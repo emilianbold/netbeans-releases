@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <api-answers
   question-version="1.23"
-  module="Debugger Core UI API"
+  module="Debugger Core UI"
   author="jjancura@netbeans.org"
 >
 
@@ -39,10 +39,47 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
 <answer id="arch-what">
-The debuggercore module (Debugger Core) allows to install different debugger implementation to one IDE. 
-It allows to share some common UI components. 
+The debuggercore module (Debugger Core UI) contains shared UI components for all debugger implementations, and defines some SPI
+for sharing of them. 
 
-<api name="DebuggerCoreAPI" type="export" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html"/>
+<ul> List of APIs:
+<li><api name="DebuggerCoreUI-SPI" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20Core%20UI%20SPI/index.html"/></li>
+
+<li><api name="Meta-inf/debugger/org.netbeans.spi.debugger.ui.BreakpointType" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>New Breakpoint Dialog loads all breakpoint type definitions.</li>
+<li><api name="Meta-inf/debugger/org.netbeans.spi.debugger.ui.AttachType" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/Debugger%20API/index.html"/>Attach to ... Dialog loads all attach type definitions.</li>
+
+<li><api name="Meta-inf/debugger/&lt;Session-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.ColumnModel" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+
+<li><api name="Meta-inf/debugger/&lt;DebuggerEngine-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.TreeModel" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;DebuggerEngine-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.TreeModelFilter" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;DebuggerEngine-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.NodeModel" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;DebuggerEngine-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.NodeModelFilter" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;DebuggerEngine-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.TableModel" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;DebuggerEngine-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.TableModelFilter" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;DebuggerEngine-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.NodeActionsProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;DebuggerEngine-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.NodeActionsProviderFilter" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+
+<li><api name="Meta-inf/debugger/&lt;Session-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.TreeModel" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;Session-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.TreeModelFilter" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;Session-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.NodeModel" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;Session-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.NodeModelFilter" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;Session-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.TableModel" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;Session-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.TableModelFilter" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;Session-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.NodeActionsProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;Session-ID&gt;/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.NodeActionsProviderFilter" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+
+<li><api name="Meta-inf/debugger/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.TreeModel" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.TreeModelFilter" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.NodeModel" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.NodeModelFilter" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.TableModel" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.TableModelFilter" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.NodeActionsProvider" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf/debugger/&lt;DebuggerView-ID&gt;/org.netbeans.spi.viewmodel.NodeActionsProviderFilter" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+
+<li><api name="netbeans.debugger.models" group="property" type="import" category="private"/>Writes information about loading of models to console.</li>
+</ul>
+
 See <a href="http://debugger.netbeans.org/">debugger.netbeans.org</a> and
  <a href="http://debuggercore.netbeans.org/">debuggercore.netbeans.org</a>
 for more information.
@@ -156,6 +193,8 @@ We would like to test 100% of our APIs.
 -->
 <answer id="dep-nb">
     <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org"/> 
+    <api name="ViewModel" type="import" category="official"/> 
+    <api name="Debugger Core API" type="import" category="official"/> 
 </answer>
 
 
@@ -216,12 +255,7 @@ We would like to test 100% of our APIs.
         </question>
 -->
 <answer id="deploy-jar">
-<ul>
-    <li>modules\autoload\debugger-api.jar - Debugger Core API</li>
-    <li>modules\autoload\debugger-viewmodel.jar - Debugger Core - View Model API</li>
-    <li>modules\autoload\debuggerCore-ui.jar - Shared UI</li>
-</ul>
-See <a href="http://debuggercore.netbeans.org/docs/api/ProgrammersGuide.html">Programmers Guide</a>.
+  Just module JAR.
 </answer>
 
 
@@ -290,8 +324,7 @@ See <a href="http://debuggercore.netbeans.org/docs/api/ProgrammersGuide.html">Pr
         </question>
 -->
 <answer id="deploy-dependencies">
-OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
-  org.netbeans.api.viewmodel/1
+OpenIDE-Module-Module-Dependencies: org.netbeans.spi.debugger.ui/1
 </answer>
 
 
@@ -669,12 +702,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
         </question>
 -->
 <answer id="format-clipboard">
-    <ul>
-    <li>custom DataFlavor type referencing own structures (for copy/cut/paste)</li>
-    <li>standard Open API's NodeTransfer.cookie for InstanceCookie (just for pasting):
-    <api name="InstanceCookie-paste" type="export" category="private"/>
-    </li>
-    </ul>
+    No comunication with clipboard.
 </answer>
 
 

@@ -39,10 +39,10 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
 <answer id="arch-what">
-The debuggercore module (Debugger Core) allows to install different debugger implementation to one IDE. 
-It allows to share some common UI components. 
+The debuggercore/viewmodel module (View Model) allows to share one TreeTableView among different modules. 
 
-<api name="DebuggerCoreAPI" type="export" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html"/>
+<api name="ViewModel" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html"/>
+
 See <a href="http://debugger.netbeans.org/">debugger.netbeans.org</a> and
  <a href="http://debuggercore.netbeans.org/">debuggercore.netbeans.org</a>
 for more information.
@@ -216,12 +216,7 @@ We would like to test 100% of our APIs.
         </question>
 -->
 <answer id="deploy-jar">
-<ul>
-    <li>modules\autoload\debugger-api.jar - Debugger Core API</li>
-    <li>modules\autoload\debugger-viewmodel.jar - Debugger Core - View Model API</li>
-    <li>modules\autoload\debuggerCore-ui.jar - Shared UI</li>
-</ul>
-See <a href="http://debuggercore.netbeans.org/docs/api/ProgrammersGuide.html">Programmers Guide</a>.
+    Just module JAR.
 </answer>
 
 
@@ -290,8 +285,7 @@ See <a href="http://debuggercore.netbeans.org/docs/api/ProgrammersGuide.html">Pr
         </question>
 -->
 <answer id="deploy-dependencies">
-OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
-  org.netbeans.api.viewmodel/1
+OpenIDE-Module-Module-Dependencies: org.netbeans.spi.viewmodel/1
 </answer>
 
 
@@ -392,9 +386,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
         </question>
 -->
 <answer id="resources-layer">
-    Yes, files are created for menus, actions, shortcuts, templates, window system layout,
-    settings storage - these are all in standard Open
-    APIs.
+    No.
 </answer>
 
 
@@ -455,9 +447,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
         </question>
 -->
 <answer id="lookup-lookup">
-    No. But we use our own private implementation of lookup pattern.
-    We are searching for instances of various servies defined in *.spi.* packages.
-    The contract is described in JavaDoc.
+    No.
 </answer>
 
 
@@ -473,8 +463,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
         </question>
 -->
 <answer id="lookup-register">
-    We use our private namespace <code>META-INF/debugger</code> for registration. 
-    The contract is described in JavaDoc.
+    No.
 </answer>
 
 
@@ -622,7 +611,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
 -->
 
 <answer id="exec-introspection">
-    debuggercore does not use introspection.
+    debuggercore/viewmodel does not use introspection.
     The cases when an object is tested on various types are quite common, but not documented.
 </answer>
 
@@ -669,12 +658,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
         </question>
 -->
 <answer id="format-clipboard">
-    <ul>
-    <li>custom DataFlavor type referencing own structures (for copy/cut/paste)</li>
-    <li>standard Open API's NodeTransfer.cookie for InstanceCookie (just for pasting):
-    <api name="InstanceCookie-paste" type="export" category="private"/>
-    </li>
-    </ul>
+    No communication with clipboard.
 </answer>
 
 
@@ -822,7 +806,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
         </question>
 -->
 <answer id="perf-menus">
-    No. Context menu are rather stable once created. Enabling logic is simple.
+    No.
 </answer>
 
 
