@@ -649,29 +649,34 @@ public final class TransformPanel extends javax.swing.JPanel {
     
     
     private void browseXSLTButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseXSLTButtonActionPerformed
-        // Add your handling code here:
-        try {
+        // prepare content for selector
+        final Node content = Util.projectView();
+        NodeOperation op = NodeOperation.getDefault();
 
-            Node[] nodes = NodeOperation.getDefault().select
-            (Util.THIS.getString("LBL_select_xslt_script"),
-            Util.THIS.getString("LBL_select_node"),
-            RepositoryNodeFactory.getDefault().repository(DataFilter.ALL),
-            new NodeAcceptor() {
-                public boolean acceptNodes(Node[] nodes) {
-                    if ( nodes.length != 1 ) {
-                        return false;
+        try {
+            Node[] selected = op.select(
+                    Util.THIS.getString("LBL_select_xslt_script"),
+                    Util.THIS.getString("LBL_select_node"),
+                    content,
+                    new NodeAcceptor() {
+                        public boolean acceptNodes(Node[] nodes) {
+                            if ( nodes.length != 1 ) {
+                                return false;
+                            }
+
+                            DataObject dataObject = (DataObject) nodes[0].getCookie(DataObject.class);
+                            if ( dataObject == null ) {
+                                return false;
+                            }
+                            return TransformUtil.isXSLTransformation(dataObject);
+                        }
                     }
-                    
-                    DataObject dataObject = (DataObject) nodes[0].getCookie(DataObject.class);
-                    if ( dataObject == null ) {
-                        return false;
-                    }
-                    return TransformUtil.isXSLTransformation(dataObject);
-                }
-            });
-            DataObject dataObject = (DataObject) nodes[0].getCookie(DataObject.class);
+            );
+
+            DataObject dataObject = (DataObject) selected[0].getCookie(DataObject.class);
+
             setXSL(TransformUtil.getURLName(dataObject.getPrimaryFile()));
-            
+
             if ( ( userSetOutput == false ) && ( xmlHistory != null ) ) {
                 setOutput(xmlHistory.getXSLOutput(data.xsl));
             }
@@ -679,9 +684,9 @@ public final class TransformPanel extends javax.swing.JPanel {
                 setProcessOutput(null);
             }
             updateXSLComboBoxModel(data.xsl);
-            
+
             updateComponents();
-            
+
             setCaretPosition(transformComboBox);
         } catch (UserCancelException exc) { // TopManager.getDefault().getNodeOperation().select
             // ignore it
@@ -689,27 +694,34 @@ public final class TransformPanel extends javax.swing.JPanel {
         } catch (IOException exc) { // TransformUtil.getURLName (...)
             // ignore it
             Util.THIS.debug(exc);
+        } finally {
+            Util.icons = null;
         }
     }//GEN-LAST:event_browseXSLTButtonActionPerformed
     
     private void browseInputButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseInputButtonActionPerformed
-        // Add your handling code here:
+        final Node content = Util.projectView();
+        NodeOperation op = NodeOperation.getDefault();
+
         try {
-            Node[] nodes = NodeOperation.getDefault().select
-            (Util.THIS.getString("LBL_select_xml_document"),
-            Util.THIS.getString("LBL_select_node"),
-            RepositoryNodeFactory.getDefault().repository(DataFilter.ALL),
-            new NodeAcceptor() {
-                public boolean acceptNodes(Node[] nodes) {
-                    if ( nodes.length != 1 ) {
-                        return false;
+            Node[] selected = op.select(
+                    Util.THIS.getString("LBL_select_xml_document"),
+                    Util.THIS.getString("LBL_select_node"),
+                    content,
+                    new NodeAcceptor() {
+                        public boolean acceptNodes(Node[] nodes) {
+                            if ( nodes.length != 1 ) {
+                                return false;
+                            }
+
+                            Object transformable = nodes[0].getCookie(TransformableCookie.class);
+                            return ( transformable != null );
+                        }
                     }
-                    
-                    Object transformable = nodes[0].getCookie(TransformableCookie.class);
-                    return ( transformable != null );
-                }
-            });
-            DataObject dataObject = (DataObject) nodes[0].getCookie(DataObject.class);
+            );
+
+            DataObject dataObject = (DataObject) selected[0].getCookie(DataObject.class);
+
             setInput(TransformUtil.getURLName(dataObject.getPrimaryFile()));
             
             if ( Util.THIS.isLoggable() ) /* then */ {
@@ -736,6 +748,8 @@ public final class TransformPanel extends javax.swing.JPanel {
         } catch (IOException exc) { // TransformUtil.getURLName (...)
             // ignore it
             Util.THIS.debug(exc);
+        } finally {
+            Util.icons = null;
         }
     }//GEN-LAST:event_browseInputButtonActionPerformed
     

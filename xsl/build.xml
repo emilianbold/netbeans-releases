@@ -36,6 +36,10 @@ Microsystems, Inc. All Rights Reserved.
           <pathelement location="${xml/core.dir}/${nb.modules/autoload.dir}/xml-core.jar"/>
           <pathelement location="${httpserver/servletapi.dir}/${nb.modules/autoload.dir}/ext/servlet-2.2.jar"/>
           <pathelement location="${libs/xalan.dir}/${nb.modules/autoload.dir}/ext/xalan-2.5.2.jar"/>
+
+            <!-- Projects dependency -->
+            <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
+            <pathelement location="${projects/projectuiapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectuiapi.jar"/>
         </path>
     </target>
 
