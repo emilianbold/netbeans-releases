@@ -16,9 +16,14 @@ package examples.texteditor;
 import java.awt.FileDialog;
 import java.io.*;
 
+/** This class is en entry point of the simple text editor.
+ * It creates and shows the main application frame.
+ */
 public class Ted extends javax.swing.JFrame {
 
-    /** Initializes the Form */
+    /** Ted constructor.
+     * It initializes all GUI components [menu bar, menu items, editor pane, etc.].
+     */
     public Ted() {
         initComponents ();
         setSize(500,300);
@@ -177,36 +182,54 @@ public class Ted extends javax.swing.JFrame {
 
     }//GEN-END:initComponents
 
+    /** This method is called when File -> Save menu item is invoked.
+     * It saves the current opened file.
+     * @param evt ActionEvent instance passed from actionPerformed event.
+     */
     private void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuItemActionPerformed
-        // Add your handling code here:
         if ("".equals(fileName))
             doSaveAs();
         else
             doSave(fileName);
     }//GEN-LAST:event_saveMenuItemActionPerformed
 
+    /** This method is called when File -> Exit menu item is invoked.
+     * It closes the application.
+     * @param evt ActionEvent instance passed from actionPerformed event.
+     */
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
-        // Add your handling code here:
         System.exit(0);
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
+    /** This method is called when Edit -> Find menu item is invoked.
+     * It creates and shows the Finder frame to allow the user to search in the text.
+     * @param evt ActionEvent instance passed from actionPerformed event.
+     */
     private void findMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findMenuItemActionPerformed
-        // Add your handling code here:
         new Finder (this, textBox).show();
     }//GEN-LAST:event_findMenuItemActionPerformed
 
+    /** This method is called when Help -> About menu item is invoked.
+     * It creates and shows the About dialog.
+     * @param evt ActionEvent instance passed from actionPerformed event.
+     */
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
-        // Add your handling code here:
         new About(this). show();
     }//GEN-LAST:event_aboutMenuItemActionPerformed
 
+    /** This method is called when File -> Save as menu item is invoked.
+     * It asks for a new file name, then saves the file.
+     * @param evt ActionEvent instance passed from actionPerformed event.
+     */
     private void saveAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsMenuItemActionPerformed
-        // Add your handling code here:
         doSaveAs();
     }//GEN-LAST:event_saveAsMenuItemActionPerformed
 
+    /** This method is called when File -> Open menu item is invoked.
+     * It displays a dialog to choose the file to be opened and edited.
+     * @param evt ActionEvent instance passed from actionPerformed event.
+     */
     private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
-        // Add your handling code here:
         FileDialog fileDialog = new FileDialog (this, "Open...", FileDialog.LOAD);
         fileDialog.show ();
         if (fileDialog.getFile () == null)
@@ -233,17 +256,25 @@ public class Ted extends javax.swing.JFrame {
             textBox.setText (str);
     }//GEN-LAST:event_openMenuItemActionPerformed
 
+    /** This method is called when File -> New menu item is invoked.
+     * It clears the editor pane.
+     * @param evt ActionEvent instance passed from actionPerformed event.
+     */
     private void newMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newMenuItemActionPerformed
-        // Add your handling code here:
         fileName = "";
         textBox.setText ("");
     }//GEN-LAST:event_newMenuItemActionPerformed
 
-    /** Exit the Application */
+    /** This method is called when the application frame is closed.
+     * @param evt WindowEvent instance passed from windowClosing event.
+     */
     private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm
         System.exit (0);
     }//GEN-LAST:event_exitForm
 
+    /** Saves the current content of editor pane to the file.
+     * @param fileName Name of the file.
+     */
     private void doSave (String fileName) {
         FileOutputStream fos = null;
         String str = textBox.getText ();
@@ -259,6 +290,8 @@ public class Ted extends javax.swing.JFrame {
         }
     }
 
+    /** Asks for a file name. then saves the current content of editor pane to the file.
+     */
     private void doSaveAs () {
         FileDialog fileDialog = new FileDialog (this, "Save As...", FileDialog.SAVE);
         fileDialog.show ();
@@ -288,6 +321,9 @@ public class Ted extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
 
+    /** Starts the application.
+     * @param args Application arguments.
+     */    
     public static void main(java.lang.String[] args) {
         new Ted ().show ();
     }

@@ -15,7 +15,9 @@ package examples.texteditor;
 
 public class Finder extends javax.swing.JDialog {
 
-    /** Initializes the Form */
+    /** Finder constructor.
+     * It creates modal dialog and displays it.
+     */
     public Finder(java.awt.Frame parent, javax.swing.JTextArea textEditor) {
         super(parent, true);
         this.textEditor = textEditor;
@@ -110,11 +112,19 @@ public class Finder extends javax.swing.JDialog {
 
     }//GEN-END:initComponents
 
+    /** This method is called when ENTER is pressed in Find text field.
+     * If the field contains some text, it invokes Find button action, otherwise does nothing.
+     * @param evt ActionEvent instance passed from actionPerformed event.
+     */
     private void findFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findFieldActionPerformed
         if (findField.getText().trim().length() > 0)
             findButton.doClick();
     }//GEN-LAST:event_findFieldActionPerformed
 
+    /** This method is called when Find button is pressed.
+     * If the field contains some text, it sets the caret position to the searched word, otherwise does nothing.
+     * @param evt ActionEvent instance passed from actionPerformed event.
+     */
     private void findButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findButtonActionPerformed
         // Add your handling code here:
         String text = textEditor.getText ();
@@ -130,11 +140,17 @@ public class Finder extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_findButtonActionPerformed
 
+    /** This method is called when Close button is pressed.
+     * It closes the Finder dialog.
+     * @param evt ActionEvent instance passed from actionPerformed event.
+     */
     private void closeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
         closeDialog(null);
     }//GEN-LAST:event_closeButtonActionPerformed
 
-    /** Closes the dialog */
+    /** This method is called when the dialog is closed.
+     * @param evt WindowEvent instance passed from windowClosing event.
+     */
     private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeDialog
         setVisible (false);
         dispose ();

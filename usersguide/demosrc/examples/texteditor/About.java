@@ -15,7 +15,9 @@ package examples.texteditor;
 
 public class About extends javax.swing.JDialog {
 
-    /** Initializes the Form */
+    /** About constructor.
+     * It creates modal dialog and displays it.
+     */
     public About(java.awt.Frame parent) {
         super (parent, true);
         initComponents ();
@@ -49,7 +51,9 @@ public class About extends javax.swing.JDialog {
     }//GEN-END:initComponents
 
 
-    /** Closes the dialog */
+    /** This method is called when the dialog is closed.
+     * @param evt WindowEvent instance passed from windowClosing event.
+     */
     private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeDialog
         setVisible (false);
         dispose ();
