@@ -282,7 +282,7 @@ public class TestCallAction extends TestAction {
                                                 if (content.compareTo(output) != 0 )
                                                     System.err.println("***************** Call action: "+name+" error in outputs comparation. ******************");
                                             } else {
-                                                System.out.println(content);
+                                                System.out.print(content);
                                             }
                                             getLogger().removePropertyChangeListener(this);
                                             isPerforming=false;

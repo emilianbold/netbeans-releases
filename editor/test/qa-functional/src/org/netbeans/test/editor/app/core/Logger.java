@@ -288,6 +288,9 @@ public class Logger implements Serializable {
         
         if (editor != Main.frame.getEditor()) {
             System.err.println("Logger Editor isn't same as in MainFrame.");
+            System.err.println("Logger.editor="+editor);
+            System.err.println("Main.Frame.editor="+Main.frame.getEditor());
+            editor = Main.frame.getEditor();
         }
         TestAction ta=(TestAction)(testActions.get(index));
         if (ta instanceof TestLogAction)
