@@ -203,28 +203,46 @@ final class Services extends ServiceType.Registry {
 
   /** Special children for handling of ManifestSection.ServiceSection(s).
   */
-  static abstract class SectionChildren extends Children.Map 
+  static abstract class SectionChildren extends Index.ArrayChildren
   implements Level {
+    /** map from (Object, Node) */
+    private java.util.Map map; 
+    
+    /** Use linked list */
+    protected java.util.Collection initCollection () {
+      return new LinkedList ();
+    }
+    
     /** Implements the addition of a section into the container.
     */
     public final void add (ManifestSection.ServiceSection section) 
     throws InstantiationException {
       Object key = key (section.getServiceType ());
 
-      if (nodes == null) {
-        nodes = new HashMap (11);
+      if (map == null) {
+        map = new HashMap (11);
       }
       
-      Node subNode = (Node)nodes.get (key);
+      if (nodes == null) {
+        nodes = initCollection ();
+      }
+      
+      Node subNode = (Node)map.get (key);
       if (subNode == null) {
         subNode = createChildren (section);
-        put (key, subNode);
+        map.put (key, subNode);
+        
+        // move as first if the section is marked as default
+        if (section.isDefault ()) {
+          ((LinkedList)nodes).addFirst (subNode);
+        } else {
+          nodes.add (subNode);
+        }
+        refresh ();
       }
       
-//      if (subNode.getChildren () instanceof Level) {
       Level l = (Level)subNode.getChildren ();
       l.add (section);
-//      }
     }
 
     /** Removes a section from this level and all sublevels.
@@ -233,10 +251,12 @@ final class Services extends ServiceType.Registry {
     throws InstantiationException {
       Object key = key (section.getServiceType ());
       
-      Node subNode = (Node)nodes.get (key);
+      Node subNode = (Node)map.get (key);
       Level l = (Level)subNode.getChildren ();
       if (l.remove (section)) {      
-        remove (key);
+        map.remove (key);
+        nodes.remove (subNode);
+        refresh ();
       }
       
       return getNodesCount () == 0;
@@ -254,11 +274,7 @@ final class Services extends ServiceType.Registry {
       AlterEnumeration aen = new AlterEnumeration (en) {
         public Object alter (Object o) {
           Node n = (Node)o;
-//          if (n.getChildren () instanceof Level) {
-            return ((Level)n.getChildren ()).services ();
-//          } else {
-//            return EmptyEnumeration.EMPTY;
-//          }
+          return ((Level)n.getChildren ()).services ();
         }
       };
       
@@ -535,11 +551,11 @@ final class Services extends ServiceType.Registry {
       }
       
       if (s1 == def) {
-        return -1;
+        return 1;
       }
       
       if (s2 == def) {
-        return 1;
+        return -1;
       }
       
       return System.identityHashCode (s1) - System.identityHashCode (s2);
@@ -549,6 +565,7 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  2    Gandalf   1.1         9/17/99  Jaroslav Tulach Reorder of nodes works.
 *  1    Gandalf   1.0         9/10/99  Jaroslav Tulach 
 * $?
 */
