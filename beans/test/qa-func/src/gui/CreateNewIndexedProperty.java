@@ -113,6 +113,8 @@ public class CreateNewIndexedProperty extends NbTestCase {
 //        JamUtilities.waitEventQueueEmpty(1500);
         new JelloYesNoDialog("Confirm Object Deletion").yes();        
 //        JamUtilities.waitEventQueueEmpty(1500);        
+        new JelloSaveCancelDialog("Question").cancel();
+
         if (!mount) {
             explorer.pushPopupMenu("Unmount Filesystem", sampleDir);            
         }
