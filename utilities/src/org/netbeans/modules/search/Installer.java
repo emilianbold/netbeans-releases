@@ -44,4 +44,12 @@ public class Installer extends ModuleInstall {
     public void uninstalled () {
         hook.unhook();
     }
+
+
+    // Just for debug purposes
+    private final static org.openide.ErrorManager errorManager = org.openide.ErrorManager.getDefault().getInstance ("org.netbeans.modules.search");
+    public final static void debug (String message) {
+        errorManager.log (message);
+    }
+
 }
