@@ -13,6 +13,8 @@
 package org.netbeans.modules.xml.catalog.impl;
 
 import java.beans.*;
+import java.io.File;
+import java.net.MalformedURLException;
 
 /**
  * XML catalog customizer. It allows to customize catalog location.
@@ -47,65 +49,81 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
         locationLabel = new javax.swing.JLabel();
         locationTextField = new javax.swing.JTextField();
         descTextArea = new javax.swing.JTextArea();
-
-        FormListener formListener = new FormListener();
+        selectButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
-        locationLabel.setText(Util.THIS.getString ("XCatalogCustomizer.locationLabel.text"));
         locationLabel.setLabelFor(locationTextField);
+        locationLabel.setText(Util.THIS.getString ("XCatalogCustomizer.locationLabel.text"));
         add(locationLabel, new java.awt.GridBagConstraints());
 
         locationTextField.setColumns(20);
-        locationTextField.addActionListener(formListener);
-        locationTextField.addFocusListener(formListener);
+        locationTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                locationTextFieldActionPerformed(evt);
+            }
+        });
+        locationTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                locationTextFieldFocusLost(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.weightx = 1.0;
         add(locationTextField, gridBagConstraints);
 
-        descTextArea.setWrapStyleWord(true);
-        descTextArea.setLineWrap(true);
         descTextArea.setEditable(false);
-        descTextArea.setForeground(new java.awt.Color(102, 102, 153));
         descTextArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
+        descTextArea.setForeground(new java.awt.Color(102, 102, 153));
+        descTextArea.setLineWrap(true);
         descTextArea.setText(Util.THIS.getString("DESC_xcatalog_fmts"));
+        descTextArea.setWrapStyleWord(true);
         descTextArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
         descTextArea.setEnabled(false);
         descTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(descTextArea, gridBagConstraints);
 
-    }
-
-    // Code for dispatching events from components to event handlers.
-
-    private class FormListener implements java.awt.event.ActionListener, java.awt.event.FocusListener {
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == locationTextField) {
-                XCatalogCustomizer.this.locationTextFieldActionPerformed(evt);
+        selectButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/catalog/impl/Bundle").getString("PROP_choose_file"));
+        selectButton.setMaximumSize(new java.awt.Dimension(89, 25));
+        selectButton.setMinimumSize(new java.awt.Dimension(89, 25));
+        selectButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectButtonActionPerformed(evt);
             }
-        }
+        });
 
-        public void focusGained(java.awt.event.FocusEvent evt) {
-        }
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        add(selectButton, gridBagConstraints);
 
-        public void focusLost(java.awt.event.FocusEvent evt) {
-            if (evt.getSource() == locationTextField) {
-                XCatalogCustomizer.this.locationTextFieldFocusLost(evt);
-            }
-        }
     }//GEN-END:initComponents
+
+    private void selectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectButtonActionPerformed
+        File f = org.netbeans.modules.xml.catalog.lib.Util.selectCatalogFile("txt xml cat catalog"); // NOI18N
+        if (f == null) return;
+        try {
+            String location = f.toURL().toExternalForm();
+            locationTextField.setText(location);
+            model.setLocation(location);
+        } catch (MalformedURLException ex) {
+            // ignore
+        }
+    }//GEN-LAST:event_selectButtonActionPerformed
 
     //!!! find out whether action performed is not enought
     
@@ -141,6 +159,7 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
     private javax.swing.JTextArea descTextArea;
     private javax.swing.JLabel locationLabel;
     private javax.swing.JTextField locationTextField;
+    private javax.swing.JButton selectButton;
     // End of variables declaration//GEN-END:variables
 
 }
