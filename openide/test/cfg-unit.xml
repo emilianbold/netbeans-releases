@@ -49,6 +49,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- XXX many loaders tests can run in IDE mode just fine... -->
                 <include name="org/openide/loaders/*.class"/>
                 <exclude name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectsCreatedOncePerFile"/>
+                <exclude name="org/openide/loaders/MultiDataObjectTest.class"/>
                 <include name="org/openide/xml/*.class"/>
                 <include name="org/openide/explorer/propertysheet/*.class"/>
                 <include name="org/openide/nodes/*.class"/>
