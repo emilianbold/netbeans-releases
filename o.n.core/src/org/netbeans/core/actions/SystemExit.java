@@ -40,6 +40,7 @@ import com.netbeans.ide.util.actions.ActionPerformer;
 import com.netbeans.ide.util.actions.CallableSystemAction;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.nodes.Node;
+import com.netbeans.ide.cookies.SaveCookie;
 
 /** SystemExit action.
 * @author   Ian Formanek
@@ -176,10 +177,12 @@ public class SystemExit extends CallableSystemAction {
     */
     private void save(boolean all) {
       if (all) {
+        SaveCookie sc = null;
         for (int i = listModel.size() - 1; i >= 0; i--) {
           try {
             DataObject obj = (DataObject) listModel.getElementAt(i);
-            obj.save();
+            sc = (SaveCookie)obj.getCookie(SaveCookie.class);
+            if (sc != null) sc.save();
             listModel.removeElement(obj);
           }
           catch (java.io.IOException e) {
@@ -189,9 +192,12 @@ public class SystemExit extends CallableSystemAction {
       }
       else {
         Object[] array = list.getSelectedValues();
+        SaveCookie sc = null;
         for (int i = 0; i < array.length; i++) {
           try {
-            ((DataObject) array[i]).save();
+            sc = (SaveCookie)
+                 (((DataObject)array[i]).getCookie(SaveCookie.class));
+            if (sc != null) sc.save();
             listModel.removeElement(array[i]);
           }
           catch (java.io.IOException e) {
@@ -267,6 +273,7 @@ public class SystemExit extends CallableSystemAction {
 
 /*
  * Log
+ *  5    Gandalf   1.4         1/14/99  David Simonek   
  *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
  *  3    Gandalf   1.2         1/6/99   Ian Formanek    Reflecting change in 
  *       datasystem package
