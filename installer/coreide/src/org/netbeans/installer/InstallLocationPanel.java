@@ -47,14 +47,18 @@ public class InstallLocationPanel extends DestinationPanel
     }
     
     public void exited (WizardBeanEvent event) {
+        //Call to update product tree
+        super.exited(event);
         try {
+            //Set install location for storage builder
             ProductService service = (ProductService)getService(ProductService.NAME);
-            String destination = (String) service.getProductBeanProperty(
+            String productDestination = (String) service.getProductBeanProperty(
             ProductService.DEFAULT_PRODUCT_SOURCE, null, "installLocation");
-            destination += File.separator + "_uninst" + File.separator + "storagebuilder"; 
-            logEvent(this, Log.DBG, "destination: " + destination);
+            String sbDestination = productDestination + File.separator + "_uninst" + File.separator + "storagebuilder"; 
+            logEvent(this, Log.DBG, "exited productDestination: " + productDestination);
+            logEvent(this, Log.DBG, "exited sbDestination: " + sbDestination);
             service.setRetainedProductBeanProperty(ProductService.DEFAULT_PRODUCT_SOURCE,
-            "storageBuilder", "installLocation", destination);
+            "storageBuilder", "installLocation", sbDestination);
         } catch (ServiceException e) {
             logEvent(this, Log.ERROR, e);
         }
