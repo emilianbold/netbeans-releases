@@ -132,6 +132,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         serverInstanceLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_Server_LabelMnemonic").charAt(0));
+        serverInstanceLabel.setLabelFor(serverInstanceComboBox);
         serverInstanceLabel.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_Server"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
