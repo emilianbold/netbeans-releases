@@ -47,6 +47,11 @@
 # default is "yes", so clean everything first
 # YOU MUST DO A CLEAN BUILD BEFORE COMMITTING TO THE TRUNK
 #
+# dobuild=no
+# if set to "no", do not do a build, just run CVS and/or tests
+# default is "yes", do a build (incl. sanity check and commit verification)
+# YOU MUST DO A CLEAN BUILD BEFORE COMMITTING TO THE TRUNK
+#
 # testedmodule=full
 # which tests to run after the build:
 # "validate" - just validation tests (fastest, default)
@@ -64,7 +69,10 @@
 # vnc seems stablest; sometimes other servers have bugs
 #
 # vncdisplayargs="-SecurityTypes=none"
-# extra arguments to pass to vnc, depending on which version you run
+# extra arguments to pass to VNC, depending on which version you run
+#
+# vncvieweropts="-ViewOnly"
+# extra arguments to pass to the VNC viewer
 #
 # spawnwm="mwm"
 # the X window manager to use, such as mwm, metacity, etc.
@@ -159,6 +167,11 @@ then
     doclean=yes
 fi
 
+if [ -z "$dobuild" ]
+then
+    dobuild=yes
+fi
+
 export JAVA_HOME=$nbjdk
 export PATH=$nbjdk/bin:$PATH
 export CLASSPATH=
@@ -174,6 +187,7 @@ then
     # Use a separate display.
     display=:69
     xauthority=/tmp/.Xauthority-$display
+    origxauthority=$XAUTHORITY
     export XAUTHORITY=$xauthority
     if [ $spawndisplaytype = Xnest ]
     then
@@ -196,7 +210,7 @@ then
     sleep 2 # give X time to start
     $spawnwm &
     wmpid=$!
-    trap "kill $wmpid; kill $xpid; rm -f $xauthority" EXIT
+    trapcmd="kill $wmpid > /dev/null 2>&1; kill $xpid > /dev/null 2>&1; rm -f $xauthority"
     sleep 2 # give WM time to work
     if [ $spawndisplaytype = Xnest ]
     then
@@ -206,9 +220,11 @@ then
         message='Testing X server...use Ctrl-Alt-F7/8 to toggle screens.'
     else
         message="Close/minimize this window if you want. [vncviewer $display]"
-        vncviewer -display $origdisplay $display &
+        XAUTHORITY=$origxauthority vncviewer $vncvieweropts -display $origdisplay $display &
         vncviewerpid=$!
+        trapcmd_vnc="kill $vncviewerpid > /dev/null 2>&1;"
     fi
+    trap "$trapcmd_vnc $trapcmd" EXIT
     xmessage -timeout 3 "$message"
     status=$?
     if [ $status != 0 ]
@@ -232,21 +248,24 @@ then
     (cd $sources; cvs -q update)
 fi
 
-echo "----------BUILDING NETBEANS----------" 1>&2
-# Intentionally skipping check-commit-validation.
-# Running sanity-start just so you have a good chance to see deprecation messages etc.
-$antcmd -f $sources/nbbuild/build.xml nozip-check commit-verification
-status=$?
-if [ $status != 0 ]
+if [ $dobuild = yes ]
 then
-    echo "NetBeans build failed with status $status!" 1>&2
-    exit 1
+    echo "----------BUILDING NETBEANS----------" 1>&2
+    # Intentionally skipping check-commit-validation.
+    # Running sanity-start just so you have a good chance to see deprecation messages etc.
+    $antcmd -f $sources/nbbuild/build.xml nozip-check commit-verification
+    status=$?
+    if [ $status != 0 ]
+    then
+        echo "NetBeans build failed with status $status!" 1>&2
+        exit 1
+    fi
 fi
 
 function browse() {
     if [ -n "$mozbrowser" ]
     then
-        DISPLAY=$origdisplay $mozbrowser -remote "openURL(file://$1,new-window)"
+        XAUTHORITY=$origxauthority DISPLAY=$origdisplay $mozbrowser -remote "openURL(file://$1,new-window)"
     else
         echo "---- SEE RESULTS: $1 ----"
     fi
