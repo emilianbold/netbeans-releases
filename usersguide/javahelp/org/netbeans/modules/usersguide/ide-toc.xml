@@ -17,7 +17,6 @@
     <tocitem text="IDE Overview" target="gs.tour" />
     <tocitem text="Key Concepts" target="gs.key" />
     <tocitem text="Starting With the Basic IDE Tasks" target="gs.howto" />
-    <tocitem text="IDE Tutorials" target="gs.gstutor" />
   </tocitem>
 
   <tocitem text="Filesystems and Application Development" >
