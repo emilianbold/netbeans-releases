@@ -719,6 +719,7 @@ the ${netbeans.dest}/bin/ directory.
     <chmod perm="ugo+x">
       <fileset dir="${netbeans.dest}/bin">
         <include name="**/*.sh"/>
+        <include name="**/*.pl"/>
         <include name="fastjavac/fastjavac.linux"/>
         <include name="fastjavac/fastjavac.sun"/>
         <include name="fastjavac/fastjavac.sun.intel"/>
