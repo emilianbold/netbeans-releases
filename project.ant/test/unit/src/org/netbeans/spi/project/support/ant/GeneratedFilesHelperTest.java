@@ -24,7 +24,6 @@ import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
@@ -51,7 +50,6 @@ public class GeneratedFilesHelperTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
-        Repository.getDefault().addFileSystem(scratch.getFileSystem()); // so FileUtil.fromFile works
         projdir = scratch.createFolder("proj");
         TestUtil.createFileFromContent(GeneratedFilesHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");
         TestUtil.setLookup(Lookups.fixed(new Object[] {
@@ -66,7 +64,6 @@ public class GeneratedFilesHelperTest extends NbTestCase {
     }
     
     protected void tearDown() throws Exception {
-        Repository.getDefault().removeFileSystem(scratch.getFileSystem());
         scratch = null;
         projdir = null;
         pm = null;

@@ -22,7 +22,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -44,7 +43,6 @@ public class SimpleAntArtifactTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
-        Repository.getDefault().addFileSystem(scratch.getFileSystem()); // so FileUtil.fromFile works
         TestUtil.setLookup(Lookups.fixed(new Object[] {
             new AntBasedProjectFactorySingleton(),
             AntBasedTestUtil.testAntBasedProjectType(),
@@ -58,7 +56,6 @@ public class SimpleAntArtifactTest extends NbTestCase {
     }
     
     protected void tearDown() throws Exception {
-        Repository.getDefault().removeFileSystem(scratch.getFileSystem());
         scratch = null;
         sisterprojdir = null;
         sisterh = null;

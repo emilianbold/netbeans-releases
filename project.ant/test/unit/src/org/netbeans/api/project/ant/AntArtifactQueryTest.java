@@ -26,7 +26,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -60,7 +59,6 @@ public class AntArtifactQueryTest extends NbTestCase {
             TestUtil.testProjectFactory(),
         }, AntArtifactQuery.class.getClassLoader());
         scratch = TestUtil.makeScratchDir(this);
-        Repository.getDefault().addFileSystem(scratch.getFileSystem()); // so FileUtil.fromFile works
         projdir = scratch.createFolder("proj");
         ProjectGenerator.createProject(projdir, "test", "proj");
         pm = ProjectManager.getDefault();
@@ -75,7 +73,6 @@ public class AntArtifactQueryTest extends NbTestCase {
     }
 
     protected void tearDown() throws Exception {
-        Repository.getDefault().removeFileSystem(scratch.getFileSystem());
         scratch = null;
         projdir = null;
         sisterprojdir = null;

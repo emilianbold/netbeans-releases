@@ -24,7 +24,6 @@ import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.api.project.ProjectInformation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -53,7 +52,6 @@ public class ProjectGeneratorTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
-        Repository.getDefault().addFileSystem(scratch.getFileSystem()); // so FileUtil.fromFile works
         projdir = scratch.createFolder("proj");
         TestUtil.setLookup(Lookups.fixed(new Object[] {
             new AntBasedProjectFactorySingleton(),
@@ -62,7 +60,6 @@ public class ProjectGeneratorTest extends NbTestCase {
     }
     
     protected void tearDown() throws Exception {
-        Repository.getDefault().removeFileSystem(scratch.getFileSystem());
         scratch = null;
         projdir = null;
         TestUtil.setLookup(Lookup.EMPTY);
