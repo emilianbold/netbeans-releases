@@ -209,7 +209,7 @@ final class WebProject implements Project, AntProjectListener {
             // Check up on build scripts.
             try {
                 String externalRoot = (String) new WebProjectProperties (WebProject.this, helper, refHelper).get (WebProjectProperties.SOURCE_ROOT);
-                if (externalRoot != null && !(externalRoot.equals ("") || externalRoot.equals (".."))) { //NOI18N
+                if (externalRoot != null && !(externalRoot.equals ("") || externalRoot.equals ("."))) { //NOI18N
                     FileObject root [] = FileUtil.fromFile (FileUtil.normalizeFile (new java.io.File (externalRoot)));
                     if (root != null && root.length == 1) {
                         FileOwnerQuery.markExternalOwner (root [0], WebProject.this, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
