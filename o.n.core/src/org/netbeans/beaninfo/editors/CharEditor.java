@@ -100,7 +100,7 @@ public class CharEditor extends PropertyEditorSupport implements EnhancedPropert
      * @param v new value
      */
     public void setValue(Object newValue) throws IllegalArgumentException {
-        if  (newValue instanceof Character) {
+        if (newValue instanceof Character ) {
             super.setValue(newValue);
             return;
         }
@@ -111,6 +111,11 @@ public class CharEditor extends PropertyEditorSupport implements EnhancedPropert
                 return;
             }
         }
+        if (newValue == null ) {
+            super.setValue( new Character( '\u0000' ) ); // NOI18N
+            return;
+        }
+        
         throw new IllegalArgumentException();
     }
     
@@ -126,7 +131,10 @@ public class CharEditor extends PropertyEditorSupport implements EnhancedPropert
      *   	current value.
      */
     public String getJavaInitializationString() {
-	return "'" + getAsText() + "'"; // NOI18N
+        if ( ((Character)getValue()).charValue() == '\'' )
+            return "\\'";                   // NOI18N
+        else
+            return "'" + getAsText() + "'"; // NOI18N
     }
 
     /**
