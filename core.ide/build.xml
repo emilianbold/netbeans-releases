@@ -18,6 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
     <property name="license.file" location="../../nbbuild/standard-nbm-license.txt"/>
+    <property name="build.sysclasspath" value="ignore"/>
 
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
@@ -35,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
 				<pathelement location="../netbeans/lib/core.jar"/>
                 <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
                 <pathelement location="${binroot}/core/release/lib/ext/${xmlparser}"/>
-                <pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
+<!--                <pathelement location="${binroot}/core/release/lib/ext/jh.jar"/> -->
             </classpath>
         </javac>
     </target>
