@@ -163,7 +163,31 @@ public class MakeNBM extends MatchingTask {
 	    if (name == null) name = file.getName ();
 	}
     }
-    
+
+    public class ExternalPackage {
+	String name = null;
+	String targetName = null;
+	String startUrl = null;
+	String description = null;
+
+	public void setName(String n) {
+	    this.name = n;
+	}
+
+	public void setTargetName(String t) {
+	    this.targetName = t;
+	}
+
+	public void setStartURL(String u) {
+	    this.startUrl = u;
+	}
+	
+	public void setDescription(String d) {
+	    this.description = d;
+	}
+
+    }
+
     // Similar to org.openide.xml.XMLUtil methods.
     private static String xmlEscape(String s) {
         int max = s.length();
@@ -226,6 +250,7 @@ public class MakeNBM extends MatchingTask {
     private Signature signature = null;
     private long mostRecentInput = 0L;
     private boolean isStandardInclude = true;
+    private ExternalPackage externalPackage = null;
 
     /** Include netbeans directory - default is true */
     public void setIsStandardInclude(boolean isStandardInclude) {
@@ -293,7 +318,11 @@ public class MakeNBM extends MatchingTask {
     public Signature createSignature () {
 	return (signature = new Signature ());
     }
-    
+
+    public ExternalPackage createExternalPackage(){
+        return (externalPackage = new ExternalPackage ());
+    }
+
     public void execute () throws BuildException {
 	if (file == null)
 	    throw new BuildException ("must set file for makenbm", location);
@@ -446,6 +475,19 @@ public class MakeNBM extends MatchingTask {
                         ps.print("  <module_notification>");
                         ps.print(notification.getText());
                         ps.println("</module_notification>");
+		    }
+		    if (externalPackage != null) {
+			if (externalPackage.name == null || 
+			    externalPackage.targetName == null ||
+			    externalPackage.startUrl == null)
+			    throw new BuildException("Must define name, targetname, starturl for external package");
+			ps.print("  <external_package ");
+			ps.print("name=\""+externalPackage.name+"\" ");
+			ps.print("target_name=\""+externalPackage.targetName+"\" ");
+			ps.print("start_url=\""+externalPackage.startUrl+"\"");
+			if (externalPackage.description != null)
+			    ps.print(" description=\""+externalPackage.description+"\"");
+			ps.println("/>");
 		    }
 		    ps.println ("</module>");
                     ps.flush();
