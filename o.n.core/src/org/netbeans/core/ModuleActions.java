@@ -123,7 +123,7 @@ class ModuleActions extends Object implements ToolsAction.Model, PropertyChangeL
   /** Removes new action from the list.
   */
   public synchronized static void remove (ManifestSection.ActionSection as) throws InstantiationException {
-    List list = (List)map.get (as);
+    List list = (List)map.get (module);
     if (list == null) {
       return;
     }
@@ -163,6 +163,7 @@ class ModuleActions extends Object implements ToolsAction.Model, PropertyChangeL
 
 /*
 * Log
+*  6    Gandalf   1.5         9/2/99   Jaroslav Tulach #3637
 *  5    Gandalf   1.4         8/5/99   Jaroslav Tulach Tools & New action in 
 *       editor.
 *  4    Gandalf   1.3         7/28/99  Jaroslav Tulach Additional manifest & 
