@@ -440,11 +440,11 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 
             // Last thing to do is create the J2SE directory unless the
             // directory exists and is empty.
-            /*if (!emptyExistingDirJ2SE) {
+            if (!emptyExistingDirJ2SE) {
                 if (!createDirectory(j2seInstallDir, j2seMsgStart)) {
                     return false;
                 }
-            }*/
+            }
         }
         
         //#49348: Do not allow the same dir for JDK and NB.
