@@ -246,7 +246,7 @@
    <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalJarFileSystem.properties" url="filesystems/filesystems_JARpropsheet.html" />   
    <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalJarFileSystem.expert" url="filesystems/filesystems_JARpropsheet.html" />  
 
-   <mapID target="org.openide.filesystems.FileSystemCapability.Bean " url="filesystems/filesystems_propsheet_capabilities.html" />   
+   <mapID target="org.openide.filesystems.FileSystemCapability.Bean" url="filesystems/filesystems_propsheet_capabilities.html" />   
    
    <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl" url="pending.html" /> 
    <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl.FileTypeNode" url="pending.html" />         
