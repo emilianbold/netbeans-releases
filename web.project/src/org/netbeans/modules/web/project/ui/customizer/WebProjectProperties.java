@@ -227,7 +227,6 @@ public class WebProjectProperties {
     
     private Project project;
     private HashMap properties;    
-//    private AntProjectHelper antProjectHelper;
     private ReferenceHelper refHelper;
     private UpdateHelper updateHelper;
     private PropertyEvaluator evaluator;
@@ -237,22 +236,10 @@ public class WebProjectProperties {
         this.properties = new HashMap();
         this.updateHelper = updateHelper;
         this.evaluator = evaluator;
-//        this.antProjectHelper = antProjectHelper;
         this.refHelper = refHelper;
         read();                                
     }
 
-    public WebProjectProperties(Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
-        this.project = project;
-        this.properties = new HashMap();
-        this.updateHelper = updateHelper;
-        this.evaluator = evaluator;
-//        this.antProjectHelper = antProjectHelper;
-        this.refHelper = refHelper;
-        read();                                
-    }
-
-    
     /** XXX to be deleted when introduced in AntPropertyHeleper API
      */    
     static String getAntPropertyName( String property ) {
