@@ -633,10 +633,10 @@ abstract class AbstractLines implements Lines, Runnable {
             lineStartList.add (start);
             matcher = null;
 
+            lineCount = lineStartList.size();
             //If we already have enough lines that we need to cache logical getLine
             //lengths, update the cache - rebuilding it is very expensive
             if (knownLogicalLineCounts != null) {
-                lineCount = lineStartList.size();
                 //This is the index of the getLine we just added
                 int lastline = lineCount-1;
                 //Get the length of the getLine

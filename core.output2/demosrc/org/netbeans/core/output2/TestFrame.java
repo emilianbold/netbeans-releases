@@ -36,7 +36,7 @@
 //        io.setToolbarActions (new Action[] {new StopAction("STOP!!")});
         validate();
         System.err.println ("Writing content");
-        for (int i=0; i < 1000; i++) {
+        for (int i=0; i < 10000; i++) {
             io.getErr().println("Scroll me " + i);
             if (i %20 == 0) {
                 io.getOut().println("STDOUT: This is a longer line.  A much longer line.  A very long line.  You'd be surprised how long it would be - maybe long enought to wrap - or at least that's the idea and the master plan, right?  Well, we'll hope so");
@@ -46,6 +46,9 @@
                 io.getErr().println("Grumble, grumble, I am a multiple of 73");
 //                io.getErr().println("file:/tmp/file:23");
             }
+            try {
+                Thread.currentThread().sleep(100);
+            } catch (Exception e){};
         }
         
         out.println ("4 This is another short line");

@@ -543,13 +543,20 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 
     public final void mouseWheelMoved(MouseWheelEvent e) {
         BoundedRangeModel sbmodel = getVerticalScrollBar().getModel();
+        int max = sbmodel.getMaximum();
+        int range = sbmodel.getExtent();
+
         int currPosition = sbmodel.getValue();
-        unlockScroll();
         if (e.getSource() == textView) {
             int newPosition = Math.max (0, Math.min (sbmodel.getMaximum(),
                 currPosition + (e.getUnitsToScroll() * (sbmodel.getExtent() / 4))));
             sbmodel.setValue (newPosition);
+            if (newPosition + range >= max) {
+                lockScroll();
+                return;
+            }
         }
+        unlockScroll();
     }
 
     Caret getCaret() {
