@@ -34,6 +34,7 @@ import org.netbeans.api.project.libraries.*;
 import org.netbeans.modules.java.project.ProjectClassPathExtender;
 
 import org.netbeans.modules.form.palette.PaletteItem;
+import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
 import org.netbeans.modules.form.codestructure.CodeStructure;
@@ -258,20 +259,6 @@ public class MetaComponentCreator {
         if (targetPlacement == TARGET_BORDER)
             return setComponentBorder(source, targetComp);
 
-        // turn on undo/redo recording on code structure (if allowed)
-        CodeStructure codeStructure = formModel.getCodeStructure();
-        if (formModel.isUndoRedoRecording()
-            && !codeStructure.isUndoRedoRecording())
-        {
-            codeStructure.setUndoRedoRecording(true);
-            undoEdit = new CreatorCodeUndoableEdit();
-            undoEdit.codeUndoRedoStart = codeStructure.markForUndo();
-            if (!formModel.isCompoundEditInProgress())
-                formModel.fireFormChanged(); // to start compound undo [a bit ugly...]
-            formModel.addUndoableEdit(undoEdit);
-        }
-        else undoEdit = null;
-
         RADComponent newMetaComp = null;
 
         if (targetPlacement == TARGET_MENU)
@@ -282,11 +269,6 @@ public class MetaComponentCreator {
 
         else if (targetPlacement == TARGET_OTHER)
             newMetaComp = addOtherComponent(source, targetComp);
-
-        else finishCreatorCodeUndoableEdit(); // should not happen
-
-        // finish undo setup
-        undoEdit = null;
 
         return newMetaComp;
     }
@@ -309,36 +291,20 @@ public class MetaComponentCreator {
             LayoutSupportManager.storeConstraints(
                                      (RADVisualComponent) sourceComp);
 
-        // turn on undo/redo recording on code structure (if allowed)
-        CodeStructure codeStructure = formModel.getCodeStructure();
-        if (formModel.isUndoRedoRecording()
-            && !codeStructure.isUndoRedoRecording())
-        {
-            codeStructure.setUndoRedoRecording(true);
-            undoEdit = new CreatorCodeUndoableEdit();
-            undoEdit.codeUndoRedoStart = codeStructure.markForUndo();
-        }
-        else undoEdit = null;
+        startCreatorCodeUndoableEdit();
 
         // copy the source metacomponent
         RADComponent newMetaComp = makeCopy(sourceComp, targetPlacement);
 
         if (newMetaComp == null) { // copying failed (for a mystic reason)
             if (undoEdit != null) {
-                codeStructure.setUndoRedoRecording(false);
+                formModel.getCodeStructure().setUndoRedoRecording(false);
                 undoEdit = null;
             }
             return null;
         }
 
-        if (undoEdit != null) { // finish undo/redo recording on code structure
-            undoEdit.codeUndoRedoEnd = codeStructure.markForUndo();
-            codeStructure.setUndoRedoRecording(false);
-            if (!formModel.isCompoundEditInProgress())
-                formModel.fireFormChanged(); // to start compound undo [a bit ugly...]
-            formModel.addUndoableEdit(undoEdit);
-            undoEdit = null;
-        }
+        finishCreatorCodeUndoableEdit();
 
         if (targetPlacement == TARGET_MENU) {
             addMenuComponent(newMetaComp, targetComp);
@@ -360,7 +326,6 @@ public class MetaComponentCreator {
         else if (targetPlacement == TARGET_OTHER) {
             addOtherComponent(newMetaComp, targetComp);
         }
-        else finishCreatorCodeUndoableEdit();
 
         return newMetaComp;
     }
@@ -686,8 +651,6 @@ public class MetaComponentCreator {
         // non-default values e.g. a label on buttons, checkboxes
         defaultComponentInit(newMetaComp);
 
-        finishCreatorCodeUndoableEdit();
-
         Class beanClass = newMetaComp.getBeanClass();
         if (java.awt.Window.class.isAssignableFrom(beanClass)
                 || java.applet.Applet.class.isAssignableFrom(beanClass))
@@ -737,8 +700,6 @@ public class MetaComponentCreator {
         newMetaComp.initialize(formModel);
         if (!initComponentInstance(newMetaComp, source))
             return null;
-
-        finishCreatorCodeUndoableEdit();
 
         addOtherComponent(newMetaComp, targetComp);
         return newMetaComp;
@@ -1010,8 +971,6 @@ public class MetaComponentCreator {
         // non-default values e.g. a label on buttons, checkboxes
         defaultMenuInit(newMenuItemComp);
 
-        finishCreatorCodeUndoableEdit();
-
         addMenuComponent(newMenuItemComp, targetComp);
 
         // for new menu bars we do some additional special things...
@@ -1063,27 +1022,28 @@ public class MetaComponentCreator {
 
     // --------
 
-    private Class prepareClass(PaletteItem item) {
+    private Class prepareClass(PaletteItem palItem) {
         Throwable error = null;
 
         FileObject formFile = FormEditorSupport.getFormDataObject(formModel)
                                                   .getFormFile();
         try {
             try {
-                return FormUtils.loadUserClass(item.getComponentClassName(), formFile);
+                return FormUtils.loadUserClass(palItem.getComponentClassName(),
+                                               formFile);
             }
             catch (ClassNotFoundException ex) {
                 error = ex;
             }
 
-            // try to add necessary classpath resources as specified in the
-            // PaletteItem to the project's classpath
+            // class loading failed- try to add necessary classpath resources as
+            // specified in the PaletteItem to the project's classpath
             Project project = FileOwnerQuery.getOwner(formFile);
             ProjectClassPathExtender projectClassPath = (ProjectClassPathExtender)
                 project.getLookup().lookup(ProjectClassPathExtender.class);
 
             if (projectClassPath != null) { // this is a j2seproject with classpath
-                String[] cpDesc = item.getClassPathSource();
+                String[] cpDesc = palItem.getClassPathSource();
                 for (int i=0; i < cpDesc.length; i+=2) {
                     try {
                         if (PaletteItem.JAR_SOURCE.equals(cpDesc[i])) {
@@ -1100,7 +1060,8 @@ public class MetaComponentCreator {
                             File jarFile = new File(cpDesc[i+1]);
                             AntArtifact artifact =
                                 AntArtifactQuery.findArtifactFromFile(jarFile);
-                            projectClassPath.addAntArtifact(artifact);
+                            if (artifact.getProject() != project)
+                                projectClassPath.addAntArtifact(artifact);
                         }
                     }
                     catch (java.io.IOException ex) {
@@ -1110,7 +1071,8 @@ public class MetaComponentCreator {
 
                 // try again to load the class after 
                 try {
-                    return FormUtils.loadUserClass(item.getComponentClassName(), formFile);
+                    return FormUtils.loadUserClass(palItem.getComponentClassName(),
+                                                   formFile);
                 }
                 catch (ClassNotFoundException ex) {
                     error = ex;
@@ -1124,37 +1086,53 @@ public class MetaComponentCreator {
             error = ex;
         }
 
-        ErrorManager em = ErrorManager.getDefault();
-        em.annotate(error, FormUtils.getBundleString("MSG_ERR_CannotLoadClass")); // NOI18N
-        em.notify(error);
+        showClassLoadingErrorMessage(error, palItem);
 
         return null;
     }
 
-    private static boolean initComponentInstance(
-                               RADComponent metacomp,
-                               CreationFactory.InstanceSource source)
+    private boolean initComponentInstance(RADComponent metacomp,
+                                          CreationFactory.InstanceSource source)
     {
-        try {
-//            if (source.getInstanceCookie() != null) {
-//                Object instance = source.getInstanceCookie().instanceCreate();
-//                metacomp.setInstance(instance);
-//            }
-//            else
-            metacomp.initInstance(source.getInstanceClass());
+        startCreatorCodeUndoableEdit();
 
-            return true;
+        try {
+            metacomp.initInstance(source.getInstanceClass());
         }
         catch (Exception ex) {
+            if (undoEdit != null) {
+               formModel.getCodeStructure().setUndoRedoRecording(false);
+                undoEdit = null;
+            }
             showInstErrorMessage(ex);
+            return false;
         }
         catch (LinkageError ex) {
+            if (undoEdit != null) {
+                formModel.getCodeStructure().setUndoRedoRecording(false);
+                undoEdit = null;
+            }
             showInstErrorMessage(ex);
+            return false;
         }
-        return false;
+
+        finishCreatorCodeUndoableEdit();
+        return true;
     }
 
     // --------
+
+    private static void showClassLoadingErrorMessage(Throwable ex,
+                                                     PaletteItem palItem)
+    {
+        ErrorManager em = ErrorManager.getDefault();
+        String msg = FormUtils.getFormattedBundleString(
+            "FMT_ERR_CannotLoadClass4", // NOI18N
+            new Object[] { palItem.getComponentClassName(),
+                           PaletteUtils.getItemSourceDescription(palItem) });
+        em.annotate(ex, msg);
+        em.notify(ex);
+    }
 
     private static void showInstErrorMessage(Throwable ex) {
         ErrorManager em = ErrorManager.getDefault();
@@ -1317,11 +1295,31 @@ public class MetaComponentCreator {
 
     //---------
 
+    /** Turns on undo/redo recording on code structure (if allowed). Needed for
+     * components holding expressions with field variable (i.e. the component's
+     * variable), otherwise redo would not work.
+     */
+    private void startCreatorCodeUndoableEdit() {
+        CodeStructure codeStructure = formModel.getCodeStructure();
+        if (formModel.isUndoRedoRecording()
+            && !codeStructure.isUndoRedoRecording())
+        {
+            codeStructure.setUndoRedoRecording(true);
+            undoEdit = new CreatorCodeUndoableEdit();
+            undoEdit.codeUndoRedoStart = codeStructure.markForUndo();
+        }
+        else undoEdit = null;
+    }
+
     private void finishCreatorCodeUndoableEdit() {
         if (undoEdit != null) { // finish undo/redo recording on code structure
             CodeStructure codeStructure = formModel.getCodeStructure();
             undoEdit.codeUndoRedoEnd = codeStructure.markForUndo();
             codeStructure.setUndoRedoRecording(false);
+            if (!formModel.isCompoundEditInProgress())
+                formModel.fireFormChanged(); // to start compound undo [a bit ugly...]
+            formModel.addUndoableEdit(undoEdit);
+            undoEdit = null;
         }
     }
 

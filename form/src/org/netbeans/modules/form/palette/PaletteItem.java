@@ -19,7 +19,6 @@ import java.awt.Toolkit;
 import java.net.URL;
 import java.util.*;
 import java.io.File;
-import java.text.MessageFormat;
 
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
@@ -95,7 +94,11 @@ public final class PaletteItem implements Node.Cookie {
 
     // [should this really be public?? - MetaComponentCreator needs it now]
     public String[] getClassPathSource() {
-        return classpath_raw;
+        if (classpath_raw == null)
+            return null;
+        String[] cpSource = new String[classpath_raw.length];
+        System.arraycopy(classpath_raw, 0, cpSource, 0, classpath_raw.length);
+        return cpSource;
     }
 
     /** @return the exception occurred when trying to resolve the component
@@ -162,36 +165,7 @@ public final class PaletteItem implements Node.Cookie {
 //    }
 
     public String toString() {
-        if (classpath_raw == null || classpath_raw.length < 2) {
-            if (componentClassName != null) {
-                if (componentClassName.startsWith("javax.") // NOI18N
-                        || componentClassName.startsWith("java.")) // NOI18N
-                    return PaletteUtils.getBundleString("MSG_StandardJDKComponent"); // NOI18N
-                if (componentClassName.startsWith("org.netbeans."))
-                    return PaletteUtils.getBundleString("MSG_NetBeansComponent"); // NOI18N
-            }
-        }
-        else if (JAR_SOURCE.equals(classpath_raw[0])) {
-            return MessageFormat.format(
-                PaletteUtils.getBundleString("FMT_ComponentFromJar"), // NOI18N
-                new Object[] { classpath_raw[1] });
-        }
-        else if (LIBRARY_SOURCE.equals(classpath_raw[0])) {
-            return MessageFormat.format(
-                PaletteUtils.getBundleString("FMT_ComponentFromLibrary"), // NOI18N
-                new Object[] { classpath_raw[1] });
-        }
-        else if (PROJECT_SOURCE.equals(classpath_raw[0])) {
-            try {
-                Project project = FileOwnerQuery.getOwner(new File(classpath_raw[1]).toURI());
-                return MessageFormat.format(
-                      PaletteUtils.getBundleString("FMT_ComponentFromProject"), // NOI18N
-                      new Object[] { project.getProjectDirectory().getPath() })
-                    .replace('/', File.separatorChar);
-            }
-            catch (Exception ex) {} // ignore
-        }
-        return PaletteUtils.getBundleString("MSG_UnspecifiedComponent"); // NOI18N
+        return PaletteUtils.getItemComponentDescription(this);
     }
 
     String getDisplayName() {

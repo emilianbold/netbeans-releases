@@ -14,12 +14,16 @@
 package org.netbeans.modules.form.palette;
 
 import java.util.ArrayList;
+import java.text.MessageFormat;
+import java.io.File;
 
 import org.openide.nodes.Node;
 import org.openide.loaders.DataFolder;
 import org.openide.filesystems.*;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import org.netbeans.api.project.libraries.*;
+import org.netbeans.api.project.*;
 
 /**
  * Class providing various useful methods for palette classes.
@@ -88,6 +92,78 @@ public final class PaletteUtils {
         return df != null
                && (!visible || !Boolean.TRUE.equals(df.getPrimaryFile()
                                        .getAttribute(PaletteNode.CAT_HIDDEN))); // NOI18N
+    }
+
+    static String getItemComponentDescription(PaletteItem item) {
+        String[] classpath_raw = item.classpath_raw;
+        if (classpath_raw == null || classpath_raw.length < 2) {
+            String componentClassName = item.getComponentClassName();
+            if (componentClassName != null) {
+                if (componentClassName.startsWith("javax.") // NOI18N
+                        || componentClassName.startsWith("java.")) // NOI18N
+                    return getBundleString("MSG_StandardJDKComponent"); // NOI18N
+                if (componentClassName.startsWith("org.netbeans."))
+                    return getBundleString("MSG_NetBeansComponent"); // NOI18N
+            }
+        }
+        else if (PaletteItem.JAR_SOURCE.equals(classpath_raw[0])) {
+            return MessageFormat.format(
+                getBundleString("FMT_ComponentFromJar"), // NOI18N
+                new Object[] { classpath_raw[1] });
+        }
+        else if (PaletteItem.LIBRARY_SOURCE.equals(classpath_raw[0])) {
+            Library lib = LibraryManager.getDefault().getLibrary(classpath_raw[1]);
+            return MessageFormat.format(
+                getBundleString("FMT_ComponentFromLibrary"), // NOI18N
+                new Object[] { lib.getDisplayName() });
+        }
+        else if (PaletteItem.PROJECT_SOURCE.equals(classpath_raw[0])) {
+            try {
+                Project project = FileOwnerQuery.getOwner(new File(classpath_raw[1]).toURI());
+                return MessageFormat.format(
+                      getBundleString("FMT_ComponentFromProject"), // NOI18N
+                      new Object[] { project.getProjectDirectory().getPath() })
+                    .replace('/', File.separatorChar);
+            }
+            catch (Exception ex) {} // ignore
+        }
+        return getBundleString("MSG_UnspecifiedComponent"); // NOI18N
+    }
+
+    public static String getItemSourceDescription(PaletteItem item) {
+        String[] classpath_raw = item.classpath_raw;
+        if (classpath_raw == null || classpath_raw.length < 2) {
+            String componentClassName = item.getComponentClassName();
+            if (componentClassName != null) {
+                if (componentClassName.startsWith("javax.") // NOI18N
+                        || componentClassName.startsWith("java.")) // NOI18N
+                    return getBundleString("MSG_StandardJDKSource"); // NOI18N
+                if (componentClassName.startsWith("org.netbeans."))
+                    return getBundleString("MSG_NetBeansSource"); // NOI18N
+            }
+        }
+        else if (PaletteItem.JAR_SOURCE.equals(classpath_raw[0])) {
+            return MessageFormat.format(
+                getBundleString("FMT_JarSource"), // NOI18N
+                new Object[] { classpath_raw[1] });
+        }
+        else if (PaletteItem.LIBRARY_SOURCE.equals(classpath_raw[0])) {
+            Library lib = LibraryManager.getDefault().getLibrary(classpath_raw[1]);
+            return MessageFormat.format(
+                getBundleString("FMT_LibrarySource"), // NOI18N
+                new Object[] { lib.getDisplayName() });
+        }
+        else if (PaletteItem.PROJECT_SOURCE.equals(classpath_raw[0])) {
+            try {
+                Project project = FileOwnerQuery.getOwner(new File(classpath_raw[1]).toURI());
+                return MessageFormat.format(
+                      getBundleString("FMT_ProjectSource"), // NOI18N
+                      new Object[] { project.getProjectDirectory().getPath() })
+                    .replace('/', File.separatorChar);
+            }
+            catch (Exception ex) {} // ignore
+        }
+        return getBundleString("MSG_UnspecifiedSource"); // NOI18N
     }
 
     public static FileObject getPaletteFolder() {
