@@ -1106,6 +1106,7 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
         Module m = searchForModule(dd,path);
         if (null != m) {
             dd.removeModule(m);
+            setClientModuleUri("");
             Object obj = vcpi.getObject();
             AntArtifact aa;
             Project p;
@@ -1163,6 +1164,8 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
         else if (obj instanceof File) {
             mod = getModFromFile((File) obj, dd, path);
         }
+        if (mod.getWeb() != null)
+            replaceEmptyClientModuleUri(path);
         Module prevMod = searchForModule(dd, path);
         if (null == prevMod && null != mod)
             dd.addModule(mod);
@@ -1206,7 +1209,6 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
                         }
                         w.setContextRoot(path.substring(0,endex));
                     }
-                    replaceEmptyClientModuleUri(path);
                      mod.setWeb(w);
                 }
                 else if (jm.getModuleType() == J2eeModule.CONN) {
@@ -1224,16 +1226,20 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
         return mod;
     }
     
+    private void setClientModuleUri(String newVal) {
+        put(EarProjectProperties.CLIENT_MODULE_URI,newVal);        
+    }
+    
     private void replaceEmptyClientModuleUri(String path) {
         // set the context path if it is not set...
         Object foo = get(EarProjectProperties.CLIENT_MODULE_URI);
         if (null == foo) {
-            put(EarProjectProperties.CLIENT_MODULE_URI,path);
+            setClientModuleUri(path);
         }
         if (foo instanceof String) {
             String bar = (String) foo;
             if (bar.length() < 1) {
-                put(EarProjectProperties.CLIENT_MODULE_URI,path);
+                setClientModuleUri(path);
             }
         }
         
@@ -1273,7 +1279,6 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
                             endex = path.length();
                         }
                         w.setContextRoot("/"+path.substring(0,endex)); // NOI18N
-                        replaceEmptyClientModuleUri(path);
                     mod.setWeb(w);
                 } else if (null != ddf && null != mod) {
                     return null; // two timing jar file.
@@ -1317,6 +1322,11 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
 //    }
     
     public     void configurationXmlChanged(AntProjectEvent ev) {
+        // XXX - remove this if block after completing 54179
+        if (projectClosed()) {
+            removeFromHelper();
+            return;
+        }
             if (notUpdating) {
                  Object pre = get(JAR_CONTENT_ADDITIONAL);
                 //if (null != ev)
@@ -1462,5 +1472,20 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
         }
         return (String[]) retList.toArray(new String[retList.size()]);
         
+    }
+    
+    // XXX - remove this method after completing 54179
+    private  boolean projectClosed() {
+        Project[] projects = org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < projects.length; i++) {
+            if (projects[i].equals(earProject))
+                return false;
+        }
+        return true;
+    }
+    
+    // XXX - remove this method after completing 54179
+    private void removeFromHelper() {
+        antProjectHelper.removeAntProjectListener(this);
     }
 }

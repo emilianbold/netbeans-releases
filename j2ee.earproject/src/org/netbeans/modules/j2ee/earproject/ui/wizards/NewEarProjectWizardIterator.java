@@ -135,15 +135,12 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
             FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(webAppDir));
             p = ProjectManager.getDefault().findProject(dir2);
             epp.addJ2eeSubprojects(new Project[] { p });
-             //ProjectManager.getDefault().
-            resultSet.add(dir2);
         }
         if (null != jarName) {
             File ejbJarDir = new File(dirF,jarName);
             h = EjbJarProjectGenerator.createProject(FileUtil.normalizeFile(ejbJarDir),jarName,
                 j2eeLevel, serverInstanceID);
             FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(ejbJarDir));
-            resultSet.add(dir2);
             p = ProjectManager.getDefault().findProject(dir2);
             epp.addJ2eeSubprojects(new Project[] { p });
         }
