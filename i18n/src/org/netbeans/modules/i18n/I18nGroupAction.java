@@ -33,17 +33,15 @@ import org.openide.util.HelpCtx;
 
 
 /**
- * Abstract class for I18n group actions.
+ * Abstract superclass for I18N group actions.
  *
  * @author  Peter Zavadsky
- * @see I18nGroupAction.Menu
- * @see I18nGroupAction.Popup
+ * @see I18nGroupMenuAction
+ * @see I18nGroupPopupAction
  */
 public abstract class I18nGroupAction extends SystemAction {
 
-    /** Icon. */
-    private static Icon icon = null;
-    
+   
     /** Array of i18n actions. */
     protected static final SystemAction[] i18nActions = new SystemAction[] {
         SystemAction.get(I18nWizardAction.class),
@@ -54,7 +52,7 @@ public abstract class I18nGroupAction extends SystemAction {
     
 
     /** Does nothing. Shouldn't be called. Implements superclass abstract method. */
-    public void actionPerformed(ActionEvent ev) {
+    public void actionPerformed(ActionEvent evt) {
     }
 
     /** Gets localized name of action. Implements superclass abstract method. */
@@ -72,38 +70,41 @@ public abstract class I18nGroupAction extends SystemAction {
         return new HelpCtx(I18nUtil.HELP_ID_I18N);
     }
     
-    /** Cretates menu item with lazy popup.
-     * @param isMenu flag if the item os part of normal menu (not popup). */
-    protected JMenuItem createLazyPopup(boolean isMenu) {
-        return new LazyPopup(isMenu);
-    }
-    
     
     /** Menu item which will create its items lazilly when the popup will becomming visible.
      * Performance savings.*/
-    private class LazyPopup extends JMenuPlus {
+    static class LazyPopup extends JMenuPlus {
 
+        /** Icon. */
+        private static Icon icon = null;
+        
         /** Indicates if is part of menu, i.e. if should have icons. */
         private boolean isMenu;
         
         /** Indicates whether menu items were created. */
         private boolean created = false;
-        
 
+        
         /** Constructor. */
-        public LazyPopup(boolean isMenu) {
-            Actions.setMenuText(this, I18nGroupAction.this.getName(), isMenu);
+        private LazyPopup(boolean isMenu, SystemAction action) {
+            Actions.setMenuText(this, action.getName(), isMenu);
             
             this.isMenu = isMenu;
             
             if(isMenu) {
                 // Binary-incompatible across SystemAction.icon ImageIcon -> Icon change:
                 //menu.setIcon (getIcon ());
-                if(icon == null) 
-                    icon = new ImageIcon(I18nGroupAction.class.getResource(I18nGroupAction.this.iconResource()));
+                if(icon == null) {
+                    icon = new ImageIcon(I18nGroupAction.class.getResource("/org/netbeans/modules/i18n/i18nAction.gif")); // NOI18N
+                }
 
                 setIcon(icon);
             }
+        }
+
+        /** Creates <code>LazyPopup</code> menu item. */
+        static JMenuItem createLazyPopup(boolean isMenu, SystemAction action) {
+            return new LazyPopup(isMenu, action);
         }
         
         /** Gets popup menu. Overrides superclass. Adds lazy menu items creation. */
