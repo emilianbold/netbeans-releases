@@ -42,6 +42,7 @@ public class ImageDataLoader extends UniFileLoader {
     // Common actions for all images.
     setActions(new SystemAction[] {
       SystemAction.get(OpenAction.class),
+      SystemAction.get(FileSystemAction.class),
       null,
       SystemAction.get(CutAction.class),
       SystemAction.get(CopyAction.class),
