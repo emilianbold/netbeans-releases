@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
           <file name="jaxrpc11.xml" url="jaxrpc11.xml"/>
           <file name="jaxr10.xml" url="jaxr10.xml"/>
           <file name="saaj12.xml" url="saaj12.xml"/>
+          <file name="jaxqname.xml" url="jaxqname.xml"/>
         </folder>
       </folder>
     
