@@ -183,8 +183,8 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         AntArtifactChooser accessory = new AntArtifactChooser( artifactType, chooser );
         chooser.setAccessory( accessory );
         
-        chooser.setPreferredSize( computePreferredSize( chooser.getPreferredSize() ) );
-
+        chooser.setPreferredSize( new Dimension( 650, 380 ) );
+        
         int option = chooser.showOpenDialog( null ); // Show the chooser
               
         if ( option == JFileChooser.APPROVE_OPTION ) {
@@ -228,24 +228,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         }
                 
     }
-        
-    private static Dimension computePreferredSize( Dimension original ) {
-        
-        int newHeight = original.width / 3 * 2;
-        
-        if ( original.height < newHeight ) {
-            return new Dimension( original.width, newHeight );
-        }
-        
-        int newWidth = original.height / 2 * 3;
-        if ( original.width < newWidth ) {
-            return new Dimension( newWidth, original.height );
-        }
-        
-        return original;
-    
-    }
-    
+       
     private static class ArtifactItem {
         
         private AntArtifact artifact;
