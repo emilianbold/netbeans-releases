@@ -114,10 +114,16 @@ public class NonGui extends NbTopManager implements Runnable {
     protected static String getUserDir () {
         if (userDir == null) {
             userDir = System.getProperty ("netbeans.user");
+            
             if (userDir == null) {
                 userDir = getHomeDir ();
-                System.getProperties ().put ("netbeans.user", homeDir); // NOI18N
+                System.getProperties ().put ("netbeans.user", homeDir); // NOI18N                                
             }
+            
+            /** #11735. Relative userDir is converted to absolute*/
+            userDir = new File(userDir).getAbsolutePath();
+            System.getProperties ().setProperty("netbeans.user", userDir);
+            
             File systemDirFile = new File (userDir, SYSTEM_FOLDER);
             if (!systemDirFile.isDirectory ()) {
                 // try to create it
