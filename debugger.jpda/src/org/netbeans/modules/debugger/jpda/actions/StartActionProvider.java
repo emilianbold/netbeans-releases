@@ -78,6 +78,13 @@ public class StartActionProvider extends ActionsProvider {
                         VirtualMachine virtualMachine = cookie.
                             getVirtualMachine ();
                         
+                        Operator o = createOperator (virtualMachine);
+                        o.start ();
+                        debuggerImpl.setRunning (
+                            virtualMachine,
+                            o
+                        );
+                        
                         // PATCH #46295 JSP breakpoint isn't reached during 
                         // second debugging
                         if (cookie instanceof AttachingDICookie) {
@@ -85,12 +92,6 @@ public class StartActionProvider extends ActionsProvider {
                         }
                         // PATCHEND Hanz
                         
-                        Operator o = createOperator (virtualMachine);
-                        o.start ();
-                        debuggerImpl.setRunning (
-                            virtualMachine,
-                            o
-                        );
                         if (startVerbose)
                             System.out.println ("\nS StartActionProvider." +
                                 "doAction ().thread end: success"
