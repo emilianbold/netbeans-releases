@@ -59,11 +59,12 @@ public final class DataObjectAdapters {
      * @return InputSource never <code>null</code>
      */           
     public static InputSource inputSource(DataObject dataObject) throws IOException {
+        if (dataObject == null) throw new NullPointerException();
         return new DataObjectInputSource(dataObject);
     }
 
     /**
-     *
+     * Lazy evaluated wrapper.
      */
     private static class DataObjectInputSource extends InputSource {
         
@@ -102,27 +103,56 @@ public final class DataObjectAdapters {
      * @return InputSource never <code>null</code>
      */               
     public static Source source(DataObject dataObject) throws IOException {
-        try {
+        if (dataObject == null) throw new NullPointerException();        
+        return new DataObjectSAXSource(dataObject);
+    }
+
+    /**
+     * Lazy evaluated wrapper.
+     */    
+    private static class DataObjectSAXSource extends SAXSource {
+        
+        private final String systemId;
+        private final DataObject dataObject;
+        
+        public DataObjectSAXSource(DataObject dataObject) throws IOException {
             URL url = dataObject.getPrimaryFile().getURL();
-            String systemId = url.toExternalForm();
-
-            XMLReader reader = newXMLReader();
-            reader.setEntityResolver (getEntityResolver());
-            Source source = new SAXSource (reader, inputSource (dataObject));
-
-            return source;        
-        } catch (ParserConfigurationException ex) {
-            throw new IOException();
-        } catch (SAXNotRecognizedException ex) {
-            throw new IOException();
-        } catch (SAXNotSupportedException ex) {
-            throw new IOException();
-        } catch (SAXException ex) {
-            throw new IOException();
+            systemId = url.toExternalForm();
+            this.dataObject = dataObject;
+        }
+        
+        public String getSystemId() {
+            return systemId;
+        }
+        
+        public XMLReader getXMLReader() {
+            try {
+                XMLReader reader = newXMLReader();
+                reader.setEntityResolver (getEntityResolver());
+                return reader;
+            } catch (ParserConfigurationException ex) {
+                Util.THIS.debug(ex);
+            } catch (SAXNotRecognizedException ex) {
+                Util.THIS.debug(ex);
+            } catch (SAXNotSupportedException ex) {
+                Util.THIS.debug(ex);
+            } catch (SAXException ex) {
+                Util.THIS.debug(ex);
+            }
+            return null;            
+        }
+        
+        public InputSource getInputSource() {
+            try {
+                return inputSource (dataObject);
+            } catch (IOException ex) {
+                Util.THIS.debug(ex);
+                return null;
+            }
         }
     }
     
-    private static SAXParserFactory getSAXParserFactory () throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
+    private static synchronized SAXParserFactory getSAXParserFactory () throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
         if ( saxParserFactory == null ) {
             saxParserFactory = SAXParserFactory.newInstance();
             saxParserFactory.setFeature (SAX_FEATURES_NAMESPACES, true);
