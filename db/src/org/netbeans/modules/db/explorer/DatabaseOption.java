@@ -102,7 +102,9 @@ public class DatabaseOption extends SystemOption
     /** Returns vector of saved connections */
     public Vector getConnections()
     {
-        if (connections == null) connections = new Vector();
+        if (connections == null)
+            connections = new Vector();
+        
         return connections;
     }
 
@@ -151,13 +153,26 @@ public class DatabaseOption extends SystemOption
     {
         return drivers.size()+" drivers, "+connections.size()+" connections";
     }
+    
+    private void closeConnections() {
+        try {
+            Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().getNodes();
+            for (int i = 0; i < n.length; i++)
+                if (n[i] instanceof ConnectionNode)
+                    ((ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo()).disconnect();
+        } catch (Exception exc) {
+            //connection not closed
+        }
+    }
 
     /** Writes data
     * @param out ObjectOutputStream
     */
-    public void writeExternal(ObjectOutput out) throws IOException
-    {
+    public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
+        
+        closeConnections();
+        
         out.writeObject(getAvailableDrivers());
         out.writeObject(getConnections());
         out.writeInt(fetchlimit);
