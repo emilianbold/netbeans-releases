@@ -27,6 +27,8 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -58,7 +60,22 @@ public class PatchAction extends NodeAction {
         if (nodes.length == 1) {
             DataObject do1 = (DataObject) nodes[0].getCookie(DataObject.class);
             if (do1 != null) {
-                return do1.getPrimaryFile().isData();
+                if (do1 instanceof org.openide.loaders.InstanceDataObject) {
+                    return false;
+                }
+                FileObject fo = do1.getPrimaryFile();
+                if (fo.isFolder()) return false;
+                try {
+                    FileSystem fs = fo.getFileSystem();
+                    if (fs.isDefault()) {
+                        String packageName = fo.getPackageName('/');
+                        return (packageName.startsWith("Templates") ||
+                                packageName.startsWith("vcs/config") ||
+                                packageName.startsWith("org/"));
+                    } else return true;
+                } catch (FileStateInvalidException fsiex) {
+                    return false;
+                }
             }
         }
         return false;
