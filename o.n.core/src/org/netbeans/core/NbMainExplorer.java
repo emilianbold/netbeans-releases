@@ -512,6 +512,17 @@ public final class NbMainExplorer extends CloneableTopComponent
             initializeWithRootContext(getExplorerManager().getRootContext());
         }
 
+        // Bugfix #5891 04 Sep 2001 by Jiri Rechtacek
+        // the title is derived from the root context
+        // it isn't changed by a selected node in the tree
+        /** Called when the explored context changes.
+        * Overriden - we don't want title to change in this style.
+        */
+        protected void updateTitle () {
+            // set name by the root context
+            setName(getExplorerManager ().getRootContext().getDisplayName());
+        }
+
         private PropertyChangeListener rcListener () {
             if (rcListener == null) {
                 rcListener = new RootContextListener();
@@ -525,7 +536,7 @@ public final class NbMainExplorer extends CloneableTopComponent
             // update TC's attributes
             setIcon(rc.getIcon(BeanInfo.ICON_COLOR_16x16));
             setToolTipText(rc.getShortDescription());
-            setName(rc.getDisplayName());
+            //setName(rc.getDisplayName());
             updateTitle();
             // attach listener
             if (weakRcL == null) {
