@@ -137,7 +137,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
                 catch (PropertyVetoException ex) {}
                 
                 if (cookie != null)
-                    designer.connectBean(cookie.getRADComponent());
+                    designer.connectBean(cookie.getRADComponent(), true);
             }
             else if (!focusingOnForm) {
                 designer.clearSelectionImpl();
