@@ -22,6 +22,7 @@ import org.netbeans.jellytools.ExplorerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.util.Dumper;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.test.oo.gui.jelly.JellyProperties;
@@ -77,6 +78,7 @@ public class JXTest extends XTest {
         try {
             String treePath = getFilesystemName() + DELIM + getDataPackageName(DELIM) + DELIM + path;
             JTreeOperator tree = ExplorerOperator.invoke().repositoryTab().tree();
+            tree.setComparator(new Operator.DefaultStringComparator(true, true));
             node = new Node(tree, treePath);
         } catch (Exception ex) {
             log("Cannot find data node: " + path, ex);
