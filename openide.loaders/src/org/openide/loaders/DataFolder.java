@@ -581,16 +581,16 @@ implements Serializable, DataObject.Container {
         if (f.equals(this)) {
             throw (IOException) ErrorManager.getDefault().annotate(
                 new IOException("Error Copying File or Folder"), //NOI18N
-                NbBundle.getMessage(DataFolder.class, "EXC_CannotCopyTheSame", getName()) //NOI18N
-            );
+                ErrorManager.WARNING, null, NbBundle.getMessage(DataFolder.class, "EXC_CannotCopyTheSame", getName()) //NOI18N
+                , null, null);
         } else {
             DataFolder testFolder = f.getFolder();
             while (testFolder != null) {
                 if (testFolder.equals(this)) {
                     throw (IOException) ErrorManager.getDefault().annotate(
                         new IOException("Error copying file or folder: " + testFolder.getPrimaryFile() + " in " + getPrimaryFile()), //NOI18N
-                        NbBundle.getMessage(DataFolder.class, "EXC_CannotCopySubfolder", getName()) //NOI18N
-                    );
+                        ErrorManager.WARNING, null, NbBundle.getMessage(DataFolder.class, "EXC_CannotCopySubfolder", getName()) //NOI18N
+                        , null, null);
                 }
                 testFolder = testFolder.getFolder();
             }
