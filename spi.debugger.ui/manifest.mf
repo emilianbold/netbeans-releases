@@ -1,5 +1,5 @@
 OpenIDE-Module: org.netbeans.modules.debugger.core/3
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/debugger/MF-Bundle.properties
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/debugger/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/debugger/multisession/EnterpriseModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/debugger/resources/mf-layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
