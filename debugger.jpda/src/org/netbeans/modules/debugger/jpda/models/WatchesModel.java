@@ -98,9 +98,9 @@ public class WatchesModel implements TreeModel {
                     watchToExpression.put(ws[i].getExpression(), expr);
                 }
                 if (expr instanceof String) {
-                    jws[i] = new JPDAWatchImpl(this, ws[i], (String) expr);
+                    jws [i] = new JPDAWatchImpl (this, ws[i], (String) expr);
                 } else {
-                    jws [i] = evaluate(ws[i], (Expression) expr);
+                    jws [i] = evaluate (ws[i], (Expression) expr);
                 }
             }
             if (listener == null)
@@ -128,11 +128,18 @@ public class WatchesModel implements TreeModel {
         listeners.remove (l);
     }
     
-    public void fireTreeChanged () {
+    void fireTreeChanged () {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
             ((TreeModelListener) v.get (i)).treeChanged ();
+    }
+    
+    void fireNodeChanged (Watch b) {
+        Vector v = (Vector) listeners.clone ();
+        int i, k = v.size ();
+        for (i = 0; i < k; i++)
+            ((TreeModelListener) v.get (i)).treeNodeChanged (b);
     }
     
     
@@ -151,7 +158,7 @@ public class WatchesModel implements TreeModel {
         return localsTreeModel;
     }
 
-    JPDAWatch evaluate(Watch w, Expression expr) {
+    JPDAWatch evaluate (Watch w, Expression expr) {
         Value v = null;
         String exception = null;
         try {
@@ -211,6 +218,11 @@ public class WatchesModel implements TreeModel {
                 this
             );
             debugger.addPropertyChangeListener (this);
+            Watch[] ws = DebuggerManager.getDebuggerManager ().
+                getWatches ();
+            int i, k = ws.length;
+            for (i = 0; i < k; i++)
+                ws [i].addPropertyChangeListener (this);
         }
         
         private WatchesModel getModel () {
@@ -223,6 +235,13 @@ public class WatchesModel implements TreeModel {
                 JPDADebugger d = (JPDADebugger) debugger.get ();
                 if (d != null)
                     d.removePropertyChangeListener (this);
+                
+                Watch[] ws = DebuggerManager.getDebuggerManager ().
+                    getWatches ();
+                int i, k = ws.length;
+                for (i = 0; i < k; i++)
+                    ws [i].removePropertyChangeListener (this);
+
                 if (task != null) {
                     // cancel old task
                     task.cancel ();
@@ -237,12 +256,14 @@ public class WatchesModel implements TreeModel {
         public void watchAdded (Watch watch) {
             WatchesModel m = getModel ();
             if (m == null) return;
+            watch.addPropertyChangeListener (this);
             m.fireTreeChanged ();
         }
         
         public void watchRemoved (Watch watch) {
             WatchesModel m = getModel ();
             if (m == null) return;
+            watch.removePropertyChangeListener (this);
             m.fireTreeChanged ();
         }
         
@@ -253,6 +274,10 @@ public class WatchesModel implements TreeModel {
         public void propertyChange (PropertyChangeEvent evt) {
             final WatchesModel m = getModel ();
             if (m == null) return;
+            
+            if (evt.getSource () instanceof Watch) {
+                m.fireTreeChanged ();
+            }
 
             if (task != null) {
                 // cancel old task

@@ -97,14 +97,14 @@ public class BreakpointsTreeModel implements TreeModel {
         listeners.remove (l);
     }
     
-    public void fireTreeChanged () {
+    void fireTreeChanged () {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
             ((TreeModelListener) v.get (i)).treeChanged ();
     }
     
-    public void fireNodeChanged (Breakpoint b) {
+    void fireNodeChanged (Breakpoint b) {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)

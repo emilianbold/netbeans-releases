@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.debugger.ui.models;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.Vector;
 
@@ -71,17 +73,25 @@ public class WatchesTreeModel implements TreeModel {
         listeners.remove (l);
     }
     
-    public void fireTreeChanged () {
+    void fireTreeChanged () {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
             ((TreeModelListener) v.get (i)).treeChanged ();
     }
     
+    void fireNodeChanged (Watch b) {
+        Vector v = (Vector) listeners.clone ();
+        int i, k = v.size ();
+        for (i = 0; i < k; i++)
+            ((TreeModelListener) v.get (i)).treeNodeChanged (b);
+    }
+    
     
     // innerclasses ............................................................
     
-    private static class Listener extends DebuggerManagerAdapter {
+    private static class Listener extends DebuggerManagerAdapter implements 
+    PropertyChangeListener {
         
         private WeakReference model;
         
@@ -93,6 +103,11 @@ public class WatchesTreeModel implements TreeModel {
                 DebuggerManager.PROP_WATCHES,
                 this
             );
+            Watch[] ws = DebuggerManager.getDebuggerManager ().
+                getWatches ();
+            int i, k = ws.length;
+            for (i = 0; i < k; i++)
+                ws [i].addPropertyChangeListener (this);
         }
         
         private WatchesTreeModel getModel () {
@@ -102,6 +117,11 @@ public class WatchesTreeModel implements TreeModel {
                     DebuggerManager.PROP_WATCHES,
                     this
                 );
+                Watch[] ws = DebuggerManager.getDebuggerManager ().
+                    getWatches ();
+                int i, k = ws.length;
+                for (i = 0; i < k; i++)
+                    ws [i].removePropertyChangeListener (this);
             }
             return m;
         }
@@ -109,13 +129,24 @@ public class WatchesTreeModel implements TreeModel {
         public void watchAdded (Watch watch) {
             WatchesTreeModel m = getModel ();
             if (m == null) return;
+            watch.addPropertyChangeListener (this);
             m.fireTreeChanged ();
         }
         
         public void watchRemoved (Watch watch) {
             WatchesTreeModel m = getModel ();
             if (m == null) return;
+            watch.removePropertyChangeListener (this);
             m.fireTreeChanged ();
+        }
+    
+        public void propertyChange (PropertyChangeEvent evt) {
+            WatchesTreeModel m = getModel ();
+            if (m == null) return;
+            if (! (evt.getSource () instanceof Watch))
+                return;
+            Watch w = (Watch) evt.getSource ();
+            m.fireNodeChanged (w);
         }
     }
 }
