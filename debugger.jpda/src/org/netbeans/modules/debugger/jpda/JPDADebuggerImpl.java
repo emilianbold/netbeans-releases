@@ -659,10 +659,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public void suspend () {
         synchronized (LOCK) {
             //S ystem.err.println("suspend");
-            if (getState () == STATE_STOPPED) {
-                System.err.println("already suspend!!");
-                Thread.dumpStack();
-            }
+            if (getState () == STATE_STOPPED) return;
             if (virtualMachine != null)
                 virtualMachine.suspend ();
             setState (STATE_STOPPED);
