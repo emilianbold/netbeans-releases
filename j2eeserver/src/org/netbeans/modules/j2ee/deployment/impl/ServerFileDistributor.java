@@ -147,25 +147,21 @@ public class ServerFileDistributor extends ServerProgress {
         setStatusDistributeRunning(NbBundle.getMessage(
         ServerFileDistributor.class, "MSG_RunningIncrementalDeploy", target));
         
-        FileObject contentDir = null;
-        contentDir = getJ2eeModule(target).getContentDirectory();
+        Iterator content = getJ2eeModule(target).getArchiveContents ();
         
-        
-        Enumeration contentFiles = contentDir.getChildren(true);
         Date lastDeployed = new Date(lastDeployTime);
-        int beginIndex = contentDir.getPath().length();
-        
-        while (contentFiles.hasMoreElements()) {
-            FileObject file = (FileObject) contentFiles.nextElement();
+        while (content.hasNext ()) {
+            J2eeModule.RootedEntry re = (J2eeModule.RootedEntry) content.next ();
+            FileObject file = re.getFileObject ();
+            
             if (file.isFolder())
                 continue;
             //jar file are created externally and timestamp may not be refreshed
             file.refresh ();
             if (file.lastModified().after(lastDeployed)) {
-                String relativePath = file.getPath().substring(beginIndex);
+                String relativePath = re.getRelativePath ();
                 mc.record(relativePath);
             }
-            
         }
 
         return mc;
