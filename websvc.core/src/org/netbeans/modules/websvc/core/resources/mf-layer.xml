@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+	<folder name="Templates">
+		<folder name="JSP_Servlet">
+			<file name="WebServiceClient">
+				<attr name="template" boolvalue="true"/>
+				<attr name="instantiatingIterator"
+					methodvalue="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardIterator.create" />
+				<attr name="templateCategory" stringvalue="web-types"/>
+				<attr name="templateWizardURL"
+					urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClient.html"/>
+				<attr name="SystemFileSystem.localizingBundle"
+					stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
+				<attr name="SystemFileSystem.icon"
+					urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClientTemplate.png"/>
+			</file>
+		</folder>
+	</folder>
+	<folder name="Editors">
+		<folder name="text">
+			<folder name="x-java">
+				<folder name="Popup">
+					<!-- Place after EJBActionGroup and/or EnterpriseRefActionGroup -->
+					<attr name="generate-goto-popup/org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance" boolvalue="true"/>
+					<attr name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EJBActionGroup.instance/org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance" boolvalue="true"/>
+					<attr name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EnterpriseRefActionGroup.instance/org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance" boolvalue="true"/>
+					<attr name="org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance" boolvalue="true"/>
+					<!-- Place after WebServiceActionGroup -->
+					<attr name="generate-goto-popup/org-netbeans-modules-websvc-core-client-actions-WebServiceClientActionGroup.instance" boolvalue="true"/>
+					<attr name="org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance/org-netbeans-modules-websvc-core-client-actions-WebServiceClientActionGroup.instance" boolvalue="true"/>
+					<attr name="org-netbeans-modules-websvc-core-client-actions-WebServiceClientActionGroup.instance/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance" boolvalue="true"/>
+					<file name="org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance"/>
+					<file name="org-netbeans-modules-websvc-core-client-actions-WebServiceClientActionGroup.instance"/>
+				</folder>
+			</folder>
+		</folder>
+	</folder>
+	<folder name="Services">
+<!--
+		<folder name="Hidden">
+			<attr name="hidden" boolvalue="true"/>
+			<file name="org-netbeans-modules-websvc-core-client-resources-EntityCatalog.xml" url="entityCatalog.xml"/>
+		</folder>
+-->
+		<folder name="MIMEResolver">
+			<file name="org-netbeans-modules-websvc-core-resources-mime-resolver.xml" url="mime-resolver.xml">
+				<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.Bundle"/>
+				<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/resources/WebServiceSettings.png"/>
+			</file>
+		</folder>
+	</folder>
+
+	<folder name="Plugins">
+		<!-- Register Web Service module catalog plugin -->
+		<folder name="XML">
+			<folder name="UserCatalogs">
+				<file name="org-netbeans-modules-websvc-wsdl-WSSchemaCatalog.instance">
+					<attr name="instanceCreate" newvalue="org.netbeans.modules.websvc.wsdl.WSSchemaCatalog"/>
+					<attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+				</file>
+			</folder>
+			<folder name="GrammarQueryManagers">
+				<!-- register semantics grammar for wscompile-config (1.1) due to code completion -->
+				<file name="org-netbeans-modules-websvc-wsdl-WSSchemaGrammarQueryMgr.instance"/>
+				<attr name="org-netbeans-modules-websvc-wsdl-WSSchemaGrammarQueryMgr.instance/semantics-grammar-to-generic-gramseparator" boolvalue="true"/>
+			</folder> <!-- GrammarQueryManagers -->
+		</folder>
+	</folder>
+
+</filesystem>
