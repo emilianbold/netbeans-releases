@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
                 <folder name="DeploymentFileNames">
                     <folder name="WAR">
-                        <file name="META-INF/context.xml"/>
+                        <file name="META-INF\context.xml"/>
                     </folder>
                 </folder>
             </folder>
