@@ -7,9 +7,10 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
@@ -17,6 +18,7 @@ import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.openide.windows.TopComponent;
@@ -39,8 +41,8 @@ public class MaximizeWindowAction extends Action {
                                         "CTL_MaximizeWindowAction");
 
     /** "Maximize Window" */
-    private static final String popupPath = Bundle.getString("org.netbeans.core.windows.actions.Bundle",
-                                                             "LBL_MaximizeWindowAction");
+    private static final String popupPath = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
+                                                                    "CTL_MaximizeWindowAction");
     
     private static final Shortcut maximizeShortcut = new Shortcut(KeyEvent.VK_BACK_QUOTE, KeyEvent.CTRL_MASK);
 

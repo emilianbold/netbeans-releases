@@ -7,9 +7,10 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
@@ -38,8 +39,8 @@ public class RestoreWindowAction extends Action {
                                         "CTL_UnmaximizeWindowAction");
 
     /** "Restore Window" */
-    private static final String popupPath = Bundle.getString("org.netbeans.core.windows.actions.Bundle",
-                                                             "LBL_RestoreWindowAction");
+    private static final String popupPath = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
+                                                                    "CTL_UnmaximizeWindowAction");
     
     private static final Shortcut restoreShortcut = new Shortcut(KeyEvent.VK_BACK_QUOTE, KeyEvent.CTRL_MASK);
 
