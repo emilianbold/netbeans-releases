@@ -13,49 +13,61 @@
 
 package org.netbeans.modules.web.debug;
 
-import org.openide.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.debugger.support.util.Utils;
+
+import javax.swing.*;
 import org.netbeans.modules.debugger.Controller;
-import org.openide.text.Line;
 
-import org.netbeans.modules.web.core.jsploader.JspDataObject;
-import org.netbeans.modules.web.html.HtmlDataObject;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 
-import org.openide.loaders.DataObject;
+import org.netbeans.modules.web.debug.util.Utils;
 
 /**
-* Customizer of LineBreakpointEvent.
+* Customizer of JspEvent
 *
-* @author  Jan Jancura, Marian Petras
+* @author Martin Grebac
 */
-class JspBreakpointPanel extends javax.swing.JPanel implements Controller {
+class JspBreakpointPanel extends JPanel implements Controller, Runnable {
 
-    private final String DOT = ".";    //NOI18N
-    private JspCompoundEvent event;
-    private String cls;
+    private JspEvent event;
+    private boolean valid = false;
     
     static final long serialVersionUID =-8164649328980808272L;
-    /** Creates new form LineBreakpointPanel */
-    public JspBreakpointPanel(JspCompoundEvent e) {
+
+    /** Creates new form JspBreakpointPanel */
+    public JspBreakpointPanel(JspEvent e) {
+   
         event = e;
         initComponents ();
         putClientProperty("HelpID", "jsp_breakpoint");//NOI18N
+
+        Listener l = new Listener(this);
+        cboxJspSourcePath.getEditor().getEditorComponent().addKeyListener(l);
+        cboxJspSourcePath.addActionListener(l);
+        
         // a11y
         getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_LineBreakpointPanel")); // NOI18N
-        cboxClass.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_CTL_Class_name")); // NOI18N
+        cboxJspSourcePath.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_CTL_Source_name")); // NOI18N
         tfLineNumber.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_CTL_Line_number")); // NOI18N
-        //
-        //initialize fields:
-        if (e!=null) {
-            Line line = Utils.getCurrentLine();
-            if ((line != null) && (org.openide.text.DataEditorSupport.findDataObject (line) instanceof JspDataObject)) {
-                e.setLine(line);
+
+        Object[] objs = Utils.getJsps();
+        if (objs != null) {
+            if (objs.length != 0) {
+                cboxJspSourcePath.setModel(
+                    new DefaultComboBoxModel(objs)
+                );
             }
         }
-        fillPackageAndClass();
-        fillLineNumber ();
-        //
+        
+        String jspSourcePath = event.getJspName();
+        cboxJspSourcePath.setSelectedItem(jspSourcePath == null ? "" : jspSourcePath.trim());        
+        fillLineNumber();
+        run();
     }
 
     /** This method is called from within the constructor to
@@ -66,41 +78,24 @@ class JspBreakpointPanel extends javax.swing.JPanel implements Controller {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        lblClassName = new javax.swing.JLabel();
         lblLineNumber = new javax.swing.JLabel();
         tfLineNumber = new javax.swing.JTextField();
-        jPanel1 = new javax.swing.JPanel();
-        cboxClass = new javax.swing.JTextField();
+        lblJspSourcePath = new javax.swing.JLabel();
+        cboxJspSourcePath = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
-        lblClassName.setText(NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Class_name"));
-        lblClassName.setLabelFor(cboxClass);
-        lblClassName.setDisplayedMnemonic(NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Class_name_mnemonic").charAt(0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 2);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(lblClassName, gridBagConstraints);
-
+        lblLineNumber.setLabelFor(tfLineNumber);
         lblLineNumber.setText(NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Line_number"));
         lblLineNumber.setDisplayedMnemonic(NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Line_number_mnemonic").charAt(0));
-        lblLineNumber.setLabelFor(tfLineNumber);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 2);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 2);
         add(lblLineNumber, gridBagConstraints);
 
         tfLineNumber.setColumns(7);
-        tfLineNumber.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tfLineNumberActionPerformed(evt);
-            }
-        });
-
         tfLineNumber.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 tfLineNumberFocusGained(evt);
@@ -109,122 +104,112 @@ class JspBreakpointPanel extends javax.swing.JPanel implements Controller {
                 tfLineNumberFocusLost(evt);
             }
         });
+        tfLineNumber.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                tfLineNumberKeyTyped(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 2);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 2);
         add(tfLineNumber, gridBagConstraints);
 
+        lblJspSourcePath.setText(NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Source_name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 2);
+        add(lblJspSourcePath, gridBagConstraints);
 
-        cboxClass.setColumns(20);
-        cboxClass.addFocusListener(new java.awt.event.FocusAdapter() {
+        cboxJspSourcePath.setEditable(true);
+        cboxJspSourcePath.getEditor().getEditorComponent().addFocusListener(new java.awt.event.FocusListener() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                cboxJspSourcePathFocusGained(evt);
+            }
             public void focusLost(java.awt.event.FocusEvent evt) {
-                setEventSource(evt);
+                cboxJspSourcePathFocusLost(evt);
             }
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 2);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        add(cboxClass, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 2);
+        add(cboxJspSourcePath, gridBagConstraints);
 
     }//GEN-END:initComponents
 
-    private void setEventSource(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_setEventSource
+    private void tfLineNumberKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfLineNumberKeyTyped
         // Add your handling code here:
-        String cls = cboxClass.getText();
-        cls = cls.trim(); 
-        if (event != null) event.setSourceName(cls);
-        fillPackageAndClass();
-    }//GEN-LAST:event_setEventSource
-
-    private void tfLineNumberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfLineNumberActionPerformed
-        // Add your handling code here:
-    }//GEN-LAST:event_tfLineNumberActionPerformed
+        run();
+    }//GEN-LAST:event_tfLineNumberKeyTyped
 
     private void tfLineNumberFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfLineNumberFocusGained
         if (!evt.isTemporary()) {
-            ((javax.swing.JTextField) evt.getComponent ()).selectAll ();
+            ((JTextField) evt.getComponent()).selectAll();
         }
     }//GEN-LAST:event_tfLineNumberFocusGained
 
     private void tfLineNumberFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfLineNumberFocusLost
         if (!evt.isTemporary()) {
-            if (tfLineNumber.getText ().trim ().length () > 0)
+            if (tfLineNumber.getText().trim().length() > 0) {
                 try {
-                    int i = Integer.parseInt (tfLineNumber.getText ());
+                    int i = Integer.parseInt(tfLineNumber.getText ());
                     if (i < 1) {
                         DialogDisplayer.getDefault().notify (
-                            new NotifyDescriptor.Message (
+                            new Message (
                                 NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Bad_line_number"),  //NOI18N
                                 NotifyDescriptor.ERROR_MESSAGE
                             )
                         );
-                    } else
-                        if (event != null) event.setLineNumber (i);
+                    } else if (event != null) {
+                            event.setLineNumber(i);
+                    }                    
                 } catch (NumberFormatException e) {
                     DialogDisplayer.getDefault().notify (
-                        new NotifyDescriptor.Message (
+                        new Message (
                             NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Bad_line_number"),  //NOI18N
                             NotifyDescriptor.ERROR_MESSAGE
                         )
                     );
                 }
-            fillLineNumber ();
+            }
         }
     }//GEN-LAST:event_tfLineNumberFocusLost
 
-    private void fillPackageAndClass() {
-        if (!isAcceptableDataObject()) return;
-
-        if (event.getSourceName()==null) return;
-        String s = event.getSourceName().trim();
-        
-        if (s.length() < 1) {
-            cls = "";   //NOI18N
+    private void cboxJspSourcePathFocusGained(java.awt.event.FocusEvent evt) {
+        if (!evt.isTemporary()) {
+            cboxJspSourcePath.getEditor().selectAll();
         }
-        else {
-            cls = s;
-            cboxClass.setText(cls);
+    }
+
+    private void cboxJspSourcePathFocusLost(java.awt.event.FocusEvent evt) {
+        if (!evt.isTemporary()) {
+            ComboBoxEditor editor = cboxJspSourcePath.getEditor();
+            String value = ((String)editor.getItem()).trim();
+            event.setJspName(value);
         }
     }
 
     private void fillLineNumber () {
-        if (!isAcceptableDataObject()) return;
-        if (event.getLineNumber () < 1) 
+    /*    if (!isAcceptableDataObject()) {
+            return;
+        }*/
+        int lnum = event.getLineNumber();
+        if (lnum < 1)  {
             tfLineNumber.setText ("");  //NOI18N
-        else    
-            tfLineNumber.setText ("" + event.getLineNumber ()); // NOI18N
-    }
-
-    private boolean isAcceptableDataObject() {
-
-        if (event == null) return false;
-        
-        Line l = event.getLine();
-        if (l == null) return false;
-
-        DataObject dobj = org.openide.text.DataEditorSupport.findDataObject (l);
-        if (dobj == null) return false;
-        
-        if ((dobj instanceof JspDataObject) || (dobj instanceof HtmlDataObject)) return true;
-        
-        return false;
-        
+        } else {
+            tfLineNumber.setText ("" + lnum); // NOI18N
+        }
     }
     
     /******************************/
@@ -243,15 +228,58 @@ class JspBreakpointPanel extends javax.swing.JPanel implements Controller {
     
     //interface org.netbeans.modules.debugger.Controller
     public boolean isValid() {
-        return true; //TEMP
+        return valid;
     }
     
+    /** thread that evaluates entered parameters and enables 'OK' button based on evaluation
+     */
+    public void run () {
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                
+                boolean nv = false;
+
+                // check values
+                String ln = tfLineNumber.getText().trim();
+                String jsp = (cboxJspSourcePath.getSelectedItem() == null) ? "" : cboxJspSourcePath.getSelectedItem().toString().trim();
+                if (ln.length() > 0) {
+                    try {
+                        int i = Integer.parseInt (ln);
+                        if (i > 0) {
+                            nv = true;
+                        }
+                    } catch (NumberFormatException e) {
+                    }
+                }
+                if (jsp.length() < 1) {
+                    nv = false;
+                }                
+                if (valid == nv) {
+                    return;
+                }
+                valid = nv;
+                firePropertyChange(PROP_VALID, Boolean.valueOf(!valid), Boolean.valueOf(valid));
+            }
+        });
+    }    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JComboBox cboxJspSourcePath;
+    private javax.swing.JLabel lblJspSourcePath;
     private javax.swing.JLabel lblLineNumber;
     private javax.swing.JTextField tfLineNumber;
-    private javax.swing.JTextField cboxClass;
-    private javax.swing.JLabel lblClassName;
     // End of variables declaration//GEN-END:variables
 
+    static class Listener extends KeyAdapter implements ActionListener {
+        Runnable r;
+        Listener (Runnable v) {
+            r = v;
+        }
+        public void keyTyped (java.awt.event.KeyEvent evt) {
+            r.run ();
+        }
+        public void actionPerformed (ActionEvent evt) {
+            r.run ();
+        }
+    }
 }
