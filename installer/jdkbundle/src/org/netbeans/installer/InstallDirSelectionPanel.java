@@ -236,15 +236,19 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 
 	//----------------------------------------------------------------------
 	// j2se install dir components
-
-	//String j2seInstallDir = tempPath + File.separator + resolveString("$L(com.sun.installer.InstallerResources,DEFAULT_DIR_CO)");
-	j2seDir = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.defaultJdkInstallDirectory)");
+        
+        //#49200: On Windows JDK 1.5.0 installer uses default installation dir
+        //"C:\Program Files\jdk1.5.0" whereas JDK 1.4.2_X uses "C:\j2sdk1.4.2_X"
+        //ie. "Program Files" is missing.
+	String j2seInstallDir = tempPath + File.separator
+        + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.defaultJdkInstallDirectory)");
+	/*j2seDir = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.defaultJdkInstallDirectory)");
 	String j2seInstallDir = null;
 	if (Util.isWindowsOS()) {
 	    j2seInstallDir = sysDrive + j2seDir;
 	} else {
 	    j2seInstallDir = tempPath + File.separator + j2seDir;
-	}
+	}*/
 	j2seLabel = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.jdkInstallDirectoryLabel)");
 
 	if (!Util.isJDKAlreadyInstalled()) {
