@@ -14,6 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="debuggercore" default="netbeans" basedir=".">
 
+  <property name="nbm_alias" value="nb_ide"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
@@ -60,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
       <description>
         Foundation for the IDE's debugger.
       </description>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>
   <target name="clean">

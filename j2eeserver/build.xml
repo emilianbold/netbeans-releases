@@ -17,6 +17,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="nbroot" location="../../nb_all"/>
   <property name="binroot" location="../../nbextra"/>
   <property name="nbext" location="${nbroot}/nbbuild"/>
+  <property name="nbm_alias" value="nb_ide"/>
 
   <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext}/nbantext.jar"/>
   <taskdef classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar" name="locjar"/>
@@ -33,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
              homepage="http://${homepage.base}/j2eeserver.html"
              distribution="${dist.base}/j2eeserver.nbm">
       <license file="${license.file}" />
-      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
       <exclude name="**/nondist/**" />
     </makenbm>
   </target>

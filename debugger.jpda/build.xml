@@ -19,6 +19,7 @@ ToDo:
 -->
 <project name="debuggerjpda" default="netbeans" basedir=".">
 
+  <property name="nbm_alias" value="nb_ide"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
@@ -75,7 +76,7 @@ ToDo:
         Requires that you have jpda.jar installed (or are using JDK
         1.3).
       </description>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>
   <target name="clean">

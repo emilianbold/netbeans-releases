@@ -21,8 +21,11 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
 
+  <property name="nbm_alias" value="nb_ide"/>
+
   <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
+  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
 
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
@@ -41,11 +44,13 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="netbeans/modules/ant.jar"
+    <locjar jarfile="netbeans/modules/ant.jar"
          manifest="manifest-subst.mf"
          basedir="src"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="false"/>
+	 compress="false">
+      <locale name="ja"/>
+    </locjar>
   </target>
 
   <target name="release">
@@ -90,7 +95,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
       <description>
         Support for Ant build scripts.
       </description>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>
 
