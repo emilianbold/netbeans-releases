@@ -494,6 +494,24 @@ public class FormDesigner extends TopComponent
         return false;
     }
 
+    public static Container createContainerView(final RADVisualContainer metacont,
+                                                final Class contClass)
+        throws Exception
+    {
+        return (Container) FormLAF.executeWithLookAndFeel(
+            UIManager.getLookAndFeel().getClass().getName(),
+            new Mutex.ExceptionAction () {
+                public Object run() throws Exception {
+                    Container container = createTopContainer(metacont,
+                                                             contClass,
+                                                             false);
+                    walkVisualComps(container, metacont, null);
+                    return container;
+                }
+            }
+        );
+    }
+
     void repopulateComponentLayer() {
         if (formModel != null && !repopulateTaskPlaced) {
             repopulateTaskPlaced = true;
@@ -520,13 +538,17 @@ public class FormDesigner extends TopComponent
                 UIManager.getLookAndFeel().getClass().getName(),
                 new Mutex.ExceptionAction () {
                     public Object run() throws Exception {
-                        Container cont = cloneTopContainerInstance();
+                        Container cont = createTopContainer(topDesignContainer,
+                                                            Window.class,
+                                                            true);
+                        if (!(cont instanceof JComponent))
+                            FakePeerSupport.attachFakePeer(cont);
                         componentLayer.add(cont, BorderLayout.CENTER);
 
                         metaCompToComp.put(topDesignContainer, cont);
                         compToMetaComp.put(cont, topDesignContainer);
 
-                        walkVisualComps(cont, topDesignContainer);
+                        walkVisualComps(cont, topDesignContainer, FormDesigner.this);
                         handleLayer.requestFocus();
                         return null;
                     }
@@ -537,17 +559,34 @@ public class FormDesigner extends TopComponent
         }
     }
 
-    private Container cloneTopContainerInstance() {
-        Object cont = topDesignContainer.getBeanInstance();
+    private static Container createTopContainer(RADVisualContainer metacont,
+                                                Class requiredClass,
+                                                boolean except)
+        throws Exception
+    {
+        if (except != requiredClass.isAssignableFrom(metacont.getBeanClass()))
+            return (Container) metacont.cloneBeanInstance();
 
-        if (cont instanceof JScrollPane || cont instanceof JTabbedPane
-            || cont instanceof JSplitPane)
-            return (Container) topDesignContainer.cloneBeanInstance();
+        if (except) // don't want requiredClass -> convert to JPanel
+            requiredClass = javax.swing.JPanel.class;
 
-        return new JPanel(); // copy relevant properties
+        Container container = (Container)
+            CreationFactory.createDefaultInstance(requiredClass);
+
+        if (container instanceof RootPaneContainer
+              && !Window.class.isAssignableFrom(metacont.getBeanClass())) {
+            Container contentCont = (Container) metacont.cloneBeanInstance();
+            ((RootPaneContainer)container).setContentPane(contentCont);
+        }
+        else
+            RADComponent.setProps(container, metacont.getAllBeanProperties());
+
+        return container;
     }
 
-    private void walkVisualComps(Object bean, RADComponent comp)
+    private static void walkVisualComps(Object bean,
+                                        RADComponent comp,
+                                        FormDesigner designer)
         throws Exception
     {
         if (comp instanceof ComponentContainer) {
@@ -561,14 +600,9 @@ public class FormDesigner extends TopComponent
             RADComponent[] children = ((ComponentContainer) comp).getSubBeans();
             for (int i = 0; i < children.length; i++) {
                 RADComponent c = children[i];
-        
-                Class cl = c.getBeanClass();
-                Object cb;
+                Object cb = c.cloneBeanInstance();
 
-                if (cl == Dialog.class)
-                    cb = new Dialog((Frame)null);
-                else {
-                    cb = c.cloneBeanInstance();//cl.newInstance();
+                if (designer != null) {
                     if (cb instanceof Component)
                         if (!(cb instanceof JComponent))
                             FakePeerSupport.attachFakePeer((Component) cb);
@@ -576,11 +610,11 @@ public class FormDesigner extends TopComponent
                             ((JComponent)cb).setRequestFocusEnabled(false);
                             ((JComponent)cb).setNextFocusableComponent((JComponent)cb);
                         }
+
+                    designer.metaCompToComp.put(c, cb);
+                    designer.compToMetaComp.put(cb, c);
                 }
 
-                metaCompToComp.put(c, cb);
-                compToMetaComp.put(cb, c);
-                
                 if (comp instanceof RADVisualContainer
                     && bean instanceof Container
                     && c instanceof RADVisualComponent
@@ -591,7 +625,7 @@ public class FormDesigner extends TopComponent
                                             (RADVisualComponent) c,
                                             (Component) cb);
                 }
-                walkVisualComps(cb, c);
+                walkVisualComps(cb, c, designer);
             }
 
             if (comp instanceof RADVisualContainer) {
@@ -603,7 +637,8 @@ public class FormDesigner extends TopComponent
         }
     }
 
-    static void setContainerLayout(Container cont, LayoutSupport laySup) {
+    private static void setContainerLayout(Container cont,
+                                           LayoutSupport laySup) {
         if (laySup != null) {
             if (laySup instanceof NullLayoutSupport)
                 cont.setLayout(null);
@@ -634,10 +669,10 @@ public class FormDesigner extends TopComponent
             return false;
     } */
 
-    static void addComponentToContainer(RADVisualContainer radcontainer,
-                                        Container container,
-                                        RADVisualComponent radcomp,
-                                        Component comp) {
+    private static void addComponentToContainer(RADVisualContainer radcontainer,
+                                                Container container,
+                                                RADVisualComponent radcomp,
+                                                Component comp) {
         comp.setName(radcomp.getName());
     
         if (container instanceof JScrollPane) {

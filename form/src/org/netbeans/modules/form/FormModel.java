@@ -92,7 +92,7 @@ public class FormModel
         return formInfo;
     }
 
-    RADComponent getTopRADComponent() {
+    public RADComponent getTopRADComponent() {
         return topRADComponent;
     }
 
@@ -275,60 +275,6 @@ public class FormModel
 
         fireComponentAdded(comp, parentContainer);
     }
-
-    // [PENDING] never called from anywhere - so is it not needed??
-/*    void addVisualComponentsRecursively(RADVisualContainer parent) {
-        RADComponent[] children = parent.getSubBeans();
-        LayoutSupport layoutSup = parent.getLayoutSupport();
-        
-        if (layoutSup == null)
-            return;
-
-//          for (int i = 0; i < children.length; i++) {
-//              if (!(children[i] instanceof RADVisualComponent)) {
-//                  // do not process non-visual components
-//                  continue;
-//              }
-
-//            RADVisualComponent visualComp =(RADVisualComponent)children [i];
-
-//            Component finalAddingComponent = visualComp.getComponent();
-
-            // we do not do this init for top level containers
-//              if ((!FormUtils.isHeavyweight(finalAddingComponent)) &&
-//                  (!(finalAddingComponent instanceof Window)))
-//              {
-//                  finalAddingComponent.addMouseListener(mouseProcessor);
-//                  finalAddingComponent.addMouseMotionListener(mouseMotionProcessor);
-//              } else {
-//                  finalAddingComponent.addMouseListener(mouseProcessor);
-//                  finalAddingComponent.addMouseMotionListener(mouseMotionProcessor);
-//              }
-
-            //visualToRAD.put(visualComp.getComponent(), visualComp);
-            //radToSelection.put(visualComp, finalAddingComponent);
-//        }
-
-        //XXXlayout.updateLayout();
-//          for (int i = 0; i < children.length; i++) {
-//              if (!(children[i] instanceof RADVisualComponent)) {
-//                  // do not process non-visual components
-//                  continue;
-//              }
-
-//              // [PENDING - patch to make JInternalFrames appear under JDK 1.3]
-//              if (children[i].getBeanInstance() instanceof javax.swing.JInternalFrame) {
-//                  ((javax.swing.JInternalFrame)children[i].getBeanInstance()).setVisible(true);
-//              }
-//          }
-
-
-        for (int i = 0; i < children.length; i++) {
-            if (children[i] instanceof RADVisualContainer) {
-                addVisualComponentsRecursively((RADVisualContainer)children[i]);
-            }
-        }
-    } */
 
     void removeComponent(RADComponent comp) {
         if (comp instanceof RADVisualComponent) {

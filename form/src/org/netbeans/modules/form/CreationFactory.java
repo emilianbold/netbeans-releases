@@ -39,7 +39,8 @@ public class CreationFactory {
         CreationDescriptor cd = (CreationDescriptor)
                                 getRegistry().get(cls.getName());
         if (cd == null && !defaultDescriptorsCreated
-                && cls.getName().startsWith("javax.swing.")) {
+                && (cls.getName().startsWith("javax.swing.")
+                    || cls.getName().startsWith("java.awt."))) {
             createDefaultDescriptors();
             cd = (CreationDescriptor)getRegistry().get(cls.getName());
         }

@@ -285,7 +285,7 @@ public class RADComponent implements FormDesignValue {
         return clone;
     }
 
-    private static void setProps(Object bean, Node.Property[] props) {//throws Exception {
+    static void setProps(Object bean, Node.Property[] props) {//throws Exception {
         for (int i = 0; i < props.length; i++) {
             RADProperty prop = (RADProperty) props[i];
             if (!prop.isChanged())

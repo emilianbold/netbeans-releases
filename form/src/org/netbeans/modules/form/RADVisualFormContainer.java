@@ -143,9 +143,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
      * created using the default constructor
      * @return the instance of the bean that will be used during design time
      */
-    protected Object createBeanInstance() {
-        return formInfo.getFormInstance();
-    }
+//    protected Object createBeanInstance() {
+//        return formInfo.getFormInstance();
+//    }
 
     /** Called to obtain a Java code to be used to generate code to access the
      * container for adding subcomponents.  It is expected that the returned

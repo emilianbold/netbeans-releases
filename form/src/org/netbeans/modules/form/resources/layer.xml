@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance" />
             <file name="org-netbeans-modules-form-palette-PaletteAction.instance" />
             <file name="org-netbeans-modules-form-actions-CustomizeLayoutAction.instance" />
-            <file name="org-netbeans-modules-form-actions-DesignModeAction.instance" />
             <file name="org-netbeans-modules-form-actions-EventsAction.instance" />
             <file name="org-netbeans-modules-form-actions-GotoFormAction.instance" />
             <file name="org-netbeans-modules-form-actions-GotoInspectorAction.instance" />
@@ -31,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-form-actions-InstallBeanAction.instance" />
             <file name="org-netbeans-modules-form-actions-SelectLayoutAction.instance" />
             <file name="org-netbeans-modules-form-actions-ShowGridAction.instance" />
-            <file name="org-netbeans-modules-form-actions-TestModeAction.instance" />
+            <file name="org-netbeans-modules-form-actions-TestAction.instance" />
         </folder>
     </folder>
 
@@ -40,13 +39,9 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
 
             <file name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance" />
-            <file name="org-netbeans-modules-form-actions-ShowGridAction.instance" />
-            <file name="org-netbeans-modules-form-actions-DesignModeAction.instance" />
-            <file name="org-netbeans-modules-form-actions-TestModeAction.instance" />
+            <file name="org-netbeans-modules-form-actions-TestAction.instance" />
 
-            <attr name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance/org-netbeans-modules-form-actions-TestModeAction.instance" boolvalue="true" />
-            <attr name="org-netbeans-modules-form-actions-TestModeAction.instance/org-netbeans-modules-form-actions-DesignModeAction.instance" boolvalue="true" />
-            <attr name="org-netbeans-modules-form-actions-DesignModeAction.instance/org-netbeans-modules-form-actions-ShowGridAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance/org-netbeans-modules-form-actions-TestAction.instance" boolvalue="true" />
         </folder>
 
         <folder name="Palette">

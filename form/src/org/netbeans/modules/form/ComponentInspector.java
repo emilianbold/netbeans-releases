@@ -42,11 +42,11 @@ import org.netbeans.modules.form.palette.*;
 public class ComponentInspector extends ExplorerPanel implements Serializable
 {
     /** The DesignMode action */
-    private static DesignModeAction designModeAction = (DesignModeAction)
-                     SharedClassObject.findObject(DesignModeAction.class, true);
+//    private static DesignModeAction designModeAction = (DesignModeAction)
+//                     SharedClassObject.findObject(DesignModeAction.class, true);
     /** The TestMode action */
-    private static TestModeAction testModeAction = (TestModeAction)
-                       SharedClassObject.findObject(TestModeAction.class, true);
+    private static TestAction testAction = (TestAction)
+                       SharedClassObject.findObject(TestAction.class, true);
     /** The action that holds the curent palette state(selection/add mode) */
 
     /** The default width of the ComponentInspector */
@@ -228,8 +228,8 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     private void focusFormImpl(FormModel formModel, int visibility) {
         this.formModel = formModel;
         
-        designModeAction.setFormModel(formModel);
-        testModeAction.setFormModel(formModel);
+//        designModeAction.setFormModel(formModel);
+        testAction.setFormModel(formModel);
 
         if (formModel == null) {
             // swing memory leak workaround

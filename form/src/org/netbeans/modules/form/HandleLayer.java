@@ -492,9 +492,11 @@ class HandleLayer extends JPanel
              && JMenuBar.class.isAssignableFrom(item.getItemClass()))
             || (formInfo instanceof MenuBarContainer
                 && MenuBar.class.isAssignableFrom(item.getItemClass()))) {
-            if (((RADVisualFormContainer)formModel.getTopRADComponent()).getFormMenu() == null) {
-                ((RADVisualFormContainer)formModel.getTopRADComponent()).setFormMenu(newMenuComp.getName());
-            }
+
+            RADVisualFormContainer form = (RADVisualFormContainer)
+                                          formModel.getTopRADComponent();
+            if (form.getFormMenu() == null)
+                form.setFormMenu(newMenuComp.getName());
         }
 
         formDesigner.setSelectedComponent(newMenuComp);
@@ -868,7 +870,7 @@ class HandleLayer extends JPanel
                         }
                         else if (item.isLayout()) {
                             if (hitMetaComp == null)
-                                hitMetaComp = formDesigner.getModel().getTopRADComponent();
+                                hitMetaComp = formDesigner.getTopDesignContainer();
                             setContainerLayout(hitMetaComp, item);
                         }
                         else if (item.isMenu()) {
@@ -876,7 +878,7 @@ class HandleLayer extends JPanel
                         }
                         else if (item.isVisual()) {
                             if (hitMetaComp == null)
-                                hitMetaComp = formDesigner.getModel().getTopRADComponent();
+                                hitMetaComp = formDesigner.getTopDesignContainer();
                             addVisualBean(hitMetaComp, item, e);
                         }
                         else {
