@@ -47,7 +47,12 @@ public class NavigateNode extends AbstractNode {
 
     protected SystemAction[] createActions () {
 	return new SystemAction[] {
+            SystemAction.get(ReloadAction.class),
 	    SystemAction.get(DeleteAllAction.class),
+            null,
+            SystemAction.get(SortAction.class),
+            null,
+            SystemAction.get(ShowTimestampAction.class),
 	};
     }
     
