@@ -97,7 +97,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
  * @author vince kraemer
  * @see WebProject
  */
-public final class EarProject implements J2eeProject, Project, AntProjectListener, FileChangeListener {
+public final class EarProject implements J2eeProject, Project, AntProjectListener, FileChangeListener, ProjectPropertyProvider {
     
     private static final Icon EAR_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif")); // NOI18N
     
@@ -186,6 +186,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
 //            new SourceLevelQueryImpl(helper, evaluator()),
 //            fileBuilt,
             new RecommendedTemplatesImpl(),
+            this,
 //            sourcesHelper.createSources()
         });
     }
@@ -425,6 +426,8 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
         return needsAdding;
     }
     
+    
+    
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
         
         ProjectOpenedHookImpl() {}
@@ -612,5 +615,8 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
     
     public String getJ2eePlatformVersion () {
         return  helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_PLATFORM);
+    }
+    public ArchiveProjectProperties getProjectProperties() {
+        return new EarProjectProperties(this, helper,refHelper, abpt);
     }
 }

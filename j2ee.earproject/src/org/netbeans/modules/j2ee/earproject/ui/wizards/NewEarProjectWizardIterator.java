@@ -129,8 +129,10 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
         }
     }
     public void uninitialize(WizardDescriptor wiz) {
+        if (null != wiz) {
         this.wiz.putProperty(WizardProperties.PROJECT_DIR,null);
         this.wiz.putProperty(WizardProperties.NAME,null);
+        }
         this.wiz = null;
         panels = null;
     }

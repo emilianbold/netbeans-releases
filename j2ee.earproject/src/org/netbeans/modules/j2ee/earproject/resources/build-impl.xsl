@@ -115,7 +115,10 @@ is divided into following sections:
                     <istrue value="${{compile.jsps}}"/>
                 </condition>
                 <condition property="do.display.browser">
-                    <istrue value="${{display.browser}}"/>
+                    <and>
+                        <istrue value="${{display.browser}}"/>
+                        <contains string="${{context.path}}" substring="/"/>
+                    </and>
                 </condition>
             </target>
 
@@ -393,7 +396,7 @@ is divided into following sections:
             
     <target name="run-deploy">
         <xsl:attribute name="depends">dist</xsl:attribute>
-        <nbdeploy debugmode="false" forceRedeploy="${{forceRedeploy}}" clientUrlPart="${{client.urlPart}}"/>
+        <nbdeploy debugmode="false" forceRedeploy="${{forceRedeploy}}" clientUrlPart="${{client.urlPart}}" contextRoot="${{context.path}}"/>
     </target>
     
     <target name="verify">
@@ -414,7 +417,7 @@ is divided into following sections:
         <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
         <xsl:attribute name ="depends">init,compile</xsl:attribute>
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
-        <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}"/>
+        <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}" contextRoot="${{context.path}}"/>
         <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
             <classpath>
                 <path path="${{debug.classpath}}"/>

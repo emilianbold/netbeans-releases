@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.jar.JarFile;
+import java.util.jar.JarEntry;
 //
 //import org.openide.ErrorManager;
 //import org.openide.util.MutexException;
@@ -1152,23 +1154,35 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
         Object obj = vcpi.getObject();
         AntArtifact aa;
         Project p;
+        String path = vcpi.getCompletePathInArchive(); //   computePath(vcpi);
+        Module mod = null;
         if (obj instanceof AntArtifact) {
-            aa = (AntArtifact) obj;
-            p = aa.getProject();            
+            mod = getModFromAntArtifact((AntArtifact) obj, dd, path);
         }
-        else return;
+        else if (obj instanceof File) {
+            mod = getModFromFile((File) obj, dd, path);
+        }
+        Module prevMod = searchForModule(dd, path);
+        if (null == prevMod && null != mod)
+            dd.addModule(mod);
+    }
+    
+    
+    private Module getModFromAntArtifact(AntArtifact aa, Application dd, String path) {
+        Project p = aa.getProject();
+        Module mod = null;
         try {
             J2eeModuleProvider jmp = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
             //AppDDSegmentProvider seg = (AppDDSegmentProvider) p.getLookup().lookup(AppDDSegmentProvider.class);
             if (null != jmp) {
-                String path = vcpi.getCompletePathInArchive(); //   computePath(vcpi);
+//                String path = vcpi.getCompletePathInArchive(); //   computePath(vcpi);
                 J2eeModule jm = jmp.getJ2eeModule();
                 if (null != jm) {
                     earProject.getAppModule().addModuleProvider(jmp,path);
                 } else {
-                    return;
+                    return null;
                 }
-                Module mod = (Module) dd.createBean("Module");
+                mod = (Module) dd.createBean("Module");
                 if (jm.getModuleType() == J2eeModule.EJB) {
                     mod.setEjb(path); // NOI18N
                 }
@@ -1181,10 +1195,27 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
                     WebModule wm = null;
                     if (null != tmp)
                         wm = (WebModule) WebModule.getWebModule(tmp);
-                    if (null != wm)
+                    if (null != wm) {
                         w.setContextRoot(wm.getContextPath());
-                    else 
-                        w.setContextRoot("/default");
+                        // set the context path if it is not set...
+                        Object foo = get(EarProjectProperties.CONTEXT_PATH);
+                        if (null == foo) {
+                            put(EarProjectProperties.CONTEXT_PATH,wm.getContextPath());
+                        }
+                        if (foo instanceof String) {
+                            String bar = (String) foo;
+                            if (bar.length() < 1) {
+                                put(EarProjectProperties.CONTEXT_PATH,wm.getContextPath());
+                            }
+                        }
+                    }
+                    else {
+                        int endex = path.length() - 4;
+                        if (endex < 1) {
+                            endex = path.length();
+                        }
+                        w.setContextRoot(path.substring(0,endex));
+                    }
                     mod.setWeb(w);
                 }
                 else if (jm.getModuleType() == J2eeModule.CONN) {
@@ -1193,18 +1224,78 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
                 else if (jm.getModuleType() == J2eeModule.CLIENT) {
                     mod.setJava(path);
                 }
-                Module prevMod = searchForModule(dd, path);
-                if (null == prevMod)
-                    dd.addModule(mod);
             }
         }
         catch (ClassNotFoundException cnfe) {
             cnfe.printStackTrace();
             org.openide.ErrorManager.getDefault ().log (cnfe.getLocalizedMessage ());
         }
+        return mod;
     }
     
-//    private String computePath(VisualClassPathItem vcpi) {
+    private Module getModFromFile(File f, Application dd, String path) {
+            JarFile jar = null;
+            Module mod = null;
+            try {
+                jar= new JarFile((File) f);
+                JarEntry ddf = jar.getJarEntry("META-INF/ejb-jar.xml"); // NOI18N
+                if (null != ddf) {
+                    mod = (Module) dd.createBean("Module"); // NOI18N
+                    mod.setEjb(path);
+                }
+                ddf = jar.getJarEntry("META-INF/ra.xml"); // NOI18N
+                if (null != ddf && null == mod) {
+                    mod = (Module) dd.createBean("Module"); //NOI18N
+                    mod.setConnector(path);                    
+                } else if (null != ddf && null != mod) {
+                    return null; // two timing jar file.
+                }
+                ddf = jar.getJarEntry("META-INF/application-client.xml"); //NOI18N
+                if (null != ddf && null == mod) {
+                    mod = (Module) dd.createBean("Module"); // NOI18N
+                    mod.setJava(path);                    
+                } else if (null != ddf && null != mod) {
+                    return null; // two timing jar file.
+                }
+                ddf = jar.getJarEntry("WEB-INF/web.xml"); //NOI18N
+                if (null != ddf && null == mod) {
+                    mod = (Module) dd.createBean("Module"); // NOI18N
+                    Web w = (Web) mod.newWeb(); 
+                    w.setWebUri(path);
+                        int endex = path.length() - 4;
+                        if (endex < 1) {
+                            endex = path.length();
+                        }
+                        w.setContextRoot(path.substring(0,endex));
+//                    w.setContextRoot("/default"); // NOI18N
+                    mod.setWeb(w);
+                } else if (null != ddf && null != mod) {
+                    return null; // two timing jar file.
+                }
+                ddf = jar.getJarEntry("META-INF/application.xml"); //NOI18N
+                if (null != ddf) {
+                    return null;
+                }
+            }
+            catch (ClassNotFoundException cnfe) {
+                org.openide.ErrorManager.getDefault ().log (cnfe.getLocalizedMessage ());
+            }
+            catch (java.io.IOException ioe) {
+                org.openide.ErrorManager.getDefault ().log (ioe.getLocalizedMessage ());
+            }
+            finally {
+                try {
+                    if (null != jar)
+                        jar.close();
+                }
+                catch (java.io.IOException ioe) {
+                    // there is little that we can do about this.
+                }
+            }
+            return mod;
+        }
+
+    //    private String computePath(VisualClassPathItem vcpi) {
 //        String full = vcpi.getEvaluated();
 //        int lastSlash = full.lastIndexOf('/');
 //        String trimmed = null;
