@@ -240,11 +240,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
         Class formBaseClass = null;
         Throwable formBaseClassEx = null;
         try {
-            Identifier superClass =
-                formObject.getSource().getClasses()[0].getSuperclass();
-            if (superClass != null)
+            ClassElement[] classes = formObject.getSource().getClasses();
+            Identifier superclass = null;
+            for (int i=0; i < classes.length; i++)
+                if (classes[i].getName().getName().equals(formObject.getName())) {
+                    superclass = classes[i].getSuperclass();
+                    break;
+                }
+
+            if (superclass != null)
                 formBaseClass = TopManager.getDefault().currentClassLoader()
-                                           .loadClass(superClass.getFullName());
+                                           .loadClass(superclass.getFullName());
             else formBaseClass = Object.class;
 
             formModel.setFormBaseClass(formBaseClass);
