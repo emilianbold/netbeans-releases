@@ -332,8 +332,9 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         return -1;
     }
 
-// JDK 1.5, Win L&F - we cannot do the layout synchronously when we've
-// just removed a tab - the layout will have out of sync cache data
+// JDK 1.5, Win L&F - removing a tab causes a relayout and that uses onl data in UI class,
+// causing it to throw ArrayOutofbounds if removing the last one.
+    // hacking around it by resetting the bad old data before removal.
 // #56628    
     private void checkWinXPLFBug() {
         if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOi18N
