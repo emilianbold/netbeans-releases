@@ -152,8 +152,8 @@ class WebActionProvider implements ActionProvider {
                     ProjectInformation pi = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
                     text = pi.getDisplayName();
                 } else { //COMMAND_RUN_SINGLE
-                    FileObject[] files = findJsps(context);
-                    text = files[0].getNameExt();
+                    FileObject[] files = ActionUtils.findSelectedFiles(context, null, null, false);
+                    text = (files == null) ? "?" : files[0].getNameExt(); // NOI18N
                 }
                 nd = new NotifyDescriptor.Confirmation(
                             NbBundle.getMessage(WebActionProvider.class, "MSG_SessionRunning", text),
@@ -175,6 +175,13 @@ class WebActionProvider implements ActionProvider {
                 FileObject[] files = findJsps( context );
                 if (files!=null && files.length>0) {
                     try {
+                        // possibly compile the JSP, if we are not compiling all of them
+                        String raw = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.COMPILE_JSPS);
+                        boolean compile = decodeBoolean(raw);
+                        if (!compile) {
+                            p.setProperty("jsp.includes", getBuiltJspFileNamesAsPath(files)); // NOI18N
+                        }
+                        
                         URLCookie uc = (URLCookie) DataObject.find (files [0]).getCookie (URLCookie.class);
                         if (uc != null) {
                             p.setProperty("client.urlPart", uc.getURL ()); //NOI18N
@@ -271,6 +278,13 @@ class WebActionProvider implements ActionProvider {
                 // debug jsp
                 if ((files != null) && (files.length>0)) {
                     try {
+                        // possibly compile the JSP, if we are not compiling all of them
+                        String raw = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.COMPILE_JSPS);
+                        boolean compile = decodeBoolean(raw);
+                        if (!compile) {
+                            p.setProperty("jsp.includes", getBuiltJspFileNamesAsPath(files)); // NOI18N
+                        }
+                        
                         URLCookie uc = (URLCookie) DataObject.find (files [0]).getCookie (URLCookie.class);
                         if (uc != null) {
                             p.setProperty("client.urlPart", uc.getURL ());
@@ -343,6 +357,20 @@ class WebActionProvider implements ActionProvider {
             ErrorManager.getDefault().notify(e);
         }
     }
+        
+    // PENDING - should not this be in some kind of an API?
+    private boolean decodeBoolean(String raw) {
+        if ( raw != null ) {
+           String lowecaseRaw = raw.toLowerCase();
+               
+           if ( lowecaseRaw.equals( "true") || // NOI18N
+                lowecaseRaw.equals( "yes") || // NOI18N
+                lowecaseRaw.equals( "enabled") ) // NOI18N
+               return true;
+        }
+            
+        return false;
+    }    
     
     public File getBuiltJsp(FileObject jsp) {
         ProjectWebModule pwm = project.getWebModule ();
