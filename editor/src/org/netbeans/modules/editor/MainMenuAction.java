@@ -69,7 +69,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     }
 
     public String getName() {
-        return "";
+        return getMenuItemText();
     }
 
     /** Returns focused editor component */
