@@ -38,11 +38,8 @@ public class EnvTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
-//        java.net.URL layer = this.getClass().getResource("convertors/data/layer.xml");
-//        fs = new org.openide.filesystems.XMLFileSystem(layer);
+        org.openide.TopManager.getDefault();
         fs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
-//        root = sfs.getRoot();
-//        assertNotNull("SFS root not found", root);
     }
     
     public void testFindEntityRegistration() throws Exception {
