@@ -60,7 +60,11 @@ class EventSetInheritanceAnalyser extends Object {
         if( clazz == null || clazz.getName().getFullName().equals("java.lang.Object")) //NOI18N
             return null;    //no super class given or super class is Object
         
-        ClassElement parent = ClassElement.forName( clazz.getSuperclass().getFullName() );
+        Identifier superClass = clazz.getSuperclass();
+        if( superClass == null ) //no extends or implements clause
+            return null;
+
+        ClassElement parent = ClassElement.forName( superClass.getFullName() );
         if( parent == null )
             return parent; 
         else {
