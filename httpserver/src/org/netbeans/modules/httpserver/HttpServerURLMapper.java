@@ -55,7 +55,9 @@ public class HttpServerURLMapper extends URLMapper {
         
         // resource name
         if (path.startsWith ("/")) path = path.substring (1); // NOI18N
-        
+        if (path.length() == 0) {
+            return new FileObject[0];
+        }
         // decode path to EXTERNAL/INTERNAL type of URL
         URL u = decodeURL(path);
         if (u == null) {
@@ -79,7 +81,7 @@ public class HttpServerURLMapper extends URLMapper {
         try {
             return new URL(newPath.toString());
         } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return null;
         }
     }
