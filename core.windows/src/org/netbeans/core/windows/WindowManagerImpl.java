@@ -729,7 +729,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         if (displayName == null) {
             displayName = tc.getName();
         }
-        if (NAME_HACK) {
+        if (NAME_HACK && displayName != null) {
             //THIS IS FOR DEMO PURPOSES ONLY!  A PROPER API IS NEEDED
             //(TopComponent.getHtmlDisplayName()), OR
             //HTML SHOULD BE PRE-SUPPLIED
