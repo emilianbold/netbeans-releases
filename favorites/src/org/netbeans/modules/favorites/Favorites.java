@@ -24,6 +24,7 @@ import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
+import org.openide.actions.NewTemplateAction;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.PropertiesAction;
@@ -327,7 +328,8 @@ final class Favorites extends FilterNode {
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] != null) {
                     if ("org.netbeans.modules.project.ui.actions.Actions$SystemNewFile". // NOI18N
-                        equals(arr[i].getClass().getName()) || // NOI18N
+                        equals(arr[i].getClass().getName()) ||
+                        (arr[i] instanceof NewTemplateAction) ||
                         (arr[i] instanceof FileSystemAction) ||
                         (arr[i] instanceof FindAction) ||
                         (arr[i] instanceof ToolsAction) ||
@@ -354,6 +356,7 @@ final class Favorites extends FilterNode {
                 if (arr[i] != null) {
                     if ("org.netbeans.modules.project.ui.actions.Actions$SystemNewFile". // NOI18N
                         equals(arr[i].getClass().getName()) ||
+                        (arr[i] instanceof NewTemplateAction) ||
                         (arr[i] instanceof FileSystemAction) ||
                         (arr[i] instanceof FindAction) ||
                         (arr[i] instanceof CopyAction) ||
@@ -407,6 +410,7 @@ final class Favorites extends FilterNode {
                 if (arr[i] != null) {
                     if ("org.netbeans.modules.project.ui.actions.Actions$SystemNewFile". // NOI18N
                         equals(arr[i].getClass().getName()) ||
+                        (arr[i] instanceof NewTemplateAction) ||
                         (arr[i] instanceof FileSystemAction) ||
                         (arr[i] instanceof FindAction) ||
                         (arr[i] instanceof CutAction) ||
