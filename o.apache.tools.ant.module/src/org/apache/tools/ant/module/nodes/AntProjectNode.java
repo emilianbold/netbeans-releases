@@ -294,10 +294,6 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         firePropertyChange (null, null, null);
     }
 
-    public SystemAction getDefaultAction () {
-        return SystemAction.get (ExecuteAction.class);
-    }
-
     public HelpCtx getHelpCtx () {
         return new HelpCtx ("org.apache.tools.ant.module.identifying-project");
     }
