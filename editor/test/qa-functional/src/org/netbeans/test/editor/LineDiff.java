@@ -18,7 +18,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author  lahvac
+ * @author  jlahoda, ehucka
  */
 public class LineDiff implements Diff {
     
@@ -77,10 +77,14 @@ public class LineDiff implements Diff {
         if (diffFile == null) {
             while ((firstLine = first.readLine()) != null) {
                 secondLine = second.readLine();
-                if (secondLine == null)
+                if (secondLine == null) {
+                    first.close();
+                    second.close();
                     return true;
-                
+                }
                 if (!compareLines(firstLine,secondLine)) {
+                    first.close();
+                    second.close();
                     return true;
                 }
             }
@@ -95,6 +99,8 @@ public class LineDiff implements Diff {
             while ((secondLine = second.readLine()) != null) {
                 a2.add(secondLine);
             }
+            first.close();
+            second.close();
             newLines=new ArrayList();
             missingLines=new ArrayList();
             
@@ -118,6 +124,7 @@ public class LineDiff implements Diff {
                             for (int l=j;l < k;l++) {
                                 newLines.add(l+"> "+a2.get(l));
                             }
+                            j=k;
                             found=true;
                             break;
                         }
@@ -135,13 +142,13 @@ public class LineDiff implements Diff {
                 pw=new PrintStream(new FileOutputStream(diffFile));
                 //pw=System.out;
                 if (missingLines.size() > 0) {
-                    pw.println("Missing Lines:");
+                    pw.println("-----------------------------Missing Lines:-----");
                     for (int i=0;i < missingLines.size();i++) {
                         pw.println(missingLines.get(i));
                     }
                 }
                 if (newLines.size() > 0) {
-                    pw.println("New Lines:");
+                    pw.println("-----------------------------New Lines:---------");
                     for (int i=0;i < newLines.size();i++) {
                         pw.println(newLines.get(i));
                     }
