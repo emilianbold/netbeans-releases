@@ -13,6 +13,10 @@
 
 package org.netbeans.jellytools.util;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 
 /** Filters string, you can simple use replaceString() method or create string
@@ -127,6 +131,22 @@ public class StringFilter {
     
     private static boolean isEmpty(String s) {
         return s == "" || s == null;
+    }
+    
+    public void filterLinesToStream (String input, PrintStream output) {
+        BufferedReader br = new BufferedReader (new StringReader (input));
+        try {
+            for (;;) {
+                String str = br.readLine();
+                if (str == null)
+                    break;
+                str = filter (str);
+                output.println (str);
+            }
+        } catch (IOException e) {
+        } finally {
+            try { br.close (); } catch (IOException e) {}
+        }
     }
     
     private class Pattern {
