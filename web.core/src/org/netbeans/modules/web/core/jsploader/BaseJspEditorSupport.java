@@ -207,10 +207,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
 
         Reader reader = null;
-        
-        //the encoding is recognized inside the open() method, 
-        //which is called before this one, so the cached encoding can be used
-        encoding = getObjectEncoding(true);
+        encoding = getObjectEncoding(false);
         
         if (!isSupportedEncoding(encoding)){
             encoding = defaulEncoding;
