@@ -259,7 +259,7 @@ public class Controller { //XXX public only for debug access to logging code
                 if (win.isAncestorOf(t)) {
                     String name = t.getIO().isStreamClosed() ? t.getIO().getName() + " " :
                             "<html><b>" + /*XXX escape */t.getIO().getName() 
-                            + " </b> </html>";  //NOI18N
+                            + " </b>&nbsp;</html>";  //NOI18N
                     win.setTabTitle (t, name);
                 }
             }

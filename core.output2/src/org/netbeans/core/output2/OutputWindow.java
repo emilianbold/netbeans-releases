@@ -252,7 +252,7 @@ public class OutputWindow extends AbstractOutputWindow {
         //XXX only until TopComponent.getHtmlDisplayName() in place
         if (name.indexOf ("<html>") != -1) {
             name = Utilities.replaceString(name, "<html>", ""); //NOI18N
-            return "<html>" + name + " "; //NOI18N
+            return "<html>" + name; //NOI18N
         } else {
             return name;
         }
