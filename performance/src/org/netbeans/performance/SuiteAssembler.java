@@ -127,19 +127,19 @@ public final class SuiteAssembler {
     /** Generates a textual representation */
     private static void generateSuite(ArrayList classList, StringBuffer buffer) {
         buffer.append("package libgen;\n\n");
+        buffer.append("import org.netbeans.performance.BenchmarkSuite;\n");
         buffer.append("import junit.framework.TestCase;\n");
-        buffer.append("import junit.framework.TestSuite;\n");
         buffer.append("import junit.framework.Test;\n\n");
         buffer.append("public class GenSuite extends TestCase {\n");
         buffer.append("    public GenSuite(String name) {\n");
         buffer.append("        super(name);\n");
         buffer.append("    }\n");
         buffer.append("    public static Test suite() {\n");
-        buffer.append("        TestSuite suite = new TestSuite();\n");
+        buffer.append("        BenchmarkSuite suite = new BenchmarkSuite();\n");
         for (int i = 0; i < classList.size(); i++) {
-            buffer.append("        suite.addTest(new TestSuite(");
+            buffer.append("        suite.addBenchmarkClass(");
             buffer.append(classList.get(i).toString());
-            buffer.append(".class));\n");
+            buffer.append(".class);\n");
         }
         buffer.append("        return suite;\n");
         buffer.append("    }\n");

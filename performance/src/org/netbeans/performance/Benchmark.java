@@ -220,9 +220,20 @@ public class Benchmark extends Assert implements Test {
             if( argString.length() > 0 ) argString = "@" + argString;
             System.out.println( className + ':'+ name + argString +
                 ": iter=" + iters + 
-                ", min=" + 1000000f*realMin + 
-                ", avg=" + 1000000f*avgTime +
-                ", max=" + 1000000f*realMax );
+                ", min=" + format(1000000f*realMin) + 
+                ", avg=" + format(1000000f*avgTime) +
+                ", max=" + format(1000000f*realMax) );
+    }
+    
+    /** Formats a */
+    private static String format(float val) {
+        if (val < 1000) {
+            return val + "  micro s";
+        } else if (val < 1000000) {
+            return (val / 1000) + " ms";
+        } else {
+            return (val / 1000000) + " s";
+        }        
     }
     
     /** Handles arrays */
