@@ -13,6 +13,7 @@
 package org.netbeans.tax;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import junit.textui.TestRunner;
 import org.netbeans.modules.xml.core.XMLDataObject;
@@ -66,7 +67,7 @@ public class EncodingTest extends XTest {
         // prepare data
         XMLDataObject original = (XMLDataObject) TestUtil.THIS.findData(DATA_OBJECT);
         if (original == null) {
-            throw new IllegalStateException("\"" + DATA_OBJECT + "\" data object is not found!");
+            fail("\"" + DATA_OBJECT + "\" data object not found!");
         }
         TreeElement docRoot = original.getTreeDocument().getDocumentElement();
         String defEncoding =  original.getTreeDocument().getEncoding();
@@ -75,7 +76,12 @@ public class EncodingTest extends XTest {
         
         // prepare workdir
         File workDir = getWorkDir();
-        clearWorkDir();
+        try {
+            clearWorkDir();
+        } catch (IOException ex) {
+            log("clearWorkDir() throws: " + ex);
+        }
+        
         FileSystem fs = TestUtil.THIS.mountDirectory(workDir);
         DataFolder dataFolder = DataFolder.findFolder(fs.getRoot());
         
@@ -93,7 +99,7 @@ public class EncodingTest extends XTest {
                 TestUtil.THIS.saveDataObject(xdao);
                 CloseCookie cc = (CloseCookie) xdao.getCookie(CloseCookie.class);
                 cc.close();
-
+                
                 // read the document and check his content
                 TreeElement newRoot = xdao.getTreeDocument().getDocumentElement();
                 String nString = TestUtil.THIS.nodeToString(newRoot);
