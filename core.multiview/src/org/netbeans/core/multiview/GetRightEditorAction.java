@@ -54,26 +54,5 @@ public class GetRightEditorAction extends AbstractAction {
             Toolkit.getDefaultToolkit().beep();
         }
     }
-
-    
-    /** Overriden to share accelerator between instances of this action.
-     */ 
-    public void putValue(String key, Object newValue) {
-        if (Action.ACCELERATOR_KEY.equals(key)) {
-            GetLeftEditorAction.putSharedAccelerator("getRightEditor", newValue); //NOI18N
-        } else {
-            super.putValue(key, newValue);
-        }
-    }
-
-    /** Overriden to share accelerator between instances of this action.
-     */ 
-    public Object getValue(String key) {
-        if (Action.ACCELERATOR_KEY.equals(key)) {
-            return GetLeftEditorAction.getSharedAccelerator("getRightEditor"); //NOI18N
-        } else {
-            return super.getValue(key);
-        }
-    }
     
 }

@@ -283,5 +283,50 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
             g.fillRect (0, 0, getWidth(), getHeight());
         }
         super.paint(g);
-    }    
+    } 
+   
+    /**
+     * Set next tab relatively to the given tab. If the give tab is the last one
+     * the first is selected.
+     *
+     * @param tab relative tab
+     */
+    public final void selectNextTab(AbstractOutputTab tab) {
+        AbstractOutputTab[] tabs = this.getTabs();
+        if (tabs.length > 1) {
+            int nextTabIndex = getSelectedTabIndex(tabs, tab) + 1;
+            if (nextTabIndex > (tabs.length - 1)) {
+                nextTabIndex = 0;
+            }
+            this.setSelectedTab(tabs[nextTabIndex]);
+        }
+    }
+
+    /**
+     * Set previous tab relatively to the given tab. If the give tab is the
+     * first one the last is selected.
+     *
+     * @param tab relative tab
+     */
+    public final void selectPreviousTab(AbstractOutputTab tab) {
+        AbstractOutputTab[] tabs = this.getTabs();
+        if (tabs.length > 1) {
+            int prevTabIndex = getSelectedTabIndex(tabs, tab) - 1;
+            if (prevTabIndex < 0) {
+                prevTabIndex = tabs.length - 1;
+            }
+            this.setSelectedTab(tabs[prevTabIndex]);
+        }
+    }
+
+    private int getSelectedTabIndex(AbstractOutputTab[] tabs, AbstractOutputTab tab) {
+        for (int i = 0; i < tabs.length; i++) {
+            if (tabs[i] == tab) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    
 }

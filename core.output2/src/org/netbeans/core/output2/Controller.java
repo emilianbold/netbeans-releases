@@ -75,6 +75,9 @@ public class Controller { //XXX public only for debug access to logging code
     private static final int ACTION_POSTMENU = 10;
     private static final int ACTION_FINDPREVIOUS = 11;
     private static final int ACTION_CLEAR = 12;
+    private static final int ACTION_NEXTTAB = 13;
+    private static final int ACTION_PREVTAB = 14;
+    
 
     //Package private for unit tests
     Action copyAction = new ControllerAction (ACTION_COPY,
@@ -102,6 +105,11 @@ public class Controller { //XXX public only for debug access to logging code
     Action postMenuAction = new ControllerAction (ACTION_POSTMENU, "postMenu", //NOI18N
             KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK));
     Action clearAction = new ControllerAction (ACTION_CLEAR, "ACTION_CLEAR");
+    
+    Action nextTabAction = new ControllerAction (ACTION_NEXTTAB, "NextViewAction", //NOI18N
+            (KeyStroke)null);
+    Action prevTabAction = new ControllerAction (ACTION_PREVTAB, "PreviousViewAction", //NOI18N
+            (KeyStroke)null);
 
     private Object[] popupItems = new Object[] {
         copyAction, new JSeparator(), findAction, findNextAction,
@@ -379,6 +387,15 @@ public class Controller { //XXX public only for debug access to logging code
                     log ("Clear on a tab with no IO");
                 }
                 break;
+            case ACTION_NEXTTAB :
+                if (log) log ("Action NEXTTAB received");
+                win.selectNextTab(tab);
+                break;
+            case ACTION_PREVTAB :
+                if (log) log ("Action PREVTAB received");
+                win.selectPreviousTab(tab);
+                break;
+                
             default :
                 assert false;
         }

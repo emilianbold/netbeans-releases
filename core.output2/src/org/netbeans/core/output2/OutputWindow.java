@@ -52,6 +52,8 @@ public class OutputWindow extends AbstractOutputWindow {
         this (new Controller());
         enableEvents(AWTEvent.FOCUS_EVENT_MASK);
         putClientProperty ("dontActivate", Boolean.TRUE);
+        getActionMap().put("PreviousViewAction", controller.prevTabAction);
+        getActionMap().put("NextViewAction", controller.nextTabAction);
     }
 
     protected void closeRequest(AbstractOutputTab tab) {
