@@ -69,8 +69,10 @@ public class NbEditorUI extends ExtEditorUI {
         findActionUpdater = createSystemActionUpdater(ExtKit.findAction, true, false);
         replaceActionUpdater = createSystemActionUpdater(ExtKit.replaceAction, true, false);
         gotoActionUpdater = createSystemActionUpdater(ExtKit.gotoAction, true, false);
-        removeSelectionActionUpdater = createSystemActionUpdater(ExtKit.removeSelectionAction,
-                                       true, true);
+        
+        // Fixed #25763 - do not sync delete action in the editor
+//        removeSelectionActionUpdater = createSystemActionUpdater(ExtKit.removeSelectionAction,
+//                                       true, true);
 
         focusL = new FocusAdapter() {
                      public void focusGained(FocusEvent evt) {
