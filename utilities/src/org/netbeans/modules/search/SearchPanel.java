@@ -21,6 +21,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -31,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -309,20 +312,46 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
         dialog.setModal(true);
         tabbedPane.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
-                int selectedIndex = tabbedPane.getSelectedIndex();
-                if (selectedIndex < 0) {
-                    selectedIndex = 0;
-                }
-                Component component = getTypeCustomizer(selectedIndex);
-                if (component != null) {
-                    component.requestFocus();
-                }
                 tabbedPane.removeFocusListener(this);
+                
+                int selectedIndex = tabbedPane.getSelectedIndex();
+                if (selectedIndex >= 0) {
+                    SearchTypePanel panel = getSearchTypePanel(selectedIndex);
+                    if (panel != null) {
+                        panel.initializeWithObject();
+                        
+                        if (panel.customizerComponent != null) {
+                            panel.customizerComponent.requestFocus();
+                        }
+                    }
+                }
+                
+                initializeTabSelectionListener();
             }
         });
         
         dialog.pack();
         dialog.setVisible(true);
+    }
+    
+    /**
+     * Sets up a listener which gets notified whenever another tab
+     * is selected.
+     * When notified about tab selection change, the panel below the tab
+     * is prepared.
+     */
+    private void initializeTabSelectionListener() {
+        tabbedPane.getModel().addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                int selectedIndex = tabbedPane.getSelectedIndex();
+                if (selectedIndex >= 0) {
+                    SearchTypePanel panel = getSearchTypePanel(selectedIndex);
+                    if (panel != null) {
+                        panel.initializeWithObject();
+                    }
+                }
+            }
+        });
     }
 
     /** Implements <code>PropertyChangeListener</code> interface. */
@@ -341,11 +370,13 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
 
    
     /**
-     * Gets type of customizer.
+     * Gets a <code>SearchTypePanel</code> for the given tab index.
      *
-     * @param index index of tab we need.
+     * @param  index  index of the tab to get the panel from
+     * @return  <code>SearchTypePanel</code> at the given tab;
+     *          or <code>null</code> if there is none at the given tab index
      */
-    private Component getTypeCustomizer(int index) {
+    private SearchTypePanel getSearchTypePanel(int index) {
         SearchTypePanel searchTypePanel = null; 
         
         Iterator it = getOrderedSearchTypePanels().iterator();
@@ -354,7 +385,7 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
             index--;
         }
         
-        return searchTypePanel != null ? searchTypePanel.getComponent() : null;
+        return searchTypePanel;
     }
     
 }

@@ -65,12 +65,17 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
     private boolean customized;
     /** Search type this model is customized by. */
     private SearchType searchType;
-    /** Beaninfo of search type. */
-    private BeanInfo beanInfo;
+    /**
+     * has this panel's customizer been initialized with
+     * <code>setObject(...)</code>?
+     *
+     * @see  #initializeWithObject()
+     */
+    private boolean initialized = false;
     /** Customizer for search type. */
-    private Customizer customizer;
+    final Customizer customizer;
     /** Customizer component. */
-    private Component customizerComponent;
+    final Component customizerComponent;
     /**
      * saved criteria for this panel
      *
@@ -88,24 +93,21 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
                 
         this.searchType = searchType;
 
-        try {
-            beanInfo = Utilities.getBeanInfo(this.searchType.getClass());
-
-            if(hasCustomizer()) {
-                customizer = getCustomizer();
-                customizerComponent = (Component)customizer;
-            } else {
-                // PENDING use property sheet as it will implement Customizer
-                // allow hiding tabs, ....
-                System.err.println("No customizer for "                 //NOI18N
-                                   + this.searchType.getName()
-                                   + ", skipping...");                  //NOI18N
-            }
-        } catch(IntrospectionException ie) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ie);
+        customizer = createCustomizer(this.searchType.getClass());
+        if (customizer != null) {
+            customizerComponent = (Component) customizer;
+        } else {
+            customizerComponent = null;
+            
+            initialized = true;            //cannot initialize <null> customizer
+            
+            // PENDING use property sheet as it will implement Customizer
+            // allow hiding tabs, ....
+            System.err.println("No customizer for "                     //NOI18N
+                               + this.searchType.getName()
+                               + ", skipping...");                      //NOI18N
         }
 
-        customizer.setObject(this.searchType);
         this.searchType.addPropertyChangeListener(this);
         
         ResourceBundle bundle = NbBundle.getBundle(SearchTypePanel.class);
@@ -273,16 +275,21 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         }
     }
 
-    /** Indicates whether the search type has customizer. */
-    private boolean hasCustomizer() {
-        // true if we have already computed beanInfo and it has customizer class
-        return beanInfo.getBeanDescriptor().getCustomizerClass() != null;
-    }
-
-    /** Gets customizer for the search type. 
-     * @return customizer object. */
-    private Customizer getCustomizer() {
-        if (customizer != null) return customizer;
+    /**
+     * Creates a customizer for a given search type. 
+     *
+     * @param  searchTypeClass  class of the search type
+     * @return  customizer object for the search type,
+     *          or <code>null</code> if the customizer could not be created
+     */
+    private static Customizer createCustomizer(final Class searchTypeClass) {
+        final BeanInfo beanInfo;
+        try {
+            beanInfo = Utilities.getBeanInfo(searchTypeClass);
+        } catch (IntrospectionException ie) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ie);
+            return null;
+        }
 
         Class clazz = beanInfo.getBeanDescriptor ().getCustomizerClass ();
         if (clazz == null) return null;
@@ -302,10 +309,6 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         return (Customizer) o;
     }
     
-    public Component getComponent() {
-        return customizerComponent;
-    }
-
     /**
      * Sets customized property.
      *
@@ -486,11 +489,23 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         this.searchType.removePropertyChangeListener(this);
 
         this.searchType = (SearchType) searchType.clone();
-        getCustomizer().setObject(this.searchType);
+        initialized = false;
+        initializeWithObject();
         this.searchType.addPropertyChangeListener(this);
 
         setCustomized(true);
     }    
+    
+    /**
+     * Initializes this panel's customizer using <code>setObject(...)</code>,
+     * if it has not been initialized yet.
+     */
+    final void initializeWithObject() {
+        if (!initialized) {
+            customizer.setObject(this.searchType);
+            initialized = true;
+        }
+    }
 
     /** Return currently hold bean. */
     public SearchType getSearchType() {
