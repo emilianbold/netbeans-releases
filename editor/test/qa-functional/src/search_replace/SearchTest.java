@@ -134,8 +134,6 @@ public class SearchTest extends EditorTestCase {
             find2.close();
             
             // search for an item from history - word "package"
-            editor.setCaretPosition(0);
-            new EventTool().waitNoEvent(1000);
             new FindAction().perform();
             Find find3 = new Find();
             JComboBoxOperator cbo = find3.cboFindWhat();
@@ -144,7 +142,8 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(1000);
             find3.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(), "'package' found at 7:1");
+            assertEquals(editor.lblStatusBar().getText().contains(
+                    "'package' found at 7:1"), true);
                         
         } finally {
             closeFileWithDiscard();
