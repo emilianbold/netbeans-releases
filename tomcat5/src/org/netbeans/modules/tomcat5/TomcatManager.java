@@ -50,6 +50,13 @@ import org.netbeans.modules.tomcat5.nodes.DebuggingTypeEditor;
 
 import org.openide.util.NbBundle;
 
+import org.netbeans.modules.debugger.AbstractDebuggerInfo;
+import org.netbeans.modules.debugger.CoreDebugger;
+import org.netbeans.modules.debugger.AbstractDebugger;
+import org.openide.debugger.DebuggerInfo;
+import org.openide.debugger.Debugger;
+import org.openide.util.Lookup;
+
 /** DeploymentManager that can deploy to 
  * Tomcat 5 using manager application.
  *
@@ -321,6 +328,103 @@ public class TomcatManager implements DeploymentManager {
         sTomcat = st;
     }
     
+    /**
+     * Returns true if this server is started in debug mode AND debugger is attached to it.
+     * Doesn't matter whether the thread are suspended or not.
+     */
+    public boolean isDebugged() {
+        
+        boolean found = false;
+        
+        CoreDebugger d = (CoreDebugger)Lookup.getDefault().lookup (Debugger.class);
+
+        if (d == null) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Debugger cannot be found in lookup.");
+            return false;
+        }
+
+        DebuggerInfo serverDInfo = null;
+        String serverPName = "";
+
+        int debuggers = d.getDebuggers().length;
+        try {
+            serverDInfo = getStartTomcat().getDebugInfo(null);
+        } catch (Exception e) {
+            // don't care - just a try
+        }
+
+        if (serverDInfo == null) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
+        }
+        if (serverDInfo instanceof AbstractDebuggerInfo) {
+            serverPName = ((AbstractDebuggerInfo)serverDInfo).getProcessName();
+        }
+
+        for (int i=0; i < debuggers; i++) {
+            if (d.getDebuggers()[i] instanceof AbstractDebugger) {
+                DebuggerInfo di = ((AbstractDebugger)d.getDebuggers()[i]).getDebuggerInfo();
+                if (di instanceof AbstractDebuggerInfo) {
+                    String pname = ((AbstractDebuggerInfo)di).getProcessName();
+                    if (serverPName.equalsIgnoreCase(pname)) {
+                        found = true;
+                        break;
+                    } 
+                }
+            }
+        }
+
+        return found;
+    }
+    
+    /**
+     * Returns true if this server is started in debug mode AND debugger is attached to it 
+     * AND threads are suspended (e.g. debugger stopped on breakpoint)
+     */
+    public boolean isSuspended() {
+        boolean suspended = false;
+        
+        CoreDebugger d = (CoreDebugger)Lookup.getDefault().lookup (Debugger.class);
+
+        if (d == null) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Debugger cannot be found in lookup.");
+            return false;
+        }
+
+        DebuggerInfo serverDInfo = null;
+        String serverPName = "";
+
+        int debuggers = d.getDebuggers().length;
+        try {
+            serverDInfo = getStartTomcat().getDebugInfo(null);
+        } catch (Exception e) {
+            // don't care - just a try
+        }
+
+        if (serverDInfo == null) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
+        }
+        if (serverDInfo instanceof AbstractDebuggerInfo) {
+            serverPName = ((AbstractDebuggerInfo)serverDInfo).getProcessName();
+        }
+
+        for (int i=0; i < debuggers; i++) {
+            if (d.getDebuggers()[i] instanceof AbstractDebugger) {
+                DebuggerInfo di = ((AbstractDebugger)d.getDebuggers()[i]).getDebuggerInfo();
+                if (di instanceof AbstractDebuggerInfo) {
+                    String pname = ((AbstractDebuggerInfo)di).getProcessName();
+                    if (serverPName.equalsIgnoreCase(pname)) {
+                        if (((AbstractDebugger)d.getDebuggers()[i]).getState() == Debugger.DEBUGGER_STOPPED) {
+                            suspended = true;
+                            break;
+                        }
+                    } 
+                }
+            }
+        }
+
+        return suspended;
+    }
+
     /** Returns username.
      * @return username or <CODE>null</CODE> when not connected.
      */
