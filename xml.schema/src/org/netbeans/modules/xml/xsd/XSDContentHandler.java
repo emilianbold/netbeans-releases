@@ -45,7 +45,7 @@ class XSDContentHandler implements ContentHandler {
         this.elementsStack = new ArrayList();
     }
 
-    public org.netbeans.modules.xml.api.model.GrammarQuery getGrammar() {
+    public XSDGrammar getGrammar() {
             return new XSDGrammar(elements, types);
     }
     
@@ -79,7 +79,7 @@ class XSDContentHandler implements ContentHandler {
         System.out.println("Stack size: " + elementsStack.size());
         
         SchemaElement e = (SchemaElement) elementsStack.get(0);
-        printlnElement(e, "    ");
+        //printlnElement(e, "    ");
         
         // println("END Document");
     }

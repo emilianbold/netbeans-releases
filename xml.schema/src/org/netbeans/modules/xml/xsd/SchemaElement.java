@@ -32,6 +32,8 @@ class SchemaElement extends AbstractResultNode implements Element {
     protected final Attributes attributes; 
     /** Sub elements */
     protected final List subelements;
+    
+    private String prefix;
 
     /** Creates empty element */
     protected SchemaElement() {
@@ -107,10 +109,22 @@ class SchemaElement extends AbstractResultNode implements Element {
     }
 
     public String getNodeName() {
-        return getSAXAttributes().getValue("name");
+        String name = getSAXAttributes().getValue("name");
+        if (prefix != null) {
+            name = prefix + ':' + name;
+        }
+        return name;
     }
 
     public String getTagName() {
         return this.getNodeName();
+    }
+    
+    public void setPrefix(String str) throws org.w3c.dom.DOMException {
+        this.prefix = str;
+    }
+    
+    public String getPrefix() {
+        return prefix;
     }
 }

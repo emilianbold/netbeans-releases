@@ -45,7 +45,7 @@ public class XSDParser {
         reader.parse(new InputSource(fistr));
     }
 
-    public GrammarQuery parse(InputSource in) {
+    public XSDGrammar parse(InputSource in) {
 
         XSDContentHandler handler = new XSDContentHandler(System.out);
         

@@ -37,12 +37,14 @@ class XSDGrammar  implements GrammarQuery {
     private Map elements;
     /** All types */
     private Map types;
-    /** flattened elements */
+    /** namespace */
+    private Namespace namespace;
     
     /** Creates new XSDGrammar */
     XSDGrammar(Map elements, Map types) {
         this.elements = elements;
         this.types = types;
+        this.namespace = null;
     }
 
     /** @return null */
@@ -78,21 +80,19 @@ class XSDGrammar  implements GrammarQuery {
     }
     
     public Enumeration queryElements(HintContext virtualElementCtx) {
-        System.err.println("queryElems: " + virtualElementCtx + " parent: " + virtualElementCtx.getParentNode().getNodeName() + " prev " + virtualElementCtx.getPreviousSibling());
-        Thread.dumpStack();
-        
-        System.err.println(virtualElementCtx.getParentNode().getNodeName() + " in " + elements);
-        SchemaElement parent = (SchemaElement) elements.get(virtualElementCtx.getParentNode().getNodeName());
+        String parentName = computeUnprefixedName(virtualElementCtx.getParentNode().getNodeName());
+        SchemaElement parent = (SchemaElement) elements.get(parentName);
         
         if (parent == null) {
             return Collections.enumeration(new ArrayList());
         }
         
         ArrayList list = new ArrayList(50);
-        String previous = (virtualElementCtx.getPreviousSibling() == null ? null : virtualElementCtx.getPreviousSibling().getNodeName());
+        String previous = (virtualElementCtx.getPreviousSibling() == null ? null : computeUnprefixedName(virtualElementCtx.getPreviousSibling().getNodeName()));
         System.err.println("PREVIOUS: " + previous);
+        //parent.setPrefix(getNamespace().getPrefix());
 
-        resolveChildren(parent, list);
+        resolveChildren(parent, list, getNamespace());
         if (previous != null) {
             System.err.println("list size: " + list.size());
             while (list.size() > 0) {
@@ -114,15 +114,31 @@ class XSDGrammar  implements GrammarQuery {
         return Collections.enumeration(list);
     }
     
-    private static void resolveChildren(SchemaElement parent, List list) {
+    /** divide by : to two parts */
+    private String computeUnprefixedName(String s) {
+        assert namespace != null;
+        assert s != null;
+        
+        int i = s.indexOf(':');
+        if (i >= 0) {
+            String ret = s.substring(i + 1);
+            System.err.println("computeUN nsPref: " + namespace.getPrefix() + " name: " + s + " ret: " + ret);
+            assert namespace.getPrefix().equals(s.substring(0, i));
+            return ret;
+        }
+        return s;
+    }
+    
+    private static void resolveChildren(SchemaElement parent, List list, Namespace ns) {
         Iterator it = parent.getSubelements();
         while (it.hasNext()) {
             SchemaElement e = (SchemaElement) it.next();
             if (e.isComposite()) {
                 System.err.println("RESOLVE COMPOSITE: " + e.getQname());
-                resolveChildren(e, list);
+                resolveChildren(e, list, ns);
             } else {
                 System.err.println("ADDING NON COMPOSITE: " + e.getQname());
+                e.setPrefix(ns.getPrefix());
                 list.add(e);
             }
         }        
@@ -143,54 +159,20 @@ class XSDGrammar  implements GrammarQuery {
         return Collections.enumeration(new ArrayList());
     }
     
-    static class GrammarResultImpl extends AbstractNode implements GrammarResult {
-        
-        private String data;
-        
-        GrammarResultImpl(String data) {
-            this.data = data;
-        }
-        
-        public short getNodeType() {
-            return org.w3c.dom.Node.TEXT_NODE;
-        }
-
-        public String getNodeValue() {
-            return getData();
-        }
-        
-        public String getData() throws org.w3c.dom.DOMException {
-            return data;
-        }
-
-        public int getLength() {
-            return data == null ? -1 : data.length();
-        }    
-
-         /**
-         * @output provide additional information simplifiing decision
-         */
-        public String getDescription() {
-            return getNodeName() + " desc";
-        }
-        
-        /**
-         * @output text representing name of suitable entity
-         * //??? is it really needed
-         */
-        public String getText() {
-            return getNodeName();
-        }
-        
-        /**
-         * @output name that is presented to user
-         */
-        public String getDisplayName() {
-            return getNodeName() + " disp";
-        }
-        
-        public Icon getIcon(int kind) {
-            return null;
-        }        
-   }
+    /**
+     * Getter for property namespace.
+     * @return Value of property namespace.
+     */
+    public org.netbeans.modules.xml.xsd.Namespace getNamespace() {
+        return namespace;
+    }
+    
+    /**
+     * Setter for property namespace.
+     * @param namespace New value of property namespace.
+     */
+    public void setNamespace(org.netbeans.modules.xml.xsd.Namespace namespace) {
+        this.namespace = namespace;
+    }
+    
 }
