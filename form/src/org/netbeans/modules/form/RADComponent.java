@@ -660,6 +660,12 @@ public class RADComponent {
     *    any editor.
     */
     public PropertyEditor getPropertyEditor () {
+      // FormPropertyEditor is one of the advanced features that must be supported bu the 
+      // persistence manager to be available
+      if (!getFormManager ().getFormEditorSupport ().supportsAdvancedFeatures ()) {
+        return super.getPropertyEditor ();
+      }
+
       // the property editor cannot be reused as it is not reentrant !!! [IAN]
 
       PropertyEditor defaultEditor = null;
@@ -807,6 +813,12 @@ public class RADComponent {
     *    any editor.
     */
     public PropertyEditor getPropertyEditor () {
+      // FormPropertyEditor is one of the advanced features that must be supported bu the 
+      // persistence manager to be available
+      if (!getFormManager ().getFormEditorSupport ().supportsAdvancedFeatures ()) {
+        return super.getPropertyEditor ();
+      }
+
       // the property editor cannot be reused as it is not reentrant !!! [IAN]
 
       PropertyEditor defaultEditor = null;
@@ -967,6 +979,9 @@ public class RADComponent {
 
 /*
  * Log
+ *  30   Gandalf   1.29        7/11/99  Ian Formanek    FormPropertyEditor is 
+ *       provided only if the current persistence manager 
+ *       supportsAdvancedFeatures ()
  *  29   Gandalf   1.28        7/5/99   Ian Formanek    NewTypes added
  *  28   Gandalf   1.27        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
  *        getComponentClass->getBeanClass
