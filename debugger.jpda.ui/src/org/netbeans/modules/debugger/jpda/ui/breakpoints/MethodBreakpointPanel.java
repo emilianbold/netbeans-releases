@@ -39,7 +39,9 @@ public class MethodBreakpointPanel extends JPanel implements Controller {
         breakpoint = b;
         initComponents ();
         
-        String className = b.getClassName ();
+        String className = "";
+        String[] fs = b.getClassFilters ();
+        if (fs.length > 0) className = fs [0];
         int i = className.lastIndexOf ('.');
         if (i < 0) {
             tfPackageName.setText ("");
@@ -48,9 +50,9 @@ public class MethodBreakpointPanel extends JPanel implements Controller {
             tfPackageName.setText (className.substring (0, i));
             tfClassName.setText (className.substring (i + 1, className.length ()));
         }
-        tfMethodName.setText (b.getMethodName());
-        cbAllMethods.setSelected (b.getAllMethods ());
-        cbInnerClasses.setSelected (b.getApplyToAnonymousInnerClasses ());
+        tfMethodName.setText (b.getMethodName ());
+        cbAllMethods.setSelected (b.getMethodName().equals (""));
+//        cbInnerClasses.setSelected (b.getApplyToAnonymousInnerClasses ());
         tfCondition.setText (b.getCondition ());
         
         actionsPanel = new ActionsPanel (b);
@@ -236,10 +238,9 @@ public class MethodBreakpointPanel extends JPanel implements Controller {
         if (className.length () > 0)
             className += '.';
         className += tfClassName.getText ().trim ();
-        breakpoint.setClassName (className);
+        breakpoint.setClassFilters (new String[] {className});
         breakpoint.setMethodName (tfMethodName.getText ().trim ());
-        breakpoint.setAllMethods (cbAllMethods.isSelected ());
-        breakpoint.setApplyToAnonymousInnerClasses (cbInnerClasses.isSelected ());
+//        breakpoint.setApplyToAnonymousInnerClasses (cbInnerClasses.isSelected ());
         breakpoint.setCondition (tfCondition.getText ());
         
         if (createBreakpoint) 

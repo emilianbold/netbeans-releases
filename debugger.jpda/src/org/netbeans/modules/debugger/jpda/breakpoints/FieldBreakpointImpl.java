@@ -22,6 +22,7 @@ import com.sun.jdi.request.AccessWatchpointRequest;
 import com.sun.jdi.request.ModificationWatchpointRequest;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
@@ -47,7 +48,11 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
     }
     
     protected void setRequests () {
-        setClassRequests (breakpoint.getClassName ());
+        setClassRequests (
+            new String[] {breakpoint.getClassName ()},
+            new String[0],
+            ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
+        );
     }
     
     protected void classLoaded (ReferenceType referenceType) {

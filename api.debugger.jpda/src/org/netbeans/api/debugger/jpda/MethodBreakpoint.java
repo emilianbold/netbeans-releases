@@ -34,15 +34,13 @@ public final class MethodBreakpoint extends JPDABreakpoint {
     /** Property name constant */
     public static final String          PROP_METHOD_NAME = "methodName"; // NOI18N
     /** Property name constant. */
-    public static final String          PROP_ALL_METHODS = "allMethods"; // NOI18N
-    /** Property name constant. */
     public static final String          PROP_BREAKPOINT_TYPE = "breakpointtType"; // NOI18N
     /** Property name constant. */
     public static final String          PROP_CONDITION = "condition"; // NOI18N
-    /** Property name constant. */
-    public static final String          PROP_ANONYMOUS_INNER = "applyToAnonymousInnerClasses";    //NOI18N
     /** Property name constant */
-    public static final String          PROP_CLASS_NAME = "className"; // NOI18N
+    public static final String          PROP_CLASS_FILTERS = "classFilters"; // NOI18N
+    /** Property name constant */
+    public static final String          PROP_CLASS_EXCLUSION_FILTERS = "classExclusionFilters"; // NOI18N
 
     /** Breakpoint type property value constant. */
     public static final int             TYPE_METHOD_ENTRY = 1;
@@ -50,10 +48,9 @@ public final class MethodBreakpoint extends JPDABreakpoint {
     public static final int             TYPE_METHOD_EXIT = 2;
 
     /** Property variable. */
-    private boolean                     anonymousInnerClasses = true;
-    private String                      className = "";
+    private String[]                    classFilters = new String [0];
+    private String[]                    classExclusionFilters = new String [0];
     private String                      methodName = "";
-    private boolean                     allMethods = false;
     private int                         breakpointType = TYPE_METHOD_ENTRY;
     private String                      condition = "";
     
@@ -62,7 +59,7 @@ public final class MethodBreakpoint extends JPDABreakpoint {
     }
     
     /**
-     * Creates a new breakpoint for given parameters.
+     * Creates a new method breakpoint for given parameters.
      *
      * @param className a class name filter
      * @param methodName a name of method
@@ -73,39 +70,20 @@ public final class MethodBreakpoint extends JPDABreakpoint {
         String methodName
     ) {
         MethodBreakpoint b = new MethodBreakpoint ();
-        b.setClassName (className);
+        b.setClassFilters (new String[] {className});
         b.setMethodName (methodName);
         return b;
     }
-
-    /**
-     * Does the breakpoint apply also to anonymous inner classes
-     * of the specified class?
-     *
-     * @return <TT>true</TT> if the breakpoint applies also
-     *    to the class' anonymous inner classes, <TT>false</TT> otherwise
-     */
-    public boolean getApplyToAnonymousInnerClasses() {
-        return anonymousInnerClasses;
-    }
     
     /**
-     * Specifies whether the breakpoint should apply to the specified class
-     * or also to its anonymous inner classes.
+     * Creates a new method breakpoint.
      *
-     * @param apply whether the breakpoint should be applied to annonymous 
-     *   inner classes
+     * @return a new method breakpoint
      */
-    public void setApplyToAnonymousInnerClasses (boolean apply) {
-        if (apply == anonymousInnerClasses) {
-            return;
-        }
-        anonymousInnerClasses = apply;
-        firePropertyChange (
-            PROP_ANONYMOUS_INNER,
-            new Boolean (!apply),
-            new Boolean (apply)
-        );
+    public static MethodBreakpoint create (
+    ) {
+        MethodBreakpoint b = new MethodBreakpoint ();
+        return b;
     }
 
     /**
@@ -157,27 +135,6 @@ public final class MethodBreakpoint extends JPDABreakpoint {
         firePropertyChange (PROP_CONDITION, old, cond);
     }
 
-
-    /**
-     * If true this breakpoint stops in all methods for given class.
-     *
-     * @return If true this breakpoint stops in all methods for given class
-     */
-    public boolean getAllMethods () {
-        return allMethods;
-    }
-
-    /**
-     * Sets all methods property value.
-     *
-     * @param all a new value of all methods property
-     */
-    public void setAllMethods (boolean all) {
-        if (allMethods == all) return;
-        allMethods = all;
-        firePropertyChange (PROP_ALL_METHODS, new Boolean (!allMethods), new Boolean (allMethods));
-    }
-
     /**
      * Returns type of this breakpoint.
      *
@@ -202,29 +159,45 @@ public final class MethodBreakpoint extends JPDABreakpoint {
     }
 
     /**
-     * Get name of class to stop on.
+     * Get list of class filters to stop on.
      *
-     * @return name of class to stop on
+     * @return list of class filters to stop on
      */
-    public String getClassName () {
-        return className;
+    public String[] getClassFilters () {
+        return classFilters;
     }
 
     /**
-     * Set name of class to stop on.
+     * Set list of class filters to stop on.
      *
-     * @param cn a new value of class name property
+     * @param classFilters a new value of class filters property
      */
-    public void setClassName (String cn) {
-        if (cn != null) {
-            cn = cn.trim();
-        }
-        if ( (cn == className) ||
-             ((cn != null) && (className != null) && className.equals (cn))
-        ) return;
-        Object old = className;
-        className = cn;
-        firePropertyChange (PROP_CLASS_NAME, old, className);
+    public void setClassFilters (String[] classFilters) {
+        if (classFilters == this.classFilters) return;
+        Object old = this.classFilters;
+        this.classFilters = classFilters;
+        firePropertyChange (PROP_CLASS_FILTERS, old, classFilters);
+    }
+
+    /**
+     * Get list of class exclusion filters to stop on.
+     *
+     * @return list of class exclusion filters to stop on
+     */
+    public String[] getClassExclusionFilters () {
+        return classExclusionFilters;
+    }
+
+    /**
+     * Set list of class exclusion filters to stop on.
+     *
+     * @param classFilters a new value of class exclusion filters property
+     */
+    public void setClassExclusionFilters (String[] classExclusionFilters) {
+        if (classExclusionFilters == this.classExclusionFilters) return;
+        Object old = this.classExclusionFilters;
+        this.classExclusionFilters = classExclusionFilters;
+        firePropertyChange (PROP_CLASS_EXCLUSION_FILTERS, old, classExclusionFilters);
     }
 
     /**
@@ -233,6 +206,6 @@ public final class MethodBreakpoint extends JPDABreakpoint {
      * @return  a string representation of the object
      */
     public String toString () {
-        return "MethodBreakpoint " + className + "." + methodName;
+        return "MethodBreakpoint " + classFilters + "." + methodName;
     }
 }

@@ -38,8 +38,7 @@ import org.netbeans.modules.debugger.jpda.util.Executor;
 *
 * @author   Jan Jancura
 */
-public class ClassBreakpointImpl extends BreakpointImpl 
-implements Executor {
+public class ClassBreakpointImpl extends ClassBasedBreakpoint {
 
     private ClassLoadUnloadBreakpoint breakpoint;
     
@@ -54,41 +53,11 @@ implements Executor {
     }
     
     protected void setRequests () {
-        setRequests (
-            breakpoint.getClassNameFilter (), 
-            breakpoint.getBreakpointType (),
-            breakpoint.isExclusionFilter ()
+        setClassRequests (
+            breakpoint.getClassFilters (), 
+            breakpoint.getClassExclusionFilters (), 
+            breakpoint.getBreakpointType ()
         );
-    }
-    
-    protected void setRequests (
-        String className,
-        int breakpointType,
-        boolean isExclusion
-    ) {
-        try {
-            if ((breakpointType & ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED) != 0
-            ) {
-                ClassPrepareRequest cpr = getEventRequestManager ().
-                    createClassPrepareRequest ();
-                if (isExclusion)
-                    cpr.addClassExclusionFilter (className);
-                else
-                    cpr.addClassFilter (className);
-                addEventRequest (cpr);
-            }
-            if ((breakpointType & ClassLoadUnloadBreakpoint.TYPE_CLASS_UNLOADED) != 0
-            ) {
-                ClassUnloadRequest cur = getEventRequestManager ().
-                    createClassUnloadRequest ();
-                if (isExclusion)
-                    cur.addClassExclusionFilter (className);
-                else
-                    cur.addClassFilter (className);
-                addEventRequest (cur);
-            }
-        } catch (VMDisconnectedException e) {
-        }
     }
 
     public boolean exec (Event event) {

@@ -22,6 +22,7 @@ import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.ExceptionRequest;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
@@ -47,7 +48,11 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
     }
     
     protected void setRequests () {
-        setClassRequests (breakpoint.getExceptionClassName ());
+        setClassRequests (
+            new String[] {breakpoint.getExceptionClassName ()},
+            new String[0],
+            ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
+        );
     }
     
     protected void classLoaded (ReferenceType referenceType) {

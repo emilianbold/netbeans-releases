@@ -56,14 +56,28 @@ public class MethodBreakpointImpl extends BreakpointImpl implements Executor {
             ) {
                 MethodEntryRequest mer = getEventRequestManager ().
                     createMethodEntryRequest ();
-                mer.addClassFilter (breakpoint.getClassName ());
+                String[] cnf = breakpoint.getClassFilters ();
+                int i, k = cnf.length;
+                for (i = 0; i < k; i++)
+                    mer.addClassFilter (cnf [i]);
+                cnf = breakpoint.getClassExclusionFilters ();
+                k = cnf.length;
+                for (i = 0; i < k; i++)
+                    mer.addClassExclusionFilter (cnf [i]);
                 addEventRequest (mer);
             }
             if ((breakpoint.getBreakpointType () & MethodBreakpoint.TYPE_METHOD_EXIT) != 0
             ) {
                 MethodExitRequest mxr = getEventRequestManager ().
                     createMethodExitRequest ();
-                mxr.addClassFilter (breakpoint.getClassName ());
+                String[] cnf = breakpoint.getClassFilters ();
+                int i, k = cnf.length;
+                for (i = 0; i < k; i++)
+                    mxr.addClassFilter (cnf [i]);
+                cnf = breakpoint.getClassExclusionFilters ();
+                k = cnf.length;
+                for (i = 0; i < k; i++)
+                    mxr.addClassExclusionFilter (cnf [i]);
                 addEventRequest (mxr);
             }
         } catch (VMDisconnectedException e) {

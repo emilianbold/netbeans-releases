@@ -102,13 +102,16 @@ public class BreakpointsNodeModel implements NodeModel {
         } else
         if (o instanceof MethodBreakpoint) {
             MethodBreakpoint b = (MethodBreakpoint) o;
-            if (b.getAllMethods ())
+            String className = "";
+            String[] fs = b.getClassFilters ();
+            if (fs.length > 0) className = fs [0];
+            if (b.getMethodName ().equals (""))
                 return new MessageFormat (
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_All_Methods_Breakpoint"
                     )).format (new Object[] {
-                        getShort (b.getClassName ())
+                        getShort (className)
                     });
             else
                 return new MessageFormat (
@@ -116,19 +119,27 @@ public class BreakpointsNodeModel implements NodeModel {
                         BreakpointsNodeModel.class,
                         "CTL_Method_Breakpoint"
                     )).format (new Object[] {
-                        getShort (b.getClassName ()),
+                        getShort (className),
                         b.getMethodName ()
                     });
         } else
         if (o instanceof ClassLoadUnloadBreakpoint) {
             ClassLoadUnloadBreakpoint b = (ClassLoadUnloadBreakpoint) o;
+            String className = "";
+            String[] fs = b.getClassFilters ();
+            if (fs.length > 0)
+                className = fs [0];
+            else {
+                fs = b.getClassExclusionFilters ();
+                if (fs.length > 0) className = fs [0];
+            }
             if (b.getBreakpointType () == b.TYPE_CLASS_LOADED)
                 return new MessageFormat (
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Class_Loaded_Breakpoint"
                     )).format (new Object[] {
-                        getShort (b.getClassNameFilter ())
+                        getShort (className)
                     });
             else
             if (b.getBreakpointType () == b.TYPE_CLASS_UNLOADED)
@@ -137,7 +148,7 @@ public class BreakpointsNodeModel implements NodeModel {
                         BreakpointsNodeModel.class,
                         "CTL_Class_Unloaded_Breakpoint"
                     )).format (new Object[] {
-                        getShort (b.getClassNameFilter ())
+                        getShort (className)
                     });
             else
                 return new MessageFormat (
@@ -145,7 +156,7 @@ public class BreakpointsNodeModel implements NodeModel {
                         BreakpointsNodeModel.class,
                         "CTL_Class_Breakpoint"
                     )).format (new Object[] {
-                        getShort (b.getClassNameFilter ())
+                        getShort (className)
                     });
         } else
         if (o instanceof ExceptionBreakpoint) {
@@ -235,33 +246,44 @@ public class BreakpointsNodeModel implements NodeModel {
         } else
         if (o instanceof MethodBreakpoint) {
             MethodBreakpoint b = (MethodBreakpoint) o;
-            if (b.getAllMethods ())
-                return new MessageFormat (
-                    NbBundle.getMessage (
-                        BreakpointsNodeModel.class,
-                        "CTL_Method_Breakpoint"
-                    )).format (new Object[] {
-                        b.getClassName (),
-                        b.getMethodName ()
-                    });
-            else
+            String className = "";
+            String[] fs = b.getClassFilters ();
+            if (fs.length > 0) className = fs [0];
+            if (b.getMethodName ().equals (""))
                 return new MessageFormat (
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_All_Methods_Breakpoint"
                     )).format (new Object[] {
-                        b.getClassName ()
+                        className
+                    });
+            else
+                return new MessageFormat (
+                    NbBundle.getMessage (
+                        BreakpointsNodeModel.class,
+                        "CTL_Method_Breakpoint"
+                    )).format (new Object[] {
+                        className,
+                        b.getMethodName ()
                     });
         } else
         if (o instanceof ClassLoadUnloadBreakpoint) {
             ClassLoadUnloadBreakpoint b = (ClassLoadUnloadBreakpoint) o;
+            String className = "";
+            String[] fs = b.getClassFilters ();
+            if (fs.length > 0)
+                className = fs [0];
+            else {
+                fs = b.getClassExclusionFilters ();
+                if (fs.length > 0) className = fs [0];
+            }
             if (b.getBreakpointType () == b.TYPE_CLASS_LOADED)
                 return new MessageFormat (
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Class_Loaded_Breakpoint"
                     )).format (new Object[] {
-                        b.getClassNameFilter ()
+                        className
                     });
             else
             if (b.getBreakpointType () == b.TYPE_CLASS_UNLOADED)
@@ -270,7 +292,7 @@ public class BreakpointsNodeModel implements NodeModel {
                         BreakpointsNodeModel.class,
                         "CTL_Class_Unloaded_Breakpoint"
                     )).format (new Object[] {
-                        b.getClassNameFilter ()
+                        className
                     });
             else
                 return new MessageFormat (
@@ -278,7 +300,7 @@ public class BreakpointsNodeModel implements NodeModel {
                         BreakpointsNodeModel.class,
                         "CTL_Class_Breakpoint"
                     )).format (new Object[] {
-                        b.getClassNameFilter ()
+                        className
                     });
         } else
         if (o instanceof ExceptionBreakpoint) {

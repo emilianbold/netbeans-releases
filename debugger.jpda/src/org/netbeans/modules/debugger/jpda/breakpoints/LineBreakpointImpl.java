@@ -21,8 +21,10 @@ import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -58,17 +60,35 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             breakpoint.getURL (),
             '.', false
         );
-        if (className == null) return;
-        setClassRequests (className);
+        if (className == null) 
+            className = breakpoint.getURL ();
+        setClassRequests (
+            new String[] {className + '*'}, // innerclasses
+            new String[0],
+            ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
+        );
+        chackLoadedClasses (className);
     }
     
     protected void classLoaded (ReferenceType referenceType) {
         try {
-            List list = referenceType.locationsOfLine (
+            List list = new ArrayList (referenceType.locationsOfLine (
                 breakpoint.getStratum (),
                 breakpoint.getSourceName (),
                 breakpoint.getLineNumber ()
-            );
+            ));
+            
+            // add lines from innerclasses
+            Iterator i = referenceType.nestedTypes ().iterator ();
+            while (i.hasNext ()) {
+                ReferenceType rt = (ReferenceType) i.next ();
+                list.addAll (rt.locationsOfLine (
+                    breakpoint.getStratum (),
+                    breakpoint.getSourceName (),
+                    breakpoint.getLineNumber ()
+                ));
+            }
+            
             if (list.size () < 1) return; 
             Location l = (Location) list.get (0);
             try {

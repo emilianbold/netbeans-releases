@@ -32,10 +32,10 @@ package org.netbeans.api.debugger.jpda;
  */
 public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
 
-    /** Name of property for class name filter. */
-    public static final String          PROP_CLASS_NAME_FILTER = "classNameFilter"; // NOI18N
-    /** Name of property for is exclusion property. */
-    public static final String          PROP_IS_EXCLUSION_FILTER = "isExclusionFilter"; // NOI18N
+    /** Property name constant */
+    public static final String          PROP_CLASS_FILTERS = "classFilters"; // NOI18N
+    /** Property name constant */
+    public static final String          PROP_CLASS_EXCLUSION_FILTERS = "classExclusionFilters"; // NOI18N
     /** Name of property for breakpoint type. */
     public static final String          PROP_BREAKPOINT_TYPE = "breakpointType"; // NOI18N
 
@@ -48,8 +48,8 @@ public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
 
     /** Property variable. */
     private int                         type = TYPE_CLASS_LOADED;
-    private boolean                     exclusionFilter = false;
-    private String                      classFilter = "";
+    private String[]                    classFilters = new String [0];
+    private String[]                    classExclusionFilters = new String [0];
 
     
     private ClassLoadUnloadBreakpoint () {
@@ -70,8 +70,25 @@ public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
         int breakpointType
     ) {
         ClassLoadUnloadBreakpoint b = new ClassLoadUnloadBreakpoint ();
-        b.setClassNameFilter (classNameFilter);
-        b.setExclusionFilter (isExclusionFilter);
+        if (isExclusionFilter)
+            b.setClassFilters (new String[] {classNameFilter});
+        else
+            b.setClassExclusionFilters (new String[] {classNameFilter});
+        b.setBreakpointType (breakpointType);
+        return b;
+    }
+    
+    /**
+     * Creates a new breakpoint for given parameters.
+     *
+     * @param breakpointType one of constants: TYPE_CLASS_LOADED, 
+     *   TYPE_CLASS_UNLOADED, TYPE_CLASS_LOADED_UNLOADED
+     * @return a new breakpoint for given parameters
+     */
+    public static ClassLoadUnloadBreakpoint create (
+        int breakpointType
+    ) {
+        ClassLoadUnloadBreakpoint b = new ClassLoadUnloadBreakpoint ();
         b.setBreakpointType (breakpointType);
         return b;
     }
@@ -100,56 +117,45 @@ public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
     }
 
     /**
-     * If true filter will be used as exclusion filter.
+     * Get list of class filters to stop on.
      *
-     * @return exclusion filter property value
+     * @return list of class filters to stop on
      */
-    public boolean isExclusionFilter () {
-        return exclusionFilter;
+    public String[] getClassFilters () {
+        return classFilters;
     }
 
     /**
-     * Setter of exclusion filter property.
+     * Set list of class filters to stop on.
      *
-     * @param exclusionFilter a new value of exclusion filter property
+     * @param classFilters a new value of class filters property
      */
-    public void setExclusionFilter (boolean exclusionFilter) {
-        if (exclusionFilter == this.exclusionFilter) return;
-        this.exclusionFilter = exclusionFilter;
-        firePropertyChange (
-            PROP_IS_EXCLUSION_FILTER, 
-            new Boolean (!exclusionFilter), 
-            new Boolean (exclusionFilter)
-        );
+    public void setClassFilters (String[] classFilters) {
+        if (classFilters == this.classFilters) return;
+        Object old = this.classFilters;
+        this.classFilters = classFilters;
+        firePropertyChange (PROP_CLASS_FILTERS, old, classFilters);
     }
 
     /**
-     * Returns class filter.
+     * Get list of class exclusion filters to stop on.
      *
-     * @return class filter
+     * @return list of class exclusion filters to stop on
      */
-    public String getClassNameFilter () {
-        return classFilter;
+    public String[] getClassExclusionFilters () {
+        return classExclusionFilters;
     }
 
     /**
-     * Sets class filter.
+     * Set list of class exclusion filters to stop on.
      *
-     * @param classFilter a new value of class filter property
+     * @param classFilters a new value of class exclusion filters property
      */
-    public void setClassNameFilter (String classFilter) {
-        if (classFilter != null) {
-            classFilter = classFilter.trim();
-        }
-        if ( (this.classFilter == classFilter) ||
-             ( (this.classFilter != null) && 
-               (classFilter != null) && 
-               classFilter.equals (this.classFilter)
-             )
-        ) return;
-        String old = this.classFilter;
-        this.classFilter = classFilter;
-        firePropertyChange (PROP_CLASS_NAME_FILTER, old, classFilter);    
+    public void setClassExclusionFilters (String[] classExclusionFilters) {
+        if (classExclusionFilters == this.classExclusionFilters) return;
+        Object old = this.classExclusionFilters;
+        this.classExclusionFilters = classExclusionFilters;
+        firePropertyChange (PROP_CLASS_EXCLUSION_FILTERS, old, classExclusionFilters);
     }
 
     /**
@@ -158,6 +164,6 @@ public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
      * @return  a string representation of the object
      */
     public String toString () {
-        return "ClassLoadUnloadBreakpoint " + classFilter;
+        return "ClassLoadUnloadBreakpoint " + classFilters;
     }
 }

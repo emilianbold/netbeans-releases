@@ -40,7 +40,17 @@ public class ClassBreakpointPanel extends JPanel implements Controller {
         breakpoint = b;
         initComponents ();
         
-        String className = b.getClassNameFilter ();
+        String[] cf = b.getClassExclusionFilters ();
+        String className = "";
+        if (cf.length > 0) {
+            cbExclusionFilter.setSelected (true);
+            className = cf [0];
+        } else {
+            cbExclusionFilter.setSelected (false);
+            cf = b.getClassFilters ();
+            if (cf.length > 0)
+                className = cf [0];
+        }
         int i = className.lastIndexOf ('.');
         if (i < 0) {
             tfPackageName.setText ("");
@@ -63,7 +73,6 @@ public class ClassBreakpointPanel extends JPanel implements Controller {
                 cbBreakpointType.setSelectedIndex (2);
                 break;
         }
-        cbExclusionFilter.setSelected (b.isExclusionFilter ());
         
         actionsPanel = new ActionsPanel (b);
         pActions.add (actionsPanel, "Center");
@@ -215,7 +224,13 @@ public class ClassBreakpointPanel extends JPanel implements Controller {
         if (className.length () > 0)
             className += '.';
         className += tfClassName.getText ().trim ();
-        breakpoint.setClassNameFilter (className);
+        if (cbExclusionFilter.isSelected ()) {
+            breakpoint.setClassFilters (new String [0]);
+            breakpoint.setClassExclusionFilters (new String [] {className});
+        } else {
+            breakpoint.setClassFilters (new String [] {className});
+            breakpoint.setClassExclusionFilters (new String [0]);
+        }
         
         switch (cbBreakpointType.getSelectedIndex ()) {
             case 0:
@@ -228,7 +243,6 @@ public class ClassBreakpointPanel extends JPanel implements Controller {
                 breakpoint.setBreakpointType (ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED_UNLOADED);
                 break;
         }
-        breakpoint.setExclusionFilter (cbExclusionFilter.isSelected ());
         if (createBreakpoint)
             DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
         return true;

@@ -114,7 +114,7 @@ public abstract class BreakpointImpl implements Executor {
         ThreadReference thread,
         ReferenceType referenceType
     ) {
-        if (condition.equals (""))
+        if ((condition == null) || condition.equals (""))
             getDebugger ().fireBreakpointEvent (
                 getBreakpoint (),
                 new JPDABreakpointEvent (
