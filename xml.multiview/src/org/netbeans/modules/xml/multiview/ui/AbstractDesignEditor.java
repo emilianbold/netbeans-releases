@@ -62,7 +62,7 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
                 // following line tells the top component which lookup should be associated with it
                 associateLookup (ExplorerUtils.createLookup (manager, map));
             }
-        },300);
+        },1000);
         initComponents();
     }
     

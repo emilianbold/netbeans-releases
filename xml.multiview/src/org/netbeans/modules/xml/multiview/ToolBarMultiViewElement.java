@@ -102,6 +102,10 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
                 tc.setDisplayName(dObj.getDisplayName());
                 tc.setToolTipText(dObj.getPrimaryFile().getPath());
             }
+            XmlMultiViewEditorSupport support = dObj.getEditorSupport();
+            if (support!=null && support.getMVTC()==null) {
+                support.setMVTC(callback.getTopComponent());
+            }
         }
     }
 
