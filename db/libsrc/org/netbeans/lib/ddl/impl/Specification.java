@@ -24,9 +24,6 @@ import org.netbeans.lib.ddl.adaptors.*;
 
 import org.openide.*;
 
-/**
-* @author Slavek Psenicka
-*/
 public class Specification implements DatabaseSpecification {
 
     /** Used DBConnection */
@@ -490,6 +487,7 @@ public class Specification implements DatabaseSpecification {
         if (type.equals("java.sql.Types.BIT")) return java.sql.Types.BIT; // NOI18N
         if (type.equals("java.sql.Types.BLOB")) return java.sql.Types.BLOB; // NOI18N
         if (type.equals("java.sql.Types.CHAR")) return java.sql.Types.CHAR; // NOI18N
+        if (type.equals("java.sql.Types.CLOB")) return java.sql.Types.CLOB; // NOI18N
         if (type.equals("java.sql.Types.DATE")) return java.sql.Types.DATE; // NOI18N
         if (type.equals("java.sql.Types.DECIMAL")) return java.sql.Types.DECIMAL; // NOI18N
         if (type.equals("java.sql.Types.DISTINCT")) return java.sql.Types.DISTINCT; // NOI18N
@@ -512,22 +510,3 @@ public class Specification implements DatabaseSpecification {
         return -1;
     }
 }
-
-/*
-* <<Log>>
-*  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  9    Gandalf   1.8         10/12/99 Radko Najman    debug messages removed
-*  8    Gandalf   1.7         9/27/99  Slavek Psenicka setMetaDataAdaptorClassName
-*        changed
-*  7    Gandalf   1.6         9/13/99  Slavek Psenicka 
-*  6    Gandalf   1.5         9/10/99  Slavek Psenicka 
-*  5    Gandalf   1.4         5/14/99  Slavek Psenicka new version
-*  4    Gandalf   1.3         4/23/99  Slavek Psenicka Chyba v createSpec pri 
-*       ConnectAs
-*  3    Gandalf   1.2         4/23/99  Slavek Psenicka Opravy v souvislosti se 
-*       spravnym throwovanim :) CommandNotImplementedException
-*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
-* $
-*/
