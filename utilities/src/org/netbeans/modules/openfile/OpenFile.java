@@ -19,12 +19,12 @@ import java.net.*;
 import java.util.*;
 
 import com.netbeans.ide.*;
+import com.netbeans.ide.cookies.OpenCookie;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.filesystems.FileSystem;
-import com.netbeans.ide.loaders.DataObject;
-import com.netbeans.ide.cookies.OpenCookie;
-
+import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.modules.ModuleInstall;
+import com.netbeans.ide.nodes.*;
 
 /** 
 *
@@ -244,7 +244,6 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
           TopManager.getDefault ().notifyException (e4);
           return null;
         }
-        fs.setHidden (true);
         Repository repo = TopManager.getDefault ().getRepository ();
         if (repo.findFileSystem (fs.getSystemName ()) != null) {
           TopManager.getDefault ().notify (new NotifyDescriptor.Message (fs.getSystemName () + " was already mounted??"));
@@ -254,6 +253,26 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
         String basename = f.getName ();
         return fs.find (pkgtouse, basename.substring (0, basename.lastIndexOf (".java")), "java");
       }
+    }
+    // Handle ZIP/JAR files by mounting and displaying.
+    if (fileName.endsWith (".zip") || fileName.endsWith (".jar")) {
+      JarFileSystem jfs = new JarFileSystem ();
+      try {
+        jfs.setJarFile (f);
+      } catch (IOException e5) {
+        TopManager.getDefault ().notifyException (e5);
+        return null;
+      } catch (PropertyVetoException e6) {
+        TopManager.getDefault ().notifyException (e6);
+        return null;
+      }
+      Repository repo2 = TopManager.getDefault ().getRepository ();
+      FileSystem exist = repo2.findFileSystem (jfs.getSystemName ());
+      if (exist == null) {
+        repo2.addFileSystem (jfs);
+        exist = jfs;
+      }
+      return exist.getRoot ();
     }
     return null;
   }
@@ -272,7 +291,24 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
       if (open != null) {
         open.open ();
       } else {
-        TopManager.getDefault ().getNodeOperation ().explore (obj.getNodeDelegate ());
+        Node n = obj.getNodeDelegate ();
+        if (fo.isRoot ()) {
+          // Try to get the node used in the usual Repository, which
+          // has a non-blank display name and is thus nicer.
+          FileSystem fs = fo.getFileSystem ();
+          Node reponode = TopManager.getDefault ().getPlaces ().nodes ().repository ();
+          Children repokids = reponode.getChildren ();
+          Enumeration fsenum = repokids.nodes ();
+          while (fsenum.hasMoreElements ()) {
+            Node fsnode = (Node) fsenum.nextElement ();
+            DataFolder df = (DataFolder) fsnode.getCookie (DataFolder.class);
+            if (df != null && df.getPrimaryFile ().getFileSystem ().equals (fs)) {
+              n = fsnode;
+              break;
+            }
+          }
+        }
+        TopManager.getDefault ().getNodeOperation ().explore (n);
       }
     } else {
       throw new FileNotFoundException (f.toString ());
@@ -286,6 +322,8 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
 
 /*
 * Log
+*  3    Gandalf   1.2         5/22/99  Jesse Glick     Support for opening 
+*       archive files, and also better display for root folders.
 *  2    Gandalf   1.1         5/22/99  Jesse Glick     If Java file does not 
 *       exist in mounted fs, tries to mount it in the correct package.
 *  1    Gandalf   1.0         5/19/99  Jesse Glick     
