@@ -39,10 +39,10 @@
         </Constraint>
       </Constraints>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="jCheckBoxEnterprise">
+    <Component class="javax.swing.JLabel" name="jLabelEnterprise">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/web/project/ui/wizards/Bundle.properties" key="LBL_NWP1_AddToEnterprise_LabelMnemonic" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+          <ResourceString bundle="org/netbeans/modules/web/project/ui/wizards/Bundle.properties" key="LBL_NWP1_AddToEnterprise_LabelMnemonic" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/web/project/ui/wizards/Bundle.properties" key="LBL_NWP1_AddToEnterprise_Label" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -53,9 +53,6 @@
           <ResourceString bundle="org/netbeans/modules/web/project/ui/wizards/Bundle.properties" key="ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCheckBoxEnterpriseActionPerformed"/>
-      </Events>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints gridX="0" gridY="1" gridWidth="2" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="11" insetsRight="11" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -63,9 +60,6 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JComboBox" name="jComboBoxEnterprise">
-      <Properties>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/web/project/ui/wizards/Bundle.properties" key="ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

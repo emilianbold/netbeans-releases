@@ -47,9 +47,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         initServerInstances();
         initJSrcStructureSpecs();
         initEnterpriseApplications();
-        
-        if (jComboBoxEnterprise.getSelectedIndex() == -1)
-            jCheckBoxEnterprise.setEnabled(false);
     }
     
     /** This method is called from within the constructor to
@@ -63,7 +60,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
         srcStructLabel = new javax.swing.JLabel();
         srcStructComboBox = new javax.swing.JComboBox();
-        jCheckBoxEnterprise = new javax.swing.JCheckBox();
+        jLabelEnterprise = new javax.swing.JLabel();
         jComboBoxEnterprise = new javax.swing.JComboBox();
         jPanel1 = new javax.swing.JPanel();
         serverInstanceLabel = new javax.swing.JLabel();
@@ -100,24 +97,17 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(srcStructComboBox, gridBagConstraints);
 
-        jCheckBoxEnterprise.setMnemonic(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_AddToEnterprise_LabelMnemonic").charAt(0));
-        jCheckBoxEnterprise.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_AddToEnterprise_Label"));
-        jCheckBoxEnterprise.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBoxEnterpriseActionPerformed(evt);
-            }
-        });
-
+        jLabelEnterprise.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_NWP1_AddToEnterprise_LabelMnemonic").charAt(0));
+        jLabelEnterprise.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_AddToEnterprise_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(jCheckBoxEnterprise, gridBagConstraints);
-        jCheckBoxEnterprise.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc"));
+        add(jLabelEnterprise, gridBagConstraints);
+        jLabelEnterprise.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc"));
 
-        jComboBoxEnterprise.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -236,10 +226,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
 
-    private void jCheckBoxEnterpriseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxEnterpriseActionPerformed
-        jComboBoxEnterprise.setEnabled(jCheckBoxEnterprise.isSelected());
-    }//GEN-LAST:event_jCheckBoxEnterpriseActionPerformed
-
     private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
         String prevSelectedItem = (String)j2eeSpecComboBox.getSelectedItem();
         String servInsID = (String)serverInstanceIDs.get(serverInstanceComboBox.getSelectedIndex());
@@ -289,9 +275,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox j2eeSpecComboBox;
     private javax.swing.JLabel j2eeSpecLabel;
-    private javax.swing.JCheckBox jCheckBoxEnterprise;
     private javax.swing.JComboBox jComboBoxEnterprise;
     private javax.swing.JLabel jLabelContextPath;
+    private javax.swing.JLabel jLabelEnterprise;
     private javax.swing.JPanel jPanel1;
     protected javax.swing.JTextField jTextFieldContextPath;
     private javax.swing.JComboBox serverInstanceComboBox;
@@ -343,10 +329,13 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
     private Project getSelectedEarApplication() {
         int idx = jComboBoxEnterprise.getSelectedIndex();
-        return (idx == -1 || !jCheckBoxEnterprise.isSelected()) ? null : (Project) earProjects.get(idx);
+        return (idx <= 0) ? null : (Project) earProjects.get(idx - 1);
     }
     
     private void initEnterpriseApplications() {
+        jComboBoxEnterprise.addItem(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_AddToEnterprise_None")); // TODO: AB: add to bundle
+        jComboBoxEnterprise.setSelectedIndex(0);
+        
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
         earProjects = new ArrayList();
         for (int i = 0; i < allProjects.length; i++) {
@@ -357,10 +346,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
                 jComboBoxEnterprise.addItem(projectInfo.getDisplayName());
             }
         }
-        if (earProjects.size() > 0) {
-            jComboBoxEnterprise.setSelectedIndex(0);
+        if (earProjects.size() <= 0) {
+            jComboBoxEnterprise.setEnabled(false);
         }
     }
-
 }
-
