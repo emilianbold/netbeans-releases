@@ -164,10 +164,8 @@ public class TomcatManager implements DeploymentManager {
             int homeEnd = baseOffset > 0 ? baseOffset : (uriOffset > 0 ? uriOffset - 1 : uri.length ());
             int baseEnd = uriOffset > 0 ? uriOffset - 1 : uri.length ();
             catalinaHome= uri.substring (homeOffset, homeEnd);
-            System.out.println("catalinaHome:"+catalinaHome);
             if (baseOffset > 0) {
                 catalinaBase = uri.substring (baseOffset + base.length (), baseEnd);
-                System.out.println("catalinaBase:"+catalinaBase);
             }
         }
         
