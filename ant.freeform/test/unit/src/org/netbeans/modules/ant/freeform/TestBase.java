@@ -38,7 +38,7 @@ abstract class TestBase extends NbTestCase {
     protected FreeformProject simple;
     protected void setUp() throws Exception {
         super.setUp();
-        egdir = new File(System.getProperty("test.eg.dir"));
+        egdir = FileUtil.normalizeFile(new File(System.getProperty("test.eg.dir")));
         assertTrue("example dir exists", egdir.exists());
         Project _simple = ProjectManager.getDefault().findProject(FileUtil.toFileObject(egdir).getFileObject("simple"));
         assertNotNull("have a project", _simple);

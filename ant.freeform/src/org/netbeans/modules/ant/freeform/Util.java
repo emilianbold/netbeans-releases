@@ -122,7 +122,11 @@ public class Util {
         if (apc == null) {
             return null;
         }
-        return apc.getProjectElement().getAttribute("name"); //NOI18N
+        Element projEl = apc.getProjectElement();
+        if (projEl == null) {
+            return null;
+        }
+        return projEl.getAttribute("name"); //NOI18N
     }
     
     private static AntProjectCookie getAntProjectCookie(FileObject fo) {
@@ -148,8 +152,12 @@ public class Util {
         if (apc == null) {
             return null;
         }
+        Element projEl = apc.getProjectElement();
+        if (projEl == null) {
+            return null;
+        }
         ArrayList names = new ArrayList();
-        Iterator it = findSubElements(apc.getProjectElement()).iterator();
+        Iterator it = findSubElements(projEl).iterator();
         while (it.hasNext()) {
             Element el = (Element)it.next();
             if (!el.getLocalName().equals("target")) { // NOI18N
@@ -157,6 +165,7 @@ public class Util {
             }
             names.add(el.getAttribute("name")); // NOI18N
         }
+        // XXX: need to handle <import> here
         Collections.sort(names);
         return names;
     }
