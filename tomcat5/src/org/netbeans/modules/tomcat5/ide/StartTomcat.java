@@ -70,9 +70,6 @@ public final class StartTomcat extends StartServer implements ProgressObject
     //public static final String TAG_SHUTDOWN_CMD   = "shutdown"; // NOI18N
     /** Debug startup/shutdown tag */
     public static final String TAG_DEBUG_CMD   = "catalina"; // NOI18N
-    
-    private static final Integer DEFAULT_ADMIN_PORT = new Integer (8025);
-    private static final Integer DEFAULT_SERVER_PORT = new Integer (8084);
 
     private static NbProcessDescriptor defaultExecDesc(String command, String argCommand, String option) {
         return new NbProcessDescriptor (
@@ -257,7 +254,7 @@ public final class StartTomcat extends StartServer implements ProgressObject
                     InstalledFileLocator ifl = InstalledFileLocator.getDefault();
                     File baseDir2 = ifl.locate (base, null, false);
                     if (baseDir2 == null) {
-                        baseDir = createBaseDir(baseDir, homeDir);
+                        baseDir = tm.createBaseDir(baseDir, homeDir);
                     } else {
                         baseDir = baseDir2;
                     }
@@ -449,59 +446,6 @@ public final class StartTomcat extends StartServer implements ProgressObject
     
     public boolean supportsDebugging (Target target) {
         return true;
-    }
-        
-    /** Initializes base dir for use with Tomcat 5.0.x. 
-     *  @param baseDir directory for base dir.
-     *  @param homeDir directory to copy config files from.
-     *  @return File with absolute path for created dir or <CODE>null</CODE> when ther is an error.
-     */
-    private File createBaseDir (File baseDir, File homeDir) {
-        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM ().log ("creating base dir for "+tm);    // NOI18N
-        }
-        pes.fireHandleProgressEvent (
-            null, 
-            new Status (
-                ActionType.EXECUTE, 
-                CommandType.START, 
-                NbBundle.getMessage (StartTomcat.class, "MSG_createBaseDir"), 
-                StateType.RUNNING
-            )
-        );
-        File baseD=tm.createBaseDir(baseDir, homeDir);
-        if (baseD!=null) {
-            try {
-                //patch server.xml using S2B
-                tm.getCatalinaBaseFileObject ();
-    //            try {
-    //                lfs = new LocalFileSystem ();
-    //                lfs.setRootDirectory (baseDir);
-    //                lfs.setHidden (true);
-    //                Repository.getDefault ().addFileSystem (lfs);
-                    File serverFile = new File (baseD, "conf/server.xml");   // NOI18N
-                    FileInputStream is = new FileInputStream (serverFile);
-                    Document doc = XMLUtil.parse(new InputSource(is), false, false, null,org.openide.xml.EntityCatalog.getDefault());
-                    TomcatInstallUtil.setAdminPort (DEFAULT_ADMIN_PORT, FileUtil.fromFile (serverFile)[0]);
-                    TomcatInstallUtil.setServerPort (DEFAULT_SERVER_PORT, FileUtil.fromFile (serverFile)[0]);
-                    is.close();
-    //            } catch (java.beans.PropertyVetoException pex) {
-    //                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, pex);
-    //                return null;
-    //            } finally {
-    //                if (lfs != null) {
-    //                    Repository.getDefault ().removeFileSystem (lfs);
-    //                }
-    //            }
-            } catch (java.io.IOException ioe) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
-                return null;
-            } catch (org.xml.sax.SAXException spe) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, spe);
-                return null;
-            }
-        }
-        return baseD;
     }
 
     public ClientConfiguration getClientConfiguration (TargetModuleID targetModuleID) {

@@ -97,6 +97,9 @@ public class TomcatManager implements DeploymentManager {
 
     /** shared memory property */
     public static final String SHARED_MEMORY = "shared_memory";
+    
+    /** is it bundled tomcat property */
+    public static final String IS_IT_BUNDLED_TOMCAT = "is_it_bundled_tomcat";
 
     /** default value for property classic */
     public static final Boolean DEFAULT_CLASSIC = Boolean.FALSE;
@@ -141,6 +144,12 @@ public class TomcatManager implements DeploymentManager {
     /** Tomcat specific Instance property - if this property exists and is set 
        to <code>true</code> Tomcat will be stoped wiht the "-force" option */
     private static final String FORCE_STOP_OPTION = "forceStopOption";
+    
+    /** default value of bundled tomcat server port */
+    private static final Integer BUNDLED_TOMCAT_DEFAULT_SERVER_PORT = new Integer(8084);
+
+    /** default value of bundled tomcat admin port */
+    private static final Integer BUNDLED_TOMCAT_DEFAULT_ADMIN_PORT = new Integer(8025);
 
     /** Manager state. */
     private boolean connected;
@@ -172,6 +181,9 @@ public class TomcatManager implements DeploymentManager {
     
     /** LogManager manages all context and shared context logs for this TomcatManager. */
     private LogManager logManager = new LogManager(this);
+    
+    /** Is it bundled Tomcat? */
+    private Boolean isItBundledTomcat = null;
 
     /** Creates an instance of connected TomcatManager
      * @param conn <CODE>true</CODE> to create connected manager
@@ -608,6 +620,26 @@ public class TomcatManager implements DeploymentManager {
         }
         return false;
     }
+    
+    /**
+     * Is it bundled Tomcat?
+     *
+     * @return <code>true</code> if this TomcatManager represents bundled Tomcat, 
+     *         <code>false</code> otherwise.
+     */
+    public boolean isItBundledTomcat() {
+        if (isItBundledTomcat == null) {
+            isItBundledTomcat = Boolean.FALSE;
+            InstanceProperties ip = getInstanceProperties();
+            if (ip != null) {
+                Object val = ip.getProperty(IS_IT_BUNDLED_TOMCAT);
+                if (val != null) {
+                    isItBundledTomcat = Boolean.valueOf(val.toString());   
+                }
+            }
+        }
+        return isItBundledTomcat.booleanValue();
+    }
 
 // --- DeploymentManager interface implementation ----------------------
     
@@ -1008,10 +1040,6 @@ public class TomcatManager implements DeploymentManager {
                 InstalledFileLocator ifl = InstalledFileLocator.getDefault ();
                 f = ifl.locate (f.getPath(), null, false);
                 if (f == null) {
-                    if (ip != null) {
-                        ip.setProperty(ADMIN_PORT, DEFAULT_ADMIN_PORT.toString());
-                        ip.setProperty(SERVER_PORT, DEFAULT_SERVER_PORT.toString());
-                    }
                     return;
                 }
             }
@@ -1274,6 +1302,11 @@ public class TomcatManager implements DeploymentManager {
         } catch (java.io.IOException ioe) {
             ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
             return null;
+        }
+        if (isItBundledTomcat()) {
+            File serverFile = new File(baseDir, "conf/server.xml");   // NOI18N
+            TomcatInstallUtil.setServerPort(BUNDLED_TOMCAT_DEFAULT_SERVER_PORT, FileUtil.toFileObject(serverFile));
+            TomcatInstallUtil.setAdminPort(BUNDLED_TOMCAT_DEFAULT_ADMIN_PORT, FileUtil.toFileObject(serverFile));
         }
         return baseDir;
     }
