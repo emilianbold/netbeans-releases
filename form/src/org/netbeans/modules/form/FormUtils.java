@@ -420,6 +420,11 @@ public class FormUtils
             if (!prop.isChanged())
                 continue;
 
+            Method writeMethod = prop.getPropertyDescriptor().getWriteMethod();
+            if (writeMethod == null || !writeMethod.getDeclaringClass()
+                                   .isAssignableFrom(targetBean.getClass()))
+                continue;
+
             try {
                 Object value = prop.getRealValue();
                 if (value == FormDesignValue.IGNORED_VALUE)
@@ -430,10 +435,7 @@ public class FormUtils
                     relativeProperties.add(prop);
 
                 value = FormUtils.cloneObject(value);
-
-                Method writeMethod = prop.getPropertyDescriptor().getWriteMethod();
-                if (writeMethod != null)
-                    writeMethod.invoke(targetBean, new Object[] { value });
+                writeMethod.invoke(targetBean, new Object[] { value });
             }
             catch (Exception ex) {
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
