@@ -210,7 +210,7 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
 
     RADConnectionDesignValue (Class requiredType, String valueText) {
       this.requiredTypeName = requiredType.getName ();
-      this.value = value;
+      this.value = valueText;
       type = TYPE_VALUE;
     }
     
