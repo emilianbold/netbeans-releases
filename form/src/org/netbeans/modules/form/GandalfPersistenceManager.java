@@ -1090,18 +1090,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     org.w3c.dom.NamedNodeMap attributes = valueNode.getAttributes ();
 
-    for (int i = 0; i < attributes.getLength (); i++) {
-      org.w3c.dom.Node attrNode = attributes.item (i);
-      String attrName = attrNode.getNodeName (); 
-      String attrValue = attrNode.getNodeValue (); 
-      
-      buf.append (" ");
-      buf.append (attrName);
-      buf.append ("=\"");
-      buf.append (attrValue);
-      buf.append ("\"");
+    if (attributes != null) {
+      for (int i = 0; i < attributes.getLength (); i++) {
+        org.w3c.dom.Node attrNode = attributes.item (i);
+        String attrName = attrNode.getNodeName (); 
+        String attrValue = attrNode.getNodeValue (); 
+        
+        buf.append (" ");
+        buf.append (attrName);
+        buf.append ("=\"");
+        buf.append (attrValue);
+        buf.append ("\"");
+      }
     }
-
     // [PENDING - CNODES, TEXT NODES, ...]
 
     org.w3c.dom.NodeList children = valueNode.getChildNodes ();
@@ -1192,6 +1193,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  16   Gandalf   1.15        7/14/99  Ian Formanek    Fixed saveNodeIntoText 
+ *       method
  *  15   Gandalf   1.14        7/13/99  Ian Formanek    Constraints persistence 
  *       added
  *  14   Gandalf   1.13        7/13/99  Ian Formanek    Third draft
