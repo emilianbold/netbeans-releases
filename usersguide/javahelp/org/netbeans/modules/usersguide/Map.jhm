@@ -601,6 +601,8 @@
 
 <!--ID for Java Platform Manager dialog box-->
     <mapID target="org.netbeans.api.java.platform.PlatformsCustomizer" url="project/proj_jdk.html" />
+    <mapID target="org.netbeans.modules.java.platform.wizard.LocationChooser" url="project/proj_jdk.html" />
+    <mapID target="org.netbeans.modules.java.j2seplatform.wizard.DetectPanel" url="project/proj_jdk.html" />
 
 <!--ID for Java Elements Options window node-->
     <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceOptions" url="files/files_elements.html" />
