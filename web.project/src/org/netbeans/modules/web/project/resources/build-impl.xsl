@@ -338,65 +338,82 @@ is divided into following sections:
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
 
-			<xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service|/p:project/p:configuration/webproject:data/webproject:web-service-clients/webproject:web-service-client">
-				<target name="wscompile-init">
-					<taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
-					  <classpath path="${{wscompile.classpath}}"/>
-					</taskdef>
+            <xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service|/p:project/p:configuration/webproject:data/webproject:web-service-clients/webproject:web-service-client">
+                <target name="wscompile-init">
+                    <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
+                        <classpath path="${{wscompile.classpath}}"/>
+                    </taskdef>
 
-					<mkdir dir="${{build.web.dir}}/WEB-INF/wsdl"/>
-					<mkdir dir="${{build.classes.dir}}"/>
-					<mkdir dir="${{build.generated.dir}}/wssrc"/>
-				</target>
-			</xsl:if>
+                    <mkdir dir="${{build.web.dir}}/WEB-INF/wsdl"/>
+                    <mkdir dir="${{build.classes.dir}}"/>
+                    <mkdir dir="${{build.generated.dir}}/wssrc"/>
+                </target>
+            </xsl:if>
 
             <xsl:for-each select="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service">
-              <xsl:variable name="wsname">
-                <xsl:value-of select="webproject:web-service-name"/>
-              </xsl:variable>
+                <xsl:variable name="wsname">
+                    <xsl:value-of select="webproject:web-service-name"/>
+                </xsl:variable>
 
-              <target name="{$wsname}_wscompile" depends="wscompile-init">
-                <wscompile
-                   server="true"
-                   fork="true"
-                   keep="true"
-                   base="${{build.generated.dir}}/wssrc"
-                   xPrintStackTrace="true"
-                   verbose="true"
-                   nonClassDir="${{build.web.dir}}/WEB-INF/wsdl"
-                   classpath="${{wscompile.classpath}}:build/web/WEB-INF/classes"
-                   mapping="${{build.web.dir}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
-                   config="${{src.dir}}/${{{$wsname}.config.name}}">
-                   <!-- HTTPProxy="${http.proxyHost}:${http.proxyPort}" -->
-                </wscompile>
-              </target>
+                <target name="{$wsname}_wscompile" depends="wscompile-init">
+                    <wscompile
+                        server="true"
+                        fork="true"
+                        keep="true"
+                        base="${{build.generated.dir}}/wssrc"
+                        xPrintStackTrace="true"
+                        verbose="true"
+                        nonClassDir="${{build.web.dir}}/WEB-INF/wsdl"
+                        classpath="${{wscompile.classpath}}:build/web/WEB-INF/classes"
+                        mapping="${{build.web.dir}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
+                        config="${{src.dir}}/${{{$wsname}.config.name}}">
+                        <!-- HTTPProxy="${http.proxyHost}:${http.proxyPort}" -->
+                    </wscompile>
+                </target>
             </xsl:for-each>
 
-			<xsl:for-each select="/p:project/p:configuration/webproject:data/webproject:web-service-clients/webproject:web-service-client">
-				<xsl:variable name="wsclientname">
-					<xsl:value-of select="webproject:web-service-client-name"/>
-				</xsl:variable>
+            <xsl:for-each select="/p:project/p:configuration/webproject:data/webproject:web-service-clients/webproject:web-service-client">
+                <xsl:variable name="wsclientname">
+                    <xsl:value-of select="webproject:web-service-client-name"/>
+                </xsl:variable>
+                <xsl:variable name="useimport">
+                    <xsl:choose>
+                        <xsl:when test="webproject:web-service-stub-type">
+                            <xsl:value-of select="webproject:web-service-stub-type='jsr-109_client'"/>
+                        </xsl:when>
+                        <xsl:otherwise>true</xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <xsl:variable name="useclient">
+                    <xsl:choose>
+                        <xsl:when test="webproject:web-service-stub-type">
+                            <xsl:value-of select="webproject:web-service-stub-type='jaxrpc_static_client'"/>
+                        </xsl:when>
+                        <xsl:otherwise>false</xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
 
-				<target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
-					<copy file="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}-config.xml"
-						tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
-						<filterset>
-							<!-- replace token with reference to WSDL file in source tree, not build tree, since the
-							     the file probably has not have been copied to the build tree yet. -->
-							<filter token="CONFIG_ABSOLUTE_PATH" value="${{basedir}}/${{web.docbase.dir}}/WEB-INF/wsdl"/>
-						</filterset>
-					</copy>
-					<wscompile
-						xPrintStackTrace="true" verbose="true"
-						fork="true" keep="true" import="true" features="norpcstructures"
-						base="${{build.classes.dir}}"
-						sourceBase="${{build.generated.dir}}/wssrc"
-						classpath="${{wscompile.classpath}}"
-						mapping="${{build.web.dir}}/WEB-INF/wsdl/{$wsclientname}-mapping.xml"
-						config="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml">
-					</wscompile>
-				</target>
-			</xsl:for-each>
+                <target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
+                    <copy file="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}-config.xml"
+                        tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
+                        <filterset>
+                            <!-- replace token with reference to WSDL file in source tree, not build tree, since the
+                                 the file probably has not have been copied to the build tree yet. -->
+                            <filter token="CONFIG_ABSOLUTE_PATH" value="${{basedir}}/${{web.docbase.dir}}/WEB-INF/wsdl"/>
+                        </filterset>
+                    </copy>
+                    <wscompile
+                        xPrintStackTrace="true" verbose="false" fork="true" keep="true"
+                        client="{$useclient}" import="{$useimport}"
+                        features="${{wscompile.client.{$wsclientname}.features}}"
+                        base="${{build.classes.dir}}"
+                        sourceBase="${{build.generated.dir}}/wssrc"
+                        classpath="${{wscompile.classpath}}"
+                        mapping="${{build.web.dir}}/WEB-INF/wsdl/{$wsclientname}-mapping.xml"
+                        config="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml">
+                    </wscompile>
+                </target>
+            </xsl:for-each>
 
             <target name="-pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
@@ -404,17 +421,17 @@ is divided into following sections:
             </target>
 
             <target name="-pre-compile">
-				<xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-service-clients/webproject:web-service-client">
-					<xsl:attribute name="depends">
-						<xsl:for-each select="/p:project/p:configuration/webproject:data/webproject:web-service-clients/webproject:web-service-client">
-							<xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-							<xsl:variable name="wsname2">
-								<xsl:value-of select="webproject:web-service-client-name"/>
-							</xsl:variable>
-							<xsl:value-of select="webproject:web-service-client-name"/><xsl:text>_client_wscompile</xsl:text>
-						</xsl:for-each>
-					</xsl:attribute>
-				</xsl:if>
+                <xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-service-clients/webproject:web-service-client">
+                    <xsl:attribute name="depends">
+                        <xsl:for-each select="/p:project/p:configuration/webproject:data/webproject:web-service-clients/webproject:web-service-client">
+                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+                            <xsl:variable name="wsname2">
+                                <xsl:value-of select="webproject:web-service-client-name"/>
+                            </xsl:variable>
+                            <xsl:value-of select="webproject:web-service-client-name"/><xsl:text>_client_wscompile</xsl:text>
+                        </xsl:for-each>
+                    </xsl:attribute>
+                </xsl:if>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
@@ -422,14 +439,14 @@ is divided into following sections:
             <target name="-do-compile">
                 <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service">
-                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
-                    <delete> 
+                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment>
+                    <delete>
                       <fileset dir="${{build.classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
                     </delete>
                 </xsl:if>
 
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"/>
-               
+
                 <copy todir="${{build.classes.dir}}">
                     <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
                 </copy>
@@ -437,16 +454,16 @@ is divided into following sections:
                   <fileset excludes="${{build.web.excludes}}" dir="${{web.docbase.dir}}">
                    <xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service">
                      <xsl:attribute name="excludes">WEB-INF/classes/** WEB-INF/web.xml WEB/sun-web.xml</xsl:attribute>
-                   </xsl:if> 
+                   </xsl:if>
                   </fileset>
                 </copy>
                 <xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service">
-                    <xsl:comment>For web services, refresh web.xml and sun-web.xml</xsl:comment>  
-                    <copy todir="${{build.web.dir}}" overwrite="true"> 
+                    <xsl:comment>For web services, refresh web.xml and sun-web.xml</xsl:comment>
+                    <copy todir="${{build.web.dir}}" overwrite="true">
                       <fileset includes="WEB-INF/web.xml WEB-INF/sun-web.xml" dir="${{web.docbase.dir}}"/>
                     </copy>
                  </xsl:if>
-                
+
                 <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-libraries/web:library[web:path-in-war]">
                     <xsl:variable name="copyto" select=" web:path-in-war"/>
                     <xsl:variable name="libfile" select="web:file"/>
@@ -460,17 +477,17 @@ is divided into following sections:
             </target>
 
             <target name="-post-compile">
-				<xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service">
-					<xsl:attribute name="depends">
-						<xsl:for-each select="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service">
-							<xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-							<xsl:variable name="wsname2">
-								<xsl:value-of select="webproject:web-service-name"/>
-							</xsl:variable>
-							<xsl:value-of select="webproject:web-service-name"/><xsl:text>_wscompile</xsl:text>
-						</xsl:for-each>
-					</xsl:attribute>
-				</xsl:if>
+                <xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service">
+                    <xsl:attribute name="depends">
+                        <xsl:for-each select="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service">
+                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+                            <xsl:variable name="wsname2">
+                                <xsl:value-of select="webproject:web-service-name"/>
+                            </xsl:variable>
+                            <xsl:value-of select="webproject:web-service-name"/><xsl:text>_wscompile</xsl:text>
+                        </xsl:for-each>
+                    </xsl:attribute>
+                </xsl:if>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
@@ -519,7 +536,7 @@ is divided into following sections:
                     <arg value="-d"/>
                     <arg file="${{basedir}}/${{build.generated.dir}}/src"/>
                     <arg value="-die1"/>
-                    <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspc.classpath}}"/> 
+                    <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspc.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"
@@ -530,8 +547,8 @@ is divided into following sections:
             </target>
 
             <target name="-do-compile-single-jsp">
-                <xsl:attribute name="depends">compile</xsl:attribute> 
-                <xsl:attribute name="if">jsp.includes</xsl:attribute> 
+                <xsl:attribute name="depends">compile</xsl:attribute>
+                <xsl:attribute name="if">jsp.includes</xsl:attribute>
                 <fail unless="javac.jsp.includes">Must select some files in the IDE or set javac.jsp.includes</fail>
 
                 <mkdir dir="${{build.generated.dir}}/src"/>
@@ -546,7 +563,7 @@ is divided into following sections:
                     <arg value="-die1"/>
                     <arg value="-jspc.files"/>
                     <arg path="${{jsp.includes}}"/>
-                    <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspc.classpath}}"/> 
+                    <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspc.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"
@@ -655,11 +672,11 @@ is divided into following sections:
         </nbjpdaconnect>
         <antcall target="debug-display-browser"/>
     </target>
-    
+
     <target name="debug-display-browser" if="do.display.browser">
         <nbbrowse url="${{client.url}}"/>
     </target>
-            
+
     <target name="debug-single">
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
         <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,debug</xsl:attribute>
@@ -842,13 +859,13 @@ is divided into following sections:
             <target name="check-clean">
                 <xsl:attribute name="depends">do-clean</xsl:attribute>
                 <xsl:attribute name="if">status.clean-failed</xsl:attribute>
-                <!-- 
+                <!--
                     When undeploy is implemented it should be optional:
                 <xsl:attribute name="unless">clean.check.skip</xsl:attribute>
                 -->
                 <echo message="Warning: unable to delete some files in ${{build.web.dir}}/WEB-INF/lib - they are probably locked by the J2EE server. " />
                 <echo level="info" message="To delete all files undeploy the module from Server Registry in Runtime tab and then use Clean again."/>
-                <!-- 
+                <!--
                     Here comes the undeploy code when supported by nbdeploy task:
                 <nbdeploy undeploy="true" clientUrlPart="${client.urlPart}"/>
                     And then another attempt to delete:
