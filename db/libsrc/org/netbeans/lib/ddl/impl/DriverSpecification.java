@@ -13,15 +13,15 @@
 
 package org.netbeans.lib.ddl.impl;
 
-import java.beans.*;
-import java.sql.*;
-import java.util.*;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.LinkedList;
 
-import org.openide.*;
+import org.openide.ErrorManager;
 
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.adaptors.*;
-import org.netbeans.lib.ddl.impl.*;
+import org.netbeans.lib.ddl.DriverSpecificationFactory;
 
 public class DriverSpecification {
 
@@ -81,6 +81,10 @@ public class DriverSpecification {
             this.catalog = catalog;
         else
             this.catalog = null; //hack for Sybase ODBC driver
+    }
+
+    public String getCatalog() {
+        return catalog;
     }
 
     public void setSchema(String schema) {

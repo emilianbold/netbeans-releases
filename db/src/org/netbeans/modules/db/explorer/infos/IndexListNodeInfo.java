@@ -13,36 +13,38 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Vector;
 
-import org.openide.nodes.Node;
+import org.openide.ErrorManager;
 
-import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.lib.ddl.adaptors.*;
+import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
 public class IndexListNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =5809643799834921044L;
 
     public void initChildren(Vector children) throws DatabaseException {
         try {
-            String table = (String)get(DatabaseNode.TABLE);
-
+            String table = (String) get(DatabaseNode.TABLE);
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getIndexInfo(table, false, false);
-            ResultSet rs = drvSpec.getResultSet();
+            Connection con = getConnection();
+            DatabaseMetaData dmd = con.getMetaData();
+            ResultSet rs = dmd.getIndexInfo(drvSpec.getCatalog(), drvSpec.getSchema(), table, false, false);            
             if (rs != null) {
                 Set ixmap = new HashSet();
-                HashMap rset = new HashMap();
                 IndexNodeInfo info;
                 Object value;
                 while (rs.next()) {
-                    rset = drvSpec.getRow();
+                    HashMap rset = getRow(rs);
                     if (rset == null)
                         continue;
                     if (rset.get(new Integer(6)) != null) {
@@ -56,7 +58,6 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
                         } else
                             throw new Exception(bundle.getString("EXC_UnableToCreateIndexNodeInfo")); //NOI18N
                     }
-                    rset.clear();
                 }
                 rs.close();
             }
@@ -65,6 +66,32 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
         }
     }
 
+    public HashMap getRow(ResultSet rs) {
+        HashMap rset = new HashMap();
+        Object value;
+
+        try {
+            int count = rs.getMetaData().getColumnCount();
+
+            for (int i = 1; i <= count; i++) {
+                value = null;
+                try {
+                    value = rs.getString(i);
+                }  catch (SQLException exc) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                    rset = null;
+                    break;
+                }
+                rset.put(new Integer(i), value);
+            }
+        } catch (SQLException exc) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+            rset = null;
+        }
+
+        return rset;
+    }
+    
     public void addIndex(String name) throws DatabaseException {
         try {
             String table = (String)get(DatabaseNode.TABLE);
