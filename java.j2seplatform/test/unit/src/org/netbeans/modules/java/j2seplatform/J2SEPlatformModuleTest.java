@@ -19,6 +19,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.JavaPlatformProviderImpl;
+import org.netbeans.modules.masterfs.MasterURLMapper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
@@ -62,6 +63,7 @@ public class J2SEPlatformModuleTest extends NbTestCase implements Lookup.Provide
         if (lookup == null) {
             lookup = Lookups.fixed(new Object[] {
                 new JavaPlatformProviderImpl (),
+                new MasterURLMapper(),
             });
         }
         return lookup;

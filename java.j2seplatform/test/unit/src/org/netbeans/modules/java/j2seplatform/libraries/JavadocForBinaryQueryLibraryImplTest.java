@@ -15,30 +15,21 @@ package org.netbeans.modules.java.j2seplatform.libraries;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.core.filesystems.ArchiveURLMapper;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.JavaPlatformProviderImpl;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.masterfs.MasterURLMapper;
 
 // XXX needs to test listening as well
 
@@ -65,35 +56,15 @@ public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase implements 
         return dir.toString();
     }
     
-    private FileSystem fs;
-    
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath()); 
         super.setUp();
         clearWorkDir();        
     }
     
-    protected void tearDown() throws Exception {
-        if (fs != null) {
-            Repository.getDefault().removeFileSystem(fs);
-            fs = null;
-        }
-        super.tearDown();
-    }
-    
     private void setupLibraries() throws Exception {
         File dir = new File(getBase());
         
-        // first mount root of disk
-        File root = dir;
-        while (root.getParentFile() != null) {
-            root = root.getParentFile();
-        }
-        LocalFileSystem lfs = new LocalFileSystem();
-        fs = lfs;
-        lfs.setRootDirectory(root);
-        Repository.getDefault().addFileSystem(lfs);
-
         // create library1:
         String libPath = dir.toString() + "/library1";
         File library = createJar(new File(libPath), "library1.jar", new String[]{"Main.class"});
@@ -116,7 +87,7 @@ public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase implements 
         registerLibrary("library3", library, javadoc);
         
         // refresh FS
-        lfs.refresh(false);
+        FileUtil.toFileObject(dir).getFileSystem().refresh(false);
     }
     
     private File createJar(File folder, String name, String resources[]) throws Exception {
@@ -187,14 +158,14 @@ public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase implements 
         if (this.lookup == null) {
             this.lookup = Lookups.fixed (
                 new Object[] {
-                    new LibraryProviderImpl(),
+                    LibraryProviderImpl.getDefault(),
                     new JavaPlatformProviderImpl (),
                     new ArchiveURLMapper (),
-                    new JavadocForBinaryQueryLibraryImpl(),            
+                    new JavadocForBinaryQueryLibraryImpl(),
+                    new MasterURLMapper(),
                 });
         }
         return this.lookup;
     }    
-    
     
 }

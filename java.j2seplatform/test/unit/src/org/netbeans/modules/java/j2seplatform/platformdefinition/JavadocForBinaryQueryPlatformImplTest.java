@@ -34,13 +34,12 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.core.filesystems.ArchiveURLMapper;
+import org.netbeans.modules.masterfs.MasterURLMapper;
 
 // XXX needs to test listening as well
 
@@ -57,49 +56,20 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase implements
         TestUtil.setLookup (Lookups.proxy(this));
     }
     
-    private FileSystem a, b;
     private Lookup lookup;
     
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath()); 
         super.setUp();
         clearWorkDir();                
-        a = mountDiskRoot(getBaseDir());
     }
     
-    protected void tearDown() throws Exception {
-        Repository.getDefault().removeFileSystem(a);
-        a = null;
-        if (b != null) {
-            Repository.getDefault().removeFileSystem(b);
-            b = null;
-        }
-        super.tearDown();
-    }
-
     private File getBaseDir() throws Exception {
         File dir = getWorkDir();
         if (Utilities.isWindows()) {
             dir = new File(dir.getCanonicalPath());
         }
         return dir;
-    }
-    
-    // necessary for misc File<->FileObject conversions
-    private FileSystem mountDiskRoot(File file) throws Exception {
-        File root = file;
-        while (root.getParentFile() != null) {
-            root = root.getParentFile();
-        }
-        LocalFileSystem lfs = new LocalFileSystem();
-        lfs.setRootDirectory(root);
-        if (Repository.getDefault().findFileSystem(lfs.getSystemName()) == null) {
-            Repository.getDefault().addFileSystem(lfs);
-            return lfs;
-        } else {
-            // Already mounted, no need to mount it again.
-            return null;
-        }
     }
     
     public void testQuery() throws Exception {
@@ -112,7 +82,6 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase implements
             url = FileUtil.getArchiveFile(url);
         }
         File root = new File(url.getFile());
-        b = mountDiskRoot(root);
         
         FileObject pfo = cp.getRoots()[0];
         URL u = URLMapper.findURL(pfo, URLMapper.EXTERNAL);
@@ -134,7 +103,8 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase implements
             lookup = Lookups.fixed(new Object[] {
                 new JavaPlatformProviderImpl (),
                 new ArchiveURLMapper(),
-                new JavadocForBinaryQueryPlatformImpl ()
+                new JavadocForBinaryQueryPlatformImpl(),
+                new MasterURLMapper(),
             });
         }
         return lookup;

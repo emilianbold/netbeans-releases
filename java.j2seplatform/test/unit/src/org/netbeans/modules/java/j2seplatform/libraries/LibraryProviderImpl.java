@@ -31,16 +31,15 @@ public class LibraryProviderImpl implements org.netbeans.spi.project.libraries.L
     private ArrayList libs = new ArrayList();
     private PropertyChangeSupport support;
     
-    private static LibraryProviderImpl DEFAULT;
+    private static final LibraryProviderImpl DEFAULT = new LibraryProviderImpl();
     
     public static LibraryProviderImpl getDefault() {
         assert DEFAULT != null;
         return DEFAULT;
     }
     
-    public LibraryProviderImpl() {
+    private LibraryProviderImpl() {
         support = new PropertyChangeSupport(this);
-        DEFAULT = this;
     }
     
     public void addLibrary(LibraryImplementation library) throws IOException {
