@@ -16,16 +16,21 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.RepositoryTabOperator;
+import org.netbeans.jellytools.TreeTableOperator;
+import org.netbeans.jellytools.WizardOperator;
 
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.ComboBoxProperty;
+import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -197,6 +202,68 @@ public class TestGenerateJavadoc extends JavadocTestCase {
                    "imageviewer" + sep + "ImageViewer.html").exists()); // NOI18N
         new EventTool().waitNoEvent(1000);
         
+    }
+    
+    public void testCreateDoclet() {
+        
+        String [] docletSettings = new String [] {"Author", "Bottom", "Charset", "Doc Title", "Footer", "Group",
+            "Header", "Help File", "Link", "Linkoffline", "No Deprecated", "No Deprecated List", "No Help", "No Index", 
+            "No Navbar", "No Tree", "Split Index", "Style Sheet File", "Use", "Version", "Window Title"};
+        String [] docletValues = new String [] {"False", "", "", "", "", "", "", "", "", "", "False", "False", "False",
+            "False", "False", "False", "False", "", "False", "False", ""};
+        
+        // create new doclet with name TestDoclet
+        OptionsOperator optionsOper = OptionsOperator.invoke();
+        JTreeOperator optionsTreeOper = optionsOper.treeTable().tree();
+        Node node = new Node(optionsTreeOper, "Code Documentation|Doclets");
+        ActionNoBlock newAction = new ActionNoBlock(null, "New|Standard Doclet");
+        newAction.perform(node);
+        WizardOperator newWizard = new WizardOperator("New Wizard - Standard Doclet");
+        JTextFieldOperator nameOper = new JTextFieldOperator(newWizard);
+        nameOper.typeText("TestDoclet");
+        newWizard.finish();
+        
+        // test default doclet values
+        optionsOper.selectOption("Code Documentation|Doclets|TestDoclet");
+        PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(optionsOper);
+        for (int i = 0; i < docletSettings.length; i++) {
+            Property docletProp = new Property(propertiesTab, docletSettings[i]);
+            assertTrue("Default value of " + docletSettings[i] + " is not " + docletValues[i], 
+                       docletProp.getValue().indexOf(docletValues[i]) != -1);
+        }
+        
+        optionsOper.close();
+        
+    }
+    
+    public void testCreateExecutor() {
+        
+        // Doclets setting excluded
+        String [] execSettings = new String [] {"1.1 style", "Enable JDK 1.4 source", "Encoding", 
+            "Extdirs", "External Process", "Locale", "Members", "Overview", "Recursive", "Verbose"};
+        String [] execValues = new String [] {"False", "False", "", "", "External Javadoc Executor",
+            "", "protected", "", "True", "False"};
+        
+        OptionsOperator optionsOper = OptionsOperator.invoke();
+        JTreeOperator optionsTreeOper = optionsOper.treeTable().tree();
+        Node node = new Node(optionsTreeOper, "Code Documentation|Javadoc Executors");
+        ActionNoBlock newAction = new ActionNoBlock(null, "New|External Javadoc");
+        newAction.perform(node);
+        WizardOperator newWizard = new WizardOperator("New Wizard - External Javadoc");
+        JTextFieldOperator nameOper = new JTextFieldOperator(newWizard);
+        nameOper.typeText("TestExecutor");
+        newWizard.finish();
+        
+        // test default executor values
+        optionsOper.selectOption("Code Documentation|Javadoc Executors|TestExecutor");
+        PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(optionsOper);
+        for (int i = 0; i < execSettings.length; i++) {
+            Property execProp = new Property(propertiesTab, execSettings[i]);
+            assertTrue("Default value of " + execSettings[i] + " is not " + execValues[i], 
+                       execProp.getValue().indexOf(execValues[i]) != -1);
+        }
+        
+        optionsOper.close();
     }
     
     /** Use for internal test execution inside IDE
