@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<mconfig name="Form config">
+    
+
+    <testbag testattribs="stable" executor="ide" name="testbag_visual_development" resultsprocessor="qa-functional">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="visualDevelopment/AddComponents_AWT.class"/>
+		<include name="visualDevelopment/AddComponents_SWING.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="stable" executor="ide" name="testbag_compatibility" resultsprocessor="qa-functional">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="compatibility/EditForm.class"/>
+		<include name="compatibility/OpenForm.class"/>
+		<include name="compatibility/OpenForm_dbc.class"/>
+		<include name="compatibility/FilesWork.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="stable" executor="ide" name="testbag_palette" resultsprocessor="qa-functional">
+        <testset dir="qa-functional/src">
+            <patternset>
+		    <include name="palette/PaletteTests.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+	<testbag testattribs="unstable" executor="ide" name="testbag_palette" resultsprocessor="qa-functional">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="compatibility/EditForm.class"/>
+		<include name="compatibility/OpenForm.class"/>
+                <!--
+		<include name="compatibility/OpenForm_dbc.class"/>
+		<include name="compatibility/FilesWork.class"/>
+                -->
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <resultsprocessor name="qa-functional" antfile="build.xml" target="test_report"/>
+    <executor name="ide" antfile="build.xml" target="runidetest"/>
+</mconfig>
