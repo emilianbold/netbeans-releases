@@ -968,7 +968,19 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 }
                 if (this.op == DnDConstants.ACTION_MOVE && !cantDelete) {
                     try {
-                        nodes[ni].dataFolder.delete ();
+                        FileObject tmpFo = nodes[ni].dataFolder.getPrimaryFile();
+                        FileObject originalRoot = nodes[ni].root;
+                        assert tmpFo != null && originalRoot != null;
+                        while (!tmpFo.equals(originalRoot)) {
+                            if (tmpFo.getChildren().length == 0) {
+                                FileObject tmpFoParent = tmpFo.getParent();
+                                tmpFo.delete ();
+                                tmpFo = tmpFoParent;
+                            }
+                            else {
+                                break;
+                            }
+                        }
                     } catch (IOException ioe) {
                         //Not important
                     }
