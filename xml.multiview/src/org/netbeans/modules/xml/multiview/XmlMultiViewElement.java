@@ -13,10 +13,16 @@
 
 package org.netbeans.modules.xml.multiview;
 
-import org.netbeans.core.spi.multiview.*;
-import org.openide.windows.TopComponent;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
+import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 /**
  * XmlMultiviewElement.java
  *
@@ -39,8 +45,20 @@ public class XmlMultiViewElement implements MultiViewElement {
     }
     
     public CloseOperationState canCloseElement() {
+        final XmlMultiViewDataObject dataObject = (XmlMultiViewDataObject) this.support.getDataObject();
+        if (dataObject.isModified()) {
+            Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(NbBundle.getMessage(DataObject.class,
+                    "MSG_SaveFile",
+                    new Object[]{dataObject.getPrimaryFile().getNameExt()}),
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE));
+            if (result != NotifyDescriptor.OK_OPTION) {
+                return MultiViewFactory.createUnsafeCloseState("Data object modified", null, null);
+            }
+            dataObject.updateDocument();
+        }
         return CloseOperationState.STATE_OK;
-    }    
+    }
     
     public void componentActivated() {
     }

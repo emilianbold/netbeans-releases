@@ -13,15 +13,15 @@
 
 package org.netbeans.modules.xml.multiview;
 
-import org.openide.loaders.*;
-import org.openide.text.DataEditorSupport;
-import org.openide.windows.*;
+import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.core.spi.multiview.*;
+import org.openide.cookies.*;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.cookies.*;
-import org.netbeans.core.spi.multiview.*;
-import org.netbeans.core.api.multiview.*;
+import org.openide.text.DataEditorSupport;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.*;
 
 /**
  * XmlMultiviewEditorSupport.java
@@ -121,8 +121,19 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
         descs[customDesc.length]=xmlDesc;
         xmlMultiViewIndex=customDesc.length;
 
-        CloneableTopComponent mvtc =  
-              MultiViewFactory.createCloneableMultiView(descs, descs[0]);
+        CloneableTopComponent mvtc = MultiViewFactory.createCloneableMultiView(descs, descs[0],
+                new CloseOperationHandler() {
+                    public boolean resolveCloseOperation(CloseOperationState[] elements) {
+                        if (elements != null) {
+                            for (int i = 0; i < elements.length; i++) {
+                                if (!elements[i].canClose()) {
+                                    return false;
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                });
         
         // #45665 - dock into editor mode if possible..
         Mode editorMode = WindowManager.getDefault().findMode(org.openide.text.CloneableEditorSupport.EDITOR_MODE);
@@ -134,8 +145,8 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
         mvtc.setIcon(org.openide.util.Utilities.loadImage(dObj.getIconBase()+".gif"));
         return mvtc;
     }
-    
-     
+
+
     /** Focuses existing component to view, or if none exists creates new.
     * The default implementation simply calls {@link #open}.
     * @see org.openide.cookies.EditCookie#edit
