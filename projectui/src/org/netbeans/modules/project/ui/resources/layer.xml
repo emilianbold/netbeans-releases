@@ -347,7 +347,8 @@ Microsystems, Inc. All Rights Reserved.
 
             <folder name="RunOther">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
-                                
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/empty.gif" />
+                                                
                 <file name="org-netbeans-modules-project-ui-TestProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
                 </file>
