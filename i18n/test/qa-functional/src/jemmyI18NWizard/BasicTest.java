@@ -48,7 +48,7 @@ public class BasicTest extends NbTestCase {
     
     public void setUp() {
         // redirect error and trace messages from Jemmy
-        //JellyProperties.setJemmyOutput(new PrintWriter(getLog(), true), new PrintWriter(getLog(), true));
+        JellyProperties.setJemmyOutput(new PrintWriter(getLog(), true), new PrintWriter(getLog(), true));
         JellyProperties.setDefaults();
     }
     
