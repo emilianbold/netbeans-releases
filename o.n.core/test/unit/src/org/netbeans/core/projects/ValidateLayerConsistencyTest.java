@@ -64,7 +64,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 continue;
             }
             
-            if ("Shortcuts/C-BACK_QUOTE.shadow".equals(fo.getPath())) {
+            if ("Shortcuts/D-BACK_QUOTE.shadow".equals(fo.getPath())) {
                 // #46753
                 continue;
             }
@@ -170,7 +170,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         if (s.startsWith ("Templates/Classes")) return true;
         if (s.startsWith ("Templates/JSP_Servlet")) return true;
         if (s.startsWith ("EnvironmentProviders/ProfileTypes/Execution/nb-j2ee-deployment.instance")) return true;
-        if (s.startsWith ("Shortcuts/C-BACK_QUOTE.shadow")) return true;
+        if (s.startsWith ("Shortcuts/D-BACK_QUOTE.shadow")) return true;
         
         return false;
     }
