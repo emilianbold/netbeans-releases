@@ -248,7 +248,7 @@ public class FormDesigner extends TopComponent
         if (formModel != null) {
             formModel.addFormModelListener(formModelListener);
             formEditorSupport = FormEditorSupport.getSupport(formModel);
-            resetTopDesignComponent();
+            resetTopDesignComponent(false);
             updateName(formModel.getName());
             handleLayer.setViewOnly(formModel.isReadOnly());
         }
@@ -459,20 +459,25 @@ public class FormDesigner extends TopComponent
         return componentLayer;
     }
 
-    public void setTopDesignComponent(RADVisualComponent component) {
+    public void setTopDesignComponent(RADVisualComponent component,
+                                      boolean update) {
         topDesignComponent = component;
-        updateWholeDesigner();
+        if (update)
+            updateWholeDesigner();
     }
 
     public RADVisualComponent getTopDesignComponent() {
         return topDesignComponent;
     }
 
-    public void resetTopDesignComponent() {
+    public void resetTopDesignComponent(boolean update) {
         if (formModel.getTopRADComponent() instanceof RADVisualComponent)
             topDesignComponent = (RADVisualComponent)
                                  formModel.getTopRADComponent();
         else topDesignComponent = null;
+
+        if (update)
+            updateWholeDesigner();
     }
 
     /** Tests whether top designed container is some parent of given component
@@ -701,7 +706,7 @@ public class FormDesigner extends TopComponent
                 && (removed == topDesignComponent
                     || removed.isParentComponent(topDesignComponent)))
             {
-                resetTopDesignComponent();
+                resetTopDesignComponent(false);
                 placeUpdateTask(UpdateTask.ALL, null);
             }
             else
