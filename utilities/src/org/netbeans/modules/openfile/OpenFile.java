@@ -405,31 +405,31 @@ class OpenFile extends Object {
         list.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         if (pkgLevel != -1) list.setSelectedIndex (pkgLevel);
         list.setCellRenderer (new ListCellRenderer () {
-                                  private Icon folderIcon = new ImageIcon (OpenFile.class.getResource ("folder.gif")); // NOI18N
-                                  private Icon rootFolderIcon = new ImageIcon (OpenFile.class.getResource ("rootFolder.gif")); // NOI18N
-                                  public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                                      String pkg2 = (String) value;
-                                      JLabel lab = new JLabel ();
-                                      if (pkg2.equals ("")) { // NOI18N
-                                          lab.setText (SettingsBeanInfo.getString ("LBL_packageWillBeDefault"));
-                                          lab.setIcon (rootFolderIcon);
-                                      } else {
-                                          lab.setText (SettingsBeanInfo.getString ("LBL_packageWillBe", pkg2));
-                                          lab.setIcon (folderIcon);
-                                      }
-                                      if (isSelected) {
-                                          lab.setBackground (list.getSelectionBackground ());
-                                          lab.setForeground (list.getSelectionForeground ());
-                                      } else {
-                                          lab.setBackground (list.getBackground ());
-                                          lab.setForeground (list.getForeground ());
-                                      }
-                                      lab.setEnabled (list.isEnabled ());
-                                      lab.setFont (list.getFont ());
-                                      lab.setOpaque (true);
-                                      return lab;
-                                  }
-                              });
+            private Icon folderIcon = new ImageIcon (OpenFile.class.getResource ("folder.gif")); // NOI18N
+            private Icon rootFolderIcon = new ImageIcon (OpenFile.class.getResource ("rootFolder.gif")); // NOI18N
+            public Component getListCellRendererComponent (JList lst, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                String pkg2 = (String) value;
+                JLabel lab = new JLabel ();
+                if (pkg2.equals ("")) { // NOI18N
+                    lab.setText (SettingsBeanInfo.getString ("LBL_packageWillBeDefault"));
+                    lab.setIcon (rootFolderIcon);
+                } else {
+                    lab.setText (SettingsBeanInfo.getString ("LBL_packageWillBe", pkg2));
+                    lab.setIcon (folderIcon);
+                }
+                if (isSelected) {
+                    lab.setBackground (lst.getSelectionBackground ());
+                    lab.setForeground (lst.getSelectionForeground ());
+                } else {
+                    lab.setBackground (lst.getBackground ());
+                    lab.setForeground (lst.getForeground ());
+                }
+                lab.setEnabled (lst.isEnabled ());
+                lab.setFont (lst.getFont ());
+                lab.setOpaque (true);
+                return lab;
+            }
+        });
         panel.add (new JScrollPane (list), BorderLayout.CENTER);
 
         // Name of mount point:
