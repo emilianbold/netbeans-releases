@@ -57,6 +57,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   private transient ExplorerManager sheetManager;
   /** ExplorerManagers of the currently selected root (tab) */
   private transient ExplorerManager currentManager;
+  /** Flag for tracking whether the manager/root listeners are added - used when opening/closing */
+  private transient boolean listenersRegistered = false;
 
   /** Listener which tracks changes on the managers for each tab and provides synchronization
   * of rootContext, exploredContext and selectedNodes with property sheet and updating the title of the Explorer */
@@ -146,14 +148,10 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
       ExplorerPanel panel = new ExplorerPanel ();
       managers[i] = panel.getExplorerManager ();
       managers[i].setRootContext (roots[i]);
-      managers[i].addPropertyChangeListener (managersListener); // synchronization of property sheet, activated nodes, title
       BeanTreeView treeView = new BeanTreeView ();
       panel.setLayout (new BorderLayout ());
       panel.add (treeView);
       tabs.addTab (roots[i].getDisplayName (), new ImageIcon (roots [i].getIcon (BeanInfo.ICON_COLOR_16x16)), panel, roots[i].getShortDescription ());
-
-      // add listeners to changes on the roots
-      roots[i].addPropertyChangeListener (rootsListener);
     }
     currentManager = managers[0]; // [PENDING]
 
@@ -174,6 +172,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
               }
           }
           updateTitle ();
+          setActivatedNodes (currentManager.getSelectedNodes ());
         }
       }
     );
@@ -216,7 +215,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
       "/com/netbeans/developer/impl/resources/actions/properties.gif"));
     sheetSwitcher = new ToolbarToggleButton (icon, sheetVisible);
     sheetSwitcher.setMargin (new java.awt.Insets (2, 0, 1, 0));
-    //sheetSwitcher.setToolTipText (Explorer.explorerBundle.getString("ACT_PropertySheet"));
+    sheetSwitcher.setToolTipText (NbBundle.getBundle (NbMainExplorer.class).getString ("CTL_ToggleProperties"));
     sheetSwitcher.addItemListener (this);
     result.add (sheetSwitcher);
     result.setBorder(new EmptyBorder(2, 0, 2, 2));
@@ -287,6 +286,16 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   */
   public void open () {
     super.open ();
+    if (!listenersRegistered) {
+      for (int i = 0; i < managers.length; i++) {
+        managers[i].addPropertyChangeListener (managersListener); // synchronization of property sheet, activated nodes, title
+      }
+      // add listeners to changes on the roots
+      for (int i = 0; i < roots.length; i++) {
+        roots[i].addPropertyChangeListener (rootsListener);
+      }
+      listenersRegistered = true;
+    }
     setActivatedNodes (currentManager.getSelectedNodes ());
     updateTitle ();
   }
@@ -301,6 +310,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
       for (int i = 0; i < roots.length; i++) {
        roots[i].removePropertyChangeListener (rootsListener);
       }
+      listenersRegistered = false;
       return true;
     } else {
       return false;
@@ -398,6 +408,12 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  12   Gandalf   1.11        5/30/99  Ian Formanek    Fixed bug 1647 - Open, 
+*       Compile, Rename, Execute and  etc. actions in popup menu in explorer are
+*       sometimes disabled.  Fixed bug 1971 - If the tab is switched from 
+*       Desktop to Repository with some nodes already selected, the actions in 
+*       popupmenu might not be correctly enabled.  Fixed bug 1616 - Property 
+*       sheet button in explorer has no tooltip.
 *  11   Gandalf   1.10        5/15/99  David Simonek   switchable sheet 
 *       serialized properly.....finally
 *  10   Gandalf   1.9         5/14/99  David Simonek   serialization of 
