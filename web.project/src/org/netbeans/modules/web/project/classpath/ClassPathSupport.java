@@ -288,24 +288,30 @@ public class ClassPathSupport {
 
     private static Map createWarIncludesMap(AntProjectHelper uh, String webModuleLibraries) {
         Map warIncludesMap = new LinkedHashMap();
-            Element data = uh.getPrimaryConfigurationData(true);
-            final String ns = WebProjectType.PROJECT_CONFIGURATION_NAMESPACE;
-            Element webModuleLibs = (Element) data.getElementsByTagNameNS(ns, webModuleLibraries).item(0);
-            if (webModuleLibs != null) {
-                NodeList ch = webModuleLibs.getChildNodes();
-                for (int i = 0; i < ch.getLength(); i++) {
-                    if (ch.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                        Element library = (Element) ch.item(i);
-                        Node webFile = library.getElementsByTagNameNS(ns, TAG_FILE).item(0);
-                        NodeList pathInWarElements = library.getElementsByTagNameNS(ns, TAG_PATH_IN_WAR); 
-                        //remove ${ and } from the beginning and end
-                        String webFileText = findText(webFile);
-                        webFileText = webFileText.substring(2, webFileText.length() - 1);
-                        warIncludesMap.put(webFileText, pathInWarElements.getLength() > 0 ? findText((Element) pathInWarElements.item(0)) : Item.PATH_IN_WAR_NONE);
+        //try all supported namespaces starting with the newest one
+        for(int idx = WebProjectType.PROJECT_CONFIGURATION_NAMESPACE_LIST.length - 1; idx >= 0; idx--) {
+            String ns = WebProjectType.PROJECT_CONFIGURATION_NAMESPACE_LIST[idx];
+            Element data = uh.createAuxiliaryConfiguration().getConfigurationFragment("data",ns,true);
+            if(data != null) {
+                Element webModuleLibs = (Element) data.getElementsByTagNameNS(ns, webModuleLibraries).item(0);
+                if (webModuleLibs != null) {
+                    NodeList ch = webModuleLibs.getChildNodes();
+                    for (int i = 0; i < ch.getLength(); i++) {
+                        if (ch.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                            Element library = (Element) ch.item(i);
+                            Node webFile = library.getElementsByTagNameNS(ns, TAG_FILE).item(0);
+                            NodeList pathInWarElements = library.getElementsByTagNameNS(ns, TAG_PATH_IN_WAR);
+                            //remove ${ and } from the beginning and end
+                            String webFileText = findText(webFile);
+                            webFileText = webFileText.substring(2, webFileText.length() - 1);
+                            warIncludesMap.put(webFileText, pathInWarElements.getLength() > 0 ? findText((Element) pathInWarElements.item(0)) : Item.PATH_IN_WAR_NONE);
+                        }
                     }
+                    return warIncludesMap;
                 }
             }
-        return warIncludesMap;
+        }
+        return warIncludesMap; //return an empy map
     }
 
     /**
