@@ -326,14 +326,12 @@ final class Central implements ControllerHandler {
         if(!getModes().contains(mode)) {
             return;
         }
-        
+//        debugLog("removeMode()=" + mode.getDisplayName());
         model.removeMode(mode);
-        
         if(isVisible()) {
             viewRequestor.scheduleRequest(
                 new ViewRequest(null, View.CHANGE_MODE_REMOVED, null, mode));
         }
-        
         WindowManagerImpl.getInstance().doFirePropertyChange(
             WindowManager.PROP_MODES, null, null);
     }
@@ -385,6 +383,7 @@ final class Central implements ControllerHandler {
             if(WindowManagerImpl.getInstance().isTopComponentPersistentWhenClosed(tc)) {
                 model.addModeClosedTopComponent(mode, tc);
             } else {
+                //mkleint since one cannot close the sliding mode just like that, we don't need to check the previous mode of the tc.
                 model.removeModeTopComponent(mode, tc);
             }
         }
@@ -396,12 +395,17 @@ final class Central implements ControllerHandler {
         } else {
             newActive = oldActive;
         }
+//        debugLog("closeMode()");
         
         // Remove mode from model if is not permanennt and emptied.
         boolean modeRemoved = false;
         if(!mode.isPermanent() && model.getModeTopComponents(mode).isEmpty()) {
-            model.removeMode(mode);
-            modeRemoved = true;
+            // only if no sliding modes' tc points to this mode, then it's ok to remove it.
+            if (doCheckSlidingModes(mode)) {
+//                debugLog("do close mode=" + mode.getDisplayName());
+                model.removeMode(mode);
+                modeRemoved = true;
+            }
         }
         
         if(isVisible()) {
@@ -638,10 +642,15 @@ final class Central implements ControllerHandler {
             if(model.containsModeTopComponent(m, tc)) {
                 tcRemoved = true;
                 model.removeModeTopComponent(m, tc);
-                
+//                debugLog("removeTopComponentFromOtherModes()");
+
                 // Remove mode from model if is not permanennt and emptied.
                 boolean modeRemoved = false;
-                if(!m.isPermanent() && m.isEmpty()) {
+                if(!m.isPermanent() && m.isEmpty() && doCheckSlidingModes(m) 
+                    // now the tc is not added to the sliding mode yet, but is *somehow* expected to be..
+                    // maybe needs redesign..
+                        && mode.getKind() != Constants.MODE_KIND_SLIDING) {
+//                    debugLog("removeTopComponentFromOtherModes() - really removing=" + m.getDisplayName());
                     model.removeMode(m);
                     modeRemoved = true;
                 }
@@ -667,7 +676,7 @@ final class Central implements ControllerHandler {
         if(viewChange && !tc.canClose()) {
             return;
         }
-
+        
         model.removeModeTopComponent(mode, tc);
 
         ModeImpl oldActive = getActiveMode();
@@ -683,12 +692,20 @@ final class Central implements ControllerHandler {
             model.setMaximizedMode(null);
         }
         
+//        debugLog("removeModeTopComponent()");
         // Remove mode from model if is not permanennt and emptied.
         boolean modeRemoved = false;
         if(!mode.isPermanent() && model.getModeTopComponents(mode).isEmpty()) {
-            model.removeMode(mode);
-            modeRemoved = true;
+            // remove only if there's no other component in sliding modes that has this one as the previous mode.
+            //TODO
+            if (doCheckSlidingModes(mode)) {
+//                debugLog("removeModeTopComponent() -removing " + mode.getDisplayName());
+                model.removeMode(mode);
+                modeRemoved = true;
+            }
         }
+        
+        
         
         if(viewChange && isVisible()) {
             viewRequestor.scheduleRequest(new ViewRequest(
@@ -716,6 +733,41 @@ final class Central implements ControllerHandler {
             WindowManagerImpl.notifyRegistryTopComponentActivated(
                 newActive.getSelectedTopComponent());
         }
+    }
+    
+   // remove the mode only if there's no other component in sliding modes that has this one as the previous mode.
+    private boolean doCheckSlidingModes(ModeImpl mode) {
+        ModeImpl slid = model.getSlidingMode(Constants.BOTTOM);
+        if (slid != null) {
+            TopComponent[] tcs = slid.getTopComponents();
+            for (int i = 0; i < tcs.length; i++) {
+                ModeImpl impl = model.getModeTopComponentPreviousMode(slid, tcs[i]);
+                if (impl == mode) {
+                    return false;
+                }
+            }
+        }
+        slid = model.getSlidingMode(Constants.LEFT);
+        if (slid != null) {
+            TopComponent[] tcs = slid.getTopComponents();
+            for (int i = 0; i < tcs.length; i++) {
+                ModeImpl impl = model.getModeTopComponentPreviousMode(slid, tcs[i]);
+                if (impl == mode) {
+                    return false;
+                }
+            }
+        }
+        slid = model.getSlidingMode(Constants.RIGHT);
+        if (slid != null) {
+            TopComponent[] tcs = slid.getTopComponents();
+            for (int i = 0; i < tcs.length; i++) {
+                ModeImpl impl = model.getModeTopComponentPreviousMode(slid, tcs[i]);
+                if (impl == mode) {
+                    return false;
+                }
+            }
+        }        
+        return true;
     }
     
     // XXX
@@ -1420,6 +1472,7 @@ final class Central implements ControllerHandler {
     }
 
     public void userClosedTopComponent(ModeImpl mode, TopComponent tc) {
+//        debugLog("userClosedTopComponent");
         if(WindowManagerImpl.getInstance().isTopComponentPersistentWhenClosed(tc)) {
             addModeClosedTopComponent(mode, tc);
         } else {
@@ -1590,8 +1643,10 @@ final class Central implements ControllerHandler {
     
     public void userDisabledAutoHide(TopComponent tc, ModeImpl source) {
         ModeImpl targetMode = getModeTopComponentPreviousMode(tc, source);
+//        debugLog("userDisabledAutoHide()=" + targetMode);
         
         if ((targetMode == null) || !model.getModes().contains(targetMode)) {
+//            debugLog("userDisabledAutoHide- previous one doesn't exist");
             // mode to return to isn't valid anymore, try constraints
             SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints(source, tc);
             constraints = constraints == null ? new SplitConstraint[0] : constraints;
@@ -1604,6 +1659,7 @@ final class Central implements ControllerHandler {
         moveTopComponentsIntoMode(targetMode, new TopComponent[] { tc } );
         
         if (source.isEmpty()) {
+//            debugLog("userDisabledAutoHide- removing " + source.getDisplayName());
             model.removeMode(source);
         }
         
@@ -1638,5 +1694,9 @@ final class Central implements ControllerHandler {
     
     // ControllerHandler <<
     ////////////////////////////
+    
+    private static void debugLog(String message) {
+        Debug.log(Central.class, message);
+    }    
 
 }
