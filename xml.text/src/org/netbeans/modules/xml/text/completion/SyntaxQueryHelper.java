@@ -303,8 +303,9 @@ public class SyntaxQueryHelper {
                 break;
 
             case XMLDefaultTokenContext.WS_ID:
-                if (StartTag.class.equals(syntaxNode.getClass()) 
-                || EmptyTag.class.equals(syntaxNode.getClass())) {
+                if ((StartTag.class.equals(syntaxNode.getClass()) 
+                 || EmptyTag.class.equals(syntaxNode.getClass())) 
+                 && !token.getImage().startsWith("/")) {
                     ctx.init((Element)syntaxNode, ""); // GrammarQuery.v2 takes Element ctx 
                     return COMPLETION_TYPE_ATTRIBUTE;
                 } else {
