@@ -16,23 +16,72 @@ package com.netbeans.enterprise.modules.db.explorer.nodes;
 import java.io.IOException;
 import java.util.*;
 import java.text.MessageFormat;
+import java.lang.reflect.Method;
+import java.awt.datatransfer.Transferable;
+import javax.swing.SwingUtilities;
+
+import org.openide.*;
+import org.openide.cookies.InstanceCookie;
+import org.openide.nodes.NodeTransfer;
+import org.openide.nodes.Node;
+import org.openide.util.datatransfer.PasteType;
+import org.openide.util.NbBundle;
+
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.*;
 import com.netbeans.enterprise.modules.db.*;
 import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
-import org.openide.util.datatransfer.PasteType;
-import java.awt.datatransfer.Transferable;
-import org.openide.nodes.NodeTransfer;
-import org.openide.nodes.Node;
-import javax.swing.SwingUtilities;
-import org.openide.util.NbBundle;
-import org.openide.*;
 
 // Node for Table/View/Procedure things.
 
-public class TableNode extends DatabaseNode
+public class TableNode extends DatabaseNode implements InstanceCookie
 {
+	public void setInfo(DatabaseNodeInfo nodeinfo)
+	{
+		super.setInfo(nodeinfo);
+	    getCookieSet().add(this);
+	}
+
+	public String instanceName() 
+	{
+		return "com.netbeans.sql.ConnectionSource";
+    }    
+
+	public Class instanceClass() throws IOException, ClassNotFoundException
+	{
+		return Class.forName("com.netbeans.sql.ConnectionSource", true, org.openide.TopManager.getDefault ().currentClassLoader ());
+	}
+	
+	public Object instanceCreate()
+	{
+		DatabaseNodeInfo info = getInfo();
+		try {
+			Method met;
+			Class objclass = instanceClass();
+			String drv = info.getDriver();
+			String db = info.getDatabase();
+			String usr = info.getUser();
+			String pwd = info.getPassword();
+			Object obj =  objclass.newInstance();
+			
+			met = objclass.getMethod("setDriver", new Class[] {String.class});
+			if (met != null) met.invoke(obj, new String[] {drv});
+			met = objclass.getMethod("setDatabase", new Class[] {String.class});
+			if (met != null) met.invoke(obj, new String[] {db});
+			met = objclass.getMethod("setUsername", new Class[] {String.class});
+			if (met != null) met.invoke(obj, new String[] {usr});
+			met = objclass.getMethod("setPassword", new Class[] {String.class});
+			if (met != null) met.invoke(obj, new String[] {pwd});
+			
+			return obj;
+			
+		} catch (Exception ex) {
+			ex.printStackTrace ();
+			return null;
+		}
+	}
+
 	public void setName(String newname)
 	{
 		try {

@@ -89,6 +89,11 @@
 				prefix = "jdbc:rmi://<HOST>:<PORT>/jdbc:cloudscape:<DB>";
 			},
 			{
+				name = "IBM DB2";
+				driver = "COM.ibm.db2.jdbc.app.DB2Driver";
+				prefix = "jdbc:db2:<DB>";
+			},
+			{
 				name = "Hypersonic SQL";
 				driver = "hSql.hDriver";
 				prefix = "jdbc:HypersonicSQL:<DB>";
@@ -1127,7 +1132,7 @@
 		resultset = (catalog,schema,name,type);
 		options = {
 			cut = NO;
-			copy = NO;
+			copy = YES;
 			delete = YES;
 		};	
 		children_ordering = {

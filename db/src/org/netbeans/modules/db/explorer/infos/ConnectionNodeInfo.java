@@ -100,8 +100,9 @@ implements ConnectionOperations
 			disconnect();
 			Vector cons = RootNode.getOption().getConnections();
 			DatabaseConnection cinfo = (DatabaseConnection)getDatabaseConnection();
-			if (!cons.contains(cinfo)) throw new Exception("connection does not exist");
-			cons.remove(cinfo);
+			if (cons.contains(cinfo)) cons.remove(cinfo);
+//			throw new Exception("connection does not exist");
+//			cons.remove(cinfo);
 		} catch (Exception e) {
 			throw new IOException(e.getMessage());
 		}

@@ -137,7 +137,8 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
     */
 	public boolean canDestroy()
 	{
-		return writable && delflag;
+//		System.out.println("Node "+getInfo().getName()+" writable "+writable+" deletable "+delflag);
+		return /*writable &&*/ delflag;
 	}
 
 	public void destroy() throws IOException

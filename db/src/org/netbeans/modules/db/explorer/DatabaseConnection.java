@@ -264,7 +264,8 @@ public class DatabaseConnection extends Object implements DBConnection
 	{
 		if (obj instanceof DBConnection) {
 			DBConnection con = (DBConnection)obj;
-			return (drv.equals(con.getDriver()) && db.equals(con.getDatabase()) && usr.equals(con.getUser()));		}
+			return db.equals(con.getDatabase());		
+		}
 		
 		return false;
 	}
