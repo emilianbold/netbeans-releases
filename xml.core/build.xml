@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -35,16 +35,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <property name="build.compiler.debug" value="on"/>
 
-
-    <target name="init">
-        <property file="${xml_root}/spec-vers.properties"/>
-        <filter  token="API_SPEC_VERS_SUBST" value="${xml.api.specification.version}"/>
-        <filter token="CORE_SPEC_VERS_SUBST" value="${xml.core.specification.version}"/>
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-        <property name="xml.implementation.version" value="${buildnumber}"/>
-        <filter token="XML_BUILD_NUMBER_SUBST"  value="${xml.implementation.version}"/>
-    </target>
-
     <target name="compile">
         <echo message="Compiling XML core module classes..."/>
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
@@ -61,10 +51,14 @@ Microsystems, Inc. All Rights Reserved.
         <for-each locations="compat"/>
     </target>
 
-    <target name="jars" depends="init,compile">
+    <target name="jars" depends="compile">
         <mkdir dir="netbeans/modules"/>
-
-        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+        <property file="${xml_root}/spec-vers.properties"/>
+        <copy file="manifest.mf" tofile="manifest-subst.mf">
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </copy>
         <locjar jarfile="netbeans/modules/autoload/xml-core.jar"
                 manifest="manifest-subst.mf"
                 compress="false">
@@ -72,9 +66,6 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="compat/src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
             <locale name="ja"/>
         </locjar>
-    </target>
-
-    <target name="release">
     </target>
 
     <target name="javahelp">
@@ -98,12 +89,12 @@ Microsystems, Inc. All Rights Reserved.
         </locjar>
     </target>
 
-    <target name="netbeans" depends="jars,release,javahelp">
+    <target name="netbeans" depends="jars,javahelp">
         <genlist targetname="nbm" outputfiledir="netbeans"/>
     </target>
 
     
-    <target name="reload" depends="init,compile" description="Test module inside running IDE (API Support with Ant required).">
+    <target name="reload" depends="compile" description="Test module inside running IDE (API Support with Ant required).">
         <mkdir dir="test"/>
 
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
