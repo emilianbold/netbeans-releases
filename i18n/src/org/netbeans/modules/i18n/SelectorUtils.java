@@ -293,7 +293,7 @@ public class SelectorUtils {
 	   }
                     
 	   DataFolder cookie = (DataFolder)nodes[0].getCookie(DataFolder.class);
-	   return (cookie != null && !cookie.getPrimaryFile().isReadOnly());
+	   return (cookie != null && cookie.getPrimaryFile().canWrite());
 	 }
        },
        panel
