@@ -101,7 +101,6 @@ public abstract class FormatterIndentEngine extends IndentEngine {
         boolean old = getFormatter().expandTabs();
         // Must call setter because of turning into custom property
         getFormatter().setExpandTabs(expandTabs);
-        updateShiftWidth();
         if (old != expandTabs) {
             firePropertyChange(EXPAND_TABS_PROP,
                 old ? Boolean.TRUE : Boolean.FALSE,
@@ -117,23 +116,12 @@ public abstract class FormatterIndentEngine extends IndentEngine {
     public void setSpacesPerTab(int spacesPerTab) {
         int old = getFormatter().getSpacesPerTab();
         getFormatter().setSpacesPerTab(spacesPerTab);
-        updateShiftWidth();
         if (old != spacesPerTab) {
             firePropertyChange(SPACES_PER_TAB_PROP,
                 new Integer(old),
                 new Integer(spacesPerTab)
             );
         }
-    }
-
-    /** This method is used for updating shift-width
-     * after manual change of one of the parameters
-     * it's computed from.
-     */
-    private void updateShiftWidth() {
-        ExtFormatter f = getFormatter();
-        int shw = f.expandTabs() ? f.getSpacesPerTab() : f.getTabSize();
-        f.setShiftWidth(shw);
     }
 
     public void setAcceptedMimeTypes(String[] mimes) {
