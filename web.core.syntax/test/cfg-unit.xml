@@ -14,16 +14,29 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="unit test config">
 
-    <testbag testattribs="validation" executor="code" name="jsp syntax parser test">
+    <testbag testattribs="validation" executor="code" name="jsp syntax parser tests">
         <testset dir="unit/src">
             <patternset>
-		<include name="**/*Test.class"/>
-		<!--include name="org/netbeans/test/web/core/syntax/CompletionTest.class"/-->
+                <include name="org/netbeans/test/web/core/syntax/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+   
+     <testbag testattribs="validation" executor="ide" name="jsp folding tests">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/test/web/folding/*Test.class"/>
             </patternset>
         </testset>
     </testbag>
     
     <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
+    
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
+    
+    <executor name="ide-nogui" antfile="build-qa-functional.xml" target="runidetest">
+    	<property name="" value=""/>
+    </executor>
     
     <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
     

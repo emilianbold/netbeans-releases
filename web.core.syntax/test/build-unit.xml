@@ -49,12 +49,17 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar"/>
                 <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor-lib.jar"/>
+                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar"/>
                 
                 <pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-modules-web-core-syntax.jar"/>
+                <pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-modules-web-project.jar"/>
+                <pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-api-web-webmodule.jar"/>
                 
                 <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
                 <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>                
-                <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-project-libraries.jar"/>                
+                <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-project-libraries.jar"/>
+                
+                
             </classpath>
         </buildTests>
     </target>
@@ -81,8 +86,11 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar"/>
                 <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor-lib.jar"/>
+                <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar"/>
                 
                 <pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-modules-web-core-syntax.jar"/>
+                <pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-modules-web-project.jar"/>
+                <pathelement location="${web/webapi.dir}/${nb.modules.dir}/org-netbeans-api-web-webmodule.jar"/>
                 
                 <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
                 <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>                
