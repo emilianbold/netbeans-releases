@@ -114,6 +114,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     if (!(comp instanceof RADMenuItemComponent)) throw new IllegalArgumentException ();
     subComponents.add (comp);
     ((RADMenuItemComponent)comp).initParent (this);
+    addVisualMenu ((RADMenuItemComponent) comp);
     ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
   }
 
@@ -343,6 +344,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
 
 /*
  * Log
+ *  9    Gandalf   1.8         12/8/99  Pavel Buzek     
  *  8    Gandalf   1.7         12/2/99  Pavel Buzek     AWT menu is displayed in
  *       form at design time (a swing equivalent is created for each awt menu 
  *       and displyed instead)
