@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="core qa-performance test config">
 
     <!-- testbag common for all suites to setup usedir -->
-    <testbag testattribs="measure_ui or measure_menus or measure_dialogs or measure_actions or measure_setup or measure_memory_usage or temp" prio="1"
+    <testbag testattribs="measure_ui or measure_menus or measure_dialogs or measure_actions or measure_setup or measure_memory_usage or memory_dialog or memory_action or memory_menu or temp" prio="1"
              executor="ide_perf_setup" name="Setup IDE for UI responsiveness">
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -159,8 +159,8 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 -->    
 
-    <testbag testattribs="measure_memory_usage" prio="2"
-             executor="ide_performance_memory_usage" name="Measure Memory Usage" >
+    <testbag testattribs="measure_memory_usage or memory_dialog" prio="2"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Dialog" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/memory_usage/MeasureMemoryUsage_dialog_1.class"/>
@@ -168,8 +168,8 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_memory_usage" prio="3"
-             executor="ide_performance_memory_usage" name="Measure Memory Usage" >
+    <testbag testattribs="measure_memory_usage or memory_dialog" prio="3"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Dialog" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/memory_usage/MeasureMemoryUsage_dialog_2.class"/>
@@ -177,8 +177,8 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_memory_usage" prio="4"
-             executor="ide_performance_memory_usage" name="Measure Memory Usage" >
+    <testbag testattribs="measure_memory_usage or memory_dialog" prio="4"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Dialog" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/memory_usage/MeasureMemoryUsage_dialog_3.class"/>
@@ -186,8 +186,8 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_memory_usage" prio="5"
-             executor="ide_performance_memory_usage" name="Measure Memory Usage" >
+    <testbag testattribs="measure_memory_usage or memory_dialog" prio="5"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Dialog" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/memory_usage/MeasureMemoryUsage_dialog_4.class"/>
@@ -195,8 +195,8 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_memory_usage" prio="6"
-             executor="ide_performance_memory_usage" name="Measure Memory Usage" >
+    <testbag testattribs="measure_memory_usage or memory_dialog" prio="6"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Dialog" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/memory_usage/MeasureMemoryUsage_dialog_5.class"/>
@@ -204,8 +204,8 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_memory_usage" prio="7"
-             executor="ide_performance_memory_usage" name="Measure Memory Usage" >
+    <testbag testattribs="measure_memory_usage or memory_dialog" prio="7"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Dialog" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/memory_usage/MeasureMemoryUsage_dialog_6.class"/>
@@ -213,8 +213,8 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_memory_usage" prio="8"
-             executor="ide_performance_memory_usage" name="Measure Memory Usage" >
+    <testbag testattribs="measure_memory_usage or memory_dialog" prio="8"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Dialog" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/memory_usage/MeasureMemoryUsage_dialog_7.class"/>
@@ -222,8 +222,8 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_memory_usage" prio="9"
-             executor="ide_performance_memory_usage" name="Measure Memory Usage" >
+    <testbag testattribs="measure_memory_usage or memory_action" prio="9"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Action" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/memory_usage/MeasureMemoryUsage_action_1.class"/>
@@ -231,8 +231,8 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_memory_usage" prio="10"
-             executor="ide_performance_memory_usage" name="Measure Memory Usage" >
+    <testbag testattribs="measure_memory_usage or memory_action" prio="10"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Action" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/memory_usage/MeasureMemoryUsage_action_2.class"/>
@@ -240,8 +240,8 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="measure_memory_usage" prio="11"
-             executor="ide_performance_memory_usage" name="Measure Memory Usage" >
+    <testbag testattribs="measure_memory_usage or memory_action" prio="11"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Action" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/memory_usage/MeasureMemoryUsage_action_3.class"/>
@@ -249,8 +249,8 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_memory_usage" prio="12"
-             executor="ide_performance_memory_usage" name="Measure Memory Usage" >
+    <testbag testattribs="measure_memory_usage or memory_action" prio="12"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Action" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/memory_usage/MeasureMemoryUsage_action_4.class"/>
@@ -258,8 +258,8 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_memory_usage" prio="13"
-             executor="ide_performance_memory_usage" name="Measure Memory Usage" >
+    <testbag testattribs="measure_memory_usage or memory_action" prio="13"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Action" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/memory_usage/MeasureMemoryUsage_action_5.class"/>
@@ -267,8 +267,8 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_memory_usage" prio="14"
-             executor="ide_performance_memory_usage" name="Measure Memory Usage" >
+    <testbag testattribs="measure_memory_usage or memory_action" prio="14"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Action" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/memory_usage/MeasureMemoryUsage_action_6.class"/>
@@ -276,11 +276,74 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_memory_usage" prio="15"
-             executor="ide_performance_memory_usage" name="Measure Memory Usage" >
+    <testbag testattribs="measure_memory_usage or memory_action" prio="15"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Action" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/memory_usage/MeasureMemoryUsage_action_7.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="measure_memory_usage or memory_menu" prio="16"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Menu" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/memory_usage/MeasureMemoryUsage_menu_1.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="measure_memory_usage or memory_menu" prio="17"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Menu" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/memory_usage/MeasureMemoryUsage_menu_2.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="measure_memory_usage or memory_menu" prio="18"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Menu" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/memory_usage/MeasureMemoryUsage_menu_3.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="measure_memory_usage or memory_menu" prio="19"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Menu" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/memory_usage/MeasureMemoryUsage_menu_4.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="measure_memory_usage or memory_menu" prio="20"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Menu" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/memory_usage/MeasureMemoryUsage_menu_5.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="measure_memory_usage or memory_menu" prio="21"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Menu" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/memory_usage/MeasureMemoryUsage_menu_6.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="measure_memory_usage or memory_menu" prio="22"
+             executor="ide_performance_memory_usage" name="Measure Memory Usage Menu" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/memory_usage/MeasureMemoryUsage_menu_7.class"/>
 	    </patternset>
 	</testset>
     </testbag>
