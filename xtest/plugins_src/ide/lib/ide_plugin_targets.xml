@@ -247,17 +247,25 @@ It can cause problems when temp files are not deleted if test crashes
         
         <!-- On windows if nb.exe is available, run it because it prints log messages to the 
              console. Otherwise run netbeans.exe launcher. -->
-        <available file="${netbeans.dest.dir}/bin/nb.exe" property="nb.exe"/>
-        <condition property="launcher" value="nb.exe">
-            <isset property="nb.exe"/>
+        <condition property="xtest.ide.launcher" value="nb.exe">
+            <and>
+                <os family="windows"/>
+                <available file="${netbeans.dest.dir}/bin/nb.exe"/>
+            </and>
         </condition>
-        <condition property="launcher" value="netbeans.exe">
-            <not>
-                <isset property="nb.exe"/>
-            </not>
+        <condition property="xtest.ide.launcher" value="netbeans.exe">
+            <and>
+                <os family="windows"/>
+                <not>
+                    <available file="${netbeans.dest.dir}/bin/nb.exe"/>
+                </not>
+            </and>
         </condition>
+        <!-- All other OS use netbeans launcher. -->
+        <property name="xtest.ide.launcher" value="netbeans"/>
         
-        <ideTestRunner dir="${netbeans.dest.dir}/bin" executable="${netbeans.dest.dir}/bin/${launcher}" workdir="${xtest.workdir}/sys"
+        <ideTestRunner dir="${netbeans.dest.dir}/bin" executable="${netbeans.dest.dir}/bin/${xtest.ide.launcher}"
+              workdir="${xtest.workdir}/sys"
               os="Windows 95 Windows 98 Windows Me Windows NT Windows 2000 Windows XP"
               failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
               enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
@@ -269,7 +277,7 @@ It can cause problems when temp files are not deleted if test crashes
               os="Linux SunOS Solaris Mac OS X" 
               failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
               enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
-            <arg line="./netbeans ${args}"/>
+            <arg line="./${xtest.ide.launcher} ${args}"/>
             <syspropertyfile file="${_ideplugin.test.propertyfile}"/>
         </ideTestRunner>    
         
