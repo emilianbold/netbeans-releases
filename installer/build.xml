@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
 		<target name="init-modules">
 	<!--		<style destdir="." in="D:/builds/NETBEANS/unpacked/netbeans/update_tracking.xml" out="modulesDef.properties" style="modulesDef.xsl"/>
 			<filter filtersfile="modulesDef.properties" />
-			<copy file="src/org/netbeans/installer/actions/DetectAction.yava" toFile="src/org/netbeans/installer/actions/DetectAction.java" filtering="true" /> -->
+			<copy file="src/org/netbeans/installer/actions/DetectAction.yava" toFile="src/org/netbeans/installer/actions/DetectAction.java" filtering="true" /> -->
 		</target>
 																																		
 		<target name="init" depends="check-buildnumber,check-nb-id,init-modules" >        
@@ -116,10 +116,17 @@ Microsystems, Inc. All Rights Reserved.
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}" />
         <filter token="product-key" value="${product-key}" />
         <copy file="NB.xml" tofile="NB-subst.xml" filtering="on" />
+        <copy file="NB_ml.xml" tofile="NB_ml-subst.xml" filtering="on" />
     </target>    
     <target name="build" depends="compile,build-init"> 
         <exec dir="${is-install-dir}" executable="cmd.exe" os="Windows 2000" failonerror="false" >
             <arg line="/c D:/builds/netbeans/nb_all/installer/buildNB.bat" />
+        </exec>
+    </target>
+ 
+    <target name="mlbuild" depends="compile,build-init"> 
+        <exec dir="${is-install-dir}" executable="cmd.exe" os="Windows 2000" failonerror="false" >
+            <arg line="/c D:/builds/netbeans/nb_all/installer/buildNB_ml.bat" />
         </exec>
     </target>
  
