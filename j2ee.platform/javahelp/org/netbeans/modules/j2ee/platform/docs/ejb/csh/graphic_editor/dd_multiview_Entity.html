@@ -29,22 +29,24 @@
 <p>The Overview section for entity beans lets you set general information about 
   the entity bean:</p>
 <ul>
-  <li><b>Name.</b> Specifies the enterprise bean's name. This name is not 
-    related to the bean's JNDI name that is specified in the <tt>sun-ejb-jar.xml</tt> 
+  <li><b>Name.</b> Specifies the enterprise bean's name. This name is not related 
+    to the bean's JNDI name that is specified in the <tt>sun-ejb-jar.xml</tt> 
     deployment descriptor. The name must be unique in the <tt>ejb-jar.xml</tt> 
     file.</li>
   <li><b>Persistence Type.</b> Specifies whether the bean's persistence is managed 
     by the the container or by the bean.</li>
   <li><b>Abstract Schema Name.</b> Specifies the abstract schema abstract schema 
-    that declares the persistent fields and relationships of an entity bean. You 
-    can view the schema for your EJB module under the project's Configuration 
-    Files node.</li>
+    that declares the persistent fields and relationships of an entity bean. </li>
   <li><b>Primary Key Field.</b> Specifies the primary key field of the entity 
     bean. The combo box lists all of the CMP fields in your entity bean. A primary 
-    key uniquely identifies an entity bean. </li>
+    key uniquely identifies an entity bean. 
+    <!--TODO we might say something about compound fields-->
+  </li>
   <li><b>Primary Key Class.</b> Displays your primary key's class. You can change 
     the class by going to the entity bean's CMP fields section and entering a 
-    new class in the primary key field's Type column. This does what???</li>
+    new class in the primary key field's Type column. You can also specify a primary 
+    key class of an compound key if Multiple (Compound primary key) is selected 
+    in the Primary Key field.</li>
   <li><b>Reentrant.</b> Specifies whether the bean is reentrant. Reentrant enterprise 
     beans can handle multiple simultaneous, interleaved, or nested invocations 
     which will not interfere with each other. </li>

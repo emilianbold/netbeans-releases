@@ -26,19 +26,19 @@
   Configuration Files node in the Projects window and double-clicking <tt>ejb-jar.xml</tt>. 
   The Enterprise Beans section of the General view contains a section for each 
   of your EJB module's enterprise beans. </p>
-<p>The section for each enterprise bean has an Enterprise Bean Implementation 
-  and Interfaces section where you can view and edit the bean class name and bean 
-  interface names. (Because message-driven beans do not have interfaces, this 
-  section is just called Enterprise Bean Implementation for message-driven beans.) 
-  You can do any of the following:</p>
+<p>Each enterprise bean has an Enterprise Bean Implementation and Interfaces section 
+  where you can view and edit the bean class name and bean interface names. (Because 
+  message-driven beans do not have interfaces, this section is just called Enterprise 
+  Bean Implementation for message-driven beans.) You can do any of the following:</p>
 <ul>
   <li><b>Add or remove interfaces. </b>Select or deselect the checkbox for the 
-    remote or local interfaces. When you add interfaces, the IDE the corresponding 
+    remote or local interfaces. When you add interfaces, the IDE adds the corresponding 
     interface, home interface, and business interface based on the name of the 
-    bean. You can only move a bean to another package in the same project.</li>
+    bean. </li>
   <li><b>Move a bean class or interface.</b> Place the cursor in the bean class 
     or interface's field and click Move Class. In the dialog that appears, select 
-    the new package from the Package combo box, then click Next. 
+    the new package from the Package combo box, then click Next. You can only 
+    mode a bean class to another package in the same project. 
     <ul class="note">
       <li>This command is not a way to move an entire enterprise bean. This only 
         moves the selected class or interface and not the corresponding classes. 
@@ -51,7 +51,13 @@
     or interface's field and click Rename Class. In the dialog that appears, type 
     a new name for the class or interface and click Next.</li>
   <li><b>Open the class or interface source file.</b> Click Go To Source for any 
-    class or interface.</li>
+    class or interface. 
+    <ul class="note">
+      <li>You can also quickly navigate to an enterprise bean's classes and interfaces 
+        by right-clicking the enterprise bean's node in the Projects window and 
+        choosing from the Go To Source submenu.</li>
+    </ul>
+  </li>
 </ul>
 <p>All enterprise beans also have the following sections in the <tt>ejb-jar.xml</tt> 
   visual editor:</p>

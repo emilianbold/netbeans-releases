@@ -31,15 +31,16 @@
   For each relationship, specify the following: </p>
 <ul>
   <li><b> Name. </b>A unique name for the relationship.</li>
-  <li><b>(Optional) Description.</b> A short description of the relationship. </li>
-  <li><b>Role Name. </b>A unique name for each relationship role.</li>
+  <li><b>(Optional) Description.</b> A short description of the relationship. 
+  </li>
+  <li><b>(Optional) Role Name. </b>A unique name for each relationship role.</li>
   <li><b>Entity Bean. </b>The bean that is the source of the relationship role.</li>
   <li><b>Multiplicity. </b>Whether the relationship is one-to-one, one-to-many, 
     many-to-one, or many-to-many.</li>
   <li><b>Cascade Delete. </b>Whether the bean is deleted whenever the other bean 
     in the relationship is deleted.</li>
   <li><b>Create CMR Field. </b>Whether to create a Container-Managed Relationship 
-    (CMR) field for the bean. If you create a CMR field, the application server 
+    (CMR) field in the bean. If you create a CMR field, the application server 
     can search for and return instances of the bean the field references. <br>
     Specify the name and return type of the CMR field. The name of the class must 
     begin with a lower-case letter. If the multiplicity of the bean it is returning 
