@@ -235,7 +235,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
                     if (info.canAdd(propmap, pname)) {
                         pclass = (String)propmap.get(DatabaseNodeInfo.CLASS);
                         canWrite = info.canWrite(propmap, pname, writable);
-                        if (pclass.equals("java.lang.Boolean")) pc = Boolean.TYPE; //NOI18N
+                        if (pclass.equals("java.lang.Boolean")) pc = Boolean.class; //NOI18N
                         else if (pclass.equals("java.lang.Integer")) pc = Integer.TYPE; //NOI18N
                         else pc = Class.forName(pclass);
 

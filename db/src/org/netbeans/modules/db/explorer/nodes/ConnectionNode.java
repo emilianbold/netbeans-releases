@@ -58,8 +58,10 @@ public class ConnectionNode extends DatabaseNode /*implements InstanceCookie*/ {
                     setConnectionName();
                 if (evt.getPropertyName().equals(DatabaseNodeInfo.USER))
                     setConnectionName();
-                if (evt.getPropertyName().equals(DatabaseNodeInfo.CONNECTION))
+                if (evt.getPropertyName().equals(DatabaseNodeInfo.CONNECTION)) {
                     update((Connection)evt.getNewValue());
+                    firePropertyChange(null, null, null);
+                }
             }
         });
 
