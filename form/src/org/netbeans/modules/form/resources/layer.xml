@@ -391,4 +391,8 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
+    <folder name="Shortcuts">
+        <file name="C-8[org.netbeans.modules.form.actions.ComponentInspectorAction].instance" />
+    </folder>
+
 </filesystem>
