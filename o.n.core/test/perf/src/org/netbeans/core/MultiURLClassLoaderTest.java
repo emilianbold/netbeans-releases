@@ -15,37 +15,46 @@ package org.netbeans.core;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.loaders.DataObject;
 
-import org.netbeans.performance.Benchmark;
 import org.openide.filesystems.multifs.MultiXMLFSTest;
-import org.openide.filesystems.multifs.MultiXMLFSTest.FSWrapper;
+import org.openide.filesystems.multifs.MultiXMLFSTest.FileWrapper;
 import org.openide.filesystems.ReadOnlyFSTest;
 import org.openide.loaders.Utilities;
+
+import org.netbeans.performance.MapArgBenchmark;
+import org.netbeans.performance.DataManager;
+import org.netbeans.performance.DataDescriptor;
 
 /**
  * Performance test for MultiURLClassLoader.
  */
-public class MultiURLClassLoaderTest extends Benchmark {
+public class MultiURLClassLoaderTest extends MapArgBenchmark implements DataManager {
     
-    private static final Object[] ARGS = new Object[] { new Integer(3000) };
+    private static final String CLASS_NO_KEY = "CLASS_NO";
     
-    private MultiURLClassLoader multicloader;
-    private MultiFileSystem mfs;
-    private FileObject[] fileObjects;
+    private MultiXMLFSTest mfstest;
     private InstanceDataObject[] instanceObjects;
-    private FSWrapper[] wrappers;
     
     /** Creates new Benchmark without arguments for given test method
      * @param name the name fo the testing method
      */    
     public MultiURLClassLoaderTest(String name) {
         super(name);
-        setArgumentArray(ARGS);
+        setArgumentArray(createArguments());
+        init();
+    }
+    
+    /** Creates an argument array */
+    private Map[] createArguments() {
+        Map[] ret = new Map[] { createDefaultMap(), createDefaultMap() };
+        ret[1].put(CLASS_NO_KEY, new Integer(1000));
+        return ret;
     }
 
     /** Creates new Benchmark for given test method with given set of arguments
@@ -54,6 +63,12 @@ public class MultiURLClassLoaderTest extends Benchmark {
      */    
     public MultiURLClassLoaderTest(String name, Object[] args) {
         super(name, args);
+        init();
+    }
+    
+    /** init */
+    private void init() {
+        mfstest = new MultiXMLFSTest(getName());
     }
     
     // things to override by the implementation of a particular Benchmark
@@ -66,17 +81,17 @@ public class MultiURLClassLoaderTest extends Benchmark {
      * or testing enviroment.
      */
     protected void setUp() throws Exception {
-        int size = 100; //0; //((Integer) getArgument()).intValue();
-        MultiXMLFSTest multifstest = new MultiXMLFSTest(getName());
-        fileObjects = multifstest.setUpFileObjects(size);
-        wrappers = multifstest.getFSWrappers();
+        int size = getIntValue(CLASS_NO_KEY);
+        
+        FileObject[] fileObjects = mfstest.setUpFileObjects(size);
+        FileWrapper[] wrappers = mfstest.getFileWrappers();
+        
         URLClassLoader[] parents = new URLClassLoader[wrappers.length];
         for (int i = 0; i < parents.length; i++) {
-            parents[i] = wrappers[i].getClassLoader();
+            parents[i] = new URLClassLoader(new URL[] { wrappers[i].getMnt().toURL() });
         }
         
-        multicloader = new MultiURLClassLoader(new URL[] {}, parents);
-        mfs = multifstest.getMultiFileSystem();
+        MultiURLClassLoader multicloader = new MultiURLClassLoader(new URL[] {}, parents);
         
         instanceObjects = fileObjects2InstanceDataObjects(fileObjects);
         setClassLoader(instanceObjects, multicloader);
@@ -108,11 +123,46 @@ public class MultiURLClassLoaderTest extends Benchmark {
      * or testing enviroment.
      */
     protected void tearDown() throws Exception {
-        for (int i = 0; i < wrappers.length; i++) {
-            ReadOnlyFSTest.delete(wrappers[i].getFile());
-        }
     }
     
+    /** Creates a Map with default arguments values */
+    protected Map createDefaultMap() {
+        Map map = super.createDefaultMap();
+        map.put(CLASS_NO_KEY, new Integer(500));
+        map.put(MultiXMLFSTest.XMLFS_NO_KEY, new Integer(30));
+        return map;
+    }
+    
+    /** Called after tearDown()  */
+    public void tearDownData() throws Exception {
+        mfstest.tearDownData();
+    }
+
+    /** Called before setUp()  */
+    public DataDescriptor createDataDescriptor() {
+        return new MUCDataDescriptor(getIntValue(CLASS_NO_KEY), getIntValue(MultiXMLFSTest.XMLFS_NO_KEY));
+    }
+    
+    /** Called before setUp()  */
+    public void setUpData(DataDescriptor ddesc) throws Exception {
+        MUCDataDescriptor dd = (MUCDataDescriptor) ddesc;
+        DataDescriptor other = dd.getDD();
+        
+        int fileNo = getIntValue(CLASS_NO_KEY);
+        Map map = (Map) getArgument();
+        map.put(ReadOnlyFSTest.FILE_NO_KEY, new Integer(fileNo));
+        
+        mfstest.setParent(this);
+        
+        if (other == null) {
+            other = mfstest.createDataDescriptor();
+            dd.setDD(other);
+        }
+        
+        mfstest.setUpData(other);
+    }
+
+    //--------------------- tests ---------------------
     /** MultiURLClassLoader */
     public void testInstanceClasses() throws Exception {
         for (int i = 0; i < instanceObjects.length; i++) {
@@ -121,7 +171,6 @@ public class MultiURLClassLoaderTest extends Benchmark {
         }
     }
     
-
     /*
     public static void main(String[] args) throws Exception {
         MultiURLClassLoaderTest mcltest = new MultiURLClassLoaderTest("test");
