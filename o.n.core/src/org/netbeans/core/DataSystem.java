@@ -88,41 +88,6 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
     refresh ();
   }
 
-  /** Initializes properties by adding them to the sheet.
-  * Called asynchronously from the constructor.
-  */
-  protected synchronized Sheet createSheet() {
-    Sheet s = Sheet.createDefault ();
-    Sheet.Set ss = s.get (Sheet.PROPERTIES);
-    ss.put (
-      new PropertySupport.ReadWrite (
-        DataSystem.this.PROP_NAME,
-        String.class,
-        NbBundle.getBundle(DataSystem.class).getString("PROP_DS_Name"),
-        NbBundle.getBundle(DataSystem.class).getString("HINT_DS_Name")
-      ) {
-
-        public Object getValue() {
-          return DataSystem.this.getName();
-        }
-
-        public void setValue(Object val) {
-          if (! (val instanceof String)) return;
-          renameRepository((String) val);
-        }
-      }
-    );
-    return s;
-  }
-
-  /** renames this node */
-  void renameRepository(String name) {
-    String old = getName();
-    setName(name);
-    if (old.equals(name)) return;
-    firePropertyChange(DataSystem.this.PROP_NAME, old, name);
-  }
-
   /** writes this node to ObjectOutputStream and its display name
   */
   public Handle getHandle() {
@@ -253,6 +218,9 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
 
 /*
  * Log
+ *  15   Gandalf   1.14        5/9/99   Ian Formanek    Fixed bug 1655 - 
+ *       Renaming of top level nodes is not persistent (removed the possibility 
+ *       to rename).
  *  14   Gandalf   1.13        5/4/99   Jaroslav Tulach No new directory & jar 
  *       in Repository node.
  *  13   Gandalf   1.12        4/9/99   Ian Formanek    Removed debug printlns

@@ -27,7 +27,6 @@ import com.netbeans.ide.*;
 import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.options.*;
 import com.netbeans.ide.actions.PropertiesAction;
-import com.netbeans.ide.actions.RenameAction;
 import com.netbeans.ide.util.HelpCtx;
 import com.netbeans.ide.util.actions.*;
 import com.netbeans.ide.nodes.*;
@@ -81,10 +80,6 @@ final class EnvironmentNode extends AbstractNode {
     return node;
   }
 
-  public boolean canRename () {
-    return true;
-  }
-
   /** Does all initialization */
   private void initialize () {
     initializeChildren();
@@ -115,29 +110,6 @@ final class EnvironmentNode extends AbstractNode {
     */
   }
 
-  /** Method that prepares properties. Called from initialize.
-  */
-  protected Sheet createSheet () {
-    ResourceBundle bundle = NbBundle.getBundle(EnvironmentNode.class);
-    // default sheet with "properties" property set
-    Sheet sheet = Sheet.createDefault();
-    sheet.get(Sheet.PROPERTIES).put(
-      new PropertySupport.Name(
-        this,
-        bundle.getString("PROP_Environment_name"),
-        bundle.getString("HINT_Environment_name")
-      )
-    );
-    return sheet;
-  }
-
-  /** renames this node */
-  /*public void rename(String name) {
-    String old = getDisplayName();
-    setDisplayName(name);
-    firePropertyChange(EnvironmentNode.this.PROP_DISPLAY_NAME, old, name);
-  }*/
-
   /** Getter for set of actions that should be present in the
   * popup menu of this node. This set is used in construction of
   * menu returned from getContextMenu and specially when a menu for
@@ -147,8 +119,6 @@ final class EnvironmentNode extends AbstractNode {
   */
   public SystemAction[] createActions () {
     return new SystemAction[] {
-      SystemAction.get(RenameAction.class),
-      null,
       SystemAction.get(PropertiesAction.class)
     };
   }
@@ -176,6 +146,9 @@ final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  14   Gandalf   1.13        5/9/99   Ian Formanek    Fixed bug 1655 - 
+ *       Renaming of top level nodes is not persistent (removed the possibility 
+ *       to rename).
  *  13   Gandalf   1.12        3/28/99  David Simonek   menu support improved 
  *       (icons, actions...)
  *  12   Gandalf   1.11        3/26/99  Jaroslav Tulach 

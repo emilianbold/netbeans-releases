@@ -81,42 +81,6 @@ public final class LoaderPoolNode extends AbstractNode {
     getCookieSet ().add (new Index ());
   }
 
-  /** Method that creates sheet for this node.
-  */
-  protected Sheet createSheet () {
-    final ResourceBundle bundle = NbBundle.getBundle(LoaderPoolNode.class);
-    // default sheet with "properties" property set
-    Sheet sheet = Sheet.createDefault();
-    sheet.get(Sheet.PROPERTIES).put(
-      new PropertySupport.ReadOnly (LoaderPoolNode.this.PROP_DISPLAY_NAME,
-                                    String.class,
-                                    bundle.getString("PROP_LoaderPool"),
-                                    bundle.getString("HINT_LoaderPool")) {
-        public Object getValue() {
-          return LoaderPoolNode.this.getDisplayName();
-        }
-      }
-    );
-    // and set new sheet
-    return sheet;
-  }
-
-  /** Do not allow renaming.*/
-  public boolean canRename () {
-    return false;
-  }
-
-  /** Renames this node
-  * @param name New name of this node
-  */
-  /*public void rename(String name) {
-    String old = getDisplayName();
-    if ((old != null) && old.equals(name)) return;
-    setDisplayName(name);
-    firePropertyChange(LoaderPoolNode.this.PROP_DISPLAY_NAME, old, name);
-  }*/
-
-
   /** Getter for set of actions that should be present in the
   * popup menu of this node.
   *
@@ -590,6 +554,9 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  18   Gandalf   1.17        5/9/99   Ian Formanek    Fixed bug 1655 - Renaming
+*       of top level nodes is not persistent (removed the possibility to 
+*       rename).
 *  17   Gandalf   1.16        5/4/99   Jaroslav Tulach Relative URL for modules.
 *  16   Gandalf   1.15        4/15/99  Martin Ryzl     add fixed
 *  15   Gandalf   1.14        4/7/99   Ian Formanek    Rename 
