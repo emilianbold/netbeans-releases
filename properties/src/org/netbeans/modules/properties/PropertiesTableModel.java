@@ -301,7 +301,22 @@ public class PropertiesTableModel extends AbstractTableModel {
     
     /** Inner class. Listener for changes on bundle structure. */
     private class TablePropertyBundleListener implements PropertyBundleListener {
-        public void bundleChanged(PropertyBundleEvent evt) {
+        public void bundleChanged(final PropertyBundleEvent evt) {
+            // quick patch for bug #13026
+            // (ensure visual updates are performed in AWT thread)
+            if (java.awt.EventQueue.isDispatchThread()) {
+                doBundleChanged(evt);
+            }
+            else {
+                java.awt.EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        doBundleChanged(evt);
+                    }
+                });
+            }
+        }
+
+        private void doBundleChanged(PropertyBundleEvent evt) {
             int changeType = evt.getChangeType();
             
             if(changeType == PropertyBundleEvent.CHANGE_STRUCT) {
