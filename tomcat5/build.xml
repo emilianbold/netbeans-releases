@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
 	  </fileset>
 	</classpath>
 	<arg line= "-f ${tomcat5_dir}/resources/tomcat5_config.dtd" />
-	<arg line= "-mdd ${tomcat5_dir}/resources/tomcat5_config.mdd" />
+	<!--<arg line= "-mdd ${tomcat5_dir}/resources/tomcat5_config.mdd" />-->
 	<arg line= "-p org.netbeans.modules.tomcat.tomcat5.config" />
 	<arg line= "-r src" />
      </java>
