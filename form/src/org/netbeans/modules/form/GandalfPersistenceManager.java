@@ -1409,6 +1409,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (valueNode != null) {
             try {
                 value = decodePrimitiveValue(valueNode.getNodeValue(), propertyType);
+                if (ed != null) {
+                    ed.setValue(value);
+                    value = ed.getValue();
+                }
             } catch (IllegalArgumentException e) {
                 value = null; // should not happen
             }
