@@ -59,6 +59,9 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
 
     private int horizontalScroll1ChangedValue = -1;
     private int horizontalScroll2ChangedValue = -1;
+    private int horizontalScroll3ChangedValue = -1;
+    private int verticalScroll1ChangedValue = -1;
+    private int verticalScroll3ChangedValue = -1;
     
     private LinesComponent linesComp1;
     private LinesComponent linesComp2;
@@ -89,6 +92,7 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         //HelpCtx.setHelpIDString (getRootPane (), DiffComponent.class.getName ());
         initActions();
         diffSplitPane.setResizeWeight(0.5);
+        mergeSplitPane.setResizeWeight(0.5);
         putClientProperty("PersistenceType", "Never");
     }
 
@@ -186,14 +190,14 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
 
         leftCommandPanel.setLayout(new java.awt.GridBagLayout());
 
-        acceptLeftButton.setText("Accept");
+        acceptLeftButton.setText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptLeftButton.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 1);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         leftCommandPanel.add(acceptLeftButton, gridBagConstraints);
 
-        acceptAndNextLeftButton.setText("Accept & Next");
+        acceptAndNextLeftButton.setText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptAndNextLeftButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 1, 0, 2);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -235,13 +239,13 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
 
         rightCommandPanel.setLayout(new java.awt.GridBagLayout());
 
-        acceptRightButton.setText("Accept");
+        acceptRightButton.setText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptRightButton.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 1);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         rightCommandPanel.add(acceptRightButton, gridBagConstraints);
 
-        acceptAndNextRightButton.setText("Accept & Next");
+        acceptAndNextRightButton.setText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptAndNextRightButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.insets = new java.awt.Insets(0, 1, 0, 2);
@@ -574,6 +578,8 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         final JScrollBar scrollBarV1 = jScrollPane1.getVerticalScrollBar();
         final JScrollBar scrollBarH2 = jScrollPane2.getHorizontalScrollBar();
         final JScrollBar scrollBarV2 = jScrollPane2.getVerticalScrollBar();
+        final JScrollBar scrollBarH3 = resultScrollPane.getHorizontalScrollBar();
+        final JScrollBar scrollBarV3 = resultScrollPane.getVerticalScrollBar();
         scrollBarV1.getModel().addChangeListener(new javax.swing.event.ChangeListener()  {
             public void stateChanged(javax.swing.event.ChangeEvent e) {
                 int value = scrollBarV1.getValue();
@@ -583,6 +589,16 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
 //                    System.out.println("setting v2=" + value);
 //                    Thread.dumpStack();
                 }
+                // TODO use a better algorithm to adjust scrollbars, if there are large changes, this will not work optimally.
+                if (value == verticalScroll1ChangedValue) return ;
+                int max1 = scrollBarV1.getMaximum();
+                int max2 = scrollBarV3.getMaximum();
+                int ext1 = scrollBarV1.getModel().getExtent();
+                int ext2 = scrollBarV3.getModel().getExtent();
+                if (max1 == ext1) verticalScroll3ChangedValue = 0;
+                else verticalScroll3ChangedValue = (value*(max2 - ext2))/(max1 - ext1);
+                verticalScroll1ChangedValue = -1;
+                scrollBarV3.setValue(verticalScroll3ChangedValue);
             }
         });
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
@@ -596,6 +612,22 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
                 }
             }
         });
+        /* don't not let the result source vertical scrolling to influence the diff panels.
+        scrollBarV3.getModel().addChangeListener(new javax.swing.event.ChangeListener()  {
+            public void stateChanged(javax.swing.event.ChangeEvent e) {
+                int value = scrollBarV3.getValue();
+                if (value == verticalScroll3ChangedValue) return ;
+                int max1 = scrollBarV3.getMaximum();
+                int max2 = scrollBarV1.getMaximum();
+                int ext1 = scrollBarV3.getModel().getExtent();
+                int ext2 = scrollBarV1.getModel().getExtent();
+                if (max1 == ext1) verticalScroll1ChangedValue = 0;
+                else verticalScroll1ChangedValue = (value*(max2 - ext2))/(max1 - ext1);
+                verticalScroll3ChangedValue = -1;
+                scrollBarV1.setValue(verticalScroll1ChangedValue);
+            }
+        });
+         */
         scrollBarH1.getModel().addChangeListener(new javax.swing.event.ChangeListener()  {
             public void stateChanged(javax.swing.event.ChangeEvent e) {
                 int value = scrollBarH1.getValue();
@@ -619,16 +651,49 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
                 if (value == horizontalScroll2ChangedValue) return;
                 int max1 = scrollBarH1.getMaximum();
                 int max2 = scrollBarH2.getMaximum();
+                int max3 = scrollBarH3.getMaximum();
                 int ext1 = scrollBarH1.getModel().getExtent();
                 int ext2 = scrollBarH2.getModel().getExtent();
-                if (max2 == ext2) horizontalScroll1ChangedValue = 0;
-                else horizontalScroll1ChangedValue = (value*(max1 - ext1))/(max2 - ext2);
+                int ext3 = scrollBarH3.getModel().getExtent();
+                if (max2 == ext2) {
+                    horizontalScroll1ChangedValue = 0;
+                    horizontalScroll3ChangedValue = 0;
+                } else {
+                    horizontalScroll1ChangedValue = (value*(max1 - ext1))/(max2 - ext2);
+                    horizontalScroll3ChangedValue = (value*(max3 - ext3))/(max2 - ext2);
+                }
                 horizontalScroll2ChangedValue = -1;
                 //                System.out.println("H2 value = "+value+" => H1 value = "+horizontalScroll1ChangedValue+"\t\tmax1 = "+max1+", max2 = "+max2);
                 scrollBarH1.setValue(horizontalScroll1ChangedValue);
+                scrollBarH3.setValue(horizontalScroll3ChangedValue);
+            }
+        });
+        scrollBarH3.getModel().addChangeListener(new javax.swing.event.ChangeListener()  {
+            public void stateChanged(javax.swing.event.ChangeEvent e) {
+                int value = scrollBarH3.getValue();
+                //                System.out.println("stateChangedH1:value = "+value+", horizontalScroll1ChangedValue = "+horizontalScroll1ChangedValue);
+                if (value == horizontalScroll3ChangedValue) return;
+                int max1 = scrollBarH1.getMaximum();
+                int max2 = scrollBarH2.getMaximum();
+                int max3 = scrollBarH3.getMaximum();
+                int ext1 = scrollBarH1.getModel().getExtent();
+                int ext2 = scrollBarH2.getModel().getExtent();
+                int ext3 = scrollBarH3.getModel().getExtent();
+                if (max3 == ext3) {
+                    horizontalScroll1ChangedValue = 0;
+                    horizontalScroll2ChangedValue = 0;
+                } else {
+                    horizontalScroll1ChangedValue = (value*(max1 - ext1))/(max3 - ext3);
+                    horizontalScroll2ChangedValue = (value*(max2 - ext2))/(max3 - ext3);
+                }
+                horizontalScroll3ChangedValue = -1;
+                //                System.out.println("H1 value = "+value+" => H2 value = "+horizontalScroll2ChangedValue+"\t\tmax1 = "+max1+", max2 = "+max2);
+                scrollBarH1.setValue(horizontalScroll1ChangedValue);
+                scrollBarH2.setValue(horizontalScroll2ChangedValue);
             }
         });
         diffSplitPane.setDividerLocation(0.5);
+        mergeSplitPane.setDividerLocation(0.5);
     }
     
     private String strCharacters(char c, int num) {
@@ -1083,6 +1148,8 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
             panel.setSource2(new java.io.BufferedReader(new java.io.InputStreamReader(panel.getClass().getResourceAsStream("/org/netbeans/modules/merge/builtin/visualizer/MergePanel.java"))));
             panel.setResultSource(new java.io.BufferedReader(new java.io.InputStreamReader(panel.getClass().getResourceAsStream("/org/netbeans/modules/merge/builtin/visualizer/MergePanel.java"))));
         } catch (java.io.IOException ioex) {}
+        //panel.addEmptyLines1(15, 2);
+        //panel.highlightRegion2(16, 17, new java.awt.Color(180, 255, 180));
         panel.addEmptyLines1(37, 2);
         panel.highlightRegion2(38, 39, new java.awt.Color(180, 255, 180));
         panel.highlightRegion1(45, 45, new java.awt.Color(160, 200, 255));

@@ -159,7 +159,9 @@
                       <SubComponents>
                         <Component class="javax.swing.JButton" name="acceptLeftButton">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Accept"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                              <ResourceString bundle="org/netbeans/modules/merge/builtin/visualizer/Bundle.properties" key="MergePanel.acceptLeftButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                            </Property>
                           </Properties>
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -169,7 +171,9 @@
                         </Component>
                         <Component class="javax.swing.JButton" name="acceptAndNextLeftButton">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Accept &amp; Next"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                              <ResourceString bundle="org/netbeans/modules/merge/builtin/visualizer/Bundle.properties" key="MergePanel.acceptAndNextLeftButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                            </Property>
                           </Properties>
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -232,7 +236,9 @@
                       <SubComponents>
                         <Component class="javax.swing.JButton" name="acceptRightButton">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Accept"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                              <ResourceString bundle="org/netbeans/modules/merge/builtin/visualizer/Bundle.properties" key="MergePanel.acceptRightButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                            </Property>
                           </Properties>
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -242,7 +248,9 @@
                         </Component>
                         <Component class="javax.swing.JButton" name="acceptAndNextRightButton">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Accept &amp; Next"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                              <ResourceString bundle="org/netbeans/modules/merge/builtin/visualizer/Bundle.properties" key="MergePanel.acceptAndNextRightButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                            </Property>
                           </Properties>
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
