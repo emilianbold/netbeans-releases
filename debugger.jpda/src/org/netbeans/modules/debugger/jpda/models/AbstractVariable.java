@@ -342,7 +342,7 @@ public class AbstractVariable implements Variable {
      */
     public String getType () {
         if (genericType != null) return genericType;
-        if (getInnerValue () == null) return null;
+        if (getInnerValue () == null) return "";
         return getInnerValue ().type ().name ();
     }
 
