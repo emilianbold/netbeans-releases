@@ -1,7 +1,7 @@
 /*
  * Abbreviations.java
  *
- * Created on 8/28/02 11:08 AM
+ * Created on 1/2/03 4:04 PM
  */
 package org.netbeans.jellytools.modules.editor;
 
@@ -22,7 +22,7 @@ public class Abbreviations extends JDialogOperator {
     /** Creates new Abbreviations that can handle it.
      */
     public Abbreviations() {
-        super("Abbreviations");
+        super(java.util.ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_Abbreviations"));
     }
     
     private JTableOperator _tabAbbreviations;
@@ -75,7 +75,7 @@ public class Abbreviations extends JDialogOperator {
      */
     public JButtonOperator btAdd() {
         if (_btAdd==null) {
-            _btAdd = new JButtonOperator(this, "Add...");
+            _btAdd = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.modules.editor.options.Bundle").getString("KBEP_Add"));
         }
         return _btAdd;
     }
@@ -85,7 +85,7 @@ public class Abbreviations extends JDialogOperator {
      */
     public JButtonOperator btEdit() {
         if (_btEdit==null) {
-            _btEdit = new JButtonOperator(this, "Edit...");
+            _btEdit = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("AEP_Edit"));
         }
         return _btEdit;
     }
@@ -95,7 +95,7 @@ public class Abbreviations extends JDialogOperator {
      */
     public JButtonOperator btRemove() {
         if (_btRemove==null) {
-            _btRemove = new JButtonOperator(this, "Remove");
+            _btRemove = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("Remove"));
         }
         return _btRemove;
     }
@@ -105,7 +105,7 @@ public class Abbreviations extends JDialogOperator {
      */
     public JButtonOperator btOK() {
         if (_btOK==null) {
-            _btOK = new JButtonOperator(this, "OK");
+            _btOK = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("KBEP_OK_LABEL"));
         }
         return _btOK;
     }
@@ -115,7 +115,7 @@ public class Abbreviations extends JDialogOperator {
      */
     public JButtonOperator btCancel() {
         if (_btCancel==null) {
-            _btCancel = new JButtonOperator(this, "Cancel");
+            _btCancel = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.openide.explorer.propertysheet.Bundle").getString("CTL_Cancel"));
         }
         return _btCancel;
     }
@@ -125,7 +125,7 @@ public class Abbreviations extends JDialogOperator {
      */
     public JButtonOperator btHelp() {
         if (_btHelp==null) {
-            _btHelp = new JButtonOperator(this, "Help");
+            _btHelp = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.openide.explorer.propertysheet.Bundle").getString("CTL_Help"));
         }
         return _btHelp;
     }
@@ -203,7 +203,7 @@ public class Abbreviations extends JDialogOperator {
     }
     
     public void addAbbreviation(String abbreviation, String expansion) {
-        btAdd().pushNoBlock();
+        btAdd().clickMouse();
         
         EnterAbbreviation enter = new EnterAbbreviation();
         
@@ -218,7 +218,7 @@ public class Abbreviations extends JDialogOperator {
             return false;
         
         tabAbbreviations().selectCell(row, 0);
-        btEdit().pushNoBlock();
+        btEdit().clickMouse();
         
         EnterAbbreviation enter = new EnterAbbreviation();
         
@@ -266,7 +266,7 @@ public class Abbreviations extends JDialogOperator {
         "|" + editorName);
         PropertySheetOperator property = new PropertySheetOperator(options);
         new TextFieldProperty(property,ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_Abbreviations")).openEditor();
-
+        
         Abbreviations abbs = new Abbreviations();
         
         options.close(); /*??? not sure whether this is assured to work*/
@@ -316,8 +316,26 @@ public class Abbreviations extends JDialogOperator {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        new Abbreviations().verify();
-        System.out.println("Abbreviations verification finished.");
+/*        EnterAbbreviation enter = new EnterAbbreviation();
+        enter.fillAbbreviation("En","Enumeration");
+        enter.btOK();
+  */      
+        
+        try {
+            //java.io.PrintWriter pw= new java.io.PrintWriter(new java.io.FileWriter("/tmp/abbrevs.java"));
+            Map map=Abbreviations.listAbbreviations(java.util.ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("OPTIONS_java"));
+            java.util.Iterator keys=map.keySet().iterator();
+            String key;
+            while (keys.hasNext()) {
+                key=(String)(keys.next());
+                System.out.println(key+" "+map.get(key));
+                //  pw.println("new Abbreviation(\""+key+"\", \""+map.get(key)+"\", \"\", \"\"),");
+            }
+            //pw.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
     }
 }
 

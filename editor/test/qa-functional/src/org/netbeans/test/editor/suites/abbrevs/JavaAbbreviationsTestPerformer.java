@@ -38,16 +38,17 @@ public class JavaAbbreviationsTestPerformer extends AbbreviationsTest {
         new JavaAbbreviationsTestPerformer("testAbbreviationChange").testAbbreviationChange();
         new JavaAbbreviationsTestPerformer("testAbbreviationOKCancel").testAbbreviationOKCancel();*/
 /*        JavaAbbreviationsTest j = new JavaAbbreviationsTestPerformer("testAbbreviationTest");
-        
+ 
         j.prepareEditor();
         j.moveCaretIntoCode();*/
-//        printAbbreviations("Java Editor");
+        //        printAbbreviations("Java Editor");
     }
     
     public Abbreviation[] getAbbreviationsToAdd() {
         return new Abbreviation[] {
             new Abbreviation("test", "testIk", "", ""),
             new Abbreviation("ttest", "test|test", "", ""),
+            new Abbreviation("tryc", "try {\n    |\n} catch (Exception ex) {\n    ex.printStackTrace();\n}", "", "")
         };
     }
     
@@ -91,6 +92,7 @@ public class JavaAbbreviationsTestPerformer extends AbbreviationsTest {
             new Abbreviation("serr", "System.err.println(\"|\");", "", ""),
             new Abbreviation("Psfs", "public static final String ", "", ""),
             new Abbreviation("pe", "protected ", "", ""),
+            new Abbreviation("ab", "abstract ", "", ""),
             new Abbreviation("Psfi", "public static final int ", "", ""),
             new Abbreviation("Ex", "Exception", "", ""),
             new Abbreviation("st", "static ", "", ""),
@@ -123,7 +125,6 @@ public class JavaAbbreviationsTestPerformer extends AbbreviationsTest {
             new Abbreviation("br", "break", "", ""),
             new Abbreviation("twni", "throw new InternalError();", "", ""),
             new Abbreviation("impq", "import javax.sql.", "", ""),
-            new Abbreviation("ab", "abstract ", "", ""),
         };
     }
     
@@ -135,20 +136,22 @@ public class JavaAbbreviationsTestPerformer extends AbbreviationsTest {
     
     public synchronized EditorOperator getTestEditor() {
         if (editor == null) {
-            EditorWindowOperator editorWindow = new EditorWindowOperator();
-            FileObject           fo           = Repository.getDefault().find("org.netbeans.test.editor.suites.abbrevs.data.testfiles.JavaAbbreviationsTest", "Test", "java");
+            
+            FileObject fo = Repository.getDefault().findResource("org/netbeans/test/editor/suites/abbrevs/data/testfiles/JavaAbbreviationsTest/Test.java");
+            
             try {
                 DataObject   od = DataObject.find(fo);
                 EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
                 
                 ec.open();
-
+                
+                EditorWindowOperator editorWindow = new EditorWindowOperator();
                 editor = new EditorOperator(editorWindow, "Test");
             } catch (DataObjectNotFoundException e) {
                 assertTrue(false);
             }
         }
-      
+        
         return editor;
     }
     
@@ -168,8 +171,8 @@ public class JavaAbbreviationsTestPerformer extends AbbreviationsTest {
         
         op.pushKey(KeyEvent.VK_HOME, KeyEvent.CTRL_MASK);
         op.pushKey(KeyEvent.VK_END, KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK);
-//        op.select(op.getText());
-//        op.select(1, op.getLineNumber());
+        //        op.select(op.getText());
+        //        op.select(1, op.getLineNumber());
         op.pushKey(KeyEvent.VK_DELETE);
     }
     
@@ -180,5 +183,5 @@ public class JavaAbbreviationsTestPerformer extends AbbreviationsTest {
     public void finishEditor() {
         getTestEditor().closeDiscard();
     }
-
+    
 }

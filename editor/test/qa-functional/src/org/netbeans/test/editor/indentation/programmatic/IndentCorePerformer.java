@@ -9,7 +9,9 @@ public class IndentCorePerformer extends NbTestCase {
         super(testCase);
     }
     public void tearDown() throws Exception {
-        assertFile("Output does not match golden file.", getGoldenFile(), new File(getWorkDir(), this.getName() + ".ref"), null, new org.netbeans.junit.diff.SimpleDiff());
+        assertFile("Output does not match golden file.", getGoldenFile(), 
+        new File(getWorkDir(), this.getName() + ".ref"), new File(getWorkDir(), 
+        this.getName() + ".diff"), new org.netbeans.test.editor.LineDiff(false));
     }
     public void testwholeClass() throws Exception {
         PrintWriter log = null;

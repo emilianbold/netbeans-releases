@@ -45,11 +45,11 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Editor Application non-validation tests -->
 
-    <testbag testattribs="all,apps" name="TestApplicationNon-validation">
+    <testbag testattribs="all,apps" name="TestApplication Non-validation">
         <testset dir="qa-functional/src">
             <patternset>  
                 <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class" />
-                <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testRepository" />
+                <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testPackageCC" />
                 <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testInstantSubstitution" />                
             </patternset>
         </testset>
@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testDoWhile" />
                 <include name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTwoBrackets" />
-                <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testRepository" />
+                <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testPackageCC" />
                 <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testInstantSubstitution" />
             </patternset>
         </testset>

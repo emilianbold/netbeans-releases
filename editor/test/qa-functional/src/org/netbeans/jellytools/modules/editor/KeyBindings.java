@@ -269,12 +269,13 @@ public class KeyBindings extends JDialogOperator {
     /**
      * @param editorName
      * @return
-     */    
+     */
     public static KeyBindings invoke(String editorName) {
         OptionsOperator options = OptionsOperator.invoke();
         options.selectOption(ResourceBundle.getBundle("org/netbeans/core/Bundle").getString("UI/Services/Editing")+"|"+ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("OPTIONS_all")+"|" + editorName);
         PropertySheetOperator property = new PropertySheetOperator(options);
-        new TextFieldProperty(property,ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_KeyBindings")).openEditor();
+        TextFieldProperty tfp=new TextFieldProperty(property,ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_KeyBindings"));
+        tfp.openEditor();
         KeyBindings ret=new KeyBindings();
         options.close();
         return ret;
@@ -291,8 +292,19 @@ public class KeyBindings extends JDialogOperator {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        //repeating test
+        String[] names=new String[] {"Plain Editor","HTML Editor","Java Editor"};
+        List list;
+        for (int j=0;j < 20;j++) {
+            
+            for (int i=0;i < names.length;i++) {
+                list = KeyBindings.listActions(names[i]);
+                System.out.println("step "+j+" output size="+list.size());
+            }
+        }
+        /*
         String name="Plain Editor";
-        List list = KeyBindings.listActions(name);
+         
         try {
             File out=new File("/tmp/"+name+" actions.lst");
             PrintWriter pw=new PrintWriter(new FileWriter(out));
@@ -302,7 +314,7 @@ public class KeyBindings extends JDialogOperator {
             pw.close();
         } catch (Exception ex) {
             ex.printStackTrace();
-        }
+        }*/
     }
 }
 

@@ -43,7 +43,7 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
     }
     
     public EditorOperator openFile() {
-        FileObject fo = Repository.getDefault().find("org.netbeans.test.editor.suites.abbrevs.data.testfiles.AbbreviationsAddRemovePerformer", "Test", "java");
+        FileObject fo = Repository.getDefault().findResource("org/netbeans/test/editor/suites/abbrevs/data/testfiles/AbbreviationsAddRemovePerformer/Test.java");
         
         try {
             DataObject od = DataObject.find(fo);
@@ -102,6 +102,9 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
             Abbreviations.removeAbbreviation(editor, "tst");
             checkAbbreviation("ts");
             checkAbbreviation("tst");
+        } catch (Exception ex) {
+            log("Bug in test: "+ex.getMessage()+" by "+ex.getClass());
+            ex.printStackTrace(getLog());
         } finally {
             Utilities.restoreAbbreviationsState(backup);
             log("doTest finished");
@@ -134,7 +137,8 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
     
     public void tearDown() throws Exception {
         log("Finishing abbreviations add/remove test.");
-        assertFile("Output does not match golden file.", getGoldenFile(), new File(getWorkDir(), this.getName() + ".ref"), null, new LineDiff(false));
+        assertFile("Output does not match golden file.", getGoldenFile(), new File(getWorkDir(), this.getName() + ".ref"), 
+        new File(getWorkDir(), this.getName() + ".diff"), new LineDiff(false));
         isInFramework = false;
     }
     

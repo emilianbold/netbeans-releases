@@ -17,7 +17,7 @@ public class EnterAbbreviation extends JDialogOperator {
     /** Creates new EnterAbbreviation that can handle it.
      */
     public EnterAbbreviation() {
-        super("Enter Abbreviation");
+        super(java.util.ResourceBundle.getBundle("org.netbeans.modules.editor.options.Bundle").getString("AEP_EnterAbbrev"));
     }
     
     private JLabelOperator _lblAbbreviation;
@@ -38,7 +38,7 @@ public class EnterAbbreviation extends JDialogOperator {
      */
     public JLabelOperator lblAbbreviation() {
         if (_lblAbbreviation==null) {
-            _lblAbbreviation = new JLabelOperator(this, "Abbreviation:");
+            _lblAbbreviation = new JLabelOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.modules.editor.options.Bundle").getString("AIP_Abbrev"));
         }
         return _lblAbbreviation;
     }
@@ -58,7 +58,7 @@ public class EnterAbbreviation extends JDialogOperator {
      */
     public JLabelOperator lblExpansion() {
         if (_lblExpansion==null) {
-            _lblExpansion = new JLabelOperator(this, "Expansion:");
+            _lblExpansion = new JLabelOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.modules.editor.options.Bundle").getString("AIP_Expand"));
         }
         return _lblExpansion;
     }
@@ -78,7 +78,7 @@ public class EnterAbbreviation extends JDialogOperator {
      */
     public JButtonOperator btOK() {
         if (_btOK==null) {
-            _btOK = new JButtonOperator(this, "OK");
+            _btOK = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.modules.editor.options.Bundle").getString("KBEP_OK_LABEL"));
         }
         return _btOK;
     }
@@ -88,7 +88,7 @@ public class EnterAbbreviation extends JDialogOperator {
      */
     public JButtonOperator btCancel() {
         if (_btCancel==null) {
-            _btCancel = new JButtonOperator(this, "Cancel");
+            _btCancel = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.openide.explorer.propertysheet.Bundle").getString("CTL_Cancel"));
         }
         return _btCancel;
     }
@@ -98,7 +98,7 @@ public class EnterAbbreviation extends JDialogOperator {
      */
     public JButtonOperator btHelp() {
         if (_btHelp==null) {
-            _btHelp = new JButtonOperator(this, "Help");
+            _btHelp = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.openide.explorer.propertysheet.Bundle").getString("CTL_Help"));
         }
         return _btHelp;
     }
