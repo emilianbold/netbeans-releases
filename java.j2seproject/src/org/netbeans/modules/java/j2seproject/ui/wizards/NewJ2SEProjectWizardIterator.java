@@ -80,7 +80,7 @@ public class NewJ2SEProjectWizardIterator implements TemplateWizard.Iterator {
         String displayName = (String)wiz.getProperty("displayName");
         String mainClass = (String)wiz.getProperty("mainClass");
         J2SEProjectGenerator.createProject(dirF, codename, displayName, mainClass );                        
-        FileObject dir = FileUtil.fromFile(dirF)[0];
+        FileObject dir = FileUtil.toFileObject(dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
         
         // Returning set of DataObject of project diretory. 

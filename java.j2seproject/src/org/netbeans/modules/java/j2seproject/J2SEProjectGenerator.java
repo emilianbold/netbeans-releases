@@ -54,12 +54,11 @@ public class J2SEProjectGenerator {
         while (rootF.getParentFile() != null) {
             rootF = rootF.getParentFile();
         }
-        FileObject[] fo = FileUtil.fromFile(rootF);
-        assert fo.length > 0 : "At least disk roots must be mounted! " + rootF;
-        fo[0].getFileSystem().refresh(false);
-        fo = FileUtil.fromFile(dir);
-        assert fo.length > 0 : "No such dir on disk: " + dir;
-        FileObject dirFO = fo[0];
+        FileObject dirFO = FileUtil.toFileObject(rootF);
+        assert dirFO != null : "At least disk roots must be mounted! " + rootF;
+        dirFO.getFileSystem().refresh(false);
+        dirFO = FileUtil.toFileObject(dir);
+        assert dirFO != null : "No such dir on disk: " + dir;
         assert dirFO.isFolder() : "Not really a dir: " + dir;
         assert dirFO.getChildren().length == 0 : "Dir must have been empty: " + dir;
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProjectType.TYPE, codename);

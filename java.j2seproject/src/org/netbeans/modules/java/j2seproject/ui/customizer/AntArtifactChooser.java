@@ -123,11 +123,10 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
     private Project getProject( File projectDir ) {
         
         try {            
-            FileObject[] fos = FileUtil.fromFile( projectDir );
+            FileObject fo = FileUtil.toFileObject(projectDir);
             
-            if ( fos.length > 0 ) {
-                FileObject projectRoot = fos[0];
-                Project project = ProjectManager.getDefault().findProject( projectRoot );
+            if (fo != null) {
+                Project project = ProjectManager.getDefault().findProject(fo);
                 return project;
             }
         }
