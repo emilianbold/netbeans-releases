@@ -650,6 +650,22 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                 }
                 return;
             }
+            
+            try {
+                try2run();
+            } catch (IOException ex) {
+                //#25288: DO can be invalidated asynchronously (module disabling)
+                //then ignore IO exceptions
+                if (getDataObject().isValid()) {
+                    throw ex;
+                } else {
+                    return;
+                }
+            }
+        }
+        
+        /** try to perform atomic action */
+        private void try2run() throws IOException {
             org.openide.filesystems.FileLock lock;
             java.io.OutputStream los;
             synchronized (READWRITE_LOCK) {
@@ -722,8 +738,8 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             try {
                 String name = (String) getter.invoke(inst, null);
                 String oldName = (String) dobj.getPrimaryFile().getAttribute(EA_NAME);
-                if (name == null || !name.equals(oldName)) {
-                    dobj.getPrimaryFile().setAttribute(EA_NAME, name);
+                if (name != null && !name.equals(oldName)) {
+                    dobj.rename(name);
                 }
             } catch (Exception ex) {
                 err.annotate(ex, dobj.getPrimaryFile().toString());
