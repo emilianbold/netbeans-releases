@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.awt.BorderLayout;
 
+import com.netbeans.ide.TopManager;
 import com.netbeans.ide.actions.*;
 import com.netbeans.ide.awt.HtmlBrowser;
 import com.netbeans.ide.cookies.ViewCookie;
@@ -29,6 +30,7 @@ import com.netbeans.ide.loaders.DataObjectExistsException;
 import com.netbeans.ide.text.EditorSupport;
 import com.netbeans.ide.loaders.OpenSupport;
 import com.netbeans.ide.filesystems.FileObject;
+import com.netbeans.ide.filesystems.FileStateInvalidException;
 import com.netbeans.ide.nodes.Children;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.actions.SystemAction;
@@ -65,13 +67,12 @@ public class HtmlLoader extends UniFileLoader {
     super (MultiDataObject.class);
     setDisplayName(NbBundle.getBundle(HtmlLoader.class).
                    getString("PROP_HtmlLoader_Name"));
-//    getExtensions ().addExtension ("txt");
     getExtensions ().addExtension ("html");
     getExtensions ().addExtension ("htm");
     getExtensions ().addExtension ("shtml");
   }
 
-  protected MultiDataObject createMultiObject (FileObject primaryFile)
+  protected MultiDataObject createMultiObject (final FileObject primaryFile)
   throws DataObjectExistsException, IOException {
 
     class Obj extends MultiDataObject {
@@ -82,97 +83,31 @@ public class HtmlLoader extends UniFileLoader {
       protected com.netbeans.ide.nodes.Node createNodeDelegate () {
         DataNode n = new DataNode (Obj.this, Children.LEAF);
         n.setIconBase ("/com/netbeans/developer/modules/loaders/html/htmlObject");
+        n.setDefaultAction (SystemAction.get (OpenAction.class));
         return n;
       }
     };
 
     MultiDataObject obj = new Obj (primaryFile, this);
     EditorSupport es = new EditorSupport (obj.getPrimaryEntry ());
-    es.setActions (new SystemAction [] {
-      SystemAction.get (CutAction.class),
-      SystemAction.get (CopyAction.class),
-      SystemAction.get (PasteAction.class),
-    });
+    es.setMIMEType ("text/plain");
     obj.getCookieSet ().add (es);
-    obj.getCookieSet ().add (
-      new BrowserView (obj)
-    );
-    return obj;
-  }
-
-
-  // innerclasses ......................................................................
-
-  public static class BrowserView extends OpenSupport implements ViewCookie {
-    DataObject obj;
-
-    BrowserView (MultiDataObject obj) {
-      super (obj.getPrimaryEntry ());
-      this.obj = obj;
-    }
-
-    /** A method to create a new component. Overriden in subclasses.
-    * @return the cloneable top component for this support
-    */
-    protected CloneableTopComponent createCloneableTopComponent () {
-      return new BrowserCloneableTopComponent (obj);
-    }
-  }
-
-  public static class BrowserCloneableTopComponent extends CloneableTopComponent {
-    private HtmlBrowser browser;
-    DataObject obj;
-
-    /** Constructor
-    * @param obj data object we belong to
-    */
-    public BrowserCloneableTopComponent (DataObject obj) {
-      super (obj);
-      this.obj = obj;
-
-      setLayout (new BorderLayout ());
-//      if (actions != null)
-//        add (SystemAction.createToolbarPresenter (actions), BorderLayout.NORTH);
-
-      browser = new HtmlBrowser ();
-      try {
-        browser.setURL (obj.getPrimaryFile ().getURL ());
-      } catch (com.netbeans.ide.filesystems.FileStateInvalidException e) {
-        e.printStackTrace ();
+    obj.getCookieSet ().add (new ViewCookie () {
+      public void view () {
+        try {
+          TopManager.getDefault ().showUrl (primaryFile.getURL ());
+        } catch (FileStateInvalidException e) {
+        }  
       }
-      add (browser, BorderLayout.CENTER);
-    }
-
-    /** Is called from the clone method to create new component from this one.
-    * This implementation only clones the object by calling super.clone method.
-    * @return the copy of this object
-    */
-    protected CloneableTopComponent createClonedObject () {
-      return new BrowserCloneableTopComponent (obj);
-    }
-
-    /** This method is called when parent window of this component has focus,
-    * and this component is preferred one in it.
-    * Override this method to perform special action on component activation.
-    * (Typical thing to do here is set performers for your actions)
-    * Remember to call superclass to
-    */
-    protected void componentActivated () {
-    }
-
-    /**
-    * This method is called when parent window of this component losts focus,
-    * or when this component losts preferrence in the parent window.
-    * Override this method to perform special action on component deactivation.
-    * (Typical thing to do here is unset performers for your actions)
-    */
-    protected void componentDeactivated () {
-    }
+    });    
+    return obj;
   }
 }
 
 /*
 * Log
+*  13   Gandalf   1.12        5/12/99  Jan Jancura     Edit in txt editor & use 
+*       common Html view window
 *  12   Gandalf   1.11        4/1/99   Jaroslav Tulach Does not recognize .txt 
 *       files.
 *  11   Gandalf   1.10        3/26/99  Ian Formanek    Fixed use of obsoleted 
