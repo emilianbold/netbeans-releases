@@ -6,6 +6,7 @@ OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Provides: org.netbeans.modules.tomcat5
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.j2eeserver/3,
+ org.netbeans.modules.j2eeapis/1,
  org.openide.execution,
  org.openide.io,
  org.netbeans.modules.schema2beans/1

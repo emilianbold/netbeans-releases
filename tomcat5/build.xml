@@ -34,11 +34,11 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/openide/io/netbeans/modules/autoload/openide-io.jar"/>
         <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <pathelement location="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
-        <pathelement location="${nb_root}/j2eeserver/netbeans/modules/j2eeserver.jar"/>
-        <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/ext/ejb20.jar"/>
-        <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/ext/jmxri.jar"/>
-        <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/ext/javax77.jar"/>
-        <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/ext/jsr88javax.jar"/>
+        <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/j2eeserver.jar"/>
+        <pathelement location="${nb_root}/j2eeserver/external/ejb20.jar"/>
+        <pathelement location="${nb_root}/j2eeserver/external/jmxri.jar"/>
+        <pathelement location="${nb_root}/j2eeserver/external/javax77.jar"/>
+        <pathelement location="${nb_root}/j2eeserver/external/jsr88javax.jar"/>
         <pathelement location="${nb_root}/debuggercore/api/netbeans/modules/autoload/debugger-api.jar"/>
         <!--<pathelement location="${nb_root}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>-->
         <fileset dir="${nb_root}/openide/netbeans/lib">
