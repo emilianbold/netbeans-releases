@@ -333,10 +333,11 @@ public class Specification implements DatabaseSpecification {
     /** Drop index
     * @param indexName Name of index
     */
-    public AbstractCommand createCommandDropIndex(String indexName)
+    public DropIndex createCommandDropIndex(String tablename)
     throws CommandNotSupportedException
     {
-        return (AbstractCommand)createCommand(DROP_INDEX, indexName);
+        DropIndex dcmd = (DropIndex)createCommand(DROP_INDEX, tablename);
+        return dcmd;
     }
 
     /** Create view

@@ -91,7 +91,9 @@ public class IndexNodeInfo extends TableNodeInfo {
             String code = getCode();
             String table = (String)get(DatabaseNode.TABLE);
             Specification spec = (Specification)getSpecification();
-            AbstractCommand cmd = spec.createCommandDropIndex(getName());
+            DropIndex cmd = (DropIndex)spec.createCommandDropIndex(getName());
+            cmd.setTableName(table);
+            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
             //refresh list of columns due to the column's icons
             getParent().getParent().refreshChildren();
