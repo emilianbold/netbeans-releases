@@ -35,6 +35,12 @@ interface Index {
     void start();
     
     /**
+     * Stop any ongoing processing if there was any.
+     * Results will not generally be valid after this.
+     */
+    void cancel();
+    
+    /**
      * Get the index data.
      * Keys are XML element names.
      * Values are occurrence counts.

@@ -101,10 +101,19 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
         }
     }
     
+    public void cancel() {
+        synchronized (toProcess) {
+            running = false;
+        }
+    }
+    
     public void run() {
         while (true) {
             final Phadhail next;
             synchronized (toProcess) {
+                if (!running) {
+                    break;
+                }
                 while (toProcess.isEmpty()) {
                     try {
                         toProcess.wait();

@@ -13,6 +13,8 @@
 
 package threaddemo.apps.index;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -49,6 +51,11 @@ public class IndexApp extends JFrame {
         index.start();
         getContentPane().add(new JScrollPane(new JTable(tableModel, columns)));
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent ev) {
+                index.cancel();
+            }
+        });
         pack();
     }
     
