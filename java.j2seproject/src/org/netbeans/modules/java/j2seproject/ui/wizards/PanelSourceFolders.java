@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
@@ -34,6 +36,7 @@ public class PanelSourceFolders extends SettingsPanel {
 
     private PanelConfigureProject firer;
     private WizardDescriptor wizardDescriptor;
+    private boolean calculatePF;
 
     /** Creates new form PanelSourceFolders */
     public PanelSourceFolders (PanelConfigureProject panel) {
@@ -54,7 +57,7 @@ public class PanelSourceFolders extends SettingsPanel {
         };
         this.sources.getDocument().addDocumentListener(pl);
         this.tests.getDocument().addDocumentListener(pl);
-        pl = new DocumentListener (){
+        this.projectName.getDocument().addDocumentListener (new DocumentListener (){
             public void changedUpdate(DocumentEvent e) {
                 calculateProjectFolder ();
                 dataChanged ();
@@ -69,15 +72,35 @@ public class PanelSourceFolders extends SettingsPanel {
                 calculateProjectFolder ();
                 dataChanged ();
             }
-        };
-        this.projectName.getDocument().addDocumentListener (pl);        
-        this.projectLocation.getDocument().addDocumentListener(pl);
+        });        
+        this.projectLocation.getDocument().addDocumentListener(new DocumentListener () {
+            public void changedUpdate(DocumentEvent e) {             
+                setCalculateProjectFolder (false);
+                dataChanged ();
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                setCalculateProjectFolder (false);
+                dataChanged ();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                setCalculateProjectFolder (false);
+                dataChanged ();
+            }
+        });
     }
 
-    private void calculateProjectFolder () {
-        File f = new File (this.projectLocation.getText());
-        this.projectFolder.setText (f.getAbsolutePath() + File.separator + 
-        this.projectName.getText());
+    private synchronized void calculateProjectFolder () {
+        if (this.calculatePF) {                        
+            File f = ProjectChooser.getProjectsFolder();
+            this.projectLocation.setText (f.getAbsolutePath() + File.separator + this.projectName.getText());
+            this.calculatePF = true;
+        }
+    }
+    
+    private synchronized void setCalculateProjectFolder (boolean value) {
+        this.calculatePF = value;
     }
 
     private void dataChanged () {
@@ -108,20 +131,10 @@ public class PanelSourceFolders extends SettingsPanel {
         if (path!=null) {
             this.tests.setText (path);
         }
+        String projectName = null;
         File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
         if (projectLocation == null) {
-            projectLocation = ProjectChooser.getProjectsFolder();
-        }
-        else {
-            projectLocation = projectLocation.getParentFile();
-            //Workaround of "bad" (web) template iterators which set projdir to illegal value
-            if (projectLocation == null) {
-                projectLocation = ProjectChooser.getProjectsFolder();
-            }
-        }
-        this.projectLocation.setText (projectLocation.getAbsolutePath());
-        String projectName = (String) settings.getProperty ("displayName"); //NOI18N
-        if (projectName == null) {
+            projectLocation = ProjectChooser.getProjectsFolder();                
             int index = FoldersListSettings.getDefault().getNewProjectCount();
             String formater = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaProject");
             File file;
@@ -131,6 +144,14 @@ public class PanelSourceFolders extends SettingsPanel {
                 file = new File (projectLocation, projectName);                
             } while (file.exists());                                
             settings.putProperty (NewJ2SEProjectWizardIterator.PROP_NAME_INDEX, new Integer(index));                        
+            this.projectLocation.setText (projectLocation.getAbsolutePath());        
+            this.setCalculateProjectFolder(true);
+        }
+        else {
+            projectName = (String) settings.getProperty ("name"); //NOI18N
+            boolean tmpFlag = this.calculatePF;
+            this.projectLocation.setText (projectLocation.getAbsolutePath());
+            this.setCalculateProjectFolder(tmpFlag);
         }
         this.projectName.setText (projectName);                
         this.sources.selectAll ();
@@ -152,9 +173,10 @@ public class PanelSourceFolders extends SettingsPanel {
         settings.putProperty ("sourceRoot",srcRoot);    //NOI18N
         settings.putProperty("testRoot",testRoot);      //NOI18N
         settings.putProperty ("name",this.projectName.getText()); // NOI18N
-        settings.putProperty ("projdir",new File (this.projectFolder.getText())); // NOI18N
         File projectsDir = new File(this.projectLocation.getText());
-        if (projectsDir.isDirectory()) {
+        settings.putProperty ("projdir", projectsDir); // NOI18N        
+        projectsDir = projectsDir.getParentFile();
+        if (projectsDir != null && projectsDir.isDirectory()) {
             ProjectChooser.setProjectsFolder (projectsDir);
         }
     }
@@ -165,13 +187,35 @@ public class PanelSourceFolders extends SettingsPanel {
             return false; // Display name not specified
         }
         
-        File destFolder = new File( projectFolder.getText() );
+        File destFolder = new File( projectLocation.getText() );
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
-            // Folder exists and is not empty
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class,"MSG_ProjectFolderExists"));
-            return false;
-        }                        
+            String file = null;
+            for (int i=0; i< kids.length; i++) {
+                String childName = kids[i].getName();
+                if ("nbproject".equals(childName)) {   //NOI18N
+                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_NetBeansProject");
+                }
+                else if ("build".equals(childName)) {    //NOI18N
+                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildFolder");                                        
+                }
+                else if ("dist".equals(childName)) {   //NOI18N
+                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_DistFolder");                    
+                }
+                else if ("build.xml".equals(childName)) {   //NOI18N
+                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildXML");                    
+                }
+                else if ("manifest.mf".equals(childName)) { //NOI18N
+                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_Manifest");                    
+                }
+                if (file != null) {
+                    String format = NbBundle.getMessage (PanelSourceFolders.class,"MSG_ProjectFolderInvalid");
+                    wizardDescriptor.putProperty( "WizardPanel_errorMessage", MessageFormat.format(format, new Object[] {file}));  //NOI18N
+                    return false;
+                }
+            }
+        }
+        
         String fileName = sources.getText();
         if (fileName.length()==0) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
@@ -224,8 +268,6 @@ public class PanelSourceFolders extends SettingsPanel {
         jLabel6 = new javax.swing.JLabel();
         projectLocation = new javax.swing.JTextField();
         jButton3 = new javax.swing.JButton();
-        jLabel7 = new javax.swing.JLabel();
-        projectFolder = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -333,8 +375,9 @@ public class PanelSourceFolders extends SettingsPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         jPanel2.add(projectName, gridBagConstraints);
 
+        jLabel6.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
         jLabel6.setLabelFor(projectLocation);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_NWP1_ProjectLocation_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
@@ -363,23 +406,6 @@ public class PanelSourceFolders extends SettingsPanel {
         jPanel2.add(jButton3, gridBagConstraints);
         jButton3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSN_browseButton"));
         jButton3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_browseButton"));
-
-        jLabel7.setLabelFor(projectFolder);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-        jPanel2.add(jLabel7, gridBagConstraints);
-        jLabel7.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSN_createdFolderLabel"));
-        jLabel7.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_projectNameLabel"));
-
-        projectFolder.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 0);
-        jPanel2.add(projectFolder, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -474,10 +500,8 @@ public class PanelSourceFolders extends SettingsPanel {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JTextField projectFolder;
     private javax.swing.JTextField projectLocation;
     private javax.swing.JTextField projectName;
     private javax.swing.JTextField sources;

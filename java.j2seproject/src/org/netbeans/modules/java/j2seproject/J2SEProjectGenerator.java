@@ -76,8 +76,8 @@ public class J2SEProjectGenerator {
         try {
         ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction () {
             public Object run() throws Exception {
-                EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 String srcReference = refHelper.createForeignFileReference(sourceFolder, JavaProjectConstants.SOURCES_TYPE_JAVA);
+                EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 props.put("src.dir",srcReference);          //NOI18N
                 String testLoc;
                 if (testFolder == null) {
@@ -187,19 +187,21 @@ public class J2SEProjectGenerator {
     }
 
     private static FileObject createProjectDir (File dir) throws IOException {
-        dir.mkdirs();
-        // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
-        File rootF = dir;
-        while (rootF.getParentFile() != null) {
-            rootF = rootF.getParentFile();
-        }
-        FileObject dirFO = FileUtil.toFileObject(rootF);
-        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
-        dirFO.getFileSystem().refresh(false);
+        FileObject dirFO;
+        if(!dir.exists()) {
+            dir.mkdirs();
+            // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
+            File rootF = dir;
+            while (rootF.getParentFile() != null) {
+                rootF = rootF.getParentFile();
+            }
+            dirFO = FileUtil.toFileObject(rootF);
+            assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
+            dirFO.getFileSystem().refresh(false);
+        }        
         dirFO = FileUtil.toFileObject(dir);
         assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
         assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
-        assert dirFO.getChildren().length == 0 : "Dir must have been empty: " + dir; // NOI18N
         return dirFO;
     }
 
