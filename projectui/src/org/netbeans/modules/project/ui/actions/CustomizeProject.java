@@ -40,21 +40,25 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
         refresh( getLookup() );
     }
             
+    
+   
     protected void refresh( Lookup context ) {
      
+        super.refresh( context );
+        
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );
                             
         if ( projects.length != 1 || projects[0].getLookup().lookup( CustomizerProvider.class ) == null ) {
             setEnabled( false );
-            setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, new Project[0] ) );
+            // setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, new Project[0] ) );
         }
         else { 
             setEnabled( true );
-            setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, projects ) );
+            // setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, projects ) );
         }
         
         
-    }
+    }   
     
     public void actionPerformed( Lookup context ) {
     
@@ -72,6 +76,7 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
     public Action createContextAwareInstance( Lookup actionContext ) {
         return new CustomizeProject( actionContext );
     }
+    
     
     // Implementation of Presenter.Popup ---------------------------------------
     

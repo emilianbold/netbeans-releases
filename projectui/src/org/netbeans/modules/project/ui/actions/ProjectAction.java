@@ -15,24 +15,29 @@ package org.netbeans.modules.project.ui.actions;
 
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
+import org.openide.awt.Mnemonics;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
+import org.openide.util.actions.Presenter;
 
 
 /** Action sensitive to current project
  * 
  * @author Pet Hrebejk 
  */
-public class ProjectAction extends LookupSensitiveAction implements /* Presenter.Menu, */ ContextAwareAction {
+public class ProjectAction extends LookupSensitiveAction implements Presenter.Menu, ContextAwareAction {
     
     private String command;
     private ProjectActionPerformer performer;
     private String namePattern;
+    private String presenterName;
     private JMenuItem menuPresenter;    
     
     /** 
@@ -56,6 +61,8 @@ public class ProjectAction extends LookupSensitiveAction implements /* Presenter
         }
         this.performer = performer;
         this.namePattern = namePattern;
+        presenterName = ActionsUtil.formatName( getNamePattern(), 0, "" );
+        setDisplayName( presenterName );
     }
     
     public void putValue( String key, Object value ) {
@@ -87,17 +94,21 @@ public class ProjectAction extends LookupSensitiveAction implements /* Presenter
         
         if ( command != null ) {
             setEnabled( projects.length == 1 );
-            setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, projects ) );
+            presenterName = ActionsUtil.formatProjectSensitiveName( namePattern, projects );
         }
         else if ( performer != null && projects.length == 1 ) {
             setEnabled( performer.enable( projects[0] ) );
-            setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, projects ) );
+            presenterName = ActionsUtil.formatProjectSensitiveName( namePattern, projects );
         }
         else {
             setEnabled( false );
-            setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, projects ) );
+            presenterName = ActionsUtil.formatProjectSensitiveName( namePattern, projects );
         }
-                
+        
+        if ( menuPresenter != null ) {
+            Mnemonics.setLocalizedText( menuPresenter, presenterName );
+        }
+                        
     }
     
     protected final String getCommand() {
@@ -108,18 +119,24 @@ public class ProjectAction extends LookupSensitiveAction implements /* Presenter
         return namePattern;
     }
     
-    /*
+    
     // Implementation of Presenter.Menu ----------------------------------------
     
     public JMenuItem getMenuPresenter () {
-        if ( menuPresenter == null ) {        
-            menuPresenter = new JMenuItem();
-            org.openide.awt.Actions.connect( menuPresenter, this, false );
-            Mnemonics.setLocalizedText( menuPresenter, "TR&ADA" );
+        
+        if ( menuPresenter == null ) {
+            menuPresenter = new JMenuItem( this );
+
+            Icon icon = (Icon)getValue( Action.SMALL_ICON );
+            if ( icon == null ) {
+                icon = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/empty.gif" ) ); // NOI18N
+            }
+            Mnemonics.setLocalizedText( menuPresenter, presenterName );
+            menuPresenter.setIcon( icon );
         }
         return menuPresenter;        
     }
-    */
+    
     
     // Implementation of ContextAwareAction ------------------------------------
     

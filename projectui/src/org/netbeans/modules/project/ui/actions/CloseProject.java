@@ -59,17 +59,20 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
         }
     }
     
-    public void refresh( Lookup context ) {        
+    public void refresh( Lookup context ) {
+        
+        super.refresh( context );
+        
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );
         // XXX make it work better for mutliple open projects
         if ( projects.length == 0 || !OpenProjectList.getDefault().isOpen( projects[0] ) ) {
             setEnabled( false );
-            setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, new Project[0] ) );
+            // setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, new Project[0] ) );
             popupName = ActionsUtil.formatProjectSensitiveName( namePatternPopup, new Project[0] );
         }
         else {
             setEnabled( true );
-            setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, projects ) );
+            // setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, projects ) );
             popupName = ActionsUtil.formatProjectSensitiveName( namePatternPopup, projects );
         }        
     }

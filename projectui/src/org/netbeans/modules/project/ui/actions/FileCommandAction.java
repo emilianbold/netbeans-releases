@@ -16,17 +16,22 @@ package org.netbeans.modules.project.ui.actions;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.actions.Presenter;
 
 /** An action sensitive to selected node. Used for 1-off actions
  */
-public class FileCommandAction extends ProjectAction {
+public class FileCommandAction extends ProjectAction implements Presenter.Menu {
 
     private String command;
+    private String presenterName;
+    private JMenuItem menuPresenter;
         
     public FileCommandAction( String command, String namePattern, String iconResource, Lookup lookup ) {
         this( command, namePattern, new ImageIcon( Utilities.loadImage( iconResource ) ), lookup );
@@ -36,20 +41,26 @@ public class FileCommandAction extends ProjectAction {
         super( command, namePattern, icon, lookup );
         this.command = command;
         assert namePattern != null : "Name patern must not be null";
+        presenterName = ActionsUtil.formatName( getNamePattern(), 0, "" );
+        setDisplayName( presenterName );
     }
     
     protected void refresh( Lookup context ) {
-        
+                
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
 
         if ( projects.length != 1 ) {
-            setEnabled( false ); // Zero or more than one projects found or command not supported
-            setDisplayName( ActionsUtil.formatName( getNamePattern(), 0, "" ) );
+            setEnabled( false ); // Zero or more than one projects found or command not supported            
+            presenterName = ActionsUtil.formatName( getNamePattern(), 0, "" );            
         }
         else {
             FileObject[] files = ActionsUtil.getFilesFromLookup( context, projects[0] );
             setEnabled( true );
-            setDisplayName( ActionsUtil.formatName( getNamePattern(), files.length, files.length > 0 ? files[0].getNameExt() : "" ) ); // NOI18N
+            presenterName = ActionsUtil.formatName( getNamePattern(), files.length, files.length > 0 ? files[0].getNameExt() : "" ); // NOI18N
+        }
+        
+        if ( menuPresenter != null ) {
+            Mnemonics.setLocalizedText( menuPresenter, presenterName );
         }
     }
     
@@ -68,6 +79,25 @@ public class FileCommandAction extends ProjectAction {
         
         return new FileCommandAction( command, getNamePattern(), (Icon)getValue( SMALL_ICON ), actionContext );
     }
+    
+    
+    // Presenter.Menu implementation ------------------------------------------
+    
+    public JMenuItem getMenuPresenter () {
+        if ( menuPresenter == null )  {
+            menuPresenter = new JMenuItem( this );
+
+            Icon icon = (Icon)getValue( Action.SMALL_ICON );
+            if ( icon == null ) {
+                icon = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/empty.gif" ) ); // NOI18N
+            }
+            Mnemonics.setLocalizedText( menuPresenter, presenterName );
+            menuPresenter.setIcon( icon );
+        }
+        return menuPresenter;
+    }
    
+    
+    
         
 }
