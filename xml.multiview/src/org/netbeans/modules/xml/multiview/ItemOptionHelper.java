@@ -28,7 +28,6 @@ public abstract class ItemOptionHelper implements ActionListener, Refreshable {
 
     private final AbstractButton[] buttons;
     private final AbstractButton unmatchedOption;
-    private final XmlMultiViewDataObject dataObject;
 
     /**
      * Constructor initializes object by button group which will be handled
@@ -37,10 +36,8 @@ public abstract class ItemOptionHelper implements ActionListener, Refreshable {
      *              If the group contains at least one button that has empty text value
      *              (see {@link #getOptionText(javax.swing.AbstractButton)}, the last one of such buttons
      *              is used as "unmatched option". The "unmatched option" is selected,
-     *              if no option matches the item value.
      */
-    public ItemOptionHelper(ButtonGroup group, XmlMultiViewDataObject dataObject) {
-        this.dataObject = dataObject;
+    public ItemOptionHelper(ButtonGroup group) {
         buttons = (AbstractButton[]) Collections.list(group.getElements()).toArray(new AbstractButton[0]);
         AbstractButton unmatchedOption = null;
         for (int i = 0; i < buttons.length; i++) {
@@ -61,7 +58,6 @@ public abstract class ItemOptionHelper implements ActionListener, Refreshable {
         final String option = getOption();
         if (!option.equals(getItemValue())) {
             setItemValue(getOption());
-            dataObject.modelUpdatedFromUI();
         }
     }
 
@@ -69,7 +65,7 @@ public abstract class ItemOptionHelper implements ActionListener, Refreshable {
      * Selects option matched the item value.
      * If no option matches the value the unmatchedOption option is selected,
      * if the "unmatchedOption" uption exists.
-     * See {@link #ItemOptionHelper(javax.swing.ButtonGroup, XmlMultiViewDataObject)}
+     * See {@link #ItemOptionHelper(javax.swing.ButtonGroup)}
      *
      * @param itemValue value of item to be selected in button group
      */

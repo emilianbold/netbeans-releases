@@ -24,17 +24,14 @@ import java.awt.event.ActionListener;
  */
 public abstract class ItemComboBoxHelper implements ActionListener {
     private JComboBox comboBox;
-    private final XmlMultiViewDataObject dataObject;
 
     /**
      * Constructor initializes object by combo box and data object which will be handled
      *
      * @param comboBox   handled JComboBox.
-     * @param dataObject related data object
      */
-    public ItemComboBoxHelper(JComboBox comboBox, XmlMultiViewDataObject dataObject) {
+    public ItemComboBoxHelper(JComboBox comboBox) {
         this.comboBox = comboBox;
-        this.dataObject = dataObject;
         comboBox.addActionListener(this);
         setValue(getItemValue());
     }
@@ -46,7 +43,6 @@ public abstract class ItemComboBoxHelper implements ActionListener {
         final String value = (String) comboBox.getSelectedItem();
         if (value == null || !value.equals(getItemValue())) {
             setItemValue(value);
-            dataObject.modelUpdatedFromUI();
         }
     }
 

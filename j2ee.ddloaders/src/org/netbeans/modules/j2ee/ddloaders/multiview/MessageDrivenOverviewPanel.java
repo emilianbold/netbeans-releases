@@ -59,7 +59,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
             }
         }));
 
-        addRefreshable(new ItemOptionHelper(getTransactionTypeButtonGroup(), dataObject) {
+        addRefreshable(new ItemOptionHelper(getTransactionTypeButtonGroup()) {
             public String getItemValue() {
                 return messageDriven.getTransactionType();
             }
@@ -96,7 +96,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
                 }
             }));
 
-            addRefreshable(new ItemOptionHelper(getAcknowledgeModeButtonGroup(), dataObject) {
+            addRefreshable(new ItemOptionHelper(getAcknowledgeModeButtonGroup()) {
                 public String getItemValue() {
                     return getConfigProperty(PROPERTY_ACKNOWLEDGE_NAME, "Auto-acknowledge");//NOI18N
                 }
@@ -109,7 +109,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
             final DurabilityComboBoxHelper durabilityComboBoxHelper = new DurabilityComboBoxHelper(durabilityComboBox,
                     dataObject);
 
-            new ItemComboBoxHelper(destinationTypeComboBox, dataObject) {
+            new ItemComboBoxHelper(destinationTypeComboBox) {
                 {
                     setDurabilityEnabled();
                 }
@@ -131,7 +131,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
         }
 
         // the second ItemComboboxHelper for destinationTypeComboBox handles message-destination-type element
-        new ItemComboBoxHelper(destinationTypeComboBox, dataObject) {
+        new ItemComboBoxHelper(destinationTypeComboBox) {
 
             public String getItemValue() {
                 try {
@@ -209,7 +209,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
     private class DurabilityComboBoxHelper extends ItemComboBoxHelper {
 
         public DurabilityComboBoxHelper(JComboBox durabilityComboBox, EjbJarMultiViewDataObject dataObject) {
-            super(durabilityComboBox, dataObject);
+            super(durabilityComboBox);
         }
 
         public String getItemValue() {

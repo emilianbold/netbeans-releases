@@ -87,7 +87,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                 primaryKeyFieldComboBox.addItem(cmpField.getFieldName());
                 primaryKeyFieldComboBox.setEditor(new ValidatingTextField());
             }
-            new ItemComboBoxHelper(primaryKeyFieldComboBox, dataObject) {
+            new ItemComboBoxHelper(primaryKeyFieldComboBox) {
 
                 public String getItemValue() {
                     return entity.getPrimkeyField();
@@ -111,7 +111,6 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                         entity.setPrimKeyClass(helper.getType());
                     }
                     primaryKeyClassComboBox.setSelectedItem(entity.getPrimKeyClass());
-                    dataObject.modelUpdatedFromUI();
                 }
             });
             primaryKeyClassComboBox.setEnabled(primaryKeyFieldComboBox.getSelectedIndex() == 0);
@@ -134,7 +133,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             primaryKeyClassComboBox.addItem("java.lang.String");    //NOI18N
             primaryKeyClassComboBox.addItem("java.math.BigDecimal");//NOI18N
 
-            new ItemComboBoxHelper(primaryKeyClassComboBox, dataObject) {
+            new ItemComboBoxHelper(primaryKeyClassComboBox) {
 
                 public String getItemValue() {
                     return entity.getPrimKeyClass();
@@ -144,12 +143,6 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                     entity.setPrimKeyClass(value);
                 }
             };
-
-            primaryKeyClassComboBox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    dataObject.modelUpdatedFromUI();
-                }
-            });
 
         } else {
             primaryKeyFieldLabel.setVisible(false);
@@ -171,7 +164,6 @@ public class EntityOverviewPanel extends EntityOverviewForm {
         reentrantCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 entity.setReentrant(reentrantCheckBox.isSelected());
-                dataObject.modelUpdatedFromUI();
             }
         });
     }

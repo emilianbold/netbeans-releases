@@ -53,7 +53,6 @@ public abstract class TextItemEditorModel extends ItemEditorHelper.ItemEditorMod
             String currentValue = getValue();
             if (!(value == currentValue || value != null && value.equals(currentValue))) {
                 setValue(value);
-                dataObject.modelUpdatedFromUI();
             }
             return true;
         } else {

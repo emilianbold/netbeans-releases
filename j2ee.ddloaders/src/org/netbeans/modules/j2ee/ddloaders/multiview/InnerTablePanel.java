@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
@@ -37,7 +36,6 @@ import java.awt.event.ActionListener;
 public class InnerTablePanel extends SectionInnerPanel {
 
     private final TablePanel tablePanel;
-    private final XmlMultiViewDataObject dataObject;
     private JTable table;
 
     protected void setButtonListeners(final InnerTableModel model) {
@@ -93,12 +91,6 @@ public class InnerTablePanel extends SectionInnerPanel {
             });
         }
 
-        public void modelUpdatedFromUI() {
-            if (dataObject != null) {
-                dataObject.modelUpdatedFromUI();
-            }
-        }
-
         public JButton getAddButton() {
             return addButton;
         }
@@ -114,13 +106,9 @@ public class InnerTablePanel extends SectionInnerPanel {
 
     public InnerTablePanel(SectionNodeView sectionNodeView, final InnerTableModel model) {
         super(sectionNodeView);
-        this.dataObject = (XmlMultiViewDataObject) sectionNodeView.getDataObject();
         tablePanel = new TablePanel(model);
         model.addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent e) {
-                if (dataObject != null) {
-                    dataObject.modelUpdatedFromUI();
-                }
                 if (e.getType() == TableModelEvent.DELETE || e.getType() == TableModelEvent.INSERT) {
                     adjustHeight();
                 }

@@ -71,7 +71,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     private FileObject srcRoots[];
     private boolean parseable;
     protected final static RequestProcessor RP = new RequestProcessor("XML Parsing");   // NOI18N
-    private boolean merging = false;
     private PropertyChangeListener ejbJarChangeListener;
 
     private static final long serialVersionUID = 8857563089355069362L;
@@ -433,9 +432,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             try {
                 EjbJarProxy newEjbJar = (EjbJarProxy) EjbJarDDUtils.createEjbJar(is);
                 if (ejbJar != null && oldEjbJar.getOriginal() != null) {
-                    merging = true;
                     ejbJar.merge(newEjbJar, EjbJar.MERGE_UPDATE);
-                    merging = false;
                 } else {
                     setEjbJar(oldEjbJar, newEjbJar);
                 }
@@ -447,10 +444,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
                 String oldDescription = oldError == null ? null : oldError.getMessage();
                 ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(oldDescription, newDescription);
                 parseable = error == null;
-                if (ejbJar != null) {
-                    System.out.println("version:" + ejbJar.getVersion() + " Status:" + ejbJar.getStatus() + " Error:" + //NOI18N
-                                    ejbJar.getError());
-                }
                 setSaxError(error);
             } catch (SAXException ex) {
                 if (ejbJar == null || oldEjbJar.getOriginal() == null) {
@@ -480,10 +473,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         if (ejbJarChangeListener == null) {
             ejbJarChangeListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if (!merging) {
-                        setSaxError(null);
-                        modelUpdatedFromUI();
-                    }
+                    modelChanged();
                 }
             };
         }
@@ -529,10 +519,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
      */
     protected boolean isModelCreated() {
         return (ejbJar!=null && ((EjbJarProxy)ejbJar).getOriginal()!=null);
-    }
-
-    public boolean isMerging() {
-        return merging;
     }
 
     public boolean isParseable() {

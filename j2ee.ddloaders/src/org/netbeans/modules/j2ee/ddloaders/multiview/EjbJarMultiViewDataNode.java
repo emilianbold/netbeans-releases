@@ -67,22 +67,19 @@ public class EjbJarMultiViewDataNode extends DataNode {
         ddListener = new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
-                if (EjbJarMultiViewDataObject.PROP_DOCUMENT_DTD.equals(evt.getPropertyName())) {
+                String propertyName = evt.getPropertyName();
+                if (EjbJarMultiViewDataObject.PROP_DOCUMENT_DTD.equals(propertyName)) {
                     firePropertyChange(PROPERTY_DOCUMENT_TYPE, evt.getOldValue(), evt.getNewValue());
-                }
-                if (DataObject.PROP_VALID.equals(evt.getPropertyName())
-                        && Boolean.TRUE.equals(evt.getNewValue())) {
+                } else if (DataObject.PROP_VALID.equals(propertyName) && Boolean.TRUE.equals(evt.getNewValue())) {
                     removePropertyChangeListener(EjbJarMultiViewDataNode.this.ddListener);
-                }
-                if (XmlMultiViewDataObject.PROP_DOCUMENT_VALID.equals(evt.getPropertyName())) {
+                } else if (XmlMultiViewDataObject.PROP_DOCUMENT_VALID.equals(propertyName)) {
                     if (Boolean.TRUE.equals(evt.getNewValue())) {
                         setIconBase(dataObject.getIconBaseForValidDocument());
                     } else {
                         setIconBase(dataObject.getIconBaseForInvalidDocument());
                     }
                     fireIconChange();
-                }
-                if (Node.PROP_PROPERTY_SETS.equals(evt.getPropertyName())) {
+                } else if (Node.PROP_PROPERTY_SETS.equals(propertyName)) {
                     firePropertySetsChange(null, null);
                 }
             }

@@ -15,13 +15,13 @@ package org.netbeans.modules.xml.multiview;
 
 import org.netbeans.core.spi.multiview.*;
 import org.openide.windows.TopComponent;
-import org.openide.util.lookup.Lookups;
-import org.openide.awt.UndoRedo;
-import org.openide.nodes.*;
-import org.openide.explorer.view.*;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * XmlMultiviewElement.java
@@ -31,19 +31,25 @@ import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
  */
 public abstract class ToolBarMultiViewElement implements MultiViewElement {
     MultiViewElementCallback observer;
-    private javax.swing.JComponent toolbar;
     private ToolBarDesignEditor editor;
     private XmlMultiViewDataObject dObj;
     
     public ToolBarMultiViewElement(XmlMultiViewDataObject dObj, ToolBarDesignEditor editor) {
-        this.dObj=dObj;
-        this.editor=editor;
+        this(dObj);
+        this.editor = editor;
     }
     
-    public ToolBarMultiViewElement(XmlMultiViewDataObject dObj) {
+    public ToolBarMultiViewElement(final XmlMultiViewDataObject dObj) {
         this.dObj=dObj;
+        dObj.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()) && editor != null) {
+                    observer.getTopComponent().setDisplayName(dObj.getEditorSupport().messageName());
+                }
+            }
+        });
     }
-    
+
     protected void setVisualEditor(ToolBarDesignEditor editor) {
         this.editor=editor;
     }
@@ -99,7 +105,7 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
         if (dObj!=null) {
             TopComponent tc = callback.getTopComponent();
             if (tc.getDisplayName()==null) {
-                tc.setDisplayName(dObj.getDisplayName());
+                tc.setDisplayName(dObj.getEditorSupport().messageName());
                 tc.setToolTipText(dObj.getPrimaryFile().getPath());
             }
             XmlMultiViewEditorSupport support = dObj.getEditorSupport();

@@ -20,11 +20,11 @@ import org.openide.cookies.*;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.*;
 
-import java.beans.PropertyVetoException;
 import org.openide.NotifyDescriptor;
+
+import java.io.IOException;
 
 /**
  * XmlMultiviewEditorSupport.java
@@ -38,9 +38,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
     private XmlMultiViewDataObject dObj;
     private XmlDocumentListener xmlDocListener;
     private int xmlMultiViewIndex;
-    private static final int PARSING_DELAY = 2000;
-    private static final int PARSING_INIT_DELAY = 100;
-    private RequestProcessor.Task parsingDocumentTask;
     private TopComponent mvtc, xmlTC;
     private int lastOpenView=0;
     
@@ -61,39 +58,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         setMIMEType ("text/xml");   // NOI18N
     }
     
-    /** Restart the timer which starts source parsing after the specified delay.
-    * The XML file from source editor is parsed, validated for errors and data model is changed
-    */
-    private void restartTimer() {
-        Runnable r = new Runnable() {
-            public void run() {
-                dObj.updateModelFromSource();
-            }
-	};
-        if (parsingDocumentTask==null || parsingDocumentTask.isFinished() || 
-            parsingDocumentTask.cancel()) {
-            parsingDocumentTask = RequestProcessor.getDefault().post(r,PARSING_INIT_DELAY);                 
-        } else {
-            parsingDocumentTask = RequestProcessor.getDefault().post(r,PARSING_DELAY);             
-        }
-    }
-    /** Restart the timer which starts source parsing after the specified delay.
-    * The XML file from source editor is parsed and validated for errors but data model is not updated
-    */
-    private void restartTimer1() {
-        Runnable r = new Runnable() {
-            public void run() {
-                dObj.validateSource();
-            }
-	};
-        if (parsingDocumentTask==null || parsingDocumentTask.isFinished() || 
-            parsingDocumentTask.cancel()) {
-            parsingDocumentTask = RequestProcessor.getDefault().post(r,PARSING_INIT_DELAY);                 
-        } else {
-            parsingDocumentTask = RequestProcessor.getDefault().post(r,PARSING_DELAY);             
-        }
-    } 
-    /** 
+    /**
      * Overrides superclass method. Adds adding of save cookie if the document has been marked modified.
      * @return true if the environment accepted being marked as modified
      *    or false if it has refused and the document should remain unmodified
@@ -242,7 +207,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
          * @return a lock on the primary file normally
          * @throws IOException if the lock could not be taken
          */
-        protected FileLock takeLock () throws java.io.IOException {
+        protected FileLock takeLock () throws IOException {
             return ((XmlMultiViewDataObject) getDataObject ()).getPrimaryEntry ().takeLock ();
         }
 
@@ -340,8 +305,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         }
 
         private void doUpdate() {
-            if (dObj.isChangedFromUI()) restartTimer1(); // validation (without updating model)
-            else restartTimer(); // validation+model update
+            dObj.documentUpdated();
         }
     }
     
@@ -407,5 +371,9 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
             return true;
 
         }
+    }
+
+    protected String messageName() {
+        return super.messageName();
     }
 }

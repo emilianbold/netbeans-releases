@@ -15,13 +15,13 @@ package org.netbeans.modules.xml.multiview;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.xml.sax.InputSource;
 
 import java.io.FileReader;
@@ -41,6 +41,13 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private org.xml.sax.SAXException saxError;
     boolean changedFromUI;
     private boolean modelUpdated;
+
+    private static final int PARSING_INIT_DELAY = 100;
+    private RequestProcessor.Task synchronizeDocumentTask;
+    private boolean syncRequest = false;
+    private boolean updateFromModel = false;
+    private boolean updatingFromModel = false;
+    private boolean updatingModel = false;
 
     /** Creates a new instance of XmlMultiViewDataObject */
     public XmlMultiViewDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
@@ -237,15 +244,9 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     
     public void modelUpdatedFromUI() {
         changedFromUI=true;
-        if(getCookie(SaveCookie.class) == null) {
-            getCookieSet0().add(getEditorSupport().saveCookie);
-            org.openide.windows.TopComponent mvtc = getEditorSupport().getMVTC();
-            mvtc .setDisplayName(mvtc.getDisplayName()+" *"); // NOI18N
-        }
-        updateDocument();
-        //setModified(true);
+        modelChanged();
     }
-    
+
     /** MultiViewDesc for MultiView editor
      */
     protected abstract DesignMultiViewDesc[] getMultiViewDesc();
@@ -284,5 +285,63 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             mvtc.setToolTipText(getPrimaryFile().getPath());
         }
         return retValue;
+    }
+
+    public void modelChanged() {
+        if (!updatingModel) {
+            synchronizeModel(true);
+        }
+    }
+
+    public void documentUpdated() {
+        if (!updatingFromModel) {
+            synchronizeModel(false);
+        }
+    }
+
+    private void sync() {
+        if (syncRequest) {
+            syncRequest = false;
+            if (updateFromModel) {
+                updatingFromModel = true;
+                try {
+                    updateDocument();
+                } finally {
+                    updatingFromModel = false;
+                }
+                validateSource();
+            } else {
+                updatingModel = true;
+                try {
+                    updateModelFromDocument();
+                } catch (IOException e) {
+                    scheduleSync();
+                } finally {
+                    updatingModel = false;
+                }
+            }
+            if (syncRequest) {
+                scheduleSync();
+            }
+        }
+    }
+
+    private void synchronizeModel(boolean updateFromModel) {
+        this.updateFromModel = updateFromModel;
+        syncRequest = true;
+        if (synchronizeDocumentTask == null) {
+            synchronizeDocumentTask = RequestProcessor.getDefault().create(new Runnable() {
+                public void run() {
+                    sync();
+                }
+            });
+            scheduleSync();
+        } else if (synchronizeDocumentTask.isFinished() || synchronizeDocumentTask.cancel()) {
+            scheduleSync();
+        }
+    }
+
+    private void scheduleSync() {
+        synchronizeDocumentTask.schedule(PARSING_INIT_DELAY);
     }
 }
