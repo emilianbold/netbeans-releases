@@ -56,7 +56,7 @@ workspaceswitcher
       <config name="bloated" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,makefile,multicompile,objectbrowser,projects,properties,remotefs,serialversion,sysprops,text,usersguide,utilities,vcscvs,web"/>
       <config name="sandwich" modules="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,objectbrowser,properties,text,utilities,vcscvs,web"/>
       <!-- You are on your own for getting the binaries for some of these: -->
-      <config name="bloated-plus-extrabins" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,makefile,multicompile,objectbrowser,projects,properties,remotefs,scripting,serialversion,sysprops,text,usersguide,utilities,vcscvs,web"/>
+      <config name="bloated-plus-extrabins" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,jini,makefile,multicompile,objectbrowser,projects,properties,remotefs,scripting,serialversion,sysprops,text,usersguide,utilities,vcscvs,web"/>
     </configmods>
   </target>
 
