@@ -341,31 +341,13 @@ public class NbTopManager extends TopManager {
   }    
 
   
-  private void storeLastProject () {
-    org.openide.actions.SaveProjectAction spa = new org.openide.actions.SaveProjectAction ();
-    if (spa.isEnabled ()) {
-      boolean doSave = true;
-  //    if (new IDESettings ().getConfirmSaveOnExit ()) {
-  //      if (TopManager.notify (...)
-  //    }
-      
-      if (doSave) {
-        try {
-          spa.performAction ();
-          NbProjectOperation.saveLastProjectUsed ();
-        } catch (IOException e) {
-          TopManager.getDefault ().notifyException (e); // [PENDING]
-        }
-      }
-    }
-  }
 
   /** The ide is left after calling this method.
   * The method return iff Runtim.getRuntime().exit() fails
   */
   public void restart () {
     // save project
-    storeLastProject ();
+    NbProjectOperation.storeLastProject ();
     
     if (ModuleInstaller.exit ()) {
       Runtime.getRuntime().exit (RESTART_EXIT_CODE);
@@ -377,7 +359,7 @@ public class NbTopManager extends TopManager {
   */
   public void exit () {
     // save project
-    storeLastProject ();
+    NbProjectOperation.storeLastProject ();
 
     if (ModuleInstaller.exit ()) {
       Runtime.getRuntime().exit (0);

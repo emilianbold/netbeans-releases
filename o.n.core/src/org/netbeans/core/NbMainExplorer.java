@@ -21,6 +21,8 @@ import java.text.MessageFormat;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.IOException;
+import java.util.*;
+import java.util.List;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -129,6 +131,12 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
     rootsListener = new PropertyChangeListener () {
       public void propertyChange (PropertyChangeEvent evt) {
+        if (TopManager.PROP_PLACES.equals (evt.getPropertyName ())) {
+          // possible change in list of roots
+          refreshRoots ();
+          return;
+        }
+        
         for (int i = 0; i < roots.length; i++) {
           if (roots[i] == evt.getSource ()) {
             if (Node.PROP_DISPLAY_NAME.equals (evt.getPropertyName ())) {
@@ -146,23 +154,10 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
       }
     };
 
-    roots = getRoots ();
-    managers = new ExplorerManager[roots.length];
-    panels = new ExplorerPanel[roots.length];
-    for (int i = 0; i < roots.length; i++) {
-      panels[i] = new ExplorerPanel ();
-      managers[i] = panels[i].getExplorerManager ();
-      managers[i].setRootContext (roots[i]);
-      BeanTreeView treeView = new BeanTreeView ();
-      panels[i].setLayout (new BorderLayout ());
-      panels[i].add (treeView);
-      tabs.addTab (
-        roots[i].getDisplayName (), 
-        new ImageIcon (roots [i].getIcon (BeanInfo.ICON_COLOR_16x16)), 
-        panels[i], 
-        roots[i].getShortDescription ()
-      );
-    }
+    TopManager.getDefault ().addPropertyChangeListener (rootsListener);
+    
+    roots = new Node[0];
+    refreshRoots ();
     currentManager = managers[0]; // [PENDING]
 
     tabs.addChangeListener (new javax.swing.event.ChangeListener () {
@@ -173,6 +168,11 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
             return;
           }
           currentManager = managers[index];
+          
+          if (currentManager == null) {
+            return;
+          }
+          
           if (activated) {
             actions.attach (currentManager);
           }
@@ -207,22 +207,104 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     return new HelpCtx (NbMainExplorer.class);
   }
 
-  private Node[] getRoots () {
+
+  /** Refreshes current state of components, so they
+  * will reflect new nodes.
+  */
+  private synchronized void refreshRoots () {
+    List l = getRoots ();
+    // first of all we have to remove the roots that
+    // are no longer there
+    if (roots != null) {
+      HashSet toRemove = new HashSet (Arrays.asList (roots));
+      toRemove.removeAll (l);
+
+
+      for (int i = 0; i < roots.length; i++) {
+        if (toRemove.contains (roots[i])) {
+          tabs.remove (panels[i]);
+          roots[i] = null;
+          panels[i] = null;
+        }
+      }
+    }
+
+    // remember current mapping
+    HashMap map;
+    if (roots != null) {
+      map = new HashMap (roots.length);
+      for (int i = 0; i < roots.length; i++) {
+        if (roots[i] != null) {
+          map.put (roots[i], panels[i]);
+        }
+      }
+    } else {
+      map = null;
+    }
+ 
+    // panel list of (ExplorerPanel)
+    List pl = new LinkedList ();
+    // manager list (ExplorerManager)
+    List ml = new LinkedList ();
+    
+    ListIterator it = l.listIterator ();
+    while (it.hasNext ()) {
+      Node r = (Node)it.next ();
+      ExplorerPanel p = map == null ? null : (ExplorerPanel)map.get (r);
+
+      if (p == null) {
+        // create and insert new tab
+        p = createPanel (r);
+        
+        tabs.insertTab (
+          r.getDisplayName (), 
+          new ImageIcon (r.getIcon (BeanInfo.ICON_COLOR_16x16)), 
+          p, 
+          r.getShortDescription (),
+          it.previousIndex ()
+        );
+      }
+      pl.add (p);
+      ml.add (p.getExplorerManager ());
+    }
+
+    managers = (ExplorerManager[])ml.toArray (new ExplorerManager[0]);
+    panels = (ExplorerPanel[])pl.toArray (new ExplorerPanel[0]);
+    roots = (Node[])l.toArray (new Node[0]);
+  }
+  
+  /** Creates a panel for given node.
+  */
+  private ExplorerPanel createPanel (Node n) {
+    ExplorerPanel panel = new ExplorerTab ();
+    ExplorerManager manager = panel.getExplorerManager ();
+    manager.setRootContext (n);
+    return panel;
+  }
+  
+  private List getRoots () {
     Places.Nodes ns = TopManager.getDefault ().getPlaces ().nodes ();
-    Node[] moduleRoots = ns.roots ();
+    
+    LinkedList list = new LinkedList(
+      Arrays.asList (ns.roots ())
+    );
 
 //    Node[] roots = new Node[2 + moduleRoots.length];
 //    roots[0] = ns.projectDesktop ();
 //    roots[1] = ns.repository ();
 //    System.arraycopy (moduleRoots, 0, roots, 2, moduleRoots.length);
 
-    Node[] roots = new Node[1 + moduleRoots.length + 3];
-    roots[0] = ns.repository ();
-    System.arraycopy (moduleRoots, 0, roots, 1, moduleRoots.length);
-    roots[roots.length - 3] = DesktopNode.createEnvironmentNode ();
-    roots[roots.length - 2] = DesktopNode.createProjectSettingsNode ();
-    roots[roots.length - 1] = DesktopNode.createSessionNode ();
-    return roots;
+    list.addFirst (ns.repository ());
+
+    if (NbProjectOperation.hasProjectDesktop ()) {
+      list.addLast (NbProjectOperation.getProjectDesktop ());
+    }
+    
+    list.addLast (ns.environment ());
+    list.addLast (DesktopNode.getProjectSettingsNode ());
+    list.addLast (ns.session ());
+    
+    return list;
   }
 
   /** Utility method, creates the explorer's toolbar */
@@ -313,7 +395,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   }
 
   private void updateTitle () {
-    String name = currentManager.getExploredContext().getDisplayName();
+    String name = currentManager == null ? null : currentManager.getExploredContext().getDisplayName();
     if (name == null) {
       name = "";
     }
@@ -409,10 +491,25 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     super.readExternal(in);
     // read and update explorer panels (and managers)
     // and update tabbed pane
+    tabs.removeAll ();
+    
     panels = (ExplorerPanel[])in.readObject();
     int selIndex = ((Integer)in.readObject()).intValue();
-    tabs.removeAll();
     managers = new ExplorerManager[panels.length];
+    roots = new Node[panels.length];
+    
+    for (int i = 0; i < panels.length; i++) {
+      managers[i] = panels[i].getExplorerManager ();
+      roots[i] = managers[i].getRootContext ();
+      tabs.addTab (
+        roots[i].getDisplayName (), 
+        new ImageIcon (roots[i].getIcon (BeanInfo.ICON_COLOR_16x16)),
+        panels[i], 
+        roots[i].getShortDescription ()
+      );
+    }
+    
+    /* JST: Has to refresh because roots are changing
     for (int i = 0; i < panels.length; i++) {
       managers[i] = panels[i].getExplorerManager();
       BeanTreeView treeView = new BeanTreeView ();
@@ -425,8 +522,15 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
         roots[i].getShortDescription ()
       );
     }
-    currentManager = panels[selIndex].getExplorerManager();
-    tabs.setSelectedIndex(selIndex);
+    */
+    
+    if (tabs.getTabCount () > selIndex) {
+      currentManager = panels[selIndex].getExplorerManager();
+      tabs.setSelectedIndex(selIndex);
+    } else {
+      currentManager = panels[0].getExplorerManager ();
+    }
+    
     // force later reassigning of listeners
     listenersRegistered = false;
     // read property shhet switcher state...
@@ -481,10 +585,22 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
   /** Shared instance of NbMainExplorer */
   private static NbMainExplorer explorer;
+  
+  /** Class holding the explorer.
+  */
+  public static final class ExplorerTab extends ExplorerPanel {
+    public ExplorerTab () {
+      BeanTreeView treeView = new BeanTreeView ();
+      setLayout (new BorderLayout ());
+      add (treeView);
+    }
+  }
 }
 
 /*
 * Log
+*  24   Gandalf   1.23        8/1/99   Jaroslav Tulach MainExplorer now listens 
+*       to changes in root elements.
 *  23   Gandalf   1.22        7/30/99  David Simonek   
 *  22   Gandalf   1.21        7/30/99  David Simonek   serialization fixes
 *  21   Gandalf   1.20        7/28/99  David Simonek   canClose updates

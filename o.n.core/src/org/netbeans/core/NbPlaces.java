@@ -188,9 +188,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
   /** Workspace node for current project. This node can change when project changes.
   */
   public Node projectDesktop () {
-    if (NbProjectOperation.getProject () != null)
-      return NbProjectOperation.getProject ().projectDesktop ();
-    else return new AbstractNode (Children.LEAF);
+    return NbProjectOperation.getProjectDesktop ();
   }
 
   /** Root nodes.
@@ -266,6 +264,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  28   Gandalf   1.27        8/1/99   Jaroslav Tulach MainExplorer now listens 
+*       to changes in root elements.
 *  27   Gandalf   1.26        7/30/99  David Simonek   again serialization of 
 *       nodes repaired
 *  26   Gandalf   1.25        7/30/99  David Simonek   serialization fixes
