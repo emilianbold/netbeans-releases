@@ -131,7 +131,17 @@ public abstract class LoaderTransfer {
                 } catch (ClassCastException cce) {
                     maybeReportException (cce);
                 } catch (IOException ioe) {
-                    maybeReportException (ioe);
+                    // #32206 - this exception is thrown when underlying fileobject
+                    // does not exist and DataObject cannot be found for it. It happens when
+                    // user copy a DataObject into clipboard, close NB, delete the file, 
+                    // restart the NB. During the startup the clipboard content is checked and
+                    // this exception is thrown.  It would be better to catch just FileStateInvalidException,
+                    // but it gets wrapped into IOException in sun.awt.datatransfer.DataTransferer.
+                    // Logging this exception as informative is too confusing.
+                    // There is usually several exceptions logged for one clipboard object
+                    // and users file it repeatedly as bug. Just log some explanation message instead.
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
+                        "INFORMATIONAL: Object in clipboard refers to a non existing file. "+ ioe.toString()); //NOI18N
                 } catch (UnsupportedFlavorException ufe) {
                     maybeReportException (ufe);
                 }
