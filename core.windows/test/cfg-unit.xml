@@ -33,16 +33,14 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-
-<!--  
-    <testbag testattribs="stable" executor="ide" name="testbag_1" resultsprocessor="unit">
+  
+    <testbag testattribs="stable" executor="code" name="testbag_1" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/core/windows/*.class"/>
+                <include name="org/netbeans/core/windows/services/DialogDisplayer50960Test.class"/>
             </patternset>
         </testset>
     </testbag>
--->
 
     <testbag testattribs="stable" executor="ide" name="testbag_2" resultsprocessor="unit">
         <testset dir="unit/src">
