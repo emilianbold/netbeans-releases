@@ -232,18 +232,24 @@ public class SourcePath {
     }
 
     public boolean showSource (CallStackFrame csf, String stratumn) {
-        int lineNumber = csf.getLineNumber (stratumn);
-        if (lineNumber < 1) lineNumber = 1;
         try {
+            String url = getURL (convertSlash (csf.getSourcePath (stratumn)));
+            if (url == null) {
+                stratumn = csf.getDefaultStratum ();
+                url = getURL (convertSlash (csf.getSourcePath (stratumn)));
+            }
+            if (url == null) return false;
+            int lineNumber = csf.getLineNumber (stratumn);
+            if (lineNumber < 1) lineNumber = 1;
             return EditorContextBridge.showSource (
-                getURL (convertSlash (csf.getSourcePath (stratumn))),
+                url,
                 lineNumber,
                 debugger
             );
         } catch (NoInformationException e) {
             return EditorContextBridge.showSource (
                 getURL (convertClassNameToRelativePath (csf.getClassName ())),
-                lineNumber,
+                1,
                 debugger
             );
         }
