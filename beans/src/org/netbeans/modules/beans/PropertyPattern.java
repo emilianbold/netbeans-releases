@@ -66,7 +66,6 @@ public class PropertyPattern extends Pattern {
     /** Holds the decapitalized name. */
     protected String name;
 
-
     /** Creates new PropertyPattern one of the methods may be null.
      * @param patternAnalyser patternAnalyser which creates this Property.
      * @param getterMethod getterMethod of the property or <CODE>null</CODE>.
@@ -237,36 +236,79 @@ public class PropertyPattern extends Pattern {
      * @throws SourceException If the modification of source code is impossible.
      */
     public void setName( String name ) throws SourceException {
-
+        String oldName = this.name;
+        
         if ( !Utilities.isJavaIdentifier( name )  )
             throw new SourceException( "Invalid event source name" ); // NOI18N
 
+        this.name = name;
         name = capitalizeFirstLetter( name );
 
         if ( getterMethod != null ) {
             Identifier getterMethodID = Identifier.create(( getterMethod.getName().getName().startsWith("get") ? // NOI18N
                                         "get" : "is" ) + name ); // NOI18N
             getterMethod.setName( getterMethodID );
+            String oldGetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertyGetter" ),
+                                           new Object[] { oldName } );
+            String newGetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertyGetter" ),
+                                           new Object[] { getName() } );
+            if (oldGetterComment.trim().equals(getterMethod.getJavaDoc().getRawText().trim())) {
+                getterMethod.getJavaDoc().setRawText( newGetterComment );
+            }
         }
         if ( setterMethod != null ) {
             Identifier setterMethodID = Identifier.create( "set" + name ); // NOI18N
-
             setterMethod.setName( setterMethodID );
+            String oldSetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertySetter" ),
+                                           new Object[] { oldName, oldName } );
+            String newSetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertySetter" ),
+                                           new Object[] { getName(), getName() } );
+            if (oldSetterComment.trim().equals(setterMethod.getJavaDoc().getRawText().trim())) {
+                setterMethod.getJavaDoc().setRawText( newSetterComment );
+            }
         }
-
-        this.name = Introspector.decapitalize( name );
-
+        
         // Ask if to set the estimated field
         if ( estimatedField != null ) {
+            String oldFieldComment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertyField" ),
+                                                   new Object[] { oldName } );
+            String newFieldComment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertyField" ),
+                                                   new Object[] { getName() } );
+            if (oldFieldComment.trim().equals(estimatedField.getJavaDoc().getRawText().trim())) {
+                estimatedField.getJavaDoc().setRawText(newFieldComment);
+            }
+                                                   
+            int mode = getMode();
             ElementFormat fmt = new ElementFormat ("{m} {t} {n}"); // NOI18N
             String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeFieldName" ),
                                                 new Object[] { fmt.format (estimatedField) } );
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
             if ( TopManager.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
                 estimatedField.setName( Identifier.create( Introspector.decapitalize( name ) ) );
+                if ( mode == READ_WRITE || mode == READ_ONLY ) {
+                    String existingGetterBody = getterMethod.getBody().trim();
+                    String oldGetterBody1 = BeanPatternGenerator.propertyGetterBody( oldName, true, true ).trim();
+                    String oldGetterBody2 = BeanPatternGenerator.propertyGetterBody( oldName, true, false ).trim();
+                    if (existingGetterBody.equals(oldGetterBody1)) {
+                        getterMethod.setBody(BeanPatternGenerator.propertyGetterBody( getName(), true, true));
+                    } else if (existingGetterBody.equals(oldGetterBody2)) {
+                        getterMethod.setBody(BeanPatternGenerator.propertyGetterBody( getName(), true, false));
+                    }
+                }
+                if ( mode == READ_WRITE || mode == WRITE_ONLY ) {
+                    String existingSetterBody = setterMethod.getBody().trim();
+                    String oldSetterBody = BeanPatternGenerator.propertySetterBody (oldName, this.type, false, false, true, false, null, null).trim();
+                    if (existingSetterBody.equals(oldSetterBody)) {
+                        setterMethod.setBody(BeanPatternGenerator.propertySetterBody (getName(), getType(), false, false, true, false, null, null));
+                        if ( setterMethod != null ) {
+                            MethodParameter params[] = setterMethod.getParameters();
+                            params[0].setName(Introspector.decapitalize( name ));
+                            setterMethod.setParameters(params);
+                        }
+                    }
+                }
             }
         }
-
     }
 
     /** Returns the mode of the property {@link #READ_WRITE READ_WRITE}, {@link #READ_ONLY READ_ONLY}
@@ -380,7 +422,6 @@ public class PropertyPattern extends Pattern {
                 setterMethod.setParameters( params );
                 
                 String body = setterMethod.getBody();
-                System.out.println("PropertyPattern " + setterMethod);
                 //test if body contains change support
                 if( body != null && ( body.indexOf(PROPERTY_CHANGE) != -1 || body.indexOf(VETOABLE_CHANGE) != -1 ) ) {
                     String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeMethodBody" ),

@@ -255,6 +255,7 @@ public class IdxPropertyPattern extends PropertyPattern {
      * @throws SourceException If the modification of source code is impossible.
      */
     public void setName(String name) throws  SourceException {
+        String oldName = this.name;
         super.setName( name );
 
         name = capitalizeFirstLetter( name );
@@ -263,10 +264,52 @@ public class IdxPropertyPattern extends PropertyPattern {
             Identifier idxGetterMethodID = Identifier.create(( indexedGetterMethod.getName().getName().startsWith("get") ? // NOI18N
                                            "get" : "is" ) + name ); // NOI18N
             indexedGetterMethod.setName( idxGetterMethodID );
+            String oldGetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_IdxPropertyGetter" ),
+                                           new Object[] { oldName } );
+            String newGetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_IdxPropertyGetter" ),
+                                           new Object[] { getName() } );
+            if (oldGetterComment.trim().equals(indexedGetterMethod.getJavaDoc().getRawText().trim())) {
+                indexedGetterMethod.getJavaDoc().setRawText( newGetterComment );
+            }
         }
         if ( indexedSetterMethod != null ) {
             Identifier idxSetterMethodID = Identifier.create( "set" + name ); // NOI18N
             indexedSetterMethod.setName( idxSetterMethodID );
+            String oldSetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_IdxPropertySetter" ),
+                                           new Object[] { oldName, oldName } );
+            String newSetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_IdxPropertySetter" ),
+                                           new Object[] { getName(), getName() } );
+            if (oldSetterComment.trim().equals(indexedSetterMethod.getJavaDoc().getRawText().trim())) {
+                indexedSetterMethod.getJavaDoc().setRawText( newSetterComment );
+            }
+        }
+        
+        // change body and javadoc of idx accessors if the field has been changed
+        if ( estimatedField != null && estimatedField.getName().getName().equals(getName())) {
+            int mode = getMode();
+            if ( mode == READ_WRITE || mode == READ_ONLY ) {
+                String existingGetterBody = indexedGetterMethod.getBody().trim();
+                String oldGetterBody1 = BeanPatternGenerator.idxPropertyGetterBody( oldName, true, true ).trim();
+                String oldGetterBody2 = BeanPatternGenerator.idxPropertyGetterBody( oldName, true, false ).trim();
+                if (existingGetterBody.equals(oldGetterBody1)) {
+                    indexedGetterMethod.setBody(BeanPatternGenerator.idxPropertyGetterBody( getName(), true, true));
+                } else if (existingGetterBody.equals(oldGetterBody2)) {
+                    indexedGetterMethod.setBody(BeanPatternGenerator.idxPropertyGetterBody( getName(), true, false));
+                }
+            }
+            if ( mode == READ_WRITE || mode == WRITE_ONLY ) {
+                String existingSetterBody = indexedSetterMethod.getBody().trim();
+                String oldSetterBody = BeanPatternGenerator.idxPropertySetterBody (oldName, this.type, false, false, true, false, null, null).trim();
+                if (existingSetterBody.equals(oldSetterBody)) {
+                    indexedSetterMethod.setBody(BeanPatternGenerator.idxPropertySetterBody (getName(), getType(), false, false, true, false, null, null));
+
+                    if ( indexedSetterMethod != null ) {
+                        MethodParameter params[] = indexedSetterMethod.getParameters();
+                        params[1].setName(Introspector.decapitalize( name ));
+                        indexedSetterMethod.setParameters(params);
+                    }
+                }
+            }
         }
     }
 
