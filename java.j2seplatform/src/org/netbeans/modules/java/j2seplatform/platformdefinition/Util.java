@@ -95,13 +95,13 @@ public class Util {
     }
 
     /**
-     * In the case when the url is a archive it is transformed into the archive root.
-     * @param archives  List&lt;UR&gt;
-     * @return
+     * Process a list of URLs, producing the archive root for archive file URLs.
+     * @param archives a list of URLs which may include some archive files and some not
+     * @return a similar list of URLs, with the archive root used in place of each archive file
      */
-    public static List getResourcesRoots (List archives) {
+    public static List/*<URL>*/ getResourcesRoots(List/*<URL>*/ archives) {
         assert archives != null;
-        List result = new ArrayList ();
+        List/*<URL>*/ result = new ArrayList ();
         for (Iterator it = archives.iterator(); it.hasNext();) {
             URL url = (URL) it.next();
             if (FileUtil.isArchiveFile(url)) {
