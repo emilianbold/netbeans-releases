@@ -27,6 +27,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 import org.netbeans.modules.web.project.ProjectWebModule;
 
 import org.netbeans.modules.web.project.SourceRoots;
@@ -310,16 +311,16 @@ public class WebProjectProperties {
         LAUNCH_URL_RELATIVE_MODEL = projectGroup.createStringDocument(evaluator, LAUNCH_URL_RELATIVE);
         DISPLAY_BROWSER_MODEL = projectGroup.createToggleButtonModel(evaluator, DISPLAY_BROWSER);
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(privateProperties.getProperty( J2EE_SERVER_INSTANCE ));
-        CONTEXT_PATH_MODEL = projectGroup.createStringDocument(evaluator, CONTEXT_PATH);
         try {
-            String contextPath = CONTEXT_PATH_MODEL.getText(0, CONTEXT_PATH_MODEL.getLength());
-            if (contextPath == null || contextPath.length() == 0) {
-                ProjectWebModule wm = (ProjectWebModule) project.getLookup().lookup(ProjectWebModule.class);
-                contextPath = wm.getContextPath();
+            CONTEXT_PATH_MODEL = new PlainDocument();
+            CONTEXT_PATH_MODEL.remove(0, CONTEXT_PATH_MODEL.getLength());
+            ProjectWebModule wm = (ProjectWebModule) project.getLookup().lookup(ProjectWebModule.class);
+            String contextPath = wm.getContextPath();
+            if (contextPath != null) {
                 CONTEXT_PATH_MODEL.insertString(0, contextPath, null);
-            }            
+            }
         } catch (BadLocationException exc) {
-            //PENDING
+            //ignore
         }
     }
 
@@ -336,7 +337,7 @@ public class WebProjectProperties {
             ProjectManager.getDefault().saveProject(project);
             
             //prevent deadlock reported in the issue #54643
-            //cp and serverId values are set in setNewContextPathValue() method which is called from storeProperties() before this code
+            //cp and serverId values are read in setNewContextPathValue() method which is called from storeProperties() before this code
             //it is easier to preset them instead of reading them here again
             if (cp != null && cp.length() != 0) {
                 ProjectWebModule wm = (ProjectWebModule) project.getLookup().lookup(ProjectWebModule.class);
@@ -459,7 +460,7 @@ public class WebProjectProperties {
         try {
             setNewContextPathValue(CONTEXT_PATH_MODEL.getText(0, CONTEXT_PATH_MODEL.getLength()), project, projectProperties, privateProperties);
         } catch (BadLocationException exc) {
-            //PENDING
+            //ignore
         }
 
         storeAdditionalProperties(projectProperties);
@@ -707,8 +708,6 @@ public class WebProjectProperties {
 
         cp = contextPath;    
         serverId = privateProps.getProperty(J2EE_SERVER_INSTANCE);
-
-        projectProps.setProperty(CONTEXT_PATH, contextPath);
     }
     
     public ClassPathUiSupport.ClassPathTableModel getJavaClassPathModel() {
