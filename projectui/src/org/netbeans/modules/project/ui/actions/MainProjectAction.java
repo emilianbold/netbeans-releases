@@ -70,7 +70,7 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
         // if no main project than show warning and allow choose a main project
         if (p == null) {
             // show warning, if cancel then return
-            if (showNoMainProjectWarning (OpenProjectList.getDefault().getOpenProjects ())) {
+            if (showNoMainProjectWarning (OpenProjectList.getDefault().getOpenProjects (), name)) {
                 return ;
             }
             p = OpenProjectList.getDefault().getMainProject();
@@ -119,7 +119,7 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
         }        
     }
     
-   private boolean showNoMainProjectWarning (Project[] projects) {
+   private boolean showNoMainProjectWarning (Project[] projects, String action) {
         boolean canceled;
         
         // no main project set => warning
@@ -130,7 +130,7 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
             DialogDescriptor.CANCEL_OPTION
         };
         DialogDescriptor desc = new DialogDescriptor (panel,
-                NbBundle.getMessage (NoMainProjectWarning.class, "CTL_NoMainProjectWarning_Title"), // NOI18N
+                action == null ? NbBundle.getMessage (NoMainProjectWarning.class, "CTL_NoMainProjectWarning_Title") : action, // NOI18N
             true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
         Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
         dlg.setVisible (true);
