@@ -266,9 +266,8 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
 
                 public PropertyEditor getPropertyEditor() {
-                    int varType = component.getCodeExpression().getVariable().getType();
-                    Boolean val = (Boolean)component.getAuxValue(AUX_VARIABLE_LOCAL);
-                    return (varType & CodeVariable.LOCAL) == CodeVariable.LOCAL ?
+                    Boolean local = (Boolean) component.getAuxValue(AUX_VARIABLE_LOCAL);
+                    return Boolean.TRUE.equals(local) ?
                         new ModifierEditor(Modifier.FINAL)
                         :
                         new ModifierEditor(Modifier.PUBLIC
