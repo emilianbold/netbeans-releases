@@ -183,7 +183,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 if (type == 2){
                     // TODO We need in the classpath the src.dir as well. 
                     cp = ClassPathFactory.createClassPath(
-                    new ProjectClassPathImplementation(helper, DOC_BASE_DIR, evaluator)); // NOI18N
+                    new JspClassPathImplementation(helper, evaluator)); // NOI18N
                 }
             }
             cache[type] = cp;

@@ -29,7 +29,8 @@ Microsystems, Inc. All Rights Reserved.
   org.netbeans.modules.html/1,
   org.netbeans.modules.web.jspparser/2,
   org.netbeans.modules.xml.text/2 = ${xml.common.impl.version},
-  org.openide.loaders > 4.11"/>
+  org.openide.loaders > 4.11,
+  org.netbeans.api.java/1"/>
           </manifest>
             <fileset dir="${build.classes.dir}"/>
         </jar>
