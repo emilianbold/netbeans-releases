@@ -149,7 +149,13 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         chooser.addPropertyChangeListener(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY,
         new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
-                setValue(chooser.getSelectedFile());
+                File f = chooser.getSelectedFile ();
+                if (f != null) {
+                    if (!files && f.isFile ()) return;
+                    if (!directories && f.isDirectory ()) return;
+                }
+
+                setValue(f);
             } 
         });
         
