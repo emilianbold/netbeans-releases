@@ -233,6 +233,37 @@
 <!--Note: not sure when this ID is called-->
 <mapID target="org.openide.filesystems.JarFileSystem" url="filesystems/filesystems_settings.html" />
 
+   <!--Filesystems node--> 
+   <mapID target="org.netbeans.core.DesktopNode$ProjectSettingsNode" url="pending.html" />
+
+   <mapID target="org.netbeans.core.ExJarFileSystem_properties" url="filesystems/filesystems_JARpropsheet.html" />
+   <mapID target="org.netbeans.core.ExJarFileSystem_expert" url="filesystems/filesystems_JARpropsheet.html" />
+   <mapID target="org.netbeans.core.ExLocalFileSystem_properties" url="filesystems/filesystems_propsheet.html" />
+   <mapID target="org.netbeans.core.ExLocalFileSystem_expert" url="filesystems/filesystems_propsheet_expert.html" />   
+      
+   <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalLocalFileSystem.properties" url="filesystems/filesystems_propsheet.html" />   
+   <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalLocalFileSystem.expert" url="filesystems/filesystems_propsheet_expert.html" />   
+   <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalJarFileSystem.properties" url="filesystems/filesystems_JARpropsheet.html" />   
+   <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalJarFileSystem.expert" url="filesystems/filesystems_JARpropsheet.html" />  
+
+   <mapID target="org.openide.filesystems.FileSystemCapability.Bean " url="filesystems/filesystems_propsheet_capabilities.html" />   
+   
+   <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl" url="pending.html" /> 
+   <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl.FileTypeNode" url="pending.html" />         
+
+   <mapID target="org.netbeans.core.ExLocalFileSystem" url="pending.html" />
+   <mapID target="org.netbeans.core.ExJarFileSystem" url="pending.html" />
+   <mapID target="org.netbeans.modules.usersguide.UGModule$GlobalJarFileSystem" url="pending.html" />
+   <mapID target="org.netbeans.modules.usersguide.UGModule$GlobalLocalFileSystem" url="pending.html" />
+   <mapID target="org.netbeans.core.projects.SystemFileSystem" url="pending.html" />
+   
+   <mapID target="org.netbeans.modules.jarpackager.JarContentChildren$ContentMemberNode.Properties" url="pending.html" />
+   <mapID target="org.netbeans.modules.jarpackager.JarDataObject$JarNode.Properties" url="pending.html" />
+   <mapID target="org.netbeans.modules.jarpackager.JarChildren$GeneratedJarNode.Properties" url="pending.html" />
+   <mapID target="org.netbeans.modules.jarpackager.JarContentChildren$ContentMemberNode.Properties" url="pending.html" />
+   <mapID target="org.netbeans.modules.jarpackager.JarDataObject$JarNode.Execution" url="pending.html" /> 
+
+
 
 <!--csh page for Import Management Tool panels-->
 <mapID target="java.import.FqnPanel" url="java/imt/resolve-ids.html" />
@@ -860,9 +891,9 @@
    <mapID target="org.netbeans.core.LoaderPoolNode$LoaderPoolItemNode" url="objects/objects_object-types.html" /> 
    <mapID target="objects.object-types" url="objects/objects_object-types.html" /> 
 
-   <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl" url="pending.html" /> 
-   <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl.FileTypeNode" url="pending.html" />         
-   
+
+
+      
    <mapID target="org.netbeans.core.MenuFolderNode" url="configure/menu_commands.html" /> 
    <mapID target="org.netbeans.core.actions.DockingAction" url="pending.html" />
    <mapID target="org.netbeans.core.actions.EditorViewAction" url="pending.html" /> 
@@ -900,14 +931,7 @@
    <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/cvs-nb/cvs_merge-resolve.html" />
 
 
-   <!--Filesystems node--> 
-   <mapID target="org.netbeans.core.DesktopNode$ProjectSettingsNode" url="pending.html" />
-   
-   <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalLocalFileSystem.properties" url="pending.html" />   
-   <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalLocalFileSystem.expert" url="pending.html" />   
-   <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalJarFileSystem.properties" url="pending.html" />   
-   <mapID target="org.netbeans.modules.usersguide.UGModule.GlobalJarFileSystem.expert" url="pending.html" />  
-   <mapID target="org.openide.filesystems.FileSystemCapability.Bean " url="pending.html" />  
+  
     
     
    <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
