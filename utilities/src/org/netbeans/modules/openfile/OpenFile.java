@@ -351,7 +351,6 @@ class OpenFile extends Object {
           SettingsBeanInfo.getString ("LBL_quickMountTitle"), // title
           NotifyDescriptor.YES_NO_OPTION, // optionType
           NotifyDescriptor.QUESTION_MESSAGE, // messageType
-          null, // icon
           new Object[] { yesOption, noOption }, // options
           yesOption // initialValue
           ));
@@ -441,6 +440,8 @@ class OpenFile extends Object {
 
 /*
  * Log
+ *  27   Gandalf   1.26        1/6/00   Jan Jancura     Icon removed from 
+ *       NotifyDesc.
  *  26   Gandalf   1.25        1/4/00   Jesse Glick     Friendlier mount 
  *       dialogs.
  *  25   Gandalf   1.24        11/10/99 Jesse Glick     Fixed race condition in 
