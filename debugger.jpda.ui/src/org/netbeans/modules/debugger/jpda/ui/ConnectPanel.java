@@ -139,6 +139,10 @@ Controller, ActionListener {
                 JLabel lblConnectors = new JLabel (
                     NbBundle.getMessage (ConnectPanel.class, "CTL_Connector") // NOI18N
                 );
+                lblConnectors.setDisplayedMnemonic (
+                    NbBundle.getMessage (ConnectPanel.class, "MN_CTL_Connector").charAt (0) // NOI18N
+                );
+                lblConnectors.setLabelFor (cbConnectors);
                 layout.setConstraints (lblConnectors, c);
             add (lblConnectors);
                 c.insets = new Insets (0, 3, 3, 0);

@@ -168,6 +168,12 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
                 "ACSD_CTL_Close" // NOI18N
             )
         );
+        bClose.setMnemonic (
+            NbBundle.getMessage (
+                BreakpointsActionsProvider.class,
+                "ACSD_CTL_Close" // NOI18N
+            ).charAt (0)
+        );
         descriptor.setClosingOptions (null);
         Dialog d = DialogDisplayer.getDefault ().createDialog (descriptor);
         d.pack ();
