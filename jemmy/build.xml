@@ -1,0 +1,104 @@
+<project name="Jemmy" default="compile" basedir=".">
+
+  <property name="src" value="src"/>
+  <property name="build" value="classes"/>
+  <property name="javadoc" value="www/javadoc"/>
+  <property name="package" value="org.netbeans.jemmy"/>
+  <property name="jar" value="jemmy.jar"/>
+  <property name="zip" value="jemmy.zip"/>
+  <property name="util" value="util"/>
+
+  <property name="testlist" value="testsuite/testlist"/>
+  <property name="testdatalocation" value="testsuite/src/org/netbeans/jemmy/testing"/>
+  <property name="testbuild" value="testsuite/classes"/>
+  <property name="testsources" value="testsuite/src"/>
+  <property name="testresources" value="testsuite/gui_resource"/>
+  <property name="testtimeouts" value="testsuite/jemmy.timeouts"/>
+  <property name="testrundir" value="testsuite/run"/>
+  <property name="robot" value="off"/>
+
+  <target name="compile">
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}"/>
+    <copy file="${src}/org/netbeans/jemmy/debug.timeouts" todir="${build}/org/netbeans/jemmy"/>
+  </target>
+
+  <target name="api" depends="compile">
+    <mkdir dir="${javadoc}"/>
+    <javadoc packagenames="${package},${package}.util,${package}.explorer,${package}.operators,${package}.demo" 
+     sourcepath="${src}" destdir="${javadoc}" Protected="yes" Windowtitle="Jemmy API"/>
+  </target>
+
+  <target name="jar" depends="compile">
+    <jar jarfile="${jar}" basedir="${build}"/>
+  </target>
+
+  <target name="jarsrc" depends="compile,jar">
+    <jar jarfile="${jar}" basedir="${src}" update="yes"/>
+  </target>
+
+  <target name="jarapi" depends="compile,api,jar">
+    <jar jarfile="${jar}" basedir="${javadoc}" update="yes"/>
+  </target>
+
+  <target name="jarall" depends="jarapi,jarsrc">
+  </target>
+
+  <target name="zip" depends="compile">
+    <zip zipfile="${zip}" basedir="${build}"/>
+  </target>
+
+  <target name="zipsrc" depends="compile,zip">
+    <zip zipfile="${zip}" basedir="${src}" update="yes"/>
+  </target>
+
+  <target name="zipapi" depends="compile,api,zip">
+    <zip zipfile="${zip}" basedir="${javadoc}" update="yes"/>
+  </target>
+
+  <target name="zipall" depends="zipapi,zipsrc">
+  </target>
+
+  <target name="clean">
+    <delete dir="${build}"/>
+    <delete dir="${javadoc}"/>
+    <delete dir="${testbuild}"/>
+    <delete file="${jar}"/>
+    <delete file="${zip}"/>
+  </target>
+
+  <target name="util">
+    <exec dir="${util}" executable="chmod">
+      <arg line="+x"/>
+      <arg line="compile"/>
+      <arg line="runTest"/>
+    </exec>
+  </target>
+
+  <target name="test" depends="compiletest">
+    <taskdef name="suite" classname="${package}.testing.TestSuite">
+      <classpath>
+        <pathelement location="${testbuild}"/>
+        <pathelement location="${build}"/>
+        <pathelement path="${java.class.path}"/>
+      </classpath>
+    </taskdef>
+    <suite testlist="${testlist}" 
+           testslocation="${testdatalocation}" 
+           resources="${testresources}" 
+           timeouts="${testtimeouts}" 
+           resultdir="${testrundir}" 
+           robotdispatching="${robot}"/>
+  </target>
+
+  <target name="compiletest" depends="compile">
+    <mkdir dir="${testbuild}"/>
+    <javac srcdir="${testsources}" destdir="${testbuild}">
+      <classpath>
+        <pathelement location="${build}"/>
+        <pathelement path="${java.class.path}"/>
+      </classpath>
+    </javac>
+  </target>
+
+</project>
