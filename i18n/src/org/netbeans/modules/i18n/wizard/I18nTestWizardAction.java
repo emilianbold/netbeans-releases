@@ -27,6 +27,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 import org.openide.DialogDisplayer;
+import org.netbeans.api.project.Project;
 
 /**
  * Action which runs i18n test wizard.
@@ -68,10 +69,16 @@ public class I18nTestWizardAction extends NodeAction {
             dialog.setVisible(false);
             dialog.dispose();
         }
-        
+
+        Project project = org.netbeans.modules.i18n.Util.getProjectFor(activatedNodes);
+	if (project == null) return;
+
         WizardDescriptor wizardDescriptor = I18nWizardDescriptor.createI18nWizardDescriptor(
             getWizardIterator(),
-            Util.createWizardSettings(activatedNodes)
+            new I18nWizardDescriptor.
+	    Settings(Util.createWizardSourceMap(activatedNodes),
+		     project)
+
         );
 
         initWizard(wizardDescriptor);

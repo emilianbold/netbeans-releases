@@ -71,4 +71,15 @@ public final class Util {
       return FileOwnerQuery.getOwner(fo);
     }
 
+  public static Project getProjectFor(Node [] activatedNodes) {
+    Project project = null;
+
+    if (activatedNodes.length > 0) {
+      DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+      if(dataObject != null && dataObject.getPrimaryFile() != null) 
+	project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
+    } 
+    return project;
+  }
+
 }

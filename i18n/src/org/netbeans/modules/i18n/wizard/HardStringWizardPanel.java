@@ -82,7 +82,7 @@ final class HardStringWizardPanel extends JPanel {
     private static final int COLUMN_INDEX_CUSTOM = 4;
         
     /** Local copy of i18n wizard data. */
-    private final Map sourceMap = Util.createWizardSettings();
+    private final Map sourceMap = Util.createWizardSourceMap();
 
     /** Table model for <code>stringTable</code>. */
     private final AbstractTableModel tableModel = new HardCodedStringTableModel();
@@ -562,10 +562,11 @@ final class HardStringWizardPanel extends JPanel {
         
         /** Reads settings at the start when the panel comes to play. Overrides superclass method. */
         public void readSettings(Object settings) {
-            getUI().setSourceMap((Map)settings);
+	    super.readSettings(settings);
+            getUI().setSourceMap(getMap());
 
             JPanel panel = (JPanel)getComponent();
-            if(foundStrings((Map)settings)) {
+            if(foundStrings(getMap())) {
                 if(panel.isAncestorOf(emptyLabel)) {
                     panel.remove(emptyLabel);
                     GridBagConstraints constraints = new GridBagConstraints();
@@ -588,9 +589,10 @@ final class HardStringWizardPanel extends JPanel {
 
         /** Stores settings at the end of panel show. Overrides superclass method. */
         public void storeSettings(Object settings) {
+	    super.storeSettings(settings);
             // Update sources.
-            ((Map)settings).clear();
-            ((Map)settings).putAll(getUI().getSourceMap());
+	    getMap().clear();
+            getMap().putAll(getUI().getSourceMap());
         }
         
         /** Searches hard coded strings in sources and puts found hard coded string - i18n string pairs

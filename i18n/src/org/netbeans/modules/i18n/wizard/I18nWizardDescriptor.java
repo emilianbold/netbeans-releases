@@ -34,6 +34,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListener;
 import org.openide.WizardDescriptor;
 import org.openide.DialogDisplayer;
+import org.netbeans.api.project.Project;
+import java.util.Map;
 
 
 /**
@@ -51,7 +53,7 @@ final class I18nWizardDescriptor extends WizardDescriptor {
     private final WizardDescriptor.Iterator panels;
 
     /** Hack. In super it's private. */
-    private final Object settings;
+    private final Settings settings;
     
     /** Next button. */
     private final JButton nextButton = new JButton();
@@ -66,9 +68,8 @@ final class I18nWizardDescriptor extends WizardDescriptor {
      * (the one from superclass) our one is set as default. */
     private PropertyChangeListener rootListener;
 
-    
     /** Creates new I18nWizardDescriptor */
-    private I18nWizardDescriptor(WizardDescriptor.Iterator panels, Object settings) {
+    private I18nWizardDescriptor(WizardDescriptor.Iterator panels, Settings settings) {
         super(panels, settings);
         
         Listener listener = new Listener();
@@ -100,7 +101,7 @@ final class I18nWizardDescriptor extends WizardDescriptor {
 
     /** Creates I18N wizard descriptor.
      * @return <code>I18nWizardDescriptor</code> instance. */
-    static WizardDescriptor createI18nWizardDescriptor(WizardDescriptor.Iterator panels, Object settings) {
+    static WizardDescriptor createI18nWizardDescriptor(WizardDescriptor.Iterator panels, Settings settings) {
         return new I18nWizardDescriptor(panels, settings);
     }
     
@@ -304,6 +305,9 @@ final class I18nWizardDescriptor extends WizardDescriptor {
         private ChangeListener changeListener;
 
 
+        /** initialized in read settings **/  
+        private I18nWizardDescriptor.Settings settings = null;
+
         /** Gets component to display. Implements <code>WizardDescriptor.Panel</code> interface method. 
          * @return this instance */
         public synchronized final Component getComponent() {
@@ -325,6 +329,7 @@ final class I18nWizardDescriptor extends WizardDescriptor {
 
         /** Reads settings at the start when the panel comes to play. Implements <code>WizardDescriptor.Panel</code> interface method. */
         public void readSettings(Object settings) {
+	  this.settings = (I18nWizardDescriptor.Settings)settings;
         }
 
         /** Stores settings at the end of panel show. Implements <code>WizardDescriptor.Panel</code> interface method. */
@@ -347,8 +352,26 @@ final class I18nWizardDescriptor extends WizardDescriptor {
             if(changeListener != null)
                 changeListener.stateChanged(new ChangeEvent(this));
         }
+
+        public Project getProject() {
+	  return settings.project;
+	}
+
+        public Map getMap() {
+	  return settings.map;
+	}
+ 
 	                	        
     } // End of nested class Panel.
+
+  public static class Settings {
+    public Settings(Map map, Project project) {
+      this.map = map;
+      this.project = project;
+    }
+    public Map map;
+    public Project project;
+  }
     
 }
 

@@ -56,7 +56,7 @@ public class SelectorUtils {
   /**
    * The filter used to filter out folders and resource bundles.
    */
-  private static FilteredNode.NodeFilter BUNDLES_FILTER = 		    
+  public static final FilteredNode.NodeFilter BUNDLES_FILTER = 		    
     new FilteredNode.NodeFilter() {
       public boolean acceptNode(Node n) {
 	// Has to be data object.
@@ -72,6 +72,14 @@ public class SelectorUtils {
     };
 
 				       
+  public static final FilteredNode.NodeFilter ALL_FILTER = 
+    new FilteredNode.NodeFilter() {
+      public boolean acceptNode(Node n) {
+	return true;
+      }
+    };
+
+
 
   /**
    * Brings up a modal windows for selection of a resource bundle from

@@ -58,6 +58,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.netbeans.modules.i18n.SelectorUtils;
 
 /**
  * First panel used in I18N (test) Wizard.
@@ -68,7 +69,7 @@ import org.openide.nodes.Children;
 final class SourceWizardPanel extends JPanel {
 
     /** Sources selected by user. */
-    private final Map sourceMap = Util.createWizardSettings();
+    private final Map sourceMap = Util.createWizardSourceMap();
     
     /** This component panel wizard descriptor.
      * @see org.openide.WizardDescriptor.Panel 
@@ -247,21 +248,14 @@ final class SourceWizardPanel extends JPanel {
 
         // take actual project from first data object
 
-        Project prj = null;
-        Iterator it = sourceMap.keySet().iterator();
-        if (it.hasNext()) {
-            DataObject dobj = (DataObject) it.next();
-            FileObject fo = dobj.getPrimaryFile();
-            prj = FileOwnerQuery.getOwner(fo);
-        }
-
-
+        Project prj = descPanel.getProject();
+  
         // Selects source data objects which could be i18n-ized.
         try {
             Node[] selectedNodes= NodeOperation.getDefault().select(
                 Util.getString("LBL_SelectSources"),
                 Util.getString("LBL_Filesystems"),
-                Util.sourcesView(prj, null),
+                SelectorUtils.sourcesNode(prj, SelectorUtils.ALL_FILTER),
                 new NodeAcceptor() {
                     public boolean acceptNodes(Node[] nodes) {
                         if(nodes == null || nodes.length == 0) {
@@ -295,7 +289,7 @@ final class SourceWizardPanel extends JPanel {
 
                 if (dataObject instanceof DataFolder) {
                     // recursively add folder content
-                    it = I18nUtil.getAcceptedDataObjects((DataFolder)dataObject).iterator();
+                    Iterator it = I18nUtil.getAcceptedDataObjects((DataFolder)dataObject).iterator();
                     while (it.hasNext()) {
                         Util.addSource(sourceMap, (DataObject)it.next());
                     }
@@ -386,14 +380,17 @@ final class SourceWizardPanel extends JPanel {
         
         /** Reads settings at the start when the panel comes to play. Overrides superclass method. */
         public void readSettings(Object settings) {
-            ((SourceWizardPanel)getComponent()).setSourceMap((Map)settings);
+	  super.readSettings(settings);
+	  ((SourceWizardPanel)getComponent()).setSourceMap(getMap());
         }
 
         /** Stores settings at the end of panel show. Overrides superclass method. */
         public void storeSettings(Object settings) {
+	  super.storeSettings(settings);
+	    super.storeSettings(settings);
             // Update sources.
-            ((Map)settings).clear();
-            ((Map)settings).putAll(((SourceWizardPanel)getComponent()).getSourceMap());
+            getMap().clear();
+            getMap().putAll(((SourceWizardPanel)getComponent()).getSourceMap());
         }
         
         /** Gets help. Implements superclass abstract method. */

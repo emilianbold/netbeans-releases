@@ -53,7 +53,7 @@ import org.openide.WizardDescriptor;
 final class AdditionalWizardPanel extends JPanel {
 
     /** Local copy of i18n wizard data. */
-    private final Map sourceMap = Util.createWizardSettings();
+    private final Map sourceMap = Util.createWizardSourceMap();
     
     /** Sources on which additional modifications coudl happen in this panel. */
     private final Set viewedSources = new HashSet(0);
@@ -237,10 +237,11 @@ final class AdditionalWizardPanel extends JPanel {
 
         /** Reads settings at the start when the panel comes to play. Overrides superclass method. */
         public void readSettings(Object settings) {
-            getUI().setSourceMap((Map)settings);
+   	    super.readSettings(settings);
+            getUI().setSourceMap(getMap());
             
             JPanel panel = (JPanel)getComponent();
-            if(hasAdditional((Map)settings)) {
+            if(hasAdditional(getMap())) {
                 if(panel.isAncestorOf(emptyLabel)) {
                     panel.remove(emptyLabel);
                     GridBagConstraints constraints = new GridBagConstraints();
@@ -263,7 +264,7 @@ final class AdditionalWizardPanel extends JPanel {
 
         /** Stores settings at the end of panel show. Overrides superclass abstract method. */
         public void storeSettings(Object settings) {
-            
+   	    super.storeSettings(settings);
             // Alter i18n string values if changing additional values could affect them.
             Map sourceMap = getUI().getSourceMap();
             Iterator it = getUI().getViewedSources().iterator();
@@ -280,8 +281,8 @@ final class AdditionalWizardPanel extends JPanel {
             }
             
             // Update sources.
-            ((Map)settings).clear();
-            ((Map)settings).putAll(sourceMap);
+            getMap().clear();
+            getMap().putAll(sourceMap);
         }
         
         /** Searches hard coded strings in sources and puts found hard coded string - i18n string pairs

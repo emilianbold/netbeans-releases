@@ -71,7 +71,7 @@ import org.openide.filesystems.FileObject;
 final class ResourceWizardPanel extends JPanel {
 
     /** Local copy of i18n wizard data. */
-    private final Map sourceMap = Util.createWizardSettings();
+    private final Map sourceMap = Util.createWizardSourceMap();
 
     /** Table model for resourcesTable. */
     private final AbstractTableModel tableModel = new ResourceTableModel();
@@ -407,14 +407,16 @@ final class ResourceWizardPanel extends JPanel {
         
         /** Reads settings at the start when the panel comes to play. Overrides superclass method. */
         public void readSettings(Object settings) {
-            getUI().setSourceMap((Map)settings);
+	    super.readSettings(settings);
+            getUI().setSourceMap(getMap());
         }
 
         /** Stores settings at the end of panel show. Overrides superclass abstract method. */
         public void storeSettings(Object settings) {
+	    super.storeSettings(settings);
             // Update sources.
-            ((Map)settings).clear();
-            ((Map)settings).putAll(getUI().getSourceMap());
+            getMap().clear();
+            getMap().putAll(getUI().getSourceMap());
         }
         
         /** Searches hard coded strings in sources and puts found hard coded string - i18n string pairs

@@ -55,7 +55,7 @@ final class Util {
     /** 
      * Create empty settings used in i18n wizards. 
      */
-    public static Map createWizardSettings() {
+    public static Map createWizardSourceMap() {
         return new TreeMap(new DataObjectComparator());
     }
     
@@ -66,8 +66,8 @@ final class Util {
      * @return map with accepted data objects as keys or empty map if no such
      * data objec were found.
      */
-    public static Map createWizardSettings(Node[] activatedNodes) {
-        Map settings = createWizardSettings();
+    public static Map createWizardSourceMap(Node[] activatedNodes) {
+        Map sourceMap = createWizardSourceMap();
         
         if (activatedNodes != null && activatedNodes.length > 0) {
             for (int i = 0; i < activatedNodes.length; i++) {
@@ -79,7 +79,7 @@ final class Util {
                         Iterator it = I18nUtil.getAcceptedDataObjects(container).iterator();
 
                         while(it.hasNext()) {
-                            addSource(settings, (DataObject)it.next());
+                            addSource(sourceMap, (DataObject)it.next());
                         }
                     }
                 }
@@ -87,12 +87,12 @@ final class Util {
                 DataObject dobj = (DataObject) activatedNodes[i].getCookie(DataObject.class);
                 if (dobj == null) continue;
                 if (FactoryRegistry.hasFactory(dobj.getClass())) {
-                    addSource(settings, dobj);
+                    addSource(sourceMap, dobj);
                 }
             }
         }
         
-        return settings;
+        return sourceMap;
     }
     
     /** Adds source to source map (I18N wizard settings). If there is already no change is done.
@@ -147,65 +147,6 @@ final class Util {
 	    if (FileOwnerQuery.getOwner(dobj.getPrimaryFile()) == null) return false;
         }
         return true;
-    }
-
-    /** Prepare node structure showing sources */
-    static Node sourcesView(Project prj, DataFilter filter) {
-//       Following code is a bit too CPU intensive (memory probably as well)
-//       for working with  MasterFS
-//
-//        DataFilter dataFilter = new DataFilter() {
-//            public boolean acceptDataObject (DataObject dataObject) {
-//                return (dataObject instanceof DataFolder
-//                 || FactoryRegistry.hasFactory(dataObject.getClass()));
-//            }
-//        };
-//
-//        Node repositoryNode = RepositoryNodeFactory.getDefault().repository(dataFilter);
-
-
-        if (prj != null) {
-            Node node = LogicalViews.physicalView(prj).createLogicalView();
-            return node;
-        } else {
-            // Thus changing to work with GlobalPathRegistry
-            Set paths = GlobalPathRegistry.getDefault().getPaths( ClassPath.SOURCE );
-            List roots = new ArrayList();
-            for ( Iterator it = paths.iterator(); it.hasNext(); ) {
-                ClassPath cp = (ClassPath)it.next();
-                roots.addAll( Arrays.asList( cp.getRoots() ) );
-            }
-
-
-            // XXX This is a bit dirty and should be rewritten to Children.Keys
-            // XXX The subnodes deserve better names than src and test
-            List nodes = new ArrayList();
-            Set names = new HashSet();
-            for( Iterator it = roots.iterator(); it.hasNext(); ) {
-                FileObject fo = (FileObject)it.next();
-                if ( names.contains( fo.getPath()) ) {
-                    continue;
-                }
-                names.add( fo.getPath () );
-                try {
-                    nodes.add( new FilterNode(DataObject.find( fo ).getNodeDelegate()) );
-                }
-                catch( DataObjectNotFoundException e ) {
-                    // Ignore
-                }
-            }
-
-            Children ch = new Children.Array();
-            Node[] nodesArray = new Node[ nodes.size() ];
-            nodes.toArray( nodesArray );
-            ch.add( nodesArray );
-
-            Node repositoryNode = new AbstractNode( ch );
-            repositoryNode.setName( NbBundle.getMessage( SourceWizardPanel.class, "LBL_Sources" ) );
-            // XXX Needs some icon.
-
-            return repositoryNode;
-        }
     }
 
     /**

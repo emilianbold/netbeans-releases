@@ -29,6 +29,8 @@ import org.openide.WizardDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.FileOwnerQuery;
 
 /**
  * Action which runs i18n wizard.
@@ -71,9 +73,13 @@ public class I18nWizardAction extends NodeAction {
             dialog.dispose();
         }
 
+	/* find out the current project from activated nodes */
+	Project project = org.netbeans.modules.i18n.Util.getProjectFor(activatedNodes);
+	if (project == null) return;
+	  
         WizardDescriptor wizardDesc = I18nWizardDescriptor.createI18nWizardDescriptor(
             getWizardIterator(),
-            Util.createWizardSettings(activatedNodes)
+            new I18nWizardDescriptor.Settings(Util.createWizardSourceMap(activatedNodes), project)
         );
 
         initWizard(wizardDesc);
