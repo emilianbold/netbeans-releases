@@ -29,7 +29,7 @@ import java.util.*;
  */
 public class ClassFile {
 
-    ConstantPool constantPool;
+    ConstantPool constantPool; 
     int classAccess;
     CPClassInfo classInfo;
     CPClassInfo superClassInfo;
@@ -79,7 +79,7 @@ public class ClassFile {
     public ClassFile(File file, boolean  includeCode) throws IOException {
 	InputStream is = null;
         if( file == null || !file.exists() )
-            throw new IllegalArgumentException("File name is invalid or file not exists");
+            throw new IOException("File name is invalid or file not exists");
         try {
             is = new BufferedInputStream( new FileInputStream( file ), BUFFER_SIZE);
             load(is, includeCode);
@@ -101,7 +101,7 @@ public class ClassFile {
      */
     public ClassFile(InputStream classData, boolean includeCode) throws IOException {
         if (classData == null)
-            throw new IllegalArgumentException("input stream not specified");
+            throw new IOException("input stream not specified");
         load(classData, includeCode);
     }
     
@@ -117,7 +117,7 @@ public class ClassFile {
         InputStream in = null;
         try {
             if (classFileName == null)
-                throw new IllegalArgumentException("input stream not specified");
+                throw new IOException("input stream not specified");
             in = new BufferedInputStream(new FileInputStream(classFileName), BUFFER_SIZE);
             load(in, includeCode);
         } finally {
@@ -137,6 +137,8 @@ public class ClassFile {
     private void load(InputStream classData, boolean includeCode) throws IOException {
         try {
             DataInputStream in = new DataInputStream(classData);
+            if (in == null)
+                throw new IOException("invalid class format");
             constantPool = loadClassHeader(in);
             interfaces = getCPClassList(in, constantPool);
             variables = Variable.loadFields(in, constantPool);
@@ -147,11 +149,11 @@ public class ClassFile {
             throw new IOException("invalid class format");
         }
     }
-    
+
     private ConstantPool loadClassHeader(DataInputStream in) throws IOException {
         int magic = in.readInt();
         if (magic != 0xCAFEBABE) {
-            throw new IllegalArgumentException("invalid class format");
+            throw new IOException("invalid class format");
         }
             
         short minor = in.readShort();
@@ -160,12 +162,14 @@ public class ClassFile {
         ConstantPool pool = new ConstantPool(count, in);
         classAccess = in.readUnsignedShort();
         classInfo = pool.getClass(in.readUnsignedShort());
+        if (classInfo == null)
+            throw new IOException("invalid class format");
         int index = in.readUnsignedShort();
         if (index != 0) // true for java.lang.Object
             superClassInfo = pool.getClass(index);
         return pool;
     }
-    
+
     static CPClassInfo[] getCPClassList(DataInputStream in, ConstantPool pool)
       throws IOException {
         int count = in.readUnsignedShort();
@@ -181,7 +185,13 @@ public class ClassFile {
         int count = in.readUnsignedShort();
         attributes = new HashMap(count + 1, (float)1.0);
         for (int i = 0; i < count; i++) {
-            CPUTF8Info entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
+            CPUTF8Info entry;
+            try {
+                entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
+            } catch (ClassCastException e) {
+                throw new IOException("invalid constant pool entry");
+            }
+
             int len = in.readInt();
             String name = entry.getName();
             if (name.equals("Deprecated")){
@@ -193,7 +203,11 @@ public class ClassFile {
                 synthetic = true;
             }
             else if (name.equals("SourceFile")) { //NOI18N
-                entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
+                try {
+                    entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
+                } catch (ClassCastException e) {
+                    throw new IOException("invalid constant pool entry");
+                }
                 sourceFileName = entry.getName();
                 attributes.put(name, sourceFileName);
             } else if (name.equals("InnerClasses")){
