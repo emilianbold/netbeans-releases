@@ -866,6 +866,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     JavaEditor.InteriorSection sec = getEventHandlerSection (handlerName);
     if (sec != null) {
       sec.openAt ();
+      formManager.getFormEditorSupport ().gotoEditor ();
     } 
   }
 
@@ -1202,6 +1203,9 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  45   Gandalf   1.44        9/2/99   Ian Formanek    Fixed bug 3698 - When 
+ *       the event handler is added or modified, the focus is not transfered to 
+ *       the editor.
  *  44   Gandalf   1.43        8/10/99  Ian Formanek    Fixed problem with 
  *       adding hidden-state components
  *  43   Gandalf   1.42        8/1/99   Ian Formanek    NodePropertyEditor 

@@ -27,7 +27,6 @@ import java.util.Map;
 import javax.swing.JTextField;
 
 /* TODO
- - gotoMethod - jumping to newly created event handlers
  - indexed properties
 */
 
@@ -75,6 +74,7 @@ public class RADComponent {
 
   private FormManager2 formManager;
   private EventsList eventsList;
+  private String gotoMethod;
 
   // FINALIZE DEBUG METHOD
   public void finalize () throws Throwable {
@@ -464,18 +464,16 @@ public class RADComponent {
                 formManager.getEventsManager ().renameEventHandler (event.getHandler (), handlerName);
                 formManager.fireEventRenamed (RADComponent.this, oldValue, oldName);
                 
-              } else {
-                
+              } else {                
                 // adding event handler
                 formManager.getEventsManager ().addEventHandler (event, handlerName);
                 formManager.fireEventAdded (RADComponent.this, event.getHandler ());
-                
               }
 
-//              if ((gotoMethod != null) && gotoMethod.equals (handlerName)) {
-//                gotoMethod = null;
-//                event.gotoEventHandler ();
-//              }
+              if ((gotoMethod != null) && gotoMethod.equals (handlerName)) {
+                gotoMethod = null;
+                event.gotoEventHandler ();
+              }
             } 
           } 
 
@@ -1130,8 +1128,8 @@ public class RADComponent {
     
     class EventEditor extends PropertyEditorSupport implements EnhancedPropertyEditor {
       public void setAsText (String string) {
+        gotoMethod = string;
         setValue(string);
-//        gotoMethod = string; // [PENDING]
       }
                                    
       private String getEditText () {
@@ -1179,6 +1177,9 @@ public class RADComponent {
 
 /*
  * Log
+ *  46   Gandalf   1.45        9/2/99   Ian Formanek    Fixed bug 3698 - When 
+ *       the event handler is added or modified, the focus is not transfered to 
+ *       the editor.
  *  45   Gandalf   1.44        9/2/99   Ian Formanek    Fixed bug 3696 - When 
  *       connection is copied and pasted into form, the initialization code of 
  *       the ConnectionSource component is not correctly generated. and 3695 - 
