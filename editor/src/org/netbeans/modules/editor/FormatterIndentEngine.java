@@ -57,7 +57,7 @@ public abstract class FormatterIndentEngine extends IndentEngine {
         return getFormatter().getSettingValue(settingName);
     }
 
-    public void setValue(String settingName, Object newValue) {
+    public void setValue(String settingName, Object newValue, String propertyName) {
         Object oldValue = getValue(settingName);
         if ((oldValue == null && newValue == null)
                 || (oldValue != null && oldValue.equals(newValue))
@@ -66,9 +66,21 @@ public abstract class FormatterIndentEngine extends IndentEngine {
         }
 
         getFormatter().setSettingValue(settingName, newValue);
-        firePropertyChange(settingName, oldValue, newValue);
+        
+        if (propertyName != null){
+            firePropertyChange(propertyName, oldValue, newValue);
+        }
     }
 
+    /**
+     * @deprecated use {@link #setValue(java.lang.String, java.lang.Object, java.lang.String)} instead 
+     * with properly specified propertyName
+     */
+    public void setValue(String settingName, Object newValue) {
+        setValue(settingName, newValue, null);
+    }
+    
+    
     public int indentLine(Document doc, int offset) {
         return getFormatter().indentLine(doc, offset);
     }
