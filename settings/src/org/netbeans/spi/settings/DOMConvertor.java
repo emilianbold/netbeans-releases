@@ -172,10 +172,19 @@ public abstract class DOMConvertor extends Convertor {
         // read
         if (element.getTagName().equals(ELM_DELEGATE)) {
             // read CDATA block
-            org.w3c.dom.Node n = element.getFirstChild();
-            String content = n.getNodeValue();
-            if (n.getNodeType() != org.w3c.dom.Node.CDATA_SECTION_NODE || content == null) {
-                throw new IOException("Expected CDATA block: " + n);
+            org.w3c.dom.NodeList children = element.getChildNodes();
+            String content = null;
+            for (int i = 0, size = children.getLength(); i < size; i++) {
+                org.w3c.dom.Node n = children.item(i);
+                if (n.getNodeType() == org.w3c.dom.Node.CDATA_SECTION_NODE) {
+                    content = n.getNodeValue();
+                    break;
+                }
+            }
+            
+            if (content == null) {
+                throw new IOException("Expected CDATA block under: " + // NOI18N
+                                       element.getTagName());
             }
             obj = readFromString(c, content, findContext(element.getOwnerDocument()));
         } else if (c instanceof DOMConvertor) {
