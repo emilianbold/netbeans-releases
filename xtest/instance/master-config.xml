@@ -60,8 +60,8 @@ Microsystems, Inc. All Rights Reserved.
       <testtype name="qa-functional" attributes="validation"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>
-      <module name="debuggercore"      testtypes="qa-gui"  attributes="validation"/>
-      <module name="debuggerjpda"      testtypes="qa-unit"  attributes="full"/>
+      <module name="debuggercore" testtypes="qa-functional" attributes="validation"/>
+      <module name="debuggerjpda" testtypes="qa-unit" attributes="full"/>
 
       <!-- no longer in validation suite
       <module name="corba"   	testtypes="qa-functional"  attributes="validation"/>   -->
