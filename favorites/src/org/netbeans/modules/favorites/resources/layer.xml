@@ -61,7 +61,6 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Windows2">
         <folder name="Modes">
             <folder name="explorer">
-                <attr name="filesystems.wstcref/favories.wstcref" boolvalue="true" />
                 <attr name="favorites.wstcref/Javadoc.wstcref" boolvalue="true" />
                 <attr name="favorites.wstcref/runtime.wstcref" boolvalue="true" />
                 <file name="favorites.wstcref" url="favorites.wstcref" />

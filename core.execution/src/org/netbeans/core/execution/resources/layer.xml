@@ -93,7 +93,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Modes">
             
             <folder name="explorer">
-                <attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" />
                 <file name="runtime.wstcref" url="windowmanager/explorer/runtime.wstcref" />
             </folder>
 
