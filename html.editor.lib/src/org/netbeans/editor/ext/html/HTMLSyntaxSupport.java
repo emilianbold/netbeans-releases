@@ -254,7 +254,6 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
      * @return true is the token is a part of singleton tag
      */
     public boolean isSingletonTag(TokenItem tagTokenItem) {
-        System.out.println("isSingletonTag?: " + tagTokenItem.getImage() + "(" + tagTokenItem.getOffset() + "; " + tagTokenItem.getTokenID().getName());
         TokenItem ti = tagTokenItem;
         while(ti != null) {
             if(ti.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL) {
