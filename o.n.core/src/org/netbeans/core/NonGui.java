@@ -263,13 +263,6 @@ public class NonGui extends NbTopManager implements Runnable {
         }
     }
     
-
-    protected static void showSystemInfo() {
-        System.out.println("-- " + getString("CTL_System_info") + " ----------------------------------------------------------------");
-        TopLogging.printSystemInfo(System.out);
-        System.out.println("-------------------------------------------------------------------------------"); // NOI18N
-    }
-
     protected static void showHelp() {
         System.out.println(getString("CTL_Cmd_options"));
         System.out.println(getString("CTL_System_option"));
@@ -278,13 +271,11 @@ public class NonGui extends NbTopManager implements Runnable {
         System.out.println(getString("CTL_FontSize_option"));
         System.out.println(getString("CTL_Locale_option"));
         System.out.println(getString("CTL_Branding_option"));
-        System.out.println(getString("CTL_Noinfo_option"));
         System.out.println(getString("CTL_Nologging_option"));
         System.out.println(getString("CTL_Nosysclipboard_option"));
     }
 
     public static void parseCommandLine(String[] args) {
-        boolean noinfo = false;
         boolean specifiedBranding = false;
 
         // let's go through the command line
@@ -302,8 +293,9 @@ public class NonGui extends NbTopManager implements Runnable {
                 accessibility = true;
                 java.lang.System.setProperty("netbeans.accessibility","true");
             }
-            else if (args[i].equalsIgnoreCase("-noinfo")) // NOI18N
-                noinfo = true;
+            else if (args[i].equalsIgnoreCase("-noinfo")) { // NOI18N
+                // obsolete switch, ignore
+            }
             else if (args[i].equalsIgnoreCase("-nologging")) // NOI18N
                 noLogging = true;
             else if (args[i].equalsIgnoreCase("-nosysclipboard")) // NOI18N
@@ -368,6 +360,16 @@ public class NonGui extends NbTopManager implements Runnable {
             }
         }
 
+        if (!noLogging) {
+            try {
+                logger = new TopLogging(getSystemDir());
+            } catch (IOException e) {
+                System.err.println("Cannot create log file. Logging disabled."); // NOI18N
+                e.printStackTrace ();
+            }
+        }
+        StartLog.logProgress ("TopLogging initialized"); // NOI18N
+        
         if (! specifiedBranding) {
             // Read default branding from file "lib/branding" in installation.
             File branding = new File (getUserDir (), "lib" + File.separator + "branding"); // NOI18N
@@ -398,12 +400,6 @@ public class NonGui extends NbTopManager implements Runnable {
                 }
             }
         }
-
-        // ----------------------------
-        // show System info
-        if (!noinfo)
-            showSystemInfo();
-
     }
     
     /** Lazily loads classes */ // #9951
@@ -440,20 +436,6 @@ public class NonGui extends NbTopManager implements Runnable {
         java.beans.PropertyEditorManager.registerEditor (getKlass("[Lorg.openide.src.Identifier;"), getKlass("org.openide.explorer.propertysheet.editors.IdentifierArrayEditor"));
         java.beans.PropertyEditorManager.registerEditor (java.lang.Character.TYPE, getKlass("org.netbeans.beaninfo.editors.CharEditor"));
         StartLog.logProgress ("PropertyEditors registered"); // NOI18N
-
-        // -----------------------------------------------------------------------------------------------------
-        // 5. Start logging
-
-        // do logging
-        if (!noLogging) {
-            try {
-                logger = new TopLogging(getSystemDir());
-            } catch (IOException e) {
-                System.err.println("Cannot create log file. Logging disabled."); // NOI18N
-                e.printStackTrace ();
-            }
-        }
-        StartLog.logProgress ("TopLogging initialized"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
         // 6. Initialize SecurityManager and ClassLoader
