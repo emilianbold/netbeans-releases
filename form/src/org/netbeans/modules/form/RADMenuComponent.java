@@ -18,10 +18,9 @@ package org.netbeans.modules.form;
 import org.openide.util.datatransfer.*;
 
 import java.awt.*;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import javax.swing.*;
+import java.io.IOException;
+import java.util.*;
 
 /**
  *
@@ -73,6 +72,52 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
             types[types.length - 1] = separator;
 
         return types;
+    }
+
+    // -------
+    // cloning menu instance (including submenus)
+
+    public Object cloneMenuInstance() {
+        Object menu = cloneBeanInstance();
+
+        for (Iterator it=subComponents.iterator(); it.hasNext(); ) {
+            RADMenuItemComponent menuItemComp = (RADMenuItemComponent) it.next();
+
+            Object menuItem;
+            int type = menuItemComp.getMenuItemType();
+            if (type != T_SEPARATOR && type != T_JSEPARATOR)
+            {
+                menuItem = menuItemComp instanceof RADMenuComponent ?
+                    ((RADMenuComponent)menuItemComp).cloneMenuInstance() :
+                    menuItemComp.cloneBeanInstance();
+            }
+            else menuItem = null;
+
+            addToMenu(menu, menuItem);
+        }
+
+        return menu;
+    }
+
+    private static void addToMenu(Object menu, Object menuItem) {
+        if (menu instanceof JMenuBar) {
+            ((JMenuBar)menu).add((JMenu)menuItem);
+        }
+        else if (menu instanceof JMenu) {
+            if (menuItem != null)
+                ((JMenu)menu).add((JMenuItem)menuItem);
+            else
+                ((JMenu)menu).addSeparator();
+        }
+        else if (menu instanceof MenuBar) {
+            ((MenuBar)menu).add((Menu)menuItem);
+        }
+        else if (menu instanceof Menu) {
+            if (menuItem != null)
+                ((Menu)menu).add((MenuItem)menuItem);
+            else
+                ((Menu)menu).addSeparator();
+        }
     }
 
     // -----------------------------------------------------------------------------
