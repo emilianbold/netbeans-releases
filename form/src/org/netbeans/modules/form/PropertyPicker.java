@@ -64,7 +64,7 @@ public class PropertyPicker extends javax.swing.JDialog {
     for (int i = 0; i < comps.length; i++) {
       allComponents.addElement (comps[i]);
     }
-    addComponentsRecursively ((ComponentContainer)manager.getRADForm ().getTopLevelComponent (), allComponents); // [PENDING - incorrect cast]
+    addComponentsRecursively (manager.getRADForm ().getFormContainer (), allComponents);
     components = new RADComponent [allComponents.size ()];
     allComponents.copyInto (components);
     int selIndex = -1;
@@ -327,6 +327,7 @@ public class PropertyPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  9    Gandalf   1.8         6/29/99  Ian Formanek    Removed incorrect cast
  *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  7    Gandalf   1.6         6/1/99   Ian Formanek    Fixed removed event 

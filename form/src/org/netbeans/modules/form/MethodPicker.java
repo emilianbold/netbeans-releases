@@ -68,7 +68,7 @@ public class MethodPicker extends javax.swing.JDialog {
       allComponents.addElement (comps[i]);
     }
 
-    addComponentsRecursively ((ComponentContainer)manager.getRADForm ().getTopLevelComponent (), allComponents); // [PENDING - incorrect cast]
+    addComponentsRecursively (manager.getRADForm ().getFormContainer (), allComponents);
 
     components = new RADComponent [allComponents.size ()];
     allComponents.copyInto (components);
@@ -346,6 +346,7 @@ public class MethodPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  8    Gandalf   1.7         6/29/99  Ian Formanek    Removed incorrect cast
  *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  6    Gandalf   1.5         6/1/99   Ian Formanek    Fixed removed event 
