@@ -76,31 +76,37 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
 
         setLayout(new java.awt.GridBagLayout());
 
-        setAsMainCheckBox.setText("Set as Main Project");
-        setAsMainCheckBox.setSelected(true);
         setAsMainCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
+        setAsMainCheckBox.setSelected(true);
+        setAsMainCheckBox.setText("Set as Main Project");
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(setAsMainCheckBox, gridBagConstraints);
 
-        createMainCheckBox.setText("Create Main Class:");
-        createMainCheckBox.setSelected(true);
         createMainCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_NWP1_CreateMainClass_CheckBoxMnemonic").charAt(0));
+        createMainCheckBox.setSelected(true);
+        createMainCheckBox.setText("Create Main Class:");
         createMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
         add(createMainCheckBox, gridBagConstraints);
 
         mainClassTextField.setText("com.myapp.Main");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
         add(mainClassTextField, gridBagConstraints);
 
     }//GEN-END:initComponents
