@@ -990,8 +990,10 @@ public class RADComponent {
         }
 
         public void setPreCode(String value) {
-            preCode = value;
-            getFormManager().firePropertyChanged(RADComponent.this, desc.getName(), null, null);
+            if ((preCode == null && value != null) || (preCode != null && !preCode.equals(value))) {
+                preCode = value;
+                getFormManager().firePropertyChanged(RADComponent.this, desc.getName(), null, null);
+            }
         }
 
         public String getPostCode() {
@@ -999,8 +1001,10 @@ public class RADComponent {
         }
 
         public void setPostCode(String value) {
-            postCode = value;
-            getFormManager().firePropertyChanged(RADComponent.this, desc.getName(), null, null);
+            if ((postCode == null && value != null) || (postCode != null && !postCode.equals(value))) {
+                postCode = value;
+                getFormManager().firePropertyChanged(RADComponent.this, desc.getName(), null, null);
+            }
         }
 
         public boolean isChanged() {
@@ -1266,8 +1270,10 @@ public class RADComponent {
         }
 
         public void setPreCode(String value) {
-            preCode = value;
-            getFormManager().firePropertyChanged(RADComponent.this, desc.getName(), null, null);
+            if ((preCode == null && value != null) || (preCode != null && !preCode.equals(value))) {
+                preCode = value;
+                getFormManager().firePropertyChanged(RADComponent.this, desc.getName(), null, null);
+            }
         }
 
         public String getPostCode() {
@@ -1275,8 +1281,10 @@ public class RADComponent {
         }
 
         public void setPostCode(String value) {
-            postCode = value;
-            getFormManager().firePropertyChanged(RADComponent.this, desc.getName(), null, null);
+            if ((postCode == null && value != null) || (postCode != null && !postCode.equals(value))) {
+                postCode = value;
+                getFormManager().firePropertyChanged(RADComponent.this, desc.getName(), null, null);
+            }
         }
 
         public boolean isChanged() {
