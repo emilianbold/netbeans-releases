@@ -96,7 +96,9 @@ public class CheckoutNeeded extends Task {
                 cvs.setOwningTarget( this.getOwningTarget() );
                 cvs.setCvsRoot( ":pserver:anoncvs@" + repository ); //NOI18N
                 
-                cvs.setDest( new File( directory ) );
+                File destfile = new File(directory);
+                if (!destfile.exists()) destfile.mkdirs();
+                cvs.setDest(destfile);
                 
                 if (!branch.equals("trunk")) //NOI18N
                     cvs.setTag( branch );
