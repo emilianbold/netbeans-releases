@@ -135,8 +135,13 @@
 				prefix = "jdbc:informix-sqli://<HOST>:<PORT>/<DB>:INFORMIXSERVER=<SERVER_NAME>";
 			},
 			{
-				name = "InstantDB";
+				name = "InstantDB (v3.13 and earlier)";
 				driver = "jdbc.idbDriver";
+				prefix = "jdbc:idb:<DB>";
+			},
+			{
+				name = "InstantDB (v3.14 and later)";
+				driver = "org.enhydra.instantdb.jdbc.idbDriver";
 				prefix = "jdbc:idb:<DB>";
 			},
 			{
@@ -145,12 +150,12 @@
 				prefix = "jdbc:interbase://<HOST>/<DB>";
 			},
 			{
-				name = "Hypersonic SQL (v1.1, 1.2)";
+				name = "Hypersonic SQL (v1.2 and earlier)";
 				driver = "hSql.hDriver";
 				prefix = "jdbc:HypersonicSQL:<DB>";
 			},
 			{
-				name = "Hypersonic SQL (v1.3)";
+				name = "Hypersonic SQL (v1.3 and later)";
 				driver = "org.hsql.jdbcDriver";
 				prefix = "jdbc:HypersonicSQL:<DB>";
 			},
@@ -185,12 +190,12 @@
 				prefix = "jdbc:postgresql://<HOST>:<PORT>/<DB>";
 			},
 			{
-				name = "Sybase (JDBC 1.x driver)";
+				name = "Sybase (jConnect 4.2 and earlier)";
 				driver = "com.sybase.jdbc.SybDriver";
 				prefix = "jdbc:sybase:Tds:<HOST>:<PORT>";
 			},
 			{
-				name = "Sybase (JDBC 2.0 driver)";
+				name = "Sybase (jConnect 5.2)";
 				driver = "com.sybase.jdbc2.jdbc.SybDriver";
 				prefix = "jdbc:sybase:Tds:<HOST>:<PORT>";
 			}
