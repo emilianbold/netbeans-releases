@@ -136,7 +136,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         serverInstanceComboBox = new javax.swing.JComboBox();
         jLabel7 = new javax.swing.JLabel();
         j2eeSpecComboBox = new javax.swing.JComboBox();
-        addToAppCheckBox = new javax.swing.JCheckBox();
+        addToAppLabel = new javax.swing.JLabel();
         addToAppComboBox = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
@@ -238,7 +238,6 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         projectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc"));
 
         org.openide.awt.Mnemonics.setLocalizedText(browseProjectFolder, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
-        browseProjectFolder.setNextFocusableComponent(addToAppCheckBox);
         browseProjectFolder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseProjectFolderActionPerformed(evt);
@@ -333,24 +332,16 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         jPanel1.add(j2eeSpecComboBox, gridBagConstraints);
         j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("ACS_LBL_IW_SelectJ2EEVersion_A11YDesc"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(addToAppCheckBox, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_AddToEApp_CheckBox"));
-        addToAppCheckBox.setNextFocusableComponent(addToAppComboBox);
-        addToAppCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                addToAppCheckBoxStateChanged(evt);
-            }
-        });
-
+        addToAppLabel.setLabelFor(addToAppComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(addToAppLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_AddToEApp_CheckBox"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        jPanel1.add(addToAppCheckBox, gridBagConstraints);
-        addToAppCheckBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("ACS_LBL_IW_SetProjectAppName_A11YDesc"));
+        jPanel1.add(addToAppLabel, gridBagConstraints);
 
-        addToAppComboBox.setEnabled(false);
         addToAppComboBox.setNextFocusableComponent(serverInstanceComboBox);
         addToAppComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -394,10 +385,6 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
             wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); //NOI18N
         }
     }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
-
-    private void addToAppCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_addToAppCheckBoxStateChanged
-        addToAppComboBox.setEnabled(addToAppCheckBox.isSelected());
-    }//GEN-LAST:event_addToAppCheckBoxStateChanged
 
     private void addToAppComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToAppComboBoxActionPerformed
         // TODO add your handling code here:
@@ -456,8 +443,8 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     }//GEN-LAST:event_browseProjectLocationActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox addToAppCheckBox;
     private javax.swing.JComboBox addToAppComboBox;
+    private javax.swing.JLabel addToAppLabel;
     private javax.swing.JButton browseProjectFolder;
     private javax.swing.JButton browseProjectLocation;
     private javax.swing.JComboBox j2eeSpecComboBox;
@@ -889,10 +876,13 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
 
     private Project getSelectedEarApplication() {
         int idx = addToAppComboBox.getSelectedIndex();
-        return (idx == -1 || !addToAppCheckBox.isSelected()) ? null : (Project) earProjects.get(idx);
+        return (idx <= 0) ? null : (Project) earProjects.get(idx - 1);
     }
     
     private void initEnterpriseApplications() {
+        addToAppComboBox.addItem(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_AddToEApp_None"));
+        addToAppComboBox.setSelectedIndex(0);
+        
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
         earProjects = new ArrayList();
         for (int i = 0; i < allProjects.length; i++) {
@@ -903,8 +893,8 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
                 addToAppComboBox.addItem(projectInfo.getDisplayName());
             }
         }
-        if (earProjects.size() > 0) {
-            addToAppComboBox.setSelectedIndex(0);
+        if (earProjects.size() <= 0) {
+            addToAppComboBox.setEnabled(false);
         }
     }
     
