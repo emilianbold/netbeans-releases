@@ -861,7 +861,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                new TagInfo ("root", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref2024.html#1003283#1003311",                         // NOI18N
                   null, null, new TagAttributeInfo[] {new TagAttributeInfo("version", false, url+"syntaxref2024.html#1003299#1003301", false),
                                                       new TagAttributeInfo("xmlns:jsp", false, url+"syntaxref2024.html#1003297#1003299", false),
-                                                      new TagAttributeInfo("xmlns:taglibPrefix", false, url+"syntaxref2024.html#1003301#1003311", false)})
+                                                      new TagAttributeInfo("xmlns:x", false, url+"syntaxref2024.html#1003301#1003311", false)})
             };
                   
             xmlJspTagDatas = new TagInfo[] {
