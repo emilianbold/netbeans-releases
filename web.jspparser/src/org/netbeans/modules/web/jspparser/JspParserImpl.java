@@ -13,26 +13,25 @@
 
 package org.netbeans.modules.web.jspparser;
 
-import java.io.IOException;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.WeakHashMap;
-import java.util.Iterator;
-import java.lang.reflect.*;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import javax.servlet.ServletContext;
-
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.PermissionCollection;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.openide.ErrorManager;
 
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
+
 
 /**
  *
@@ -74,9 +73,10 @@ public class JspParserImpl implements JspParserAPI {
                 for (int i = 0; i < files.length; i++) {
                     urls[i] = files[i].toURI().toURL();
                 }
-                URLClassLoader urlCL = new URLClassLoader(urls, JspParserImpl.class.getClassLoader());
+                ExtClassLoader urlCL = new ExtClassLoader(urls, JspParserImpl.class.getClassLoader());
                 Class cl = urlCL.loadClass("org.netbeans.modules.web.jspparser_ext.WebAppParseSupport");
-                webAppParserImplConstructor = cl.getDeclaredConstructor(new Class[] {JspParserAPI.WebModule.class});
+               
+                webAppParserImplConstructor = cl.getDeclaredConstructor(new Class[] {WebModule.class});
             }
             catch (NoSuchMethodException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -89,6 +89,7 @@ public class JspParserImpl implements JspParserAPI {
             }
         }
     }
+    
     
     
     private static boolean loggerInitialized = false;
@@ -253,4 +254,18 @@ public class JspParserImpl implements JspParserAPI {
         }
     }
     
+    private static class ExtClassLoader extends URLClassLoader {
+        
+        private static final AllPermission ALL_PERM = new AllPermission();
+        
+        public ExtClassLoader(URL[] classLoadingURLs, ClassLoader parent) {
+            super(classLoadingURLs, parent);
+        }
+        
+        protected PermissionCollection getPermissions(CodeSource codesource) {
+            PermissionCollection perms = super.getPermissions(codesource);
+            perms.add(ALL_PERM);
+            return perms;
+        }
+    }
 }
