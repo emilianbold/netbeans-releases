@@ -28,7 +28,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 import org.netbeans.api.xml.cookies.*;
-import org.netbeans.api.xml.cookies.CookieObserver;
 import org.netbeans.api.xml.services.*;
 import org.netbeans.api.xml.parsers.*;
 
