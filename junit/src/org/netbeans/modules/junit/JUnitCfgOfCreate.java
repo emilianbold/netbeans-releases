@@ -106,9 +106,13 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      *
      * @see  #isAcceptable()
      */
-    private boolean checkBoxesOK = true;
-    // The default value is important - if it were <false> by default,
-    // method checkChkBoxesStates() might not display the error message.
+    private boolean checkBoxesOK;
+    
+    /**
+     * message about invalid configuration of checkboxes
+     * in the <em>Method Access Levels</em> group
+     */
+    private String msgChkBoxesInvalid;
     
     /**
      * is the entered class name non-empty and valid?
@@ -132,17 +136,8 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     private static final int MSG_TYPE_INVALID_CHKBOXES = 1;
     /** layer index for a message about invalid class name */
     private static final int MSG_TYPE_CLASSNAME_INVALID = 2;
-    /**
-     * messages in layers (index <code>0</code> means the topmost layer)
-     */
-    private final String[] messageLayers = new String[3];
-    /**
-     * was the last message temporary?
-     * Temporary messages are displayed no matter what message layers contain.
-     *
-     * @see  #messageLayers
-     */
-    private boolean lastMsgWasTemporary = false;
+    /** */
+    private MessageStack msgStack = new MessageStack(3);
 
     /**
      * Creates a JUnit configuration panel.
@@ -407,18 +402,19 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     /**
      */
     private void checkChkBoxesStates() {
-        final boolean wereOK = checkBoxesOK;
         checkBoxesOK = chkPublic.isSelected()
                        || chkProtected.isSelected()
                        || chkPackage.isSelected();
-        if (checkBoxesOK != wereOK) {
-            //PENDING - text of the message:
-            setMessage(!checkBoxesOK
-                           ? NbBundle.getMessage(
-                                     getClass(),
-                                     "MSG_AllMethodTypesDisabled")      //NOI18N
-                           : null,
-                       MSG_TYPE_INVALID_CHKBOXES);
+        if (checkBoxesOK) {
+            setMessage(null, MSG_TYPE_INVALID_CHKBOXES);
+        } else {
+            if (msgChkBoxesInvalid == null) {
+                //PENDING - text of the message:
+                msgChkBoxesInvalid = NbBundle.getMessage(
+                        JUnitCfgOfCreate.class,
+                        "MSG_AllMethodTypesDisabled");                  //NOI18N
+            }
+            setMessage(msgChkBoxesInvalid, MSG_TYPE_INVALID_CHKBOXES);
         }
     }
     
@@ -648,70 +644,15 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      *                  removed
      */
     private void setMessage(final String message, final int msgType) {
-        
-        /* determine message to display: */
-        String msgToDisplay = null;
-        if (msgType == MSG_TYPE_TEMPORARY) {
-            if (message != null) {
-                
-                /* ignore all layered message and display the given message: */
-                msgToDisplay = message;
-            } else {
-                
-                /* clear the message unless there is some layered message: */
-                msgToDisplay = "";                                      //NOI18N
-                for (int i = 0; i < messageLayers.length; i++) {
-                    if (messageLayers[i] != null) {
-                        msgToDisplay = messageLayers[i];
-                        break;
-                    }
-                }
-            }
-            lastMsgWasTemporary = true;
-        } else {
-            final boolean compareValues = !lastMsgWasTemporary;
-            lastMsgWasTemporary = false;
-
-            boolean covered = false;
-            boolean lookingDown = false;
-            
-            for (int i = 0; i < messageLayers.length; i++) {
-                final String currMsg = messageLayers[i];
-                if (lookingDown) {
-                    if (messageLayers[i] != null) {
-                        msgToDisplay = currMsg;
-                        break;
-                    }
-                }
-                if (i == msgType) {
-                    if (message == null) {
-                        if (compareValues && (currMsg == null)) {
-                            return;
-                        } else if (!covered) {
-                            messageLayers[i] = message;
-                            lookingDown = true;
-                            continue;
-                        }
-                    } else if (compareValues && message.equals(currMsg)) {
-                        return;
-                    }
-                    messageLayers[i] = message;
-                    if (!covered) {
-                        msgToDisplay = (message != null ? message : "");//NOI18N
-                    }
-                    break;
-                }
-                covered |= (currMsg != null);
-            }
-            if (lookingDown && (msgToDisplay == null)) {
-                msgToDisplay = "";                                      //NOI18N
-            }
+        String msgToDisplay = msgStack.setMessage(msgType, message);
+        if (msgToDisplay == null) {
+            return;                     //no change
         }
 
         /* display the message: */
         if (!isPainted()) {
             initialMessage = msgToDisplay;
-        } else if (msgToDisplay != null) {
+        } else {
             displayMessage(msgToDisplay);
         }
     }
