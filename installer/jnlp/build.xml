@@ -124,6 +124,11 @@ All Rights Reserved.
         <copy flatten="true" todir="release">
             <fileset dir="jars">
                 <include name="**/*.jar"/>
+                <!-- XXX need to exclude it now as it is signed twice -->
+                <exclude name="**/*jh*.jar" />
+                <exclude name="**/*javahelp.jar" />
+                <!-- we do not support autoupdate in webstart -->
+                <include name="**/org-netbeans-modules-autoupdate.jar" />
             </fileset>
         </copy>
 
