@@ -140,9 +140,9 @@
 	<!-- The Sources Folder panel in Project Properties for a Free-Form Web Application: -->
 	<mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersPanel" url="web/csh/dbox_projprops_freeform/SourceFoldersPanel.html" />
 	<!-- The Classpath panel in Project Properties for a Free-Form Web Application: -->
-	<mapID target="org.netbeans.modules.java.freeform.ui.ClasspathPanel" url="web/csh/dbox_projprops_freeform/ClasspathPanel.html" />
+	<mapID target="org.netbeans.modules.java.freeform.ui.ClasspathPanel" url="web/csh/dbox_projprops_freeform/OutputPanel.html" />
 	<!-- The Output Folder panel in Project Properties for a Free-Form Web Application: -->
-	<mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel" url="web/csh/dbox_projprops_freeform/OutputPanel.html" />
+	<mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel" url="web/csh/dbox_projprops_freeform/ClasspathPanel.html" />
 	
 	<!-- The Library Manager dialog box: -->
 	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/taglib_manage.html" />
