@@ -219,7 +219,7 @@ public class AntTargetNode extends ElementNode {
                 return true;
             }
             public Component getCustomEditor () {
-                return new DependsPanel ();
+                return new JScrollPane(new DependsPanel ());
             }
             private class DependsPanel extends Box implements ActionListener {
                 private final Set on = new HashSet (); // Set<String>
