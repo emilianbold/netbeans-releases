@@ -24,11 +24,14 @@ public class ImageViewer extends CloneableTopComponent {
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = 6017254068843460960L; // [PENDING SUID]
 
+  private ImageDataObject storedObject;
+
   /** Creates new image viewer.
   * @exception IOException if the file cannot be loaded.
   */
   public ImageViewer(ImageDataObject obj) throws java.io.IOException {
     super(obj);
+    storedObject = obj;
     javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(new javax.swing.JLabel(new NBImageIcon(obj)));
     setLayout(new java.awt.BorderLayout());
     add(scroll, "Center");
@@ -43,24 +46,20 @@ public class ImageViewer extends CloneableTopComponent {
   * This implementation only clones the object by calling super.clone method.
   * @return the copy of this object
   */
-/*  protected CloneableTopComponent createClonedObject () {
+  protected CloneableTopComponent createClonedObject () {
     try {
-      return new ImageViewer((ImageDataObject) getDataObject());
+      return new ImageViewer(storedObject);
     }
-    catch (IOException e) {
+    catch (java.io.IOException e) {
       throw new InternalError ();
     }
-  } */
+  } 
   
-  /** Returns true */
-  public boolean closeLast() {
-    return true;
-  }
-
 }
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/7/99   Ian Formanek    
  *  2    Gandalf   1.1         1/7/99   Ian Formanek    
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
