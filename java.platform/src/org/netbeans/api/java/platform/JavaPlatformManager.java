@@ -28,9 +28,7 @@ import org.netbeans.modules.java.platform.JavaPlatformProvider;
  * assign serializable IDs to their instances. It also defines a `default' platform, which represents NetBeans'
  * own runtime environment.
  *
- * PENDING: Notification events about adding/removing a Platform
- *
- * @author Radko Najman, Svata Dedic
+ * @author Radko Najman, Svata Dedic, Tomas Zezula
  */
 public final class JavaPlatformManager {
     

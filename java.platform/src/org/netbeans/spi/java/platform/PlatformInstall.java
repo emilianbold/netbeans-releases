@@ -21,7 +21,7 @@ import org.openide.filesystems.*;
  * is responsible for recognizing the platform, through its {@link #accept} method,
  * and for instantiation itself, through the provided TemplateWizard.Iterator.
  *
- * @author Svata Dedic
+ * @author Svata Dedic, Tomas Zezula
  */
 public abstract class PlatformInstall {
     /**
