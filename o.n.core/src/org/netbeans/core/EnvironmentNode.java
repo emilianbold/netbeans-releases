@@ -46,8 +46,8 @@ final class EnvironmentNode extends AbstractNode {
     private static final Object lock = new Object();
 
     /** Constructor */
-    private EnvironmentNode (String filter) {
-        super (new NbPlaces.Ch (filter));
+    private EnvironmentNode (String filter, Children children) {
+        super (children);
 
         this.filter = filter;
         
@@ -58,6 +58,7 @@ final class EnvironmentNode extends AbstractNode {
         setIconBase(iconBase);
     }
     
+    
     /** Finds the node for given name.
      */
     public static EnvironmentNode find (final String name) {
@@ -67,7 +68,17 @@ final class EnvironmentNode extends AbstractNode {
                     synchronized (lock) {
                         EnvironmentNode n = (EnvironmentNode)types.get (name);
                         if (n == null) {
-                            n = new EnvironmentNode (name);
+                            if (ManifestSection.NodeSection.TYPE_ROOTS.equals(name)) {
+                                n = new EnvironmentNode (name, new NbPlaces.Ch (name));
+                            } else {
+                                DataFolder folder = null;
+                                if (ManifestSection.NodeSection.TYPE_ENVIRONMENT.equals(name)) {
+                                    folder = NbPlaces.findSessionFolder("UI/Runtime"); // NOI18N
+                                } else {
+                                    folder = NbPlaces.findSessionFolder("UI/Services"); // NOI18N
+                                }
+                                n = new EnvironmentNode (name, folder.createNodeChildren(DataFilter.ALL));
+                            }
                             types.put (name, n);
                         }
                         return n;
