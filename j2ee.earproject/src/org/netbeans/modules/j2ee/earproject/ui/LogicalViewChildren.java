@@ -165,7 +165,16 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
         });
     }
  
-    public void propertiesChanged(AntProjectEvent ape) {
+    public void propertiesChanged(final AntProjectEvent ape) {
+        
+        // unsafe to call Children.setKeys() while holding a mutext
+        // here the caller holds ProjectManager.mutex() read access
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                updateKeys();
+            }
+        });
+        
     }
 /*    private void addKeyValues(List keyContainer, List beans) {
         Iterator it = beans.iterator();
