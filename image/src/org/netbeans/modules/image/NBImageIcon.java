@@ -19,10 +19,9 @@ import javax.swing.*;
 
 import com.netbeans.ide.util.io.*;
 
-/** ImageIcon with the changed serialization.
+/** ImageIcon with serialization.
 *
 * @author Petr Hamernik
-* @version 0.18, Jun 3, 1998
 */
 class NBImageIcon extends ImageIcon implements Serializable {
   /** generated Serialized Version UID */
@@ -30,42 +29,33 @@ class NBImageIcon extends ImageIcon implements Serializable {
   /** Appropriate image data object */
   ImageDataObject obj;
 
-  /** Constructs new ImageIcon for the dataobject */
+  /** Construct a new icon.
+  * @param obj the data object to represent the image in
+  */
   public NBImageIcon(ImageDataObject obj) {
     super(obj.getImageURL());
     this.obj = obj;
   }
 
-  /** @return an object to be written to the stream instead of this object. */
+  // Get an object to be written to the stream instead of this object.
   public Object writeReplace() {
     return new ResolvableHelper(obj);
   }
 
-  /** Helper class for serialization */
+  // Helper class for serialization.
   static class ResolvableHelper implements Serializable {
-    /** generated Serialized Version UID */
+    // generated Serialized Version UID
     static final long serialVersionUID = -1120520132882774882L;
-    /** DataObject for this image */
+    // serializable data object
     ImageDataObject obj;
 
     ResolvableHelper(ImageDataObject obj) {
       this.obj = obj;
     }
 
-    /**
-    * Return an object to replace the object extracted from the stream.
-    * The object will be used in the graph in place of the original.
-    */
+    // Restore with the same data object.
     public Object readResolve() {
       return new NBImageIcon(obj);
     }
   }
 }
-
-/*
- * Log
- *  3    Gandalf   1.2         1/20/99  Petr Hamernik   
- *  2    Gandalf   1.1         1/7/99   Jaroslav Tulach Uses OpenSupport
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- */

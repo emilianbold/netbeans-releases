@@ -29,7 +29,7 @@ public class ImageDataLoaderBeanInfo extends SimpleBeanInfo {
   private static Image icon;
   private static Image icon32;
 
-  /** Propertydescriptors */
+  /** Property descriptors. */
   private static PropertyDescriptor[] descriptors;
 
 
@@ -38,18 +38,11 @@ public class ImageDataLoaderBeanInfo extends SimpleBeanInfo {
   public ImageDataLoaderBeanInfo() {
   }
 
-  /**
-  * @return Returns an array of PropertyDescriptors
-  * describing the editable properties supported by this bean.
-  */
   public PropertyDescriptor[] getPropertyDescriptors () {
     if (descriptors == null) initializeDescriptors();
     return descriptors;
   }
 
-  /** @param type Desired type of the icon
-  * @return returns the Image loader's icon
-  */
   public Image getIcon(final int type) {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
@@ -83,13 +76,3 @@ public class ImageDataLoaderBeanInfo extends SimpleBeanInfo {
   }
 
 }
-
-/*
-* Log
-*  4    Gandalf   1.3         3/22/99  Ian Formanek    Icons moved from 
-*       modules/resources to this package
-*  3    Gandalf   1.2         2/16/99  David Simonek   
-*  2    Gandalf   1.1         1/22/99  Ian Formanek    
-*  1    Gandalf   1.0         1/5/99   Ian Formanek    
-* $
-*/

@@ -16,7 +16,7 @@ package com.netbeans.developer.modules.loaders.image;
 import com.netbeans.ide.windows.CloneableTopComponent;
 import com.netbeans.ide.util.HelpCtx;
 
-/** Object that provides viewer for images.
+/** Top component providing a viewer for images.
 *
 * @author Petr Hamernik, Ian Formanek
 */
@@ -26,8 +26,8 @@ public class ImageViewer extends CloneableTopComponent {
 
   private ImageDataObject storedObject;
 
-  /** Creates new image viewer.
-  * @exception IOException if the file cannot be loaded.
+  /** Create a new image viewer.
+  * @param obj the data object holding the image
   */
   public ImageViewer(ImageDataObject obj) {
     super(obj);
@@ -37,26 +37,13 @@ public class ImageViewer extends CloneableTopComponent {
     add(scroll, "Center");
   }
 
-  /** @return help for image viewer */
   public HelpCtx getHelp() {
     return new HelpCtx("com.netbeans.developer.help.BaseLoadersImageImageViewer");
   }
 
-  /** Is called from the clone method to create new component from this one.
-  * This implementation only clones the object by calling super.clone method.
-  * @return the copy of this object
-  */
+  // Cloning the viewer uses the same underlying data object.
   protected CloneableTopComponent createClonedObject () {
     return new ImageViewer(storedObject);
   }
 
 }
-
-/*
- * Log
- *  4    Gandalf   1.3         1/7/99   Jaroslav Tulach Uses OpenSupport
- *  3    Gandalf   1.2         1/7/99   Ian Formanek    
- *  2    Gandalf   1.1         1/7/99   Ian Formanek    
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- */

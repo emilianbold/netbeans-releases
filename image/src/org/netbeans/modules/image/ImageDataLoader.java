@@ -24,11 +24,14 @@ import com.netbeans.ide.util.NbBundle;
 */
 public class ImageDataLoader extends UniFileLoader {
 
-  /** Creates new ImageDataLoader without the extension. */
+  /** Create a new loader. */
   public ImageDataLoader() {
+    // Set the representation class.
     super(ImageDataObject.class);
+    // Get a localized display name.
     setDisplayName(NbBundle.getBundle(ImageDataLoader.class).
                    getString("PROP_ImageLoader_Name"));
+    // List of recognized extensions.
     ExtensionList ext = new ExtensionList();
     ext.addExtension("jpg");
     ext.addExtension("jpeg");
@@ -36,6 +39,7 @@ public class ImageDataLoader extends UniFileLoader {
     ext.addExtension("gif");
     setExtensions(ext);
 
+    // Common actions for all images.
     setActions(new SystemAction[] {
       SystemAction.get(OpenAction.class),
       null,
@@ -53,13 +57,12 @@ public class ImageDataLoader extends UniFileLoader {
 
   }
 
-  /** Creates the right data object for given primary file.
-  * It is guaranteed that the provided file is realy primary file
-  * returned from the method findPrimaryFile.
+  /** Create the image data object.
   *
-  * @param primaryFile the primary file
+  * @param primaryFile the primary file (e.g. <code>*.gif</code>)
   * @return the data object for this file
-  * @exception DataObjectExistsException if the primary file already has data object
+  * @exception DataObjectExistsException if the primary file already has a data object
+  * @exception java.io.IOException should not be thrown
   */
   protected MultiDataObject createMultiObject (FileObject primaryFile)
   throws DataObjectExistsException, java.io.IOException {
@@ -67,20 +70,3 @@ public class ImageDataLoader extends UniFileLoader {
   }
 
 }
-
-/*
- * Log
- *  5    Gandalf   1.4         3/26/99  Ian Formanek    Fixed use of obsoleted 
- *       NbBundle.getBundle (this)
- *  4    Gandalf   1.3         1/7/99   Ian Formanek    
- *  3    Gandalf   1.2         1/6/99   Jan Jancura     
- *  2    Gandalf   1.1         1/6/99   Ian Formanek    Updated to new 
- *       DataSystem
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- * Beta Change History:
- *  0    Tuborg    0.11        --/--/98 Jaroslav Tulach Multi window is here (again)
- *  0    Tuborg    0.12        --/--/98 Petr Hamernik   small changes
- *  0    Tuborg    0.14        --/--/98 Jan Formanek    locale change
- *  0    Tuborg    0.15        --/--/98 Petr Hamernik   Multi window is away (again)
- */

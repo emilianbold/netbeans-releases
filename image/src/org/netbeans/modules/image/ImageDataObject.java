@@ -23,8 +23,7 @@ import com.netbeans.ide.util.*;
 import com.netbeans.ide.util.actions.*;
 import com.netbeans.ide.nodes.*;
 
-/** Object that represents one file containing image in the tree of
-* beans representing data systems.
+/** Object that represents one file containing an image.
 *
 * @author Petr Hamernik, Jaroslav Tulach, Ian Formanek
 */
@@ -37,21 +36,24 @@ public class ImageDataObject extends MultiDataObject {
 
   /** New instance.
   * @param pf primary file object for this data object
+  * @param loader the data loader creating it
+  * @exception DataObjectExistsException if there was already a data object for it 
   */
   public ImageDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
     super(pf, loader);
+    // Support OpenCookie.
     getCookieSet ().add (new Open (getPrimaryEntry ()));
   }
 
   /** Help context for this object.
-  * @return help context
+  * @return the help context
   */
   public com.netbeans.ide.util.HelpCtx getHelpCtx () {
     return new com.netbeans.ide.util.HelpCtx ("com.netbeans.developer.docs.Users_Guide.usergd-using-div-12", "USERGD-USING-TABLE-2");
   }
 
-  /**
-  * @return Image url loaded from primary FileObject of this DataObject.
+  /** Get a URL for the image.
+  * @return the image url
   */
   java.net.URL getImageURL() {
     try {
@@ -61,15 +63,8 @@ public class ImageDataObject extends MultiDataObject {
     }
   }
 
-  /** Provides node that should represent this data object. When a node for representation
-  * in a parent is requested by a call to getNode (parent) it is the exact copy of this node
-  * with only parent changed. This implementation creates instance
-  * <CODE>DataNode</CODE>.
-  * <P>
-  * This method is called only once.
-  *
-  * @return the node representation for this data object
-  * @see DataNode
+  /** Create a node to represent the image.
+  * @return the node
   */
   protected Node createNodeDelegate () {
     DataNode node = new DataNode (this, Children.LEAF);
@@ -78,37 +73,15 @@ public class ImageDataObject extends MultiDataObject {
     return node;
   }
 
-  /** Implementation of open cookie.
-  */
   private class Open extends OpenSupport implements OpenCookie {
     public Open (MultiDataObject.Entry ent) {
       super (ent);
     }
 
-    /** Creates the viewer */
+    // Creates the viewer
     public CloneableTopComponent createCloneableTopComponent () {
       return new ImageViewer(ImageDataObject.this);
     }
   }
 
 }
-
-
-/*
- * Log
- *  8    Gandalf   1.7         3/22/99  Ian Formanek    Icons moved from 
- *       modules/resources to this package
- *  7    Gandalf   1.6         2/3/99   Jaroslav Tulach 
- *  6    Gandalf   1.5         1/22/99  Ian Formanek    
- *  5    Gandalf   1.4         1/15/99  Petr Hamernik   image source repaired
- *  4    Gandalf   1.3         1/7/99   Jaroslav Tulach Uses OpenSupport
- *  3    Gandalf   1.2         1/7/99   Ian Formanek    
- *  2    Gandalf   1.1         1/7/99   Ian Formanek    
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- * Beta Change History:
- *  0    Tuborg    0.11        --/--/98 Jaroslav Tulach Changed number of parameters in constructor
- *  0    Tuborg    0.13        --/--/98 Jan Formanek    Icon change
- *  0    Tuborg    0.16        --/--/98 Jan Formanek    reflecting changes in cookies
- *  0    Tuborg    0.17        --/--/98 Jan Formanek    templates
- */
