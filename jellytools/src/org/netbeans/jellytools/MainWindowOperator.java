@@ -149,13 +149,21 @@ public class MainWindowOperator extends JFrameOperator {
 
     /** Makes IDE to switch to compact mode (former MDI). */
     public static void setCompactMode() {
-        WindowManagerImpl.getInstance().setEditorAreaState(Constants.EDITOR_AREA_JOINED);
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                WindowManagerImpl.getInstance().setEditorAreaState(Constants.EDITOR_AREA_JOINED);
+            }
+        });
         new EventTool().waitNoEvent(1000);
     }
 
     /** Makes IDE to switch to separate (multiple smaller windows) mode (former SDI). */
     public static void setSeparateMode() {
-        WindowManagerImpl.getInstance().setEditorAreaState(Constants.EDITOR_AREA_SEPARATED);
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                WindowManagerImpl.getInstance().setEditorAreaState(Constants.EDITOR_AREA_SEPARATED);
+            }
+        });
         new EventTool().waitNoEvent(1000);
     }
     
