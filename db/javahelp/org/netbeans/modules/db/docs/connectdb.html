@@ -19,15 +19,13 @@
         <h2>Connecting to a Database</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
         <p>Once the drivers for your database have been added and are visible
-            in the Databases node, you can open a connection to the database.
-        </p>
+        in the Databases node, you can open a connection to the database.</p>     
         <p>Once the initial connection has been made you can do the following:</p>
         <ul>
             <li>Correct a broken connection</li>
             <li>Disconnect and reconnect to a database</li>
         </ul>
-        <p>When connecting to a database you can also choose to obtain a database schema
-        rather than the database. For more, see <a href="nbdocs:/org/netbeans/modules/dbschema/docs/dbschema.html">Obtaining a Database Schema</a>.</p>
+        
         
         <p><b>To open a new connection:</b></p>
 
@@ -55,56 +53,43 @@
                 or off by right-clicking the node for a disconnected database in the Runtime window and
                 selecting or deselecting Remember password in the Properties dialog box. </p>
             </li>
-            <li>Click OK to connect the IDE to the database. 
-                <p>If the connection is successful, a new node appears on the same level as 
-                Drivers. The icon for a connected database shows complete. If the connection 
-                attempt fails, the IDE displays a dialog box indicating the connection 
-                is broken. </p>
+            <li>Click OK to connect the IDE to the database.
+                <table>
+                    <tr> 
+                        <td><img src="images/tip.gif" alt="tip"></td>
+                        <td>When connecting to the database, the schema with the same name as the user name is 
+                        set as default, but if a schema with that name does not exist, 
+                        you are automatically switched to the Advanced Tab to select a schema. </td>
+                    </tr>
+                </table>
+            </li>
             </li>
         </ol>
-
-        <!--<p><b>To display schema information for a database:</b></p>
-
-        <ol>
-
-        <li>In the Runtime window, expand the Databases node and the Drivers node.</li>
-  
-        <li>Right-click your driver's instance node and choose Connect Using.</li>
-        <li>In the Basic setting tab, enter the details to connect to the database.</li>
-        <li>Choose the Advanced tab and click Get Schemas to connect to the database.</li>
-
-        <li>Select the schema to use with the database object by choosing it from the 
-
-        combo box. This schema will be used with getter database objects such as tables 
-
-        and views.</li>
-
-        <li>Click OK.
-
-        <p>The database connect to the database schema and the connection node in 
-
-        the Databases folder. The IDE displays child folders of this connection node. 
-
-        These folders represent lists of tables, views and procedures.</p></li>
-
-        </ol>-->
-
+        <p>If the connection is successful, the database connection node appears on the same level as 
+        Drivers in the Databases node. The database connection node appears whole
+        indicating the database is connected. 
+        Expand the database connection node to see the child folders 
+        representing lists of tables, views and procedures.
+        For more, see <a href="browstruct.html">Browsing Structures</a>.</p>
+        <p>If the connection 
+        attempt fails, the IDE displays a dialog box indicating the connection 
+        is broken and the database connection node is broken.</p>
+            
         <p><b>To correct a broken connection:</b></p>
         <ol>
-            <li>Right-click the broken connection node and choose Properties from the 
+            <li>Right-click the broken database connection node and choose Properties from the 
             contextual menu.</li>
             <li>Enter the correct Database URL in the properties dialog box and click Close.</li>
-            <li>Right-click on the broken connection node and choose
+            <li>Right-click on the broken database connection node and choose
             Connect from the contextual menu.</li>
         </ol>
 
         <p><b>To disconnect from the database connection:</b></p>
         <ul>
-            <li>Right-click the Database Connection node and choose Disconnect from the contextual menu. 
+            <li>Right-click the database connection node and choose Disconnect from the contextual menu. 
                 <p> You cannot browse the database until you reconnect to the database. </p>
             </li>
         </ul>
-
         <table>
             <tr> 
                 <th colspan=2 align=left><a name="seealso">See Also</a></th>
