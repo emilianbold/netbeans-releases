@@ -14,12 +14,8 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * @author pfiala
@@ -32,10 +28,8 @@ class CmpRelationShipsNode extends EjbSectionNode {
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        final EjbJar ejbJar = (EjbJar) key;
-        EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) getSectionNodeView().getDataObject();
-        final CmpRelationshipsDialogHelper dialogHelper = new CmpRelationshipsDialogHelper(dataObject, ejbJar);
-        final CmpRelationshipsTableModel model = new CmpRelationshipsTableModel(ejbJar);
+        final EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) getSectionNodeView().getDataObject();
+        final CmpRelationshipsTableModel model = new CmpRelationshipsTableModel(dataObject);
         final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
             public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
                 if (source == key) {
@@ -44,18 +38,9 @@ class CmpRelationShipsNode extends EjbSectionNode {
             }
 
             protected void editCell(int row, int column) {
-                EjbRelation ejbRelation = ejbJar.getSingleRelationships().getEjbRelation(row);
-                dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_Edit_CMP_Relationship"),
-                        ejbRelation);
+                model.editRow(row);
             }
         };
-        innerTablePanel.getAddButton().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_AddCMPRelationship"), null);
-            }
-        });
         return innerTablePanel;
-
     }
-
 }

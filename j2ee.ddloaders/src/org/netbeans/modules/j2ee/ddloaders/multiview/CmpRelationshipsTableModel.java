@@ -13,12 +13,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
-import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
-import org.netbeans.modules.j2ee.dd.api.ejb.RelationshipRoleSource;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;
-import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
+import org.netbeans.modules.j2ee.dd.api.ejb.*;
+import org.openide.util.RequestProcessor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -41,15 +37,17 @@ class CmpRelationshipsTableModel extends InnerTableModel {
                                                   Utils.getBundleMessage("LBL_Role"),
                                                   Utils.getBundleMessage("LBL_Field")};
     private static final int[] COLUMN_WIDTHS = new int[]{140, 70, 100, 100, 100, 100, 100, 100};
+    private EjbJarMultiViewDataObject dataObject;
 
-    public CmpRelationshipsTableModel(EjbJar ejbJar) {
+    public CmpRelationshipsTableModel(EjbJarMultiViewDataObject dataObject) {
         super(COLUMN_NAMES, COLUMN_WIDTHS);
-        this.ejbJar = ejbJar;
+        this.dataObject = dataObject;
+        this.ejbJar = dataObject.getEjbJar();
         ejbJar.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 Object source = evt.getSource();
                 if (source instanceof Relationships || source instanceof EjbRelation || source instanceof CmrField ||
-                                source instanceof EjbRelationshipRole || source instanceof RelationshipRoleSource) {
+                        source instanceof EjbRelationshipRole || source instanceof RelationshipRoleSource) {
                     tableChanged();
                 }
             }
@@ -57,15 +55,34 @@ class CmpRelationshipsTableModel extends InnerTableModel {
     }
 
     public int addRow() {
-        //todo
-        //fireTableDataChanged();
+        CmpRelationshipsDialogHelper dialogHelper = new CmpRelationshipsDialogHelper(dataObject, ejbJar);
+        if (dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_AddCMPRelationship"), null)) {
+            saveDataObject();
+        }
         return getRowCount() - 1;
     }
 
     public void removeRow(int row) {
-        Relationships relationships = ejbJar.getSingleRelationships();
-        relationships.removeEjbRelation(relationships.getEjbRelation(row));
-        //fireTableRowsDeleted(row, row);
+        ejbJar.getSingleRelationships().removeEjbRelation(ejbJar.getSingleRelationships().getEjbRelation(row));
+        saveDataObject();
+    }
+
+    public void editRow(int row) {
+        EjbRelation ejbRelation = ejbJar.getSingleRelationships().getEjbRelation(row);
+        CmpRelationshipsDialogHelper dialogHelper = new CmpRelationshipsDialogHelper(dataObject, ejbJar);
+        if (dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_Edit_CMP_Relationship"),
+                ejbRelation)) {
+            saveDataObject();
+        }
+
+    }
+
+    private void saveDataObject() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                dataObject.saveDocument();
+            }
+        });
     }
 
     public void refreshView() {

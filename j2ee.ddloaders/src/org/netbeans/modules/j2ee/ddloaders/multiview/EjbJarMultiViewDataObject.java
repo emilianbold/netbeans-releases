@@ -51,6 +51,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.swing.event.ChangeListener;
+import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -145,6 +146,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 
 
     public void saveDocument() {
+        waitForSync();
         try {
             editor.saveDocument();
         } catch (IOException e) {
@@ -452,9 +454,13 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
                     oldEjbJar.setStatus(error == null ? EjbJar.STATE_VALID : EjbJar.STATE_INVALID_PARSABLE);
                     oldEjbJar.setError(error);
                 }
-                String newDescription = error == null ? null : error.getMessage();
-                String oldDescription = oldError == null ? null : oldError.getMessage();
-                ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(oldDescription, newDescription);
+                final String newDescription = error == null ? null : error.getMessage();
+                final String oldDescription = oldError == null ? null : oldError.getMessage();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(oldDescription, newDescription);
+                    }
+                });
                 parseable = error == null;
                 setSaxError(error);
             } catch (SAXException ex) {
