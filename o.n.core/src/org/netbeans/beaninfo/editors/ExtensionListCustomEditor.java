@@ -7,13 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.beaninfo.editors;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -28,7 +27,6 @@ import javax.swing.*;
 import javax.swing.border.*;
 import org.openide.loaders.ExtensionList;
 
-//import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** A custom editor for array of Strings.
@@ -41,8 +39,6 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
     ExtensionList value;
     ExtensionListEditor editor;
     
-//    private Vector itemsVector;
-
     static final long serialVersionUID =-4347656479280614636L;
     
     private String[] getStrings() {
@@ -67,23 +63,8 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
         itemList.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         itemList.setListData (getStrings());
 
-        setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(16, 8, 8, 0)));
-        buttonsPanel.setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(0, 5, 5, 5)));
-
         ResourceBundle bundle = NbBundle.getBundle (
                                        ExtensionListCustomEditor.class);
-
-        itemLabel.setText (bundle.getString ("CTL_ELCE_Item"));
-        itemListLabel.setText(bundle.getString ("CTL_ELCE_ItemList"));
-        addButton.setText (bundle.getString ("CTL_ELCE_Add"));
-        changeButton.setText (bundle.getString ("CTL_ELCE_Change"));
-        removeButton.setText (bundle.getString ("CTL_ELCE_Remove"));
-
-        itemLabel.setDisplayedMnemonic(bundle.getString("CTL_ELCE_Item_Mnemonic").charAt(0));
-        itemListLabel.setDisplayedMnemonic(bundle.getString("CTL_ELCE_ItemList_Mnemonic").charAt(0));
-        addButton.setMnemonic(bundle.getString("CTL_ELCE_Add_Mnemonic").charAt(0));
-        changeButton.setMnemonic(bundle.getString("CTL_ELCE_Change_Mnemonic").charAt(0));
-        removeButton.setMnemonic(bundle.getString("CTL_ELCE_Remove_Mnemonic").charAt(0));
 
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ELCE"));
         itemField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ELCE_Item"));
@@ -123,7 +104,6 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
         }); 
         addButton.setEnabled(false);
         changeButton.setEnabled(false);
-        setMinimumSize(new Dimension (200, 400));
     }
     
     /** Determine if the text of the text field matches an item in the 
@@ -151,21 +131,60 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        editPanel = new javax.swing.JPanel();
+        addButton = new javax.swing.JButton();
+        changeButton = new javax.swing.JButton();
+        removeButton = new javax.swing.JButton();
         itemListScroll = new javax.swing.JScrollPane();
         itemList = new javax.swing.JList();
         itemLabel = new javax.swing.JLabel();
         itemField = new javax.swing.JTextField();
         itemListLabel = new javax.swing.JLabel();
-        buttonsPanel = new javax.swing.JPanel();
-        addButton = new javax.swing.JButton();
-        changeButton = new javax.swing.JButton();
-        removeButton = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
 
-        setLayout(new java.awt.BorderLayout());
+        setLayout(new java.awt.GridBagLayout());
 
-        editPanel.setLayout(new java.awt.GridBagLayout());
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(ExtensionListCustomEditor.class, "CTL_ELCE_Add", new Object[] {}));
+        addButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 8, 0, 8);
+        add(addButton, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(changeButton, org.openide.util.NbBundle.getMessage(ExtensionListCustomEditor.class, "CTL_ELCE_Change", new Object[] {}));
+        changeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                changeButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
+        add(changeButton, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(ExtensionListCustomEditor.class, "CTL_ELCE_Remove", new Object[] {}));
+        removeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 8);
+        add(removeButton, gridBagConstraints);
 
         itemList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
@@ -180,85 +199,37 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        editPanel.add(itemListScroll, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        add(itemListScroll, gridBagConstraints);
 
         itemLabel.setLabelFor(itemField);
-        itemLabel.setText("item");
+        org.openide.awt.Mnemonics.setLocalizedText(itemLabel, org.openide.util.NbBundle.getMessage(ExtensionListCustomEditor.class, "CTL_ELCE_Item", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 12);
-        editPanel.add(itemLabel, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(4, 8, 0, 8);
+        add(itemLabel, gridBagConstraints);
 
+        itemField.setColumns(10);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        editPanel.add(itemField, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        add(itemField, gridBagConstraints);
 
         itemListLabel.setLabelFor(itemList);
-        itemListLabel.setText("jLabel1");
+        org.openide.awt.Mnemonics.setLocalizedText(itemListLabel, org.openide.util.NbBundle.getMessage(ExtensionListCustomEditor.class, "CTL_ItemList", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
-        editPanel.add(itemListLabel, gridBagConstraints);
-
-        add(editPanel, java.awt.BorderLayout.CENTER);
-
-        buttonsPanel.setLayout(new java.awt.GridBagLayout());
-
-        addButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addButtonActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
-        buttonsPanel.add(addButton, gridBagConstraints);
-
-        changeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                changeButtonActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
-        buttonsPanel.add(changeButton, gridBagConstraints);
-
-        removeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeButtonActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 8);
-        buttonsPanel.add(removeButton, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        buttonsPanel.add(jPanel1, gridBagConstraints);
-
-        add(buttonsPanel, java.awt.BorderLayout.EAST);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        add(itemListLabel, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -322,6 +293,7 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
         if (sel != -1) {
             itemField.setText ((String) itemList.getModel().getElementAt(sel));
             changeButton.setEnabled(false);
+            addButton.setEnabled (false);
         }
     }//GEN-LAST:event_itemListValueChanged
 
@@ -355,16 +327,13 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane itemListScroll;
-    private javax.swing.JLabel itemLabel;
-    private javax.swing.JPanel buttonsPanel;
+    private javax.swing.JButton addButton;
+    private javax.swing.JButton changeButton;
     private javax.swing.JTextField itemField;
-    private javax.swing.JPanel editPanel;
+    private javax.swing.JLabel itemLabel;
     private javax.swing.JList itemList;
     private javax.swing.JLabel itemListLabel;
-    private javax.swing.JButton changeButton;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JButton addButton;
+    private javax.swing.JScrollPane itemListScroll;
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
 
