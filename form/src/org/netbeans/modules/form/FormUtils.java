@@ -202,31 +202,6 @@ public class FormUtils extends Object {
     return sb.toString ();
   }
 
-  /** A utility method that returns a class of event adapter for
-  * specified listener. It works only on known listeners from java.awt.event.
-  * Null is returned for unknown listeners.
-  * @return class of an adapter for specified listener or null if
-  *               unknown/does not exist
-  */
-  public static Class getAdapterForListener (Class listener) {
-    if (java.awt.event.ComponentListener.class.equals (listener))
-      return java.awt.event.ComponentAdapter.class;
-    else if (java.awt.event.ContainerListener.class.equals (listener))
-      return java.awt.event.ContainerAdapter.class;
-    else if (java.awt.event.FocusListener.class.equals (listener))
-      return java.awt.event.FocusAdapter.class;
-    else if (java.awt.event.KeyListener.class.equals (listener))
-      return java.awt.event.KeyAdapter.class;
-    else if (java.awt.event.MouseListener.class.equals (listener))
-      return java.awt.event.MouseAdapter.class;
-    else if (java.awt.event.MouseMotionListener.class.equals (listener))
-      return java.awt.event.MouseMotionAdapter.class;
-    else if (java.awt.event.WindowListener.class.equals (listener))
-      return java.awt.event.WindowAdapter.class;
-    else return null; // not found
-
-  }
-
 // -----------------------------------------------------------------------------
 // Visual utility methods
 
@@ -323,6 +298,8 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  17   Gandalf   1.16        7/27/99  Ian Formanek    getAdapterForListener ->
+ *       BeanSupport
  *  16   Gandalf   1.15        7/19/99  Ian Formanek    pack () in test mode
  *  15   Gandalf   1.14        7/4/99   Ian Formanek    aded menuBar ignored 
  *       property to JInternalFrame

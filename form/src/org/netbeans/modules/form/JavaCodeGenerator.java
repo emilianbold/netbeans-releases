@@ -577,7 +577,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       EventSetDescriptor eventSetDesc = eventSets[i].getEventSetDescriptor ();
 
       // try to find adpater to use instead of the listener
-      Class classToGenerate = FormUtils.getAdapterForListener(
+      Class classToGenerate = BeanSupport.getAdapterForListener(
         eventSetDesc.getListenerType());
       boolean adapterUsed = true;
       if (classToGenerate == null) { // if not found, we must use the listener
@@ -1186,6 +1186,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  41   Gandalf   1.40        7/27/99  Ian Formanek    getAdapterForListener ->
+ *       BeanSupport
  *  40   Gandalf   1.39        7/23/99  Ian Formanek    Fixed work with 
  *       FormAwareEditors
  *  39   Gandalf   1.38        7/14/99  Ian Formanek    Serialization of 
