@@ -458,8 +458,8 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         String name;
         Object[] waNas = waitingToolbars.keySet().toArray();
         Object[] names = allToolbars.keySet().toArray();
-
-	/* Checks ToolbarPool with waiting list. */
+        
+        /* Checks ToolbarPool with waiting list. */
         for (int i = 0; i < waNas.length; i++) {
             name = (String)waNas[i];
             if (toolbarPool ().findToolbar (name) != null) {  /* If there is new toolbar in the pool
@@ -467,12 +467,12 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 ToolbarConstraints tc = (ToolbarConstraints)waitingToolbars.remove (name);
 		                                           /* ... it's removed from waiting ... */
                 allToolbars.put (name, tc);                /* ... so it's added to correct toolbars ... */
-                addInvisible (tc);                         /* ... and added to visible toolbars. */
+                addVisible (tc);                         /* ... and added to visible toolbars. */
                 change = true;
             }
         }
 
-	/* Checks ToolbarPool with list of all toolbars ... reverse process than previous for. */
+        /* Checks ToolbarPool with list of all toolbars ... reverse process than previous for. */
         for (int i = 0; i < names.length; i++) {
             name = (String)names[i];
             if (toolbarPool ().findToolbar (name) == null) {  /* If there is toolbar which is not represented int pool ... */
@@ -499,7 +499,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     /** Removes toolbar from visible toolbars.
      * @param tc specified toolbar
      */
-    void removeVisible (ToolbarConstraints tc) {
+    private void removeVisible (ToolbarConstraints tc) {
         invisibleToolbars.put (tc, new Integer (tc.rowIndex()));
         if (tc.destroy())
             checkToolbarRows();
@@ -511,7 +511,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     /** Adds toolbar from list of invisible to visible toolbars.
      * @param tc specified toolbar
      */
-    void addInvisible (ToolbarConstraints tc) {
+    private void addVisible (ToolbarConstraints tc) {
         int rC = toolbarRows.size();
         int pos = ((Integer)invisibleToolbars.remove (tc)).intValue();
         tc.setVisible (true);
@@ -778,9 +778,14 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                       } else {
                           ToolbarPool.getDefault().setPreferredIconSize(24);
                       }
-                      //Rebuild toolbars
-                      rebuildPanel();
-                      rebuildMenu();
+                      //Rebuild toolbar panel
+                      //#43652: Find current toolbar configuration
+                      String name = ToolbarPool.getDefault().getConfiguration();
+                      ToolbarConfiguration tbConf = findConfiguration(name);
+                      if (tbConf != null) {
+                          tbConf.rebuildPanel();
+                          tbConf.rebuildMenu();
+                      }
                   }
               }
         });
@@ -860,7 +865,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     public void setToolbarVisible(Toolbar tb, boolean b) {
         ToolbarConstraints tc = getToolbarConstraints(tb.getName());
         if (b) {
-            addInvisible(tc);
+            addVisible(tc);
         } else {
             removeVisible(tc);
         }
