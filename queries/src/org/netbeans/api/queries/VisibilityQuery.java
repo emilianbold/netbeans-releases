@@ -31,7 +31,7 @@ import java.util.*;
  * @see org.netbeans.spi.queries.VisibilityQueryImplementation
  * @author Radek Matous 
  */
-public class VisibilityQuery {
+public final class VisibilityQuery {
     private static final VisibilityQuery INSTANCE = new VisibilityQuery();
     private static final Lookup.Template TEMPLATE = new Lookup.Template(VisibilityQueryImplementation.class);
     
