@@ -612,7 +612,7 @@ public class DriverSpecification {
         }
     }
     
-    private boolean isMSSQLSaUser(DatabaseMetaData dmd) {
+    public boolean isMSSQLSaUser(DatabaseMetaData dmd) {
         try {
             String user = dmd.getUserName().trim();
             
