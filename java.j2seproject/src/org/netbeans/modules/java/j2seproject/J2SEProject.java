@@ -98,7 +98,8 @@ final class J2SEProject implements Project, AntProjectListener {
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
-    
+    private MainClassUpdater mainClassUpdater;
+
     J2SEProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
@@ -354,7 +355,12 @@ final class J2SEProject implements Project, AntProjectListener {
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-            
+
+            //register updater of main.class
+            //the updater is active only on the opened projects
+            mainClassUpdater = new MainClassUpdater (J2SEProject.this, eval, helper,
+                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0],"main.class"); //NOI18N
+
             // Make it easier to run headless builds on the same machine at least.
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
                 public Object run() {
@@ -388,6 +394,10 @@ final class J2SEProject implements Project, AntProjectListener {
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+            if (mainClassUpdater != null) {
+                mainClassUpdater.unregister ();
+                mainClassUpdater = null;
+            }
         }
         
     }
