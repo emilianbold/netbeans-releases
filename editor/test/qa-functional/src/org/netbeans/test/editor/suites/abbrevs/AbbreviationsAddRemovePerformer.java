@@ -32,10 +32,8 @@ import org.openide.loaders.DataObjectNotFoundException;
  * @author  Jan Lahoda
  */
 public class AbbreviationsAddRemovePerformer extends JellyTestCase {
-    
-    private static String testFile = 
-    "org/netbeans/test/editor/suites/abbrevs/data/testfiles/AbbreviationsAddRemovePerformer/Test.java";
-    
+
+    private static final String editor = "Java Editor";
     private boolean isInFramework;
     
     /** Creates a new instance of AbbreviationsAddRemove */
@@ -45,7 +43,7 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
     }
     
     public EditorOperator openFile() {
-        FileObject fo = Repository.getDefault().findResource(testFile);
+        FileObject fo = Repository.getDefault().find("org.netbeans.test.editor.suites.abbrevs.data.testfiles.AbbreviationsAddRemovePerformer", "Test", "java");
         
         try {
             DataObject od = DataObject.find(fo);
@@ -53,7 +51,7 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
             
             ec.open();
             
-            return new EditorOperator("Test");
+            return new EditorOperator(new EditorWindowOperator(), "Test");
         } catch (DataObjectNotFoundException e) {
             assertTrue(false);
             return null;
@@ -67,7 +65,7 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
         //Open an editor:
         EditorOperator editor = openFile();
         
-        //This line is reserved for testing. All previous content is removed
+        //This line is reserved for testing. All previous content is destroyed
         //(and fails test!).
         editor.setCaretPosition(24, 1);
         
@@ -75,37 +73,39 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
         editor.txtEditorPane().typeText(abbreviation);
         //Expand abbreviation:
         editor.txtEditorPane().typeKey(' ');
-        //Flush current on output (ref output!)
+        //Flush current line to output (ref output!)
         ref(editor.getText(editor.getLineNumber()));
         //Delete what we have written:
         editor.select(editor.getLineNumber());
         editor.pushKey(KeyEvent.VK_DELETE, 0);
         editor.pushKey(KeyEvent.VK_S, KeyEvent.CTRL_MASK);
-        editor.close();
+        editor.closeDiscard();
     }
     
     /**
      * @param args the command line arguments
      */
     public void doTest() throws Exception {
+        log("doTest start");
         Object backup = Utilities.saveAbbreviationsState();
-        
-        Abbreviations abbs = Abbreviations.invoke("Java Editor");
-        
-        //For test testing, remove two testing abbreviations. Remove in final version.
-        abbs.addAbbreviation("ts", "Thread.dumpStack();");
-        abbs.addAbbreviation("tst", "Thread.sleep(1000);");
 
-        checkAbbreviation("ts");
-        checkAbbreviation("tst");
-        abbs.removeAbbreviation("ts");
-        checkAbbreviation("ts");
-        checkAbbreviation("tst");
-        abbs.removeAbbreviation("tst");
-        checkAbbreviation("ts");
-        checkAbbreviation("tst");
-        
-        Utilities.restoreAbbreviationsState(backup);
+        try {
+            //For test testing, remove two testing abbreviations. Remove in final version.
+            Abbreviations.addAbbreviation(editor, "ts", "Thread.dumpStack();");
+            Abbreviations.addAbbreviation(editor, "tst", "Thread.sleep(1000);");
+            
+            checkAbbreviation("ts");
+            checkAbbreviation("tst");
+            Abbreviations.removeAbbreviation(editor, "ts");
+            checkAbbreviation("ts");
+            checkAbbreviation("tst");
+            Abbreviations.removeAbbreviation(editor, "tst");
+            checkAbbreviation("ts");
+            checkAbbreviation("tst");
+        } finally {
+            Utilities.restoreAbbreviationsState(backup);
+            log("doTest finished");
+        }
     }
     
 /*    public void ref(String ref) {

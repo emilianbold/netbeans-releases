@@ -39,12 +39,12 @@ public class Utilities {
         return NbBundle.getBundle(BaseOptionsBeanInfo.class);
     }
     
-    /**Saves abbreviations maps for all editor kits installed. You should no
-     * rely on the particular type returned (java.util.Map), but just save the
+    /**Saves abbreviations maps for all editor kits installed. You should not
+     * rely on the particular type returned (currently java.util.Map), but just save the
      * returned Object and pass it unchanged to restoreAbbreviationsState();
      */
     public static Object saveAbbreviationsState() {
-        SystemOption[] options = ((AllOptions) AllOptions.findObject(AllOptions.class)).getOptions();
+        SystemOption[] options = ((AllOptions) AllOptions.findObject(AllOptions.class, true)).getOptions();
         Map            result  = new HashMap();
         
         for (int cntr = 0; cntr < options.length; cntr++) {

@@ -31,12 +31,12 @@ public class JavaAbbreviationsTestPerformer extends AbbreviationsTest {
      */
     public static void main(String[] args) {
         new JavaAbbreviationsTestPerformer("testAbbreviationTest").testAbbreviationTest();
-        new JavaAbbreviationsTestPerformer("testAbbreviationWithoutExpansion").testAbbreviationWithoutExpansion();
+/*        new JavaAbbreviationsTestPerformer("testAbbreviationWithoutExpansion").testAbbreviationWithoutExpansion();
         new JavaAbbreviationsTestPerformer("testAbbreviationInsideComment").testAbbreviationInsideComment();
         new JavaAbbreviationsTestPerformer("testAbbreviationAdd").testAbbreviationAdd();
         new JavaAbbreviationsTestPerformer("testAbbreviationRemove").testAbbreviationRemove();
         new JavaAbbreviationsTestPerformer("testAbbreviationChange").testAbbreviationChange();
-        new JavaAbbreviationsTestPerformer("testAbbreviationOKCancel").testAbbreviationOKCancel();
+        new JavaAbbreviationsTestPerformer("testAbbreviationOKCancel").testAbbreviationOKCancel();*/
 /*        JavaAbbreviationsTest j = new JavaAbbreviationsTestPerformer("testAbbreviationTest");
         
         j.prepareEditor();
@@ -136,9 +136,9 @@ public class JavaAbbreviationsTestPerformer extends AbbreviationsTest {
     public synchronized EditorOperator getTestEditor() {
         if (editor == null) {
             EditorWindowOperator editorWindow = new EditorWindowOperator();
-            FileObject fo = Repository.getDefault().find("org.netbeans.test.editor.suites.abbrevs.data.testfiles.JavaAbbreviationsTest", "Test", "java");
+            FileObject           fo           = Repository.getDefault().find("org.netbeans.test.editor.suites.abbrevs.data.testfiles.JavaAbbreviationsTest", "Test", "java");
             try {
-                DataObject od = DataObject.find(fo);
+                DataObject   od = DataObject.find(fo);
                 EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
                 
                 ec.open();
@@ -166,8 +166,9 @@ public class JavaAbbreviationsTestPerformer extends AbbreviationsTest {
     public void prepareEditor() {
         EditorOperator op = getTestEditor();
         
-        op.pushKey(KeyEvent.VK_END, KeyEvent.CTRL_DOWN_MASK);
-        op.select(op.getText());
+        op.pushKey(KeyEvent.VK_HOME, KeyEvent.CTRL_DOWN_MASK);
+        op.pushKey(KeyEvent.VK_END, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+//        op.select(op.getText());
 //        op.select(1, op.getLineNumber());
         op.pushKey(KeyEvent.VK_DELETE);
     }
