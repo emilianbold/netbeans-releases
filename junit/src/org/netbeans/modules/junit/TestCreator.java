@@ -593,7 +593,7 @@ public class TestCreator extends java.lang.Object {
      
     static private MethodElement createMethodImpl(MethodElement origMethod) throws SourceException {
         MethodElement   newMethod = (MethodElement)origMethod.clone();
-        StringBuffer    body = new StringBuffer();
+        StringBuffer    body = new StringBuffer(200);
         int             mod = origMethod.getModifiers() & ~Modifier.ABSTRACT;
 
 // @@        System.out.println("createMethodImpl : " + origMethod.getName().getFullName());
@@ -604,9 +604,11 @@ public class TestCreator extends java.lang.Object {
         newMethod.setModifiers(mod);
 
         // prepare the body of method implementation
-        if (JUnitSettings.getDefault().isBodyComments())
+        body.append('\n');
+        if (JUnitSettings.getDefault().isBodyComments()) {
             body.append(NbBundle.getMessage(TestCreator.class,"TestCreator.methodImpl.bodyComment"));
-        
+            body.append('\n');
+        }
         if (newMethod.getReturn().isClass() || newMethod.getReturn().isArray()) {
             body.append("\nreturn null;\n");
         } else if (newMethod.getReturn().equals(Type.BOOLEAN)) {
