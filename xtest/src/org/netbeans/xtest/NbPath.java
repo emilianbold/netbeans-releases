@@ -73,9 +73,14 @@ public class NbPath extends Task {
             File jar = new File(System.getProperty("netbeans.home"), "modules/ext/ant.jar");
             if (jar.exists())
                 addPath(list, jar.getAbsolutePath());
-            jar = new File(System.getProperty("netbeans.home"), "modules/ext/optional.jar");
+            jar = new File(System.getProperty("netbeans.home"), "modules/ext/ant-optional.jar");
             if (jar.exists())
                 addPath(list, jar.getAbsolutePath());
+            else {
+                jar = new File(System.getProperty("netbeans.home"), "modules/ext/optional.jar");
+                if (jar.exists())
+                    addPath(list, jar.getAbsolutePath());
+            }
             listJars(System.getProperty("netbeans.home"), "lib/ext", list);
         }
         getProject().setProperty(ANT_CLASS_PATH, list.toString());
