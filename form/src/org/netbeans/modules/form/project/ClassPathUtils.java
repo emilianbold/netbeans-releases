@@ -289,15 +289,16 @@ public class ClassPathUtils {
                 Library lib = LibraryManager.getDefault().getLibrary(name);
                 return MessageFormat.format(
                     getBundleString("FMT_LibrarySource"), // NOI18N
-                    new Object[] { lib.getDisplayName() });
+                    new Object[] { lib != null ? lib.getDisplayName() : name });
             }
             else if (ClassSource.PROJECT_SOURCE.equals(type)) {
                 try {
                     Project project = FileOwnerQuery.getOwner(new File(name).toURI());
                     return MessageFormat.format(
                           getBundleString("FMT_ProjectSource"), // NOI18N
-                          new Object[] { project.getProjectDirectory().getPath()
-                                          .replace('/', File.separatorChar) });
+                          new Object[] { project == null ? name :
+                                         project.getProjectDirectory().getPath()
+                                           .replace('/', File.separatorChar) });
                 }
                 catch (Exception ex) {} // ignore
             }
