@@ -42,6 +42,8 @@ public class Arch extends Task implements ErrorHandler {
     /** map from String ids -> Elements */
     private Map answers;
     private Map questions;
+    /** exception during parsing */
+    private SAXParseException parseException;
     
     public Arch() {
     }
@@ -122,6 +124,11 @@ public class Arch extends Task implements ErrorHandler {
                 q = builder.parse (questionsFile);
                 qSource = new javax.xml.transform.stream.StreamSource (questionsFile);
             }
+            
+            if (parseException != null) {
+                throw parseException;
+            }
+            
         } catch (SAXParseException ex) {
             log(ex.getSystemId() + ":" + ex.getLineNumber() + ": " + ex.getLocalizedMessage(), Project.MSG_ERR);
             throw new BuildException(questionsFile.getAbsolutePath() + " is malformed or invalid", ex, location);
@@ -378,7 +385,10 @@ public class Arch extends Task implements ErrorHandler {
     }
 
     public void error(SAXParseException exception) throws SAXException {
-        log(exception.getSystemId() + ":" + exception.getLineNumber() + ": " + exception.getLocalizedMessage(), Project.MSG_ERR);
+        if (parseException != null) {
+            log(parseException.getSystemId() + ":" + parseException.getLineNumber() + ": " + parseException.getLocalizedMessage(), Project.MSG_ERR);
+        }
+        parseException = exception;
     }
     
     public void fatalError(SAXParseException exception) throws SAXException {
