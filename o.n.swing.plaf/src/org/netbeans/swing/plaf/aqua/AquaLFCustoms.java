@@ -67,7 +67,7 @@ public final class AquaLFCustoms extends LFCustoms {
         Border empty = BorderFactory.createEmptyBorder();
 
         Image explorerIcon = UIUtils.loadImage(
-            "/org/netbeans/swing/plaf/resources/osx-folder.png"); //NOI18N
+            "org/netbeans/swing/plaf/resources/osx-folder.png"); //NOI18N
 
         Border lowerBorder = new AquaRoundedLowerBorder();
         Border tabsBorder = new AquaEditorTabControlBorder();
