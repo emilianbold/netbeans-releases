@@ -388,10 +388,19 @@ public final class BeanInstaller
         {
             try
             {
+                File defDir = new File(System.getProperty("user.home"));  // NOI18N
                 if (Utilities.isUnix())
-                    lastDirectory = new File(System.getProperty("user.home"));
+                    lastDirectory = defDir;
                 else if (Utilities.isWindows())
-                    lastDirectory = FileSystemView.getFileSystemView().getRoots()[0].listFiles()[0];
+                {
+                    do
+                    {
+                        defDir = defDir.getParentFile();
+                    }
+                    while (defDir != null && defDir.getParentFile() != null);
+                    if (defDir != null)
+                        lastDirectory = defDir;
+                }
             }
             catch (Exception ex)
             {
