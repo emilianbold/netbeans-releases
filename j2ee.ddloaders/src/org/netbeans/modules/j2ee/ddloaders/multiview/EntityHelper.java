@@ -33,11 +33,7 @@ public class EntityHelper extends EntityAndSessionHelper {
     }
 
     public void addCmpField() {
-        new AddCmpFieldAction() {
-            protected void performAction(Node[] activatedNodes) {
-                super.performAction(activatedNodes);
-            }
-        }.performAction(new Node[]{createEntityNode()});
+        new AddCmpFieldAction().addCmpField(beanClass, ejbJarFile);
     }
 
     public void addFinderMethod() {
@@ -67,5 +63,13 @@ public class EntityHelper extends EntityAndSessionHelper {
 
     public void removeQuery(Query query) {
         ((Entity) ejb).removeQuery(query);
+    }
+
+    public boolean hasLocalInterface() {
+        return ejb.getLocal() != null;
+    }
+
+    public boolean hasRemoteInterface() {
+        return ejb.getRemote() != null;
     }
 }

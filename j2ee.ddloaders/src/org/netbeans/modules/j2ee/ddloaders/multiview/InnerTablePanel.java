@@ -127,17 +127,6 @@ public class InnerTablePanel extends SectionInnerPanel {
             }
         });
         table = tablePanel.getTable();
-        model.addTableModelListener(new TableModelListener() {
-            public void tableChanged(final TableModelEvent e) {
-                int type = e.getType();
-                if (type == TableModelEvent.UPDATE) {
-                    final int column = e.getColumn() + 1;
-                    if (column < model.getColumnCount()) {
-                        //editCell(e.getFirstRow(), column);
-                    }
-                }
-            }
-        });
         table.setPreferredSize(table.getPreferredSize());
         table.setCellSelectionEnabled(true);
         InputMap inputMap = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);

@@ -51,6 +51,12 @@ class CmpFieldsTableModel extends InnerTableModel {
         return row;
     }
 
+    public void editRow(int row) {
+        if (getCmpFieldHelper(row).edit()) {
+            fireTableRowsUpdated(row, row);
+        }
+    }
+
     public void removeRow(int row) {
         CmpField cmpField = entity.getCmpField()[row];
         if (getCmpFieldHelper(cmpField).deleteCmpField()) {
@@ -68,11 +74,10 @@ class CmpFieldsTableModel extends InnerTableModel {
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        CmpField field = entity.getCmpField(rowIndex);
-        CmpFieldHelper helper = getCmpFieldHelper(field);
+        CmpFieldHelper helper = getCmpFieldHelper(rowIndex);
         switch (columnIndex) {
             case 0:
-                return field.getFieldName();
+                return helper.getFieldName();
             case 1:
                 return helper.getType();
             case 2:
@@ -84,14 +89,13 @@ class CmpFieldsTableModel extends InnerTableModel {
             case 5:
                 return new Boolean(helper.hasRemoteSetter());
             case 6:
-                return field.getDefaultDescription();
+                return helper.getDefaultDescription();
         }
         return null;
     }
 
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
-        CmpField field = entity.getCmpField(rowIndex);
-        CmpFieldHelper helper = getCmpFieldHelper(field);
+        CmpFieldHelper helper = getCmpFieldHelper(rowIndex);
         switch (columnIndex) {
             case 0:
                 helper.setFieldName((String) value);
@@ -112,11 +116,16 @@ class CmpFieldsTableModel extends InnerTableModel {
                 helper.setRemoteSetter(((Boolean) value).booleanValue());
                 break;
             case 6:
-                field.setDescription((String) value);
-                entity.setCmpField(rowIndex, field);
+                helper.setDescription((String) value);
                 break;
         }
         fireTableRowsUpdated(rowIndex, rowIndex);
+    }
+
+    private CmpFieldHelper getCmpFieldHelper(int rowIndex) {
+        CmpField field = entity.getCmpField(rowIndex);
+        CmpFieldHelper helper = getCmpFieldHelper(field);
+        return helper;
     }
 
     private CmpFieldHelper getCmpFieldHelper(CmpField field) {
@@ -151,5 +160,4 @@ class CmpFieldsTableModel extends InnerTableModel {
         }
         return super.getColumnClass(columnIndex);
     }
-
 }

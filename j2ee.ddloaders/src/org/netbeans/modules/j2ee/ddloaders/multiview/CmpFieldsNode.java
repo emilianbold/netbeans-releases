@@ -34,8 +34,12 @@ class CmpFieldsNode extends SectionNode {
     protected SectionInnerPanel createNodeInnerPanel() {
         final Entity entity = (Entity) key;
         final FileObject ejbJarFile = getSectionNodeView().getDataObject().getPrimaryFile();
-        final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(),
-                new CmpFieldsTableModel(ejbJarFile, entity, entityHelper));
+        final CmpFieldsTableModel model = new CmpFieldsTableModel(ejbJarFile, entity, entityHelper);
+        final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
+            protected void editCell(final int row, final int column) {
+                model.editRow(row);
+            }
+        };
         return innerTablePanel;
 
     }

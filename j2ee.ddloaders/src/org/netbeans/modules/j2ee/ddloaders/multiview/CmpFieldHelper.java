@@ -14,15 +14,13 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddFinderMethodAction;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddSelectMethodAction;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.FieldCustomizer;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.CMPFieldNode;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityNode;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.nodes.Node;
 import org.openide.src.ClassElement;
+import org.openide.src.FieldElement;
 import org.openide.src.Identifier;
 import org.openide.src.MethodElement;
 import org.openide.src.MethodParameter;
@@ -102,7 +100,7 @@ public class CmpFieldHelper {
 
     public void setLocalGetter(boolean create) {
         if (create) {
-            Utils.addMethod(entityHelper.localBusinessInterfaceClass, getterMethod, false);
+            Utils.addMethod(entityHelper.localBusinessInterfaceClass, getterMethod, false, 0);
         } else {
             Utils.removeBusinessMethod(entityHelper.localBusinessInterfaceClass, getterMethod);
         }
@@ -110,7 +108,7 @@ public class CmpFieldHelper {
 
     public void setLocalSetter(boolean create) {
         if (create) {
-            Utils.addMethod(entityHelper.localBusinessInterfaceClass, setterMethod, false);
+            Utils.addMethod(entityHelper.localBusinessInterfaceClass, setterMethod, false, 0);
         } else {
             Utils.removeBusinessMethod(entityHelper.localBusinessInterfaceClass, setterMethod);
         }
@@ -118,7 +116,7 @@ public class CmpFieldHelper {
 
     public void setRemoteGetter(boolean create) {
         if (create) {
-            Utils.addMethod(entityHelper.remoteBusinessInterfaceClass, getterMethod, true);
+            Utils.addMethod(entityHelper.remoteBusinessInterfaceClass, getterMethod, true, 0);
         } else {
             Utils.removeBusinessMethod(entityHelper.remoteBusinessInterfaceClass, getterMethod);
         }
@@ -126,7 +124,7 @@ public class CmpFieldHelper {
 
     public void setRemoteSetter(boolean create) {
         if (create) {
-            Utils.addMethod(entityHelper.remoteBusinessInterfaceClass, setterMethod, true);
+            Utils.addMethod(entityHelper.remoteBusinessInterfaceClass, setterMethod, true, 0);
         } else {
             Utils.removeBusinessMethod(entityHelper.remoteBusinessInterfaceClass, setterMethod);
         }
@@ -153,6 +151,7 @@ public class CmpFieldHelper {
         return false;
     }
 
+
     private static void removeMethod(ClassElement interfaceElement, MethodElement method) {
         MethodElement businessMethod = getBusinessMethod(interfaceElement, method);
         if (businessMethod != null) {
@@ -177,4 +176,45 @@ public class CmpFieldHelper {
         Utils.renameMethod(remoteSetter, setterName);
     }
 
+    public void setDescription(String s) {
+        field.setDescription(s);
+    }
+
+    public String getDefaultDescription() {
+        return field.getDefaultDescription();
+    }
+
+    public String getFieldName() {
+        return field.getFieldName();
+    }
+
+    public boolean edit() {
+        FieldElement element = new FieldElement();
+        try {
+            element.setName(Identifier.create(getFieldName()));
+            element.setType(Type.createClass(Identifier.create(getType())));
+        } catch (SourceException e) {
+            Utils.notifyError(e);
+            return false;
+        }
+        String title = Utils.getBundleMessage("LBL_EditCmpField");
+        FieldCustomizer customizer = new FieldCustomizer(element, getDefaultDescription(),
+                entityHelper.hasLocalInterface(), entityHelper.hasRemoteInterface(), hasLocalGetter(),
+                hasLocalSetter(), hasRemoteGetter(), hasRemoteSetter());
+        NotifyDescriptor nd = new NotifyDescriptor(customizer, title, NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.PLAIN_MESSAGE, null, null);
+        boolean resultIsOk = DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION;
+        customizer.isOK();  // apply possible changes in dialog fields
+        if (resultIsOk) {
+            setFieldName(element.getName().toString());
+            setType(element.getType().toString());
+            setDescription(customizer.getDescription());
+            setLocalGetter(customizer.isLocalGetter());
+            setLocalSetter(customizer.isLocalSetter());
+            setRemoteGetter(customizer.isRemoteGetter());
+            setRemoteSetter(customizer.isRemoteSetter());
+            return true;
+        }
+        return false;
+    }
 }
