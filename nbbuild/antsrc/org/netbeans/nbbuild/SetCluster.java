@@ -30,6 +30,7 @@ public class SetCluster extends org.apache.tools.ant.Task {
     private String propertiesList = null;
     private String cluster;
     private String thisModuleName = null;
+    private String defaultLocation = null;
     
     /** Sets the name of property which should contain the value */
     public void setName(String name) {
@@ -49,6 +50,11 @@ public class SetCluster extends org.apache.tools.ant.Task {
     /** Name of this module */
     public void setModule(String module) {
         thisModuleName = module;
+    }
+
+    /** Location of default cluster */
+    public void setDefaultLocation(String defaultLocation) {
+        this.defaultLocation = defaultLocation;
     }
     
     public void execute() throws BuildException {
@@ -96,6 +102,11 @@ public class SetCluster extends org.apache.tools.ant.Task {
                 }
             }
         }
-        throw new BuildException("No cluster list with this module: " + thisModuleName + " was found", this.getLocation());
+       log("No cluster list with this module: " + thisModuleName + " was found. Using default cluster location: " + defaultLocation, Project.MSG_WARN);
+       if (defaultLocation == null)
+           throw new BuildException("No default cluster location defined", this.getLocation());
+
+       log( "Property: " + name + " will be set to " + defaultLocation, Project.MSG_VERBOSE);
+       this.getProject().setProperty( name, defaultLocation );
     }
 }
