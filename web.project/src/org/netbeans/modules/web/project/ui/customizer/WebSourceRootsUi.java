@@ -118,6 +118,7 @@ final class WebSourceRootsUi {
         private final Set ownedFolders;
         private DefaultTableModel rootsModel;
         private EditMediator relatedEditMediator;
+        private File lastUsedDir; //Last used current folder in JFileChooser
         
         public EditMediator( WebProject master,
                              SourceRoots sourceRoots,
@@ -175,16 +176,27 @@ final class WebSourceRootsUi {
                 else
                     chooser.setDialogTitle( NbBundle.getMessage( WebSourceRootsUi.class, "LBL_SourceFolder_DialogTitle" )); // NOI18N
                 
-                File curDir = FileUtil.toFile(this.project.getProjectDirectory());
+                File curDir = this.lastUsedDir;
+                if (curDir == null) {
+                    curDir = FileUtil.toFile(this.project.getProjectDirectory());
+                }
                 if (curDir != null) {
                     chooser.setCurrentDirectory (curDir);
                 }
                 int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( addFolderButton ) ); // Sow the chooser
                 
-                if ( option == JFileChooser.APPROVE_OPTION ) {                   
+                if ( option == JFileChooser.APPROVE_OPTION ) {
+                    curDir = chooser.getCurrentDirectory();
+                    if (curDir != null) {
+                        this.lastUsedDir = curDir;
+                        if (this.relatedEditMediator != null) {
+                            this.relatedEditMediator.lastUsedDir = curDir;
+                        }
+                    }
                     File files[] = chooser.getSelectedFiles();
                     addFolders( files );
                 }
+                
             }
             else if ( source == removeButton ) { 
                 removeElements();
