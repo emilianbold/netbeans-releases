@@ -45,6 +45,7 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
@@ -707,7 +708,6 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         return globalPropertiesChanged || projectPropertiesChanged;
     }
     
-    
     public void removeServiceClient(String serviceName) {
         // 2. Remove service from project.xml
         //    Side effect: Regenerate build-impl.xsl
@@ -800,8 +800,11 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     
     public List/*StubDescriptor*/ getStubDescriptors() {
         ArrayList stubs = new ArrayList(2);
-        stubs.add(jsr109ClientStub);
         stubs.add(jaxrpcClientStub);
+        String version = project.getWebModule().getJ2eePlatformVersion();
+        if(WebModule.J2EE_14_LEVEL.equals(version)) {
+            stubs.add(jsr109ClientStub);
+        }
         return stubs;
     }
     
