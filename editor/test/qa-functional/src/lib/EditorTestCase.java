@@ -26,15 +26,12 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author  Petr Felenda
  */
 public class EditorTestCase extends NbTestCase {
-
-    private String defaultProjectName = "editor_test";
-
-    private String defaultSamplePackage;
-    private String defaultSampleName;
-    
-
     
     /** Default name of project is used if not specified in openProject method. */
+    private String defaultProjectName = "editor_test";
+    private String defaultSamplePackage = "test";
+    private String defaultSampleName = "sample1";
+
     private static final char treeSeparator = '|';
     private final String defaultPackageNameTreePath = "Source packages"+treeSeparator+"test";
     private final String defaultFileName = "sampel1";
@@ -85,7 +82,7 @@ public class EditorTestCase extends NbTestCase {
         };
     }
     
-    /** Otevre project. Pred otevreni projectu zjisti zda jiz neni otevren.
+    /** Open project. Before opening the project is checked opened projects.
      * @param projectName is name of the project stored in .../editor/test/qa-functional/data/ directory.
      */
     public void openProject(String projectName) {
@@ -104,7 +101,7 @@ public class EditorTestCase extends NbTestCase {
             ex.printStackTrace();
             isOpen = false;
             
-            // This excpeiton is ok, project neni otevren.");
+            // This excpeiton is ok, project is not open;
         }
         
         if ( isOpen ) {
@@ -168,8 +165,8 @@ public class EditorTestCase extends NbTestCase {
            EditorOperator editor = editorWindow.selectPage(fileName);
            editor.close();
         } catch ( TimeoutExpiredException ex) {
-            log("Vyjimka "+ex.getMessage());
-            log("Nepodarilo se zavrit file");
+            log(ex.getMessage());
+            log("Can't close the file");
         }
     }
     
@@ -180,12 +177,11 @@ public class EditorTestCase extends NbTestCase {
            EditorWindowOperator editorWindow = new EditorWindowOperator(fileName);
            //find editor
            EditorOperator editor = editorWindow.selectPage(fileName);
+           editor.save();
            editor.close();
-           NbDialogOperator dialog = new NbDialogOperator(dialogSaveTitle);
-           dialog.pushKey(KeyEvent.VK_ENTER);
         } catch ( TimeoutExpiredException ex) {
-            log("Vyjimka "+ex.getMessage());
-            log("Nepodarilo se zavrit file");
+            log(ex.getMessage());
+            log("Can't close the file");
         }
     }
     
@@ -199,8 +195,8 @@ public class EditorTestCase extends NbTestCase {
            EditorOperator editor = editorWindow.selectPage(fileName);
            editor.closeDiscard();
         } catch ( TimeoutExpiredException ex) {
-            log("Vyjimka "+ex.getMessage());
-            log("Nepodarilo se zavrit file");
+            log(ex.getMessage());
+            log("Can't close the file");
         }
     }
     
@@ -254,10 +250,6 @@ public class EditorTestCase extends NbTestCase {
     protected EditorOperator getDefaultSampleEditorOperator() {
         EditorWindowOperator editorWindow = new EditorWindowOperator(defaultSampleName);
         return editorWindow.selectPage(defaultSampleName);
-    }
-
-    public boolean diff() {
-        return false;        
     }
     
 }
