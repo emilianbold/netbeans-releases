@@ -42,10 +42,12 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
         NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_ThreadAction_MakeCurrent_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
+                if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).originalThread;
                 return debugger.getCurrentThread () != node;
             }
             
             public void perform (Object[] nodes) {
+                if (nodes[0] instanceof MonitorModel.ThreadWithBordel) nodes[0] = ((MonitorModel.ThreadWithBordel) nodes[0]).originalThread;
                 ((JPDAThread) nodes [0]).makeCurrent ();
             }
         },
@@ -56,13 +58,14 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
         NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_ThreadAction_GoToSource_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
+                if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).originalThread;
                 return isGoToSourceSupported ((JPDAThread) node);
             }
             
             public void perform (Object[] nodes) {
+                if (nodes[0] instanceof MonitorModel.ThreadWithBordel) nodes[0] = ((MonitorModel.ThreadWithBordel) nodes[0]).originalThread;
                 String language = DebuggerManager.getDebuggerManager ().
                     getCurrentSession ().getCurrentLanguage ();
-                String className = ((JPDAThread) nodes [0]).getClassName ();
                 SourcePath sp = (SourcePath) DebuggerManager.
                     getDebuggerManager ().getCurrentEngine ().lookupFirst 
                     (null, SourcePath.class);
@@ -76,6 +79,7 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
         NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_ThreadAction_Suspend_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
+                if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).originalThread;
                 if (node instanceof JPDAThread)
                     return !((JPDAThread) node).isSuspended ();
                 else
@@ -84,11 +88,14 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
             
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;
-                for (i = 0; i < k; i++)
-                    if (nodes [i] instanceof JPDAThread)
-                        ((JPDAThread) nodes [i]).suspend ();
+                for (i = 0; i < k; i++) {
+                    Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ? 
+                            ((MonitorModel.ThreadWithBordel) nodes[i]).originalThread : nodes[i];
+                    if (node instanceof JPDAThread)
+                        ((JPDAThread) node).suspend ();
                     else
-                        ((JPDAThreadGroup) nodes [i]).suspend ();
+                        ((JPDAThreadGroup) node).suspend ();
+                }
             }
         },
         Models.MULTISELECTION_TYPE_ALL
@@ -98,6 +105,7 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
         NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_ThreadAction_Resume_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
+                if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).originalThread;
                 if (node instanceof JPDAThread)
                     return ((JPDAThread) node).isSuspended ();
                 else
@@ -106,11 +114,14 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
             
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;
-                for (i = 0; i < k; i++)
-                    if (nodes [i] instanceof JPDAThread)
-                        ((JPDAThread) nodes [i]).resume ();
+                for (i = 0; i < k; i++) {
+                    Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ? 
+                            ((MonitorModel.ThreadWithBordel) nodes[i]).originalThread : nodes[i];
+                    if (node instanceof JPDAThread)
+                        ((JPDAThread) node).resume ();
                     else
-                        ((JPDAThreadGroup) nodes [i]).resume ();
+                        ((JPDAThreadGroup) node).resume ();
+                }
             }
         },
         Models.MULTISELECTION_TYPE_ALL

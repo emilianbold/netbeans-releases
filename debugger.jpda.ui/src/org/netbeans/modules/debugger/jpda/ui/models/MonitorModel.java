@@ -268,6 +268,7 @@ NodeActionsProviderFilter {
             model.performDefaultAction (
                 ((ThreadWithBordel) o).originalThread
             );
+            return;
         }
         if (o instanceof ObjectVariable) {
             return;
@@ -294,7 +295,7 @@ NodeActionsProviderFilter {
         }
     }
     
-    private static class ThreadWithBordel {
+    static class ThreadWithBordel {
         JPDAThread originalThread;
     }
 }
