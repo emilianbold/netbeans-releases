@@ -22,6 +22,11 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.util.*;
 
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *	<p>Represents the root file found on the file sysetm.</p>
@@ -31,10 +36,12 @@ import java.util.*;
 class HTTPRootFileObject
     extends HTTPFileObject implements Runnable {
 
+    private static final String IDE_SETTINGS_NAME = "Services/org-netbeans-core-IDESettings.settings"; // NOI18N
     private Thread  refreshThread;
     private Date    lastRefreshDate;
     private boolean threadIsRunning;
-
+    
+    private static boolean proxyInit;
 
     /**
      *	Constructs a <code>HTTPRootFileObject</code> with the file system passed.
@@ -201,7 +208,8 @@ class HTTPRootFileObject
      *	@since 3.4
      */
     synchronized void refreshRootContents( ) {
-
+        initHTTPProxyHack();
+        Thread.dumpStack();
         // File object for /package-list
         HTTPFileObject	packageFile;
         // File object for /index-files/ directory
@@ -216,6 +224,9 @@ class HTTPRootFileObject
 
         // Tell the file system that it is being refreshed
         parentFileSystem.setState( HTTPFileSystem.STATE_READING );
+        
+        System.err.println("proxyhost = " + System.getProperty("http.proxyHost"));
+        System.err.println("proxyport = " + System.getProperty("http.proxyPort"));
 
         // Remove all existing children from the root file object
         removeAllChildren( );
@@ -366,5 +377,29 @@ class HTTPRootFileObject
         refreshThread.interrupt( );
 
     }
-
+    
+    /**
+     * Note that this is a *hack*, since it depends on some strange name given to the
+     * IDESettings instance by the Core. But otherwise I don't know about a way
+     * how to force the setting to be read.
+     */
+    static void initHTTPProxyHack() {
+        if (proxyInit)
+            return;
+        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource(IDE_SETTINGS_NAME);
+        try {
+            DataObject d = DataObject.find(f);
+            InstanceCookie ic = (InstanceCookie)d.getCookie(InstanceCookie.class);
+            if (ic != null) {
+                Object o = ic.instanceCreate();
+                // OK, we've initialized.
+                proxyInit = true;
+            }
+        } catch (DataObjectNotFoundException ex) {
+        } catch (IOException ex) {
+            proxyInit = true;
+        } catch (ClassNotFoundException ex) {
+            proxyInit = true;
+        } 
+    }
 }
