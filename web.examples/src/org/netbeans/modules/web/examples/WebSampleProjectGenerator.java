@@ -16,8 +16,11 @@ package org.netbeans.modules.web.examples;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -25,6 +28,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 
 import org.openide.filesystems.FileObject;
@@ -165,9 +169,16 @@ public class WebSampleProjectGenerator {
                 EditableProperties ep = new EditableProperties();
                 ep.load(is);
                 
+                
+                String password = readPassword();
+                if (password==null) {
+                    password = generatePassword(8);
+                    storePassword(password);
+                }
+                    
                 ep.setProperty("manager.url", "http://localhost:8084/manager/");    //NOI18N
-                ep.setProperty("manager.username", "ide_manager");  //NOI18N
-                ep.setProperty("manager.password", "");     //NOI18N
+                ep.setProperty("manager.username", "ide");  //NOI18N
+                ep.setProperty("manager.password", password);     //NOI18N
                 ep.setProperty("catalina.home", InstalledFileLocator.getDefault().locate("jakarta-tomcat-5.0.25", null, false).getAbsolutePath());        //NOI18N
 
                 OutputStream os = new FileOutputStream(props);
@@ -180,6 +191,92 @@ public class WebSampleProjectGenerator {
             prjLoc.refresh(false);
         }
         return prjLoc;
+    }
+
+    private final static String PWD_FILENAME = "tomcatpasswd.txt";
+    private final static String TOMCAT_USERS_XML = "jakarta-tomcat-5.0.25_base/conf/tomcat-users.xml";
+
+    private static String readPassword() {
+        String passwd = readPasswordFromUsersXml();
+        if (passwd == null) {
+            passwd = readPasswordFromTxtFile();
+        }
+        return passwd;
+    }
+    
+    private static String readPasswordFromTxtFile() {
+        FileReader pwdFile = null;
+        LineNumberReader lnr = null;
+        try {
+            pwdFile = new FileReader(System.getProperty("netbeans.user")+System.getProperty("file.separator") + PWD_FILENAME);
+            if (pwdFile == null) {
+                return null;
+            }
+            lnr = new LineNumberReader(pwdFile);
+            String passwd = lnr.readLine();
+            return passwd;
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ioe.toString());
+            return null;
+        } finally {
+            if (lnr != null) {
+                try {
+                    lnr.close();
+                } catch (IOException ioe) {
+                    // just ignore
+                }
+            }
+        }        
+    }
+    
+    private static String readPasswordFromUsersXml() {
+        try {
+            File pwdFile = new File(System.getProperty("netbeans.user")+System.getProperty("file.separator") + TOMCAT_USERS_XML);
+            if (!pwdFile.exists()) {
+                return null;
+            }
+            Document doc = XMLUtil.parse(new InputSource(pwdFile.toURI().toString()), false, true, null, null);
+            NodeList nlist = doc.getElementsByTagName("user");       //NOI18N
+            if (nlist != null) {
+                for (int i=0; i < nlist.getLength(); i++) {
+                    Node n = nlist.item(i);
+                    if (n.getNodeType() != Node.ELEMENT_NODE) {
+                        continue;
+                    }
+                    Element e = (Element)n;
+                    String attr = e.getAttribute("username");   //NOI18N
+                    if ((attr == null) || (!attr.equals("ide"))) {      //NOI18N
+                        continue;
+                    }
+                    return e.getAttribute("password");  //NOI18N
+                }
+            }
+        } catch (Exception e) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.toString());
+        }
+        return null;
+    }
+
+    private static void storePassword(String password) {
+        FileWriter pwdFile = null;
+        try {
+            pwdFile = new FileWriter(System.getProperty("netbeans.user")+System.getProperty("file.separator") + PWD_FILENAME);
+            if (pwdFile == null) {
+                return;
+            }
+            pwdFile.write(password);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ioe.toString());
+        } finally {
+            if (pwdFile != null) {
+                try {
+                    pwdFile.close();
+                } catch (IOException ioe) {
+                    // just ignore
+                }
+            }
+        }
+ 
     }
     
     private static void unzip(InputStream source, File targetFolder) throws IOException {
@@ -205,7 +302,7 @@ public class WebSampleProjectGenerator {
             zip.close();
         }
     }
-        
+
     /**
      * Extract nested text from an element.
      * Currently does not handle coalescing text nodes, CDATA sections, etc.
@@ -240,5 +337,25 @@ public class WebSampleProjectGenerator {
         } finally {
             lock.releaseLock();
         }
-    }        
+    }
+    
+    public static String generatePassword(int length) {
+	int ran2 = 0;
+	String pwd = "";
+	for (int i = 0; i < length; i++) {
+            ran2 = (int)(Math.random()*61);
+            if (ran2 < 10) {
+                ran2 += 48;
+            } else {
+                if (ran2 < 35) {
+                    ran2 += 55;
+                } else {
+                    ran2 += 62;
+                }
+            }
+            char c = (char) ran2;
+            pwd += c;
+	}
+        return pwd;
+    }
 }
