@@ -105,7 +105,7 @@ public class TLDNode extends DataNode {
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("concepts_tldfile");//NOI18N
+        return new HelpCtx(TLDNode.class);//NOI18N
     }
     
 }
