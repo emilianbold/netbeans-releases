@@ -563,8 +563,12 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
             initialize();
         }
 
-        /** Docks the table into the workspace */
+        /** Docks the table into the workspace if top component is valid.
+         *  (Top component may become invalid after deserialization)
+         */
         public void open(Workspace workspace){
+            if (discard()) return;
+
             if (workspace == null) workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
             Mode editorMode = workspace.findMode(this);
             if (editorMode == null) {
@@ -580,6 +584,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
         
         /** Initializes this instance. Used by construction and deserialization. */
         private void initialize() {
+            
             initComponents();
             
             // force closing panes in all workspaces, default is in current only
@@ -722,6 +727,14 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
             gridbag.setConstraints(panel, c);
             add(panel);
         }
+        
+        /** This component should be discarded if the associated environment
+         *  is not valid.
+         */
+        private boolean discard () {
+            return propDataObject == null;
+        }
+        
 
         /**
          * Overrides superclass method. Serialize this top component.
@@ -745,6 +758,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
          */
         public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
             super.readExternal(in);
+
             propDataObject = (PropertiesDataObject)in.readObject();
             
             // deserialize secondaries this way see writeExternal
