@@ -94,6 +94,9 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="empty" executor="code" name="testbag_empty" resultsprocessor="unit">
         <testset dir="unit/src"/>
     </testbag>
+    <testbag testattribs="emptyide" executor="ide" name="testbag_emptyide" resultsprocessor="unit">
+        <testset dir="unit/src"/>
+    </testbag>
 
     <testbag testattribs="dev" executor="code" name="testbag_dev" resultsprocessor="unit">
         <testset dir="unit/src">
