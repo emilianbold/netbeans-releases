@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="jars" depends="tojar,compile">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copyfile src="manifest.mf" dest="manifest-subst.mf" filtering="on"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="netbeans/modules/db.jar"
          manifest="manifest-subst.mf"
          basedir="src"
@@ -58,10 +58,13 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="javahelp">
-    <copydir src="javahelp" dest="netbeans/docs"/>
+    <copy todir="netbeans/docs">
+      <fileset dir="javahelp"/>
+    </copy>
   </target>
 
   <target name="netbeans" depends="jars,javahelp"/>
+
 <!--
   <target name="nbm" depends="netbeans">
     <makenbm file="db.nbm"
@@ -77,15 +80,18 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 -->
+
   <target name="clean">
-    <delete dir="src">
-      <include name="**/*.class"/>
-      <include name="**/*.jar"/>
+    <delete>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+        <include name="**/*.jar"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="db.nbm"/>
-    <deltree dir="netbeans"/>
-    <deltree dir="Info"/>
+    <delete dir="netbeans"/>
+    <delete dir="Info"/>
   </target>
 
 </project>
