@@ -21,11 +21,18 @@ import org.openide.TopManager;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 
 /**
-* RADConnectionPropertyEditor is a property editor for ListModel, which encapsulates a connection to existing ListModel beans on the form
-*
-* @author  Ian Formanek
-*/
-public class RADConnectionPropertyEditor extends Object implements PropertyEditor, FormAwareEditor, XMLPropertyEditor, NamedPropertyEditor {
+ * RADConnectionPropertyEditor is a property editor for ListModel, which
+ * encapsulates a connection to existing ListModel beans on the form
+ *
+ * @author Ian Formanek
+ */
+
+public class RADConnectionPropertyEditor
+  implements PropertyEditor,
+             FormAwareEditor,
+             XMLPropertyEditor,
+             NamedPropertyEditor
+{
 
   protected PropertyChangeSupport support;
   private Class propertyType;
@@ -40,13 +47,14 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
   }
 
   /** If a property editor or customizer implements the FormAwareEditor
-  * interface, this method is called immediately after the PropertyEditor
-  * instance is created or the Customizer is obtained from getCustomizer ().
-  * @param component The RADComponent representing the JavaBean being edited by this 
-  *                  property editor or customizer
-  * @param property  The RADProperty being edited by this property editor or null 
-  *                  if this interface is implemented by a customizer
-  */
+   * interface, this method is called immediately after the PropertyEditor
+   * instance is created or the Customizer is obtained from getCustomizer ().
+   * @param component The RADComponent representing the JavaBean being edited by this 
+   *                  property editor or customizer
+   * @param property  The RADProperty being edited by this property editor or null 
+   *                  if this interface is implemented by a customizer
+   */
+  
   public void setRADComponent (RADComponent rcomp, RADComponent.RADProperty rprop) {
     rcomponent = rcomp;
   }
@@ -412,11 +420,9 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
         setValue (new RADConnectionDesignValue (component, RADConnectionDesignValue.TYPE_BEAN, null, rcomponent.getFormManager ()));
 
       } else {
-        String code = attributes.getNamedItem (ATTR_CODE).getNodeValue ();
+        String code = attributes.getNamedItem (ATTR_CODE).getNodeValue();
         setValue (new RADConnectionDesignValue (code));
       }
-
-
     } catch (NullPointerException e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) {
         e.printStackTrace ();
@@ -425,11 +431,13 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
     }
   }
   
-  /** Called to store current property value into XML subtree. The property value should be set using the
-  * setValue method prior to calling this method.
-  * @param doc The XML document to store the XML in - should be used for creating nodes only
-  * @return the XML DOM element representing a subtree of XML from which the value should be loaded
-  */
+  /** Called to store current property value into XML subtree. The property
+   * value should be set using the setValue method prior to calling this method.
+   * @param doc The XML document to store the XML in - should be used for creating nodes only
+   * @return the XML DOM element representing a subtree of XML from which the
+   * value should be loaded
+   */
+  
   public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
     org.w3c.dom.Element el = doc.createElement (XML_CONNECTION);
     if (currentValue == null) return null;
@@ -461,13 +469,12 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
            el.setAttribute (ATTR_COMPONENT, currentValue.radComponentName);
            break;
       case RADConnectionDesignValue.TYPE_CODE: 
-           el.setAttribute (ATTR_CODE, org.openide.util.Utilities.replaceString (currentValue.userCode, "\n", "\\n")); // NOI18N
+           el.setAttribute (ATTR_CODE, currentValue.userCode);
            break;
     }
 
     return el;
   }
-
 }
 
 /*
