@@ -273,11 +273,14 @@ workspaceswitcher
           description="Build the IDE and start it, but do not create a build archive.">
     <mkdir dir="firststart"/>
     <nbmerge dest="firststart" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-"/>
-    <chmod file="firststart/bin/runide.sh" perm="ugo+x"/>
-    <chmod file="firststart/bin/runide_multiuser.sh" perm="ugo+x"/>
-    <chmod file="firststart/bin/fastjavac/fastjavac.linux" perm="ugo+x"/>
-    <chmod file="firststart/bin/fastjavac/fastjavac.sun" perm="ugo+x"/>
-    <chmod file="firststart/bin/fastjavac/fastjavac.sun.intel" perm="ugo+x"/>
+    <chmod perm="ugo+x">
+      <fileset dir="firststart/bin">
+        <include name="*.sh"/>
+        <include name="fastjavac/fastjavac.linux"/>
+        <include name="fastjavac/fastjavac.sun"/>
+        <include name="fastjavac/fastjavac.sun.intel"/>
+      </fileset>
+    </chmod>
     <echo>Starting the IDE...
 (This both acts as a test, and primes some files
 to make the first user start faster and better.)
