@@ -17,6 +17,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import javax.swing.text.JTextComponent;
@@ -148,7 +149,7 @@ public class BaseOptions extends OptionSupport {
   }
   
   public Map getAbbrevMap() {
-    return (Map)getSettingValue(SettingNames.ABBREV_MAP);
+    return new HashMap( (Map)getSettingValue(SettingNames.ABBREV_MAP) );
   }
 
   public void setAbbrevMap(Map map) {
@@ -261,8 +262,8 @@ public class BaseOptions extends OptionSupport {
   }
 
   public Map getColoringMap() {
-    Map cm = SettingsUtil.getColoringMap(getKitClass(), false);
-    cm.put(null, getKitClass()); // add kit class
+    Map cm = new HashMap( SettingsUtil.getColoringMap(getKitClass(), false) );
+    cm.put(null, getKitClass().getName() ); // add kit class
     return cm;
   }
 
@@ -376,7 +377,7 @@ public class BaseOptions extends OptionSupport {
   }
 
   public Map getFindHistory() {
-    return (Map)getSettingValue(SettingNames.FIND_HISTORY);
+    return new HashMap( (Map)getSettingValue(SettingNames.FIND_HISTORY) );
   }
   
   public void setFindHistory(Map m) {
@@ -435,6 +436,7 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  19   Jaga      1.14.1.1.1.13/20/00  Miloslav Metelka 
  *  18   Jaga      1.14.1.1.1.03/15/00  Miloslav Metelka Structural change
  *  17   Gandalf-post-FCS1.14.1.1    2/28/00  Petr Nejedly    
  *  16   Gandalf-post-FCS1.14.1.0    2/28/00  Petr Nejedly    Redesign of 
