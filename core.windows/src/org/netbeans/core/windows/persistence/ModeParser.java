@@ -1553,7 +1553,7 @@ class ModeParser {
             buff.append("  <state type=\""); // NOI18N
             if (mc.state == Constants.MODE_STATE_JOINED) {
                 buff.append("joined"); // NOI18N
-            } else if (mc.kind == Constants.MODE_STATE_SEPARATED) {
+            } else if (mc.state == Constants.MODE_STATE_SEPARATED) {
                 buff.append("separated"); // NOI18N
             }
             buff.append("\" />\n"); // NOI18N
