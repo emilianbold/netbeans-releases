@@ -27,7 +27,7 @@ NBROOT=${XML_ROOT}/..
 
 XML_APIS=${NBROOT}/core/external/xml-apis*.jar
 XERCES=${NBROOT}/core/external/xerces*.jar
-XALAN=${NBROOT}/libs/external/xalan-2.3.1.jar
+XALAN=${NBROOT}/libs/external/xalan*.jar
 
 ##<debug>
 #ls -la ${XML_APIS}

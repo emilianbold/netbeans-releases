@@ -22,12 +22,9 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbroot" location="${xml_root}/.."/>
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
-    <property name="xml-apis" location="${nbroot}/core/external/xml-apis-1.0b2.jar" />
-
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40/xml"/>
-    <property name="storepass" value="?"/>
     <property name="nbm_alias" value="nb_ide"/>
 
     <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
@@ -58,7 +55,9 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${nbroot}/openidex/netbeans/modules/autoload/openidex.jar"/>
                 <pathelement location="${tax_lib_root}/src/"/>
                 <pathelement location="${api_root}/src/"/>
-                <pathelement location="${xml-apis}"/> <!-- JAXP and SAX dependency -->
+                <fileset dir="${nbroot}/core/external">
+                    <include name="xml-apis*.jar"/>
+                </fileset>
             </classpath>
         </javac>
 
@@ -182,7 +181,9 @@ Microsystems, Inc. All Rights Reserved.
                 <fileset dir="${nbroot}/openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>
-                <pathelement location="${xml-apis}"/> <!-- JAXP and SAX dependency -->
+                <fileset dir="${nbroot}/core/external">
+                    <include name="xml-apis*.jar"/>
+                </fileset>
             </classpath>
             
             <link href="${jdk-docs-location}"

@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
-    <property name="apache-license.file" location="${libs_root}/apache-license.txt"/>
+    <property name="apache-license.file" location="${nbroot}/nbbuild/external/apache-license.txt"/>
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
     <property name="nbm_alias" value="nb_ide"/>
@@ -71,12 +71,12 @@ Microsystems, Inc. All Rights Reserved.
                  topdir="."
                  module="netbeans/modules/autoload/xerces.jar"
                  homepage="http://${homepage.base}/#xerces"
-                 distribution="${dist.base}/xerces.nbm">
-            <license name="xalan-license.txt">
+                 distribution="http://${dist.base}/xerces.nbm">
+            <license name="xerces-license.txt">
                 <text>For the integration module:</text>
                 <file location="${license.file}"/>
                 <text>For the Xerces library:</text>
-                <file location="../../nbbuild/external/apache-license.txt"/>
+                <file location="${apache-license.file}"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
