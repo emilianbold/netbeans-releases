@@ -901,7 +901,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
 		fail(sb.toString());
             }
         } catch (Exception e) {
-            fail("Could not traverse reference graph");
+            throw new Error("Could not traverse reference graph.", e);
         }
     }
 
