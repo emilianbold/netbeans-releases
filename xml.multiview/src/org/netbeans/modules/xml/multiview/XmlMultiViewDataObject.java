@@ -226,7 +226,9 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     
     /** Display Name for MultiView editor
      */
-    protected abstract String getDisplayName();
+    protected String getDisplayName() {
+        return getPrimaryFile().getNameExt();
+    }
     
     /** Icon for XML View */
     protected java.awt.Image getXmlViewIcon() {
@@ -275,9 +277,11 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     }
     /** provides renaming of super top component */
     protected FileObject handleRename(String name) throws IOException {
+        //System.out.println("handleRename()"+name);
         FileObject retValue = super.handleRename(name);
         org.openide.windows.TopComponent mvtc = getEditorSupport().getMVTC();
         if (mvtc!=null) {
+            //mvtc.setName(name);
             mvtc.setDisplayName(getDisplayName());
             mvtc.setToolTipText(getPrimaryFile().getPath());
         }
