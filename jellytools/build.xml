@@ -145,6 +145,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/*.class"/>
                 <include name="**/*.zip"/>
                 <include name="**/*.jar"/>
+                <exclude name="builds/*.jar"/>
             </fileset>
         </delete>
         <delete file="jellytools.nbm"/>
