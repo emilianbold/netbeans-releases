@@ -303,7 +303,7 @@ public class TreeModelNode extends AbstractNode {
             if (text.indexOf ("<i>") > 0) return text;
             text = text.substring (6, text.length () - 7);
         }
-        return "<html><i>" + text + "</i></html>";
+        return "<html><font color=666666>" + text + "</font></html>";
     }
     
     private static String htmlValue (String name) {
@@ -547,6 +547,8 @@ public class TreeModelNode extends AbstractNode {
         }
         
         public Object getValue (String attributeName) {
+            if (!canWrite ())
+                return super.getValue (attributeName);
             if (attributeName.equals ("htmlDisplayValue"))
                 return properties.get (id + "#html");
             return super.getValue (attributeName);
