@@ -315,6 +315,50 @@ public class MonitorData extends BaseBean {
 	return true;
     }
 
+    public String getServerAndPort() 
+    {
+	String server = null;
+	String port = null;
+		
+	try {
+	    server = getEngineData().getAttributeValue("serverName"); // NOI18N
+	    port = getEngineData().getAttributeValue("serverPort"); // NOI18N
+	    return server.concat(":").concat(port);
+	}
+	catch(NullPointerException npe) {
+	}
+	    
+	// Backwards compatibility
+	server = getServletData().getAttributeValue("serverName"); // NOI18N
+	port = getServletData().getAttributeValue("serverPort"); // NOI18N
+	return server.concat(":").concat(port);
+    }
+
+    public String getServerName() {
+	
+	try {
+	    return getEngineData().getAttributeValue("serverName"); // NOI18N
+	}
+	catch(NullPointerException npe) {
+	}
+	    
+	// Backwards compatibility
+	return getServletData().getAttributeValue("serverName"); // NOI18N
+    }
+
+    public int getServerPort() {
+	
+	String portS = null;
+	try {
+	    portS = getEngineData().getAttributeValue("serverPort"); // NOI18N
+	}
+	catch(NullPointerException npe) {
+	}
+	if(portS == null) 
+	    portS = getServletData().getAttributeValue("serverPort"); // NOI18N 
+	return Integer.parseInt(portS);
+    }
+
     //
     static public void addComparator(BeanComparator c) {
 	MonitorData.comparators.add(c);

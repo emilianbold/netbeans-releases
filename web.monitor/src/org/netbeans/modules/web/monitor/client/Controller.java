@@ -407,8 +407,6 @@ public class Controller  {
      */
     public void replayTransaction(Node node) {
 
-	boolean debug = false;
-	 
 	if(debug) 
 	    log("Replay transaction from node " + node.getName()); // NOI18N
 		
@@ -457,7 +455,7 @@ public class Controller  {
 	    };
 
 	    Object[] args = {
-		md.getServletData().getAttributeValue("serverName"),  // NOI18N
+		md.getServerName(),
 	    };
 	    
 	    MessageFormat msgFormat = new MessageFormat
@@ -480,15 +478,14 @@ public class Controller  {
 	    };
 
 	    Object[] args = {
-		md.getServletData().getAttributeValue("serverName"), // NOI18N
-		md.getServletData().getAttributeValue("serverPort"), // NOI18N
+		md.getServerAndPort(),
 	    };
-	    
+
 	    MessageFormat msgFormat = new MessageFormat
 		(resBundle.getString("MON_Exec_server_start")); 
 
 	    NotifyDescriptor noServerDialog = 
-		new NotifyDescriptor(msgFormat.format(args),
+		new NotifyDescriptor(msgFormat.format(args), 
 				     resBundle.getString("MON_Exec_server"),
 				     NotifyDescriptor.DEFAULT_OPTION,
 				     NotifyDescriptor.INFORMATION_MESSAGE,
@@ -590,31 +587,20 @@ public class Controller  {
 	    log("Replay transaction from transaction file "); //NOI18N 
 	URL url = null;
 	try {
-	    String name;
-	    String portStr;
-	     
-	    // New data beans
-	    try {
-		name =
-		    md.getEngineData().getAttributeValue("serverName"); //NOI18N  
-		portStr = 
-		    md.getEngineData().getAttributeValue("serverPort"); //NOI18N 
-	    }
-	    // Old data beans
-	    catch(Exception ex) {
-		name =
-		    md.getServletData().getAttributeValue("serverName"); //NOI18N  
-		portStr = 
-		    md.getServletData().getAttributeValue("serverPort"); //NOI18N 
-	    }
+	    String name = md.getServerName();
+	    int port = md.getServerPort();
 	    
-	    int port = Integer.parseInt(portStr);
 	    StringBuffer uriBuf = new StringBuffer(128);
 	    uriBuf.append(md.getRequestData().getAttributeValue("uri")); //NOI18N 
 	    uriBuf.append("?ffj_resend="); //NOI18N 
 	    uriBuf.append(md.getAttributeValue("id")); //NOI18N 
 	    uriBuf.append("&ffj_status="); //NOI18N 
-	    uriBuf.append(status); 
+	    uriBuf.append(status);
+
+	    if(md.getRequestData().getReplaceSessionCookie()) { 
+		uriBuf.append("&netbeans_session=");
+		uriBuf.append("12434");
+	    }
 	    url = new URL("http", name, port, uriBuf.toString()); //NOI18N 
 	}
 	catch(MalformedURLException me) { 
@@ -1085,8 +1071,13 @@ public class Controller  {
 	    };
 	    String msg = null;
 	    if(replay) msg = resBundle.getString("MON_CantReplay"); 
-	    else msg = resBundle.getString("MON_NoServer"); 
+	    else { 
+		msg = resBundle.getString("MON_NoServer");
+	    }
 	    
+	    msg = msg.concat(" ");
+	    msg = msg.concat(resBundle.getString("MON_Start_server"));
+		
 	    NotifyDescriptor noServerDialog = 
 		new NotifyDescriptor(msg,
 				     resBundle.getString("MON_NoServerTitle"),

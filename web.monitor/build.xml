@@ -19,7 +19,15 @@ Microsystems, Inc. All Rights Reserved.
   <property name="nbroot" location="../../nb_all"/>
   <property name="binroot" location="../../nbextra"/>
   <property name="license.file" location="${f4jroot}/core/release/LICENSE.txt"/>
+  <property name="servlet22" 
+     location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar"/>
+  <property name="servlet23" 
+     location="${binroot}/web/servletapi23/release/modules/ext/servlet-2.3.jar"/>
+  <property name="schema2beans" 
+     location="${nbroot}/schema2beans/netbeans/modules/schema2beans.jar"/>
 
+  <property name="catalina" 
+     location="extra/catalina.jar"/>
 
   <taskdef name="jhindexer" 
            classname="org.netbeans.nbbuild.JHIndexer"
@@ -64,7 +72,6 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <!-- These are the secondary targets. -->
-
  <target name="javahelp">
     <mkdir dir="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch2"/>
     <jhindexer basedir="javahelp/org/netbeans/modules/web/monitor/docs/"
@@ -114,9 +121,9 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
          <pathelement location="${nbroot}/httpserver/netbeans/modules/httpserver.jar"/>
          <pathelement location="${nbroot}/web/core/netbeans/modules/jsp.jar"/>
-         <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar"/> 
+         <pathelement location="${servlet22}"/> 
          <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
-         <pathelement location="${nbroot}/schema2beans/netbeans/modules/schema2beans.jar"/>
+         <pathelement location="${schema2beans}"/>
       </classpath>
      </javac>
   </target>
@@ -132,7 +139,7 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
          <pathelement location="${nbroot}/httpserver/netbeans/modules/httpserver.jar"/>
          <pathelement location="${nbroot}/schema2beans/netbeans/modules/schema2beans.jar"/>
-         <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar"/> 
+         <pathelement location="${servlet22}"/>
          <pathelement location="${nbroot}/web/core/netbeans/modules/jsp.jar"/>
        </classpath>
      </javac>
@@ -147,8 +154,8 @@ Microsystems, Inc. All Rights Reserved.
 
        <classpath>
          <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
-         <pathelement location="${nbroot}/schema2beans/netbeans/modules/schema2beans.jar"/>
-         <pathelement location="extra/servlet.jar"/>
+         <pathelement location="${schema2beans}"/>
+         <pathelement location="${servlet23}"/>	
        </classpath>
      </javac>
   </target>
@@ -163,7 +170,7 @@ Microsystems, Inc. All Rights Reserved.
 
        <classpath>
           <pathelement location="${binroot}/httpserver/release/modules/ext/webserver.jar"/>
-          <pathelement location="extra/servlet.jar"/> 
+         <pathelement location="${servlet23}"/>		
          <pathelement location="${nbroot}/schema2beans/netbeans/modules/schema2beans.jar"/>
        </classpath>
      </javac>
@@ -177,23 +184,9 @@ Microsystems, Inc. All Rights Reserved.
 	 debug="${build.compiler.debug}"
 	 includes="**/org/apache/catalina/**"
 	 excludes="**/SCCS/**,**/CVS/**">
-
        <classpath>
-          <pathelement location="extra/servlet.jar"/> 
+          <pathelement location="${nbextra}/web/servletapi23/release/modules/ext/servlet-2.3.jar"/> 
           <pathelement location="extra/catalina.jar"/> 
-       </classpath>
-     </javac>
-  </target>
-
-  <target name="compile-iplanet" depends="compile-server"> 
-    <javac srcdir="src" destdir="src"
-         deprecation="${build.compiler.deprecation}" 
-	 debug="${build.compiler.debug}"
-         includes="**/iplanet/**"
-	 excludes="**/SCCS/**, **/CVS/**">
-       <classpath>
-          <pathelement location="extra/servlet.jar"/>
-          <pathelement location="extra/NSServletLayer.jar"/>
        </classpath>
      </javac>
   </target>
@@ -203,8 +196,6 @@ Microsystems, Inc. All Rights Reserved.
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf"
           filtering="on"/>
-
-    <!-- Create jspie.jar, which includes some stuff from ${nbroot}/web. -->
 
     <locjar jarfile="netbeans/modules/monitor.jar"
          manifest="manifest-subst.mf"
@@ -224,33 +215,32 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </locjar>
  
-    <locjar jarfile="netbeans/modules/ext/httpmonitor.jar"
+ <!-- NOTE: this is not an IDE module. It is deployed on the execution 
+      server. It will not be deployed correctly if we build a separate 
+      version for another language --> 
+    <jar jarfile="netbeans/modules/ext/httpmonitor.jar"
          compress="false">
-      <locale name="ja"/>
-      <branding name="f4j"/>
-      <branding name="f4j_ce"/>
-      <branding name="f4j_ie"/>
-      <fileset dir="src">
+	<fileset dir="src">
         <patternset excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt">
 	  <include name="org/netbeans/modules/web/monitor/server/"/>
           <include name="org/netbeans/modules/web/monitor/data/"/>
-          <include name="org/apache/catalina/"/>	
+          <include name="org/netbeans/modules/web/monitor/catalina/MonitorUtil**"/>	
         </patternset>
       </fileset>
-    </locjar>
+    </jar>
 
-  <locjar jarfile="netbeans/modules/ext/cathttpmon.jar"
+ <!-- NOTE: this is not an IDE module. It is deployed on the execution 
+      server. It will not be deployed correctly if we build a separate 
+      version for another language --> 
+  <jar jarfile="netbeans/modules/ext/monitor-valve.jar"
          compress="false">
-      <locale name="ja"/>
-      <branding name="f4j"/>
-      <branding name="f4j_ce"/>
-      <branding name="f4j_ie"/>
       <fileset dir="src">
         <patternset excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt">
-          <include name="org/apache/catalina/"/>
+          <include name="org/netbeans/modules/web/monitor/catalina/MonitorValve**"/>	
         </patternset>
       </fileset>
-    </locjar>
+
+    </jar>
   </target>
 
   <!-- This target will be deprecated --> 
