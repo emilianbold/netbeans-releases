@@ -68,7 +68,7 @@ final class ProjectSelectionPanel extends JPanel {
             setText(project.getName());
             setSelected(selectedProjects.contains(project) ||
                     requiredProjects.contains(project));
-            setToolTipText(""); // NOI18N
+            setToolTipText(null);
             if (project.hasJavaNature() && !requiredProjects.contains(project)) {
                 setEnabled(true);
             } else {
