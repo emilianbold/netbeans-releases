@@ -18,7 +18,6 @@ import java.lang.reflect.InvocationTargetException;
 import com.netbeans.ide.*;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.NotImplementedException;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.developer.modules.loaders.form.formeditor.*;
 import com.netbeans.developer.modules.loaders.java.*;
@@ -119,6 +118,7 @@ public class FormDataNode extends JavaNode {
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/7/99   Ian Formanek    
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  * Beta Change History:

@@ -29,7 +29,6 @@ import com.netbeans.ide.options.*;
 import com.netbeans.ide.actions.PropertiesAction;
 import com.netbeans.ide.actions.RenameAction;
 import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.ide.util.NotImplementedException;
 import com.netbeans.ide.util.actions.*;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.util.NbBundle;
@@ -169,6 +168,7 @@ public final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  5    Gandalf   1.4         1/7/99   Ian Formanek    
  *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
  *  3    Gandalf   1.2         1/6/99   Ian Formanek    Fixed outerclass 
  *       specifiers uncompilable under JDK 1.2
