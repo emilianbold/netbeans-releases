@@ -107,6 +107,7 @@ public final class Deployment {
             progress.recordWork(MAX_DEPLOY_PROGRESS);
         } else {
             err = NbBundle.getMessage (Deployment.class, "MSG_AnotherError");
+            progress.addError(err);
             throw new DeploymentException (err);
         }
         return target.getClientUrl(clientUrlPart);
