@@ -23,7 +23,7 @@ import org.openide.util.actions.CallableSystemAction;
 /** Opens a file by file chooser. */
 public class OpenFileAction extends CallableSystemAction {
   public String getName () {
-    return "Open File";
+    return SettingsBeanInfo.getString ("LBL_openFile");
   }
   public HelpCtx getHelpCtx () {
     return HelpCtx.DEFAULT_HELP;
@@ -38,11 +38,9 @@ public class OpenFileAction extends CallableSystemAction {
         TopManager.getDefault ().notifyException (e);
       }
   }
-  /*
   protected String iconResource () {
-    return "/com/netbeans/examples/modules/openfile/something.gif";
+    return "/com/netbeans/examples/modules/openfile/openFile.gif";
   }
-  */
   public static void main (String[] ignore) {
     new OpenFileAction ().performAction ();
   }

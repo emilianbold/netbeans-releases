@@ -23,63 +23,19 @@ import org.openide.cookies.*;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.*;
-import org.openide.modules.ModuleInstall;
 import org.openide.nodes.*;
 
 /** Acts as a server to open files when requested.
 *
 * @author Jaroslav Tulach, Jesse Glick
 */
-public class OpenFile extends Object implements ModuleInstall, Runnable {
+class OpenFile extends Object implements Runnable {
   /** max length of transferred data */
   private static final int LENGTH = 512;
   /** how long to wait between requests */
   private static final int TIMEOUT = 10000;
   /** true if we should stop due to uninstallation */
-  private static boolean stop;
-  
-  public void installed () {
-    try {
-      DataFolder folder = DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File");
-      DataObject[] oldkids = folder.getChildren ();
-      InstanceDataObject inst = InstanceDataObject.create (folder, "OpenFile", OpenFileAction.class);
-      DataObject[] newkids = new DataObject[oldkids.length + 1];
-      boolean found = false;
-      // Try to put it after the open-Explorer action, else at the end of the menu.
-      for (int i = 0, j = 0; i < oldkids.length; i++, j++) {
-        newkids[j] = oldkids[i];
-        if (! found && (i == oldkids.length - 1 || oldkids[i].getName ().equals ("OpenExplorer"))) {
-          newkids[++j] = inst;
-          found = true;
-        }
-      }
-      folder.setOrder (newkids);
-    } catch (IOException e) {
-      TopManager.getDefault ().notifyException (e);
-    }
-    restored ();
-  }
-
-  public void restored () {
-    stop = false;
-    new Thread (this, "OpenFile").start ();
-  }
-
-  public void uninstalled () {
-    stop = true;
-    try {
-      DataFolder folder = DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File");
-      if (! InstanceDataObject.remove (folder, "OpenFile", OpenFileAction.class))
-        throw new IOException ("Could not remove action");
-    } catch (IOException e) {
-      TopManager.getDefault ().notifyException (e);
-    }
-  }
-
-  public boolean closing () {
-    stop = true;
-    return true;
-  }
+  static boolean stop;
   
   /** Run the server.
   * If the server is stopped from the Control Panel, waits until it is
@@ -155,15 +111,14 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
         // Check access:
         if (Settings.DEFAULT.getAccess () == Settings.ACCESS_LOCAL) {
           if (! p.getAddress ().equals (InetAddress.getLocalHost ())) {
-            TopManager.getDefault ().notify (new NotifyDescriptor.Message
-                                             ("Rejecting attempted open-file access from host " + p.getAddress ()));
+            TopManager.getDefault ().notify (new NotifyDescriptor.Message (SettingsBeanInfo.getString ("MSG_rejectHost", p.getAddress ())));
             continue;
           }
         }
         // Try to open the requested file:
         String fileName = new String (p.getData (), p.getOffset () + 1, p.getLength () - 1);
         boolean wait = (p.getData ()[p.getOffset ()] == (byte) 'Y');
-        TopManager.getDefault ().setStatusText ("Opening " + fileName + (wait ? " (and waiting)" : ""));
+        TopManager.getDefault ().setStatusText (SettingsBeanInfo.getString (wait ? "MSG_openingAndWaiting" : "MSG_opening", fileName));
         
         byte res;
         boolean replyAnyway = true;
@@ -410,7 +365,7 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
         }
         TopManager.getDefault ().getNodeOperation ().explore (n);
         if (wait) {
-            TopManager.getDefault ().notify (new NotifyDescriptor.Message ("File cannot be opened, will tell launcher it is closed immediately."));
+            TopManager.getDefault ().notify (new NotifyDescriptor.Message (SettingsBeanInfo.getString ("MSG_cannotOpenWillClose", f)));
             return true;
         }
       }
@@ -452,10 +407,7 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
           TopManager.getDefault ().notifyException (e);
         }
       } else {
-        TopManager.getDefault ().notify (new NotifyDescriptor.Message (new String[] {
-          "File " + obj.getName () + " was saved, but the Open File server was not running.",
-          "Manually halt the launcher process."
-        }));
+        TopManager.getDefault ().notify (new NotifyDescriptor.Message (SettingsBeanInfo.getString ("MSG_serverNotRunningWhenSaved", obj.getName ())));
       }
     }
   };
