@@ -34,6 +34,8 @@ class WarmUpSupport implements Runnable {
 
     static final String WARMUP_FOLDER = "WarmUp"; // NOI18N
     static final int WARMUP_DELAY = 1500; // 1.5 sec after main window is shown
+    
+    static boolean finished = false;    // usefull for testability
 
     private ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.core.WarmUpSupport");
 
@@ -53,6 +55,7 @@ class WarmUpSupport implements Runnable {
 
         if (warmObjects == null || warmObjects.length == 0) {
             err.log("no warmp up task"); // NOI18N
+            finished = true;
             return;
         }
 
@@ -71,5 +74,6 @@ class WarmUpSupport implements Runnable {
             }
         }
         err.log("done"); // NOI18N
+        finished = true;
     }
 }
