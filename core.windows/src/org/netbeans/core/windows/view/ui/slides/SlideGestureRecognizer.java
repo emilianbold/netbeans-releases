@@ -52,6 +52,7 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
     /** Listsner to timer notifications */
     private AutoSlideTrigger autoSlideTrigger = new AutoSlideTrigger();
     private ResizeGestureRecognizer resizer;
+    private boolean pressingButton = false;
 
     SlideGestureRecognizer(SlideBar slideBar, ResizeGestureRecognizer resize) {
         this.slideBar = slideBar;
@@ -87,6 +88,12 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
             curMouseLocX = e.getX();
             curMouseLocY = e.getY();
         }
+        // #54764 - start
+        if (pressingButton && e.getButton() == MouseEvent.NOBUTTON) {
+            pressingButton = false;
+            autoSlideTrigger.activateAutoSlideInGesture(); 
+        }
+        // #54764 - end
     }
 
     /** Activates automatic slide in system */
@@ -98,12 +105,20 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
         mouseInButton = (Component)e.getSource();
         curMouseLocX = e.getX();
         curMouseLocY = e.getY();
+        pressingButton =false;
+        // #54764 - start
+        if (e.getButton() != MouseEvent.NOBUTTON) {
+            pressingButton = true;
+            return;
+        }
+        // #54764 - end
         autoSlideTrigger.activateAutoSlideInGesture();
     }
 
     /** Deactivates automatic slide in listening */
     public void mouseExited(MouseEvent e) {
         mouseInButton = null;
+        pressingButton = false;
         autoSlideTrigger.deactivateAutoSlideInGesture();
     }
     
