@@ -15,7 +15,9 @@ package org.netbeans.modules.diff;
 
 import java.lang.reflect.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
@@ -29,13 +31,22 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
+import org.openide.windows.TopComponent;
 
 //import org.netbeans.modules.diff.cmdline.DiffCommand;
-import org.netbeans.modules.vcscore.diff.AbstractDiff;
+//import org.netbeans.modules.vcscore.diff.AbstractDiff;
+
+import org.netbeans.api.diff.*;
+
+//import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
+//import org.netbeans.modules.diff.cmdline.CmdlineDiffProvider;
+//import org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer;
 
 //import org.netbeans.modules.diff.io.diff.*;
 
 /**
+ * Diff Action. It gets the default diff visualizer and diff provider if needed
+ * and display the diff visual representation of two files selected in the IDE.
  *
  * @author  Martin Entlicher
  */
@@ -43,6 +54,17 @@ public class DiffAction extends NodeAction {
 
     /** Creates new DiffAction */
     public DiffAction() {
+        //setupDefaultServices();
+    }
+    
+    private void setupDefaultServices() {
+        DiffSettings settings = (DiffSettings) SystemOption.findObject(DiffSettings.class, true);
+        DiffManager manager = DiffManager.getDefault();
+        //DiffProvider dp = new org.netbeans.modules.diff.cmdline.provider.CmdlineDiffProvider(settings.getDiffCmd());
+        DiffProvider dp = new org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider();
+        manager.setDefaultDiffProvider(dp);
+        DiffVisualizer dv = new org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer();
+        manager.setDefaultDiffVisualizer(dv);
     }
     
     public String getName() {
@@ -65,13 +87,40 @@ public class DiffAction extends NodeAction {
         final FileObject fo2 = (FileObject) fos.get(1);
         //System.out.println("performAction("+fo1+", "+fo2+")");
         //doDiff(fo1, fo2);
+        DiffVisualizer dv = DiffManager.getDefault().getDefaultDiffVisualizer();
+        System.out.println("dv = "+dv);
+        if (dv == null) return ;
+        List diffs = null;
+        if (dv.needsProvider()) {
+            DiffProvider dp = DiffManager.getDefault().getDefaultDiffProvider();
+            System.out.println("dp = "+dp);
+            if (dp == null) return ;
+            try {
+                diffs = dp.createDiff(fo1, fo2);
+            } catch (IOException ioex) {
+                TopManager.getDefault().notifyException(ioex);
+                return ;
+            }
+        }
+        TopComponent tp;
+        try {
+            tp = dv.showDiff(diffs, fo1, fo2);
+        } catch (IOException ioex) {
+            TopManager.getDefault().notifyException(ioex);
+            return ;
+        }
+        System.out.println("tp = "+tp);
+        if (tp != null) tp.open();
+        /*
         RequestProcessor.postRequest(new Runnable() {
             public void run() {
                 doDiffFiles(fo1, fo2);//new FileObject[] { fo1, fo2 });
             }
         });
+         */
     }
     
+    /*
     private void doDiffFiles(FileObject fo1, FileObject fo2) {
         DiffSettings settings = (DiffSettings) SystemOption.findObject(DiffSettings.class, true);
         DiffProvider provider = settings.getDefaultDiffProvider();
@@ -104,6 +153,7 @@ public class DiffAction extends NodeAction {
             }
         });
     }
+     */
     
     /*
     private void doDiffFiles(FileObject[] fos) {
