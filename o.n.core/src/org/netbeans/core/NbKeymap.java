@@ -29,7 +29,7 @@ final class NbKeymap implements Keymap {
   /** Parent keymap */
   Keymap parent;
   /** Hashtable holding key - action mappings */
-  Hashtable bindings;
+  Map bindings;
   /** Default action */
   Action defaultAction;
   /** Listeners set */
@@ -44,7 +44,7 @@ final class NbKeymap implements Keymap {
   NbKeymap(final String name, final Keymap parent) {
     this.name = name;
     this.parent = parent;
-    bindings = new Hashtable();
+    bindings = new HashMap();
   }
 
   public Action getDefaultAction() {
@@ -64,7 +64,10 @@ final class NbKeymap implements Keymap {
   }
 
   public Action getAction(KeyStroke key) {
-    Action a = (Action) bindings.get(key);
+    Action a = null;
+    synchronized (this) {
+      a = (Action) bindings.get(key);
+    }
     if ((a == null) && (parent != null)) {
         a = parent.getAction(key);
     }
@@ -72,19 +75,25 @@ final class NbKeymap implements Keymap {
   }
 
   public KeyStroke[] getBoundKeyStrokes() {
-    KeyStroke[] keys = new KeyStroke[bindings.size()];
     int i = 0;
-    for (Enumeration e = bindings.keys() ; e.hasMoreElements() ;) {
-      keys[i++] = (KeyStroke) e.nextElement();
+    KeyStroke[] keys = null;
+    synchronized (this) {
+      keys = new KeyStroke[bindings.size()];
+      for (Iterator iter = bindings.keySet().iterator(); iter.hasNext(); ) {
+        keys[i++] = (KeyStroke) iter.next();
+      }
     }
     return keys;
   }
 
   public Action[] getBoundActions() {
-    Action[] actions = new Action[bindings.size()];
     int i = 0;
-    for (Enumeration e = bindings.elements() ; e.hasMoreElements() ;) {
-      actions[i++] = (Action) e.nextElement();
+    Action[] actions = null;
+    synchronized (this) {
+      actions = new Action[bindings.size()];
+      for (Iterator iter = bindings.values().iterator(); iter.hasNext(); ) {
+        actions[i++] = (Action) iter.next();
+      }
     }
     return actions;
   }
@@ -93,35 +102,45 @@ final class NbKeymap implements Keymap {
     // searches for all entries which have value a
     // and add them to the resulting array
     Set result = new HashSet(5);
-    Set entries = bindings.entrySet();
     Map.Entry curEntry = null;
     int count = 0;
-    for (Iterator it = entries.iterator(); it.hasNext(); ) {
-      curEntry = (Map.Entry)it.next();
-      if (curEntry.getValue().equals(a)) {
-        result.add(curEntry.getKey());
-        count++;
+    KeyStroke[] strokes = null;
+    synchronized (this) {
+      Set entries = bindings.entrySet();
+      for (Iterator it = bindings.entrySet().iterator(); it.hasNext(); ) {
+        curEntry = (Map.Entry)it.next();
+        if (curEntry.getValue().equals(a)) {
+          result.add(curEntry.getKey());
+          count++;
+        }
       }
+      strokes = (KeyStroke[])result.toArray(new KeyStroke[count]);
     }
-    return (KeyStroke[])result.toArray(new KeyStroke[count]);
+    return strokes;
   }
 
-  public boolean isLocallyDefined(KeyStroke key) {
+  public synchronized boolean isLocallyDefined(KeyStroke key) {
     return bindings.containsKey(key);
   }
 
   public void addActionForKeyStroke(KeyStroke key, Action a) {
-    bindings.put(key, a);
+    synchronized (this) {
+      bindings.put(key, a);
+    }
     fireChangeEvent(new ChangeEvent(this));
   }
 
   public void removeKeyStrokeBinding(KeyStroke key) {
-    bindings.remove(key);
+    synchronized (this) {
+      bindings.remove(key);
+    }
     fireChangeEvent(new ChangeEvent(this));
   }
 
   public void removeBindings() {
-    bindings.clear();
+    synchronized (this) {
+      bindings.clear();
+    }
     fireChangeEvent(new ChangeEvent(this));
   }
 
@@ -148,6 +167,8 @@ final class NbKeymap implements Keymap {
 
 /*
 * Log
+*  4    src-jtulach1.3         4/1/99   David Simonek   concurrent writing bug 
+*       fixed (hopefully)
 *  3    src-jtulach1.2         3/4/99   Jaroslav Tulach ChangeListener in 
 *       TopManager
 *  2    src-jtulach1.1         3/1/99   David Simonek   icons etc..
