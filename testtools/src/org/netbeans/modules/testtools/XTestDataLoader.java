@@ -43,7 +43,7 @@ public class XTestDataLoader extends UniFileLoader {
 
     /** creates new XTestDataLoader */    
     public XTestDataLoader () {
-        super (XTestDataObject.class);
+        super ("XTestDataObject");
     }
 
     /** returns default display name of XTestDataObject

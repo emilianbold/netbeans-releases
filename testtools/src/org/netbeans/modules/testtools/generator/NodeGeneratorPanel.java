@@ -39,7 +39,8 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
     private Node rootNode;
     private static java.awt.Dialog dialog;
     private static NodeGeneratorPanel panel;
-    private String directory;
+    // data folder where to places generated sources
+    private DataFolder targetDataFolder;
     private Thread thread;
     private java.util.Properties props;
     
@@ -319,7 +320,7 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
             thread.interrupt();
         }
         helpLabel.setText(NbBundle.getMessage(NodeGeneratorPanel.class, "MSG_Help"));  // NOI18N
-        thread = new Thread(new NodeGeneratorRunnable(directory, nodeField.getText(), actionField.getText(), inlineCheck.isSelected(), noBlockCheck.isSelected(), this));
+        thread = new Thread(new NodeGeneratorRunnable(targetDataFolder, nodeField.getText(), actionField.getText(), inlineCheck.isSelected(), noBlockCheck.isSelected(), this));
         thread.start();
     }//GEN-LAST:event_startButtonActionPerformed
 
@@ -379,7 +380,7 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
                             nodeField.setText("nodes"); // NOI18N
                             actionField.setText("actions"); // NOI18N
                         }                            
-                        directory = org.openide.filesystems.FileUtil.toFile(df.getPrimaryFile().getFileSystem().getRoot()).getAbsolutePath();
+                        targetDataFolder = df;
                     }
                 } catch (org.openide.filesystems.FileStateInvalidException e) {}
             }

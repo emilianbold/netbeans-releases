@@ -58,7 +58,7 @@ public class NodeGeneratorAction extends NodeAction {
      * @return String path to action icon
      */    
     protected String iconResource() {
-       return "/org/netbeans/modules/testtools/generator/NodeGeneratorAction.gif";  // NOI18N
+       return "org/netbeans/modules/testtools/generator/NodeGeneratorAction.gif";  // NOI18N
     }
     
     /** method returning action Help Context

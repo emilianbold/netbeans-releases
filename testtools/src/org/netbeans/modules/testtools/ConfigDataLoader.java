@@ -54,7 +54,7 @@ public class ConfigDataLoader extends UniFileLoader {
     
     /** Creates a new instance of ConfigDataLoader */
     public ConfigDataLoader() {
-        super(ConfigDataObject.class);
+        super("ConfigDataObject");
     }
 
     /** Get default actions.

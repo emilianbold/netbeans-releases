@@ -32,12 +32,15 @@ import javax.swing.MenuElement;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.netbeans.core.NbMainExplorer;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JMenuOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.modules.jemmysupport.I18NSupport;
+import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 
 import org.openide.src.*;
 import org.openide.cookies.SourceCookie;
@@ -45,8 +48,11 @@ import org.openide.execution.NbClassLoader;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystemCapability;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 /** Node Generator main class
@@ -751,31 +757,53 @@ public class NodeGenerator {
         return matchingRecords;
     }
     
-    /** saves all new sources (node and actions)
-     * @param packagesRootDir String path of the root of packages where sources have to be saved
-     * @throws FileNotFoundException when some problem with directories occures
+    /** saves all new sources (node and actions), refreshes target folder
+     * and opens source for node in editor
+     * @param targetDataFolder DataFolder of the root of packages where sources have to be saved
+     * @throws IOException when some problem with directories occures
+     * @throws DataObjectNotFoundException when no DataObject is found for generated node
      */    
-    public void saveNewSources(String packagesRootDir) throws FileNotFoundException {
+    public void saveNewSources(DataFolder targetDataFolder) throws IOException, DataObjectNotFoundException {
         Iterator it = matchingRecords.iterator();
         while (it.hasNext()) {
             Object o=it.next();
             if (o instanceof NewActionRecord) {
                 NewActionRecord rec=(NewActionRecord)o;
                 if (!rec.isInline()) {
-                    File f=new File(packagesRootDir, rec.getFullClassName().replace('.', '/')+".java"); // NOI18N
-                    f.getParentFile().mkdirs();
-                    PrintStream out=new PrintStream(new FileOutputStream(f));
-                    out.print(rec.getSourceCode());
+                    // create action
+                    FileObject fo = FileUtil.createData(targetDataFolder.getPrimaryFile(), rec.getFullClassName().replace('.', '/')+".java"); // NOI18N
+                    PrintStream out = new PrintStream(fo.getOutputStream(fo.lock()));
+                    // write generated source to a stream
+                    out.println(rec.getSourceCode());
                     out.close();
                 }
             }
         }
-        File f=new File(packagesRootDir, nodePackage.replace('.', '/')+"/"+nodeName+".java"); // NOI18N
-        f.getParentFile().mkdirs();
-        PrintStream out=new PrintStream(new FileOutputStream(f));
-        out.print(getSourceCode());
+        // create node
+        FileObject fo = FileUtil.createData(targetDataFolder.getPrimaryFile(), nodePackage.replace('.', '/')+"/"+nodeName+".java"); // NOI18N
+        PrintStream out = new PrintStream(fo.getOutputStream(fo.lock()));
+        // write generated source to a stream
+        out.println(getSourceCode());
         out.close();
+        // refresh target data folder
+        targetDataFolder.getPrimaryFile().refresh();
+        // open FileObject representing generated node in source editor
+        openInEditor(fo);
     }
+    
+    /** Opens given FileObject in source editor and selects node in explorer. 
+     * It is expected that FileObject is java DataObject and has EditorCookie.
+     * @param fo FileObject to be opened in source editor. It should be java
+     * DataObject
+     */
+    private void openInEditor(FileObject fo) throws DataObjectNotFoundException {
+        DataObject dob = DataObject.find(fo);
+        // selects node in explorer
+        NbMainExplorer.RepositoryTab.getDefaultRepositoryTab().doSelectNode(dob);
+        // open in editor
+        ((EditorCookie)dob.getCookie(EditorCookie.class)).open();
+    }
+
    
     /** returns String representation of Node bean
      * @return String repreentation of Node bean

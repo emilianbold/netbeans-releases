@@ -36,6 +36,8 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
 
 /** class observing CTRL-F11 key and launching NodeGenerator
@@ -44,7 +46,8 @@ import org.openide.util.NbBundle;
  */
 public class NodeGeneratorRunnable implements Runnable, AWTEventListener {
     
-    String directory;
+    // data folder where to store generated sources
+    DataFolder targetDataFolder;
     String nodesPackage;
     String actionsPackage;
     JLabel help;
@@ -54,15 +57,15 @@ public class NodeGeneratorRunnable implements Runnable, AWTEventListener {
     boolean defaultNoBlock;
     
     /** Creates new instance of NodeGeneratorRunnable
-     * @param directory String destination directory (root of packages)
+     * @param targetDataFolder target data folder (root of packages)
      * @param nodesPackage String package for nodes
      * @param actionsPackage String package for actions
      * @param defaultInline boolean default inline selection
      * @param defaultNoBlock boolean default no block selection
      * @param panel NodeGeneratorPanel (caller)
      */    
-    public NodeGeneratorRunnable(String directory, String nodesPackage, String actionsPackage, boolean defaultInline, boolean defaultNoBlock, NodeGeneratorPanel panel) {
-        this.directory = directory;
+    public NodeGeneratorRunnable(DataFolder targetDataFolder, String nodesPackage, String actionsPackage, boolean defaultInline, boolean defaultNoBlock, NodeGeneratorPanel panel) {
+        this.targetDataFolder = targetDataFolder;
         this.nodesPackage = nodesPackage;
         this.actionsPackage = actionsPackage;
         this.defaultInline = defaultInline;
@@ -102,12 +105,14 @@ public class NodeGeneratorRunnable implements Runnable, AWTEventListener {
                     int i=2;
                     String name = "NewNode"; // NOI18N
                     String index = ""; // NOI18N
+                    String directory = FileUtil.toFile(targetDataFolder.getPrimaryFile()).getAbsolutePath();
                     while ((file=new File(directory+"/"+nodesPackage.replace('.', '/')+"/"+name+index+".java")).exists()) {  // NOI18N
                         index = String.valueOf(i++);
                     }
                     NodeGenerator gen = new NodeGenerator(actionsPackage, nodesPackage, name+index, popup, defaultInline, defaultNoBlock);
                     if (NodeEditorPanel.showDialog(gen)) {
-                        gen.saveNewSources(directory);
+                        // save sources, refresh target folder and open node in source editor
+                        gen.saveNewSources(targetDataFolder);
                         help.setText(NbBundle.getMessage(NodeGeneratorRunnable.class, "MSG_Finished")+gen.getNodeName());  // NOI18N
                     } else {
                         help.setText(NbBundle.getMessage(NodeGeneratorRunnable.class, "MSG_Canceled"));  // NOI18N
