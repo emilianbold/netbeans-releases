@@ -77,15 +77,12 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
             return false;
         }
         
+        // check if the file name can be created
         FileObject dir = Templates.getTargetFolder( wizard );
-        
-        DataFolder df = DataFolder.findFolder( dir );
         FileObject template = Templates.getTemplate( wizard );
 
         String errorMessage = ProjectUtilities.canUseFileName (dir, gui.getTargetName(), template.getExt ());
-        if (gui.isShowing ()) {
-            wizard.putProperty ("WizardPanel_errorMessage", errorMessage); // NOI18N
-        }
+        wizard.putProperty ("WizardPanel_errorMessage", errorMessage); // NOI18N
 
         return errorMessage == null;
     }
