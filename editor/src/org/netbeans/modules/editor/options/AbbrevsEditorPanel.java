@@ -14,6 +14,9 @@
 package org.netbeans.modules.editor.options;
 
 import java.awt.Dialog;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Window;
 import java.awt.event.*;
 import java.util.*;
@@ -44,12 +47,30 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
 
     // The master we talk to about changes in map
     private AbbrevsEditor editor;
+    
+    private FontSizeTable abbrevsTable;
 
     /** Creates new form AbbrevsEditorPanel */
     public AbbrevsEditorPanel( AbbrevsEditor editor ) {
         this.editor = editor;
         model = new PairStringModel();
         initComponents ();
+
+        abbrevsTable = new FontSizeTable();
+        abbrevsTable.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+        abbrevsTable.setModel(model);
+        abbrevsTable.setShowHorizontalLines(false);
+        abbrevsTable.setShowVerticalLines(false);
+        abbrevsTable.setSelectionMode( DefaultListSelectionModel.SINGLE_SELECTION );
+        // Set the width of columns to 30% and 70%
+        TableColumnModel col = abbrevsTable.getColumnModel();
+        col.getColumn( 0 ).setMaxWidth( 3000 );
+        col.getColumn( 0 ).setPreferredWidth( 30 );
+        col.getColumn( 1 ).setMaxWidth( 7000 );
+        col.getColumn( 1 ).setPreferredWidth( 70 );
+        abbrevsPane.setViewportView(abbrevsTable);
+        
+        
         getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AEP")); // NOI18N
         abbrevsTable.getAccessibleContext().setAccessibleName(getBundleString("ACSN_AEP_Table")); // NOI18N
         abbrevsTable.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AEP_Table")); // NOI18N
@@ -128,7 +149,6 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         abbrevsPane = new javax.swing.JScrollPane();
-        abbrevsTable = new javax.swing.JTable();
         addButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
@@ -136,19 +156,6 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
-        abbrevsTable.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
-        abbrevsTable.setModel(model);
-        abbrevsTable.setShowVerticalLines(false);
-        abbrevsTable.setShowHorizontalLines(false);
-        abbrevsTable.setSelectionMode( DefaultListSelectionModel.SINGLE_SELECTION );
-        // Set the width of columns to 30% and 70%
-        TableColumnModel col = abbrevsTable.getColumnModel();
-        col.getColumn( 0 ).setMaxWidth( 3000 );
-        col.getColumn( 0 ).setPreferredWidth( 30 );
-        col.getColumn( 1 ).setMaxWidth( 7000 );
-        col.getColumn( 1 ).setPreferredWidth( 70 );
-        abbrevsPane.setViewportView(abbrevsTable);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -282,10 +289,9 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addButton;
-    private javax.swing.JTable abbrevsTable;
-    private javax.swing.JButton editButton;
     private javax.swing.JScrollPane abbrevsPane;
+    private javax.swing.JButton addButton;
+    private javax.swing.JButton editButton;
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
 
@@ -360,4 +366,35 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
         }
     }
 
+    
+     private final class FontSizeTable extends JTable{
+ 
+         private boolean needCalcRowHeight = true;        
+         
+         public void updateUI() {
+             super.updateUI();
+             needCalcRowHeight = true;            
+         }
+         
+         public void paint(Graphics g) {
+             if (needCalcRowHeight) {
+                 calcRowHeight(g);
+             }
+             super.paint(g);
+         }
+         
+         /** Calculate the height of rows based on the current font.  This is
+          *  done when the first paint occurs, to ensure that a valid Graphics
+          *  object is available.
+          */
+         private void calcRowHeight(Graphics g) {
+             Font f = getFont();
+             FontMetrics fm = g.getFontMetrics(f);
+             int rowHeight = fm.getHeight();
+             needCalcRowHeight = false;
+             setRowHeight(rowHeight);
+         }
+         
+     }
+    
 }
