@@ -405,4 +405,7 @@ public final class SourceRoots {
         }
     }
 
+    public boolean isTest() {
+        return isTest;
+    }
 }
