@@ -50,8 +50,6 @@ Microsystems, Inc. All Rights Reserved.
         </fileset>
         <pathelement location="../java/netbeans/modules/java.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>      
-        <!-- Hopefully set up bu nbbuild/build.xml: -->
-        <pathelement location="${jdkhome}/lib/tools.jar"/>
       </classpath>
     </javac>
   </target>

@@ -63,11 +63,6 @@ public class JavadocModule extends ModuleInstall {
     protected Object writeReplace(){
         return null;
     }
-
-    public static Boolean isDisabledForJDK14() {
-        return new Boolean(Dependency.JAVA_SPEC.compareTo(
-                               new SpecificationVersion("1.4")) >= 0); // NOI18N
-    }
     
     public synchronized static void registerTopComponent(TopComponent tc) {
         if (floatingTopComponents == null)

@@ -111,12 +111,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
                 <attr name="SystemFileSystem.layer" stringvalue="project"/>
             </file>
-            <file name="org-netbeans-modules-javadoc-settings-JavadocSettingsService.settings" url="javadoc_internal_executor.settings">
-                <attr name="hidden" methodvalue="org.netbeans.modules.javadoc.JavadocModule.isDisabledForJDK14" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
-                <attr name="SystemFileSystem.layer" stringvalue="project"/>
-            </file>
             <attr name="SystemFileSystem.layer" stringvalue="project"/>
         </folder>  
 
@@ -212,12 +206,6 @@ SystemFileSystem
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
               <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
             </file>    
-            <file name="org-netbeans-modules-javadoc-settings-JavadocSettingsService.settings" url="javadoc_internal_executor.settings">
-              <attr name="hidden" methodvalue="org.netbeans.modules.javadoc.JavadocModule.isDisabledForJDK14" />
-              <attr name="template" boolvalue="true"/>
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
-              <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
-            </file>
           </folder>  
 
           <folder name="StdDocletType">
