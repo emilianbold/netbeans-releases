@@ -35,6 +35,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
@@ -48,17 +49,36 @@ import org.openide.util.actions.SystemAction;
 class J2eePlatformNode extends AbstractNode implements PropertyChangeListener {
 
     private static final String ARCHIVE_ICON = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/jar.gif"; //NOI18N
+    private static final String DEFAULT_ICON = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/j2eeServer.gif"; //NOI18N
+    private static final String BROKEN_PROJECT_BADGE = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/brokenProjectBadge.gif"; //NOI18N
     
     private static final Icon icon = new ImageIcon(Utilities.loadImage(ARCHIVE_ICON));
+    // TODO: AB: can this be done better?
+    private static final Image brokenIcon = Utilities.mergeImages(
+            Utilities.loadImage(DEFAULT_ICON),
+            Utilities.loadImage(BROKEN_PROJECT_BADGE), 
+            8, 0);
 
     private final PropertyEvaluator evaluator;
     private final String platformPropName;
     private J2eePlatform platformCache;
     
-    private final PropertyChangeListener displayNameListener = new PropertyChangeListener() {
+    /*private final PropertyChangeListener displayNameListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
             fireNameChange((String)evt.getOldValue(), (String)evt.getNewValue());
             fireDisplayNameChange((String)evt.getOldValue(), (String)evt.getNewValue());
+        }
+    };*/
+    
+    private final PropertyChangeListener platformListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (J2eePlatform.PROP_DISPLAY_NAME.equals(evt.getPropertyName())) {
+                fireNameChange((String)evt.getOldValue(), (String)evt.getNewValue());
+                fireDisplayNameChange((String)evt.getOldValue(), (String)evt.getNewValue());
+            }
+            if (J2eePlatform.PROP_CLASSPATH.equals(evt.getPropertyName())) {
+                postAddNotify();
+            }
         }
     };
 
@@ -76,25 +96,28 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener {
     public String getName () {
         return this.getDisplayName();
     }
-
-    public String getDisplayName () {
-        return getPlatform().getDisplayName();
+    
+    public String getDisplayName() {
+        return "";
+    }
+    
+    public String getHtmlDisplayName() {
+        if (getPlatform() != null)
+            return getPlatform().getDisplayName();
+        else 
+            return NbBundle.getMessage(J2eePlatformNode.class, "LBL_J2eeServerMissing");
     }
     
     public Image getIcon(int type) {
-        Image result = getPlatform().getIcon();
-        if (result == null)
-            result = super.getIcon(type);
-        
-        return result;
+        Image result = null;
+        if (getPlatform() != null) {
+            result = getPlatform().getIcon();
+        }
+        return result != null ? result : brokenIcon;
     }
     
     public Image getOpenedIcon(int type) {
-        Image result = getPlatform().getIcon();
-        if (result == null)
-            result = super.getOpenedIcon(type);
-        
-        return result;
+        return getIcon(type);
     }
 
     public boolean canCopy() {
@@ -107,24 +130,26 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (platformPropName.equals(evt.getPropertyName())) {
-            platformCache.removePropertyChangeListener(displayNameListener);
+            if (platformCache != null)
+                platformCache.removePropertyChangeListener(platformListener);
+            
             platformCache = null;
+            
             this.fireNameChange(null, null);
             this.fireDisplayNameChange(null, null);
+            this.fireIconChange();
+            
             //The caller holds ProjectManager.mutex() read lock
-            LibrariesNode.rp.post (new Runnable () {
-                public void run () {
-                    ((PlatformContentChildren)getChildren()).addNotify ();
-                }
-            });
+            postAddNotify();
         }
-        if (J2eePlatform.PROP_CLASSPATH.equals(evt.getPropertyName())) {
-            LibrariesNode.rp.post (new Runnable () {
-                public void run () {
-                    ((PlatformContentChildren)getChildren()).addNotify ();
-                }
-            });
-        }
+    }
+
+    private void postAddNotify() {
+        LibrariesNode.rp.post (new Runnable () {
+            public void run () {
+                ((PlatformContentChildren)getChildren()).addNotify ();
+            }
+        });
     }
 
     private J2eePlatform getPlatform () {
@@ -133,12 +158,8 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener {
             if (j2eePlatformInstanceId != null) {
                 platformCache = Deployment.getDefault().getJ2eePlatform(j2eePlatformInstanceId);
             }
-            if (platformCache == null) {
-                platformCache = Deployment.getDefault().getJ2eePlatform(Deployment.getDefault().getDefaultServerInstanceID());
-                
-            }
             if (platformCache != null) {
-                platformCache.addPropertyChangeListener(displayNameListener);
+                platformCache.addPropertyChangeListener(platformListener);
                 // the platform has likely changed, so force the node to display the new platform's icon
                 this.fireIconChange();
             }
@@ -165,17 +186,23 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener {
         }
 
         private List getKeys () {
+            List result;
+            
             J2eePlatform j2eePlatform = ((J2eePlatformNode)this.getNode()).getPlatform();
-            File[] classpathEntries = j2eePlatform.getClasspathEntries();
-            List result = new ArrayList(classpathEntries.length);
-            for (int i = 0; i < classpathEntries.length; i++) {
-                FileObject file = FileUtil.toFileObject(classpathEntries[i]);
-                if (file != null) {
-                    FileObject archiveFile = FileUtil.getArchiveRoot(file);
-                    if (archiveFile != null) {
-                        result.add(new LibrariesSourceGroup(archiveFile, file.getNameExt(), icon, icon));
+            if (j2eePlatform != null) {
+                File[] classpathEntries = j2eePlatform.getClasspathEntries();
+                result = new ArrayList(classpathEntries.length);
+                for (int i = 0; i < classpathEntries.length; i++) {
+                    FileObject file = FileUtil.toFileObject(classpathEntries[i]);
+                    if (file != null) {
+                        FileObject archiveFile = FileUtil.getArchiveRoot(file);
+                        if (archiveFile != null) {
+                            result.add(new LibrariesSourceGroup(archiveFile, file.getNameExt(), icon, icon));
+                        }
                     }
                 }
+            } else {
+                result = Collections.EMPTY_LIST;
             }
             
             return result;
