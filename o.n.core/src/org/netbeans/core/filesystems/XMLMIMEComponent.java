@@ -279,6 +279,17 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
 
         public void comment(char[] ch, int start, int length) {}
         
+        public void error(SAXParseException exception) throws SAXException {
+            this.state = ERROR;
+            throw STOP;
+        }
+
+        public void fatalError(SAXParseException exception) throws SAXException {
+            this.state = ERROR;
+            throw STOP;
+        }
+        
+        
     }
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
