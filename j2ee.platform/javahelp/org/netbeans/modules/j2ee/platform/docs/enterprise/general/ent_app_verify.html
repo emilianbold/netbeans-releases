@@ -12,17 +12,18 @@
 
 <h2>Verifying an Enterprise Application</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>Before you deploy an enterprise application or any stand-alone web or EJB modules, 
-  you should use the verifier to make sure you have implemented the J2EE 1.4 specification 
-  correctly. The verifier tool validates both J2EE and SJS Application Server specific deployment descriptors against their corresponding DTD files 
+<p>Before you deploy an enterprise application or any stand-alone web or EJB module, you
+ should verify it, to ensure it is properly implemented to the J2EE 1.4 specification.
+ The verifier tool validates both J2EE and SJS Application Server specific deployment descriptors against their corresponding DTD files 
   and gives errors and warnings if a module or application is not J2EE and SJS Application Server compliant. You can verify deployment descriptors 
   in EAR, WAR, RAR, and JAR files.</p>
 <p>The verifier tool is not simply an XML syntax verifier. Rules and interdependencies 
   between various elements in the deployment descriptors are verified. Where needed, 
-  user application classes are introspected to apply validation rules. </p>
+  classes in your module are examined to ensure that what is referred to in the
+  deployment descriptors actually exists and will work when deployed. </p>
 <p><b>To verify a project deployment descriptors:</b></p>
 <ol>
-  <li>Right-click any Web module, EJB module, or enterprise application project 
+	<li>Right-click any web module, EJB module, or enterprise application project 
     in the Projects window and choose Verify. 
     <p>The Verifier window opens and displays all the results.</p>
   </li>
@@ -35,9 +36,9 @@
 </ol>
 <ul class="note">
   <li>Not all failures to comply with the J2EE 1.4 specification will cause the 
-    application to fail. However, it is good to know where your application does 
-    not comply to the J2EE 1.4 specification, so that you can take appropriate 
-    steps, if any.</li>
+  application to fail. However, modules that fail to comply with the J2EE 1.4 specification
+   may not be portable between application servers. The verifier tool helps you ensure your code is
+    not locked into running only on a specific application server.</li>
 </ul>
 <table>
   <tr> 
