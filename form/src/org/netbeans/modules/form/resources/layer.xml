@@ -80,9 +80,9 @@ SystemFileSystem
         </folder>
 
         <folder name="Tools">
-            <attr name="Separator1[javax-swing-JSeparator].instance/org-netbeans-modules-form-actions-InstallBeanAction.instance" boolvalue="true" />
+            <attr name="Separator1.instance/org-netbeans-modules-form-actions-InstallBeanAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-form-actions-InstallBeanAction.instance" />
-            <attr name="org-netbeans-modules-form-actions-InstallBeanAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-form-actions-InstallBeanAction.instance/Separator2.instance" boolvalue="true" />
         </folder>
     </folder>
 
@@ -693,7 +693,9 @@ SystemFileSystem
     </folder>
 
     <folder name="Shortcuts">
-        <file name="C-8[org.netbeans.modules.form.actions.FormEditorAction].instance" />
+        <file name="C-8.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.form.actions.FormEditorAction"/>
+	</file>
     </folder>
 
 
