@@ -319,10 +319,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Toolbars">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
-        <file name="Standard.xml" url="Standard.xml">
-            <!-- Optimization only: -->
-            <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="false"/>
-        </file>
+        <file name="Standard.xml" url="Standard.xml"/>
 
         <folder name="Build">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />

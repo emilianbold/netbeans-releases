@@ -99,9 +99,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Toolbars">
-        <file name="Debugging.xml" url="Debugging.xml">
-            <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="false"/>
-        </file>
+        <file name="Debugging.xml" url="Debugging.xml"/>
 
         <folder name="Debug">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
