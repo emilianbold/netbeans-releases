@@ -36,7 +36,6 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
 import org.openide.awt.ToolbarPool; // Why is this in open API?
-import org.openide.ErrorManager;
 import org.openide.util.WeakSet;
 import org.openide.windows.TopComponent;
 
@@ -110,14 +109,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         toShow.removeAll(oldShowing);
         for(Iterator it = toShow.iterator(); it.hasNext(); ) {
             TopComponent tc = (TopComponent)it.next();
-            try {
-                WindowManagerImpl.getInstance().componentShowing(tc);
-            } catch(RuntimeException re) {
-                IllegalStateException ise = new IllegalStateException("[Winsys] TopComponent tc=" + tc // NOI18N
-                + " throws runtime exception from its componentShowing method. Repair it!"); // NOI18N
-                ErrorManager.getDefault().annotate(ise, re);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ise);
-            }
+            WindowManagerImpl.getInstance().componentShowing(tc);
         }
         
         // PENDING Find main event first.
@@ -333,14 +325,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         toHide.removeAll(newShowing);
         for(Iterator it = toHide.iterator(); it.hasNext(); ) {
             TopComponent tc = (TopComponent)it.next();
-            try {
-                WindowManagerImpl.getInstance().componentHidden(tc);
-            } catch(RuntimeException re) {
-                IllegalStateException ise = new IllegalStateException("[Winsys] TopComponent tc=" + tc // NOI18N
-                + " throws runtime exception from its componentHidden method. Repair it!"); // NOI18N
-                ErrorManager.getDefault().annotate(ise, re);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ise);
-            }
+            WindowManagerImpl.getInstance().componentHidden(tc);
         }
     }
     
