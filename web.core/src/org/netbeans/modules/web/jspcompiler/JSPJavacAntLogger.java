@@ -225,6 +225,9 @@ public final class JSPJavacAntLogger extends AntLogger {
             try {
                 SmapResolver resolver = new SmapResolver(new SmapFileReader(smapFile));
                 String jspName = resolver.getJspFileName(line1, col1);
+                if (jspName == null) {
+                    return null;
+                }
                 if (LOGGABLE) ERR.log("translate: [" + line1 + ", " + col1 + "]");
                 int newRow = resolver.unmangle(line1, col1);
 //debug ("translated to '" + jspName + ":" + newRow + "'");
