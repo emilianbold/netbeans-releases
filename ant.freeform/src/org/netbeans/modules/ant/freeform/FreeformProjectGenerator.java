@@ -983,31 +983,6 @@ public class FreeformProjectGenerator {
         aux.putConfigurationFragment(data, true);
     }
     
-    //XXX: The <property-file> elements are ignored at the moment.
-    /**
-     * Read all <property> elements and return them as Properties instance.
-     */
-    public static Properties getProperties(AntProjectHelper helper) {
-        Properties props = new Properties();
-        Element data = helper.getPrimaryConfigurationData(true);
-        Element propertiesEl = Util.findElement(data, "properties", FreeformProjectType.NS_GENERAL); // NOI18N
-        if (propertiesEl == null) {
-            return props;
-        }
-        List/*<Element>*/ subElms = Util.findSubElements(propertiesEl);
-        Iterator it = subElms.iterator();
-        while (it.hasNext()) {
-            Element el = (Element)it.next();
-            if (!el.getLocalName().equals("property")) { // NOI18N
-                continue;
-            }
-            String key = el.getAttribute("name");
-            String value = Util.findText(el);
-            props.put(key, value);
-        }
-        return props;
-    }
-
     /**
      * Structure describing compilation unit.
      * Data in the struct are in the same format as they are stored in XML.
