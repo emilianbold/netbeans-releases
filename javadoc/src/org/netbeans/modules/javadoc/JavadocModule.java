@@ -13,7 +13,10 @@
 
 package com.netbeans.developer.modules.javadoc;
  
-import java.io.*;
+import java.io.File;
+
+import java.util.Enumeration;
+import javax.swing.event.*;
 
 // IDE imports ------------------
 
@@ -24,12 +27,12 @@ import com.netbeans.ide.loaders.DataFolder;
 import com.netbeans.ide.loaders.DataLoader;
 import com.netbeans.ide.TopManager;
 
-import javax.swing.event.*;
 
 // MODULE imports ---------------
 
 import com.netbeans.developer.modules.loaders.java.JavaDataObject;
 import com.netbeans.developer.modules.loaders.java.JavaNode;
+import com.netbeans.developer.modules.javadoc.settings.StdDocletSettings;
 
 /** Class for initializing Javadoc module on IDE startup.
 
@@ -40,9 +43,18 @@ public class JavadocModule implements ModuleInstall {
   static {
   }
 
-  /** By first install of module in the IDE do nothing. 
+  /** By first install of module in the IDE, check whether standard documentation folder
+  * exists. If not creates it.
   */
   public void installed() {
+    // Create Standard Doclet option to get Standard javadoc directory
+    StdDocletSettings sdsTemp = new StdDocletSettings();
+
+    File dir = sdsTemp.getDirectory();
+    
+    if ( !dir.isDirectory() ) 
+      dir.mkdirs();
+
   }
 
   /** By uninstalling module from the IDE do nothing. 
@@ -59,25 +71,19 @@ public class JavadocModule implements ModuleInstall {
     installActions( TopManager.getDefault().getLoaderPool().firstProducerOf( DataFolder.class ),
       new SystemAction[] { SystemAction.get( GenerateDocAction.class ), null } );
 
-    // Install JavaDataObject action
+    // Install GenerateDocActon for every producer of JavaDataObject and derived classes.
     
-    DataLoader javaLoader = TopManager.getDefault().getLoaderPool().firstProducerOf( JavaDataObject.class );
-    if (javaLoader != null) {
-      installActions(javaLoader, new SystemAction[] { SystemAction.get( GenerateDocAction.class ), null } );
-    }
-    else {
-      TopManager.getDefault().getLoaderPool().addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
-          DataLoader javaL = TopManager.getDefault().getLoaderPool().firstProducerOf( JavaDataObject.class );
-          if (javaL != null) {
-            installActions(javaL, new SystemAction[] { SystemAction.get( GenerateDocAction.class ), null } );
-            TopManager.getDefault().getLoaderPool().removeChangeListener(this);
-          }
-        }
-      });
-    }
+    TopManager.getDefault().getLoaderPool().addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent e) {
+        Enumeration en = TopManager.getDefault().getLoaderPool().producersOf(JavaDataObject.class);
 
-    // System.out.println ( "Javadoc module installed .." );
+        while ( en.hasMoreElements() ) {
+          DataLoader loader =  (DataLoader)en.nextElement();
+          if ( !hasGenerateDoc( loader )) 
+            installActions(loader, new SystemAction[] { SystemAction.get( GenerateDocAction.class ), null } );                          
+        }
+      }
+    });
   }
 	
   /** Called before exiting IDE. 
@@ -88,6 +94,10 @@ public class JavadocModule implements ModuleInstall {
   }
 
  
+  /** Installs array of new actions into popup menu of DataLoeader before the action Cut
+  * @param dl DataLoadaer object where to install new actions
+  * @param sa[] Array of new acrions
+  */
   private void installActions ( DataLoader dl, SystemAction sa[] ) {
     SystemAction old_sa[], new_sa[]; 
     int i;
@@ -98,7 +108,7 @@ public class JavadocModule implements ModuleInstall {
     new_sa = new SystemAction[ old_sa.length + sa.length ];
      
     for (i = 0; i < old_sa.length; i++) {
-      if (old_sa[i] instanceof CutAction) {
+      if ( old_sa[i] instanceof CutAction ) {
         for (j = 0; j < sa.length ; j++ )
           new_sa[i + j] = sa[j];
         }
@@ -111,46 +121,29 @@ public class JavadocModule implements ModuleInstall {
     }
 
   dl.setActions( new_sa );
-  }
+  }  
 
-
-  /** Installs sa[] actions on position <code>index</code> bottom of menu 
+  /** Checks whether an action of type actionClass is already installed in 
+  * DataLoader's popup menu
   */
-  
-  private void installActions ( DataLoader dl, int index, SystemAction sa[] ) {
-    int          i, j; 
-    SystemAction old_sa[], new_sa[]; 
 
-    //System.out.println ( dl );
-
-    old_sa = dl.getActions();
-
-    new_sa = new SystemAction[ old_sa.length + sa.length ];
-     
-    // Old actions up to index
-    for (i = 0; i < old_sa.length - index; i++) {
-      new_sa[i] = old_sa[i];
-    } 
-
-    // New actions
-    for (j = 0; i < old_sa.length - index + sa.length ; i++, j++ ) {
-      new_sa[i] = sa[j];
-      }
+  private boolean hasGenerateDoc ( DataLoader dl ) {
+    SystemAction actions[] = dl.getActions();
     
-    // Rest of old actions
-    for (; i < old_sa.length + sa.length; i++ ) {
-      new_sa[i] = old_sa[i - index];
-    }
+    for (int i = 0; i < actions.length; i++) 
+      if (actions[i] instanceof GenerateDocAction )
+        return true;
 
-    dl.setActions( new_sa );
+    return false;
   }
-  
 
 
 }
 
 /* 
  * Log
+ *  3    Gandalf   1.2         4/27/99  Petr Hrebejk    GenerateDocAction for 
+ *       all producersOf JavaDataObjects
  *  2    Gandalf   1.1         4/23/99  Petr Hrebejk    
  *  1    Gandalf   1.0         4/23/99  Petr Hrebejk    
  * $ 
