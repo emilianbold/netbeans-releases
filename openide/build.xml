@@ -26,6 +26,8 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="postprocess" classname="org.netbeans.nbbuild.Postprocess" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks" classpath="../nbbuild/nbantext.jar:${binroot}/core/release/lib/ext/regexp.jar"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
+  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
 
   <target name="init-14">
     <available property="jdk14" classname="java.lang.CharSequence" />
@@ -830,6 +832,7 @@ Set jmf.home to the location of your JMF installation to continue."/>
     <delete dir="examplemodules"/>
     <delete dir="compatkit-work"/>
     <delete dir="standalone"/>
+    <delete dir="fake" />
   </target>
   <target name="real-clean" depends="clean" description="As for clean, but also remove example module reload area.">
     <delete dir="examplemodulereload"/>
@@ -886,6 +889,68 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
         <!-- Be safe and give the absolute path here. -->
         <style in="api/doc/changes/apichanges.xml" out="www/apichanges.html" destdir="www" style="${basedir}/api/doc/changes/apichanges.xsl"/>
     </target>
-    <target name="nbm" depends="netbeans" description="Dummy target."/>
+    
+  <!-- creating a fake module for distribution of openide & core as nbm -->
 
+  <target name="nbm" depends="netbeans, preparenbm">
+    <makenbm file="org-openide.nbm"
+             topdir="fake"
+             module="fake/netbeans/modules/org-openide.jar"
+	     homepage="http://openide.${homepage.base}/"
+	     distribution="http://${dist.base}/org-openide.nbm">
+      <license file="${license.file}"/>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+    </makenbm>
+  </target>
+  
+  <target name="preparenbm" depends="vers-prep" >
+    <!-- our fake directory, where we are going to copy all modules -->
+    <mkdir dir="fake" />
+    <copy todir="fake/netbeans">
+        <fileset dir="netbeans" />
+    </copy>
+    
+  
+    <!-- we need to build also core -->
+    <antcall target="buildandcopy">   
+        <param name="dir" value="../core" />
+    </antcall>
+    <antcall target="buildandcopy">   
+        <param name="dir" value="../core/compiler" />
+    </antcall>
+    <antcall target="buildandcopy">   
+        <param name="dir" value="../core/execution" />
+    </antcall>
+    <antcall target="buildandcopy">   
+        <param name="dir" value="../core/ui" />
+    </antcall>
+    <antcall target="buildandcopy">   
+        <param name="dir" value="../core/windows" />
+    </antcall>
+    <antcall target="buildandcopy">   
+        <param name="dir" value="../core/ide" />
+    </antcall>
+    
+    <copy file="org-openide.mf" tofile="org-openide-subst.mf" filtering="on"/>
+    
+    <locjar jarfile="fake/netbeans/modules/org-openide.jar"
+            manifest="org-openide-subst.mf"
+	    compress="false">
+      <locale name="ja"/>
+      
+      <!-- Include just the Bundle.properties describing the module -->
+      <fileset dir="." excludesfile="../nbbuild/standard-jar-excludes.txt" >
+           <include name="org-openide.properties" />
+      </fileset>
+    </locjar>
+    
+    <genlist targetname="nbm" outputfiledir="../nbbuild/netbeans"/>
+  </target>
+  
+  <target name="buildandcopy" >
+    <ant dir="${dir}" />   
+    <copy todir="fake/netbeans">
+        <fileset dir="${dir}/netbeans" />
+    </copy>
+  </target>
 </project>
