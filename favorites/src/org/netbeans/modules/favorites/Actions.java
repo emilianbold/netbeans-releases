@@ -221,6 +221,11 @@ public final class Actions extends Object {
                 }
                 FileObject fo = dataObject.getPrimaryFile();
                 if (fo != null) {
+                    //Check if it is folder. Action is enabled only for folders.
+                    if (!fo.isFolder()) {
+                        return false;
+                    }
+                    //Check if it is root.
                     File file = FileUtil.toFile(fo);
                     if (file != null) {
                         if (file.getParent() == null) {
