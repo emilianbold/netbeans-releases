@@ -67,6 +67,11 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         }
     }
 
+    public void refreshChildren() throws DatabaseException
+    {
+        // refresh action is empty
+    }
+    
     public void addConnection(DBConnection cinfo)
     throws DatabaseException
     {
