@@ -74,6 +74,28 @@ public class FileCommandAction extends ProjectAction implements Presenter.Menu {
         }
         
     }
+    
+    // Implementation of Presenter.Menu ----------------------------------------
+    
+    public JMenuItem getMenuPresenter () {
+        
+        if ( menuPresenter == null ) {
+            menuPresenter = new JMenuItem( this );
+
+            Icon icon = null;
+            // ignore icon if noIconInMenu flag is set
+            if (!Boolean.TRUE.equals( getValue( "noIconInMenu" ) ) ) { 
+                icon = (Icon)getValue( Action.SMALL_ICON );
+            }
+            if ( icon == null ) {
+                icon = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/empty.gif" ) ); // NOI18N
+            }
+            Mnemonics.setLocalizedText( menuPresenter, presenterName );
+            menuPresenter.setIcon( icon );
+        }
+        return menuPresenter;        
+    }
+    
 
     public Action createContextAwareInstance( Lookup actionContext ) {
         
