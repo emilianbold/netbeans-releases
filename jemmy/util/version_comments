@@ -26,7 +26,7 @@ Now NoComponentUnderMouseException exception is produced, if mouse is going to b
 but no java component is under the mouse.
 
 
-3. Some changes in com.sun.jemmy.testing package for stability.
+3. Some changes in org.netbeans.jemmy.testing package for stability.
 
 #VERSION 1.0.2
 
@@ -41,7 +41,7 @@ Two errors were checked:
 		for a mouse operation, if no coordinates were passed.
 
 Functionality to work with JTable component.	
-	New methods in com.sun.jemmy.operators.JTableOperator class.
+	New methods in org.netbeans.jemmy.operators.JTableOperator class.
 		isEditing()
 		isRowSelected(int)
 		isColumnSelected(int)
@@ -201,7 +201,7 @@ Component visualizer.
 Interface and three default implementation allow to define own/on of implemented
 algorithm to prepare component to "user" input.
 Interface:
-com.sun.jemmy.ComponentOperator.ComponentVisualizer
+org.netbeans.jemmy.ComponentOperator.ComponentVisualizer
 Default implementations:
 jemmy/com/sun/jemmy/util/EmptyVisualizer.java - do not do anything.
 jemmy/com/sun/jemmy/util/DefaultVisualizer.java
@@ -413,3 +413,42 @@ jemmy/com/sun/jemmy/ClassReference.java
 One more method: selectItem(String) in
 jemmy/com/sun/jemmy/operators/JComboBoxOperator.java
 
+
+#VERSION 1.0.11
+
+4637840 bugfix
+
+Ability to work with javax.swing.text.StyledDocument:
+
+New interface:
+org.netbeans.jemmy.operators.JTextComponentOperator.TextChooser - 
+	defines text searching criteria
+
+
+New methods:
+org.netbeans.jemmy.operators.JTextComponentOperator.getPositionByText(String, TextChooser, int),
+org.netbeans.jemmy.operators.JTextComponentOperator.getPositionByText(String, TextChooser) - 
+	searches position by text and criteria defined by TextChooser
+
+org.netbeans.jemmy.operators.JTextComponentOperator.getDisplayedText() - 
+	gives text which is actually displayed.
+
+
+New classes:
+org.netbeans.jemmy.operators.JTextPaneOperator - 
+	operator for javax.swing.JTextPane component
+
+jemmy.org.netbeans.jemmy.util.AbstractTextStyleChooser - 
+	abstract org.netbeans.jemmy.operators.JTextComponentOperator.TextChooser
+	simplifying working with StyledDocument
+
+jemmy.org.netbeans.jemmy.util.TextStyleChooser
+	implementation containing most tipical criteria.
+
+
+Other new operators:
+org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator
+org.netbeans.jemmy.operators.JColorChooserOperator
+org.netbeans.jemmy.operators.JPasswordFieldOperator
+org.netbeans.jemmy.operators.JProgressBarOperator
+org.netbeans.jemmy.operators.JRadioButtonMenuItemOperator
