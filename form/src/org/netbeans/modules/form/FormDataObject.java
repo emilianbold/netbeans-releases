@@ -196,6 +196,7 @@ public class FormDataObject extends JavaDataObject {
 
 /*
  * Log
+ *  14   Gandalf   1.13        4/26/99  Ian Formanek    
  *  13   Gandalf   1.12        4/4/99   Ian Formanek    Fixed creation from 
  *       template
  *  12   Gandalf   1.11        3/27/99  Ian Formanek    Removed obsoleted import

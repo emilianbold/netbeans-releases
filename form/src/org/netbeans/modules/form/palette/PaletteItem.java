@@ -1,0 +1,83 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is Forte for Java, Community Edition. The Initial
+ * Developer of the Original Code is Sun Microsystems, Inc. Portions
+ * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
+ */
+
+package com.netbeans.developer.modules.loaders.form.palette;
+
+import java.lang.ref.WeakReference;
+
+import com.netbeans.ide.cookies.InstanceCookie;
+
+/** The PaletteItem encapsulate all objects that can be used as components in the form editor
+*
+* @author   Ian Formanek
+*/
+public class PaletteItem implements java.io.Serializable {
+  /** generated Serialized Version UID */
+//  static final long serialVersionUID = -2098259549820241091L;
+
+// -----------------------------------------------------------------------------
+// Global class variables
+
+  /** Weak reference to shared instance of the JavaBean */
+  private WeakReference sharedReference = null;
+
+  /** The JavaBean Class represented by this PaletteItem */
+  private Class beanClass;
+  
+// -----------------------------------------------------------------------------
+// Constructors
+
+  /** Creates a new PaletteItem */
+  public PaletteItem (InstanceCookie cookie) throws ClassNotFoundException, java.io.IOException {
+    this (cookie.instanceClass ());
+  }
+
+  /** Creates a new PaletteItem for specified JavaBean class 
+  * @param beanClass the string name of the Java Bean's classass
+  */
+  public PaletteItem (String beanName) throws ClassNotFoundException {
+    this (Class.forName (beanName));
+  }
+  
+  /** Creates a new PaletteItem for specified JavaBean class
+  * @param beanClass the Java Bean's class
+  */
+  public PaletteItem (Class beanClass) {
+    this.beanClass = beanClass;
+  }
+  
+// -----------------------------------------------------------------------------
+// Class Methods
+
+  public Object getSharedInstance () throws InstantiationException, IllegalAccessException {
+    Object sharedObject;
+    if ((sharedReference == null) || ((sharedObject = sharedReference.get ()) == null)) {
+      sharedObject = createInstance ();
+      sharedReference = new WeakReference (sharedObject);
+    }
+    
+    return sharedObject;
+  }
+  
+  public Object createInstance () throws InstantiationException, IllegalAccessException {
+    if (beanClass == null) return null;
+    return beanClass.newInstance ();
+  }
+
+}
+
+/*
+ * Log
+ *  1    Gandalf   1.0         4/26/99  Ian Formanek    
+ * $
+ */
