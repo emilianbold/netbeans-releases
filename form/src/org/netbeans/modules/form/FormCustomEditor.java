@@ -56,8 +56,8 @@ public class FormCustomEditor extends JPanel
         initComponents();
 
         advancedButton.setText(FormUtils.getBundleString("CTL_Advanced")); // NOI18N
-        advancedButton.setMnemonic(FormUtils.getBundleString(
-                                      "CTL_Advanced_mnemonic").charAt(0)); // NOI18N
+//        advancedButton.setMnemonic(FormUtils.getBundleString(
+//                                      "CTL_Advanced_mnemonic").charAt(0)); // NOI18N
         if (editor.getProperty() instanceof RADProperty)
             advancedButton.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
