@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
+import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 import org.openide.nodes.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
@@ -140,7 +141,11 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
                 return new Node[0];
             
             Node childNode;
-            if (instance.getStartServer().isAlsoTargetServer(null)) 
+            StartServer startServer = instance.getStartServer();
+            if (startServer == null) {
+                return new Node[0];
+            }
+            if (startServer.isAlsoTargetServer(null)) 
                 childNode = instance.getServer().getNodeProvider().createInstanceTargetNode(instance);
             else
                 childNode = instance.getServer().getNodeProvider().createInstanceNode(instance);
