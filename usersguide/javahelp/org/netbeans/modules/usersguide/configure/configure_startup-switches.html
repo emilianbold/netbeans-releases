@@ -15,13 +15,13 @@
 <p>You can pass startup parameters to the IDE launcher using the <i>IDE-HOME</i><tt>/etc/netbeans.conf</tt> 
   file. The launcher reads this file prior to parsing the command-line
     options, including any parameters you have added.  
-<p>The following table defines the switches
-  you can use with the IDE. 
+<p>The following table defines the switches you can use with the IDE. 
+
 <table border="1" cellpadding="5" cellspacing="0">
   <tr valign="top"> 
-    <td><tt>--help</tt>
-(or<tt> -h</tt>)    
-  <p><blockquote>Prints descriptions of common startup parameters.</blockquote></td></tr>
+    <td><tt>--help</tt> (or<tt> -h</tt>)    
+    <p><blockquote>Prints descriptions of common startup parameters.</blockquote></td>
+  </tr>
 	
   <tr valign="top"> 
     <td><tt>--jdkhome</tt> <i>jdk-home-dir</i></tt>
@@ -34,6 +34,7 @@
       <p>To switch the IDE's user directory, use the <tt>-userdir</tt> switch
         that is detailed below.</p></blockquote></td>
   </tr>
+  
   <tr valign="top"> 
     <td><tt>--cp:p</tt> <i>additional-classpath</i>
     <p><blockquote>Prefixes the specified class path to the IDE's class path.</p></blockquote></td>
@@ -42,11 +43,11 @@
   <tr valign="top"> 
     <td><tt>--cp:a</tt> <i>additional-classpath</i>
     <p><blockquote>Appends the specified class path to the IDE's class path.</p></blockquote></td>
-  </tr>
+  </tr> 
   
   <tr valign="top"> 
     <td><tt>--open </tt><i>file</i>
-    <p><blockquote>Mounts the directory containing the specified file in the Filesystems
+    <p><blockquote>Mounts the directory containing the specified file in the Files
         window and opens the file in the Source Editor.</p></blockquote>
 	  <!--<p>The source code of the test class belonging to the tested class is opened in the Source Editor.</p>-->
     </td>
@@ -54,14 +55,11 @@
   
     <tr valign="top"> 
     <td><tt>--open </tt><i>file:line number</i>
-    <p><blockquote>Mounts the directory containing the specified file in the Filesystems
+    <p><blockquote>Mounts the directory containing the specified file in the Files
       window and opens the file in the Source Editor at the specified line.</p></blockquote></td>
   </tr>
-    <tr valign="top"> 
-    <td><tt>-J</tt><i>jvm-flags</i>
-    <p><blockquote>Passes the specified flags directly to the JVM software.</p></blockquote></td>
-  </tr>
-    <tr valign="top"> 
+  
+  <tr valign="top"> 
     <td><tt>--laf</tt> <i>UI-class-name</i>
     <p><blockquote>Selects the given class as the IDE's look and feel. The following
         are two examples of look and feel classes:
@@ -69,41 +67,61 @@
       <li><tt>com.sun.java.swing.plaf.motif.MotifLookAndFeel</tt></li>
       <li><tt>javax.swing.plaf.metal.MetalLookAndFeel</tt></li>
     </ul></blockquote></td>
-    <tr valign="top"> 
+  </tr>
+    
+  <tr valign="top"> 
     <td><p><tt>--fontsize</tt> <i>size</i></p>
     <p><blockquote>Sets the font size, expressed in points, in the IDE's user interface.
       If this option is not used, the font size is 11 points.</p></blockquote>
       </td>
+  </tr>
 	  
-	<tr valign="top"> 
+  <tr valign="top"> 
     <td><tt>--locale</tt> <i>language</i><tt>[:</tt><i>country</i><tt>[:</tt><i>variant</i><tt>]]</tt>
     <p><blockquote>Activates the specified locale.</p></blockquote></td>
-	<tr valign="top"> 
+  </tr>
+
+  <tr valign="top"> 
     <td><tt>--userdir</tt> <i>userdir</i>
     <p><blockquote>Explicitly specifies the user directory, which is the location
         where user settings are stored.
-          <p>If this option is not used in UNIX<sup>&reg;</sup> environments,
+    <p>If this option is not used in UNIX<sup>&reg;</sup> environments,
             the user directory is set in the <i>HOME</i> directory by default.
             If this option is not set on Microsoft Windows systems, the user
             directory is the one you specified when you first launched the IDE.</p>
-          <p>You can determine the current user directory in the About dialog
+    <p>You can determine the current user directory in the About dialog
             box. Choose Help <img src="../images/arrow.gif" alt="and choose">&nbsp;About.
-      Then click the Detail Tab and look at the User Dir field.</p></blockquote></td>		
+      Then click the Detail Tab and look at the User Dir field.</p></blockquote></td>
+  </tr>
 	  
-	<tr valign="top"> 
+  <tr valign="top"> 
+    <td><tt>-J</tt><i>jvm-flags</i>
+    <p><blockquote>Passes the specified flags directly to the JVM software.</p></blockquote></td>
+  </tr>
+  
+  <tr valign="top"> 
     <td>
       <tt>-J-Dsun.java2d.noddraw=true</tt>
     <p><blockquote>Prevents the use of DirectX for rendering. This switch might prevent
       problems that occur on some Microsoft Windows systems with faulty graphics
       cards.</p></blockquote></td>
-	<tr valign="top"> 
+  </tr>
+      
+  <tr valign="top"> 
     <td><tt>-J-Dnetbeans.debugger.jpda.transport=dt_shmem</tt> <i>userdir</i>
     <p><blockquote>Forces the IDE to use the shared memory connection when starting a debugging
       session with the Debug <img src="../images/arrow.gif" alt="and choose">&nbsp;Start
       command. This parameter has no effect when you attach the debugger to an
       already running process.</p></blockquote></td>	
   </tr>
+  
+  <tr valign="top"> 
+    <td><tt>-J-Dorg.netbeans.spi.java.project.support.ui.packageView.USE_TREE_VIEW=true</tt>
+    <p><blockquote>Displays packages in the Project window in a directory-based view 
+    rather than a package-based view.</p></blockquote></td>	
+  </tr>
 </table>
+
 <table>
   <tr>
     <td valign="top"><img src="../images/tip.gif" alt="Note"></td>
