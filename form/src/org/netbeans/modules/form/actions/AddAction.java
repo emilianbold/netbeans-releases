@@ -106,8 +106,7 @@ public class AddAction extends NodeAction {
 
                         RADComponent newComp =
                             formCookie.getFormModel().getComponentCreator()
-                                .createComponent(paletteItem.getComponentClass(),
-                                                 targetComponent, null);
+                                .createComponent(paletteItem, targetComponent, null);
 
                         if (newComp != null)
                             added = true;

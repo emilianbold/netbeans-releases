@@ -171,7 +171,7 @@ public class SelectLayoutAction extends NodeAction {
                 
                 // set the selected layout on the activated container
                 container.getFormModel().getComponentCreator().createComponent(
-                    paletteItem.getComponentClass(), container, null);
+                    paletteItem, container, null);
             }
         }
     }

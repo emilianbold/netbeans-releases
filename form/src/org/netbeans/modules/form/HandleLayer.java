@@ -194,8 +194,7 @@ class HandleLayer extends JPanel
                             PaletteItem item = CPManager.getDefault().getSelectedItem();
                             if (item != null) {
                                 formDesigner.getModel().getComponentCreator()
-                                    .createComponent(item.getComponentClass(),
-                                                     comp, null);
+                                    .createComponent(item, comp, null);
                                 formDesigner.toggleSelectionMode();
                             }
                         }
@@ -1165,14 +1164,11 @@ class HandleLayer extends JPanel
 
                             if (!mouseOnVisual(lastLeftMousePoint)) {
                                 formDesigner.getModel().getComponentCreator()
-                                    .createComponent(item.getComponentClass(),
-                                                     null, null);
+                                    .createComponent(item, null, null);
                             }
                             else {
                                 formDesigner.getModel().getComponentCreator()
-                                    .createComponent(item.getComponentClass(),
-                                                     hitMetaComp,
-                                                     constraints);
+                                    .createComponent(item, hitMetaComp, constraints);
                             }
                         }
 

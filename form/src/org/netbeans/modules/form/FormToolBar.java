@@ -26,6 +26,7 @@ import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.palette.*;
 import org.netbeans.modules.form.actions.TestAction;
+import org.netbeans.modules.form.actions.InstallBeanAction;
 
 /**
  * ToolBar in the FormDesigner - by default it holds buttons for selection and
@@ -108,20 +109,35 @@ class FormToolBar extends JToolBar {
         paletteButton.getAccessibleContext().setAccessibleDescription(FormUtils.getBundleString("ACSD_AddMode")); // NOI18N
 
         // adding the components to the toolbar
-        JToolBar.Separator separator = new JToolBar.Separator();
-        separator.setOrientation(JSeparator.VERTICAL);
+        JToolBar.Separator separator1 = new JToolBar.Separator();
+        separator1.setOrientation(JSeparator.VERTICAL);
+//        JToolBar.Separator separator2 = new JToolBar.Separator();
+//        separator2.setOrientation(JSeparator.VERTICAL);
+//        JToolBar.Separator separator3 = new JToolBar.Separator();
+//        separator3.setOrientation(JSeparator.VERTICAL);
 
         TestAction testAction = (TestAction) SystemAction.get(TestAction.class);
         JButton testButton = (JButton) testAction.getToolbarPresenter();
         testButton.addMouseListener(listener);
 
+        InstallBeanAction paletteManagerAction = (InstallBeanAction)
+                                      SystemAction.get(InstallBeanAction.class);
+        JButton pmButton = (JButton) paletteManagerAction.getToolbarPresenter();
+
+        add(Box.createHorizontalStrut(4));
+        add(separator1);
+        add(Box.createHorizontalStrut(6));
         add(selectionButton);
         add(connectionButton);
         add(paletteButton);
         add(Box.createHorizontalStrut(6));
-        add(separator);
-        add(Box.createHorizontalStrut(6));
+//        add(separator2);
+//        add(Box.createHorizontalStrut(4));
         add(testButton);
+        add(Box.createHorizontalStrut(6));
+//        add(separator3);
+//        add(Box.createHorizontalStrut(4));
+        add(pmButton);
         add(Box.createHorizontalGlue());
         add(addLabel);
 

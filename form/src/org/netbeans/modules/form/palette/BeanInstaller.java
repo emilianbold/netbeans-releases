@@ -116,9 +116,11 @@ public final class BeanInstaller {
         catch (java.io.IOException ex) {} // should not happen
     }
 
-    /** @return list of ItemInfo */
-    static List findJavaBeans(File[] jarFiles) {
-        ArrayList beans = new ArrayList(100);
+    /** Finds available JavaBeans in given JAR files. Looks for beans
+     * specified in the JAR manifest only.
+     * @return list of ItemInfo */
+    static List findJavaBeansInJar(File[] jarFiles) {
+        Map beans = null;
 
         for (int i=0; i < jarFiles.length; i++) {
             Manifest manifest;
@@ -152,11 +154,34 @@ public final class BeanInstaller {
                 ItemInfo ii = new ItemInfo();
                 ii.classname = classname;
                 ii.source = jarPath;
-                beans.add(ii);
+
+                if (beans == null)
+                    beans = new HashMap(100);
+                beans.put(ii.classname, ii);
             }
         }
 
-        return beans;
+        return beans != null ? new ArrayList(beans.values()) : null;
+    }
+
+    /** Collects all classes under given roots that could be used as JavaBeans.
+     * This method is supposed to search in JAR files or folders containing
+     * built classes.
+     * @return list of ItemInfo */
+    static List findJavaBeans(File[] roots) {
+        Map beans = new HashMap(100);
+
+        for (int i=0; i < roots.length; i++) {
+            FileObject foRoot = FileUtil.toFileObject(roots[i]);
+            if (foRoot != null) {
+                if (FileUtil.isArchiveFile(foRoot))
+                    foRoot = FileUtil.getArchiveRoot(foRoot);
+                if (foRoot != null && foRoot.isFolder())
+                    scanFolderForBeans(foRoot, beans, roots[i].getAbsolutePath());
+            }
+        }
+
+        return new ArrayList(beans.values());
     }
 
     // --------
@@ -197,7 +222,8 @@ public final class BeanInstaller {
         catch (java.io.IOException ex) {} // should not happen
     }
 
-    /** @return paths to project output JARs that are produced for given file
+    /** @return paths to project output roots (JARs) that are produced for
+     * given file (which might be a source, or even part of the output)
      */
     private static String[] getProjectOutput(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
@@ -245,6 +271,40 @@ public final class BeanInstaller {
             outputs[i] = outputFile.getAbsolutePath();
         }
         return outputs;
+    }
+
+    /** Recursive method scanning folders for classes (class files) that could
+     * be JavaBeans. */
+    private static void scanFolderForBeans(FileObject folder, Map beans, String root) {
+        DataObject dobj;
+        SourceCookie source;
+
+        FileObject[] files = folder.getChildren();
+        for (int i=0; i < files.length; i++) {
+            FileObject fo = files[i];
+            if (fo.isFolder()) {
+                scanFolderForBeans(fo, beans, root);
+            }
+            else try {
+                if ("class".equals(fo.getExt()) // NOI18N
+                     && (dobj = DataObject.find(fo)) != null
+                     && (source = (SourceCookie)dobj.getCookie(SourceCookie.class)) != null)
+                {
+                    ClassElement[] cls = source.getSource().getClasses();
+                    for (int j=0; j < cls.length; j++)
+                        if (cls[j].getName().getName().equals(dobj.getName())
+                            && cls[j].isDeclaredAsJavaBean())
+                        {
+                            ItemInfo ii = new ItemInfo();
+                            ii.classname = cls[j].getName().getFullName();
+                            ii.source = root;
+                            beans.put(ii.classname, ii);
+                            break;
+                        }
+                }
+            }
+            catch (org.openide.loaders.DataObjectNotFoundException ex) {} // should not happen
+        }
     }
 
     private static AddToPaletteWizard getAddWizard() {

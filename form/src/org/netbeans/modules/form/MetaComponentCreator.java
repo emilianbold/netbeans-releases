@@ -19,13 +19,21 @@ import javax.swing.undo.*;
 import javax.swing.border.Border;
 import java.util.*;
 import java.text.MessageFormat;
+import java.io.File;
 
 import org.openide.*;
 import org.openide.src.*;
 import org.openide.nodes.Node;
 //import org.openide.cookies.InstanceCookie;
 import org.openide.util.Mutex;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.netbeans.api.project.ant.*;
+import org.netbeans.api.project.*;
+import org.netbeans.api.project.libraries.*;
+import org.netbeans.modules.java.project.ProjectClassPathExtender;
 
+import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
 import org.netbeans.modules.form.codestructure.CodeStructure;
@@ -60,7 +68,7 @@ public class MetaComponentCreator {
 
     /** Creates and adds a new metacomponent to FormModel. The new component
      * is added to target component (if it is ComponentContainer).
-     * @param ic InstanceCookie for creating the bean instance
+     * @param beanClass class of the component to be created
      * @param constraints constraints object (for visual components only)
      * @param targetComp component into which the new component is added
      * @return the component if it was successfully created and added (all
@@ -70,6 +78,28 @@ public class MetaComponentCreator {
                                         RADComponent targetComp,
                                         Object constraints)
     {
+        return createAndAddComponent(
+                   new CreationFactory.InstanceSource(beanClass),
+                   targetComp,
+                   constraints);
+    }
+
+    /** Creates and adds a new metacomponent to FormModel. The new component
+     * is added to target component (if it is ComponentContainer).
+     * @param item PaletteItem describing the component to be created
+     * @param constraints constraints object (for visual components only)
+     * @param targetComp component into which the new component is added
+     * @return the component if it was successfully created and added (all
+     *         errors are reported immediately)
+     */
+    public RADComponent createComponent(PaletteItem item,
+                                        RADComponent targetComp,
+                                        Object constraints)
+    {
+        Class beanClass = prepareClass(item);
+        if (beanClass == null)
+            return null;
+
         return createAndAddComponent(
                    new CreationFactory.InstanceSource(beanClass),
                    targetComp,
@@ -730,27 +760,27 @@ public class MetaComponentCreator {
                              CreationFactory.InstanceSource source,
                              RADComponent targetComp)
     {
-        Class layoutClass = source.getInstanceClass();
-        LayoutManager layoutInstance;
-        if (LayoutManager.class.isAssignableFrom(layoutClass)
-            && source.getInstanceCookie() != null)
-        {
-            try {
-                layoutInstance = (LayoutManager)
-                                 source.getInstanceCookie().instanceCreate();
-            }
-            catch (Exception ex) {
-                showInstErrorMessage(ex);
-                return null;
-            }
-            catch (LinkageError ex) {
-                showInstErrorMessage(ex);
-                return null;
-            }
-        }
-        else layoutInstance = null;
+//        Class layoutClass = source.getInstanceClass();
+//        LayoutManager layoutInstance;
+//        if (LayoutManager.class.isAssignableFrom(layoutClass)
+//            && source.getInstanceCookie() != null)
+//        {
+//            try {
+//                layoutInstance = (LayoutManager)
+//                                 source.getInstanceCookie().instanceCreate();
+//            }
+//            catch (Exception ex) {
+//                showInstErrorMessage(ex);
+//                return null;
+//            }
+//            catch (LinkageError ex) {
+//                showInstErrorMessage(ex);
+//                return null;
+//            }
+//        }
+//        else layoutInstance = null;
 
-        return setContainerLayout(layoutClass, layoutInstance, targetComp);
+        return setContainerLayout(source.getInstanceClass(), null, targetComp);
     }
 
     private RADComponent setContainerLayout(Class layoutClass,
@@ -1033,16 +1063,85 @@ public class MetaComponentCreator {
 
     // --------
 
+    private Class prepareClass(PaletteItem item) {
+        Throwable error = null;
+
+        FileObject formFile = FormEditorSupport.getFormDataObject(formModel)
+                                                  .getFormFile();
+        try {
+            try {
+                return FormUtils.loadClass(item.getComponentClassName(), formFile);
+            }
+            catch (ClassNotFoundException ex) {
+                error = ex;
+            }
+
+            // try to add necessary classpath resources as specified in the
+            // PaletteItem to the project's classpath
+            Project project = FileOwnerQuery.getOwner(formFile);
+            ProjectClassPathExtender projectClassPath = (ProjectClassPathExtender)
+                project.getLookup().lookup(ProjectClassPathExtender.class);
+
+            if (projectClassPath != null) { // this is a j2seproject with classpath
+                String[] cpDesc = item.getClassPathSource();
+                for (int i=0; i < cpDesc.length; i+=2) {
+                    try {
+                        if (PaletteItem.JAR_SOURCE.equals(cpDesc[i])) {
+                            FileObject jarFile = FileUtil.toFileObject(
+                                                        new File(cpDesc[i+1]));
+                            projectClassPath.addArchiveFile(jarFile);
+                        }
+                        else if (PaletteItem.LIBRARY_SOURCE.equals(cpDesc[i])) {
+                            Library lib = LibraryManager.getDefault()
+                                                      .getLibrary(cpDesc[i+1]);
+                            projectClassPath.addLibrary(lib);
+                        }
+                        else if (PaletteItem.PROJECT_SOURCE.equals(cpDesc[i])) {
+                            File jarFile = new File(cpDesc[i+1]);
+                            AntArtifact artifact =
+                                AntArtifactQuery.findArtifactFromFile(jarFile);
+                            projectClassPath.addAntArtifact(artifact);
+                        }
+                    }
+                    catch (java.io.IOException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                }
+
+                // try again to load the class after 
+                try {
+                    return FormUtils.loadClass(item.getComponentClassName(), formFile);
+                }
+                catch (ClassNotFoundException ex) {
+                    error = ex;
+                }
+            }
+        }
+        catch (Exception ex) {
+            error = ex;
+        }
+        catch (LinkageError ex) {
+            error = ex;
+        }
+
+        ErrorManager em = ErrorManager.getDefault();
+        em.annotate(error, FormUtils.getBundleString("MSG_ERR_CannotLoadClass")); // NOI18N
+        em.notify(error);
+
+        return null;
+    }
+
     private static boolean initComponentInstance(
                                RADComponent metacomp,
                                CreationFactory.InstanceSource source)
     {
         try {
-            if (source.getInstanceCookie() != null) {
-                Object instance = source.getInstanceCookie().instanceCreate();
-                metacomp.setInstance(instance);
-            }
-            else metacomp.initInstance(source.getInstanceClass());
+//            if (source.getInstanceCookie() != null) {
+//                Object instance = source.getInstanceCookie().instanceCreate();
+//                metacomp.setInstance(instance);
+//            }
+//            else
+            metacomp.initInstance(source.getInstanceClass());
 
             return true;
         }

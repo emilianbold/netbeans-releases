@@ -37,7 +37,8 @@ class AddToPaletteWizard extends WizardDescriptor {
     private BeanInstaller.ItemInfo[] selectedBeans;
     private String selectedCategory;
 
-    Map libraryMap; // map from (JAR) file names to libraries they belong to
+    Map libraryNameMap; // map from root file (JAR) names to libraries they belong to
+                        // created by ChooseLibraryWizardPanel.storeSettings
 
     private java.awt.Dialog dialog;
 
@@ -75,6 +76,7 @@ class AddToPaletteWizard extends WizardDescriptor {
                                    PaletteUtils.getBundleString("CTL_SelectBeans_Step"), // NOI18N
                                    PaletteUtils.getBundleString("CTL_SelectCategory_Step") }); // NOI18N
 
+        libraryNameMap = null;
         wizardIterator.setSourceType(sourceType);
         updateState();
 

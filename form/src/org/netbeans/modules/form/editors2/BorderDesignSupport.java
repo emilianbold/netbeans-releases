@@ -61,9 +61,9 @@ public class BorderDesignSupport implements FormDesignValue,
 
         Border border = (Border) CreationFactory.createInstance(borderSource);
 
-        if (borderSource.getInstanceCookie() != null)
-            setBorder(border);
-        else
+//        if (borderSource.getInstanceCookie() != null)
+//            setBorder(border);
+//        else
             theBorder = border;
     }
 

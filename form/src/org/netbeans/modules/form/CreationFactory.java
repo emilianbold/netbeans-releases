@@ -19,7 +19,7 @@ import java.lang.reflect.*;
 import javax.swing.*;
 import javax.swing.border.Border;
 import org.openide.util.Mutex;
-import org.openide.cookies.InstanceCookie;
+//import org.openide.cookies.InstanceCookie;
 
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
@@ -43,14 +43,14 @@ public class CreationFactory {
 
     public static final class InstanceSource {
         private Class instClass;
-        private InstanceCookie instCookie;
+//        private InstanceCookie instCookie;
 
         public InstanceSource(Class cls) {
             instClass = cls;
             exchangeClass();
         }
 
-        public InstanceSource(InstanceCookie ic)
+/*        public InstanceSource(InstanceCookie ic)
             throws java.io.IOException, ClassNotFoundException
         {
             instClass = ic.instanceClass();
@@ -58,15 +58,15 @@ public class CreationFactory {
 
             if (!(ic instanceof org.openide.loaders.InstanceDataObject))
                 instCookie = ic; // don't treat InstanceDataObject as instances
-        }
+        } */
 
         public Class getInstanceClass() {
             return instClass;
         }
 
-        public InstanceCookie getInstanceCookie() {
-            return instCookie;
-        }
+//        public InstanceCookie getInstanceCookie() {
+//            return instCookie;
+//        }
 
         private void exchangeClass() {
             // hack - use the class loaded by NbClassLoader, avoid using class
@@ -129,16 +129,16 @@ public class CreationFactory {
     {
         Object instance;
 
-        if (source.getInstanceCookie() != null)
-            instance = source.getInstanceCookie().instanceCreate();
-        else { // create default instance
+//        if (source.getInstanceCookie() != null)
+//            instance = source.getInstanceCookie().instanceCreate();
+//        else { // create default instance
             Class theClass = source.getInstanceClass();
             CreationDescriptor cd =
                 CreationFactory.getDescriptor(theClass);
             instance = cd != null ?
                            cd.createDefaultInstance() :
                            theClass.newInstance();
-        }
+//        }
 
         initAfterCreation(instance);
         return instance;

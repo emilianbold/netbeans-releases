@@ -113,7 +113,7 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
 
             AddToPaletteWizard wizard = (AddToPaletteWizard) settings;
             wizard.setJARFiles(libFiles);
-            wizard.libraryMap = libraryMap;
+            wizard.libraryNameMap = libraryMap;
         }
     }
 
@@ -171,19 +171,19 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             add(label1, gridBagConstraints);
 
-            JButton button1 = new JButton();
-            org.openide.awt.Mnemonics.setLocalizedText(
-                button1, PaletteUtils.getBundleString("CTL_LibrariesManager")); // NOI18N
-            gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 2;
-            gridBagConstraints.gridy = 2;
-            gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-            add(button1, gridBagConstraints);
+//            JButton button1 = new JButton();
+//            org.openide.awt.Mnemonics.setLocalizedText(
+//                button1, PaletteUtils.getBundleString("CTL_LibrariesManager")); // NOI18N
+//            gridBagConstraints = new java.awt.GridBagConstraints();
+//            gridBagConstraints.gridx = 2;
+//            gridBagConstraints.gridy = 2;
+//            gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+//            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+//            add(button1, gridBagConstraints);
 
             JScrollPane scrollpane1 = new javax.swing.JScrollPane();
             scrollpane1.setViewportView(list);
-            scrollpane1.setBorder(new EmptyBorder(0, 0, 0, 0));
+            scrollpane1.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 1;
@@ -193,16 +193,16 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
             gridBagConstraints.weighty = 1.0;
             add(scrollpane1, gridBagConstraints);
 
-            button1.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent ev) {
-                    Library lib = null;
-                    Object[] selected = list.getSelectedValues();
-                    if (selected.length > 0)
-                        lib = (Library) selected[0];
-                    if (LibrariesCustomizer.showCustomizer(lib))
-                        updateLibraryList();
-                }
-            });
+//            button1.addActionListener(new ActionListener() {
+//                public void actionPerformed(ActionEvent ev) {
+//                    Library lib = null;
+//                    Object[] selected = list.getSelectedValues();
+//                    if (selected.length > 0)
+//                        lib = (Library) selected[0];
+//                    if (LibrariesCustomizer.showCustomizer(lib))
+//                        updateLibraryList();
+//                }
+//            });
         }
 
         Library[] getSelectedLibraries() {
@@ -241,7 +241,7 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
     {
         private static final Border hasFocusBorder =
             new LineBorder(UIManager.getColor("List.focusCellHighlight")); // NOI18N
-        private static final Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
+        private static final Border noFocusBorder = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 
         public LibraryRenderer() {
             setOpaque(true);

@@ -19,6 +19,7 @@ import java.awt.Toolkit;
 import java.net.URL;
 import java.util.*;
 import java.io.File;
+import java.text.MessageFormat;
 
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
@@ -27,7 +28,6 @@ import org.openide.filesystems.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.project.libraries.*;
-import org.netbeans.api.project.ant.*;
 import org.netbeans.api.project.*;
 
 /**
@@ -81,12 +81,21 @@ public final class PaletteItem implements Node.Cookie {
         return componentClassName;
     }
 
+    public String getComponentClassName() {
+        return componentClassName;
+    }
+
     /** @return the class of the component represented by this pallete item.
      * May return null - if class loading fails. */
     public Class getComponentClass() {
         if (componentClass == null && lastError == null)
             componentClass = loadComponentClass();
         return componentClass;
+    }
+
+    // [should this really be public?? - MetaComponentCreator needs it now]
+    public String[] getClassPathSource() {
+        return classpath_raw;
     }
 
     /** @return the exception occurred when trying to resolve the component
@@ -152,8 +161,37 @@ public final class PaletteItem implements Node.Cookie {
 //        return componentIsContainer.booleanValue();
 //    }
 
-    String getComponentClassName() {
-        return componentClassName;
+    public String toString() {
+        if (classpath_raw == null || classpath_raw.length < 2) {
+            if (componentClassName != null) {
+                if (componentClassName.startsWith("javax.") // NOI18N
+                        || componentClassName.startsWith("java.")) // NOI18N
+                    return PaletteUtils.getBundleString("MSG_StandardJDKComponent"); // NOI18N
+                if (componentClassName.startsWith("org.netbeans."))
+                    return PaletteUtils.getBundleString("MSG_NetBeansComponent"); // NOI18N
+            }
+        }
+        else if (JAR_SOURCE.equals(classpath_raw[0])) {
+            return MessageFormat.format(
+                PaletteUtils.getBundleString("FMT_ComponentFromJar"), // NOI18N
+                new Object[] { classpath_raw[1] });
+        }
+        else if (LIBRARY_SOURCE.equals(classpath_raw[0])) {
+            return MessageFormat.format(
+                PaletteUtils.getBundleString("FMT_ComponentFromLibrary"), // NOI18N
+                new Object[] { classpath_raw[1] });
+        }
+        else if (PROJECT_SOURCE.equals(classpath_raw[0])) {
+            try {
+                Project project = FileOwnerQuery.getOwner(new File(classpath_raw[1]).toURI());
+                return MessageFormat.format(
+                      PaletteUtils.getBundleString("FMT_ComponentFromProject"), // NOI18N
+                      new Object[] { project.getProjectDirectory().getPath() })
+                    .replace('/', File.separatorChar);
+            }
+            catch (Exception ex) {} // ignore
+        }
+        return PaletteUtils.getBundleString("MSG_UnspecifiedComponent"); // NOI18N
     }
 
     String getDisplayName() {

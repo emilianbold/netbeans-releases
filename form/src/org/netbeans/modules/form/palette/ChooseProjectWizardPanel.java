@@ -15,6 +15,7 @@ package org.netbeans.modules.form.palette;
 
 import java.io.*;
 import javax.swing.JFileChooser;
+import javax.swing.BorderFactory;
 import javax.swing.event.*;
 import java.beans.*;
 import java.util.*;
@@ -47,11 +48,12 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel {
     public java.awt.Component getComponent() {
         if (projectChooser == null) { // create the UI component for the wizard step
             projectChooser = ProjectChooser.projectChooser();
+            projectChooser.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
             // wizard API: set the caption and index of this panel
             projectChooser.setName(PaletteUtils.getBundleString("CTL_SelectProject_Caption")); // NOI18N
             projectChooser.putClientProperty("WizardPanel_contentSelectedIndex", // NOI18N
-                                          new Integer(0));
+                                             new Integer(0));
 
             if (lastDirectoryUsed != null)
                 projectChooser.setCurrentDirectory(new File(lastDirectoryUsed));
@@ -114,7 +116,6 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel {
         catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-
         if (project == null)
             return;
 

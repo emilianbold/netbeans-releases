@@ -15,6 +15,7 @@ package org.netbeans.modules.form.palette;
 
 import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.BorderFactory;
 import javax.swing.event.*;
 import java.awt.event.*;
 import java.beans.*;
@@ -45,6 +46,7 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel {
     public java.awt.Component getComponent() {
         if (fileChooser == null) { // create the UI component for the wizard step
             fileChooser = new JFileChooser(lastDirectoryUsed);
+            fileChooser.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
             // wizard API: set the caption and index of this panel
             fileChooser.setName(PaletteUtils.getBundleString("CTL_SelectJAR_Caption")); // NOI18N
