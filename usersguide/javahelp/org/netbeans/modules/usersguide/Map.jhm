@@ -177,7 +177,6 @@
 <mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="beans/settings.html" />
 
 
-<mapID target="java.intro" url="java/intro.html" />
 <mapID target="java.sync.intro" url="java/synchronizing/intro.html" />
 <mapID target="java.sync.properties" url="java/synchronizing/properties.html" />
 <mapID target="java.sync.new-interface" url="java/synchronizing/new-interface.html" />
@@ -1041,8 +1040,7 @@
    <mapID target="org.openide.src.nodes.InitializerNode" url="java/nodes/constructors.html" />
    
 <!-- Java node property sheet CSH -->
-   <mapID target="org.netbeans.modules.java.JavaNode.textProperties" url="java/encoding.html" />
-   <mapID target="org.netbeans.modules.java.JavaNode.properties" url="java/execution_props.html" />
+   <mapID target="org.netbeans.modules.java.JavaNode.properties" url="java/nodes/source_props.html" />
    <mapID target="org.openide.src.ConstructorProperties" url="java/nodes/constructors_props.html" />
    <mapID target="org.openide.src.MethodProperties" url="java/nodes/methods_props.html" />
    <mapID target="org.openide.src.ClassProperties" url="java/nodes/class_props.html" />
