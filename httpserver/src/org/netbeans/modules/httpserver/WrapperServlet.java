@@ -49,7 +49,16 @@ public class WrapperServlet extends NbBaseServlet {
             return url;
         
         try {
-            String path = HttpServerSettings.mangle (url.toString ());
+            String orig = url.toString ();
+            int slash = orig.indexOf ('/');
+            if (slash >= 0 && orig.charAt (slash+1) == '/') {
+                slash = orig.indexOf (slash+2);
+            }
+            String path;
+            if (slash >=0)
+                path = java.net.URLEncoder.encode (orig.substring (0, slash))+orig.substring (slash);
+            else
+                path = orig;
             URL newURL = new URL ("http", 
                                   InetAddress.getLocalHost ().getHostName (), 
                                   HttpServerSettings.OPTIONS.getPort (),
@@ -81,8 +90,14 @@ public class WrapperServlet extends NbBaseServlet {
             // resource name
             if (path.startsWith ("/")) path = path.substring (1); // NOI18N
             
-            URL innerURL = new URL (HttpServerSettings.demangle (path));
-System.out.println("demangled to "+innerURL.toString ());
+            String internalUrl;
+            int slash = path.indexOf ('/');
+            if (slash >= 0)
+                internalUrl = java.net.URLDecoder.decode (path.substring (0,slash))+path.substring (slash);
+            else
+                internalUrl = java.net.URLDecoder.decode (path);
+            URL innerURL = new URL (internalUrl);
+// System.out.println("demangled to "+innerURL.toString ());
             URLConnection conn = innerURL.openConnection ();
             
             response.setContentType(conn.getContentType ());   // NOI18N
