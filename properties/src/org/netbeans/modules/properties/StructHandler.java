@@ -17,28 +17,31 @@ package org.netbeans.modules.properties;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
-import java.util.LinkedList;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import javax.swing.text.BadLocationException;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
-import org.openide.util.*;
 import org.openide.nodes.Children;
+import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 
 /* Handling of properties structure files
-*
-* @author Petr Hamernik, Petr Jiricka
-*/
+ *
+ * @author Petr Hamernik, Petr Jiricka
+ */
 public class StructHandler extends Element {
 
     /** Appropriate properties file entry. */
     private PropertiesFileEntry pfe;
 
-    /** Keeps parsing task. */
-    RequestProcessor.Task parsingTask;
+    /** Weak reference to parsing task. */
+    WeakReference parsingTaskWRef;
 
     /** Soft reference to the data */
     SoftReference dataRef;
@@ -93,7 +96,7 @@ public class StructHandler extends Element {
             return getData().ps.printString();
         } catch (PropertiesException e) {
             // PENDING - handle it
-            return "";
+            return ""; // NOI18N
         }
     }
 
@@ -101,20 +104,32 @@ public class StructHandler extends Element {
     * and cancels previous parsing task if it is not running yet.
     */
     void autoParse() {
-        if (getStatus()) {
-            // If there is previous parsing task waiting, try to cancel it.
-            if(parsingTask != null)
-                parsingTask.cancel();
-            // Request parsing to start after 500 milliseconds.
-            synchronized (this) {
-                parsingTask = RequestProcessor.postRequest(
+        if(getStatus()) {
+            // Time to wait before start the parsing task.
+            // If no parsing task running yet, set delay time to 0.
+            int delayTime = 0;
+
+            if(parsingTaskWRef != null) {
+                Task previousTask = (Task)parsingTaskWRef.get();
+                if(previousTask != null) {
+                    if(!previousTask.cancel() && !previousTask.isFinished())
+                        // Prevoius task was not cancelled and is running currently -> next task delay time set to 500 milllis.
+                        delayTime = 500;
+                }
+            }
+            
+            // Request parsing to start after 'time' milliseconds.
+            synchronized(this) {
+                parsingTaskWRef = new WeakReference(
+                    RequestProcessor.postRequest(
                         new Runnable() {
                             public void run() {
                                 reparseNowBlocking();
                             }
                         },
-                        500 // Time to wait before start the parsing task.
-                    );
+                        delayTime
+                    )
+                );
             }
         }
     }
