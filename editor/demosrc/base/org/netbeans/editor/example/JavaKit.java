@@ -13,7 +13,7 @@
 
 package org.netbeans.editor.example;
 
-import java.io.File;
+import java.io.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.ActionEvent;
@@ -84,7 +84,11 @@ public class JavaKit extends ExtKit {
 
         if( jcPath != null ) {
             JCBaseFinder finder = new JCBaseFinder();
-            JCFileProvider provider = new JCFileProvider( Editor.getDistributionDirectory().getPath() + File.separator + jcPath );
+	    DAFileProvider provider = new DAFileProvider(
+		new URLAccessor(JavaKit.class.getResource("/" + jcPath + ".jcs")),
+		new URLAccessor(JavaKit.class.getResource("/" + jcPath + ".jcb"))
+	    );
+	    
             finder.append( provider );
             JavaCompletion.setFinder( finder );
         }
@@ -272,4 +276,120 @@ public class JavaKit extends ExtKit {
         }
     }
 
+
+    /**
+     *   DataAccessor for parser DB files via URL streams
+     *
+     *   @author  Petr Nejedly
+     */
+    public static class URLAccessor implements DataAccessor {
+    
+        URL url;
+        InputStream stream;
+	int streamOff;
+        int actOff;
+
+        public URLAccessor(URL url) {
+            this.url = url;
+        }
+    
+        /** Not implemented
+         */
+        public void append(byte[] buffer, int off, int len) throws IOException {
+	    throw new IllegalArgumentException("read only!");
+        }
+    
+        /**
+         * Reads exactly <code>len</code> bytes from this file resource into the byte
+         * array, starting at the current file pointer. This method reads
+         * repeatedly from the file until the requested number of bytes are
+         * read. This method blocks until the requested number of bytes are
+         * read, the end of the inputStream is detected, or an exception is thrown.
+         *
+         * @param      buffer     the buffer into which the data is read.
+         * @param      off        the start offset of the data.
+         * @param      len        the number of bytes to read.
+         */
+        public void read(byte[] buffer, int off, int len) throws IOException {
+	    InputStream str = getStream(actOff);
+	    while (len > 0) {
+		int count = str.read(buffer, off, len);
+		streamOff += count;
+		off += count;
+		len -= count;
+	    }
+        }
+    
+        /** Opens DataAccessor file resource 
+         *  @param requestWrite if true, file is opened for read/write operation.
+         */
+        public void open(boolean requestWrite) throws IOException {
+	    if(requestWrite) throw new IllegalArgumentException("read only!");
+        }
+    
+        /** Closes DataAccessor file resource  */
+        public void close() throws IOException {
+            if (stream!=null) {
+                stream.close();
+        	stream = null;
+	    }
+        }
+    
+        /**
+         * Returns the current offset in this file. 
+         *
+         * @return     the offset from the beginning of the file, in bytes,
+         *             at which the next read or write occurs.
+         */
+        public long getFilePointer() throws IOException {
+           return actOff;
+        }
+    
+        /** Clears the file and sets the offset to 0 */
+        public void resetFile() throws IOException {
+            throw new IllegalArgumentException("read only!");
+        }
+    
+        /**
+         * Sets the file-pointer offset, measured from the beginning of this
+         * file, at which the next read or write occurs.
+         */    
+        public void seek(long pos) throws IOException {
+            actOff = (int)pos;
+        }
+
+        /** Gets InputStream prepared for reading from <code>off</code> offset position*/
+        private InputStream getStream(int off) throws IOException {
+	    if (streamOff > off && stream != null) {
+		stream.close();
+		stream = null;
+	    }
+	    
+            if(stream == null) {
+		stream = url.openStream();
+		streamOff = 0;
+	    }
+	    
+	    while (streamOff < off) {
+		long len = stream.skip(off - streamOff);
+		streamOff += (int)len;
+		if (len == 0) throw new IOException("EOF");
+	    }
+
+	    return stream;
+        }    
+    
+        public int getFileLength() {
+	    try {
+		int l =  url.openConnection().getContentLength();
+		return l;
+	    } catch (IOException e) {
+		return 0;
+	    }
+        }
+    
+        public String toString() {
+            return url.toString();
+        }
+    }
 }

@@ -40,16 +40,13 @@ Microsystems, Inc. All Rights Reserved.
 	   manifest="manifest.mf"
            excludesfile="../../nbbuild/standard-jar-excludes.txt"
            compress="false">
+     <fileset dir="../release/system" />
      </jar>
   </target>
 
    <target name="standalone" depends="jars">
      <copy file="base/run.sh" tofile="${target_dir}/run.sh" />
      <chmod file="${target_dir}/run.sh" perm="a+x"/>
-     <mkdir dir="${target_dir}/ParserDB" />
-     <copy todir="${target_dir}/ParserDB">
-        <fileset dir="../release/system/ParserDB" />
-     </copy>
 
      <mkdir dir="${target_dir}/DTDs" />
      <copy todir="${target_dir}/DTDs">
