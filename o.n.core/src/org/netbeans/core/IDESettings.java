@@ -34,6 +34,7 @@ import org.openide.loaders.DataNode;
 import org.openide.nodes.Node;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -311,17 +312,60 @@ public class IDESettings extends SystemOption {
 
     /** Getter for preffered web browser.
      *
-     * @return prefered browser, may return null if no browser is selected 
+     * First time when this function is called Lookup is used 
+     * to find prefered browser factory in a browser registry.
+     * 
+     * @return prefered browser, 
+     * may return null if it is not possible to get the browser
      */
     public HtmlBrowser.Factory getWWWBrowser() {
         try {
             Node.Handle hdl = (Node.Handle) getProperty(PROP_WWWBROWSER);
-            if (hdl == null)
+            if (hdl == null) {
+                Lookup.Result res = Lookup.getDefault ().lookup (new Lookup.Template (HtmlBrowser.Factory.class));
+                java.util.Iterator it = res.allInstances ().iterator ();
+                while (it.hasNext ()) {
+                    Object brow = it.next ();
+                    
+                    // check if it is not set to be hidden
+                    FileObject fo = TopManager.getDefault ().getRepository ()
+                        .getDefaultFileSystem ().findResource ("Services/Browsers");   // NOI18N
+                    DataFolder folder = DataFolder.findFolder (fo);
+                    DataObject [] dobjs = folder.getChildren ();
+                    for (int i = 0; i<dobjs.length; i++) {
+                        Object o = null;
+                        try {
+                            InstanceCookie cookie = (InstanceCookie)dobjs[i].getCookie (InstanceCookie.class);
+                            if (cookie == null)
+                                continue;
+                            
+                            o = cookie.instanceCreate ();
+                            if (o != null 
+                            && o.equals (brow) 
+                            && !Boolean.TRUE.equals (dobjs[i].getPrimaryFile ().getAttribute ("hidden"))) { // NOI18N see LookupNode.EA_HIDDEN
+                                return (HtmlBrowser.Factory)brow;
+                            }
+                        }
+                        // exceptions are thrown if module is uninstalled 
+                        catch (java.io.IOException ex) {}
+                        catch (ClassNotFoundException ex) {}
+                    }
+                    
+                }
                 return null;
+            }
             
             Node n = hdl.getNode ();
             Object o = ((InstanceCookie) n.getCookie (InstanceCookie.class)).instanceCreate ();
             return (HtmlBrowser.Factory)o;
+        }
+        catch (java.io.IOException ex) {
+            // handle is invalid or instanceCreate failed - uninstalled module
+            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, ex);
+        }
+        catch (ClassNotFoundException ex) {
+            // instanceCreate failed - uninstalled module
+            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, ex);
         }
         catch (Exception ex) {
             TopManager.getDefault ().notifyException (ex);
@@ -348,19 +392,25 @@ public class IDESettings extends SystemOption {
             DataFolder folder = DataFolder.findFolder (fo);
             DataObject [] dobjs = folder.getChildren ();
             for (int i = 0; i<dobjs.length; i++) {
-                Object o = ((InstanceCookie)dobjs[i].getCookie (InstanceCookie.class)).instanceCreate ();
-                if (o != null) {
-                    if (o.equals (brow)) {
-                        putProperty(PROP_WWWBROWSER, dobjs[i].getNodeDelegate ().getHandle (), true); 
-                        // mark this object so it can be found by modules (utilities, open URL in new window)
-                        dobjs[i].getPrimaryFile ().setAttribute ("DEFAULT_BROWSER", Boolean.TRUE);
-                    }
-                    else {
-                        // unset default browser attribute in other browsers
-                        Object attr = dobjs[i].getPrimaryFile ().getAttribute ("DEFAULT_BROWSER");
-                        if ((attr != null) && (attr instanceof Boolean))
-                            dobjs[i].getPrimaryFile ().setAttribute ("DEFAULT_BROWSER", Boolean.FALSE);
-                    }
+                Object o = null;
+                try {
+                    o = ((InstanceCookie)dobjs[i].getCookie (InstanceCookie.class)).instanceCreate ();
+                }
+                // exceptions are thrown if module is uninstalled 
+                // we still need to remove default_browser mark in such case
+                catch (java.io.IOException ex) {}
+                catch (ClassNotFoundException ex) {}
+                
+                if (o != null && o.equals (brow)) {
+                    putProperty(PROP_WWWBROWSER, dobjs[i].getNodeDelegate ().getHandle (), true); 
+                    // mark this object so it can be found by modules (utilities, open URL in new window)
+                    dobjs[i].getPrimaryFile ().setAttribute ("DEFAULT_BROWSER", Boolean.TRUE);
+                }
+                else {
+                    // unset default browser attribute in other browsers
+                    Object attr = dobjs[i].getPrimaryFile ().getAttribute ("DEFAULT_BROWSER");
+                    if ((attr != null) && (attr instanceof Boolean))
+                        dobjs[i].getPrimaryFile ().setAttribute ("DEFAULT_BROWSER", Boolean.FALSE);
                 }
             }
         }
