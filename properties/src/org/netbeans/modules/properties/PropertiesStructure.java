@@ -61,6 +61,7 @@ public class PropertiesStructure extends Element {
      */
     public void update(PropertiesStructure struct) {
         synchronized(getParent()) {
+        synchronized(getParentBundleStructure()) {
             boolean structChanged = false;
             Element.ItemElem curItem;
             Element.ItemElem oldItem;
@@ -103,6 +104,7 @@ public class PropertiesStructure extends Element {
                     itemChanged((Element.ItemElem) it.next());
                 }
             }
+        }
         }
     }
 
@@ -170,6 +172,7 @@ public class PropertiesStructure extends Element {
      */                         
     public boolean renameItem(String oldKey, String newKey) {
         synchronized(getParent()) {
+        synchronized(getParentBundleStructure()) {
             Element.ItemElem item = getItem(newKey);
             if (item == null) {
                 item = getItem(oldKey);
@@ -185,12 +188,14 @@ public class PropertiesStructure extends Element {
                 return false;
             }
         }
+        }
     }
 
     /** Deletes an item from the structure, if exists.
      * @return <code>true<code> if the item has been deleted successfully, <code>false</code> otherwise */
     public boolean deleteItem(String key) {
         synchronized(getParent()) {
+        synchronized(getParentBundleStructure()) {
             Element.ItemElem item = getItem(key);
             
             if (item == null) {
@@ -208,6 +213,7 @@ public class PropertiesStructure extends Element {
                 ErrorManager.getDefault().notify(e);
                 return false;
             }
+        }
         }
     }
 
@@ -230,6 +236,7 @@ public class PropertiesStructure extends Element {
         // find the position where to add it
         try {
             synchronized(getParent()) {
+            synchronized(getParentBundleStructure()) {
                 PositionBounds pos = getBounds();
                 
                 PositionBounds itemBounds
@@ -243,6 +250,7 @@ public class PropertiesStructure extends Element {
                 structureChanged();
                 
                 return true;
+            }
             }
         } catch (IOException ioe) {
             return false;

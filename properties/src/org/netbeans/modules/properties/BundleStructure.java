@@ -16,6 +16,7 @@ package org.netbeans.modules.properties;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -61,7 +62,7 @@ public class BundleStructure {
      *
      * @see  #buildKeySet
      */
-    private ArrayList keyList;
+    private List keyList;
     
     /**
      * Compartor which sorts keylist.
@@ -367,8 +368,8 @@ public class BundleStructure {
      *
      * @see  #keyList
      */
-    private void buildKeySet() {
-        keyList = new ArrayList() {
+    private synchronized void buildKeySet() {
+        List keyList = new ArrayList() {
             public boolean equals(Object obj) {
                 if (!(obj instanceof ArrayList)) {
                     return false;
@@ -408,6 +409,7 @@ public class BundleStructure {
         }
         
         Collections.sort(keyList, comparator);
+        this.keyList = keyList;
     }
 
     /**
@@ -464,7 +466,7 @@ public class BundleStructure {
         // PENDING - events should be finer
         // find out whether global key table has changed and fire a change
         // according to that
-        ArrayList oldKeyList = keyList;         
+        List oldKeyList = keyList;         
         
         buildKeySet();
         if (!keyList.equals(oldKeyList)) {
