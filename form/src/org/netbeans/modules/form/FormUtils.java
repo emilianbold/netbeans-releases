@@ -1120,53 +1120,35 @@ public class FormUtils
 
     // ---------
 
-    /** Loads a class of a component to be used in the form editor. The class
-     * might be either a support class being part of the IDE, or a user class
-     * defined externally (by a project classpath). This methods tries both.
+    /** Loads a class of a component to be used (instantiated) in the form
+     * editor. The class might be either a support class being part of the IDE,
+     * or a user class defined externally (by a project classpath). This methods
+     * tries both ways. There are also separate loadSystemClass and
+     * loadUserClass methods available.
      * @param name String name of the class
      * @param formFile FileObject representing the form file as part of a project
      */
     public static Class loadClass(String name, FileObject formFile)
         throws ClassNotFoundException
     {
-        Class theClass = null;
-
-        ClassNotFoundException exception = null;
-        LinkageError error = null;
-
-        // first try the system class loader (for Swing components and IDE stuff
+        // first try the system classloader (for Swing components and IDE stuff
         // like property editors, form module support classes, etc)
         try {
-            theClass = loadSystemClass(name);
+            return loadSystemClass(name);
         }
         catch (ClassNotFoundException ex) {
-            exception = ex;
+            // ignore, likely this is not the right classloader
         }
         catch (LinkageError ex) {
-            error = ex;
+            // some problem during loading [should not be left uncaught here?]
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
 
-        // second try the project class loader
-        if (theClass == null && formFile != null) {
-            try {
-                theClass = loadUserClass(name, formFile);
-            }
-            catch (ClassNotFoundException ex) {
-                exception = ex;
-            }
-            catch (LinkageError ex) {
-                error = ex;
-            }
-        }
+        // second try the project class loader (the class is not an IDE class)
+        if (formFile != null)
+            return loadUserClass(name, formFile);
 
-        if (theClass != null)
-            return theClass; // success
-
-        if (exception != null)
-            throw exception;
-        if (error != null)
-            throw error;
-        throw new ClassNotFoundException();
+        throw new ClassNotFoundException(); // classpath unknown
     }
 
     public static Class loadClass(String name, FormModel form)
@@ -1193,11 +1175,38 @@ public class FormUtils
     public static Class loadUserClass(String name, FileObject formFile)
         throws ClassNotFoundException
     {
-        ClassPath cp = ClassPath.getClassPath(formFile, ClassPath.COMPILE);
-        if (cp == null)
-            throw new ClassNotFoundException();
+        ClassNotFoundException cnfe = null;
+        ClassLoader loader;
 
-        return cp.getClassLoader(true).loadClass(name);
+        // first try compilation classpath of the project
+        loader = ClassPath.getClassPath(formFile, ClassPath.COMPILE)
+                                .getClassLoader(true);
+        try {
+            return loader.loadClass(name);
+        }
+        catch (ClassNotFoundException ex) {
+            cnfe = ex;
+        }
+        // LinkageError left uncaught
+
+        // try execution classpath - in case the class is within the same project
+        loader = ClassPath.getClassPath(formFile, ClassPath.EXECUTE)
+                                 .getClassLoader(true);
+        try {
+            Class cls = loader.loadClass(name);
+            // a source must be available for the class in the project
+            String resourceName = name.replace('.', '/') + ".java"; // NOI18N
+            if (ClassPath.getClassPath(formFile, ClassPath.SOURCE)
+                                   .findResource(resourceName) != null)
+                return cls;
+        }
+        catch (ClassNotFoundException ex) {
+            // report failure against compilation classpath (just annotate by this one)
+            ErrorManager.getDefault().annotate(cnfe, ex);
+        }
+        // LinkageError left uncaught
+
+        throw cnfe;
     }
 
 //    public static Class loadUserClass(String name, FormModel form)
