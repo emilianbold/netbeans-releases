@@ -7,47 +7,47 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.projects;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
-import junit.framework.*;
-import org.netbeans.junit.*;
+import java.util.List;
+import java.util.Map;
+import java.util.jar.Manifest;
+import junit.framework.Test;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.cookies.InstanceCookie;
-
-import org.openide.filesystems.*;
-
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
-/** Checks the consistence of System File System content.
+/** Checks consistency of System File System contents.
  *
  * @author Jaroslav Tulach
  */
 public class ValidateLayerConsistencyTest extends NbTestCase {
     
-    /** Creates a new instance of SFSTest */
     public ValidateLayerConsistencyTest(String name) {
         super (name);
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(ValidateLayerConsistencyTest.class);
-        
-        return suite;
+        return new NbTestSuite(ValidateLayerConsistencyTest.class);
     }
 
     protected boolean runInEQ() {
@@ -55,9 +55,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
     
     public void testAreAttributesFine () {
-        java.util.ArrayList errors = new java.util.ArrayList ();
+        List/*<String>*/ errors = new ArrayList();
         
-        java.util.Enumeration files = Repository.getDefault().getDefaultFileSystem().getRoot ().getChildren(true);
+        Enumeration/*<FileObject>*/ files = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren(true);
         while (files.hasMoreElements()) {
             FileObject fo = (FileObject)files.nextElement();
             
@@ -73,7 +73,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 continue;
             }
             
-            java.util.Enumeration attrs = fo.getAttributes();
+            Enumeration/*<String>*/ attrs = fo.getAttributes();
             while (attrs.hasMoreElements()) {
                 String name = (String)attrs.nextElement();
                 
@@ -90,10 +90,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     
     
     public void testContentCanBeRead () {
-        java.util.ArrayList errors = new java.util.ArrayList ();
+        List/*<String>*/ errors = new ArrayList();
         byte[] buffer = new byte[4096];
         
-        java.util.Enumeration files = Repository.getDefault().getDefaultFileSystem().getRoot ().getChildren(true);
+        Enumeration/*<FileObject>*/ files = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren(true);
         while (files.hasMoreElements()) {
             FileObject fo = (FileObject)files.nextElement();
             
@@ -116,7 +116,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     assertEquals ("The amount of data in stream is the same as the length", size, read);
                 }
                 
-            } catch (java.io.IOException ex) {
+            } catch (IOException ex) {
                 errors.add ("\n    File " + fo + " cannot be read " + ex);
             }
         }
@@ -127,9 +127,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
     
     public void testInstantiateAllInstances () {
-        java.util.ArrayList errors = new java.util.ArrayList ();
+        List/*<String>*/ errors = new ArrayList();
         
-        java.util.Enumeration files = Repository.getDefault().getDefaultFileSystem().getRoot ().getChildren(true);
+        Enumeration/*<FileOject>*/ files = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren(true);
         while (files.hasMoreElements()) {
             FileObject fo = (FileObject)files.nextElement();
             
@@ -154,65 +154,64 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
     }
     
-    public void testIfOneFileIsDefinedTwiceByDifferentModulesTheyNeedToHaveMutualDependencyBetweenEachOther () throws Exception {
-        ClassLoader l = (ClassLoader)org.openide.util.Lookup.getDefault ().lookup (ClassLoader.class);
+    public void testIfOneFileIsDefinedTwiceByDifferentModulesTheyNeedToHaveMutualDependency() throws Exception {
+        ClassLoader l = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
         assertNotNull ("In the IDE mode, there always should be a classloader", l);
         
         // String -> List<Modules>
-        java.util.HashMap files = new java.util.HashMap ();
+        Map/*<String,List<String>>*/ files = new HashMap();
         
         boolean atLeastOne = false;
-        java.util.Enumeration en = l.getResources ("META-INF/MANIFEST.MF");
+        Enumeration/*<URL>*/ en = l.getResources("META-INF/MANIFEST.MF");
         while (en.hasMoreElements ()) {
-            java.net.URL u = (java.net.URL)en.nextElement ();
-            java.util.jar.Manifest mf = new java.util.jar.Manifest (u.openStream ());
+            URL u = (URL) en.nextElement();
+            Manifest mf = new Manifest(u.openStream());
             String module = mf.getMainAttributes ().getValue ("OpenIDE-Module");
             if (module == null) continue;
             String layer = mf.getMainAttributes ().getValue ("OpenIDE-Module-Layer");
             if (layer == null) continue;
             
             atLeastOne = true;
-            java.net.URL layerURL = new java.net.URL (u, "../" + layer);
-            org.openide.filesystems.XMLFileSystem fs = new org.openide.filesystems.XMLFileSystem (layerURL);
+            URL layerURL = new URL(u, "../" + layer);
+            FileSystem fs = new XMLFileSystem(layerURL);
             
-            java.util.Enumeration all = fs.getRoot ().getChildren (true);
+            Enumeration/*<FileObject>*/ all = fs.getRoot().getChildren(true);
             while (all.hasMoreElements ()) {
                 FileObject fo = (FileObject)all.nextElement ();
                 if (!fo.isData ()) continue;
                 
-                java.util.List list = (java.util.List)files.get (fo.getPath ());
+                List/*<String>*/ list = (List) files.get(fo.getPath());
                 if (list == null) {
-                    list = new java.util.ArrayList ();
+                    list = new ArrayList();
                     files.put (fo.getPath (), list);
                 }
                 list.add (module);
             }
         }
         
-        java.util.Iterator it = files.entrySet ().iterator ();
+        Iterator/*<Map.Entry<String,List<String>>>*/ it = files.entrySet().iterator();
         StringBuffer sb = new StringBuffer ();
         while (it.hasNext ()) {
-            java.util.Map.Entry e = (java.util.Map.Entry)it.next ();
-            java.util.List list = (java.util.List)e.getValue ();
+            Map.Entry/*<String,List<String>>*/ e = (Map.Entry) it.next();
+            List/*<String>*/ list = (List) e.getValue();
             if (list.size () == 1) continue;
             
-            Lookup.Result res = Lookup.getDefault ().lookup (new Lookup.Template (ModuleInfo.class));
+            Lookup.Result/*<ModuleInfo>*/ res = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class));
             assertFalse ("Some modules found", res.allInstances ().isEmpty ());
             
-            java.util.Iterator names = new java.util.ArrayList (list).iterator ();
+            Iterator/*<String>*/ names = new ArrayList(list).iterator();
             while (names.hasNext ()) {
                 String name = (String)names.next ();
-                java.util.Iterator modules = res.allInstances ().iterator ();
+                Iterator/*<ModuleInfo>*/ modules = res.allInstances().iterator();
                 while (modules.hasNext ()) {
                     ModuleInfo info = (ModuleInfo)modules.next ();
                     if (name.equals (info.getCodeName ())) {
-                        Iterator deps = info.getDependencies ().iterator ();
+                        // remove dependencies
+                        Iterator/*<Dependency>*/ deps = info.getDependencies().iterator();
                         while (deps.hasNext ()) {
                             Dependency d = (Dependency)deps.next ();
                             list.remove (d.getName ());
                         }
-                        // remove dependencies
-                        list.removeAll (info.getDependencies ());
                     }
                 }
             }
