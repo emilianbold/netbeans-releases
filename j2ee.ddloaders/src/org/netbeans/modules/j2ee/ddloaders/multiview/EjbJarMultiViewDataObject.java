@@ -174,6 +174,13 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     }
 
     public EjbJar getEjbJar() {
+        if (ejbJar == null) {
+            try {
+                parseDocument(false);
+            } catch (IOException e) {
+                Utils.notifyError(e);
+            }
+        }
         waitForSync();
         return ejbJar;
     }
@@ -431,6 +438,9 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     protected String generateDocumentFromModel() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
+            if (ejbJar == null) {
+                parseDocument(false);
+            }
             ejbJar.write(out);
             out.close();
             return out.toString("UTF8"); //NOI18N
@@ -529,7 +539,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 
     private int getBeanInterfaceType(String interfaceName) {
         int interfaceType = -1;
-        EntityAndSession[] beans = ejbJar.getEnterpriseBeans().getSession();
+        EntityAndSession[] beans = getEjbJar().getEnterpriseBeans().getSession();
         for (int i = 0; i < beans.length; i++) {
             if (beans[i].getHome() != null &&
                     beans[i].getHome().equals(interfaceName)) {
