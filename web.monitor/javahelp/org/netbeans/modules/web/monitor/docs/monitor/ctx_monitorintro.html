@@ -8,7 +8,7 @@ license terms.
 <html>
 <head>
 <meta name="lastupdated" 
-content="18april02">
+content="20mar2003">
 
 
 <title>Monitoring Data Flow on the Web Server</title>
@@ -34,18 +34,26 @@ rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
   JSP and servlet file execution at any time. </p>
 <p><b>To start the HTTP Monitor:</b></p>
 <ul>
-  <li> From the main menu bar, choose Debug <img src="../images/arrow.gif" 
-width="6" height="13" alt="and choose"> HTTP Monitor or View <img src="../images/arrow.gif" 
-width="6" height="13" alt="and choose"> HTTP Monitor</li>
-  <li>In the Debugging workspace, on the Debug (Full) toolbar, click <img src="../images/monicon.gif" width="21" height="20">.</li>
-  <li>The HTTP starts automatically when you debug JSP pages and servlets.</li>
+  <li> From the main menu bar, choose Debug&nbsp;<img src="../images/arrow.gif" 
+width="6" height="13" alt="and choose">&nbsp;HTTP Monitor or View&nbsp;<img src="../images/arrow.gif" 
+width="6" height="13" alt="and choose">&nbsp;HTTP Monitor</li>
+  <li>In the Debugging workspace, on the Debug (Full) toolbar, click&nbsp;<img src="../images/monicon.gif" width="21" height="20">.</li>
+  <li>The HTTP Monitor starts automatically when you debug JSP pages and servlets.</li>
 </ul>
-<p>The HTTP Monitor starts the HTTP server automatically. If the internal HTTP 
-  service is not running, HTTP Monitor will automatically start it when attempting 
-  to record or view data. </p>
-<p>Note that the HTTP server is not the same as the Internal Tomcat web server 
-  instance, and therefore cannot be configured using the Tomcat node in the Server 
-  Registry on the Runtime pane of the Explorer.</p>
+<p>If the internal HTTP server is not running, the HTTP Monitor automatically 
+  starts the server when attempting to record or view data.</p>
+<p>To configure the HTTP Server,
+  right-click the HTTP Server node in the Runtime tab, and choose Properties.
+  Note that the HTTP server is not the same as a web server 
+  instance, and therefore cannot be configured using a web server node in the Server 
+  Registry on the Runtime tab of the Explorer. 
+</p>
+<p><b>Troubleshooting</b></p>
+<p>If the HTTP Monitor is not recording, you might need to add an HTTP Monitor
+filter to the web application's deployment descriptor
+(<tt>WEB-INF/web.xml</tt>). For more information, see
+<a href="servconfig.html">Deploying the HTTP Monitor for a Web Application</a>.
+</p>
 <table>
 <tr>
 <th colspan=2 align=left><a name="seealso">See Also</a></th>

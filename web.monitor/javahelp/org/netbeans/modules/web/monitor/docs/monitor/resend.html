@@ -6,7 +6,7 @@ Use is subject to license terms.
 > -->
 <html>
 <head>
-<meta name="lastupdated" content="19feb03">
+<meta name="lastupdated" content="21mar03">
 
 <title>Editing and Replaying Requests</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -19,122 +19,127 @@ Use is subject to license terms.
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>You can replay HTTP requests associated with both the Current Records and Saved 
-  Records subcategories of the All Records tree view. The executor resends the 
-  original HTTP request.</p>
+<p>You can replay HTTP requests that are associated with the current records and 
+  the saved records in the HTTP Monitor window. When you replay a request, the 
+  response appears in the web browser. Note that if the server or the web module 
+  is not running, an error message is displayed. If this happens, re-execute the 
+  module on the target server. </p>
 <table>
   <tr> 
-    <td valign="top"><img src="../images/tip.gif" alt="Tip"></td>
+    <td valign="top"><img src="../images/warn.gif" alt="Tip"width="16" height="16">
+    </td>
     <td valign=top align=left> 
-      <p>Before resending requests, verify that the current web module is being 
-        executed on the web server. Also, note that the cache configuration in 
+        Note that the cache configuration in 
         certain browsers can cause problems with replaying requests. If you encounter 
-        such problems, press Reload in your browser to bypass the cache and resend 
-        the request.</p>
+        such problems, bypass the cache by clicking Reload on your browser
+        after the monitor issues the request.
       </td>
   </tr>
 </table>
-<p><b>To resend an HTTP Monitor data record to the server:</b></p>
-<ol>
-  <li>Right-click the monitor data record to be replayed.</li>
-  <li>Choose Replay from the contextual menu. The page resulting from the request 
-    appears in the browser you chose.</li>
-</ol>
 <table>
   <tr> 
     <td valign="top"><img src="../images/warn.gif" width="16" height="16"></td>
     <td valign=top align=left> 
-      <p>Note that if a servlet or JSP page reads data directly from the <code>ServletInputStream</code> 
+      If a servlet or JSP page reads data directly from the <code>ServletInputStream</code> 
         as opposed to using methods from the <code>getParameter</code> family, 
-        requests to that resource will not replay correctly.</p>
+        requests to that resource will not replay correctly.
     </td>
   </tr>
 </table>
-<p><b>To edit and then resend a monitor data record:</b></p>
+<p><b>To replay an HTTP request on the server:</b></p>
 <ol>
-  <li>Right-click the monitor data record to be edited.</li>
+  <li>In the HTTP Monitor Records pane, right-click the monitor record 
+      that you want to replay.</li>
+  <li>Choose Replay from the contextual menu. The page resulting from the request 
+      appears in the web browser.</li>
+</ol>
+<p><b>To edit and replay an HTTP request:</b></p>
+<ol>
+  <li>In the HTTP Monitor Records pane, right-click the record that 
+      you want to edit.</li>
   <li>Choose Edit and Replay from the contextual menu. The Edit and Replay dialog 
     box appears. It enables you to modify query parameters, request information, 
     or headers before sending the request. You can also send the request to a 
     different server.</li>
-  <li>Edit information about the request.</li>
-  <li>Click Send HTTP request.</li>
+  <li>Edit information about the request. The following sections 
+    describe the information that you can edit 
+    in the HTTP Monitor's Edit and Replay dialog  box.</li>
+  <li>Click Send HTTP Request.</li>
 </ol>
-<p>When editing and resending a record, there is a variety of information which 
-  you can edit. The sections below describe the information which can be edited 
-  in HTTP Monitor's Edit and replay dialog.</p>
 <p><b>To edit query parameters:</b></p>
 <ol>
-  <li>Click the Query tab, and then click the Add parameter button. The Add Parameter 
-    dialog box appears.</li>
-  <li> Type in a name and value, and click OK. The query parameters appear in 
-    the Edit and Replay dialog box.</li>
-  <li>To delete a query parameter, select the parameter, and then click Delete 
-    parameters. Use the Shift or Control key in conjunction with Delete parameters 
-    to delete multiple parameters.</li>
+  <li>Click the Query tab.</li>
+  <li>To add a query, click Add Parameter. The Add Parameter 
+    dialog box appears. Type in a name and value, and click OK. The query parameters appear in 
+    the Query tab.</li>
+  <li>To edit a query parameter, click the elipsis button next to the parameter.
+  <li>To delete a query parameter, select the parameter and click Delete 
+    Parameters. Use the Shift or Control key to select multiple parameters
+    for deletion.
+  </li>
 </ol>
 <p><b>To edit request data:</b></p>
 <ol>
-  <li>To edit a request parameter, such as Request URI or Protocol, click the 
-    Request tab. Click the ellipsis button next to the desired request parameter. 
-    The Edit Value dialog box appears.</li>
-  <li>Type in a value, and click OK. The edited request parameter values appear 
-    in the Edit and Replay dialog box.</li>
-  <li>To change a request method, select the desired method from the combo box 
-    in the Method field. For instance, change <tt>GET</tt> to <tt>POST</tt>.</li>
+  <li>Click the Request tab.
+  <li>To edit the Request URI parameter or the Protocol parameter, 
+  click the ellipsis button next 
+  to the parameter. 
+  </li>
+  <li>To change the request method, select the desired method from the combo box 
+    in the Method parameter. For instance, change <tt>GET</tt> to <tt>POST</tt>.</li>
 </ol>
 <p><b>To edit cookies:</b></p>
+<p>Session cookies are handled according to the settings 
+      specified on the HTTP Monitor toolbar.
+      <ul>
+      <li>If you click &quot;Use the browser's session 
+      cookie for replay,&quot; the server ignores the values that were saved 
+      when the record was 
+      recorded, and the server uses the cookie that the browser generates.
+      </li>
+      <li>If you click &quot;Use the recorded session cookie for replay,&quot; 
+      the server either uses the cookie that is associated with the record's 
+      session, or, if you edited a cookie, the server uses
+      the edited cookie.
+      </li>
+      <li>If the record header does not include a session cookie, the browser 
+      will not send a cookie.
+      </li>
+      </ul>
+     <p>The following steps show how to edit cookies in the
+      Cookies tab. You can also edit cookies in the Header tab. 
+      Not all servers support the editing of cookies.</p>
 <ol>
-  <li>Click the Cookies tab, then click the ellipses button next to the appropriate 
-    cookie. The Edit Cookie dialog box appears.</li>
-  <li>Edit the cookie name and value, and click OK. The edited cookie appears 
-    in the Edit and Replay dialog box.</li>
-  <li>To delete a cookie, select the cookie and then click Delete cookies. Use 
-    the shift or Control key in conjunction with Delete cookies to delete multiple 
-    cookies. </li>
+  <li>Click the Cookies tab.</li>
+  <li>To add a cookie, click Add Cookie. The Add Cookie 
+    dialog box appears. Type in a name and value, and click OK.</li>
+  <li>To edit a cookie, click the ellipses button next to the 
+    cookie.</li>
+  <li>To delete a cookie, select the cookie and click Delete Cookies. Use 
+    the Shift or Control key to select multiple 
+    cookies for deletion. </li>
 </ol>
 <p><b>To edit request headers:</b></p>
 <ol>
-  <li>To add a header, click the Headers tab and then click the Add header button. 
-    The Add Header dialog box appears.</li>
-  <li>Type in a name and value and click OK. </li>
-  <li>To delete a header, select it, and then click Delete headers. A confirmation 
-    dialog appears. Use the Shift or Control key in conjunction with the Delete 
-    headers button to delete multiple headers.</li>
-  <li>To edit a header parameter such as Accept, Connection, Host, or user-Agent, 
-    click the ellipsis button next to the desired parameter. The Edit header dialog 
-    box appears.</li>
-  <li>Type in the new name and value and click OK. The new information is reflected 
-    in the Edit and replay dialog box.</li>
+  <li>Click the Headers tab.</li>
+  <li>To add a header, click Add Header. 
+    The Add Header dialog box appears. Type in a name and value and click OK.</li>
+  <li>To edit a header parameter such as Accept, Connection, Host, or User-Agent, 
+    click the ellipsis button next to the parameter.</li>
+  <li>To delete a header, select it and click Delete Headers. Use the Shift or 
+    Control key to select multiple headers for deletion.</li>
+
 </ol>
 <p><b>To send a request to a different server:</b></p>
 <ol>
-  <li>To edit server information, such as hostname of servlet engine or port number 
-    of HTTP service, click the Server tab and then click the ellipsis button next 
-    to the desired server parameter. The Edit Value dialog box appears.</li>
-  <li>Type in a value, and click OK. The edited server parameter values appear 
-    in the Edit and Replay dialog box. Note that success depends upon the target 
-    server having the monitor filter installed.</li>
+  <li>To edit server information, such as the hostname of servlet engine or the port number 
+    of an HTTP service, click the Server tab.</li>
+  <li>To change a parameter's value, click the ellipsis button next 
+    to the parameter. Note that the server must be configured
+    to work with the HTTP Monitor. Otherwise, the server will not replay the
+    request properly. For more information, see
+<a href="servconfig.html">Deploying the HTTP Monitor for a Web Application</a>.</li>
 </ol>
-<table>
-              <tr>
-              <td valign="top"><img src="../images/tip.gif" alt="Tip"></td>
-              
-    <td valign=top align=left> Session cookies are handled according to the settings 
-      specified on the Monitor toolbar. If you chose &quot;use the browser's session 
-      cookie for replay,&quot; then any value that was saved when the record was 
-      recorded is ignored, and the session cookie generated by the browser will 
-      be used. If you chose &quot;use the recorded session cookie for replay,&quot; 
-      then any changes you specify in the Edit and Replay dialog box will be used. 
-      If the record header doesn't include a session cookie, then the browser 
-      won't send a cookie either. You can edit cookies either in the header or 
-      on the Cookies tab. Not all servers support this functionality.</td> 
-              </tr>
-              </table>
-
- 
-
-
 <table>
          <tr>
          <th colspan=2 align=left><a name="seealso">See Also</a></th>
