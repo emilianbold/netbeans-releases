@@ -290,7 +290,7 @@ Microsystems, Inc. All Rights Reserved.
             
 	    <pathelement location="../../../libs/xerces/netbeans/modules/autoload/ext/xerces-2.0.2-1.jar"/>    
 	    <pathelement location="../../../libs/xerces/netbeans/modules/autoload/ext/xml-commons-dom-ranges-1.0.b2.jar"/>    
-            <pathelement location="../../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
+            <pathelement location="../../../openide/io/netbeans/modules/org-openide-io.jar"/>
             <pathelement location="../../../core/execution/netbeans/modules/autoload/core-execution.jar"/>
             <pathelement location="../../../core/output/netbeans/modules/autoload/core-output.jar"/>
             <pathelement location="../../../core/term/netbeans/modules/autoload/terminalemulator.jar"/>
@@ -330,7 +330,7 @@ Microsystems, Inc. All Rights Reserved.
 	    <pathelement location="${netbeans.home}/modules/autoload/openide-execution.jar"/>    
             <pathelement location="${netbeans.home}/modules/autoload/openide-compiler.jar"/>
             <pathelement location="${netbeans.home}/modules/autoload/openide-debugger.jar"/>
-	    <pathelement location="${netbeans.home}/modules/autoload/openide-io.jar"/>    
+	    <pathelement location="${netbeans.home}/modules/org-openide-io.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/autoload/ext/javax77.jar"/>    
 	    <pathelement location="${netbeans.home}/modules/autoload/ext/jsr88javax.jar"/>    
             <pathelement location="${netbeans.home}/modules/ant.jar"/>

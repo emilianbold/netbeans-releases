@@ -49,12 +49,12 @@ Microsystems, Inc. All Rights Reserved.
 <!--            <pathelement location="${debuggercore/oldapi.dir}/${nb.modules.dir}/org-openide-debugger.jar"/> -->
             <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
             <pathelement location="${openide/execution/deprecated.dir}/${nb.modules.dir}/org-openide-execution-deprecated.jar"/>
-            <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
+            <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/>
             <pathelement location="${core/output.dir}/${nb.modules.dir}/org-netbeans-core-output.jar"/>
             <pathelement location="${core/term.dir}/${nb.modules.dir}/org-netbeans-lib-terminalemulator.jar"/>
             <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
             <pathelement location="${classfile.dir}/${nb.modules/autoload.dir}/classfile.jar"/>
-            <pathelement location="${clazz.dir}/${nb.modules.dir}/clazz.jar"/>
+            <pathelement location="${clazz.dir}/${nb.modules.dir}/org-netbeans-modules-clazz.jar"/>
             <pathelement location="${projects/queries.dir}/${nb.modules.dir}/org-netbeans-modules-queries.jar"/>
             <pathelement location="${java/platform.dir}/${nb.modules.dir}/org-netbeans-modules-java-platform.jar"/>
 

@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/> <!-- XXX -->
       <pathelement location="${openide/execution/deprecated.dir}/${nb.modules.dir}/org-openide-execution-deprecated.jar"/> <!-- XXX -->
       <pathelement location="${schema2beans/rt.dir}/${nb.modules/autoload.dir}/schema2beans.jar"/>
-      <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
+      <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/> 
       <pathelement location="${core/settings.dir}/${nb.modules.dir}/org-netbeans-modules-settings.jar"/>
       <pathelement location="${xml/api.dir}/${nb.modules/autoload.dir}/xml-api.jar" />
       <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar" />

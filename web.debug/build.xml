@@ -23,14 +23,14 @@ Microsystems, Inc. All Rights Reserved.
     <path id="cp">
         <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-        <pathelement location="${openidex.dir}/${nb.modules/autoload.dir}/openidex.jar"/>
+        <pathelement location="${openidex.dir}/${nb.modules.dir}/org-openidex-util.jar"/>
         <pathelement location="${editor.dir}/${nb.modules.dir}/editor.jar"/>
         <pathelement location="${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
         <pathelement location="${debuggercore.dir}/${nb.modules.dir}/org-netbeans-modules-debugger-core.jar"/>
         <pathelement location="${debuggerjpda.dir}/${nb.modules.dir}/org-netbeans-modules-debugger-jpda.jar"/>
         <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
         <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
-        <pathelement location="${html.dir}/${nb.modules.dir}/html.jar"/>
+        <pathelement location="${html.dir}/${nb.modules.dir}/org-netbeans-modules-html.jar"/>
         <pathelement location="${web/core.dir}/${nb.modules.dir}/jsp.jar"/>
         <pathelement location="${web/jspsyntax.dir}/${nb.modules.dir}/jsp-syntax.jar"/>
         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>

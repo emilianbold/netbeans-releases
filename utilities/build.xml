@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -13,181 +13,40 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="utilities" default="netbeans" basedir=".">
-  <import file="../nbbuild/default.xml"/>
-  
-  <property name="javadoc.destdir.default" value="javadoc"/>
-  <property name="javadoc.extra.param" value=""/>
-  <property name="javadoc.private" value="false"/>
 
-  <target name="init" depends="default.init">
-    <patternset id="utilities.files">
-      <include name="${nb.modules.dir}/utilities.jar"/>
-      <include name="${nb.lib.dir}/openfile-cli.jar"/>
-    </patternset>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
-    <path id="cp">
-      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-      <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
-      <pathelement location="${openidex.dir}/${nb.modules/autoload.dir}/openidex.jar"/>
-      <pathelement location="${core/javahelp.dir}/${nb.modules.dir}/org-netbeans-modules-javahelp.jar"/>
-      <pathelement location="clisrc"/>
-    </path>
-    <path id="cli-cp">
-      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-      <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
-    </path>
-  </target>
+    <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <include name="${module.jar}"/>
+            <include name="${javahelp.jar}" if="has.javahelp"/>
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
+            <include name="${nb.lib.dir}/org-netbeans-modules-utilities-cli.jar"/>
+        </patternset>
+    </target>
 
-  <target name="compile-cli" depends="init">
-    <javac srcdir="clisrc"
-           destdir="clisrc"
-           deprecation="${build.compiler.deprecation}"
-           debug="${build.compiler.debug}"
-           source="1.4">
-      <classpath refID="cli-cp"/>
-    </javac>
-  </target>
+    <target name="compile-cli" depends="init">
+        <path id="cli-cp">
+            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+            <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
+        </path>
+        <mkdir dir="build/cliclasses"/>
+        <javac srcdir="clisrc" destdir="build/cliclasses" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+            <classpath refid="cli-cp"/>
+        </javac>
+        <copy todir="build/cliclasses">
+            <fileset dir="clisrc" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+        </copy>
+    </target>
 
-  <target name="compile" depends="init,compile-cli">
-    <javac srcdir="src"
-           destdir="src"
-           deprecation="${build.compiler.deprecation}"
-           debug="${build.compiler.debug}"
-           source="1.4">
-      <classpath refid="cp"/>
-    </javac>
-  </target>
+    <target name="jar-cli" depends="init,compile-cli">
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/org-netbeans-modules-utilities-cli.jar">
+            <fileset dir="build/cliclasses"/>
+        </jar>
+    </target>
 
-  <target name="jars" depends="compile">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/utilities.jar"
-         manifest="manifest-subst.mf"
-         basedir="src"
-         excludesfile="../nbbuild/standard-jar-excludes.txt"
-         compress="false"/>
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openfile-cli.jar">
-      <fileset dir="clisrc" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-    </jar>
-  </target>
+    <target name="compile" depends="jar-cli,projectized.compile"/>
 
-  <target name="netbeans" depends="jars" description="Build everything.">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/utilities.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="utilities.files"/>
-      </fileset>
-    </genlist>
-  </target>
-
-  <target name="nbm" depends="netbeans" description="Build an NBM.">
-    <makenbm file="utilities.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules.dir}/utilities.jar"
-	     homepage="http://utilities.${homepage.base}/"
-	     distribution="http://${dist.base}/utilities.nbm">
-      <license file="${license.file}"/>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-  <target name="clean" depends="init" description="Clean everything.">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir="clisrc">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="utilities.files"/>
-      </fileset>
-    </delete>
-    <delete file="manifest-subst.mf"/>
-    <delete file="utilities.nbm"/>
-    <delete dir="${javadoc.destdir.default}"/>
-  </target>
-
-  <target name="check-javadoc-destdir-overridden"
-          if="javadoc.destdir">
-    <property name="javadoc.destdir.overridden" value="true"/>
-  </target>
-
-  <target name="set-default-javadoc-destdir"
-          unless="javadoc.destdir.overridden"
-          depends="check-javadoc-destdir-overridden">
-    <property name="javadoc.destdir" value="${javadoc.destdir.default}"/>
-  </target>
-
-  <target name="set-javadoc-destdir"
-          depends="check-javadoc-destdir-overridden,set-default-javadoc-destdir"/>
-
-  <target name="clear-default-javadoc-destdir"
-          unless="javadoc.destdir.overridden"
-          depends="check-javadoc-destdir-overridden,set-javadoc-destdir">
-    <delete dir="${javadoc.destdir}"/>
-    <mkdir dir="${javadoc.destdir}"/>
-  </target>
-
-  <target name="check-javadoc-destdir-exists" depends="set-javadoc-destdir">
-    <available file="${javadoc.destdir}" type="dir" property="javadoc.destdir.exists"/>
-  </target>
-
-  <target name="fail-if-javadoc-destdir-missing"
-          unless="javadoc.destdir.exists"
-          depends="check-javadoc-destdir-exists">
-    <fail message="Destination directory does not exist: ${javadoc.destdir}"/>
-  </target>
-
-  <target name="check-overridden-javadoc-destdir"
-          if="javadoc.destdir.overridden"
-          depends="check-javadoc-destdir-overridden,set-javadoc-destdir,fail-if-javadoc-destdir-missing"/>
-
-  <target name="prepare-javadoc-destdir"
-          depends="check-overridden-javadoc-destdir,clear-default-javadoc-destdir"/>
-
-  <target name="javadoc" description="Build utilities module API documentation."
-          depends="init,prepare-javadoc-destdir">
-    <tstamp/>
-    <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2004 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
-    <echo message="Build Utilities module API documentation..."/>
-    <echo message="Destination directory: ${javadoc.destdir}"/>
-    <javadoc destdir="${javadoc.destdir}"
-             packagenames="org.netbeans.modules.*"
-             doctitle="NetBeans Utilities module APIs"
-             windowtitle="NetBeans Utilities module APIs"
-             bottom="${apis-footer}"
-             use="true"
-             splitindex="true"
-             private="${javadoc.private}"
-             author="false"
-             version="false"
-             maxmemory="384m"
-             source="1.4"
-             additionalparam="-breakiterator ${javadoc.extra.param}">
-      <sourcepath>
-        <pathelement location="src"/>
-        <pathelement location="loaderswitcher/src"/>
-        <pathelement location="group/src"/>
-      </sourcepath>
-      <classpath refid="cp"/>
-      <classpath>
-        <fileset dir="..">
-          <patternset includes="openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-        </fileset>
-      </classpath>
-
-      <group title="Loader Switcher"    packages="org.netbeans.modules.loaderswitcher*"/>
-      <group title="Group"              packages="org.netbeans.modules.group*"/>
-      <group title="Open File"          packages="org.netbeans.modules.openfile*"/>
-      <group title="PDF"                packages="org.netbeans.modules.pdf*"/>
-      <group title="Search"             packages="org.netbeans.modules.search*"/>
-      <group title="URL"                packages="org.netbeans.modules.url*"/>
-    </javadoc>    
-  </target>
+    <target name="netbeans-extra" depends="jar-cli"/>
 
 </project>

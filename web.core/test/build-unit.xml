@@ -79,8 +79,8 @@ Microsystems, Inc. All Rights Reserved.
 	        <pathelement location="${netbeans.home}/modules/editor.jar"/>
                 <pathelement location="${netbeans.home}/modules/ext/nb-editor.jar"/>
                 
-	        <pathelement location="${netbeans.home}/modules/autoload/vcscore.jar"/>
-                <pathelement location="${netbeans.home}/modules/html.jar"/>
+	        <pathelement location="${netbeans.home}/modules/org-netbeans-modules-vcscore.jar"/>
+                <pathelement location="${netbeans.home}/modules/org-netbeans-modules-html.jar"/>
                 <pathelement location="${netbeans.home}/modules/org-netbeans-modules-java.jar"/>
                 <pathelement location="${netbeans.home}/modules/jarpackager.jar"/>
                 <pathelement location="${netbeans.home}/modules/org-netbeans-modules-debugger-core.jar"/>

@@ -164,7 +164,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Using jars classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against jars -->
 	<path id="compiletest.classpath">        
-	    <pathelement location="../netbeans/modules/autoload/openidex.jar"/>
+	    <pathelement location="../netbeans/modules/org-openidex-util.jar"/>
 	        <fileset dir="../../openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>
@@ -190,7 +190,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Using IDE classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against installed IDE -->
     	<path id="compiletest.classpath">        
-	        <pathelement location="${netbeans.home}/modules/autoload/openidex.jar"/>
+	        <pathelement location="${netbeans.home}/modules/org-openidex-util.jar"/>
 	        <fileset dir="${netbeans.home}/lib">
                     <include name="openide*.jar"/>
                 </fileset>
@@ -210,7 +210,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Using jars classpath."/>
         <!-- this classpath will be used for executing tests against jars -->
 	<path id="codetest.classpath">
-	        <pathelement location="../netbeans/modules/autoload/openidex.jar"/>
+	        <pathelement location="../netbeans/modules/org-openidex-util.jar"/>
 	        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
 	        <fileset dir="../../core/netbeans/lib">
             		<include name="core.jar"/>
@@ -236,7 +236,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Using IDE classpath."/>
         <!-- this classpath will be used for executing tests against installed IDE -->
     	<path id="codetest.classpath">
-	        <pathelement location="${netbeans.home}/modules/autoload/openidex.jar"/>
+	        <pathelement location="${netbeans.home}/modules/org-openidex-util.jar"/>
 	        <pathelement location="${netbeans.home}/lib/openide.jar"/>
           	<fileset dir="${netbeans.home}/lib">
 	            	<include name="core.jar"/>

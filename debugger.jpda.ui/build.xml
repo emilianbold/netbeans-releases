@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -34,7 +34,7 @@ ToDo:
             <pathelement location="${debuggerjpda/api.dir}/${nb.modules/autoload.dir}/debuggerjpda-api.jar"/>
             <pathelement location="${debuggerjpda.dir}/${nb.modules/autoload.dir}/debuggerjpda-impl.jar"/>
             <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-            <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
+            <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/>
             <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
             <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
             <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
