@@ -29,6 +29,7 @@ import org.openide.filesystems.FileUtil;
 import java.util.*;
 import java.io.*;
 import java.net.URL;
+import org.netbeans.modules.j2ee.deployment.config.*;
 import org.openide.util.NbBundle;
 
 /** 
@@ -37,63 +38,29 @@ import org.openide.util.NbBundle;
  */
 public final class DeploymentTargetImpl implements DeploymentTarget {
     
-    J2eeProfileSettings settings;
-    J2eeDeploymentLookup deployment;
+    J2eeModuleProvider moduleProvider;
+    String clientName;
+    ServerString server;
     TargetModule[] targetModules;
     
-    /**
-     * @param target build target that provides J2eeModule
-     */
-    public DeploymentTargetImpl(J2eeProfileSettings settings, J2eeDeploymentLookup deployment) {
-        this.settings = settings;
-        this.deployment = deployment;
-    }
-    
-    public boolean dontDeploy() {
-        return settings.DEPLOY_NONE.equals (settings.getDeployment());
-    }
-    
-    //PENDING: UI
-    static Boolean fastDeploy;
-    public boolean doFastDeploy() {
-        if (fastDeploy != null)
-            return fastDeploy.booleanValue();
-        
-        if ("false".equalsIgnoreCase(System.getProperty("j2eeserver.fastDeploy"))) {
-//            System.out.println("FastDeploy is off!");
-            fastDeploy = Boolean.FALSE;
-        } else
-            fastDeploy = Boolean.TRUE;
-        
-        return fastDeploy.booleanValue();
+    public DeploymentTargetImpl(J2eeModuleProvider moduleProvider, String clientName) {
+        this.moduleProvider = moduleProvider;
+        this.clientName = clientName;
     }
     
     public J2eeModule getModule() {
-        return deployment.getProvider ().getJ2eeModule ();
+        return moduleProvider.getJ2eeModule ();
     }
     
     public ModuleChangeReporter getModuleChangeReporter() {
-        return deployment.getProvider ().getModuleChangeReporter ();
+        return moduleProvider.getModuleChangeReporter ();
     }
     
-    public void startClient(String partUrl) {
-        if (! settings.getShowClient().booleanValue())
-            return;
-
-        String url = getClientUrl(partUrl);
-                
-        if (url != null)
-            startWebClient(url + partUrl);
-        else
-            return; //PENDING implement start non-web client
-    }
-
     public String getClientUrl(String partUrl) {
         // determine client module
         J2eeModule clientModule = getModule();
         String url = null;
         if (clientModule instanceof J2eeModuleContainer) {
-            String clientName = settings.getClientModule();
             J2eeModuleContainer ear = (J2eeModuleContainer)clientModule;
             J2eeModule[] children = ear.getModules(null);
             clientModule = null;
@@ -179,31 +146,20 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         }
         return urlString;
     }
-    private void startWebClient(String urlString) {
-        String defaultURL = settings.getDefaultUrl();
-        if (defaultURL != null && ! defaultURL.trim().equals("") ){
-            urlString += "/" + defaultURL;
-        }
-        
-        StatusDisplayer.getDefault().setStatusText(
-            NbBundle.getMessage(DeploymentTargetImpl.class, "MSG_StartWebClient", urlString)
-        );
-        
-        try {
-            URL url = new URL(urlString);
-            org.openide.awt.HtmlBrowser.URLDisplayer.getDefault().showURL (url);
-        } catch (Exception io) {
-            String msg = NbBundle.getMessage(DeploymentTargetImpl.class, "MSG_StartWebClientFailed", urlString, io.getMessage()); 
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-        }
+    
+    private ConfigSupportImpl getConfigSupportImpl () {
+        return (ConfigSupportImpl) moduleProvider.getConfigSupport ();
     }
     
     public File getConfigurationFile() {
-        return deployment.getConfigurationFile ();
+        return getConfigSupportImpl ().getConfigurationFile ();
     }
     
     public ServerString getServer() {
-        return settings.getServerString();
+        if (server == null) {
+            server = new ServerString (ServerRegistry.getInstance ().getServerInstance (moduleProvider.getServerInstanceID ()));
+        }
+        return server;
     }
     
     public TargetModule[] getTargetModules() {
@@ -225,11 +181,11 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     }
     
     public DeploymentConfigurationProvider getDeploymentConfigurationProvider() {
-        return deployment.getStorage ();
+        return getConfigSupportImpl ().getStorage ();
     }
     
-    public J2eeModuleProvider.ConfigSupport getConfigSupport() {
-        return deployment.getConfigSupport();
+    public J2eeModuleProvider.ConfigSupport getConfigSupport () {
+        return moduleProvider.getConfigSupport();
     }
 
     private String getTargetModuleFileName() {
@@ -242,9 +198,10 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
         }
         if (f == null)
-            f = FileUtil.toFile(deployment.getProvider().getModuleFolder());
+            f = FileUtil.toFile(moduleProvider.getModuleFolder());
         String pathName = f.getAbsolutePath();
         String fileName = TargetModule.shortNameFromPath(pathName);
         return fileName;
     }
+    
 }

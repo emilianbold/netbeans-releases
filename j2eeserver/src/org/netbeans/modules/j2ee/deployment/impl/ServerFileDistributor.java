@@ -27,7 +27,6 @@ import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationProvider;
-import org.netbeans.modules.j2ee.deployment.impl.projects.J2eeDeploymentLookup;
 import java.net.URL;
 
 /**

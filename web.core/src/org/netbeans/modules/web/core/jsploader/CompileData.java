@@ -52,7 +52,7 @@ public class CompileData {
         this.jspPage = jspPage;
         this.docRoot = WebModule.getWebModule (jspPage.getPrimaryFile()).getDocumentBase ();
         String jspResourcePath = JspCompileUtil.findRelativeContextPath(docRoot, jspPage.getPrimaryFile());
-        JSPServletFinder finder = J2eeModuleProvider.getJSPServletFinder(docRoot);
+        JSPServletFinder finder = JSPServletFinder.findJSPServletFinder (docRoot);
         servletJavaRoot = finder.getServletTempDirectory();
         servletResourceName = finder.getServletResourcePath(jspResourcePath);
         servletEncoding = finder.getServletEncoding(jspResourcePath);

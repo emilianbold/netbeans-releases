@@ -34,13 +34,14 @@ import org.openide.filesystems.Repository;
 import org.netbeans.modules.web.core.jsploader.*;
 import org.netbeans.modules.web.debug.Context;
 
-import org.netbeans.modules.web.spi.webmodule.*;
+import org.netbeans.modules.web.api.webmodule.*;
 import org.netbeans.modules.j2ee.deployment.impl.projects.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.api.project.*;
 
 
 import java.net.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
 
 /**
  *
@@ -113,22 +114,17 @@ public class Utils {
     public static String getServletClass(String jspUrl) {
         System.err.println("url : " + jspUrl);
         URI jspUri = URI.create(jspUrl);
-        Project project = FileOwnerQuery.getOwner(jspUri);
 
-        WebModuleImplementation wmi = (WebModuleImplementation)project.getLookup().lookup(WebModuleImplementation.class);
-        
-        J2eeDeploymentLookup jdl = (J2eeDeploymentLookup)project.getLookup().lookup(J2eeDeploymentLookup.class);
-        J2eeProfileSettings settings = jdl.getJ2eeProfileSettings();
-        DeploymentTargetImpl target = new DeploymentTargetImpl(settings, jdl);
-        
-        FindJSPServlet findJspServlet = target.getServer().getServerInstance().getFindJSPServlet();        
 
         java.io.File f = new java.io.File(jspUri);
         f = FileUtil.normalizeFile(f);
-                
-        String jspRelativePath = FileUtil.getRelativePath(wmi.getDocumentBase(), FileUtil.toFileObject(f));
-                
-        String servletPath = findJspServlet.getServletResourcePath("", jspRelativePath); //TODO - context path
+        FileObject fo = FileUtil.toFileObject(f);
+        JSPServletFinder finder = JSPServletFinder.findJSPServletFinder (fo);
+        WebModule wm = WebModule.getWebModule (fo);
+        
+        String jspRelativePath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
+
+        String servletPath = finder.getServletResourcePath(jspRelativePath); //TODO - context path
         servletPath = servletPath.substring(0, servletPath.length()-5); // length of ".java"
         servletPath = servletPath.replace('/', '.'); //NOI18N
         Utils.getEM().log("servlet class: " + servletPath);

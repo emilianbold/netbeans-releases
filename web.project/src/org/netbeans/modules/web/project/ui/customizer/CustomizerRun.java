@@ -19,14 +19,14 @@ import javax.swing.event.DocumentListener;
 
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 
 public class CustomizerRun extends JPanel implements WebCustomizer.Panel, DocumentListener {
     
     // Helper for storing properties
     private VisualPropertySupport vps;
     
-    String[] serverURLs;
+    String[] serverInstanceIDs;
     String[] serverNames;
     
     /** Creates new form CustomizerCompile */
@@ -37,17 +37,21 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
     }
     
     public void initValues() {
-        serverURLs = InstanceProperties.getInstanceList ();
-        serverNames = new String[serverURLs.length];
-        for (int i = 0; i < serverURLs.length; i++) {
-            serverNames[i] = InstanceProperties.getInstanceProperties (serverURLs [i]).getProperty (InstanceProperties.DISPLAY_NAME_ATTR);
+        Deployment deployment = Deployment.getDefault ();
+        serverInstanceIDs = deployment.getServerInstanceIDs ();
+        serverNames = new String[serverInstanceIDs.length];
+        for (int i = 0; i < serverInstanceIDs.length; i++) {
+            
+            serverNames[i] = deployment.getServerDisplayName (deployment.getServerID (serverInstanceIDs [i])) 
+             + " (" + deployment.getServerInstanceDisplayName (serverInstanceIDs [i]) + ")"; //NOI18N
+            
         }
         
         vps.register(jTextFieldContextPath, WebProjectProperties.CONTEXT_PATH);
         vps.register(jCheckBoxDisplayBrowser, WebProjectProperties.DISPLAY_BROWSER);
         vps.register(jTextFieldRelativeURL, WebProjectProperties.LAUNCH_URL_RELATIVE);
         vps.register(jTextFieldFullURL, WebProjectProperties.LAUNCH_URL_FULL);
-        vps.register(jComboBoxServer, serverNames, serverURLs, WebProjectProperties.J2EE_SERVER);
+        vps.register(jComboBoxServer, serverNames, serverInstanceIDs, WebProjectProperties.J2EE_SERVER_INSTANCE);
 
         jTextFieldRelativeURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
         jTextFieldContextPath.getDocument().addDocumentListener(this);

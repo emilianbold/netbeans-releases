@@ -29,8 +29,6 @@ import java.nio.charset.Charset;
 import java.util.EventListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.URLCookie;
 
 import org.openide.*;
 import org.openide.cookies.EditorCookie;
@@ -52,6 +50,7 @@ import org.netbeans.modules.web.core.QueryStringCookie;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
 import org.netbeans.modules.java.Util;
+import org.netbeans.modules.web.api.webmodule.URLCookie;
 import org.netbeans.modules.web.core.WebExecSupport;
 
 /** Object that provides main functionality for internet data loader.
@@ -84,7 +83,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
         super (pf, l);
         CookieSet cookies = getCookieSet();
         cookies.add (createJspEditorSupport());
-        cookies.add (J2eeModuleProvider.getExecutionSupport(this));
         initialize();
     }
 

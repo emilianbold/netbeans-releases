@@ -61,11 +61,11 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public String getContextPath () {
-        return J2eeModuleProvider.getConfigSupport (project).getWebContextRoot ();
+        return getConfigSupport ().getWebContextRoot ();
     }
     
     public void setContextPath (String path) {
-        J2eeModuleProvider.getConfigSupport (project).setWebContextRoot (path);
+        getConfigSupport ().setWebContextRoot (path);
     }
     
     public FileObject getDocumentBase () {
@@ -111,6 +111,18 @@ public final class ProjectWebModule extends J2eeModuleProvider
     
     public FileObject getModuleFolder () {
         return getDocumentBase ();
+    }
+    
+    public boolean useDefaultServer () {
+        return false;
+    }
+    
+    public String getServerID () {
+        return helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
+    }
+
+    public String getServerInstanceID () {
+        return helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_INSTANCE);
     }
     
     public Iterator getArchiveContents () throws java.io.IOException {

@@ -25,6 +25,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.openide.filesystems.*;
 import org.apache.tools.ant.Project;
 import javax.enterprise.deploy.spi.Target;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 
 /**
@@ -33,8 +34,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
  */
 public class Deploy extends Task {
     
-    static final int MAX_DEPLOY_PROGRESS = 5;
-
     /**
      * Holds value of property debugmode.
      */
@@ -45,97 +44,23 @@ public class Deploy extends Task {
      */
     private String clientUrlPart;
 
-    private boolean alsoStartTargets = true;    //TODO - make it a property? is it really needed?
-    
     public void execute() throws BuildException { 
 
-        J2eeDeploymentLookup jdl = null;
+        J2eeModuleProvider jmp = null;
         try {
             FileObject fob = FileUtil.toFileObject(getProject().getBaseDir());
             fob.refresh(); // without this the "build" directory is not found in filesystems
-            jdl = (J2eeDeploymentLookup) FileOwnerQuery.getOwner(fob).getLookup().lookup(J2eeDeploymentLookup.class);
+            jmp = (J2eeModuleProvider) FileOwnerQuery.getOwner(fob).getLookup().lookup(J2eeModuleProvider.class);
         } catch (Exception e) {
             throw new BuildException(e);
         }
 
-        J2eeProfileSettings settings = jdl.getJ2eeProfileSettings();
-        DeploymentTargetImpl target = new DeploymentTargetImpl(settings, jdl);
-
-        ServerString server = target.getServer();
-        J2eeModule module = target.getModule();
-        TargetModule[] modules = null;
-        DeployProgressUI progress = new DeployProgressMonitor(false, true);  // modeless with stop/cancel buttons
-        progress.startProgressUI(MAX_DEPLOY_PROGRESS);
-        
         try {
-            if (module == null) {
-                progress.addError(getBundle("MSG_NoJ2eeModule"));
-                throw new BuildException(getBundle("MSG_NoJ2eeModule"));
-            }
-            if (server == null || server.getServerInstance() == null) {
-                progress.addError(getBundle("MSG_NoTargetServer"));
-                throw new BuildException(getBundle("MSG_NoTargetServer"));
-            }
-            
-            progress.recordWork(1);
-            
-            boolean serverReady = false;
-            TargetServer targetserver = new TargetServer(target);
-
-            if (alsoStartTargets || debugmode) {
-                serverReady = targetserver.startTargets(debugmode, progress);
-            } else { //PENDING: how do we know whether target does not need to start when deploy only
-                serverReady = server.getServerInstance().start(progress);
-            }
-            if (! serverReady) {
-                progress.addError(getBundle("MSG_StartServerFailed"));
-                throw new BuildException(getBundle("MSG_StartServerFailed"));
-            }
-            
-            progress.recordWork(2);
-            modules = targetserver.deploy(progress);
-            progress.recordWork(MAX_DEPLOY_PROGRESS-1);
-            
+            String clientUrl = Deployment.getDefault ().deploy (jmp, debugmode, null, clientUrlPart);
+            getProject().setProperty("client.url", clientUrl);
         } catch (Exception ex) {
             throw new BuildException(getBundle("MSG_DeployFailed"));
         }
-        
-        if (modules != null && modules.length > 0) {
-            target.setTargetModules(modules);
-            progress.recordWork(MAX_DEPLOY_PROGRESS);
-        } else {
-            throw new BuildException("Some other error.");
-        }
-
-        String clientUrl = target.getClientUrl(getClientUrlPart());
-        getProject().setProperty("client.url", clientUrl);
-        
-        if (debugmode) {
-            Target t = null;
-            Target[] targs = server.toTargets();
-            if (targs != null && targs.length > 0) {
-                t = targs[0];
-            }
-            
-            ServerDebugInfo sdi = server.getServerInstance().getStartServer().getDebugInfo(t);
-            if (sdi == null) {
-                throw new BuildException("Error retrieving debug info from server");
-            }
-            String h = sdi.getHost();
-            String transport = sdi.getTransport();
-            String address = "";                                                //NOI18N
-            
-            if (transport.equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
-                address = sdi.getShmemName();
-            } else {
-                address = Integer.toString(sdi.getPort());
-            }
-            
-            getProject().setProperty("jpda.transport", transport);
-            getProject().setProperty("jpda.host", h);
-            getProject().setProperty("jpda.address", address);
-        }
-        
     }
 
     private String getBundle(String key) {

@@ -11,32 +11,167 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.lang.ref.SoftReference;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.exceptions.TargetException;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
+import org.netbeans.modules.j2ee.deployment.impl.ServerString;
+import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
+import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.api.OldJSPDebug;
-import org.openide.nodes.Node;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  *
- * @author  pj97932
+ * @author Petr Jiricka
  */
-public interface JSPServletFinder extends Node.Cookie {
+public final class JSPServletFinder {
     
     public static final String SERVLET_FINDER_CHANGED = "servlet-finder-changed"; // NOI18N
     
-    public File getServletTempDirectory();
+    private Project project;
+
+    /** Returns JSPServletFinder for the project that contains given file.
+     * @return null if the file is not in any project
+     */
+    public static JSPServletFinder findJSPServletFinder(FileObject f) {
+        Project prj = FileOwnerQuery.getOwner (f);
+        return prj == null ? null : new JSPServletFinder(prj);
+    }
     
-    public String getServletResourcePath(String jspResourcePath);
+    /** Creates a new instance of JspServletFinderImpl */
+    private JSPServletFinder (Project project) {
+        this.project = project;
+    }
     
-    public String getServletEncoding(String jspResourcePath);
+    private J2eeModuleProvider getProvider() {
+        return (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
+    }
     
-    public void addPropertyChangeListener(PropertyChangeListener l);
+    /** Returns the server instance currently selected for the module associated with this JSPServletFinder.
+     * May return null.
+     */
+    private ServerString getServerString() {
+        J2eeModuleProvider dl = getProvider ();
+        if (dl == null)
+            return null;
+        return new ServerString (ServerRegistry.getInstance ().getServerInstance (dl.getServerInstanceID ()));
+    }
     
-    public void removePropertyChangeListener(PropertyChangeListener l);
+    /** Returns the module ID that corresponds to the deployed module on the current server, 
+     * for this JSPServletFinder. May return null.
+     */
+    private TargetModuleID getTargetModuleID() {
+        ServerString serverS = getServerString();
+        if (serverS == null)
+            return null;
+        ServerInstance inst = serverS.getServerInstance();
+        if (inst == null)
+            return null;
+        DeploymentManager dm = inst.getDeploymentManagerForConfiguration();
+        try {
+            TargetModuleID mod[] = dm.getAvailableModules(ModuleType.WAR, serverS.toTargets());
+            TargetModuleID mod0 = null; // PENDING - find by web URI
+            return mod0;
+        }
+        catch (TargetException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            return null;
+        }
+    }
     
-    public OldJSPDebug.JspSourceMapper getSourceMapper(String jspResourcePath);
+    private String getWebURL() {
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
+        return provider.getConfigSupport().getWebContextRoot();
+    }
     
+    /** Returns the FindJSPServlet class associated with this JSPServletFinder.
+     * May return null.
+     */
+    private FindJSPServlet getServletFinder() {
+        ServerString serverS = getServerString();
+        if (serverS == null)
+            return null;
+        ServerInstance inst = serverS.getServerInstance();
+        if (inst == null)
+            return null;
+        return inst.getFindJSPServlet();
+    }
+    
+    public File getServletTempDirectory () {
+        FindJSPServlet find = getServletFinder();
+        if (find == null)
+            return null;
+        String webURL = getWebURL();
+        if (webURL == null)
+            return null;
+        //TargetModuleID moduleID = getTargetModuleID();
+        //if (moduleID == null)
+        //    return null;
+        return find.getServletTempDirectory(webURL);
+        
+/*        try {
+            J2eeDeploymentLookup dl = getDeploymentLookup();
+            J2eeProfileSettings settings = dl.getJ2eeProfileSettings();
+            DeploymentTargetImpl target = new DeploymentTargetImpl(settings, dl);
+            ServerString serverS = target.getServer();
+            ServerInstance inst = serverS.getServerInstance();
+            DeploymentManager dm = inst.getDeploymentManager();
+System.out.println("getting servlet temp directory - dm is  " + dm);
+            TargetModuleID mod[] = dm.getAvailableModules(ModuleType.WAR, serverS.toTargets());
+            TargetModuleID mod0 = null; // PENDING - find by web URI
+            FindJSPServlet find = inst.getFindJSPServlet();
+System.out.println("getting servlet temp directory - find is " + find);
+            return find.getServletTempDirectory(mod0);
+        }
+        catch (TargetException e) {
+            // PENDING
+            return null;
+        }*/
+    }
+ 
+    public String getServletResourcePath(String jspResourcePath) {
+        FindJSPServlet find = getServletFinder();
+        if (find == null)
+            return null;
+        String webURL = getWebURL();
+        if (webURL == null)
+            return null;
+        return find.getServletResourcePath(webURL, jspResourcePath);
+    }
+ 
+    public String getServletEncoding(String jspResourcePath) {
+        FindJSPServlet find = getServletFinder();
+        if (find == null)
+            return null;
+        String webURL = getWebURL();
+        if (webURL == null)
+            return null;
+        return find.getServletEncoding(webURL, jspResourcePath);
+    }
+ 
+    public OldJSPDebug.JspSourceMapper getSourceMapper(String jspResourcePath) {
+        // PENDING
+        return null;
+    }
+ 
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        // PENDING
+    }
+ 
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        // PENDING
+    }
 }

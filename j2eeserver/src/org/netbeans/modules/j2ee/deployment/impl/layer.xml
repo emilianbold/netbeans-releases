@@ -3,28 +3,6 @@
 
 <filesystem>
 
-  <folder name="Services">
-<!-- Is this necessary?  Why do we need an Executor now? -->
-    <folder name="Executor">
-      <file name="org-netbeans-modules-j2ee-deployment-execution-ServerExecutor.settings" url="../execution/Executor.settings">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.deployment.execution.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/core/resources/executionTypes.gif"/>
-        <attr name="SystemFileSystem.layer" stringvalue="project"/>
-      </file>
-    </folder>
-    
-<!--    <file name="org-netbeans-modules-j2ee-deployment-ServerRegistry.settings" url="ServerRegistry.settings"/> -->
-       
-<!--    <folder name="DebuggerType">
-      <file name="org-netbeans-modules-j2ee-deployment-execution-ServerDebuggerType.settings" url="../execution/Debugger.settings">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.deployment.impl.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/core/resources/debuggerTypes.gif"/>
-        <attr name="SystemFileSystem.layer" stringvalue="project"/>
-      </file>
-    </folder>
--->
-  </folder>
-
   <folder name="J2EE">
     <folder name="ApplicationProviders">
     </folder>

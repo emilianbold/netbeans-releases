@@ -19,14 +19,14 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.TargetModule;
-
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import java.io.File;
 
 /**
  *
  * @author  gfink
  */
-public interface DeploymentTarget extends Node.Cookie {
+public interface DeploymentTarget {
     
     public J2eeModule getModule ();
     
@@ -36,15 +36,8 @@ public interface DeploymentTarget extends Node.Cookie {
     
     public File getConfigurationFile();
 
-    public boolean dontDeploy();
-    
-    public boolean doFastDeploy();
-    
-    // possibly a more involved api here?
-    public void startClient(String url);
-    
     public String getClientUrl(String partUrl);
-
+    
     public TargetModule[] getTargetModules();
     
     public void setTargetModules(TargetModule[] targetModules);

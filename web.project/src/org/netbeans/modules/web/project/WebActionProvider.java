@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.web.project;
 
+import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +48,9 @@ import javax.enterprise.deploy.spi.Target;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
+import org.netbeans.modules.web.project.ui.NoSelectedServerWarning;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.*;
 
 /** Action provider of the Web project. This is the place where to do
@@ -78,11 +82,12 @@ class WebActionProvider implements ActionProvider {
     
     // Ant project helper of the project
     private AntProjectHelper antProjectHelper;
+    private ReferenceHelper refHelper;
         
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
     
-    public WebActionProvider(WebProject project, AntProjectHelper antProjectHelper) {
+    public WebActionProvider(WebProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
         
         commands = new HashMap();
             commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
@@ -98,6 +103,7 @@ class WebActionProvider implements ActionProvider {
         
         this.antProjectHelper = antProjectHelper;
         this.project = project;
+        this.refHelper = refHelper;
     }
     
     private FileObject findBuildXml() {
@@ -112,7 +118,10 @@ class WebActionProvider implements ActionProvider {
         Properties p;
         String[] targetNames = (String[])commands.get(command);
         
-        if (command.equals (COMMAND_RUN)) {             
+        if (command.equals (COMMAND_RUN)) {
+            if (!isSelectedServer ()) {
+                return;
+            }
             if (isDebugged()) {
                 NotifyDescriptor nd;
                 nd = new NotifyDescriptor.Confirmation(
@@ -141,8 +150,23 @@ class WebActionProvider implements ActionProvider {
                     return;
                 }
             }
+            J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+            ServerDebugInfo sdi = jmp.getServerDebugInfo ();
+            String h = sdi.getHost();
+            String transport = sdi.getTransport();
+            String address = "";                                                //NOI18N
+            
+            if (transport.equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                address = sdi.getShmemName();
+            } else {
+                address = Integer.toString(sdi.getPort());
+            }
+            
             p = new Properties();
             p.setProperty("client.urlPart", project.getWebModule().getUrl());
+            p.setProperty("jpda.transport", transport);
+            p.setProperty("jpda.host", h);
+            p.setProperty("jpda.address", address);
             
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] files = findSources( context );
@@ -191,7 +215,6 @@ class WebActionProvider implements ActionProvider {
     
     /** Find selected sources 
      */
-    //PENDING BUILDSYS - ignore JspServletDataObject for compilation
     private FileObject[] findSources(Lookup context) {
         FileObject srcDir = project.getSourceDirectory();
         if (srcDir != null) {
@@ -204,19 +227,9 @@ class WebActionProvider implements ActionProvider {
     
     private boolean isDebugged() {
         
-        J2eeDeploymentLookup jdl = (J2eeDeploymentLookup)project.getLookup().lookup(J2eeDeploymentLookup.class);
-        J2eeProfileSettings settings = jdl.getJ2eeProfileSettings();
-        DeploymentTargetImpl target = new DeploymentTargetImpl(settings, jdl);
-
-        ServerString server = target.getServer();
-        
-        Target t = null;
-        Target[] targs = server.toTargets();
-        if (targs != null && targs.length > 0) {
-            t = targs[0];
-        }
-
-        ServerDebugInfo sdi = server.getServerInstance().getStartServer().getDebugInfo(null);
+        J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        ServerDebugInfo sdi = jmp.getServerDebugInfo ();
+//        server.getServerInstance().getStartServer().getDebugInfo(null);
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         
         for (int i=0; i < sessions.length; i++) {
@@ -252,4 +265,38 @@ class WebActionProvider implements ActionProvider {
 //        }
 //    }
         
+    private boolean isSelectedServer () {
+        String instance = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_INSTANCE);
+        boolean selected;
+        if (instance != null) {
+            selected = true;
+        } else {
+            // no selected server => warning
+            String server = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
+            NoSelectedServerWarning panel = new NoSelectedServerWarning (server);
+
+            Object[] options = new Object[] {
+                DialogDescriptor.OK_OPTION,
+                DialogDescriptor.CANCEL_OPTION
+            };
+            DialogDescriptor desc = new DialogDescriptor (panel,
+                    NbBundle.getMessage (NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
+                true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
+            Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
+            dlg.setVisible (true);
+            if (desc.getValue() != options[0]) {
+                selected = false;
+            } else {
+                instance = panel.getSelectedInstance ();
+                selected = instance != null;
+                if (selected) {
+                    WebProjectProperties wpp = new WebProjectProperties (project, antProjectHelper, refHelper);
+                    wpp.put (WebProjectProperties.J2EE_SERVER_INSTANCE, instance);
+                    wpp.store ();
+                }
+            }
+            dlg.dispose();            
+        }
+        return selected;
+    }
 }

@@ -31,13 +31,13 @@ import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationPro
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
-// import org.netbeans.api.debugger.DebuggerInfo;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import java.util.*;
 import java.io.*;
 import javax.enterprise.deploy.model.DeployableObject;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 /**
  * Encapsulates a set of ServerTarget(s), provides a wrapper for deployment
@@ -83,12 +83,9 @@ public class TargetServer {
             instance.start(ui);
             targets = dtarget.getServer().toTargets();
         }        
-        // see if we want and can incremental
-        if (dtarget.doFastDeploy()) {
-            incremental = instance.getIncrementalDeployment();
-            if (incremental != null && ! checkServiceImplementations())
-                incremental = null;
-        }
+        incremental = instance.getIncrementalDeployment();
+        if (incremental != null && ! checkServiceImplementations())
+            incremental = null;
 
         try {
             FileObject contentFO = dtarget.getModule().getContentDirectory();
