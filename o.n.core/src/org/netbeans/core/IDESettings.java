@@ -51,7 +51,7 @@ public class IDESettings extends SystemOption {
   /** home page property name */
   public static String PROP_HOME_PAGE = "homePage";
   /** use proxy property name */
-  public static String PROP_USE_PROXY = "homePage";
+  public static String PROP_USE_PROXY = "useProxy";
   /** proxy host property name */
   public static String PROP_PROXY_HOST = "proxyHost";
   /** proxy port property name */
@@ -267,6 +267,7 @@ public class IDESettings extends SystemOption {
 
 /*
  * Log
+ *  10   Gandalf   1.9         7/28/99  Jan Jancura     Bug in useProxy property
  *  9    Gandalf   1.8         7/21/99  Ian Formanek    settings for proxy, 
  *       property output detail level hidden
  *  8    Gandalf   1.7         7/20/99  Ian Formanek    Removed 
