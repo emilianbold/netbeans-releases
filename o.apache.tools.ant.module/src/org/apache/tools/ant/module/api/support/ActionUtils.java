@@ -217,6 +217,7 @@ public final class ActionUtils {
      * @return a comma-separated list of relative file paths suitable for use by Ant
      *         (the empty string in case there are no files)
      * @throws IllegalArgumentException in case some file is not in the directory
+     * @since org.apache.tools.ant.module/3 3.16
      */
     public static String antIncludesList(FileObject[] files, FileObject dir, boolean recursive) throws IllegalArgumentException {
         if (!dir.isFolder()) {
