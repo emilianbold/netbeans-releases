@@ -42,6 +42,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
     /** document loaded; may be null initially */
     private StyledDocument document = null;
     private int listenerCount = 0; // for assertions only
+    private int cookieListenerCount = 0; // for assertions only
     private final Listener listener;
 
     /**
@@ -54,6 +55,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         this.edit = edit;
         listener = new Listener();
         edit.addPropertyChangeListener(listener);
+        cookieListenerCount++;
     }
     
     /**
@@ -82,8 +84,10 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
      * if it is not already.
      */
     protected final void initiating() {
-        edit.prepareDocument();
-        System.err.println("initiating...");//XXX
+        if (requiresUnmodifiedDocument()) {
+            edit.prepareDocument();
+            System.err.println("initiating...");//XXX
+        }
     }
 
     /**
@@ -96,12 +100,15 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
     private void refreshDocument(boolean requireDocument) throws IOException {
         System.err.println("rD begin");//XXX
         StyledDocument oldDocument = document;
-        // XXX is openDocument safe to call from any thread? probably yes, for now...
         edit.removePropertyChangeListener(listener);
+        assert --cookieListenerCount == 0;
         try {
-            document = requireDocument ? edit.openDocument() : edit.getDocument();
+            //new Exception("will call " + (requireDocument ? "openDocument" : "getDocument") + " on " + this).printStackTrace();
+            document = requireDocument ? edit.openDocument() : (document != null ? edit.getDocument() : null);
+            //new Exception("called " + (requireDocument ? "openDocument" : "getDocument") + " on " + this).printStackTrace();
         } finally {
             edit.addPropertyChangeListener(listener);
+            assert ++cookieListenerCount == 1;
         }
         assert !requireDocument || document != null;
         if (document != oldDocument) {
@@ -281,15 +288,18 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         public void propertyChange(final PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(EditorCookie.Observable.PROP_DOCUMENT)) {
                 System.err.println("DPS.pC<PROP_DOCUMENT>");//XXX
+                //new Exception("got PROP_DOCUMENT on " + DocumentParseSupport.this).printStackTrace();
                 try {
                     refreshDocument(true);
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
-                getMutex().readAccess(new Mutex.Action() {
-                    public Object run() {
+                // Runnable, not Mutex.Action, to avoid blocking: because CES fires
+                // PROP_DOCUMENT from within a RP task, and we may already be locking
+                // the EQ with CES.open or .openDocument.
+                getMutex().readAccess(new Runnable() {
+                    public void run() {
                         invalidate(evt);
-                        return null;
                     }
                 });
             }
