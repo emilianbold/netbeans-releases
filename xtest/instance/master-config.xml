@@ -73,7 +73,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="xml/tools"		testtypes="qa-functional"  attributes="validation"/>
       <module name="xml/tax/lib"	testtypes="qa-functional"  attributes="validation"/>
       <module name="xml/tree-edit"	testtypes="qa-functional"  attributes="validation"/>
-      <module name="autoupdate" testtypes="gui"  	   attributes="validation"/>
+      <!-- module name="autoupdate" testtypes="gui"  	   attributes="validation"/ -->
   </config>
   
   <!-- QA functional tests for Netbeans on jdk 1.3 -->
@@ -107,7 +107,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="xml/tools"		testtypes="qa-functional"  attributes="validation"/>
       <module name="xml/tax/lib"	testtypes="qa-functional"  attributes="validation"/>
       <module name="xml/tree-edit"	testtypes="qa-functional"  attributes="validation"/>
-      <module name="autoupdate" testtypes="gui"  	   attributes="validation"/>
+      <!-- module name="autoupdate" testtypes="gui"  	   attributes="validation"/ -->
   </config>
 
   <!-- FULL -->
@@ -140,7 +140,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="xml/tools"		testtypes="qa-functional"  attributes="validation,full"/>
       <module name="xml/tax/lib"	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="xml/tree-edit"	testtypes="qa-functional"  attributes="validation,full"/>
-      <module name="autoupdate" testtypes="gui"  	   attributes="validation,full"/>
+      <!-- module name="autoupdate" testtypes="gui"  	   attributes="validation,full"/ -->
   </config>
   
   <!-- QA functional tests for Netbeans on jdk 1.3 -->
@@ -174,7 +174,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="xml/tools"		testtypes="qa-functional"  attributes="validation,full"/>
       <module name="xml/tax/lib"	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="xml/tree-edit"	testtypes="qa-functional"  attributes="validation,full"/>
-      <module name="autoupdate" testtypes="gui"  	   attributes="validation,full"/>
+      <!-- module name="autoupdate" testtypes="gui"  	   attributes="validation,full"/ -->
   </config>
   
   <!-- QA functional tests for FFJ CE -->
