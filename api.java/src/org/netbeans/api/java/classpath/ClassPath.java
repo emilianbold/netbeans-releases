@@ -657,12 +657,16 @@ public final class ClassPath {
 
         public void addRoot (URL url) {
             if (!isInitialized()) {                
-                FileSystem fs = getFileSystem ();
-                if (fs != null) {
-                    fs.addFileChangeListener (this);
-                    setInitialized(true);
-                }
-                else {                                                
+                FileSystem[] fss = getFileSystems ();
+                if (fss != null && fss.length > 0) {
+                    for (int i = 0; i < fss.length; i++) {
+                        FileSystem fs = fss[i];
+                        if (fs != null) {
+                            fs.addFileChangeListener (this);
+                        }                                        
+                    }
+                    setInitialized(true);                    
+                } else {                                                
                     ErrorManager.getDefault().log (ErrorManager.ERROR,"Can not find file system, not able to listen on changes.");  //NOI18N
                 }
             }
@@ -683,10 +687,13 @@ public final class ClassPath {
 
         public void removeAllRoots () {
             this.roots.clear();
-            FileSystem fs = getFileSystem ();
-            if (fs != null) {
-                fs.removeFileChangeListener (this);
-            }
+            FileSystem[] fss = getFileSystems ();
+            for (int i = 0; i < fss.length; i++) {
+                FileSystem fs = fss[i];
+                if (fs != null) {
+                    fs.removeFileChangeListener (this);
+                }                
+            }            
             initialized = false; //Already synchronized
         }
 
@@ -714,10 +721,13 @@ public final class ClassPath {
 
         public void run() {
             if (isInitialized()) {
-                FileSystem fs = getFileSystem();
-                if (fs != null) {
-                    fs.removeFileChangeListener (this);
-                }
+                FileSystem[] fss = getFileSystems ();
+                for (int i = 0; i < fss.length; i++) {
+                    FileSystem fs = fss[i];
+                    if (fs != null) {
+                        fs.removeFileChangeListener (this);
+                    }                    
+                }                
             }
         }
 
@@ -771,25 +781,33 @@ public final class ClassPath {
             this.initialized = newValue;
         }
         
-        private static FileSystem getFileSystem () {
+        private static FileSystem[] getFileSystems() {
             File[] roots = File.listRoots();
-            if (roots.length == 0) {
-                return null;
-            }
-            FileObject fo = FileUtil.toFileObject(roots[0]);
-            if (fo == null) {
-                return null;
-            }
-            try {
-                return fo.getFileSystem();
-            } catch (FileStateInvalidException e) {
-                ErrorManager.getDefault().notify (e);
-                return null;
-            }
+            Set allRoots = new LinkedHashSet ();
+            assert roots != null && roots.length > 0 : "Could not list file roots to refresh";//NOI18N
+        
+            for (int i = 0; i < roots.length; i++) {
+                File root = roots[i];
+                FileObject random = FileUtil.toFileObject(root);            
+                if (random == null) continue;
+        
+                FileSystem fs;
+                try {
+                    fs = random.getFileSystem();
+                    allRoots.add(fs);
+                } catch (FileStateInvalidException e) {
+                    throw new AssertionError(e);
+                }            
+            }        
+            FileSystem[] retVal = new FileSystem [allRoots.size()];
+            allRoots.toArray(retVal);
+            assert retVal.length > 0 : "Could not get a filesystem  for project files from masterfs";//NOI18N
+        
+            return retVal;
         }
     }
 
-
+        
     static  {
         ClassPathAccessor.DEFAULT = new ClassPathAccessor() {
             public ClassPath createClassPath(ClassPathImplementation spiClasspath) {
