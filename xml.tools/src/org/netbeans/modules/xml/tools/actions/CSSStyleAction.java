@@ -31,7 +31,7 @@ import org.netbeans.modules.xml.core.DTDDataObject;
 
 import org.netbeans.modules.xml.tools.lib.GuiUtil;
 import org.netbeans.modules.xml.tools.generator.SelectFileDialog;
-
+import org.netbeans.modules.xml.core.actions.CollectDTDAction;
 /**
  * Creates a CSS draft upon a standalone DTD. Stores it into css file.
  * It does work only with standalone DTD (it is feature).
@@ -39,7 +39,7 @@ import org.netbeans.modules.xml.tools.generator.SelectFileDialog;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class CSSStyleAction extends CookieAction {
+public class CSSStyleAction extends CookieAction implements CollectDTDAction.DTDAction {
 
     /** Serial Version UID */
     private static final long serialVersionUID = 7867855746468L;
