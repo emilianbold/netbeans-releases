@@ -142,7 +142,11 @@ public class RADComponent {
       }
       RADProperty prop = (RADProperty)nameToProperty.get (props[i].getName ());
       try {
-        if ((!prop.canRead ()) || (!prop.canWrite ())) continue; // ignore this property
+        if (prop == null)       // unknown property. ignore
+          continue;
+        if ((!prop.canRead ()) || (!prop.canWrite ()))
+          continue;
+        
         Object currentValue = prop.getValue ();
         Object defaultValue = defaultPropertyValues.get (props[i].getName ());
         if (!Utilities.compareObjects (currentValue, defaultValue)) {
@@ -151,6 +155,7 @@ public class RADComponent {
           prop.setChanged (true);
         }
       } catch (Exception e) {
+        e.printStackTrace();
 //        if ( // [PENDING] notify exception
         // simply ignore this property
       }
@@ -1484,6 +1489,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  77   Gandalf   1.76        3/7/00   Tran Duc Trung  fix #5791: cannot add 
+ *       serialized bean to component palette
  *  76   Gandalf   1.75        1/18/00  Pavel Buzek     ignoring some properties
  *       in copy/paste
  *  75   Gandalf   1.74        1/17/00  Pavel Buzek     cut/paste - store and 

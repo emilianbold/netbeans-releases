@@ -27,12 +27,14 @@ import javax.swing.event.*;
 import javax.swing.border.*;
 
 import org.openide.*;
+import org.openide.nodes.Node;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import com.netbeans.developer.modules.loaders.form.FormLoaderSettings;
+import com.netbeans.developer.modules.loaders.clazz.ClassDataObject;
 
 /** Bean Installer
 *
@@ -109,7 +111,8 @@ public final class BeanInstaller extends Object {
   }
 
   /** Open the palette category selector and if user confirms some category, installs specified beans into it.
-  */
+   */
+/*  
   public static void installBeans(InstanceCookie[] cookies) {
     String pal = selectPaletteCategory();
 
@@ -123,6 +126,25 @@ public final class BeanInstaller extends Object {
     if (pal != null) {
       finishInstall(null, list, pal);
     }
+  }
+  */
+  public static void installBeans(Node[] nodes) {
+    String pal = selectPaletteCategory();
+    if (pal == null)
+      return;
+
+    ArrayList list = new ArrayList (nodes.length);
+    for (int i = 0; i < nodes.length; i++) {
+      DataObject dobj = (DataObject) nodes[i].getCookie(ClassDataObject.class);
+      if (dobj != null)
+        list.add(dobj);
+      else {
+        InstanceCookie ic = (InstanceCookie) nodes[i].getCookie(InstanceCookie.class);
+        if (ic != null)
+          list.add(ic);
+      }
+    }
+    finishInstall(null, list, pal);
   }
 
   /** Scan all files with attributes in the given jar.
@@ -229,7 +251,13 @@ public final class BeanInstaller extends Object {
       } else if (obj instanceof InstanceCookie) {
         name = ((InstanceCookie)obj).instanceName ();
         if (name != null) createInstance(category, name, null);
-      } 
+      } else if (obj instanceof ClassDataObject) {
+        try {
+          ((ClassDataObject)obj).createShadow(DataFolder.findFolder(category));
+        } catch (IOException ex) {
+          TopManager.getDefault ().notifyException(ex);
+        }
+      }
     }
   }
 
@@ -502,7 +530,8 @@ public final class BeanInstaller extends Object {
     try {
       details.load(fis = new FileInputStream(localBase + "beans.properties")); // NOI18N
     } catch (IOException e) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
+      if (System.getProperty ("netbeans.debug.exceptions") != null)
+        System.err.println(e.getMessage());
       // ignore in this case
     } finally {
       if (fis != null) try { fis.close (); } catch (IOException e) { /* ignore */ };
@@ -755,6 +784,8 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  34   Gandalf   1.33        3/7/00   Tran Duc Trung  fix #5791: cannot add 
+ *       serialized bean to component palette
  *  33   Gandalf   1.32        1/19/00  Pavel Buzek     
  *  32   Gandalf   1.31        1/17/00  Jesse Glick     Localized filenames.
  *  31   Gandalf   1.30        1/16/00  Ian Formanek    Different format in 

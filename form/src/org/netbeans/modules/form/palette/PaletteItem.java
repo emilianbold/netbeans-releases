@@ -88,7 +88,18 @@ public class PaletteItem implements java.io.Serializable {
 // Class Methods
 
   public String getName () {
-    return org.openide.util.Utilities.getShortClassName (getItemClass ());
+    String name;
+    if (instanceDO != null)
+      name = instanceDO.instanceName();
+    else if (instanceCookie != null)
+      name = instanceCookie.instanceName();
+    else
+      name = beanClass.getName();
+    int i = name.lastIndexOf('.');
+    if (i >= 0)
+      name = name.substring(i+1);
+    return name;
+    //return org.openide.util.Utilities.getShortClassName (getItemClass ());
   }
   
   public String getDisplayName () {
@@ -113,16 +124,20 @@ public class PaletteItem implements java.io.Serializable {
   
   public Object createInstance () throws InstantiationException, IllegalAccessException {
     if (beanClass == null) return null;
-    if (instanceCookie != null) {
-      try {
-        return instanceCookie.instanceCreate ();
-      } catch (ClassNotFoundException e) {
-        throw new InstantiationException (e.getMessage ());
-      } catch (java.io.IOException e) {
-        throw new InstantiationException (e.getMessage ());
+    try {
+      if (instanceDO != null) {
+        return instanceDO.instanceCreate();
       }
-    } else {
+    
+      if (instanceCookie != null) {
+        return instanceCookie.instanceCreate ();
+      }
+      
       return beanClass.newInstance ();
+    }catch (ClassNotFoundException e) {
+      throw new InstantiationException (e.getMessage ());
+    } catch (java.io.IOException e) {
+      throw new InstantiationException (e.getMessage ());
     }
   }
 
@@ -177,6 +192,8 @@ public class PaletteItem implements java.io.Serializable {
 
 /*
  * Log
+ *  17   Gandalf   1.16        3/7/00   Tran Duc Trung  fix #5791: cannot add 
+ *       serialized bean to component palette
  *  16   Gandalf   1.15        1/13/00  Ian Formanek    NOI18N #2
  *  15   Gandalf   1.14        1/5/00   Ian Formanek    NOI18N
  *  14   Gandalf   1.13        11/27/99 Patrik Knakal   

@@ -96,13 +96,16 @@ public class InstallToPaletteAction extends CookieAction {
     for (int i = 0; i < activatedNodes.length; i++) {
       cookies[i] = (InstanceCookie)activatedNodes[i].getCookie (InstanceCookie.class);
     }
-    BeanInstaller.installBeans (cookies);
+    //XXX BeanInstaller.installBeans (cookies);
+    BeanInstaller.installBeans(activatedNodes);// XXX(-tdt)
   }
 
 }
 
 /*
  * Log
+ *  6    Gandalf   1.5         3/7/00   Tran Duc Trung  fix #5791: cannot add 
+ *       serialized bean to component palette
  *  5    Gandalf   1.4         1/5/00   Ian Formanek    NOI18N
  *  4    Gandalf   1.3         11/27/99 Patrik Knakal   
  *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
