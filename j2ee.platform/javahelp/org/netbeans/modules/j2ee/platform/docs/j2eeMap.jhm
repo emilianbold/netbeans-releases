@@ -181,6 +181,7 @@
     <mapID target="config_ejb_about" url="ejb/configuring/config_ejb_about.html" />
     <mapID target="ejb_relationship" url="ejb/configuring/ejb_relationship.html" />
     <mapID target="about_ejb_relationship" url="ejb/configuring/about_ejb_relationship.html" />
+    <mapID target="config_ejb_dd" url="ejb/configuring/config_ejb_dd.html" />
     
     <!-- EJB Module from Existing Sources Project Wizard dialog box csh -->
 

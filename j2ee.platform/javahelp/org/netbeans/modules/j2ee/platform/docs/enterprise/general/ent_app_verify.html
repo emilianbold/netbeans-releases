@@ -12,27 +12,35 @@
 
 <h2>Verifying an Enterprise Application</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>When you build an EAR file, or when changes have been made to any of its modules,
-you should verify that the result is a valid implementation of the J2EE 1.4 specification.
-A verified application implements the J2EE 1.4 specification correctly.</p>
-<table cellpadding="3" cellspacing="0" border="0">
-  <tr valign="top"> 
-    <td><img src="../../web/images/tip.gif" alt="tip">&nbsp;</td>
-    <td>Not all failures to
-	    comply with the J2EE 1.4 specification will cause the application to fail. However,
-	    it is good to know where your application does not comply to the J2EE 1.4
-    specification, so that you can take appropriate steps, if any.</td>
-  </tr>
-</table>
+<p>Before you deploy an enterprise application or any stand-alone web or EJB modules, 
+  you should use the verifier to make sure you have implemented the J2EE 1.4 specification 
+  correctly. The verifier tool validates both J2EE and Sun Java System Application 
+  Server specific deployment descriptors against their corresponding DTD files 
+  and gives errors and warnings if a module or application is not J2EE and Sun 
+  Java System Application Server compliant. You can verify deployment descriptors 
+  in EAR, WAR, RAR, and JAR files.</p>
+<p>The verifier tool is not simply an XML syntax verifier. Rules and interdependencies 
+  between various elements in the deployment descriptors are verified. Where needed, 
+  user application classes are introspected to apply validation rules. </p>
+<p><b>To verify a project deployment descriptors:</b></p>
 <ol>
-<li>Right-click an enterprise application project node in the Projects window and choose Verify.
-<p>The Verifier window opens and displays all the results.</p></li>
-<li>Filter the results according to your needs:
-<ul><li>Click Failures Only to display only failures.</li>
-	<li>Click Failures and Warnings Only to display only failures and warnings.</li>
-</ul>
-<li>Make appropriate changes, if any, and verify the application again.</li>
+  <li>Right-click any Web module, EJB module, or enterprise application project 
+    in the Projects window and choose Verify. 
+    <p>The Verifier window opens and displays all the results.</p>
+  </li>
+  <li>Filter the results according to your needs: 
+    <ul>
+      <li>Click Failures Only to display only failures.</li>
+      <li>Click Failures and Warnings Only to display only failures and warnings.</li>
+    </ul>
+  <li>Make appropriate changes, if any, and verify the project again.</li>
 </ol>
+<ul class="note">
+  <li>Not all failures to comply with the J2EE 1.4 specification will cause the 
+    application to fail. However, it is good to know where your application does 
+    not comply to the J2EE 1.4 specification, so that you can take appropriate 
+    steps, if any.</li>
+</ul>
 <table>
   <tr> 
     <th colspan=2 align=left><a name="seealso">See also</a></th>

@@ -12,29 +12,41 @@
 <body>
 <h2>Deploying and Undeploying an EJB Module</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>Unless your EJB module is designed to be deployed as a stand-alone EJB module, 
-  you should always deploy EJB modules by deploying the enterprise application 
-  that contains them. If you run the Run Project or Deploy commands on an individual 
-  EJB module that is part of an enterprise application, the IDE only deploys that 
-  EJB module. Any changes you have made in the other modules in the project are 
-  not propagated to the server.</p>
-<p><b>To deploy or undeploy a single EJB module:</b></p>
+<p>There are two ways to deploy an EJB module:</p>
 <ul>
-  <li>In the Projects window, right-click the EJB project and choose one of the 
-    following: 
-    <ul>
-      <li><b>Run Project.</b> Starts the target application server and domain 
-        and deploys the EJB module.</li>
-      <li><b>Deployment <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Deploy.</b> 
-        Deploys the EJB module to the target application server and domain.</li>
-      <li><b>Deployment <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Undeploy.</b> 
-        Removes the EJB module to the target application server and domain.</li>
-      <li><b>Deployment <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Redeploy.</b> 
-        Undeployes the EJB module and then deploys it again.</li>
-    </ul>
-  </li>
+  <li><b>As a stand-alone EJB module.</b> Enterprise beans in a stand-alone EJB 
+    modules can only be accessed through their remote interfaces. All of the JAR 
+    files needed for execution are packaged in the EJB JAR file itself.</li>
+  <li><b>As part of an enterprise application.</b> When an EJB module is part 
+    of an enterprise application, its enterprise beans can be accessed from external 
+    clients and web modules through its remote interfaces, and by other modules 
+    in the enterprise application through its local interfaces. All of the JAR 
+    files needed for execution are packaged in the in the enterprise application's 
+    EAR file and the classpath to these JAR files are written in the EJB module's 
+    manifest file.</li>
 </ul>
-<p>Add info on deploying a J2EE application?</p>
+<p>There are two commands you can use to deploy an EJB module or an enterprise 
+  application:</p>
+<ul>
+  <li><b>Run Project. </b>If the local version of the stand-alone EJB module or 
+    enterprise application is newer than the version that is deployed on the application 
+    server, this command undeploys the enterprise application or module and deploys 
+    the new version. For enterprise applications, this command also opens the 
+    client module's default URL in the external browser.</li>
+  <li><b>Deploy/Redeploy Project. </b>This stops the enterprise application, undeploys 
+    the application or stand-alone module from the application server, and deploys 
+    your local version.</li>
+</ul>
+<p><b>To deploy or undeploy a stand-alone EJB module:</b></p>
+<ul>
+  <li>In the Projects window, right-click the EJB module project and choose Run 
+    Project or Deploy Project.</li>
+</ul>
+<p><b>To deploy or undeploy an enterprise application:</b></p>
+<ul>
+  <li>In the Projects window, right-click the enterprise application project and 
+    choose Run Project or Deploy Project.</li>
+</ul>
 <table border="0">
   <tr> 
     <th colspan="2" align="left" ><a name="seealso">See Also</a></th>

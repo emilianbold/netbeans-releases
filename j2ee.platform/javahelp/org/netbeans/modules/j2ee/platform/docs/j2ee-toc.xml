@@ -207,13 +207,13 @@
         <tocitem text="Configuring EJB Modules" >
             <tocitem text="About Configuring EJB Modules" target="config_ejb_about" />
             <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
-            <tocitem text="Adding an External Enterprise Bean to an EJB Module" target="tbd" />
+            <tocitem text="Configuring EJB Deployment Descriptors" target="config_ejb_dd" />
             <tocitem text="About Container-Managed Relationships" target="about_ejb_relationship" /> 
             <tocitem text="Managing Container-Managed Relationships" target="ejb_relationship" /> 
         </tocitem>
         <tocitem text="Building and Deploying EJB Modules" >
             <tocitem text="Building an EJB Module" target="build_ejb" />
-            <tocitem text="Validating an EJB Module" target="tbd" />
+            <tocitem text="Verifying an Enterprise Application" target="ent_app_verify" />
             <tocitem text="Deploying an EJB Module" target="deploy_ejb" />
         </tocitem>
         <tocitem text="Debugging and Testing EJB Modules" >

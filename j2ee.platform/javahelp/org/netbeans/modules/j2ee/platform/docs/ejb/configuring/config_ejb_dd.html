@@ -1,0 +1,106 @@
+ 
+<html>
+
+<!--
+  *     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+  *     Use is subject to license terms.
+-->
+<head>
+
+
+<title>Configuring EJB Deployment Descriptors</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+<h2> Configuring EJB Deployment Descriptors</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Deployment descriptors are XML-based text files whose elements describe how 
+  to assemble and deploy a module to a specific environment. The elements also 
+  contain behavioral information about components not included directly in code.</p>
+<p>For EJB modules, there are two types of deployment descriptors:</p>
+<ul>
+  <li><b><tt>ejb-jar.xml</tt>. </b>The general J2EE deployment descriptor that 
+    configures deployment settings on any J2EE-compliant implementation. </li>
+  <li><b><tt>sun-ejb-jar.xml</tt>.</b> The server-specific deployment descriptor 
+    that configures deployment settings for the Sun Java System Application Server.</li>
+</ul>
+<p><b>To edit <tt>ejb-jar.xml</tt>:</b></p>
+<ol>
+  <li>In the Projects window, expand the Configuration Files node for your EJB 
+    module project.</li>
+  <li>Double-click <tt>ejb-jar.xml</tt> to open it in the graphical editor. <br>
+    The graphical editor opens in a Source Editor tab. The editor contains a general 
+    Module Details section and a section for each of the enterprise beans in your 
+    module. </li>
+  <li>Edit the deployment descriptor as necessary. See the following topics for 
+    more information: 
+    <ul>
+      <li>EJB Module Deployment Descriptor Editor - Session Beans</li>
+      <li>EJB Module Deployment Descriptor Editor - Entity Beans</li>
+      <li>EJB Module Deployment Descriptor Editor - Message-Driven Beans</li>
+      <li>EJB Module Deployment Descriptor Editor - CMP Relationships</li>
+    </ul>
+  </li>
+  <li>(Optional) Click XML at the top of the deployment descriptor editor to view 
+    and edit the deployment descripor's XML code. </li>
+  <li>Choose File <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Save 
+    to save your changes.</li>
+</ol>
+<p><b>To edit <tt>sun-ejb-jar.xml</tt>:</b></p>
+<ol>
+  <li>In the Projects window, expand the Configuration Files node for your EJB 
+    module project.</li>
+  <li>Double-click <tt>sun-ejb-jar.xml</tt> to open it in the graphical editor. 
+    <br>
+    The graphical editor opens in a Source Editor tab. The editor contains a tree 
+    view of the module's contents on the left and property editors for each item 
+    on the right. </li>
+  <li>Edit the deployment descriptor as necessary. See the following topics for 
+    more information: 
+    <ul>
+      <li>To come</li>
+    </ul>
+  </li>
+  <li>Choose File <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Save 
+    to save your changes.</li>
+</ol>
+<ul class="note">
+  <li>If you enter any XML syntax errors the IDE automatically alerts you. To 
+    fully ensure your changes have not cause any errors, you should verify the 
+    EJB module. </li>
+</ul>
+<table border="0">
+  <tr> 
+    <th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+  </tr>
+  <tr valign="top"> 
+    <td width="23px" nowrap>&nbsp;</td>
+    <!--
+      
+    <td nowrap><a href="add_ejbql.html">Enterprise JavaBeans Query Language</a><br>
+      <a href="">EJBQL Property Editor</a><br>
+      <a href="define_finder_method.html">Defining a Finder Method</a><br>
+      <a href="define_select_method.html">Defining a Select Method</a><br>
+      <a href="add_ejbql.html">Creating an Enterprise Bean</a><br>
+      <a href="add_ejbql.html">Working With Enterprise Beans</a></td>
+    -->
+  </tr>
+</table>
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+</body>
+
+</html>
