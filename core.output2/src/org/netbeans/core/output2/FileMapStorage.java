@@ -156,7 +156,10 @@ class FileMapStorage implements Storage {
      */
     public synchronized ByteBuffer getWriteBuffer (int size) throws IOException {
         if (master.capacity() - master.position() < size) {
-            master = ByteBuffer.allocateDirect (BASE_BUFFER_SIZE * 2);
+            int newSize = Math.max (BASE_BUFFER_SIZE * 2, 
+                size + BASE_BUFFER_SIZE);
+            
+            master = ByteBuffer.allocateDirect (newSize);
         }
 
         if (buffer == null) {
