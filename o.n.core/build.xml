@@ -18,17 +18,9 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="compile">
     <javac srcdir="libsrc" destdir="libsrc"/>
-    <!-- Force use of classic compiler, though slower; modern compiler on Linux 1.3 -->
-    <!-- has bugs which prevents it from compiling entire module correctly -->
-    <!-- (though compiling in pieces *sometimes* works). -->
-    <!-- Bug involves inner class having same name as an outer class in the same package. -->
-    <!-- Note that it works if you compile from this dir, just not from another dir! -->
-    <!-- XXX Apparently Win2000 1.3 can compile it with modern compiler, so make this -->
-    <!-- test conditional on Linux, to avoid penalizing others with a slow compiler. -->
-    <!-- Also see same situation in beans and form and properties modules. -->
-    <property name="build.compiler" value="classic"/>
     <javac srcdir="src" destdir="src">
       <classpath>
+        <pathelement location="../openide/openide-13javac-workaround.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
 	<pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>

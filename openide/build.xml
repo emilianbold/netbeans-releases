@@ -54,6 +54,26 @@ Microsystems, Inc. All Rights Reserved.
          basedir="src"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
+    <!-- JDK 1.3 Javac at least on Linux has a serious bug as regards -->
+    <!-- situations where one package contains a public class and a public -->
+    <!-- inner class of the same name: though the inner class should be qualified -->
+    <!-- by its outer class, something gets confused and the compiler thinks -->
+    <!-- it cannot find the simple class whenever it is used. -->
+    <!-- Forcing use of 1.2 compiler is possible with -Dbuild.compiler=classic, -->
+    <!-- but this slows down builds, messes up Jikes users, and is not apparently -->
+    <!-- needed for all 1.3 Javac versions. Easier to ensure that the outer classes -->
+    <!-- appear in a separate JAR file at compile time, this assuages the compiler. -->
+    <jar jarfile="openide-13javac-workaround.jar"
+         basedir="src"
+         compress="false">
+      <!-- Compare inner classes of Actions: -->
+      <include name="org/openide/awt/ToolbarButton*.class"/>
+      <exclude name="org/openide/awt/ToolbarButtonUI*.class"/>
+      <include name="org/openide/awt/ToolbarToggleButton*.class"/>
+      <!-- Compare inner class of RequestProcessor: -->
+      <include name="org/openide/util/Task*.class"/>
+      <exclude name="org/openide/util/TaskListener*.class"/>
+    </jar>
   </target>
 
   <target name="netbeans" depends="jars"/>
@@ -174,6 +194,7 @@ Microsystems, Inc. All Rights Reserved.
     </delete>
     <delete file="manifest-subst.mf"/>
     <deltree dir="netbeans"/>
+    <delete file="openide-13javac-workaround.jar"/>
     <deltree dir="OpenAPIs"/>
     <delete file="OpenAPIs.zip"/>
     <delete file="OpenAPIs.log"/>

@@ -6,7 +6,8 @@
 
 <project name="Ant Module" default="all" basedir=".">
   <target name="setProps">
-    <property name="build.compiler" value="classic"/>
+    <!-- Removed (is this still necessary?). -jglick -->
+    <!-- <property name="build.compiler" value="classic"/> -->
     <property name="dist.classes" value="classes"/>
     <property name="module.package" value="org${file.separator}apache${file.separator}tools${file.separator}ant${file.separator}module"/>
     <property name="module.classes" value="${dist.classes}${file.separator}${module.package}"/>
