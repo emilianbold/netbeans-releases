@@ -47,8 +47,8 @@ public abstract class EjbJarMultiviewElement extends ToolBarMultiViewElement {
             if (view instanceof SectionNodeView) {
                 dataObject.getEjbJar().addPropertyChangeListener(new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
-                        ((SectionNodeView) view).dataModelPropertyChange(evt.getSource(), evt.getPropertyName(), evt.getOldValue(),
-                                evt.getNewValue());
+                        ((SectionNodeView) view).dataModelPropertyChange(evt.getSource(), evt.getPropertyName(),
+                                evt.getOldValue(), evt.getNewValue());
                     }
                 });
             }
@@ -74,7 +74,7 @@ public abstract class EjbJarMultiviewElement extends ToolBarMultiViewElement {
     protected abstract PanelView createView();
 
     public CloseOperationState canCloseElement() {
-        if (dataObject.isModified()) {
+        if (! dataObject.canClose()) {
             return MultiViewFactory.createUnsafeCloseState(Utils.getBundleMessage("LBL_DataObjectModified"), null,
                     null);
         } else {

@@ -15,6 +15,8 @@ package org.netbeans.modules.xml.multiview;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -28,6 +30,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.util.Enumeration;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * XmlMultiviewDataObject.java
@@ -80,6 +85,13 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private synchronized XmlMultiViewEditorSupport createEditorSupport() {
         if(editor == null) {
             editor = new XmlMultiViewEditorSupport(this);
+            editor.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())) {
+                        documentUpdated();
+                    }
+                }
+            });
         }
         return editor;
     }
@@ -327,5 +339,18 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private void synchronizeModel(boolean updateFromModel) {
         this.updateFromModel = updateFromModel;
         synchronizeModelTask.schedule(PARSING_INIT_DELAY);
+    }
+
+    public boolean canClose() {
+        if (isModified()) {
+            Enumeration enumeration =
+                    ((CloneableTopComponent) getEditorSupport() .getMVTC()).getReference().getComponents();
+            if (enumeration.hasMoreElements()) {
+                enumeration.nextElement();
+                return enumeration.hasMoreElements();
+            }
+            return false;
+        }
+        return true;
     }
 }

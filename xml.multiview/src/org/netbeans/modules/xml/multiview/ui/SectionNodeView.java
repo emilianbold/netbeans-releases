@@ -87,7 +87,7 @@ public class SectionNodeView extends SectionView {
     }
 
     public void refreshView() {
-        refreshTask.run();
+        rootNode.refreshSubtree();
     }
 
     public void scheduleRefreshView() {

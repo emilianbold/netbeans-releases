@@ -164,6 +164,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
     }
     
     private void openInAWT(int index) {
+        dObj.documentUpdated();
         CloneableTopComponent mvtc = openCloneableTopComponent();
         MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
         handler.requestVisible(handler.getPerspectives()[index<0?xmlMultiViewIndex:index]);
