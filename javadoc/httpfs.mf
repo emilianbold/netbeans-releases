@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.javadoc.httpfs/1
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Name: HTTP Javadoc Filesystem
+Created-By: Jeffrey A. Keyser
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.icebrowser/1 > 1.5
+
+Name: org/netbeans/modules/javadoc/httpfs/HTTPFileSystem.class
+OpenIDE-Module-Class: Filesystem
+Display-Name: HTTP Javadocs
