@@ -421,6 +421,10 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                 //Check libraries and add them to classpath automatically
                 String libFolderName = helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.LIBRARIES_DIR);
                 WebProjectProperties wpp = new WebProjectProperties (WebProject.this, helper, refHelper);
+                    //DDDataObject initialization to be ready to listen on changes (#45771)
+                    try {
+                        DataObject dobj = DataObject.find(webModule.getDeploymentDescriptor());
+                    } catch (org.openide.loaders.DataObjectNotFoundException ex) {}
                 if (libFolderName != null && helper.resolveFile (libFolderName).isDirectory ()) {
                     List cpItems = (List) wpp.get (WebProjectProperties.JAVAC_CLASSPATH);
                     FileObject libFolder = helper.resolveFileObject(libFolderName);
