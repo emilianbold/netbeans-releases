@@ -5,7 +5,7 @@
           "http://www.netbeans.org/dtds/tc-ref2_0.dtd">
 
 <tc-ref version="2.0">
-    <module name="org.netbeans.core.ui/1" spec="1.2" />
+    <module name="org.netbeans.core.output2/1" spec="1.1" />
     <tc-id id="output" />
     <state opened="false" />
 </tc-ref>
