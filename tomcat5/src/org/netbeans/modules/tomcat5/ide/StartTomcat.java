@@ -122,7 +122,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     private boolean isDebugMode = false;
     private boolean startDebugMode = false;
     
-    private static final String DEPLOYMENT_PLAN_FNAME = "WEB-INF" + System.getProperty("file.separator")+ "tomcat_configuration.xml"; //NOI18N
+    private static final String DEPLOYMENT_PLAN_FNAME = "WEB-INF" + System.getProperty("file.separator")+ "context.xml"; //NOI18N
     
     /** Default constructor. */
     public StartTomcat () {
@@ -348,6 +348,17 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
         while ((command == CommandType.START && !URLWait.waitForStartup (tm, 1000)) ||  //still no feedback when starting
                (command == CommandType.STOP && URLWait.waitForStartup (tm, 1000))) {    //still getting feedback when stopping
             pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, NbBundle.getMessage (StartTomcat.class, "MSG_waiting"), StateType.RUNNING));
+        }
+        if (command == CommandType.START)
+        try {
+            TargetModuleID modules [] = tm.getAvailableModules (ModuleType.WAR, tm.getTargets ());
+            System.out.println("AVAILABLE MODULES");
+            for (int j = 0; j < modules.length; j++) {
+                System.out.println("module:"+modules [j]);
+            }
+            System.out.println("END OF AVAILABLE MODULES");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.COMPLETED));
         running = command.equals (CommandType.START);
