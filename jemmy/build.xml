@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -11,47 +11,14 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project name="Jemmy" default="compile" basedir=".">
-  <import file="../nbbuild/default.xml"/> 
-
-  <property name="src" value="src"/>
-  <property name="modulesrc" value="modulesrc"/>
-  <property name="build" value="classes"/>
-  <property name="javadoc" value="javadoc/jemmy-api"/>
+<project name="jemmy" default="compile" basedir=".">
+  <import file="nbproject/build-impl.xml"/>
+  <!-- Properties not defined in this or above scripts are set in nbproject/project.properties -->
+  <!-- Package name used in targets api and test -->
   <property name="package" value="org.netbeans.jemmy"/>
-
-
-  <property name="jar" value="jemmy.jar"/>
-  <property name="zip" value="jemmy.zip"/>
-  <property name="util" value="util"/>
-  <property name="excludes" value="util/${ant.java.version}.excludes"/>
-
-  <property name="testlist" value="testsuite/testlist"/>
-  <property name="testdatalocation" value="testsuite/src/org/netbeans/jemmy/testing"/>
-  <property name="testbuild" value="testsuite/classes"/>
-  <property name="testsources" value="testsuite/src"/>
-  <property name="testresources" value="testsuite/gui_resource"/>
-  <property name="testtimeouts" value="testsuite/jemmy.timeouts"/>
-  <property name="testresultdir" value="testsuite/run"/>
-  <property name="testrundir" value="run"/>
-  <property name="robot" value="off"/>
-  <property name="shortcut" value="off"/>
-  <property name="dispatch" value="off"/>
-
-  <property name="nbext" value="../nbbuild"/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" value="${nbext}/standard-nbm-license.txt"/>
-
-    <target name="init" depends="default.init">
-      <patternset id="jemmy.files">
-        <!-- All files created for NBM -->
-        <include name="${nb.modules.dir}/org-netbeans-modules-jemmy.jar"/>
-        <include name="${nb.docs.dir}/jemmy-api.zip"/>
-        <include name="${nb.modules.dir}/ext/jemmy.jar"/>
-      </patternset>
-    </target>
-
+  <!-- Excludes according to java.version -->
+  <property name="java.version.excludes" value="util/${ant.java.version}.excludes"/>
+    
   <target name="java">
     <echo message="Using ${java.vm.version} java"/>
   </target>
@@ -62,103 +29,82 @@ Microsystems, Inc. All Rights Reserved.
     </tstamp>
   </target>
 
-  <target name="compile" depends="java,timestamp">
+  <target name="compile" depends="init,java,timestamp">
     <filter token="BUILD_NUMBER" value="${buildnumber}"/>
-    <mkdir dir="${build}"/>
-    <javac srcdir="${src}" destdir="${build}" excludesfile="${excludes}" debug="on" source="1.4"/>
-    <copy file="${src}/org/netbeans/jemmy/debug.timeouts" todir="${build}/org/netbeans/jemmy"/>
-    <copy file="${src}/org/netbeans/jemmy/version_info" tofile="${build}/org/netbeans/jemmy/version_info" filtering="on"/>
+    <mkdir dir="${build.classes.dir}"/>
+    <javac srcdir="${src.dir}" destdir="${build.classes.dir}" excludesfile="${java.version.excludes}" debug="on" source="1.4"/>
+    <copy file="${src.dir}/org/netbeans/jemmy/debug.timeouts" todir="${build.classes.dir}/org/netbeans/jemmy"/>
+    <copy file="${src.dir}/org/netbeans/jemmy/version_info" tofile="${build.classes.dir}/org/netbeans/jemmy/version_info" filtering="on"/>
+  </target>
+
+  <target name="jar" depends="compile">
+    <mkdir dir="${dist.dir}"/>
+    <jar jarfile="${dist.jar}" basedir="${build.classes.dir}" manifest="${build.classes.dir}/org/netbeans/jemmy/version_info"/>
   </target>
 
   <target name="check-api-uptodate">
-    <uptodate property="api-uptodate" targetfile="${javadoc}/index.html">
-      <srcfiles dir="${src}">
+    <uptodate property="api-uptodate" targetfile="${dist.javadoc.dir}/index.html">
+      <srcfiles dir="${src.dir}">
         <include name="**/*.java"/>
       </srcfiles>
     </uptodate>
   </target>
 
-  <target name="api" depends="check-api-uptodate" unless="api-uptodate">
-    <mkdir dir="${javadoc}"/>
+  <target name="api" depends="init,check-api-uptodate" unless="api-uptodate">
+    <mkdir dir="${dist.javadoc.dir}"/>
     <javadoc packagenames="${package},${package}.util,${package}.explorer,${package}.operators,${package}.demo,${package}.drivers,${package}.drivers.buttons,${package}.drivers.input,${package}.drivers.lists,${package}.drivers.scrolling,${package}.drivers.tables,${package}.drivers.text,${package}.drivers.trees,${package}.image" 
-     sourcepath="${src}" destdir="${javadoc}" Protected="yes" Windowtitle="Jemmy API"/>
+             sourcepath="${src.dir}" destdir="${dist.javadoc.dir}" Protected="yes" Windowtitle="Jemmy API"/>
   </target>
 
-  <target name="javadoc" depends="api">
-    <zip zipfile="${javadoc}.zip" basedir="${javadoc}"/>
+  <!-- Only shortcut to be available in project menu in IDE -->
+  <target name="javadoc" depends="api"/>
+  
+  <target name="jarsrc" depends="jar">
+    <jar jarfile="${dist.jar}" basedir="${src.dir}" update="yes"/>
   </target>
 
-  <target name="jar" depends="compile">
-    <jar jarfile="${jar}" basedir="${build}" manifest="${build}/org/netbeans/jemmy/version_info"/>
-  </target>
-
-  <target name="jars" depends="init,jar,javadoc">
-    <copy file="${javadoc}.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}" filtering="off"/>
-    <copy file="${jar}" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext" filtering="off"/>
-    <property file="${build}/org/netbeans/jemmy/version_info"/>
-    <filter token="VERSION_SUBST" value="${Jemmy-MajorVersion}.${Jemmy-MinorVersion}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-jemmy.jar" 
-         manifest="manifest-subst.mf" 
-         basedir="${modulesrc}"
-    />
-    <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
-      <enabled dir="${netbeans.dest.dir}/${cluster.dir}">
-        <include name="${nb.modules.dir}/org-netbeans-modules-jemmy.jar"/>
-      </enabled>
-    </createmodulexml>
-  </target>
-
-  <target name="jarsrc" depends="compile,jar">
-    <jar jarfile="${jar}" basedir="${src}" update="yes"/>
-  </target>
-
-  <target name="jarapi" depends="compile,api,jar">
-    <jar jarfile="${jar}" basedir="${javadoc}" update="yes"/>
+  <target name="jarapi" depends="jar,api">
+    <jar jarfile="${dist.jar}" basedir="${dist.javadoc.dir}" update="yes"/>
   </target>
 
   <target name="jarall" depends="jarapi,jarsrc">
   </target>
 
   <target name="zip" depends="compile">
-    <zip zipfile="${zip}" basedir="${build}"/>
+    <zip zipfile="${dist.zip}" basedir="${build.classes.dir}"/>
   </target>
 
-  <target name="zipsrc" depends="compile,zip">
-    <zip zipfile="${zip}" basedir="${src}" update="yes"/>
+  <target name="zipsrc" depends="zip">
+    <zip zipfile="${dist.zip}" basedir="${src.dir}" update="yes"/>
   </target>
 
-  <target name="zipapi" depends="compile,api,zip">
-    <zip zipfile="${zip}" basedir="${javadoc}" update="yes"/>
+  <target name="zipapi" depends="api,zip">
+    <zip zipfile="${dist.zip}" basedir="${dist.javadoc.dir}" update="yes"/>
   </target>
 
   <target name="zipall" depends="zipapi,zipsrc">
   </target>
 
-  <target name="clean" depends="init">
-    <delete dir="${build}/org"/>
-    <delete dir="javadoc"/>
-    <delete dir="${testbuild}"/>
-    <delete file="${jar}"/>
-    <delete file="${zip}"/>
-    <delete file="manifest-subst.mf"/>
-    <delete file="jemmy.nbm"/>
-    <delete>
-        <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-            <patternset refID="jemmy.files"/>
-        </fileset>
-    </delete>
-  </target>
-
-  <target name="test" depends="compiletest">
+  <!-- Test jemmy - if run from IDE it closes IDE. That's why it is called only
+       when netbeans.home is not defined.
+       -->
+  <target name="test" depends="compiletest" unless="netbeans.home">
     <taskdef name="suite" classname="${package}.testing.TestSuite">
       <classpath>
-        <pathelement location="${testbuild}"/>
-        <pathelement location="${build}"/>
+        <pathelement location="${build.test.classes.dir}"/>
+        <pathelement location="${build.classes.dir}"/>
         <pathelement path="${java.class.path}"/>
       </classpath>
     </taskdef>
+    <property name="testlist" value="testsuite/testlist"/>
+    <property name="testdatalocation" value="testsuite/src/org/netbeans/jemmy/testing"/>
+    <property name="testresources" value="testsuite/gui_resource"/>
+    <property name="testtimeouts" value="testsuite/jemmy.timeouts"/>
+    <property name="testresultdir" value="testsuite/run"/>
+    <property name="testrundir" value="run"/>
+    <property name="robot" value="off"/>
+    <property name="shortcut" value="off"/>
+    <property name="dispatch" value="off"/>
     <suite testlist="${testlist}" 
            testslocation="${testdatalocation}" 
            resources="${testresources}" 
@@ -171,33 +117,13 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compiletest" depends="compile">
-    <mkdir dir="${testbuild}"/>
-    <javac srcdir="${testsources}" destdir="${testbuild}" excludesfile="${excludes}" debug="on" source="1.4">
+    <mkdir dir="${build.test.classes.dir}"/>
+    <javac srcdir="${test.src.dir}" destdir="${build.test.classes.dir}" excludesfile="${java.version.excludes}" debug="on" source="1.4">
       <classpath>
-        <pathelement location="${build}"/>
+        <pathelement location="${build.classes.dir}"/>
         <pathelement path="${java.class.path}"/>
       </classpath>
     </javac>
   </target>
-
-  <target name="nbm" depends="netbeans">
-    <makenbm file="jemmy.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules.dir}/org-netbeans-modules-jemmy.jar"
-             homepage="http://jemmy.${homepage.base}"
-             distribution="http://${dist.base}/jemmy.nbm">
-      <license file="${license.file}"/>
-<!--      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/> -->
-    </makenbm>
-  </target>
-
-  <target name="netbeans" depends="jars">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/org-netbeans-modules-jemmy.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="jemmy.files"/>
-      </fileset>
-    </genlist>
-  </target>
-
-  <target name="release"/>
 </project>
+

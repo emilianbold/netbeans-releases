@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
+            <code-name-base>org.netbeans.modules.jemmy.idemodule</code-name-base>
+            <path>jemmy/idemodule</path>
+            <module-dependencies/>
+            <public-packages>
+                <package>org.netbeans.jemmy</package>
+                <package>org.netbeans.jemmy.accessibility</package>
+                <package>org.netbeans.jemmy.demo</package>
+                <package>org.netbeans.jemmy.drivers</package>
+                <package>org.netbeans.jemmy.explorer</package>
+                <package>org.netbeans.jemmy.image</package>
+                <package>org.netbeans.jemmy.operators</package>
+                <package>org.netbeans.jemmy.util</package>
+            </public-packages>
+
+            <extra-compilation-unit>
+                <package-root>../src</package-root>
+                <classpath/>
+		<built-to>../build/classes</built-to>
+		<built-to>${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/jemmy.jar</built-to>
+            </extra-compilation-unit>
+        </data>
+    </configuration>
+</project>

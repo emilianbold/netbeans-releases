@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+
+Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
+Author: Jiri.Skrivanek@sun.com
+-->
+<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
+
+<library version="1.0">
+    <name>Jemmy</name>
+    <type>j2se</type>
+    <localizing-bundle>org/netbeans/modules/jemmy/idemodule/Bundle</localizing-bundle>
+    <volume>
+        <type>classpath</type>
+        <resource>jar:nbinst:///modules/ext/jemmy.jar!/</resource>
+    </volume>
+    <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst:///docs/jemmy-api.zip!/</resource>
+    </volume>
+</library>

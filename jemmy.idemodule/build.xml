@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="jemmy/idemodule" default="netbeans" basedir=".">
+    <import file="../../nbbuild/templates/projectized.xml"/>
+  
+    <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <!-- All files created for NBM -->
+            <include name="${module.jar}" />
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml" />
+            <include name="${nb.docs.dir}/jemmy-api.zip"/>
+            <include name="${nb.modules.dir}/ext/jemmy.jar"/>
+        </patternset>
+    </target>
+    
+    <target name="netbeans-extra">
+        <!-- build jemmy.jar -->
+        <ant dir=".." target="jar" inheritAll="false"/>
+        <copy file="../dist/jemmy.jar" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+        <!-- create javadoc -->
+        <ant dir=".." target="javadoc" inheritAll="false"/>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
+        <zip zipfile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/jemmy-api.zip" basedir="../dist/javadoc"/>
+    </target>
+
+     <!-- overriden because we need to filter manifest -->
+    <target name="jar-no-module-deps" unless="module.dependencies">
+        <property file="../src/org/netbeans/jemmy/version_info"/>
+        <filter token="VERSION_SUBST" value="${Jemmy-MajorVersion}.${Jemmy-MinorVersion}"/>
+        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on" overwrite="true"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" 
+             compress="${build.package.compress}" 
+             index="${build.package.index}" 
+             manifest="manifest-subst.mf" 
+             basedir="${build.classes.dir}">
+            <manifest>
+                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+            </manifest>
+	</jar>
+    </target>
+    
+    <target name="clean" depends="projectized.clean">
+        <ant dir=".." target="clean" inheritAll="false"/>
+    </target>
+</project>
