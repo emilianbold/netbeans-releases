@@ -14,6 +14,7 @@
 package org.openide.actions;
 
 import java.io.IOException;
+import org.openide.cookies.SaveCookie;
 
 import org.openide.util.actions.NodeAction;
 import org.openide.nodes.Node;
@@ -107,6 +108,10 @@ public final class SaveAsTemplateAction extends NodeAction {
     private void createNewTemplate(DataObject source,
                                    DataFolder targetFolder) {
         try {
+            SaveCookie cookie = (SaveCookie)source.getCookie (SaveCookie.class);
+            if (cookie != null) {
+                cookie.save ();
+            }
             DataObject newTemplate = source.copy(targetFolder);
             newTemplate.setTemplate(true);
         } catch (IOException ex) {
