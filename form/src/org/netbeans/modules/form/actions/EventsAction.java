@@ -101,7 +101,8 @@ public class EventsAction extends CookieAction {
         Hashtable mapping = new Hashtable ();
         public void menuSelected(MenuEvent e) {
           JMenu menu = (JMenu)e.getSource ();
-          menu.removeAll ();
+          if (menu.getMenuComponentCount () > 0) // [IAN - Patch for Swing 1.1, which throws NullPointerException if removeAll is called on empty uninitialized JMenu]
+            menu.removeAll ();
           Node[] nodes = getActivatedNodes ();
           if (nodes.length == 0) return;
           Node n = nodes[0]; // we suppose that one node is activated
@@ -154,6 +155,8 @@ public class EventsAction extends CookieAction {
 }
 /*
  * Log
+ *  2    Gandalf   1.1         3/28/99  Ian Formanek    Introduced changes done 
+ *       in X2 after this class was copied to Gandalf
  *  1    Gandalf   1.0         3/26/99  Ian Formanek    
  * $
  */
