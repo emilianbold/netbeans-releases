@@ -459,7 +459,7 @@ public class PropertyUtils {
         }
         URI u = base.toURI().relativize(file.toURI());
         assert !u.isAbsolute() : u + " from " + basedir + " and " + file + " with common root " + base;
-        b.append(u);
+        b.append(u.getPath());
         if (b.charAt(b.length() - 1) == '/') {
             // file is an existing directory and file.toURI ends in /
             // we do not want the trailing slash

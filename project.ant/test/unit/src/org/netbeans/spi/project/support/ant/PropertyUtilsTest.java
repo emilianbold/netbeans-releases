@@ -34,6 +34,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Test functionality of PropertyUtils.
@@ -156,7 +157,7 @@ public class PropertyUtilsTest extends NbTestCase {
         File tmp = getWorkDir();
         File d1 = new File(tmp, "d1");
         File d1f = new File(d1, "f");
-        File d1s = new File(d1, "s");
+        File d1s = new File(d1, "s p a c e");
         File d1sf = new File(d1s, "f");
         File d2 = new File(tmp, "d2");
         File d2f = new File(d2, "f");
@@ -167,8 +168,8 @@ public class PropertyUtilsTest extends NbTestCase {
         assertEquals("d2f from d1", "../d2/f", PropertyUtils.relativizeFile(d1, d2f));
         assertEquals("d1 from d1", ".", PropertyUtils.relativizeFile(d1, d1));
         assertEquals("d2 from d1", "../d2", PropertyUtils.relativizeFile(d1, d2));
-        assertEquals("d1s from d1", "s", PropertyUtils.relativizeFile(d1, d1s));
-        assertEquals("d1sf from d1", "s/f", PropertyUtils.relativizeFile(d1, d1sf));
+        assertEquals("d1s from d1", "s p a c e", PropertyUtils.relativizeFile(d1, d1s));
+        assertEquals("d1sf from d1", "s p a c e/f", PropertyUtils.relativizeFile(d1, d1sf));
         assertEquals("d11 from d1", "../d11", PropertyUtils.relativizeFile(d1, d11));
         // Now make them and check that the results are the same.
         assertTrue("made d1s", d1s.mkdirs());
@@ -180,10 +181,19 @@ public class PropertyUtilsTest extends NbTestCase {
         assertEquals("existing d2f from d1", "../d2/f", PropertyUtils.relativizeFile(d1, d2f));
         assertEquals("existing d1 from d1", ".", PropertyUtils.relativizeFile(d1, d1));
         assertEquals("existing d2 from d1", "../d2", PropertyUtils.relativizeFile(d1, d2));
-        assertEquals("existing d1s from d1", "s", PropertyUtils.relativizeFile(d1, d1s));
-        assertEquals("existing d1sf from d1", "s/f", PropertyUtils.relativizeFile(d1, d1sf));
+        assertEquals("existing d1s from d1", "s p a c e", PropertyUtils.relativizeFile(d1, d1s));
+        assertEquals("existing d1sf from d1", "s p a c e/f", PropertyUtils.relativizeFile(d1, d1sf));
         assertEquals("existing d11 from d1", "../d11", PropertyUtils.relativizeFile(d1, d11));
-        // XXX also try to test nonrelativizable files... only works on Windows though!
+        // XXX: the below code should pass on Unix too I guess.
+        if (Utilities.isWindows()) {
+            // test Windows drives:
+            File f1 = new File("C:\\folder\\one");
+            File f2 = new File("D:\\t e m p\\two");
+            assertNull("different drives cannot be relative", PropertyUtils.relativizeFile(f1, f2));
+            f1 = new File("D:\\folder\\one");
+            f2 = new File("D:\\t e m p\\two");
+            assertEquals("relativization failed for Windows absolute paths", "../../t e m p/two", PropertyUtils.relativizeFile(f1, f2));
+        }
     }
     
     public void testGlobalProperties() throws Exception {
