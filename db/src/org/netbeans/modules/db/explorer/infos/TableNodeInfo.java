@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
 import org.netbeans.lib.ddl.*;
@@ -26,7 +28,6 @@ import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class TableNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =-632875098783935367L;
@@ -64,7 +65,6 @@ public class TableNodeInfo extends DatabaseNodeInfo {
             if (rs != null) {
                 HashMap rset = new HashMap();
                 DatabaseNodeInfo iinfo;
-                Object value;
                 while (rs.next()) {
                     rset = drvSpec.getRow();
                     if (rset.get(new Integer(9)) == null)
@@ -166,17 +166,8 @@ public class TableNodeInfo extends DatabaseNodeInfo {
         }
     }
 
-    public void dropIndex(DatabaseNodeInfo tinfo)
-    throws DatabaseException
-    {
-        DatabaseNode node = (DatabaseNode)tinfo.getNode();
-        DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
-        try {
-            String cname = tinfo.getName();
-            Specification spec = (Specification)getSpecification();
-        } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
-        }
+    public void dropIndex(DatabaseNodeInfo tinfo) throws DatabaseException {
+        //???
     }
 
     public void refreshChildren() throws DatabaseException
@@ -246,16 +237,14 @@ public class TableNodeInfo extends DatabaseNodeInfo {
         }
     }
 
-    public void delete()
-    throws IOException
-    {
+    public void delete() throws IOException {
         try {
             Specification spec = (Specification)getSpecification();
             AbstractCommand cmd = spec.createCommandDropTable(getTable());
             cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
-            throw new IOException(e.getMessage());
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 
@@ -275,7 +264,9 @@ public class TableNodeInfo extends DatabaseNodeInfo {
                     return elem;
                 }
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            //PENDING
+        }
         return null;
     }
 
@@ -284,19 +275,11 @@ public class TableNodeInfo extends DatabaseNodeInfo {
     {
         try {
             Vector chvec = new Vector(1);
-
-            // !!! TADY JE ASI PROBLEM S REFRESHEM TABULEK PO PRIDANI !!!
-
-            //			ResultSet rs;
-            //			DatabaseMetaData dmd = getSpecification().getMetaData();
-            //			String catalog = (String)get(DatabaseNode.CATALOG);
-            //			String table = (String)get(DatabaseNode.TABLE);
-
             initChildren(chvec, tname);
             if (chvec.size() == 1) {
                 DatabaseNodeInfo nfo = (DatabaseNodeInfo)chvec.elementAt(0);
                 DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
-                DatabaseNode dnode = chld.createSubnode(nfo, true);
+                chld.createSubnode(nfo, true);
             }
             // refresh list of columns
             refreshChildren();
