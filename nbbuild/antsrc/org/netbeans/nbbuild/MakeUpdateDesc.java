@@ -274,21 +274,21 @@ public class MakeUpdateDesc extends MatchingTask {
                                                 idx = line.indexOf (dummyDistribution);
                                                 if (idx != -1) {
                                                     String line1 = line.substring (0, idx) + "distribution=\""; //NOI18N
-                                                    log ("distribution line1  : \"" + line1 + "\"", Project.MSG_INFO);
+                                                    log ("distribution line1  : \"" + line1 + "\"", Project.MSG_DEBUG);
                                                     String pomline = line.substring (idx + dummyDistribution.length ());
-                                                    log ("distribution pomline: \"" + pomline + "\"", Project.MSG_INFO);
+                                                    log ("distribution pomline: \"" + pomline + "\"", Project.MSG_DEBUG);
                                                     String line2;
                                                     int idx2 = pomline.indexOf("\""); //NOI18N
                                                     if (idx2 != -1) {
                                                         line2 = pomline.substring (idx2);
-                                                        log ("distribution line2: \"" + line2 + "\"", Project.MSG_INFO);
+                                                        log ("distribution line2: \"" + line2 + "\"", Project.MSG_DEBUG);
                                                     } else {
                                                         throw new BuildException ("Strange info.xml line: " + line, location);
                                                     }
                                                     String newline = line1 + dist_base + "/" + n_file.getName() + line2;
                                                     if (!newline.equals(line)) {
-                                                        log (" <- distribution fixed from: \"" + line + "\"", Project.MSG_INFO);
-                                                        log (" -> distribution fixed to  : \"" + newline + "\"", Project.MSG_INFO);
+                                                        log (" <- distribution fixed from: \"" + line + "\"", Project.MSG_DEBUG);
+                                                        log (" -> distribution fixed to  : \"" + newline + "\"", Project.MSG_VERBOSE);
                                                         line = newline;
                                                     }
                                                 }
