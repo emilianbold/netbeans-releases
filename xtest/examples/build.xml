@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="Unit Tests" basedir=".." default="xtest">
+<project name="Unit Tests" basedir="." default="xtest">
     
     <!-- Properties -->
     <property name="netbeans.test.home" value="../../../" />
     <property name="xtest.home" value="../../../XTest" />
-
     <property name="test_type" value="code" />
-                             
+    <property name="mask" value="**/*.class" />
+    <property name="xmask" value="**/*Suite.class" />                             
+    <property name="test_class" value="" />                             
+
+
     <!-- Task definitions -->
     <taskdef name="nbpath" classname="org.netbeans.xtest.NbPath" classpath="${xtest.home}/lib/xtest.jar" />
     <taskdef name="xalan" classname="org.netbeans.xtest.XalanLauncher" classpath="${xtest.home}/lib/xtest.jar" />
@@ -22,6 +25,8 @@
             <param name="test_name" value="FileSystems" />
             <param name="test_class" value="org.openide.filesystems.FilesystemsSuite" />
             <param name="test_outfile" value="results/FileSystems" />
+            <param name="mask" value="" />
+            <param name="xmask" value="" />
         </antcall>
     </target>
    <target name="FileSystems" depends="testFileSystems,test_report" />
@@ -46,18 +51,23 @@
 
     <!-- Code test bootstrap -->
     <target name="code_test_bootstrap">
+        <!-- Init -->
+        <mkdir dir="${basedir}/results/work" />
+        <mkdir dir="${basedir}/results/html" />
+        <mkdir dir="${basedir}/results/xml" />
+        <unjar src="${basedir}/lib/test.jar" dest="${basedir}/results/work" />
+        
         <nbpath nbhome="${netbeans.test.home}" />
         <junit fork="yes" printsummary="yes">
             <jvmarg value="-Dxdata=${basedir}/data" />
-            <jvmarg value="-Dxresults=${basedir}/results" />
+            <jvmarg value="-Dxresults=${basedir}/results/xml" />
             <formatter classname="org.netbeans.xtest.JUnitXMLFormatter" extension=".xml" />
             <classpath>
                 <pathelement path="${xtest.home}/lib/xtest.jar" />
                 <pathelement path="${ant.class.path}" />
                 
-                <pathelement location="lib/test.jar" />
+                <pathelement location="./results/work" />
 
-                <pathelement location="src" />
                 <pathelement location="../../../src/" />
 
                 <pathelement path="${netbeans.test.library.path}" />
@@ -67,26 +77,27 @@
             
             <test name="${test_class}" outfile="${test_outfile}" />
                  
-            <batchtest fork="yes" todir="results">
-                <fileset dir="./src">                    
-                    <include name="${mask}" />                 
+            <batchtest fork="yes" todir="results/xml">
+                <fileset dir="results/work">                
+                   <include name="${mask}" />
+                   <exclude name="${xmask}" />
                 </fileset>
             </batchtest>
         </junit>        
     </target>
 
    <target name="test_report">
-	<junitreport todir="./results" tofile="report.xml" >
-		 <fileset dir="./results">
+	<junitreport todir="./results/xml" tofile="report.xml" >
+		 <fileset dir="./results/xml">
 		   <include name="*.xml"/>
 		 </fileset>
-		<report format="frames"  styledir="${xtest.home}/xslt" todir="./results"/>
+		<report format="frames"  styledir="${xtest.home}/xslt" todir="./results/html"/>
         </junitreport> 
     </target>
 
     <target name="xtest" depends="code_test_bootstrap, test_report" />
    
-     <!-- IDE test bootstrap -->
+    <!-- IDE test bootstrap -->
     <target name="ide_test_bootstrap">
         <property name="test.jar" value="${basedir}/lib/test.jar" />
 
