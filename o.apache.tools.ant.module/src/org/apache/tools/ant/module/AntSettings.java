@@ -15,6 +15,7 @@
 
 package org.apache.tools.ant.module;
 
+import java.util.HashMap;
 import java.util.Properties;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -55,11 +56,6 @@ public class AntSettings extends SystemOption implements ChangeListener {
         Properties p = new Properties ();
         // Enable hyperlinking for Jikes:
         p.setProperty ("build.compiler.emacs", "true"); // NOI18N
-        String dummy = "irrelevant"; // NOI18N
-        p.setProperty (DEF_CLASS_PATH, dummy);
-        p.setProperty (DEF_BOOTCLASS_PATH, dummy);
-        p.setProperty (DEF_LIBRARY_PATH, dummy);
-        p.setProperty (DEF_FILESYSTEMS_PATH, dummy);
         p.setProperty ("build.sysclasspath", "ignore"); // #9527 NOI18N
         setProperties (p);
         setReuseOutput (false);
@@ -93,19 +89,13 @@ public class AntSettings extends SystemOption implements ChangeListener {
     }
 
     public Properties getProperties () {
-        Properties p = (Properties) getProperty (PROP_PROPERTIES);
-        if (p.containsKey (DEF_CLASS_PATH)) {
-            p.setProperty (DEF_CLASS_PATH, getClassPath(NbClassPath.createClassPath ()));
-        }
-        if (p.containsKey (DEF_BOOTCLASS_PATH)) {
-            p.setProperty (DEF_BOOTCLASS_PATH, getClassPath(NbClassPath.createBootClassPath ()));
-        }
-        if (p.containsKey (DEF_LIBRARY_PATH)) {
-            p.setProperty (DEF_LIBRARY_PATH, getClassPath(NbClassPath.createLibraryPath ()));
-        }
-        if (p.containsKey (DEF_FILESYSTEMS_PATH)) {
-            p.setProperty (DEF_FILESYSTEMS_PATH, getClassPath(NbClassPath.createRepositoryPath (FileSystemCapability.EXECUTE)));
-        }
+        HashMap m = (HashMap)getProperty(PROP_PROPERTIES);
+        Properties p = new Properties();
+        p.putAll(m);
+        p.setProperty (DEF_CLASS_PATH, getClassPath(NbClassPath.createClassPath ()));
+        p.setProperty (DEF_BOOTCLASS_PATH, getClassPath(NbClassPath.createBootClassPath ()));
+        p.setProperty (DEF_LIBRARY_PATH, getClassPath(NbClassPath.createLibraryPath ()));
+        p.setProperty (DEF_FILESYSTEMS_PATH, getClassPath(NbClassPath.createRepositoryPath (FileSystemCapability.EXECUTE)));
         return p;
     }
     
@@ -120,7 +110,18 @@ public class AntSettings extends SystemOption implements ChangeListener {
     }
 
     public void setProperties (Properties p) {
-        putProperty (PROP_PROPERTIES, p, true);
+        // #16003: don't actually store a Properties; store something else,
+        // to ensure that SystemOption will store what we actually keep here,
+        // which will *not* contain the r/o properties DEF_CLASS_PATH etc.
+        // Old serialized settings will still call this setter and so we
+        // will upgrade storage; subsequent saves will only serialize the smaller
+        // HashMap, without all of these useless keys.
+        HashMap m = new HashMap(p);
+        m.remove(DEF_CLASS_PATH);
+        m.remove(DEF_BOOTCLASS_PATH);
+        m.remove(DEF_LIBRARY_PATH);
+        m.remove(DEF_FILESYSTEMS_PATH);
+        putProperty (PROP_PROPERTIES, m, true);
     }
     
     public boolean getSaveAll () {
