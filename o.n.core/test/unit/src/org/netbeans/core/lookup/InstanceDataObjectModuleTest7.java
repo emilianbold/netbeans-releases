@@ -40,7 +40,8 @@ import org.openide.filesystems.FileUtil;
  * @author Jesse Glick
  * @see InstanceDataObjectModuleTestHid
  */
-public class InstanceDataObjectModuleTest7 extends InstanceDataObjectModuleTestHid {
+public class InstanceDataObjectModuleTest7 extends InstanceDataObjectModuleTestHid 
+implements org.openide.filesystems.FileChangeListener {
 
     public InstanceDataObjectModuleTest7(String name) {
         super(name);
@@ -57,8 +58,16 @@ public class InstanceDataObjectModuleTest7 extends InstanceDataObjectModuleTestH
         Properties p = System.getProperties();
         p.remove("system.dir");
         System.setProperties(p);
+        Repository.getDefault ().getDefaultFileSystem ().addFileChangeListener (this);
         super.setUp();
     }
+    
+    protected void tearDown () throws java.lang.Exception {
+        Repository.getDefault ().getDefaultFileSystem ().removeFileChangeListener (this);
+        super.tearDown ();
+    }
+    
+    
     
     public void testFixedSettingsChangeInstanceAfterSlowReload() throws Exception {
         twiddle(m2, TWIDDLE_ENABLE);
@@ -118,4 +127,28 @@ public class InstanceDataObjectModuleTest7 extends InstanceDataObjectModuleTestH
         InstanceCookie inst3 = (InstanceCookie)obj3.getCookie(InstanceCookie.class);
         assertNull("Had instance", inst3);
     }
+    
+    public void fileAttributeChanged (org.openide.filesystems.FileAttributeEvent fe) {
+    }
+    
+    public void fileChanged (org.openide.filesystems.FileEvent fe) {
+    }
+    
+    public void fileDataCreated (org.openide.filesystems.FileEvent fe) {
+    }
+    
+    public void fileDeleted (org.openide.filesystems.FileEvent fe) {
+        if ("inst-2.settings".equals (fe.getFile ().getNameExt ())) {
+            FileObject isThere = Repository.getDefault ().getDefaultFileSystem ().findResource (fe.getFile ().getPath ());
+            
+            fail ("File " + fe.getFile () + " should not be deleted as this will discard the data object. Moreover it is expected that similar file is still there: " + isThere);
+        }
+    }
+    
+    public void fileFolderCreated (org.openide.filesystems.FileEvent fe) {
+    }
+    
+    public void fileRenamed (org.openide.filesystems.FileRenameEvent fe) {
+    }
+    
 }
