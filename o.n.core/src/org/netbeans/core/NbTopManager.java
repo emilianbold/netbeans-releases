@@ -338,10 +338,22 @@ public class NbTopManager extends TopManager {
   * The method return iff Runtim.getRuntime().exit() fails
   */
   public void exit () {
-    NbProjectOperation.exit ();
-    // PENDING - will be in the project
-    if (System.getProperty("netbeans.workspaces") != null)
-      NbWorkspacePool.exit ();
+    com.netbeans.ide.actions.SaveProjectAction spa = new com.netbeans.ide.actions.SaveProjectAction ();
+    if (spa.isEnabled ()) {
+      boolean doSave = true;
+  //    if (new IDESettings ().getConfirmSaveOnExit ()) {
+  //      if (TopManager.notify (...)
+  //    }
+      
+      if (doSave) {
+        try {
+          spa.performAction ();
+          NbProjectOperation.saveLastProjectUsed ();
+        } catch (IOException e) {
+          TopManager.getDefault ().notifyException (e); // [PENDING]
+        }
+      }
+    }
 
     if (ModuleInstaller.exit ()) {
       Runtime.getRuntime().exit (0);
