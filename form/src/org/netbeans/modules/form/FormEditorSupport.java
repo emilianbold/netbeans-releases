@@ -147,6 +147,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
        );
       formLoaded = true;
     } catch (Throwable e) {
+      if (System.getProperty ("netbeans.debug.form") != null) {
+        e.printStackTrace ();
+      }
       TopManager.getDefault ().notify (new NotifyDescriptor.Message (
             com.netbeans.ide.util.NbBundle.getBundle (FormEditorSupport.class).getString ("ERR_BackwardCompatibilityBreach"),
             NotifyDescriptor.WARNING_MESSAGE
@@ -171,6 +174,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  6    Gandalf   1.5         4/12/99  Ian Formanek    Improved form loading 
+ *       debug messages
  *  5    Gandalf   1.4         4/7/99   Ian Formanek    Backward-compatible 
  *       deserialization finalized for Gandalf beta
  *  4    Gandalf   1.3         3/28/99  Ian Formanek    
