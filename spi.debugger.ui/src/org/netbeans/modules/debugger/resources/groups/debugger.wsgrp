@@ -5,7 +5,7 @@
           "http://www.netbeans.org/dtds/group-properties2_0.dtd">
 
 <group version="2.0">
-    <module name="org.netbeans.modules.debugger.ui/1" spec="2.3" />
+    <module name="org.netbeans.spi.debugger.ui/1" spec="1.0" />
     <name unique="debugger" />
     <state opened="false" />
 </group>

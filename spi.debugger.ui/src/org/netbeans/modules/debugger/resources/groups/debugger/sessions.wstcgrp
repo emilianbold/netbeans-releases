@@ -5,7 +5,7 @@
           "http://www.netbeans.org/dtds/tc-group2_0.dtd">
 
 <tc-group version="2.0">
-    <module name="org.netbeans.modules.debugger.ui/1" spec="2.3"/>
+    <module name="org.netbeans.spi.debugger.ui/1" spec="1.0" />
     <tc-id id="sessions" />
     <open-close-behavior open="true" close="true" />
 </tc-group>
