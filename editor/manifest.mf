@@ -1,8 +1,7 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.editor/1
+OpenIDE-Module: org.netbeans.modules.editor/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/editor/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/editor/EditorModule.class
 OpenIDE-Module-Specification-Version: 1.15
 OpenIDE-Module-Layer: org/netbeans/modules/editor/resources/layer.xml
-Class-Path: ext/nb-editor.jar
 

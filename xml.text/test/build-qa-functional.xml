@@ -34,8 +34,8 @@ Microsystems, Inc. All Rights Reserved.
             ${xml/text-edit.dir}/${nb.modules.dir}/xml-text-edit.jar:
             ${xml/tools.dir}/${nb.modules.dir}/xml-tools.jar:
             ${openide/execution.dir}/modules/org-openide-execution.jar:
-            ${editor.dir}/${nb.modules.dir}/editor.jar:
-            ${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
+            ${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar:
+            ${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
 
     <!--<echo message="FFFFFFFFFFFFFFFFFFFFFFFF ${test.qa-functional.cp.extra}"/>-->
     

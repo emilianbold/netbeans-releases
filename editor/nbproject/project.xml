@@ -19,6 +19,14 @@ Microsystems, Inc. All Rights Reserved.
             <path>editor</path>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor.fold</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -106,20 +114,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.editor.java</package>
                 <package>org.netbeans.modules.editor.options</package>
                 <package>org.netbeans.modules.editor.plain</package>
-                <!-- Added manually libsrc public packages -->
-                <package>org.netbeans.editor</package>
-                <package>org.netbeans.editor.ext</package>
-                <package>org.netbeans.editor.ext.html</package>
-                <package>org.netbeans.editor.ext.java</package>
-                <package>org.netbeans.editor.ext.plain</package>
-                <package>org.netbeans.editor.view.spi</package>
             </public-packages>
-            <extra-compilation-unit>
-                <package-root>libsrc</package-root>
-                <classpath>${openide.dir}/${nb.lib.dir}/openide.jar</classpath>
-                <built-to>build/lib-classes</built-to>
-                <built-to>${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nb-editor.jar</built-to>
-            </extra-compilation-unit>
             <javadoc/>
         </data>
     </configuration>

@@ -384,9 +384,13 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module debuggerjpda/ant..."/>
     <ant dir="../debuggerjpda/ant" target="netbeans"/>
   </target>
-  <target name="all-editor" depends="build-platform,all-java/srcmodel,all-java/api,all-java/javacore,all-editor/fold,all-editor/util">
+  <target name="all-editor" depends="build-platform,all-java/srcmodel,all-java/api,all-java/javacore,all-editor/lib,all-editor/fold,all-editor/util">
     <echo message="Building module editor..."/>
     <ant dir="../editor" target="netbeans"/>
+  </target>
+  <target name="all-editor/lib" depends="build-platform,all-editor/fold,all-editor/util">
+    <echo message="Building module editor/lib..."/>
+    <ant dir="../editor/lib" target="netbeans"/>
   </target>
   <target name="all-editor/fold" depends="build-platform,all-editor/util">
     <echo message="Building module editor/fold..."/>

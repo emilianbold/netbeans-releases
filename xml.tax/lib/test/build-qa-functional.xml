@@ -193,7 +193,7 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${netbeans.home}/modules/xml-tools.jar"/>
             <pathelement location="${netbeans.home}/modules/xml-tree-edit.jar"/>                      
             <pathelement location="${netbeans.home}/modules/editor.jar"/>                      
-            <pathelement location="${netbeans.home}/modules/ext/nb-editor.jar"/>                      
+            <pathelement location="${netbeans.home}/modules/editor-lib.jar"/>                      
             <!--pathelement location="${nb.repository}/xml/test/qa-functional/src"/-->                      
    	</path>
     </target>

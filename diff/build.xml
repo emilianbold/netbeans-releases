@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
       <include name="${nb.modules.dir}/diff.jar"/>
     </patternset>
     <path id="cp">
-      <pathelement location="${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
+      <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
     </path>

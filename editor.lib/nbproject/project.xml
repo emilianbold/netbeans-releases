@@ -15,19 +15,11 @@ Microsystems, Inc. All Rights Reserved.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
-            <code-name-base>org.netbeans.modules.lexer.editorbridge</code-name-base>
-            <path>lexer/editorbridge</path>
+            <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
+            <path>editor/lib</path>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.editor</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
+                    <code-name-base>org.netbeans.modules.editor.fold</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -35,12 +27,11 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.lexer</code-name-base>
+                    <code-name-base>org.netbeans.modules.editor.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -49,21 +40,21 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>4.34</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.loaders</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>4.12</specification-version>
+                        <specification-version>4.37</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
             <public-packages>
-	        <package>org.netbeans.modules.lexer.editorbridge</package>
-	    </public-packages>
+                <package>org.netbeans.editor</package>
+                <package>org.netbeans.editor.ext</package>
+                <package>org.netbeans.editor.ext.html</package>
+                <package>org.netbeans.editor.ext.html.dtd</package>
+                <package>org.netbeans.editor.ext.java</package>
+                <package>org.netbeans.editor.ext.plain</package>
+                <package>org.netbeans.editor.view.spi</package>
+                <package>org.netbeans.lib.editor.view</package>
+            </public-packages>
+            <javadoc/>
         </data>
     </configuration>
 </project>

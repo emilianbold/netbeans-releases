@@ -76,7 +76,7 @@ Microsystems, Inc. All Rights Reserved.
                 </fileset>
                 
 	        <pathelement location="${netbeans.home}/modules/editor.jar"/>
-                <pathelement location="${netbeans.home}/modules/ext/nb-editor.jar"/>
+                <pathelement location="${netbeans.home}/modules/editor-lib.jar"/>
                 
 	        <pathelement location="${netbeans.home}/modules/org-netbeans-modules-vcscore.jar"/>
                 <pathelement location="${netbeans.home}/modules/org-netbeans-modules-html.jar"/>

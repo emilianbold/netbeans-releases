@@ -1,2 +1,2 @@
 Main-Class: org.netbeans.editor.example.Editor
-Class-Path: nb-editor.jar
+Class-Path: editor-lib.jar

@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init">
     
         <path id="compiletest.classpath">
-            <pathelement location="${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
             <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
             <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar"/>
             <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-util.jar"/>
@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
         </path>
     
         <path id="codetest.classpath">
-            <pathelement location="${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
             <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
             <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar"/>
             <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-util.jar"/>

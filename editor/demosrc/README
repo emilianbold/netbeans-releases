@@ -1,19 +1,19 @@
 Introduction:
 	This is the implementation of simple standalone editor application.
 It is based on the fact that NetBeans editors are pure swing editors.
-Everything you need for this editor is nb-editor.jar archive from NetBeans
-build (modules/ext/nb-editor.jar) and a set of classes from this directory
+Everything you need for this editor is editor-lib.jar archive from NetBeans
+build (modules/editor-lib.jar) and a set of classes from this directory
 and subdirectories.
 
 How to compile/setup it/run it:
 	Basically, you need only Editor.java located under the base subdir
-and nb-editor.jar to compile it and make it working with other Swing
+and editor-lib.jar to compile it and make it working with other Swing
 EditorKits. To use NetBeans' Java and HTML editor, you also need to
 compile JavaKit and HTMLKit. At best, just compile the whole content
 of base/org/netbeans/editor/example:
 
   cd base/org/netbeans/editor/example
-  javac -classpath $NB_HOME/modules/ext/nb-editor.jar *.java
+  javac -classpath $NB_HOME/modules/editor-lib.jar *.java
 
 and make jar of classes and resources subdirectory:
 
@@ -38,7 +38,7 @@ Unless you are going to include properties support, remove the string
 	Finally there is a run.sh script in the "base" directory.
 It is simple and it should be easy to write a .bat file for OS without
 a suitable shell.
-	Now, to run it, just copy/link nb-editor.jar to base directory
+	Now, to run it, just copy/link editor-lib.jar to base directory
 and use ./run.sh
 	To add the support for properties files, compile and jar the files
 in properties-addon to base/properties-addon.jar and copy the file

@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
             <pathelement location="${xml/css.dir}/${nb.modules.dir}/css.jar"/>
             <pathelement location="${editor.dir}/${nb.modules.dir}/editor.jar"/>
-            <pathelement location="${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/editor-lib.jar"/>
             <pathelement location="../../jemmy/builds/jemmy.jar"/>                    
             <pathelement location="../../jellytools/builds/jelly-nb.jar"/>
             <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>

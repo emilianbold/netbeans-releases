@@ -25,10 +25,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile" depends="editor">
-     <copy file="../netbeans/modules/ext/nb-editor.jar" tofile="${target_dir}/nb-editor.jar" />
+     <copy file="../netbeans/modules/editor-lib.jar" tofile="${target_dir}/editor-lib.jar" />
      <javac srcdir="base" destdir="base" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
        <classpath>
-        <pathelement location="${target_dir}/nb-editor.jar"/>
+        <pathelement location="${target_dir}/editor-lib.jar"/>
        </classpath>
      </javac>
   </target>

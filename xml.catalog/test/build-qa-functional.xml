@@ -33,8 +33,8 @@ Microsystems, Inc. All Rights Reserved.
             ${xml/core.dir}/${nb.modules/autoload.dir}/xml-core.jar:
             ${xml/text-edit.dir}/${nb.modules.dir}/xml-text-edit.jar:
             ${xml/tools.dir}/${nb.modules.dir}/xml-tools.jar:
-            ${editor.dir}/${nb.modules.dir}/editor.jar:
-            ${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
+            ${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar:
+            ${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
 
     <target name="qa-functional-compiler" depends="init,init-cp">
          <ant antfile="build.xml" dir="../../test" target="build-xml-lib"/>
