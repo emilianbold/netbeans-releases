@@ -51,6 +51,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
         final javax.swing.text.StyledDocument doc = getDocument();
         // dependency on xml/core
         String enc = EncodingHelper.detectEncoding(doc);
+        if (enc == null) enc = "UTF8"; //!!! // NOI18N
         
         try {
             //test encoding on dummy stream
