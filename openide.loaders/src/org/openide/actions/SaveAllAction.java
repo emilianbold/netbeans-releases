@@ -19,6 +19,7 @@ import org.openide.LifecycleManager;
 
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.CallableSystemAction;
@@ -73,7 +74,11 @@ public final class SaveAllAction extends CallableSystemAction {
     * and enables / disables this action appropriately */
     final class ModifiedListL implements ChangeListener {
         public void stateChanged(final ChangeEvent evt) {
-            setEnabled(((java.util.Set)evt.getSource()).size() > 0);
+            Mutex.EVENT.writeAccess(new Runnable() {
+                public void run() {
+                    setEnabled(((java.util.Set)evt.getSource()).size() > 0);
+                }
+            });
         }
     } // end of ModifiedListL inner class
 }

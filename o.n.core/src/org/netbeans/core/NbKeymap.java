@@ -18,6 +18,7 @@ import javax.swing.event.*;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
+import org.openide.util.Mutex;
 
 /** Implementation of standard key - action mappings.
 *
@@ -139,15 +140,17 @@ public final class NbKeymap extends Observable implements Keymap {
     }
 
     /** Updates action accelerator. */
-    private void updateActionAccelerator(Action a) {
+    private void updateActionAccelerator(final Action a) {
         if(a == null) {
             return;
         }
         
-        KeyStroke[] keystrokes = getKeyStrokesForAction(a);
-        a.putValue(Action.ACCELERATOR_KEY,
-                   keystrokes.length > 0 ? keystrokes[0]
-                                         : null);
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public void run() {
+                KeyStroke[] keystrokes = getKeyStrokesForAction(a);
+                a.putValue(Action.ACCELERATOR_KEY, keystrokes.length > 0 ? keystrokes[0] : null);
+            }
+        });
     }
     
     public void addActionForKeyStroke(KeyStroke key, Action a) {
