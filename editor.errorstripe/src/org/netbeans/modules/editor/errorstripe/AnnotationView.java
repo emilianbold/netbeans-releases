@@ -783,7 +783,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             String description = mark.getShortDescription();
             
             if (description != null) {
-                return "<html>" + translate(description); // NOI18N
+                return "<html><body>" + translate(description); // NOI18N
             }
         }
         
