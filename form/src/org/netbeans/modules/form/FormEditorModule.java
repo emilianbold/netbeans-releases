@@ -242,7 +242,7 @@ public class FormEditorModule extends ModuleInstall {
     try {
       if ((swingCategory = paletteFolder.getFileObject ("Swing")) == null) // NOI18N
         swingCategory = paletteFolder.createFolder ("Swing"); // NOI18N
-      createInstances (swingCategory, defaultSwingComponents, null, componentErrors);
+      createInstances (swingCategory, defaultSwingComponents, defaultSwingIcons, componentErrors);
       localizeFile (swingCategory);
     } catch (java.io.IOException e) {
       categoryErrors.add ("Swing"); // NOI18N
@@ -254,7 +254,7 @@ public class FormEditorModule extends ModuleInstall {
     try {
       if ((swing2Category = paletteFolder.getFileObject ("Swing2")) == null) // NOI18N
         swing2Category = paletteFolder.createFolder ("Swing2"); // NOI18N
-      createInstances (swing2Category, defaultSwing2Components, null, componentErrors);
+      createInstances (swing2Category, defaultSwing2Components, defaultSwing2Icons, componentErrors);
       localizeFile (swing2Category);
     } catch (java.io.IOException e) {
       categoryErrors.add ("Swing2"); // NOI18N
@@ -399,6 +399,25 @@ public class FormEditorModule extends ModuleInstall {
     "javax.swing.JPopupMenu", // NOI18N
   };
 
+  /** The default Swing icons */
+  private final static String[] defaultSwingIcons = new String[] {
+    "/javax/swing/beaninfo/images/JLabelColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JButtonColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JCheckBoxColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JRadioButtonColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JComboBoxColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JListColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JTextFieldColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JTextAreaColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JToggleButtonColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JPanelColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JTabbedPaneColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JScrollBarColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JScrollPaneColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JMenuBarColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JPopupMenuColor16.gif" // NOI18N
+  };
+
   /** The default Swing Components - Swing2 category */
   private final static String[] defaultSwing2Components = new String[] {
     "javax.swing.JSlider", // NOI18N
@@ -417,6 +436,23 @@ public class FormEditorModule extends ModuleInstall {
     "javax.swing.JOptionPane", // NOI18N
   };
 
+  /** The default Swing icons - Swing2 category */
+  private final static String[] defaultSwing2Icons = new String[] {
+    "/javax/swing/beaninfo/images/JSliderColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JProgressBarColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JSplitPaneColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JPasswordFieldColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JSeparatorColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JTextPaneColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JEditorPaneColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JTreeColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JTableColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JToolBarColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JInternalFrameColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JLayeredPaneColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JDesktopPaneColor16.gif", // NOI18N
+    "/javax/swing/beaninfo/images/JOptionPaneColor16.gif" // NOI18N
+  };
 
 //  private final static String[] defaultDBComponents = new String[] {
 //    "com.netbeans.sql.JDBCRowSet", // NOI18N
@@ -479,6 +515,8 @@ public class FormEditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  45   Jaga      1.43.1.0    4/3/00   Ales Novak      avoidance for BeanInfo 
+ *       search
  *  44   Gandalf   1.43        2/29/00  Tran Duc Trung  JDK "forgets" to provide
  *       a PropertyEditor for char and Character. We need to implement one 
  *       ourselves
