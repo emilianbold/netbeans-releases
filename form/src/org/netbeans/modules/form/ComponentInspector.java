@@ -186,8 +186,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     }
 
     public HelpCtx getHelpCtx() {
-        return getHelpCtx(getExplorerManager().getSelectedNodes(),
-                          new HelpCtx(ComponentInspector.class));
+        return new HelpCtx("gui.component-inspector"); // NOI18N
     }
 
     /** This method focuses the ComponentInspector on given form.

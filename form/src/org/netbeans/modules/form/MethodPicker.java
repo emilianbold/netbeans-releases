@@ -20,6 +20,7 @@ import java.util.*;
 import java.awt.*;
 
 import org.openide.TopManager;
+import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
 /** The MethodPicker is a form which allows user to pick one of methods
@@ -100,6 +101,8 @@ public class MethodPicker extends javax.swing.JDialog {
         Dimension dialogSize = getSize();
         setLocation((screenSize.width - dialogSize.width) / 2,
                     (screenSize.height - dialogSize.height) / 2);
+
+        HelpCtx.setHelpIDString(getRootPane(), "gui.connecting.code"); // NOI18N
     }
 
     public java.awt.Dimension getPreferredSize() {

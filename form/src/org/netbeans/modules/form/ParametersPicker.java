@@ -104,7 +104,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         updateParameterTypes();
         currentFilledState = isFilled();
 
-        HelpCtx.setHelpIDString(this, ParametersPicker.class.getName());
+        HelpCtx.setHelpIDString(this, "gui.source.modifying.property"); // NOI18N
     }
 
     public void setPropertyValue(RADConnectionPropertyEditor.RADConnectionDesignValue value) {

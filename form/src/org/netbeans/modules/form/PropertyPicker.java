@@ -101,7 +101,7 @@ public class PropertyPicker extends javax.swing.JDialog {
         setLocation((screenSize.width - dialogSize.width) / 2,
                     (screenSize.height - dialogSize.height) / 2);
 
-        HelpCtx.setHelpIDString(getRootPane(), PropertyPicker.class.getName());
+        HelpCtx.setHelpIDString(getRootPane(), "gui.connecting.code"); // NOI18N
     }
 
     public java.awt.Dimension getPreferredSize() {

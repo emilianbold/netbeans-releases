@@ -39,7 +39,7 @@ public class InstallBeanAction extends CallableSystemAction {
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(InstallBeanAction.class);
+        return new HelpCtx("beans.adding"); // NOI18N
     }
 
     /** Icon resource.

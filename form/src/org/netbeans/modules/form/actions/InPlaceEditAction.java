@@ -77,6 +77,6 @@ public class InPlaceEditAction extends NodeAction {
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(InPlaceEditAction.class);
+        return new HelpCtx("gui.components.inplace-editing"); // NOI18N
     }
 }

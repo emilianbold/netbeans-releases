@@ -28,9 +28,6 @@ import org.netbeans.modules.form.*;
  */
 public class TestAction extends CallableSystemAction {
 
-    /** The help context of this action */
-    private static HelpCtx help;
-
     static final long serialVersionUID =6405790716032972989L;
 
     public TestAction() {
@@ -49,7 +46,7 @@ public class TestAction extends CallableSystemAction {
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(TestAction.class);
+        return new HelpCtx("gui.modes"); // NOI18N
     }
 
     /** @return resource for the action icon */
@@ -123,8 +120,11 @@ public class TestAction extends CallableSystemAction {
                 ));
 
             // prepare close operation
-            if (frame instanceof JFrame)
+            if (frame instanceof JFrame) {
                 ((JFrame)frame).setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                HelpCtx.setHelpIDString(((JFrame)frame).getRootPane(),
+                                        "gui.modes"); // NOI18N
+            }
             else {
                 final Frame showingFrame = frame;
                 frame.addWindowListener(new java.awt.event.WindowAdapter() {

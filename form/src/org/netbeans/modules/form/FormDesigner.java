@@ -91,8 +91,7 @@ public class FormDesigner extends TopComponent
     //////
     
     public HelpCtx getHelpCtx() {
-        return ExplorerPanel.getHelpCtx(getActivatedNodes(),
-                                        new HelpCtx(this.getClass()));
+        return new HelpCtx("gui.formeditor"); // NOI18N
     }
 
     public Dimension getPreferredSize() {

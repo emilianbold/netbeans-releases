@@ -77,7 +77,7 @@ public class InstallToPaletteAction extends CookieAction {
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(InstallToPaletteAction.class);
+        return new HelpCtx("beans.adding"); // NOI18N
     }
 
     /** Icon resource.

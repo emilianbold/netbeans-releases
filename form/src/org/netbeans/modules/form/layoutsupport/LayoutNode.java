@@ -21,6 +21,7 @@ import org.openide.nodes.*;
 import org.openide.actions.*;
 import org.openide.loaders.*;
 import org.openide.cookies.*;
+import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.actions.*;
@@ -118,6 +119,29 @@ public class LayoutNode extends AbstractNode implements FormLayoutCookie
         return array;
     }
 
+    public HelpCtx getHelpCtx() {
+        Class layoutClass = layoutSupport.getLayoutClass();
+        String helpID = null;
+        if (layoutClass != null) {
+            if (layoutClass == BorderLayout.class)
+                helpID = "gui.layouts.managers.border";
+            else if (layoutClass == FlowLayout.class)
+                helpID = "gui.layouts.managers.flow";
+            else if (layoutClass == GridLayout.class)
+                helpID = "gui.layouts.managers.grid";
+            else if (layoutClass == GridBagLayout.class)
+                helpID = "gui.layouts.managers.gridbag";
+            else if (layoutClass == CardLayout.class)
+                helpID = "gui.layouts.managers.card";
+            else if (layoutClass == javax.swing.BoxLayout.class)
+                helpID = "gui.layouts.managers.box";
+            else if (layoutClass == org.netbeans.lib.awtextra.AbsoluteLayout.class)
+                helpID = "gui.layouts.managers.absolute";
+        }
+        if (helpID != null)
+            return new HelpCtx(helpID);
+        return super.getHelpCtx();
+    }
 
     public Node.Cookie getCookie(Class type) {
         Node.Cookie inh = super.getCookie(type);

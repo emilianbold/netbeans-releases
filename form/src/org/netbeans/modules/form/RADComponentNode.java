@@ -139,7 +139,7 @@ public class RADComponentNode extends AbstractNode
         if (help != null)
             return help;
         else
-            return new HelpCtx(RADComponentNode.class);
+            return new HelpCtx("gui.component-inspector"); // NOI18N
     }
 
     public Node.PropertySet[] getPropertySets() {

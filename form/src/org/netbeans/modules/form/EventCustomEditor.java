@@ -35,6 +35,8 @@ public class EventCustomEditor extends javax.swing.JPanel {
 
         initComponents();
         enableButtons();
+
+        org.openide.util.HelpCtx.setHelpIDString(this, "gui.csh.handlers"); // NOI18N
     }
 
     /** This method is called from within the constructor to

@@ -450,7 +450,7 @@ public class FormLoaderSettings extends SystemOption {
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(FormLoaderSettings.class);
+        return new HelpCtx("gui.configuring"); // NOI18N
     }
 
 }
