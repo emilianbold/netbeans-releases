@@ -5,65 +5,79 @@
 -->
 <html>
 <head>
-<title>About Editing XML Documents</title> 
+<title>Working With XML Documents in the IDE</title> 
 <link rel="StyleSheet" href="../ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Working With XML Documents in the IDE </h2>
+<h2>Working With XML Documents in the IDE</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
-<p>The Simple API for XML (SAX) is a serial access protocol for XML. SAX is an 
-  event-driven API that you can use in your Java programs by registering a document 
-  handler with a SAX parser. After registration, the parser invokes your callback 
-  methods whenever it encounters a new XML tag, error, or other special condition.</p>
-<p>&nbsp;</p>
-<p>You can either generate a cascading style sheet (CSS) from an existing document
-type definition (DTD) or create a new one from a template.</p>
-<h3>sdfkjh</h3>
+<p>The following table outlines the basic workflow when editing XML Documents
+  in the IDE.</p>
+<table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
+   process step. The right column contains detail information to accomplish that process.">
+  <tr valign="center">
+    <td align="center"><img src="../images/circle1.gif" alt="Number one"><br>
+      <b>Create an XML Document</b>
+      <p></td>
+    <td><ul>
+        <li>Create a new <a href="xml_create.html">XML</a>, <a href="css/css_create.html">CSS</a>, <a href="schema/schemas.html">Schema</a>, <a href="dtd/dtd_create.html">DTD</a>,
+          or <a href="xsl/xsl_about.html">XSL stylesheet</a> document.      
+    </ul></td>
+  </tr>
+  <tr>
+    <td colspan="2"><hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="center">
+    <td align="center"><img src="../images/circle2.gif" alt="Number one"><br>
+      <b>Edit an XML Document</b>
+      <p></td>
+    <td><ul>
+        <li><a href="xml_edit.html">Open an XML document in the Source Editor.</a></li>
+      </ul></td>
+  </tr>
   
-<p> poopy pants:</p>
-<ul>
-  <li><b>CSS.&nbsp;</b>The interface containing the methods that 
-    the generated parser calls when parsing the XML document. You can specify
-     the elements for which the IDE generates handler methods. The IDE generates
-     a <tt>handle_</tt><i>elementName</i> method for content elements and a pair
-      of <tt>start_</tt><i>elementName</i> and <tt>end_</tt><i>elementName</i> methods
-       for csontainer elements. </li>
-  <li><b>DTD.&nbsp;</b>A document type definition (DTD) describes the grammar
-    that can be used in an XML file and indicates the valid arrangement of the
-    file's tags. It can exist as a prologue to an XML file (internal DTD) or
-  as a separate file (external DTD). </li>
-  <li> <b>XSL.&nbsp;</b>The parser used to parse the XML files. If 
-    you generate the document handler using SAX version 1.0, the generated parser
-     implements <tt>org.xml.sax.DocumentHandler</tt>. If you use SAX version
-     2.0,  the parser implements <tt>org.xml.sax.ContentHandler</tt>. The parser
-     translates  and normalizes the output from the SAX parser and calls the
-     appropriate handler  implementation methods or data convertor implementation
-     methods.</li>
-  <li><strong>SAX</strong>. The Simple API for XML (SAX) is a serial access protocol for XML. SAX
-      is an event-driven API that you can use in your Java programs by registering
-      a document handler with a SAX parser. After registration, the parser invokes
-      your callback methods whenever it encounters a new XML tag, error, or other
-      special condition.</p>
-    You typically use the SAX protocol with servlets and network-oriented programs.
-    SAX is the fastest and least memory-intensive mechanism currently available
-    for dealing with XML documents. If you are writing an application that displays
-  and possibly modifies an XML document, you might prefer to use the DOM mechanism. </li>
-  <li><strong>XML Catalogs </strong><b>.</b> XML catalogs provide mapping information
-    that maps an external entity in an XML document to the actual location of
-    the document being referenced. You can use a catalog to redirect mappings
-  for an external entity, such as a DTD or XML file, to a different location. </li>
-</ul>
-
+    <tr>
+    <td colspan="2"><hr align="center" width="80%">
+    </td>
+  </tr>
+  
+    <tr valign="center">
+    <td align="center"><img src="../images/circle3.gif" alt="Number one"><br>
+      <b>Check an XML Document</b>
+      <p></td>
+    <td><ul>
+        <li><a href="xml_check.html">Check an XML document for well-formedness.</a></li>
+        <li><a href="xml_validate.html">Validate an XML document that is constrained by an XML schema or
+          DTD.</a></li>
+      </ul></td>
+  </tr>
+  <!--<tr>
+    <td colspan="2"><hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="center">
+    <td align="center"><img src="../images/circle4.gif" alt="Number four"><br>
+      <b>Do something to an XML Document</b>
+      <p></td>
+    <td><ul>
+        <li><a href="vcs_diff.html">View differences between versions of a file.</a></li>
+        <!--<li><a href="vcs_diff.html">View differences between versions of a
+  file as text.</a></li>
+      </ul></td>
+  </tr>-->
+</table>
 <table>
   <tr> 
     <th colspan=2 align=left><a name="seealso">See Also</a></th>
   </tr>
   <tr> 
     <td width="23"></td>
-    <td> <a href="sax/sax_generate.html">Generating a SAX Document Handler</a><br>
-      <a href="dtd/dtd_generatedom.html">Generating a DOM Tree Scanner</a> <br>
-      <a href="dtd/dtd_create.html">Creating a DTD</a>
+    <td> 
+	  <a href="xml_about.html">About Editing XML Documents</a><br>
+      <a href="xml_quickref.html">IDE XML Task Quick Reference</a><br>
+      <a href="xml_settings.html">Global XML Settings</a>
 	</td>
   </tr>
 </table>

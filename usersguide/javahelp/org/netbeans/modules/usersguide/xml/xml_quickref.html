@@ -5,55 +5,178 @@
 -->
 <html>
 <head>
-<title>About Editing XML Documents</title> 
+<title>IDE XML Tasks: Quick Reference </title> 
 <link rel="StyleSheet" href="../ide.css" type="text/css">
 </head>
 <body>
 
-<h2>IDE XML Task Quick Reference </h2>
+<h2>IDE XML Tasks: Quick Reference </h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
-<p>The Simple API for XML (SAX) is a serial access protocol for XML. SAX is an 
-  event-driven API that you can use in your Java programs by registering a document 
-  handler with a SAX parser. After registration, the parser invokes your callback 
-  methods whenever it encounters a new XML tag, error, or other special condition.</p>
-<p>&nbsp;</p>
-<p>You can either generate a cascading style sheet (CSS) from an existing document
-type definition (DTD) or create a new one from a template.</p>
-<h3>sdfkjh</h3>
+<p>The following table describes common XML editing tasks.</p>
+
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+   task name. The right column lists the steps to perform.">
+  <tr valign="top"> 
+    <th scope="col" align="left">To perform this task</th>
+    <th scope="col" align="left">Follow these steps</th>
+  </tr>
   
-<p> poopy pants:</p>
-<ul>
-  <li><b>CSS.&nbsp;</b>The interface containing the methods that 
-    the generated parser calls when parsing the XML document. You can specify
-     the elements for which the IDE generates handler methods. The IDE generates
-     a <tt>handle_</tt><i>elementName</i> method for content elements and a pair
-      of <tt>start_</tt><i>elementName</i> and <tt>end_</tt><i>elementName</i> methods
-       for csontainer elements. </li>
-  <li><b>DTD.&nbsp;</b>A document type definition (DTD) describes the grammar
-    that can be used in an XML file and indicates the valid arrangement of the
-    file's tags. It can exist as a prologue to an XML file (internal DTD) or
-  as a separate file (external DTD). </li>
-  <li> <b>XSL.&nbsp;</b>The parser used to parse the XML files. If 
-    you generate the document handler using SAX version 1.0, the generated parser
-     implements <tt>org.xml.sax.DocumentHandler</tt>. If you use SAX version
-     2.0,  the parser implements <tt>org.xml.sax.ContentHandler</tt>. The parser
-     translates  and normalizes the output from the SAX parser and calls the
-     appropriate handler  implementation methods or data convertor implementation
-     methods.</li>
-  <li><strong>SAX</strong>. The Simple API for XML (SAX) is a serial access protocol for XML. SAX
-      is an event-driven API that you can use in your Java programs by registering
-      a document handler with a SAX parser. After registration, the parser invokes
-      your callback methods whenever it encounters a new XML tag, error, or other
-      special condition.</p>
-    You typically use the SAX protocol with servlets and network-oriented programs.
-    SAX is the fastest and least memory-intensive mechanism currently available
-    for dealing with XML documents. If you are writing an application that displays
-  and possibly modifies an XML document, you might prefer to use the DOM mechanism. </li>
-  <li><strong>XML Catalogs </strong><b>.</b> XML catalogs provide mapping information
-    that maps an external entity in an XML document to the actual location of
-    the document being referenced. You can use a catalog to redirect mappings
-  for an external entity, such as a DTD or XML file, to a different location. </li>
-</ul>
+  <tr valign="top"> 
+    <td>Create a new XML document. </td>
+    <td> 
+<ol>
+  <li>In the Versioning window, right-click the VCS working
+    directory's top level node and choose CVS&nbsp;<img src="../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Checkout.    </li>
+  <li>Specify the modules you wish to check out. 
+   <ul><li>To check out the entire repository
+    select All. 
+   <li>To check out a specific directory,  click the Select button
+    to choose from a list of all of the modules in the repository.
+   </ul></li>
+  <li>Click Finish to check out the files.</li>
+  </ol>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Open an XML document in the Source Editor. </td>
+    <td> 
+<ol>
+  <li>Right-click the file's node that you wish to update.</li>
+  <li>Choose CVS <img src="../images/arrow.gif" alt="and choose">&nbsp;Update.
+  </li>
+</ol>
+    </td>
+  </tr>
+
+  <tr valign="top"> 
+    <td>Check an XML document.</td>
+    <td> 
+   <ol>
+    <li>Right-click the appropriate revision node in the Versioning window.
+    <li>Choose Diff Graphical from the contextual menu.
+  </ol>
+    </td>
+  </tr>
+    <tr valign="top"> 
+    <td>Validate an XML document.</td>
+    <td><ol><li>Ensure that your local copies of the files are up-to-date by
+          right-clicking and choosing CVS <img src="../images/arrow.gif" width="5" height="11" alt="and choosing">&nbsp;Update
+          before committing your changes. </li>
+        <li>Right-click the files or directories you wish to commit and choose CVS <img src="../images/arrow.gif" width="5" height="11" alt="and choosing">&nbsp;Commit.
+        </li>
+    </ol>
+    </td>
+  </tr>
+
+    <tr valign="top"> 
+    <td>Create a new CSS. </td>
+    <td> 
+<ol>
+  <li>In the Versioning window, expand the file's node to reveal the subnodes
+    for each revision and branch.</li>
+  <li>Right-click the revision you wish to merge into your working copy and choose
+    Merge With Revision.
+  </li>
+</ol>
+    </td>
+  </tr>
+  
+<tr valign="top"> 
+    <td>Generate a CSS</td>
+    <td> 
+<ol>
+  <li>Choose Versioning <img src="../images/arrow.gif" alt="and choose"> Versioning
+    Manager from the main window.</li>
+  <li>Click Add. The New Wizard appears allowing you to configure the necessary
+    versioning settings.</li>
+  <li>Select the CVS profile from the Version Control System Profile combo box.</li>
+  </ol>
+    </td>
+  </tr>
+  
+<tr valign="top"> 
+  <td>Create a new DTD</td>
+    <td> 
+<ol>
+  <li>Right-click the locally modified file or folder
+    and choose CVS&nbsp;<img src="../images/arrow.gif" alt="and choose">&nbsp;Diff
+    Textual. </li>
+  <li>In the Output dialog, ensure that the output shows the correct differences.</li>
+  <li>Right-click in the output pane and choose Save To File from the contextual
+    menu.
+    <p>A patch file is created containing the differences between the source code file
+  versions.</li>
+</ol>
+    </td>
+	
+<tr valign="top"> 
+    <td>Generate a DOM Tree Scanner. </td>
+    <td> 
+<ol>
+  <li>Choose Versioning <img src="../images/arrow.gif" alt="and choose"> Versioning
+    Manager from the main window.</li>
+  <li>Click Add. The New Wizard appears allowing you to configure the necessary
+    versioning settings.</li>
+  <li>Select the CVS profile from the Version Control System Profile combo box.</li>
+  </ol>
+    </td>
+  </tr>
+	
+<tr valign="top"> 
+    <td>Generate a SAX document handler</td>
+    <td> 
+<ol>
+  <li>Choose Versioning <img src="../images/arrow.gif" alt="and choose"> Versioning
+    Manager from the main window.</li>
+  <li>Click Add. The New Wizard appears allowing you to configure the necessary
+    versioning settings.</li>
+  <li>Select the CVS profile from the Version Control System Profile combo box.</li>
+  </ol>
+    </td>
+  </tr>
+
+<tr valign="top"> 
+    <td>Create an XML schema</td>
+    <td> 
+      <ol>
+        <li>Choose Versioning <img src="../images/arrow.gif" alt="and choose">&nbsp;Versioning
+          Manager.</li>
+        <li>Select the appropriate VCS  node and click
+            Edit. </li>
+        <li>Edit the necessary  VCS settings in the working directory's
+          Customizer.</li>
+      </ol>
+    </td>
+  </tr>
+
+<tr valign="top"> 
+    <td>Configure global XML settings. </td>
+    <td> 
+      <ol>
+        <li><!--To configure profile-specific VCS settings in a working directory's
+          Customizer, -->Choose Versioning <img src="../images/arrow.gif" alt="and choose">&nbsp;Versioning
+          Manager.</li>
+        <li>Select the appropriate VCS  node and click
+            Edit. </li>
+        <li>Edit the necessary  VCS settings in the working directory's
+          Customizer.</li>
+      </ol>
+    </td>
+  </tr>
+  
+    <tr valign="top"> 
+    <td>Configure   XML and DTD Editor Properties.</td>
+    <td> 
+      <ol>
+        <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options,
+           expand the Source Creation and Management node, then select the Version
+        Control Settings node.</li>
+        <li>Edit the desired properties in the Option window's right pane. </li>
+      </ol>
+    </td>
+  </tr>
+  
+</table>
 
 <table>
   <tr> 
@@ -61,9 +184,10 @@ type definition (DTD) or create a new one from a template.</p>
   </tr>
   <tr> 
     <td width="23"></td>
-    <td> <a href="sax/sax_generate.html">Generating a SAX Document Handler</a><br>
-      <a href="dtd/dtd_generatedom.html">Generating a DOM Tree Scanner</a> <br>
-      <a href="dtd/dtd_create.html">Creating a DTD</a>
+    <td> 
+      <a href="xml_about.html">About Editing XML Documents</a><br>
+	  <a href="xml_overview.html">Working With XML Documents in the IDE</a><br>
+      <a href="xml_settings.html">Global XML Settings</a>
 	</td>
   </tr>
 </table>

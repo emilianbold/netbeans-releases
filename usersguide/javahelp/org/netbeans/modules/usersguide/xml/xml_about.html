@@ -12,88 +12,74 @@
 
 <h2>About Editing XML Documents</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
-<p>The Extensible Markup Language (XML) is a subset of SGML whose goal is to
-  enable generic SGML to be served, received, and processed on the Web in the
-  way that is now possible with HTML. XML has been designed for ease of implementation
-  and for interoperability with both SGML and HTML.</p>
-<p>A data object is an XML document if it is well-formed, as defined
-  in this specification. A well-formed XML document MAY in addition be valid
-if it meets certain further constraints.</p>
-The XML node (<img src="images/xmlObject.gif" alt="XML object node icon">) 
-  represents an XML document in the IDE. You can create an XML document by choosing 
-  File <img src="../images/arrow.gif" alt="and choose" >&nbsp;New from the main window, 
-  expanding the XML folder, and selecting XML Document.
-
-<h3>Types of XML Documents in the IDE </h3>  
-<p> The IDE has poopy pants, including:</p>
+<p>The Extensible Markup Language (XML) is a subset of SGML designed to
+  enable generic SGML to be served, received, and processed on the Web easily
+  and efficiently. Because its format is not fixed, XML enables you to design
+  your own customized markup languages with which to create various types of
+  documents. </p>
+<p>In the IDE,  XML documents  are represented by  XML nodes (<img src="images/xmlObject.gif" alt="XML object node icon">).
+  The IDE provides tools to assist you in creating, editing, checking, and validating
+  the various XML document types it supports. </p>
+<!--<p>A data object is an XML document if it is well-formed, as defined in this
+  specification. A well-formed XML document MAY in addition be valid if it meets
+  certain further constraints.</p>--> 
+<h3>XML Document Types in the IDE </h3>  
+<p> The IDE supports several types of XML documents, including:</p>
 <ul>
-  <li><b>CSS.</b> Cascading Style Sheets (CSS) provide a simple mechanism for formatting
-      and adding style to HTML and XML documents. The IDE displays all CSSs as
-      CSS nodes (<img src="./images/css.gif" width="16" height="16" alt="css node">)
-      in the Files window. </p>
-    You can create an CSS by choosing File <img src="../images/arrow.gif" alt="and choose" >&nbsp;New
-    from the main window, expanding the XML folder, and selecting Cascading Style
-  Sheet. </li>
-  <li><b>DTD.&nbsp;</b>A document type definition (DTD) describes the grammar
-    that can be used in an XML file and indicates the valid arrangement of the
-    file's tags. It can exist as a prologue to an XML file (internal DTD) or
-  as a separate file (external DTD). 
-  <p>A DTD node (<img src="./images/dtdObject.gif" width="16" height="16" alt="DTD object node icon">) 
-  represents a document type definition (DTD) file. A DTD describes the tags that 
-  can be used in an XML file and indicates the valid arrangement of those tags. 
-  It can exist as a prologue to an XML file (internal DTD) or as a separate file 
-  (external DTD). </p>
-<p>You can create a new DTD by choosing File <img src="../images/arrow.gif" alt="and choose" >&nbsp;New 
-  from the main window, expanding the XML folder, and selecting DTD Entity. You 
-  can also generate a DTD for any XML file by right-clicking the XML file and 
-  choosing Generate DTD.</p>
-</li>
-  <li><b>XSL.</b> XSL stylesheets (<img src="./images/xslObject.gif" alt="XSL stylesheet node icon">)
-      define transformation rules for your XML documents. You can perform an
-      XML transformation to transform the data in an XML document into the output
-      of your choice, such as formatted HTML or a text file. </p>
-    You can create an XSL stylesheet by choosing File <img src="../images/arrow.gif" alt="and choose" >&nbsp;New
-  from the main window, expanding the XML folder, and selecting XSL Stylesheet. </li>
-  <li><strong>SAX</strong>. The Simple API for XML (SAX) is a serial access protocol for XML. SAX
-      is an event-driven API that you can use in your Java programs by registering
-      a document handler with a SAX parser. After registration, the parser invokes
-      your callback methods whenever it encounters a new XML tag, error, or other
-      special condition.</p>
-    You typically use the SAX protocol with servlets and network-oriented programs.
-    SAX is the fastest and least memory-intensive mechanism currently available
-    for dealing with XML documents. If you are writing an application that displays
-  and possibly modifies an XML document, you might prefer to use the DOM mechanism. </li>
-  <li><b>XML Catalogs.</b> XML catalogs provide mapping information
-    that maps an external entity in an XML document to the actual location of
-    the document being referenced. You can use a catalog to redirect mappings
-  for an external entity, such as a DTD or XML file, to a different location. </li>
-</ul>
-<h3>Other Types of XML Documents in the IDE </h3>
-<ul>
-  <li><b>XML Schema.</b> XML schemas (<img src="./images/xmlSchemaObject.gif" alt="XML shcema node icon" width="16" height="16">)
-      specify the valid grammar of an XML document. Schemas have several advantages
-      over DTDs, such as better extensibility, support of namespaces and data
-      types, and an XML code base.</p>
-    <p> You can create an XML schema by choosing File <img src="../images/arrow.gif" alt="and choose" >&nbsp;New
-      from the main window, expanding the XML folder, and selecting XML Schema.</p>
+  <li><b>Cascading Style Sheet.</b> A CSS   (<img src="./images/css.gif" width="16" height="16" alt="css node">)
+    provides a simple mechanism for formatting and adding style to HTML and XML
+  documents. </li>
+  <li><b>Document Type Definition.&nbsp;</b>A DTD (<img src="./images/dtdObject.gif" width="16" height="16" alt="DTD object node icon">)
+    describes the grammar that can be used in an XML file and indicates the valid
+    arrangement of the file's tags. It can exist as a prologue to an XML file
+    (internal DTD) or as a separate file (external DTD). 
   <li><b>Parsed Entity.</b> Parsed entity nodes  (<img src="images/entObject.gif" alt="parsed entity node icon" width="16" height="16">)
      represent parsed entity (<tt>.ent</tt>) files. If several of your XML
      documents  refer to a single piece of information, you can store that information
      in a  parsed entity. Any changes you make to the parsed entity are then
-     automatically  reflected in all of the documents that reference it.</p>
-     <p>You can create an external parsed entity by choosing File <img src="../images/arrow.gif" alt="and choose" >&nbsp;New 
-  from the main window, expanding the XML folder, and selecting XML Parsed Entity. 
-</p>
-<p>You can edit a parsed entity by double-clicking its node in the Files window.
-<!--TODO What is XML Entity Check? --></p>
-<p>For more information about using parsed entities in XML documents, see: </p>
+     automatically  reflected in all of the documents that reference it.
+    <p>For more information about using parsed entities in XML documents, see: </p>
 <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
     <param name="content" value="http://www.w3.org/TR/REC-xml#TextEntities">
     <param name="text" value="<html><u>http://www.w3.org/TR/REC-xml#TextEntities</u></html>">
     <param name="textFontSize" value="medium">
     <param name="textColor" value="blue">
 </object></p>
-  </ul>
+
+  <li><b>XML Catalogs.</b> XML catalogs (<img src="./images/catalog-entry.gif" alt="XML shcema node icon" width="16" height="16">) provide mapping information
+    that maps an external entity in an XML document to the actual location of
+    the document being referenced. You can use a catalog to redirect mappings
+  for an external entity, such as a DTD or XML file, to a different location. </li>
+
+   <li><b>XML Schema.</b> XML schemas (<img src="./images/xmlSchemaObject.gif" alt="XML shcema node icon" width="16" height="16">)
+      specify the valid grammar of an XML document. Schemas have several advantages
+      over DTDs, such as better extensibility, support of namespaces and data
+      types, and an XML code base.
+
+  <li><b>XSL Stylesheet.</b> XSL stylesheets (<img src="./images/xslObject.gif" alt="XSL stylesheet node icon">)
+      define transformation rules for your XML documents. You can perform an
+      XML transformation to transform the data in an XML document into the output
+      of your choice, such as formatted HTML or a text file. </li> 
+</ul>
+<h3>XML Protocols in the IDE </h3>
+<ul>
+  <li><b>SAX</b>. The  Simple API for XML (SAX) is
+    a serial access protocol for XML. SAX is an event-driven API that you can
+    use in your Java programs by registering a document handler with a SAX parser.
+    After registration, the parser invokes your callback methods whenever it
+    encounters a new XML tag, error, or other special condition.  </li>
+  <p>Typically,  the SAX protocol is used with servlets and network-oriented
+    programs. SAX is the fastest and least memory-intensive mechanism currently
+    available for dealing with XML documents. 
+  <li>
+  <p><b>DOM</b>. The Document Object Model (DOM) protocol converts
+    an XML document into a collection of objects in your program.
+  You can then manipulate the object model in any 
+  way that makes sense. This mechanism is also known as the random access protocol
+   because it permits you to access any part of the data at any time. Typically,
+    this protocol is used in applications that display and modify XML documents. </p>
+  
+</ul>
 
 <table>
   <tr> 
@@ -101,9 +87,10 @@ The XML node (<img src="images/xmlObject.gif" alt="XML object node icon">)
   </tr>
   <tr> 
     <td width="23"></td>
-    <td> <a href="sax/sax_generate.html">Generating a SAX Document Handler</a><br>
-      <a href="dtd/dtd_generatedom.html">Generating a DOM Tree Scanner</a> <br>
-      <a href="dtd/dtd_create.html">Creating a DTD</a>
+    <td> 
+	  <a href="xml_overview.html">Working With XML Documents in the IDE</a><br>
+      <a href="xml_quickref.html">IDE XML Task Quick Reference</a><br>
+      <a href="xml_settings.html">Global XML Settings</a>
 	</td>
   </tr>
 </table>
