@@ -36,6 +36,8 @@ public interface AntBasedProjectType {
      * Create the project object with a support class.
      * Normally the project should retain a reference to the helper object in
      * order to implement various required methods.
+     * Do <em>not</em> do any caching here; the infrastructure will call this
+     * method only when the project needs to be loaded into memory.
      * @param helper a helper object encapsulating the generic project structure
      * @return a project implementation
      * @throws IOException if there is some problem loading additional data
