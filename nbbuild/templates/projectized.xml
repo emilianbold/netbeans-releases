@@ -293,6 +293,8 @@ Microsystems, Inc. All Rights Reserved.
             </batchtest>
             <classpath refid="test.unit.run.cp"/>
             <syspropertyset refid="test.unit.properties"/>
+            <!-- <assertions> does not seem to work in Ant 1.6.1? -->
+            <jvmarg value="-ea"/>
             <formatter type="brief" usefile="false"/>
         </junit>
         <fail if="tests.failed">Some tests failed; see details above.</fail>
@@ -307,6 +309,8 @@ Microsystems, Inc. All Rights Reserved.
             </batchtest>
             <classpath refid="test.unit.run.cp"/>
             <syspropertyset refid="test.unit.properties"/>
+            <!-- <assertions> does not seem to work in Ant 1.6.1? -->
+            <jvmarg value="-ea"/>
             <formatter type="brief" usefile="false"/>
         </junit>
         <fail if="tests.failed">Some tests failed; see details above.</fail>
@@ -319,6 +323,7 @@ Microsystems, Inc. All Rights Reserved.
             <jvmarg value="-Xnoagent"/>
             <jvmarg value="-Djava.compiler=none"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <jvmarg value="-ea"/>
             <classpath refid="test.unit.run.cp"/>
             <syspropertyset refid="test.unit.properties"/>
             <arg line="${test.class}"/>
