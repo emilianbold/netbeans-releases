@@ -30,7 +30,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
  *
  * @author Peter Williams
  */
-public class ProjectWebServicesSupportProvider implements WebServicesSupportProvider{ //, WebServicesClientSupportProvider {
+public class ProjectWebServicesSupportProvider implements WebServicesSupportProvider, WebServicesClientSupportProvider {
 
     public ProjectWebServicesSupportProvider () {
     }
@@ -43,7 +43,7 @@ public class ProjectWebServicesSupportProvider implements WebServicesSupportProv
             // !PW FileUtil.toFile(file) can return null if the FileObject passed in is abstract,
             // e.g. from exploring a WAR file for example.
             if(FileUtil.toFile(ejbproject.getProjectDirectory()).equals(FileUtil.toFile(file))) {
-                    return ejbproject.getAPIWebServicesSupport();
+                return ejbproject.getAPIWebServicesSupport();
             }
 
             // TODO: ma154696: This is just quick fix for multiple source roots, is it OK?
@@ -68,7 +68,6 @@ public class ProjectWebServicesSupportProvider implements WebServicesSupportProv
         return null;
     }
 
-    /*  FIX-ME: web service client not yet implemented in EJB module
     public WebServicesClientSupport findWebServicesClientSupport (FileObject file) {
         Project project = FileOwnerQuery.getOwner (file);
         if (project != null && project instanceof EjbJarProject) {
@@ -77,16 +76,21 @@ public class ProjectWebServicesSupportProvider implements WebServicesSupportProv
             // !PW FileUtil.toFile(file) can return null if the FileObject passed in is abstract,
             // e.g. from exploring a WAR file for example.
             if(FileUtil.toFile(ejbproject.getProjectDirectory()).equals(FileUtil.toFile(file))) {
-                    return ejbproject.getAPIWebServicesClientSupport();
-            }
-
-            FileObject src = ejbproject.getSourceDirectory();
-            if (src != null && (src.equals (file) || FileUtil.isParentOf (src, file))) {
                 return ejbproject.getAPIWebServicesClientSupport();
             }
-            FileObject web = wp.getWebModule ().getDocumentBase();
-            if (web != null && (web.equals (file) || FileUtil.isParentOf (web, file))) {
-                return wp.getAPIWebServicesClientSupport();
+
+            // TODO: ma154696: This is just quick fix for multiple source roots, is it OK?
+            FileObject[] sourceRoots = ejbproject.getSourceRoots().getRoots();
+            for (int i = 0; i < sourceRoots.length; i++) {
+                FileObject src = sourceRoots[i];
+                if (src != null && (src.equals (file) || FileUtil.isParentOf (src, file))) {
+                    return ejbproject.getAPIWebServicesClientSupport();
+                }
+            }
+
+            FileObject metaInf = ejbproject.getEjbModule().getMetaInf();
+            if(metaInf != null && (metaInf.equals (file) || FileUtil.isParentOf (metaInf, file))) {
+                return ejbproject.getAPIWebServicesClientSupport();
             }
 
             FileObject build = ejbproject.getEjbModule().getBuildDirectory();
@@ -96,5 +100,4 @@ public class ProjectWebServicesSupportProvider implements WebServicesSupportProv
         }
         return null;
     }
-    */
 }

@@ -35,6 +35,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;
@@ -134,6 +135,10 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     private static final String RUN = "Run";    
     private static final String RUN_TESTS = "RunTests";
     
+    private static final String WEBSERVICE_CATEGORY = "WebServiceCategory";
+    private static final String WEBSERVICES = "WebServices";
+    private static final String WEBSERVICECLIENTS = "WebServiceClients";
+    
     private void init( EjbJarProjectProperties uiProperties ) {
         
         ResourceBundle bundle = NbBundle.getBundle( CustomizerProviderImpl.class );
@@ -192,17 +197,34 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 null,
                 new ProjectCustomizer.Category[] { build, jar, javadoc }  );
                 
-        ProjectCustomizer.Category webServices = ProjectCustomizer.Category.create(
-                "WsCompile",
+        ProjectCustomizer.Category services = ProjectCustomizer.Category.create(
+                WEBSERVICES,
                 "Web Services",
                 null,
                 null);
                 
+        ProjectCustomizer.Category clients = ProjectCustomizer.Category.create(
+                WEBSERVICECLIENTS,
+                "Web Service Clients",
+                null,
+                null);
+                
+        ProjectCustomizer.Category webServices = ProjectCustomizer.Category.create(
+                WEBSERVICE_CATEGORY,
+                "Web Services",
+                null,
+                new ProjectCustomizer.Category[] { services, clients } );
+                
         List servicesSettings = null;
+        List serviceClientsSettings = null;
         EjbJarProvider ejbJarProvider = (EjbJarProvider)project.getLookup().lookup(EjbJarProvider.class);
         WebServicesSupport servicesSupport = WebServicesSupport.getWebServicesSupport(ejbJarProvider.getMetaInf());
         if (servicesSupport != null) {
             servicesSettings = servicesSupport.getServices();
+        }
+        WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(ejbJarProvider.getMetaInf());
+        if (clientSupport != null) {
+            serviceClientsSettings = clientSupport.getServiceClients();
         }
         
         categories = new ProjectCustomizer.Category[] { 
@@ -220,13 +242,20 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         panels.put( jar, new CustomizerJar( uiProperties ) );
         panels.put( javadoc, new CustomizerJavadoc( uiProperties ) );
         panels.put( run, new CustomizerRun( uiProperties ) ); 
-        if (servicesSettings != null && servicesSettings.size() > 0)
-            panels.put( webServices, new CustomizerWSServiceHost( uiProperties, servicesSettings ));
-        else
-            panels.put( webServices, new LabelPanel(NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_CustomizeWsServiceHost_NoWebServices")));
+        if(servicesSettings != null && servicesSettings.size() > 0) {
+            panels.put( services, new CustomizerWSServiceHost( uiProperties, servicesSettings ));
+        } else {
+            panels.put( services, new LabelPanel(NbBundle.getMessage(CustomizerProviderImpl.class, 
+                "LBL_CustomizeWsServiceHost_NoWebServices")));
+        }
+        if(servicesSettings != null && servicesSettings.size() > 0) {
+            panels.put( clients, new CustomizerWSClientHost( uiProperties, serviceClientsSettings ));
+        } else {
+            panels.put( clients, new LabelPanel(NbBundle.getMessage(CustomizerProviderImpl.class, 
+                "LBL_CustomizeWsServiceClientHost_NoWebServiceClients")));
+        }
         
         panelProvider = new PanelProvider( panels );
-        
     }
     
     private static class PanelProvider implements ProjectCustomizer.CategoryComponentProvider {

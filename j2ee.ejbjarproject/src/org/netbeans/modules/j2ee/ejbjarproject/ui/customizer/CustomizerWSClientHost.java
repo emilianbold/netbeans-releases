@@ -46,14 +46,15 @@ import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
  *
  * @author Peter Williams
  */
-public class CustomizerWSServiceHost extends javax.swing.JPanel implements PropertyChangeListener {
+public class CustomizerWSClientHost extends javax.swing.JPanel 
+    implements PropertyChangeListener { // WebCustomizer.Panel, WebCustomizer.ValidatingPanel
     
     private EjbJarProjectProperties ejbJarProperties;
     private WsCompileEditorSupport.Panel wsCompileEditor;
 
     private List serviceSettings;
     
-    public CustomizerWSServiceHost(EjbJarProjectProperties ejbJarProperties, List serviceSettings) {
+    public CustomizerWSClientHost(EjbJarProjectProperties ejbJarProperties, List serviceSettings) {
         assert serviceSettings != null;
         initComponents();
 
@@ -104,7 +105,7 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements Prope
             wsCompileEditor = editorSupport.getWsCompileSupport();
         }
 
-        wsCompileEditor.initValues(serviceSettings, WsCompileEditorSupport.TYPE_SERVICE);
+        wsCompileEditor.initValues(serviceSettings, WsCompileEditorSupport.TYPE_CLIENT);
     }   
 
     /*public void validatePanel() throws WizardValidationException {
@@ -115,7 +116,7 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements Prope
 
     public void propertyChange(PropertyChangeEvent evt) {
         WsCompileEditorSupport.FeatureDescriptor newFeatureDesc = (WsCompileEditorSupport.FeatureDescriptor) evt.getNewValue();
-        String propertyName = "wscompile.service." + newFeatureDesc.getServiceName() + ".features";
+        String propertyName = "wscompile.client." + newFeatureDesc.getServiceName() + ".features";
         ejbJarProperties.putAdditionalProperty(propertyName, newFeatureDesc.getFeatures());
     }
 }

@@ -81,6 +81,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 
 /**
@@ -102,8 +103,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private final EjbJarProvider ejbModule;
     private final EjbJar apiEjbJar;
     private WebServicesSupport apiWebServicesSupport;
+    private WebServicesClientSupport apiWebServicesClientSupport;
     private EjbJarWebServicesSupport ejbJarWebServicesSupport;
-    //private WebServicesClientSupport apiWebServicesClientSupport;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
     
@@ -177,6 +178,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         apiEjbJar = EjbJarFactory.createEjbJar(ejbModule);
         ejbJarWebServicesSupport = new EjbJarWebServicesSupport(this, helper, refHelper);
         apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport(ejbJarWebServicesSupport);
+        apiWebServicesClientSupport = WebServicesSupportFactory.createWebServicesClientSupport(ejbJarWebServicesSupport);
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper,
             UpdateHelper.createDefaultNotifier());
         lookup = createLookup(aux);
@@ -312,11 +314,10 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     WebServicesSupport getAPIWebServicesSupport() {
         return apiWebServicesSupport;
     }
-    /*
+
     WebServicesClientSupport getAPIWebServicesClientSupport () {
-                return apiWebServicesClientSupport;
+        return apiWebServicesClientSupport;
     }
-     */
     
     /*public EjbJarProjectProperties getEjbJarProjectProperties() {
         return new EjbJarProjectProperties (this, helper, refHelper);
@@ -723,6 +724,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             "Templates/J2EE/Message", //NOI18N
             "Templates/J2EE/WebService", // NOI18N
             "Templates/J2EE/MessageHandler", // NOI18N
+            "Templates/J2EE/WebServiceClient", // NOI18N
             "Templates/J2EE/ServiceLocator.java", // NOI18N
             "Templates/Classes/Class.java" // NOI18N
         };
