@@ -32,7 +32,9 @@ import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import junit.framework.*;
+import org.netbeans.modules.j2ee.deployment.impl.ui.ServerRegistryNode;
 import org.openide.ErrorManager;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -174,13 +176,36 @@ public class TomcatManagerTest extends TestCase {
         assertFalse (tm.isRedeploySupported ());
     }
     
-//    /** Test of redeploy method, of class org.netbeans.modules.tomcat5.TomcatManager. */
-//    public void testRedeploy () {
-//        System.out.println ("testRedeploy");
+    /** Test for adding instance (needs to be ide test). */
+//    public void testAddToRegistry () {
+//        System.out.println ("testAddToRegistry");
+//        ServerRegistryNode srn = new ServerRegistryNode ();
+//        try {
+//            org.netbeans.modules.j2ee.deployment.impl.ServerRegistry
+//                .getInstance().addInstance("tomcat:dummy manager", "", "");
+//        }
+//        catch (java.io.IOException ioe) {
+//            fail(ioe.getMessage ());
+//            return;
+//        }
 //        
-//        // Add your test code below by replacing the default call to fail.
-//        fail ("The test case is empty.");
+//        boolean found = false;
+//        Node [] nodes = srn.getChildren ().getNodes ();
+//        for (int i=0; i<nodes.length; i++) {
+//            Node [] subnodes = nodes[i].getChildren ().getNodes ();
+//            for (int j=0; j<nodes.length; j++) {
+//                if (subnodes[j].getDisplayName ().indexOf ("dummy manager") >= 0) {
+//                    found = true;
+//                    break;
+//                }
+//            }
+//            if (found) {
+//                break;
+//            }
+//        }
+//        assertTrue ("Added instance not found in registry", found);
+//        
 //    }
-//    
+    
     
 }
