@@ -142,10 +142,8 @@ final class ResultView extends JPanel
 
         resultLabel.setLabelFor(treeView);
         
-        splittedPanel.setSwapPanesEnabled(false);
-        splittedPanel.setSplitTypeChangeEnabled(false);
-        splittedPanel.add(explorerPanel, SplittedPanel.ADD_FIRST);
-        splittedPanel.add(detailsPanel, SplittedPanel.ADD_SECOND);
+        splitPane.setLeftComponent(explorerPanel);
+        splitPane.setRightComponent(detailsPanel);
         
         initAccessibility();
     }
@@ -193,8 +191,8 @@ final class ResultView extends JPanel
         resultLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
         add(resultLabel);
 
-        splittedPanel.setAlignmentX(orientationLeftToRigth ? 0.0f : 1.0f);
-        add(splittedPanel);
+        splitPane.setAlignmentX(orientationLeftToRigth ? 0.0f : 1.0f);
+        add(splitPane);
 
         sortingPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 11, 5));
 
@@ -285,7 +283,7 @@ final class ResultView extends JPanel
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private final javax.swing.JLabel resultLabel = new javax.swing.JLabel();
     private final javax.swing.JRadioButton sortButton = new javax.swing.JRadioButton();
-    private final org.openide.awt.SplittedPanel splittedPanel = new org.openide.awt.SplittedPanel();
+    private final javax.swing.JSplitPane splitPane = new javax.swing.JSplitPane();
     private final javax.swing.JRadioButton unsortButton = new javax.swing.JRadioButton();
     // End of variables declaration//GEN-END:variables
     
