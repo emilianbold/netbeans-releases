@@ -564,7 +564,9 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
     </file>
 
+<!--
     <file name="IDESettings.settings" url="IDESettings.settings"/>
+-->
     <file name="OutputSettings.settings" url="OutputSettings.settings"/>
     <file name="ExecutionSettings.settings" url="ExecutionSettings.settings"/>
     <file name="PropertySheetSettings.settings" url="PropertySheetSettings.settings"/>
