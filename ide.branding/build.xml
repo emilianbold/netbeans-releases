@@ -85,7 +85,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="release/netbeans.png"/>
     <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="release/netbeans.icns"/>
     <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="release/shortcuts.pdf"/>
-    <copydir dest="${netbeans.dest.dir}/${cluster.dir}/doc" src="release/doc"/>                      
+    <copydir dest="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}" src="release/doc"/>                      
   </target>
   
   <target name="jars" depends="init">
