@@ -132,7 +132,7 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
                                 if (f == null ) {
                                     throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                                 }
-                                ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null, archiveFiles[i].isFolder() ? ClassPathSupport.Item.PATH_IN_WAR_NONE : ClassPathSupport.Item.PATH_IN_WAR_LIB);
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null, ClassPathSupport.Item.PATH_IN_WAR_LIB);
                                 if (!resources.contains(item)) {
                                     resources.add (item);
                                     added = true;
