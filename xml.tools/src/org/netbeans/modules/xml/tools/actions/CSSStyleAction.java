@@ -98,7 +98,6 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
             FileObject primFile = dtdo.getPrimaryFile();
             String name = primFile.getName() + Util.THIS.getString("NAME_SUFFIX_Stylesheet");
             FileObject folder = primFile.getParent();
-            String packageName = folder.getPackageName ('.');
 
             FileObject generFile = (new SelectFileDialog (folder, name, "css")).getFileObject(); // NOI18N
             name = generFile.getName();

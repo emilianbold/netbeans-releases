@@ -107,7 +107,6 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
                 FileObject primFile = dtdo.getPrimaryFile();
                 String name = primFile.getName() + Util.THIS.getString("NAME_SUFFIX_Documentation");
                 FileObject folder = primFile.getParent();
-                String packageName = folder.getPackageName ('.');
 
                 FileObject generFile = (new SelectFileDialog (folder, name, "html")).getFileObject(); // NOI18N
                 name = generFile.getName();

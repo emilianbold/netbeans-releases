@@ -108,7 +108,7 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
             return new XSLGrammarQuery(dataObj);
             
         } catch (DataObjectNotFoundException e) {
-            throw new IllegalStateException("Missing DataObject " + e.getFileObject().getPackageNameExt('/', '.') + "!"); // NOI18N
+            throw new IllegalStateException("Missing DataObject " + e.getFileObject().getPath() + "!"); // NOI18N
         }
     }
     
