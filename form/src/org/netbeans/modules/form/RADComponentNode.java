@@ -77,6 +77,10 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     }
   }
   
+  void notifyPropertiesChange () {
+    firePropertyChange (null, null, null);
+  }
+
   public Image getIcon (int iconType) {
     Image ic = BeanSupport.getBeanIcon (component.getBeanClass (), iconType);
     if (ic != null) return ic;
@@ -523,6 +527,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  23   Gandalf   1.22        7/14/99  Ian Formanek    Fixed bug 1830 - Layout 
+ *       panel is not synchronized with Form Window
  *  22   Gandalf   1.21        7/5/99   Ian Formanek    provides NewTypes and 
  *       New action
  *  21   Gandalf   1.20        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
