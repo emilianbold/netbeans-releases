@@ -117,7 +117,12 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
     
 
     public void setTopComponents(TopComponent[] tcs, TopComponent selected) {
-        tabbed.setTopComponents(tcs, selected);
+        ignoreChange = true;
+        try {
+            tabbed.setTopComponents(tcs, selected);
+        } finally {
+            ignoreChange = false;
+        }
     }
     
     /** Adds TopComponent into specified tab. */
