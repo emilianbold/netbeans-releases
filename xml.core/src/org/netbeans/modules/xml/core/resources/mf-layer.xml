@@ -104,6 +104,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="XML">
             <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance" />
             <file name="org-netbeans-modules-xml-core-actions-CollectDTDAction.instance" />
+            <file name="org-netbeans-modules-xsl-actions-ScenarioAction.instance" />
         </folder>
 
         <!-- Help -->
@@ -122,6 +123,20 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-xml-core-error.xml" url="error-annotation.xml"/>
         </folder>
+        <folder name="text">
+            <folder name="xml">    
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <!--attr name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance/XMLSeparator2.instance" boolvalue="true"/>
+                        <file name="XMLSeparator3.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        </file>
+                        <attr name="XMLSeparator3.instance/org-netbeans-modules-xsl-actions-ScenarioAction.instance" boolvalue="true"/-->
+                        <file name="org-netbeans-modules-xml-core-actions-ScenarioAction.instance"/>
+                    </folder> <!-- Default -->
+                </folder> <!-- Toolbars -->
+            </folder> <!-- xml -->
+        </folder> <!-- text -->
     </folder>
 
     <!-- register services with Lookup -->
@@ -129,6 +144,9 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Hidden">            
             <file name="org.netbeans-modules-xml-core-cookies.xml" url="XMLCookies.xml" />
+            <file name="org-netbeans-modules-xsl-actions-ScenarioAction.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.core.actions.CollectXMLAction$XMLAction"/>
+            </file>
         </folder>
 
         <folder name="Looks">
@@ -150,6 +168,12 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
     </folder> <!-- Services -->          
+
+    <folder name="Shortcuts">
+        <file name="A-S.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.xsl.actions.ScenarioAction"/>
+        </file>
+    </folder> <!-- Shortcuts -->
 
     <!-- Registrations accesible with dedicated FolderLookups -->        
     <folder name="Plugins">
