@@ -17,6 +17,7 @@ import java.awt.*;
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
+import java.beans.*;
 
 import org.netbeans.core.spi.multiview.*;
 import org.openide.DialogDisplayer;
@@ -85,6 +86,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     private RADComponent connectionSource;
     private RADComponent connectionTarget;
 
+    private MultiViewElementCallback multiViewObserver;
+
     /** The icons for FormDesigner */
     private static String iconURL =
         "org/netbeans/modules/form/resources/formDesigner.gif"; // NOI18N
@@ -117,6 +120,18 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         add(scrollPane, BorderLayout.CENTER);
 
         setModel(formModel);
+
+        // for multiview - propagate activated nodes
+        addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent e) {
+                if ("activatedNodes".equals(e.getPropertyName())) {
+                    TopComponent tc = multiViewObserver != null ?
+                                      multiViewObserver.getTopComponent() : null;
+                    if (tc != null)
+                        tc.setActivatedNodes((Node[])e.getNewValue());
+                }
+            }
+        });
     }
 
     public void initialize() {
@@ -794,8 +809,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     public JComponent getVisualRepresentation() {
         return this;
     }
-
-    transient MultiViewElementCallback multiViewObserver;
 
     public void setMultiViewCallback(MultiViewElementCallback callback) {
         multiViewObserver = callback;

@@ -1219,12 +1219,25 @@ public class FormEditorSupport extends JavaEditor
 
         private transient JComponent toolbar;
 
+        private transient MultiViewElementCallback multiViewObserver;
+
         JavaEditorTopComponent() {
             super();
         }
 
         JavaEditorTopComponent(DataObject dobj) {
             super(dobj);
+            // for multiview - propagate activated nodes
+            addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent e) {
+                    if ("activatedNodes".equals(e.getPropertyName())) {
+                        TopComponent tc = multiViewObserver != null ?
+                                    multiViewObserver.getTopComponent() : null;
+                        if (tc != null)
+                            tc.setActivatedNodes((Node[])e.getNewValue());
+                    }
+                }
+            });
         }
 
         public JComponent getToolbarRepresentation() {
@@ -1255,8 +1268,6 @@ public class FormEditorSupport extends JavaEditor
         public void componentActivated() {
             super.componentActivated();
         }
-
-        private transient MultiViewElementCallback multiViewObserver;
 
         public void setMultiViewCallback(MultiViewElementCallback callback) {
             multiViewObserver = callback;
