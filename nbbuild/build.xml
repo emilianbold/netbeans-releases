@@ -3293,13 +3293,16 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
   <target 
     name="commit-validation" 
-    depends="commitValidation,all-verification,no-commit-validation" 
+    depends="commitValidation,commit-verification,no-commit-validation" 
     description="Runs tests to validate IDE before commit."
   />
 
   <target name="all-commitValidation" description="dummy target for build error recognition facility"/>
   
-  <target name="all-verification" depends="check-files-layout" />
+  <target name="commit-verification" depends="all-verification,check-files-layout" />
+  <target name="all-verification" >
+    <echo message="Runs verification tests to check the IDE before commit" />
+  </target>
 
   <!-- keep this target name at least for a while for backward compat -jglick -->
   <target name="commitValidation" depends="all-commitValidation,check-commit-validation" if="run.validation">
