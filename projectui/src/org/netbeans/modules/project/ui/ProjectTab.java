@@ -14,6 +14,7 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -59,6 +60,8 @@ public class ProjectTab extends TopComponent
     public static final String ID_LOGICAL = "projectTabLogical_tc"; // NOI18N                            
     public static final String ID_PHYSICAL = "projectTab_tc"; // NOI18N                        
     
+    private static final Image ICON = org.openide.util.Utilities.loadImage( "org/netbeans/modules/project/ui/resources/projectTab.gif" );
+    
     private static Map tabs = new HashMap();                            
                             
     private transient final ExplorerManager manager;
@@ -102,6 +105,7 @@ public class ProjectTab extends TopComponent
     
     private void initValues( String tcID ) {
         setName(NbBundle.getMessage(ProjectTab.class, "LBL_" + tcID ));  //NOI18N
+        setIcon( ICON ); // XXX This might need to set icon by project tab type later
         if ( rootNode == null ) {
             // Create the node which lists open projects      
             rootNode = new ProjectsRootNode( tcID.equals( ID_LOGICAL ) ? ProjectsRootNode.LOGICAL_VIEW : ProjectsRootNode.PHYSICAL_VIEW );
