@@ -81,13 +81,15 @@ public class DataObjectSearchGroup extends SearchGroup {
 
         lowMemoryWarning = false;
         lowMemoryWarningCount = 0;
+        assureMemory(REQUIRED_PER_ITERATION, true);
+
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
             SearchInfo info = getSearchInfo(node);
             if (info != null) {
                 for (Iterator j = info.objectsToSearch(); j.hasNext(); ) {
                     if (stopped) return;
-                    assureMemory();
+                    assureMemory(REQUIRED_PER_ITERATION, false);
                     processSearchObject(/*DataObject*/ j.next());
                 }
             }
@@ -97,28 +99,48 @@ public class DataObjectSearchGroup extends SearchGroup {
 
     private static boolean lowMemoryWarning = false;
     private static int lowMemoryWarningCount = 0;
+    private static int MB = 1024 * 1024;
+    private static int REQUIRED_PER_ITERATION = 2 * MB;
+    private static int REQUIRED_PER_FULL_GC = 7 * MB;
 
-    /** throws RuntimeException if low memory condition happens */
-    private void assureMemory() {
+    /**
+     * throws RuntimeException if low memory condition happens
+     * @param estimate etimated memory requirements before next check
+     * @param tryGC on true use potentionally very slow test that is more accurate (cooperates with GC)
+     */
+    private static void assureMemory(int estimate, boolean tryGC) {
         Runtime rt = Runtime.getRuntime();
         long total = rt.totalMemory();
         long max = rt.maxMemory();  // XXX on some 1.4.1 returns heap&native instead of -Xmx
-        long required = Math.max(total/13, 9*1024*1024);
+        long required = Math.max(total/13, estimate + REQUIRED_PER_FULL_GC);
         if (total ==  max && rt.freeMemory() < required) {
             // System.err.println("MEM " + max + " " +  total + " " + rt.freeMemory());
-            lowMemoryWarning = true;
+            if (tryGC) {
+                try {
+                    byte[] gcProvocation = new byte[(int)required + REQUIRED_PER_FULL_GC];
+                    gcProvocation = null;
+                } catch (OutOfMemoryError e) {
+                    throwNoMemory();
+                }
+            } else {
+                lowMemoryWarning = true;
+            }
         } else if (lowMemoryWarning) {
             lowMemoryWarning = false;
             lowMemoryWarningCount ++;
         }
         // gc is getting into corner
-        if (lowMemoryWarningCount > 7 || (total == max && rt.freeMemory() < 7*1024*1024)) {
-            RuntimeException ex = new RuntimeException("Low memory condition"); // NOI18N
-            String msg = NbBundle.getMessage(DataObjectSearchGroup.class, "EX_memory");
-            ErrorManager.getDefault().annotate(ex, ErrorManager.USER, null, msg, null, null);
-            throw ex;
+        if (lowMemoryWarningCount > 7 || (total == max && rt.freeMemory() < REQUIRED_PER_FULL_GC)) {
+            throwNoMemory();
         }
 
+    }
+
+    private static void throwNoMemory() {
+        RuntimeException ex = new RuntimeException("Low memory condition"); // NOI18N
+        String msg = NbBundle.getMessage(DataObjectSearchGroup.class, "EX_memory");
+        ErrorManager.getDefault().annotate(ex, ErrorManager.USER, null, msg, null, null);
+        throw ex;
     }
 
     /**

@@ -140,7 +140,12 @@ public abstract class SearchGroup extends Object {
         stopped = true;
     }
 
-    /** Does search. */
+    /**
+     * Does search.
+     *
+     * @throw RuntimeException USER level annotated runtime exception
+     *        on low memory condition (instead of OutOfMemoryError)
+     */
     public void search() {
         resultObjects.clear();
         prepareSearch();
