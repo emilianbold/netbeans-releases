@@ -42,7 +42,7 @@ public class SearchDocAction extends CallableSystemAction {
   * @return the action's icon location
   */
   protected String iconResource () {
-    return "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"
+    return "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif";
   }
   
   /** Help context where to find more about the action.
@@ -68,6 +68,7 @@ public class SearchDocAction extends CallableSystemAction {
 
 /*
  * Log
+ *  4    Gandalf   1.3         5/26/99  Ian Formanek    Fixed last change
  *  3    Gandalf   1.2         5/26/99  Ian Formanek    touch-ups
  *  2    Gandalf   1.1         5/14/99  Petr Hrebejk    
  *  1    Gandalf   1.0         5/13/99  Petr Hrebejk    
