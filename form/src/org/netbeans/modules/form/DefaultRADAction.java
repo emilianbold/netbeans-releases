@@ -78,7 +78,8 @@ public class DefaultRADAction extends CookieAction {
      */
     protected void performAction(Node[] activatedNodes) {
         RADComponent comp =((RADComponentCookie)activatedNodes[0].getCookie(RADComponentCookie.class)).getRADComponent();
-        comp.attachDefaultEvent();
+        if (comp.hasDefaultEvent())
+            comp.attachDefaultEvent();
     }
 
 }
