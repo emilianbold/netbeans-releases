@@ -61,17 +61,8 @@ public class MethodPicker extends javax.swing.JDialog {
       javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
     );
 
-    Vector allComponents = new Vector ();
-    allComponents.addElement (manager.getRADForm ().getTopLevelComponent ());
-    RADComponent[] comps = manager.getNonVisualComponents ();
-    for (int i = 0; i < comps.length; i++) {
-      allComponents.addElement (comps[i]);
-    }
-
-    addComponentsRecursively (manager.getRADForm ().getFormContainer (), allComponents);
-
-    components = new RADComponent [allComponents.size ()];
-    allComponents.copyInto (components);
+    Collection allComponents = manager.getAllComponents ();
+    components = (RADComponent[])allComponents.toArray (new RADComponent [allComponents.size ()]);
     int selIndex = -1;
     for (int i = 0; i < components.length; i++) {
       componentsCombo.addItem (components[i].getName ());
@@ -344,6 +335,9 @@ public class MethodPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  11   Gandalf   1.10        10/9/99  Ian Formanek    Fixed bug 4151 - Menus, 
+ *       MenuItems etc. are missing in Component combo box in Form Connection 
+ *       (or Connection Wizard).
  *  10   Gandalf   1.9         7/31/99  Ian Formanek    Parameters Button is not
  *       displayed - not in the .form file (i.e. when opened as a form, it will 
  *       be recreated !)

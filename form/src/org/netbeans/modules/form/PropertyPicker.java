@@ -58,15 +58,8 @@ public class PropertyPicker extends javax.swing.JDialog {
       javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
     );
 
-    Vector allComponents = new Vector ();
-    allComponents.addElement (manager.getRADForm ().getTopLevelComponent ());
-    RADComponent[] comps = manager.getNonVisualComponents ();
-    for (int i = 0; i < comps.length; i++) {
-      allComponents.addElement (comps[i]);
-    }
-    addComponentsRecursively (manager.getRADForm ().getFormContainer (), allComponents);
-    components = new RADComponent [allComponents.size ()];
-    allComponents.copyInto (components);
+    Collection allComponents = manager.getAllComponents ();
+    components = (RADComponent[])allComponents.toArray (new RADComponent [allComponents.size ()]);
     int selIndex = -1;
     for (int i = 0; i < components.length; i++) {
       componentsCombo.addItem (components[i].getName ());
@@ -122,15 +115,6 @@ public class PropertyPicker extends javax.swing.JDialog {
 
 // ----------------------------------------------------------------------------
 // private methods
-
-  private void addComponentsRecursively (ComponentContainer cont, Vector vect) {
-    RADComponent[] children = cont.getSubBeans ();
-    for (int i = 0; i < children.length; i++) {
-      vect.addElement (children[i]);
-      if (children[i] instanceof ComponentContainer)
-        addComponentsRecursively ((ComponentContainer)children[i], vect);
-    }
-  }
 
   private void updatePropertyList () {
     RADComponent sel = getSelectedComponent ();
@@ -325,6 +309,9 @@ public class PropertyPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  11   Gandalf   1.10        10/9/99  Ian Formanek    Fixed bug 4151 - Menus, 
+ *       MenuItems etc. are missing in Component combo box in Form Connection 
+ *       (or Connection Wizard).
  *  10   Gandalf   1.9         7/31/99  Ian Formanek    Localization completed
  *  9    Gandalf   1.8         6/29/99  Ian Formanek    Removed incorrect cast
  *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
