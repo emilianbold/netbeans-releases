@@ -17,6 +17,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -73,6 +74,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         DebuggerManager.getDebuggerManager ().removeDebuggerListener (
             DebuggerManager.PROP_CURRENT_ENGINE,
             this
+        );
+        Models.setModelsToView (
+            view, null, null, null, null, Collections.EMPTY_LIST
         );
     }
 

@@ -88,15 +88,17 @@ public final class Models {
         NodeActionsProvider nodeActionsProvider,
         List columnModels
     ) {
-        CompoundModel cm = new CompoundModel (
-            treeModel,
-            nodeModel,
-            nodeActionsProvider,
-            columnModels,
-            tableModel
-        );
         TreeTable tt = new TreeTable ();
-        tt.setModel (cm);
+        if (treeModel != null) {
+            CompoundModel cm = new CompoundModel (
+                treeModel,
+                nodeModel,
+                nodeActionsProvider,
+                columnModels,
+                tableModel
+            );
+            tt.setModel (cm);
+        }
         return tt;
     }
     

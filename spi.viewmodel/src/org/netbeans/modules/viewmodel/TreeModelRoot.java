@@ -17,6 +17,7 @@ import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.WeakHashMap;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
@@ -64,7 +65,11 @@ public class TreeModelRoot implements TreeModelListener {
     }
     
     public void treeChanged () {
-        rootNode.setObject (model.getRoot ());
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                rootNode.setObject (model.getRoot ());
+            }
+        });
 //        Iterator i = new HashSet (objectToNode.values ()).iterator ();
 //        while (i.hasNext ()) {
 //            WeakReference wr = (WeakReference) i.next ();

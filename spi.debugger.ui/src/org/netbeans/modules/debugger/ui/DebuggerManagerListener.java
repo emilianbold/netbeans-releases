@@ -15,8 +15,8 @@ package org.netbeans.modules.debugger.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.debugger.Session;
 
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
@@ -36,54 +36,63 @@ import org.openide.windows.WindowManager;
  */
 public class DebuggerManagerListener extends DebuggerManagerAdapter {
     
+    private boolean isOpened = false;
+    
     public void propertyChange (PropertyChangeEvent evt) {
-        if (evt.getPropertyName ().equals (DebuggerManager.PROP_SESSIONS)) {
-            if (((Session[]) evt.getOldValue ()).length == 0
-            ) {
-                // Open debugger TopComponentGroup.
-                SwingUtilities.invokeLater (new Runnable () {
-                    public void run () {
-                        TopComponentGroup group = WindowManager.getDefault ().
-                            findTopComponentGroup ("debugger"); // NOI18N
-                        if (group != null) {
-                            try {
-                                group.open ();
-                                if (ToolbarPool.getDefault ().
-                                    getConfiguration ().equals 
-                                    (ToolbarPool.DEFAULT_CONFIGURATION)
-                                )
-                                    ToolbarPool.getDefault ().setConfiguration 
-                                        ("Debugging");
-                            } catch (Throwable e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                });
-            }
-            if (DebuggerManager.getDebuggerManager ().getSessions ().length == 0
-            ) {
-                // Close debugger TopComponentGroup.
-                SwingUtilities.invokeLater (new Runnable () {
-                    public void run () {
-                        TopComponentGroup group = WindowManager.getDefault ().
-                            findTopComponentGroup ("debugger"); // NOI18N
-                        if (group != null) {
-                            group.close ();
-                            if (ToolbarPool.getDefault ().getConfiguration ()
-                                .equals ("Debugging")
+        if ( (DebuggerManager.getDebuggerManager ().getCurrentEngine () 
+               != null) &&
+             (!isOpened)
+        ) {
+            // Open debugger TopComponentGroup.
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    TopComponentGroup group = WindowManager.getDefault ().
+                        findTopComponentGroup ("debugger"); // NOI18N
+                    if (group != null) {
+                        try {
+                            group.open ();
+                            if (ToolbarPool.getDefault ().
+                                getConfiguration ().equals 
+                                (ToolbarPool.DEFAULT_CONFIGURATION)
                             )
                                 ToolbarPool.getDefault ().setConfiguration 
-                                    (ToolbarPool.DEFAULT_CONFIGURATION);
+                                    ("Debugging");
+                        } catch (Throwable e) {
+                            e.printStackTrace();
                         }
                     }
-                });
-            }
+                }
+            });
+            isOpened = true;
+        }
+        if ( (evt.getPropertyName () == DebuggerManager.PROP_DEBUGGER_ENGINES) 
+                &&
+             ((DebuggerEngine[]) evt.getNewValue ()).length == 0
+        ) {
+            // Close debugger TopComponentGroup.
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    TopComponentGroup group = WindowManager.getDefault ().
+                        findTopComponentGroup ("debugger"); // NOI18N
+                    if (group != null) {
+                        group.close ();
+                        if (ToolbarPool.getDefault ().getConfiguration ()
+                            .equals ("Debugging")
+                        )
+                            ToolbarPool.getDefault ().setConfiguration 
+                                (ToolbarPool.DEFAULT_CONFIGURATION);
+                    }
+                }
+            });
+            isOpened = false;
         }
     }
     
     public String[] getProperties () {
-        return new String [] {DebuggerManager.PROP_SESSIONS};
+        return new String [] {
+            DebuggerManager.PROP_DEBUGGER_ENGINES,
+            DebuggerManager.PROP_CURRENT_ENGINE
+        };
     }
     
 }

@@ -72,6 +72,7 @@ ExplorerManager.Provider, PropertyChangeListener {
     private MyTreeTable         treeTable;
     private Node.Property[]     columns;
     private List                expandedPaths = new ArrayList ();
+    private TreeModelRoot       currentTreeModelRoot;
     
     
     public TreeTable () {
@@ -88,12 +89,16 @@ ExplorerManager.Provider, PropertyChangeListener {
     
     public void setModel (CompoundModel model) {
         
+        // 1) destroy old model
+        if (currentTreeModelRoot != null) 
+            currentTreeModelRoot.destroy ();
+        
+        // 2) save current settings (like columns, expanded paths)
         List ep = treeTable.getExpandedPaths ();
         if (ep.size () > 0) expandedPaths = ep;
-        
         saveWidths ();
         
-        // 1) no model => set empty root node
+        // 3) no model => set empty root node & return
         if (model == null) {
             getExplorerManager ().setRootContext (
                 new AbstractNode (Children.LEAF)
@@ -101,7 +106,7 @@ ExplorerManager.Provider, PropertyChangeListener {
             return;
         }
         
-        // 2) set columns for given model
+        // 4) set columns for given model
         columns = createColumns (model);
         treeTable.setProperties (columns);
         
@@ -115,13 +120,14 @@ ExplorerManager.Provider, PropertyChangeListener {
 //            ex.printStackTrace ();
 //        }
         
-        // 3) update column widths
-        updateColumnWidths ();
-        
-        // 3) set root node for given model
+        // 5) set root node for given model
+        currentTreeModelRoot = new TreeModelRoot (model);
         getExplorerManager ().setRootContext (
-            new TreeModelRoot (model).getRootNode ()
+            currentTreeModelRoot.getRootNode ()
         );
+        
+        // 6) update column widths & expanded nodes
+        updateColumnWidths ();
         treeTable.expandNodes (expandedPaths);
     }
     
