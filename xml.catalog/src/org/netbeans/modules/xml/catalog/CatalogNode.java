@@ -67,7 +67,7 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
             SystemAction.get(RefreshAction.class),
             SystemAction.get(CatalogNode.UnmountAction.class),
             null,
-            //!!! sometimes added by BeanNode
+            //??? #24349 CustimizeAction sometimes added by BeanNode here
             SystemAction.get(PropertiesAction.class)
         };
     }
