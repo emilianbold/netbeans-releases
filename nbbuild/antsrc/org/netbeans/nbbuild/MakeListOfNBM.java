@@ -39,6 +39,7 @@ public class MakeListOfNBM extends Task {
     /** Sets the directory used to create the NBM list file */
     public void setOutputfiledir(File s) {
         outputFile = s;
+        log("Setting outputfile to " + s, Project.MSG_DEBUG);
     }
 
     public FileSet createFileSet() {
@@ -48,6 +49,7 @@ public class MakeListOfNBM extends Task {
     /** Sets the module file */
     public void setModule(String s) {
         moduleName = s;
+        log("Setting moduleName to " + s, Project.MSG_DEBUG);
     }
 
     public void setTargetName(String t) {
@@ -74,31 +76,31 @@ public class MakeListOfNBM extends Task {
             jar = new JarFile(module);
             attr = jar.getManifest().getMainAttributes();
         } catch (IOException ex) {
-            throw new BuildException("Can't get manifest attributes", ex, getLocation());
+            throw new BuildException("Can't get manifest attributes for module jar file "+module.getAbsolutePath(), ex, getLocation());
         } finally {
             try {
                 if (jar != null) jar.close();
             } catch( IOException ex1 ) {}
         }
-      
-        String codename = attr.getValue("OpenIDE-Module");
+        
+        String codename = attr.getValue("OpenIDE-Module"); //NOI18N
         if (codename == null) {
-            throw new BuildException("invalid manifest, does not contain OpenIDE-Module", getLocation());
+            throw new BuildException("Manifest in jar file "+module.getAbsolutePath()+" does not contain OpenIDE-Module", getLocation());
         }
         
-        String versionSpecNum = attr.getValue("OpenIDE-Module-Specification-Version");
+        String versionSpecNum = attr.getValue("OpenIDE-Module-Specification-Version"); //NOI18N
         if (versionSpecNum == null) {
-            log("manifest does not contain OpenIDE-Module-Specification-Version");
+            log("Manifest in jar file "+module.getAbsolutePath()+" does not contain tag OpenIDE-Module-Specification-Version");
             return;
         }
         
         UpdateTracking.Version version = track.addNewModuleVersion( codename, versionSpecNum );
 
-        String systemDir = this.getProject().getProperty("nb.system.dir");
+        String systemDir = this.getProject().getProperty("nb.system.dir"); //NOI18N
         if (systemDir == null)
             throw new BuildException( "Can't read nb.system.dir property");
-        
-        fs.createInclude().setName(systemDir + File.separator + "Modules" + File.separator + track.getTrackingFileName());
+        log("Property nb.system.dir has got value \""+systemDir+"\"",Project.MSG_DEBUG);
+        fs.createInclude().setName(systemDir + File.separator + "Modules" + File.separator + track.getTrackingFileName()); //NOI18N
         
         DirectoryScanner ds = fs.getDirectoryScanner( this.getProject() );
         ds.scan();
@@ -123,16 +125,16 @@ public class MakeListOfNBM extends Task {
         }
         track.write();
         String absolutePath = outputFile.getAbsolutePath();
-        String clusterDir = this.getProject().getProperty("cluster.dir");
-        String moduleName = this.getProject().getProperty("module.name");
+        String clusterDir = this.getProject().getProperty("cluster.dir");  //NOI18N
+        String moduleName = this.getProject().getProperty("module.name"); //NOI18N
         String outputPath = absolutePath.substring(0,absolutePath.length() - clusterDir.length());
         String[] inc = new String[include.length+2];
         for (int i=0; i < include.length; i++)
             inc[i] = include[i];
-        inc[include.length] = systemDir + File.separator + "Modules" + File.separator + track.getTrackingFileName();
+        inc[include.length] = systemDir + File.separator + "Modules" + File.separator + track.getTrackingFileName(); //NOI18N
         inc[include.length+1] = UpdateTracking.TRACKING_DIRECTORY + File.separator + track.getTrackingFileName();
         ModuleTracking moduleTracking = new ModuleTracking( outputPath );
-        moduleTracking.putModule(moduleName, absolutePath, inc);
+        moduleTracking.putModule(moduleName, clusterDir, inc);
         moduleTracking.write();
     }
 }
