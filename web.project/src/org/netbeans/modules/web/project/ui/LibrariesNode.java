@@ -111,8 +111,8 @@ final class LibrariesNode extends AbstractNode {
      */
     LibrariesNode (String displayName, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                    String classPathProperty, String[] classPathIgnoreRef, String platformProperty, String j2eePlatformProperty,
-                   Action[] librariesNodeActions) {
-        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, j2eePlatformProperty, platformProperty));
+                   Action[] librariesNodeActions, String webModuleElementName) {
+        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, j2eePlatformProperty, platformProperty, webModuleElementName));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
         this.setIconBase(ICON);
@@ -135,16 +135,16 @@ final class LibrariesNode extends AbstractNode {
     }
 
     //Static Action Factory Methods
-    public static Action createAddProjectAction (Project p, String classPathId) {
-        return new AddProjectAction (p, classPathId);
+    public static Action createAddProjectAction (Project p, String classPathId, String webModuleElementName) {
+        return new AddProjectAction (p, classPathId, webModuleElementName);
     }
 
-    public static Action createAddLibraryAction (Project p, AntProjectHelper helper, String classPathId) {
-        return new AddLibraryAction (p, helper, classPathId);
+    public static Action createAddLibraryAction (Project p, AntProjectHelper helper, String classPathId, String webModuleElementName) {
+        return new AddLibraryAction (p, helper, classPathId, webModuleElementName);
     }
 
-    public static Action createAddFolderAction (Project p, String classPathId) {
-        return new AddFolderAction (p, classPathId);
+    public static Action createAddFolderAction (Project p, String classPathId, String webModuleElementName) {
+        return new AddFolderAction (p, classPathId, webModuleElementName);
     }
     
     /**
@@ -198,6 +198,7 @@ final class LibrariesNode extends AbstractNode {
         private final String platformProperty;
         private final String j2eePlatformProperty;
         private final Set classPathIgnoreRef;
+        private final String webModuleElementName;
 
         //XXX: Workaround: classpath is used only to listen on non existent files.
         // This should be removed when there will be API for it
@@ -206,7 +207,7 @@ final class LibrariesNode extends AbstractNode {
 
 
         LibrariesChildren (PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
-                           String classPathProperty, String[] classPathIgnoreRef, String platformProperty, String j2eePlatformProperty) {
+                           String classPathProperty, String[] classPathIgnoreRef, String platformProperty, String j2eePlatformProperty, String webModuleElementName) {
             this.eval = eval;
             this.helper = helper;
             this.refHelper = refHelper;
@@ -214,6 +215,7 @@ final class LibrariesNode extends AbstractNode {
             this.classPathIgnoreRef = new HashSet(Arrays.asList(classPathIgnoreRef));
             this.platformProperty = platformProperty;
             this.j2eePlatformProperty = j2eePlatformProperty;
+            this.webModuleElementName = webModuleElementName;
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -261,11 +263,11 @@ final class LibrariesNode extends AbstractNode {
                         break;
                     case Key.TYPE_PROJECT:
                         result = new Node[] {new ProjectNode(key.getProject(), helper, eval, refHelper, key.getClassPathId(),
-                            key.getEntryId())};
+                            key.getEntryId(), webModuleElementName)};
                         break;
                     case Key.TYPE_LIBRARY:
                         result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
-                            helper, eval, refHelper, key.getClassPathId(), key.getEntryId())};
+                            helper, eval, refHelper, key.getClassPathId(), key.getEntryId(), webModuleElementName)};
                         break;
                 }
             }
@@ -513,11 +515,13 @@ final class LibrariesNode extends AbstractNode {
 
         private final Project project;
         private final String classPathId;
+        private final String webModuleElementName;
 
-        public AddProjectAction (Project project, String classPathId) {
+        public AddProjectAction (Project project, String classPathId, String webModuleElementName) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddProject_Action" ) );
             this.project = project;
             this.classPathId = classPathId;
+            this.webModuleElementName = webModuleElementName;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -532,7 +536,7 @@ final class LibrariesNode extends AbstractNode {
             if (cpExtender != null) {
                 for (int i=0; i<artifacts.length;i++) {
                     try {
-                        cpExtender.addAntArtifact(classPathId, artifacts[i]);
+                        cpExtender.addAntArtifact(classPathId, artifacts[i], webModuleElementName);
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
                     }
@@ -549,12 +553,14 @@ final class LibrariesNode extends AbstractNode {
         private final Project project;
         private final AntProjectHelper helper;
         private final String classPathId;
+        private final String webModuleElementName;
 
-        public AddLibraryAction (Project project, AntProjectHelper helper, String classPathId) {
+        public AddLibraryAction (Project project, AntProjectHelper helper, String classPathId, String webModuleElementName) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddLibrary_Action" ) );
             this.project = project;
             this.helper = helper;
             this.classPathId = classPathId;
+            this.webModuleElementName = webModuleElementName;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -586,7 +592,7 @@ final class LibrariesNode extends AbstractNode {
             if (cpExtender != null) {
                 for (int i=0; i<libraries.length;i++) {
                     try {
-                        cpExtender.addLibrary(classPathId, libraries[i]);
+                        cpExtender.addLibrary(classPathId, libraries[i], webModuleElementName);
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
                     }
@@ -613,11 +619,13 @@ final class LibrariesNode extends AbstractNode {
 
         private final Project project;
         private final String classPathId;
+        private final String webModuleElementName;
 
-        public AddFolderAction (Project project, String classPathId) {
+        public AddFolderAction (Project project, String classPathId, String webModuleElementName) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddFolder_Action" ) );
             this.project = project;
             this.classPathId = classPathId;
+            this.webModuleElementName = webModuleElementName;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -648,7 +656,7 @@ final class LibrariesNode extends AbstractNode {
                     try {
                         FileObject fo = FileUtil.toFileObject (files[i]);
                         assert fo != null : files[i];
-                        cpExtender.addArchiveFile(classPathId, fo);
+                        cpExtender.addArchiveFile(classPathId, fo, webModuleElementName);
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
                     }

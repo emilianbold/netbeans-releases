@@ -51,12 +51,16 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
         this.eval = eval;
         this.refHelper = refHelper;
     }
-
+    
     public boolean addLibrary(final Library library) throws IOException {
         return addLibrary(CP_CLASS_PATH, library);
     }
-
+    
     public boolean addLibrary(final String classPathId, final Library library) throws IOException {
+        return addLibrary(classPathId, library, null);
+    }
+
+    public boolean addLibrary(final String classPathId, final Library library, final String webModuleElementName) throws IOException {
         assert library != null : "Parameter can not be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
@@ -64,7 +68,7 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
                         public Object run() throws Exception {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathId);
-                            WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
+                            WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (webModuleElementName);
                             List resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
                             VisualClassPathItem item = VisualClassPathItem.create (library, VisualClassPathItem.PATH_IN_WAR_LIB);
                             if (!resources.contains(item)) {
@@ -94,8 +98,12 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
     public boolean addArchiveFile(final FileObject archiveFile) throws IOException {
         return addArchiveFile(CP_CLASS_PATH,archiveFile);
     }
-
+    
     public boolean addArchiveFile(final String classPathId, final FileObject archiveFile) throws IOException {
+        return addArchiveFile(classPathId,archiveFile,null);
+    }
+
+    public boolean addArchiveFile(final String classPathId, final FileObject archiveFile, final String webModuleElementName) throws IOException {
         assert archiveFile != null : "Parameter can not be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
@@ -103,7 +111,7 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
                         public Object run() throws Exception {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathId);
-                            WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
+                            WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (webModuleElementName);
                             List resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
                             File f = FileUtil.toFile (archiveFile);
                             if (f == null ) {
@@ -137,8 +145,12 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
     public boolean addAntArtifact(final AntArtifact artifact) throws IOException {
         return addAntArtifact(CP_CLASS_PATH,artifact);
     }
-
+    
     public boolean addAntArtifact(final String classPathId, final AntArtifact artifact) throws IOException {
+        return addAntArtifact(classPathId,artifact,null);
+    }
+
+    public boolean addAntArtifact(final String classPathId, final AntArtifact artifact, final String webModuleElementName) throws IOException {
         assert artifact != null : "Parameter can not be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
@@ -146,7 +158,7 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
                         public Object run() throws Exception {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty (classPathId);
-                            WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
+                            WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (webModuleElementName);
                             List resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
                             VisualClassPathItem item = VisualClassPathItem.create (artifact, VisualClassPathItem.PATH_IN_WAR_LIB);
                             if (!resources.contains(item)) {

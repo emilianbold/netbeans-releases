@@ -72,11 +72,11 @@ class ProjectNode extends AbstractNode {
     private final Project project;
     private Image cachedIcon;
 
-    ProjectNode (Project project, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId) {
+    ProjectNode (Project project, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String webModuleElementName) {
         super (Children.LEAF, Lookups.fixed(new Object[] {
             project,
             new JavadocProvider(project),
-            new Removable(helper, eval, refHelper, classPathId, entryId)}));
+            new Removable(helper, eval, refHelper, classPathId, entryId, webModuleElementName)}));
         this.project = project;
     }
 
@@ -236,13 +236,15 @@ class ProjectNode extends AbstractNode {
         private final ReferenceHelper refHelper;
         private final String classPathId;
         private final String entryId;
+        private final String webModuleElementName;
 
-        Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId) {
+        Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String webModuleElementName) {
             this.helper = helper;
             this.eval = eval;
             this.refHelper = refHelper;
             this.classPathId = classPathId;
             this.entryId = entryId;
+            this.webModuleElementName = webModuleElementName;
         }
 
         public boolean canRemove () {
@@ -265,7 +267,7 @@ class ProjectNode extends AbstractNode {
                                 boolean removed = false;
                                 EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 String raw = props.getProperty (classPathId);
-                                WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
+                                WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (webModuleElementName);
                                 List/*VisualClassPathItem*/ resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
                                 for (Iterator i = resources.iterator(); i.hasNext();) {
                                     VisualClassPathItem item = (VisualClassPathItem)i.next();

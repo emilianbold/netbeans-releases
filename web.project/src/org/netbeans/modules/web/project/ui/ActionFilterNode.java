@@ -76,13 +76,13 @@ class ActionFilterNode extends FilterNode {
      * the node should not have the {@link RemoveClassPathRootAction}
      * @return ActionFilterNode
      */
-    static ActionFilterNode create (Node original, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId) {
+    static ActionFilterNode create (Node original, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String webModuleElementName) {
         DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
         assert dobj != null;
         FileObject root =  dobj.getPrimaryFile();
         Lookup lkp = new ProxyLookup (new Lookup[] {original.getLookup(), helper == null ?
             Lookups.singleton (new JavadocProvider(root,root)) :
-            Lookups.fixed (new Object[] {new Removable (helper, eval, refHelper, classPathId, entryId),
+            Lookups.fixed (new Object[] {new Removable (helper, eval, refHelper, classPathId, entryId, webModuleElementName),
             new JavadocProvider(root,root)})});
         return new ActionFilterNode (original, helper == null ? MODE_PACKAGE : MODE_ROOT, root, lkp);
     }
@@ -237,13 +237,15 @@ class ActionFilterNode extends FilterNode {
        private final ReferenceHelper refHelper;
        private final String classPathId;
        private final String entryId;
+       private final String webModuleElementName;
 
-       Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId) {
+       Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String webModuleElementName) {
            this.helper = helper;
            this.eval = eval;
            this.refHelper = refHelper;
            this.classPathId = classPathId;
            this.entryId = entryId;
+           this.webModuleElementName = webModuleElementName;
        }
 
 
@@ -265,7 +267,7 @@ class ActionFilterNode extends FilterNode {
                         boolean removed = false;
                         EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         String raw = props.getProperty (classPathId);
-                        WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
+                        WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (webModuleElementName);
                         List/*VisualClassPathItem*/ resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
                         for (Iterator i = resources.iterator(); i.hasNext();) {
                             VisualClassPathItem item = (VisualClassPathItem)i.next();
