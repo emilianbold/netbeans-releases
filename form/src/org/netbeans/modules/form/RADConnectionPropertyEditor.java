@@ -95,14 +95,30 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
   public String getJavaInitializationString () {
     if (currentValue != null) {
       switch (currentValue.type) {
-        case RADConnectionDesignValue.TYPE_VALUE: return currentValue.value;     
+        case RADConnectionDesignValue.TYPE_VALUE: return currentValue.value;
         case RADConnectionDesignValue.TYPE_CODE: return currentValue.userCode;
         case RADConnectionDesignValue.TYPE_PROPERTY: 
             PropertyDescriptor pd = currentValue.getProperty ();
             if (pd == null) return null; // failed to initialize => do not generate code
-            else return currentValue.radComponentName + "." + pd.getReadMethod ().getName () + " ()"; // [FUTURE: Handle indexed properties]
-        case RADConnectionDesignValue.TYPE_METHOD: return currentValue.radComponentName + "." + currentValue.methodName + " ()";
-        case RADConnectionDesignValue.TYPE_BEAN: return currentValue.radComponentName;
+            else {
+              if (currentValue.radComponent instanceof RADFormContainer) {
+                return pd.getReadMethod ().getName () + " ()"; // [FUTURE: Handle indexed properties]
+              } else {
+                return currentValue.radComponentName + "." + pd.getReadMethod ().getName () + " ()"; // [FUTURE: Handle indexed properties]
+              }
+            } 
+        case RADConnectionDesignValue.TYPE_METHOD: 
+            if (currentValue.radComponent instanceof RADFormContainer) {
+              return currentValue.methodName + " ()";
+            } else {
+              return currentValue.radComponentName + "." + currentValue.methodName + " ()";
+            }
+        case RADConnectionDesignValue.TYPE_BEAN: 
+            if (currentValue.radComponent instanceof RADFormContainer) {
+              return "this";
+            } else {
+              return currentValue.radComponentName;
+            }
       }
     }
     return null;
