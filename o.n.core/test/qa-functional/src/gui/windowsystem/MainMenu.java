@@ -93,17 +93,17 @@ public class MainMenu extends JellyTestCase {
         suite.addTest(new MainMenu("testMainMenuMnemonicsCollision"));
         suite.addTest(new MainMenu("testMainMenuShortCutCollision"));
         
-//        suite.addTest(new MainMenu("testMenuItemsWhenProjectSelected"));
-//        suite.addTest(new MainMenu("testMenuItemsWhenSourcePackagesSelected"));
-//        suite.addTest(new MainMenu("testMenuItemsWhenPackageSelected"));
-//        suite.addTest(new MainMenu("testMenuItemsWhenJavaSelected"));
-//        suite.addTest(new MainMenu("testMenuItemsWhenFormSelected"));
-//        
-//        suite.addTest(new MainMenu("testPopupMenuItemsWhenProjectSelected"));
-//        suite.addTest(new MainMenu("testPopupMenuItemsWhenSourcePackagesSelected"));
-//        suite.addTest(new MainMenu("testPopupMenuItemsWhenPackageSelected"));
-//        suite.addTest(new MainMenu("testPopupMenuItemsWhenJavaSelected"));
-//        suite.addTest(new MainMenu("testPopupMenuItemsWhenFormSelected"));
+        suite.addTest(new MainMenu("testMenuItemsWhenProjectSelected"));
+        suite.addTest(new MainMenu("testMenuItemsWhenSourcePackagesSelected"));
+        suite.addTest(new MainMenu("testMenuItemsWhenPackageSelected"));
+        suite.addTest(new MainMenu("testMenuItemsWhenJavaSelected"));
+        suite.addTest(new MainMenu("testMenuItemsWhenFormSelected"));
+        
+        suite.addTest(new MainMenu("testPopupMenuItemsWhenProjectSelected"));
+        suite.addTest(new MainMenu("testPopupMenuItemsWhenSourcePackagesSelected"));
+        suite.addTest(new MainMenu("testPopupMenuItemsWhenPackageSelected"));
+        suite.addTest(new MainMenu("testPopupMenuItemsWhenJavaSelected"));
+        suite.addTest(new MainMenu("testPopupMenuItemsWhenFormSelected"));
 //
 //        suite.addTest(new MainMenu("testAddingNewSeparator"));
 //        suite.addTest(new MainMenu("testMoveUpDownSeparator"));
