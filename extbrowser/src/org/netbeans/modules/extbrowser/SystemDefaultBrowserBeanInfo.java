@@ -24,7 +24,7 @@ public class SystemDefaultBrowserBeanInfo extends SimpleBeanInfo {
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor descr = new BeanDescriptor (SystemDefaultBrowser.class);
         descr.setDisplayName (NbBundle.getMessage (SystemDefaultBrowserBeanInfo.class, "CTL_SystemDefaultBrowserName"));
-        descr.setShortDescription (NbBundle.getMessage (SystemDefaultBrowserBeanInfo.class, "HINT_SystemDefaultBrowserName")); //TODO
+        descr.setShortDescription (NbBundle.getMessage (SystemDefaultBrowserBeanInfo.class, "HINT_SystemDefaultBrowserName"));
 
         descr.setValue ("helpID", "org.netbeans.modules.extbrowser.ExtWebBrowser");  // NOI18N //TODO
 	return descr;
