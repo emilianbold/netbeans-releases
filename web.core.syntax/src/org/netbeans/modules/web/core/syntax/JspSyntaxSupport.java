@@ -239,56 +239,106 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return (ExtSyntaxSupport)get( org.netbeans.editor.ext.html.HTMLSyntaxSupport.class );
     }
 
+    /** This method decides what kind of completion (html, java, jsp-tag, ...) should be opened 
+     * or whether the completion window should be closed if it is opened.
+     */
     public int checkCompletion(JTextComponent target, String typedText, boolean visible ) {
-        SyntaxElement elem;
+        
+        char first = typedText.charAt(0); //get typed char
+        
+        TokenItem item = null; //get token on the cursor
         try{
-            elem = getElementChain( target.getCaret().getDot() );
-        } catch (BadLocationException ecx ) {
+            item = getItemAtOrBefore(target.getCaret().getDot());
+        }catch(BadLocationException e) {
             return COMPLETION_HIDE;
         }
-        if (elem == null) return COMPLETION_HIDE;
+        if (item == null) return COMPLETION_HIDE;
+        
+        TokenContextPath tcp = item.getTokenContextPath();
 
-        //final JspDataObject jspdo;
-        char first = typedText.charAt(0);
-        switch (elem.getCompletionContext()) {
-                // TAG COMPLETION
-                case JspSyntaxSupport.TAG_COMPLETION_CONTEXT :
-                    if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("TAG_COMPLETION_CONTEXT");   // NOI18N
+        //System.out.println("typed '" + first + "' ;token = " + item);
+        
+        if(tcp.contains(HTMLTokenContext.contextPath)) {
+            //we are in content language
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("CONTENTL_COMPLETION_CONTEXT");   // NOI18N
+            ExtSyntaxSupport support = getContentLanguageSyntaxSupport();
+            if (support != null) {
+                return support.checkCompletion( target, typedText, visible );
+            }
+        }
+        
+        if(tcp.contains(JavaTokenContext.contextPath)) {
+            //we are in scripting language
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("SCRIPTINGL_COMPLETION_CONTEXT" );   // NOI18N
+            if (JspUtils.getScriptingLanguage().equals("text/x-java")) { // NOI18N
+                return ((ExtSyntaxSupport)get( org.netbeans.editor.ext.java.JavaSyntaxSupport.class )).checkCompletion( target, typedText, visible );
+            }
+        }
+        
+        //JSP tag or directive
+        if(tcp.contains(JspTagTokenContext.contextPath)) {
+            //need to distinguish tag/end_tag/directive - search back throught the token chain for <%@ , </ or < tokens
+            TokenItem tracking = item;
+            
+            //the maxBacktrace number says how far back we are willing to look for 
+            //the start tag tokens <%, </ and < (simply the JSP tag or directive beginning).
+            //There may happen a situation when user starts to write a tag that the a large
+            //part of the document behind the cursor is recognized as a jsp tag.
+            //In such a case typing somewhere in the end of this 'badly' recognized block
+            //would slow down the typing rapidy due to the backtracking oven a long token chain.
+            //
+            //So we suppose tha tag has less than 20 attributes (and one attribute-value pair consumes 4 tokens)
+            int maxBacktrace = 20 * 4;
+            
+            do {
+                String image = tracking.getImage();
+                //System.out.println("tracking: " + tracking);
+                
+                //this is a case when use types %> which is recognized as a JspTagToken, but before that there are java tokens
+                if(image.equals("%>")) return COMPLETION_HIDE;
+                
+                if(tracking.getImage().startsWith("<%")) {
+                    //we are in a directive
+                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("DIRECTIVE_COMPLETION_CONTEXT");   // NOI18N
+
+                    //open completion also in such a case: <%=|
+                    if( !visible && first == '=' && tracking.getImage().equals("<%")) return COMPLETION_POPUP;
+                    
+                    if( !visible && first == '%' || first == '@' || first == ' ' ) return COMPLETION_POPUP;
+                    if( visible && first == '=' || first == '>' ) return COMPLETION_HIDE;
+                    return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
+                }
+                if(tracking.getImage().equals("<")) {
+                    //we are in a tag
+                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("TAG_COMPLETION_CONTEXT");   // NOI18N
                     if( !visible && first == ' ' || first == ':' ) return COMPLETION_POPUP;
                     if( visible && first == '>' ) return COMPLETION_HIDE;
                     return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
-
-                // ENDTAG COMPLETION
-                case JspSyntaxSupport.ENDTAG_COMPLETION_CONTEXT :
-                    if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("ENDTAG_COMPLETION_CONTEXT" );   // NOI18N
+                }
+                if(tracking.getImage().equals("</")) {
+                    //we are in an end tag
+                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("ENDTAG_COMPLETION_CONTEXT" );   // NOI18N
                     if( visible && first == '>' ) return COMPLETION_HIDE;
                     return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
-
-                // DIRECTIVE COMPLETION
-                case JspSyntaxSupport.DIRECTIVE_COMPLETION_CONTEXT :
-                    if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("DIRECTIVE_COMPLETION_CONTEXT");   // NOI18N
-                    if( !visible && first == '@' || first == ' ' ) return COMPLETION_POPUP;
-                    if( visible && first == '=' || first == '>' ) return COMPLETION_HIDE;
-                    return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
-
-                // CONTENT LANGUAGE
-                case JspSyntaxSupport.CONTENTL_COMPLETION_CONTEXT :
-                    if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("CONTENTL_COMPLETION_CONTEXT");   // NOI18N
-                    ExtSyntaxSupport support = getContentLanguageSyntaxSupport();
-                    if (support != null) {
-                        return support.checkCompletion( target, typedText, visible );
-                    }
+                }
+                //test whether we are still in the tag context
+                if(!tracking.getTokenContextPath().contains(JspTagTokenContext.contextPath)) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("we are out of jsp tag without finding any tag start token!"));
                     break;
-//                    TBD:Combining
-//                    return new CompletionQuery.DefaultResult( jspList, "JSP completion4" );
-                                        
-                case JspSyntaxSupport.SCRIPTINGL_COMPLETION_CONTEXT :
-                    if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("SCRIPTINGL_COMPLETION_CONTEXT" );   // NOI18N
-                    if (JspUtils.getScriptingLanguage().equals ("text/x-java")) { // NOI18N
-                        return ((ExtSyntaxSupport)get( org.netbeans.editor.ext.java.JavaSyntaxSupport.class )).checkCompletion( target, typedText, visible );
-                    }
-                    break;
+                }
+                
+                //search previous token
+                tracking = tracking.getPrevious();
+                
+            } while(maxBacktrace-- > 0); 
+            
+        }//eof JSP tag
+        
+        if(tcp.contains(ELTokenContext.contextPath)) {
+            //we are in expression language - we do not provide any code completion so far
+            if (visible) return COMPLETION_HIDE;
         }
+        
         return COMPLETION_HIDE;
     }
     
