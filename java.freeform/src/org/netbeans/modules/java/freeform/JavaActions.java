@@ -34,11 +34,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.modules.java.freeform.ui.ProjectModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -104,6 +106,7 @@ final class JavaActions implements ActionProvider {
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final AuxiliaryConfiguration aux;
+    private boolean setOutputsNotified;
     
     public JavaActions(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
         this.project = project;
@@ -165,6 +168,30 @@ final class JavaActions implements ActionProvider {
         generate.setDefaultCapable(true);
         d.setOptions(new Object[] {generate, NotifyDescriptor.CANCEL_OPTION});
         return DialogDisplayer.getDefault().notify(d) == generate;
+    }
+    
+    /**
+     * Warns the user about missing project outputs setting
+     * @param commandDisplayName the display name of the action to be bound
+     */
+    private boolean alertOutputs (String commandDisplayName) {
+        JButton setOutputOption = new JButton (NbBundle.getMessage(JavaActions.class,"CTL_SetOutput"));
+        setOutputOption.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(JavaActions.class,"AD_SetOutput"));
+        setOutputOption.setDefaultCapable(true);
+        String projectDisplayName = ProjectUtils.getInformation(project).getDisplayName();
+        String title = NbBundle.getMessage(JavaActions.class, "TITLE_set_outputs_dialog", commandDisplayName, projectDisplayName);
+        String body = NbBundle.getMessage(JavaActions.class,"TEXT_set_outputs_dialog");
+        NotifyDescriptor d = new NotifyDescriptor.Message (body, NotifyDescriptor.QUESTION_MESSAGE);
+        d.setTitle(title);
+        d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);        
+        d.setOptions(new Object[] {setOutputOption, NotifyDescriptor.CANCEL_OPTION});
+        if (DialogDisplayer.getDefault().notify (d) == setOutputOption) {
+            CustomizerProvider customizerProvider = (CustomizerProvider) project.getLookup().lookup (CustomizerProvider.class);
+            assert customizerProvider != null;
+            customizerProvider.showCustomizer();
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -230,7 +257,27 @@ final class JavaActions implements ActionProvider {
         return target;
     }
     
-    private void handleDebug() throws IOException, SAXException {
+    private void handleDebug() throws IOException, SAXException {                        
+        if (!this.setOutputsNotified) {
+            ProjectModel pm = ProjectModel.createModel(Util.getProjectLocation(this.helper, this.evaluator),
+                FileUtil.toFile(project.getProjectDirectory()), this.evaluator, this.helper);        
+            List/*<ProjectModel.CompilationUnitKey>*/ cuKeys = pm.createCompilationUnitKeys();
+            assert cuKeys != null;
+            boolean hasOutputs = false;
+            for (Iterator it = cuKeys.iterator(); it.hasNext();) {
+                ProjectModel.CompilationUnitKey ck = (ProjectModel.CompilationUnitKey) it.next();
+                JavaProjectGenerator.JavaCompilationUnit cu = pm.getCompilationUnit(ck,false);
+                if (cu.output != null && cu.output.size()>0) {
+                    hasOutputs = true;
+                    break;
+                }
+            }
+            if (!hasOutputs) {
+                alertOutputs (NbBundle.getMessage(JavaActions.class, "ACTION_debug"));            
+                this.setOutputsNotified = true;
+                return;
+            }
+        }        
         String[] bindings = findCommandBinding(ActionProvider.COMMAND_RUN);
         Element task = null;
         Element origTarget = null;
@@ -271,7 +318,7 @@ final class JavaActions implements ActionProvider {
         writeCustomScript(doc, generatedScriptPath);
         addBinding(ActionProvider.COMMAND_DEBUG, generatedScriptPath, generatedTargetName, null, null, null, null, null);
         jumpToBinding(ActionProvider.COMMAND_DEBUG);
-        jumpToBuildScript(generatedScriptPath, generatedTargetName);
+        jumpToBuildScript(generatedScriptPath, generatedTargetName);                
     }
     
     private Element createNbjpdastart(Document ownerDocument) {

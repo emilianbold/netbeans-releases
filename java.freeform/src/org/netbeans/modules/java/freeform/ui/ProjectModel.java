@@ -677,7 +677,7 @@ public class ProjectModel  {
         return false;
     }
     
-    static class CompilationUnitKey {
+    public static class CompilationUnitKey {
         public List locations;
         public String label;
         
