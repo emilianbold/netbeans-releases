@@ -299,7 +299,7 @@ Microsystems, Inc. All Rights Reserved.
   -->
   <target name="do-lib-javac" >
     <mkdir dir="${localdir}" />
-    <javac sourcepath="" destdir="${localdir}" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <javac sourcepath="" destdir="${localdir}" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
       <src path="src" />
       <src path="${localdir}" />
       <selector>
@@ -594,6 +594,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
              version="false"
              maxmemory="64m"
 	     stylesheetfile="../nbbuild/javadoctools/javadoc.css"
+             source="1.4"
     >
       <sourcepath>
         <pathelement location="api/doc"/>
