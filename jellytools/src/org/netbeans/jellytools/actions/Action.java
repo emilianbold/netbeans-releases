@@ -581,6 +581,109 @@ public class Action {
         return shortcuts;
     }
     
+    /** Checks whether this action is enabled. If IDE system action class
+     * is defined, it calls its isEnabled() method else if main menu path is 
+     * defined, it checks menu item is enabled. Otherwise it throws 
+     * UnsupportedOperationException.
+     * @return true if this action is enabled; false otherwise
+     */
+    public boolean isEnabled() {
+        if(systemActionClass != null) {
+            return SystemAction.get(systemActionClass).isEnabled();
+        } else if(menuPath != null) {
+            return MainWindowOperator.getDefault().menuBar().showMenuItem(menuPath, "|").isEnabled();
+        } else {
+            throw new UnsupportedOperationException("Cannot detect if "+getClass().getName()+" is enabled.");
+        }
+    }
+
+    /** Checks whether this action on given nodes is enabled. If IDE system action class
+     * is defined, it calls its isEnabled() method. Nodes are selected first. 
+     * Else if popup menu path is defined, it checks menu item is enabled.
+     * Otherwise it throws UnsupportedOperationException.
+     * @param nodes array of nodes to be selected before a check
+     * @return true if this action is enabled; false otherwise
+     */
+    public boolean isEnabled(Node[] nodes) {
+        testNodes(nodes);
+        if(systemActionClass != null) {
+            nodes[0].select();
+            for (int i=1; i<nodes.length; i++)
+                nodes[i].addSelectionPath();
+            try {
+                Thread.sleep(SELECTION_WAIT_TIME);
+            } catch (Exception e) {
+                throw new JemmyException("Sleeping interrupted", e);
+            }
+            return SystemAction.get(systemActionClass).isEnabled();
+        } else if(popupPath != null) {
+            TreePath paths[]=new TreePath[nodes.length];
+            for (int i=0; i<nodes.length; i++) {
+                paths[i]=nodes[i].getTreePath();
+            }
+            Operator.ComponentVisualizer treeVisualizer = nodes[0].tree().getVisualizer();
+            Operator.ComponentVisualizer oldVisualizer = null;
+            // If visualizer of JTreeOperator is EmptyVisualizer, we need
+            // to avoid making tree component visible in callPopup method.
+            // So far only known case is tree from TreeTableOperator.
+            if(treeVisualizer instanceof EmptyVisualizer) {
+                oldVisualizer = Operator.getDefaultComponentVisualizer();
+                Operator.setDefaultComponentVisualizer(treeVisualizer);
+            }
+            // Need to wait here to be more reliable.
+            // TBD - It can be removed after issue 23663 is solved.
+            new EventTool().waitNoEvent(500);
+            JPopupMenuOperator popup=new JPopupMenuOperator(nodes[0].tree().callPopupOnPaths(paths));
+            // restore previously used default visualizer
+            if(oldVisualizer != null) {
+                Operator.setDefaultComponentVisualizer(oldVisualizer);
+            }
+            popup.setComparator(getComparator());
+            return popup.showMenuItem(popupPath, "|").isEnabled();
+        } else {
+            throw new UnsupportedOperationException("Cannot detect if "+getClass().getName()+" is enabled.");
+        }
+    }
+    
+    /** Checks whether this action on given node is enabled. If IDE system action class
+     * is defined, it calls its isEnabled() method. Node is selected first.
+     * Else if popup menu path is defined, it checks menu item is enabled.
+     * Otherwise it throws UnsupportedOperationException.
+     * @param node node to be selected before a check
+     * @return true if this action is enabled; false otherwise
+     */
+    public boolean isEnabled(Node node) {
+        return isEnabled(new Node[] {node});
+    }
+
+    /** Checks whether this action is enabled for given ComponentOperator. 
+     * First it makes component visible and focused.
+     * If IDE system action class is defined, it calls its isEnabled() method.
+     * Else if main menu path is defined, it checks menu item is enabled.
+     * Otherwise it throws UnsupportedOperationException.
+     * @param componentOperator instance of ComponentOperator
+     * @return true if this action is enabled; false otherwise
+     */
+    public boolean isEnabled(ComponentOperator componentOperator) {
+        componentOperator.makeComponentVisible();
+        componentOperator.getFocus();
+        if(systemActionClass != null) {
+            return SystemAction.get(systemActionClass).isEnabled();
+        } else if(popupPath != null) {
+            // Need to wait here to be more reliable.
+            // TBD - It can be removed after issue 23663 is solved.
+            new EventTool().waitNoEvent(500);
+            componentOperator.clickForPopup();
+            JPopupMenuOperator popup = new JPopupMenuOperator(componentOperator);
+            popup.setComparator(getComparator());
+            return popup.showMenuItem(popupPath, "|").isEnabled();
+        } else if(menuPath != null) {
+            return MainWindowOperator.getDefault().menuBar().showMenuItem(menuPath, "|").isEnabled();
+        } else {
+            throw new UnsupportedOperationException("Cannot detect if "+getClass().getName()+" is enabled.");
+        }
+    }
+
     /** This class defines keyboard shortcut for action execution */    
     public static class Shortcut extends Object {
         /** key code of shortcut (see KeyEvent) */        
