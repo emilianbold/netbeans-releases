@@ -829,6 +829,11 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
      * @see #removeEditorSilent */
     static class BundleTable extends JTable {
         
+        public BundleTable(){
+            super();
+            this.setRowHeight(getCellFontHeight() + 1);
+        }
+        
         /**
          * The same like superclass removeEditor except it doesn't request focus back to table.
          * We need this kind of behaviour (see bug in IssueaZilla #9237). The table shoudl request focus
@@ -854,6 +859,18 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                 repaint(cellRect);
             }
         }
+        
+        private int getCellFontHeight() {
+            Font cellFont = UIManager.getFont("TextField.font");
+            if (cellFont != null) {
+                FontMetrics fm = getFontMetrics(cellFont);
+                if (fm != null) {
+                    return fm.getHeight();
+                }
+            }
+            return 14;
+        }        
+        
     } // End of BundleTable class.
     
 }
