@@ -158,7 +158,7 @@ final class Services extends ServiceType.Registry implements Comparator {
     /** Getter for all kinds of services.
     */
     private static void recomputeKinds () {
-        kinds.clear ();
+        List newKinds = new LinkedList();
         
         InstantiationException mainExc = null;
 
@@ -173,15 +173,15 @@ final class Services extends ServiceType.Registry implements Comparator {
                     type = type.getSuperclass();
                 }
                 
-                if (!kinds.contains (type)) {
-                    kinds.add (type);
+                if (!newKinds.contains (type)) {
+                    newKinds.add (type);
                 }
             } catch (InstantiationException ex) {
                   TopManager.getDefault().getErrorManager().copyAnnotation(ex, mainExc);
                   mainExc = ex;
             }
         }
-
+        kinds = newKinds;
         if (mainExc != null) {
             // notify to error manager
             TopManager.getDefault ().getErrorManager ().notify (
@@ -524,6 +524,9 @@ final class Services extends ServiceType.Registry implements Comparator {
 
 /*
 * $Log$
+* Revision 1.41  2001/02/20 18:31:08  dstrupl
+* #9696 better synchronization on Services.kinds
+*
 * Revision 1.40  2001/02/19 10:48:27  dstrupl
 * #9656 Deadlock while building. I hope that this will fix it.
 * The whole synchronization on INSTANCE might be reviewed.
