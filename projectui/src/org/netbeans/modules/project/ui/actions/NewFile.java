@@ -101,7 +101,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         try { 
             Set resultSet = template == null ? wd.instantiate () : wd.instantiate( template );
             
-            if (resultSet == null) {
+            if (resultSet == null || resultSet.isEmpty ()) {
                 // no new object, no work
                 return ;
             }
