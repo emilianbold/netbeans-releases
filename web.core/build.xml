@@ -46,6 +46,7 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="${web/servletapi24.dir}/${nb.modules/autoload.dir}/ext/servlet-api-2.4.jar" />
       <pathelement location="${web/ddapi.dir}/${nb.modules/autoload.dir}/ddapi.jar" />
       <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
+      <pathelement location="${java/project.dir}/${nb.modules.dir}/org-netbeans-modules-java-project.jar"/>
     </path>
   </target>
 
