@@ -10,6 +10,7 @@ package org.netbeans.modules.editor.fold;
 import java.util.Collections;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Position;
 import junit.framework.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
@@ -26,6 +27,8 @@ import org.netbeans.spi.editor.fold.FoldOperation;
  * @author mmetelka
  */
 public class SimpleFoldManagerTest extends NbTestCase {
+    
+    private static final int MAX_FOLD_MEMORY_SIZE = 64;
     
     static final int FOLD_START_OFFSET_1 = 5;
     static final int FOLD_END_OFFSET_1 = 10;
@@ -78,7 +81,7 @@ public class SimpleFoldManagerTest extends NbTestCase {
                 
                 // Check fold size
                 assertSize("Size of the fold " , Collections.singleton(fold),
-                    700, new FoldMemoryFilter(fold));
+                    MAX_FOLD_MEMORY_SIZE, new FoldMemoryFilter(fold));
                 
             } finally {
                 hierarchy.unlock();
@@ -129,7 +132,8 @@ public class SimpleFoldManagerTest extends NbTestCase {
             return (o == fold.getType())
                 || (o == fold.getDescription()) // requires non-null description during construction
                 || (o == fold.getParent())
-                || (o instanceof org.netbeans.modules.editor.fold.FoldOperationImpl);
+                || (o instanceof org.netbeans.modules.editor.fold.FoldOperationImpl)
+                || (o instanceof Position);
             
             // Will count possible FoldChildren and ExtraInfo
         }
