@@ -346,10 +346,12 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         for (int i = 0; i < servInstIDs.length; i++) {
             String instanceID = servInstIDs[i];
             J2eePlatform j2eePlat = deployment.getJ2eePlatform(instanceID);
-            if (j2eePlat != null && j2eePlat.getSupportedModuleTypes().contains(J2eeModule.EAR)
+            String servInstDisplayName = Deployment.getDefault().getServerInstanceDisplayName(servInstIDs[i]);
+            if (servInstDisplayName != null
+                && j2eePlat != null && j2eePlat.getSupportedModuleTypes().contains(J2eeModule.EAR)
                 && j2eePlat.getSupportedSpecVersions().contains(j2eeSpec)) {
                 servInstIDsList.add(instanceID);
-                servNamesList.add(deployment.getServerInstanceDisplayName(instanceID));
+                servNamesList.add(servInstDisplayName);
             }
         }
         serverInstanceIDs = (String[]) servInstIDsList.toArray(new String[servInstIDsList.size()]);
