@@ -350,15 +350,21 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         public void dragEnter(DropTargetDragEvent e) {
             if( e.isDataFlavorSupported( tiDataFlavor ) ) {
                 e.acceptDrag(DnDConstants.ACTION_MOVE);
+            } else {
+                e.rejectDrag();
             }
         }
 
         public void dragOver(DropTargetDragEvent e) {
-            updateDropGesture( e );
-            if( !validateDropPosition() ) {
-                e.rejectDrag();
+            if( e.isDataFlavorSupported( tiDataFlavor ) ) {
+                updateDropGesture( e );
+                if( !validateDropPosition() ) {
+                    e.rejectDrag();
+                } else {
+                    e.acceptDrag( DnDConstants.ACTION_MOVE );
+                }
             } else {
-                e.acceptDrag( DnDConstants.ACTION_MOVE );
+                e.rejectDrag();
             }
         }
     }
