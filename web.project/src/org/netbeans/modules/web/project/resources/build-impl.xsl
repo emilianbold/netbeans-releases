@@ -760,9 +760,9 @@ is divided into following sections:
                         <xsl:attribute name="property"><xsl:value-of select="$base.prop.name"/></xsl:attribute>
                         <xsl:attribute name="file"><xsl:value-of select="$included.prop.name"/></xsl:attribute>
                      </basename>
-                     <copy todir="${{dist.ear.dir}}">
-                        <xsl:attribute name="file"><xsl:value-of select="$included.prop.name"/></xsl:attribute>
-                     </copy>
+                     <copyfiles todir="${{dist.ear.dir}}">
+                        <xsl:attribute name="files"><xsl:value-of select="$included.prop.name"/></xsl:attribute>
+                     </copyfiles>
                 </xsl:for-each>
                 <mkdir dir="${{build.web.dir.real}}/META-INF"/>
                 <manifest file="${{build.web.dir.real}}/META-INF/MANIFEST.MF" mode="update">
