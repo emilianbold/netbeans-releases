@@ -91,7 +91,7 @@ public class PostInstallFixupAction extends ProductAction {
         String productID = Util.getStringPropertyValue("ProductID");
         if (productID != null) {
             try {
-                String fileName = nbInstallDir + sep + "nb4.0" + sep + "config" + sep + "productid";
+                String fileName = nbInstallDir + sep + "nb4.1" + sep + "config" + sep + "productid";
                 logEvent(this, Log.DBG, "create file: " + fileName + " content: '" + productID + "'");
                 fileService.createAsciiFile(fileName,new String[] { productID });
             }
@@ -117,7 +117,7 @@ public class PostInstallFixupAction extends ProductAction {
             
             deleteFiles(nbInstallDir, new String[] {sep + "etc" + sep + "netbeans.conf"});
             deleteFiles(nbInstallDir, new String[] {"_uninst" + sep + "install.log"});
-            deleteFiles(nbInstallDir, new String[] {"nb4.0" + sep + "config" + sep + "productid" });
+            deleteFiles(nbInstallDir, new String[] {"nb4.1" + sep + "config" + sep + "productid" });
             deleteFiles(uninstallDir, new String[] {"install.properties"});
 
             if (Util.isUnixOS())
