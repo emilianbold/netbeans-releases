@@ -7,25 +7,24 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.java.j2seplatform.libraries;
 
-import org.netbeans.spi.project.libraries.LibraryImplementation;
+package org.netbeans.modules.java.j2seplatform.libraries;
 
 import javax.swing.AbstractListModel;
 import java.util.List;
-import java.util.Collections;
 import java.util.ArrayList;
 import java.net.URL;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileUtil;
 
-class VolumeContentModel extends AbstractListModel {
+class VolumeContentModel extends AbstractListModel/*<String>*/ {
 
     private LibraryImplementation impl;
     private String volumeType;
-    private List content;
+    private List/*<URL>*/ content;
 
     public VolumeContentModel (LibraryImplementation impl, String volumeType) {
         //TODO: Should listen on the impl
@@ -40,7 +39,6 @@ class VolumeContentModel extends AbstractListModel {
         }
     }
 
-
     public int getSize() {
         return this.content.size();
     }
@@ -50,7 +48,6 @@ class VolumeContentModel extends AbstractListModel {
             throw new IllegalArgumentException();
         return ((URL)this.content.get (index)).toExternalForm();
     }
-
 
     public void addResource (URL resource) {
         if (FileUtil.isArchiveFile(resource)) {
