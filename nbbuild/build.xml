@@ -62,8 +62,6 @@ ToDo:
      <fileset dir="..">
         <!-- XML Serializer: -->
         <include name="libs/external/xerces*.jar"/>
-        <!-- Needed for CheckLinks: -->
-        <include name="libs/external/regexp*.jar"/>
         <!-- For JavaHelp indexing: -->
         <include name="nbbuild/external/jhall*.jar"/>
         <!-- For XMLValidate Ant task: -->

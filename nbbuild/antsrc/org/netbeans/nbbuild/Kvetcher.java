@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,15 +15,13 @@ package org.netbeans.nbbuild;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.*;
 
 import org.apache.tools.ant.*;
 import org.apache.tools.mail.MailMessage;
 
-// XXX use java.util.regex.* instead
-import org.apache.regexp.*;
-
 /** Task to complain (via email) to people when things fail in a build.
- * In Ant 1.4 this could be better written using TaskContainer, probably.
+ * XXX In Ant 1.4 this could be better written using TaskContainer, probably.
  * XXX support fallback address for errors not otherwise handled
  * XXX do not send the same error to more than one culprit
  * XXX support ignore patterns for errors, to be useful with e.g. compile deprecations
@@ -120,12 +118,12 @@ public class Kvetcher extends Task implements BuildListener {
         }
     }
     public final class Regexp {
-        RE pattern;
+        Pattern pattern;
         int group = -1;
         public void setPattern(String p) throws BuildException {
             try {
-                pattern = new RE(p);
-            } catch (RESyntaxException rese) {
+                pattern = Pattern.compile(p);
+            } catch (PatternSyntaxException rese) {
                 throw new BuildException(rese, location);
             }
         }
@@ -175,7 +173,7 @@ public class Kvetcher extends Task implements BuildListener {
             try {
                 Culprit c = (Culprit)it.next();
                 MailMessage mail = null;
-                boolean send = false;
+                //boolean send = false;
                 PrintStream ps = null;
                 Iterator it2 = messages.iterator();
                 while (it2.hasNext()) {
@@ -183,7 +181,8 @@ public class Kvetcher extends Task implements BuildListener {
                     Iterator it3 = c.regexp.iterator();
                     while (it3.hasNext()) {
                         Regexp r = (Regexp)it3.next();
-                        if (r.pattern.match(msg)) {
+                        Matcher m = r.pattern.matcher(msg);
+                        if (m.find()) {
                             if (mail == null) {
                                 // OK, time to start sending.
                                 log("Sending mail to " + ((Address)c.to.get(0)).name);
@@ -205,7 +204,7 @@ public class Kvetcher extends Task implements BuildListener {
                                 }
                                 ps.println();
                             }
-                            ps.println(r.group == -1 ? msg : r.pattern.getParen(r.group));
+                            ps.println(r.group == -1 ? msg : m.group(r.group));
                             break; // this regexp matches, look for other messages
                         }
                     }

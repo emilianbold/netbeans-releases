@@ -16,6 +16,7 @@ package org.netbeans.nbbuild;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.regex.*;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.FileScanner;
@@ -23,13 +24,10 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 
-// XXX use java.util.regex.* instead
-import org.apache.regexp.*;
 import org.apache.tools.ant.types.Mapper;
 
-// [PENDING] would be nice to have line numbers reported in output;
-// not clear what the best way to do that is without introducing
-// overhead; maybe wrapper InputStream that counts lines?
+// XXX would be nice to have line numbers reported in output;
+// see FindBadConstructions for example
 // XXX in Ant 1.6, permit <xmlcatalog> entries to make checking of "external" links
 // work better in the case of cross-links between APIs
 
@@ -80,6 +78,7 @@ public class CheckLinks extends MatchingTask {
         // methods which can hang (until a timeout) on machines with improperly
         // configured networks. Anyway we want to compare literal URLs, not normalized
         // hostnames.
+        // XXX just use URI
         Set okurls = new HashSet (1000); // Set<String>
         // Set of known-bad URLs.
         Set badurls = new HashSet (100); // Set<String>
@@ -102,14 +101,13 @@ public class CheckLinks extends MatchingTask {
         }
     }
     
-    static RE hrefOrAnchor;
+    private static Pattern hrefOrAnchor;
     static {
         try {
-            hrefOrAnchor = new RE("<(a|img)(\\s+shape=\"rect\")?\\s+(href|name|src)=\"([^\"#]*)(#[^\"]+)?\"(\\s+shape=\"rect\")?>");
-        } catch (RESyntaxException rese) {
-            throw new Error (rese.toString());
+            hrefOrAnchor = Pattern.compile("<(a|img)(\\s+shape=\"rect\")?\\s+(href|name|src)=\"([^\"#]*)(#[^\"]+)?\"(\\s+shape=\"rect\")?>", Pattern.CASE_INSENSITIVE);
+        } catch (PatternSyntaxException e) {
+            throw new ExceptionInInitializerError(e);
         }
-        hrefOrAnchor.setMatchFlags (RE.MATCH_CASEINDEPENDENT);
     }
     
     // recurse:
@@ -142,15 +140,32 @@ public class CheckLinks extends MatchingTask {
             return;
         }
         task.log("Checking " + u + " (recursion level " + recurse + ")", Project.MSG_VERBOSE);
-        InputStream rd;
+        CharSequence content;
         String mimeType;
         try {
+            // XXX for protocol 'file', could more efficiently use a memmapped char buffer
             URLConnection conn = base.openConnection ();
             conn.connect ();
             mimeType = conn.getContentType ();
-            rd = conn.getInputStream ();
+            InputStream is = conn.getInputStream ();
+            String enc = conn.getContentEncoding();
+            if (enc == null) {
+                enc = "UTF-8";
+            }
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                int read;
+                byte[] buf = new byte[4096];
+                while ((read = is.read(buf)) != -1) {
+                    baos.write(buf, 0, read);
+                }
+                content = baos.toString(enc);
+            } finally {
+                is.close();
+            }
         } catch (IOException ioe) {
             task.log(normalize(referrer, mappers) + ": broken link: " + base, Project.MSG_WARN);
+            task.log("Error: " + ioe, Project.MSG_VERBOSE);
             badurls.add(base.toExternalForm());
             badurls.add(u.toExternalForm());
             return;
@@ -160,24 +175,20 @@ public class CheckLinks extends MatchingTask {
         if (recurse > 0 && cleanurls.add(base.toExternalForm())) {
             others = new HashSet(100);
         }
-        try {
             if (recurse == 0 && frag == null) {
                 // That is all we wanted to check.
                 return;
             }
             if ("text/html".equals(mimeType)) {
                 task.log("Parsing " + base, Project.MSG_VERBOSE);
-                CharacterIterator it = new StreamCharacterIterator (rd);
-                int idx = 0;
+                Matcher m = hrefOrAnchor.matcher(content);
                 Set names = new HashSet(100); // Set<String>
-                while (hrefOrAnchor.match (it, idx)) {
-                    // Advance match position past end of expression:
-                    idx = hrefOrAnchor.getParenEnd (0);
+                while (m.find()) {
                     // Get the stuff involved:
-                    String type = hrefOrAnchor.getParen(3);
+                    String type = m.group(3);
                     if (type.equalsIgnoreCase("name")) {
                         // We have an anchor, therefore refs to it are valid.
-                        String name = unescape(hrefOrAnchor.getParen(4));
+                        String name = unescape(m.group(4));
                         if (names.add(name)) {
                             okurls.add(new URL(base, "#" + name).toExternalForm());
                         } else if (recurse == 1) {
@@ -186,8 +197,8 @@ public class CheckLinks extends MatchingTask {
                     } else {
                         // A link to some other document: href=, src=.
                         if (others != null) {
-                            String otherbase = unescape(hrefOrAnchor.getParen (4));
-                            String otheranchor = unescape(hrefOrAnchor.getParen (5));
+                            String otherbase = unescape(m.group(4));
+                            String otheranchor = unescape(m.group(5));
                             if (!otherbase.startsWith("mailto:")) {
                                 URL o = new URL(base, (otheranchor == null) ? otherbase : otherbase + otheranchor);
                                 //task.log("href: " + o);
@@ -199,9 +210,6 @@ public class CheckLinks extends MatchingTask {
             } else {
                 task.log("Not checking contents of " + base, Project.MSG_VERBOSE);
             }
-        } finally {
-            rd.close();
-        }
         if (! okurls.contains(u.toExternalForm())) {
             task.log(normalize(referrer, mappers) + ": broken link: " + u, Project.MSG_WARN);
         }
