@@ -134,7 +134,9 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
         annotationType.setVisible(def.getAttribute(ATTR_TYPE_VISIBLE));
         annotationType.setWholeLine(def.getAttribute(ATTR_TYPE_TYPE).equals("line"));
         try {
-            annotationType.setHighlight(Color.decode(def.getAttribute(ATTR_TYPE_HIGHLIGHT)));
+            if (def.getAttribute(ATTR_TYPE_HIGHLIGHT) != null && def.getAttribute(ATTR_TYPE_HIGHLIGHT).length() > 0) {
+                annotationType.setHighlight(Color.decode(def.getAttribute(ATTR_TYPE_HIGHLIGHT)));
+            }
             if (def.getAttribute(ATTR_TYPE_FOREGROUND) != null && def.getAttribute(ATTR_TYPE_FOREGROUND).length() > 0) {
                 annotationType.setForegroundColor(Color.decode(def.getAttribute(ATTR_TYPE_FOREGROUND)));
                 annotationType.setInheritForegroundColor(false);
