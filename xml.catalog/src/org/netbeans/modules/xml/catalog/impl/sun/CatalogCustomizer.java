@@ -59,18 +59,17 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         locationTextField = new javax.swing.JTextField();
         selectButton = new javax.swing.JButton();
         preferCheckBox = new javax.swing.JCheckBox();
+        descTextArea = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
 
         locationLabel.setText(Util.getString ("CatalogCustomizer.locationLabel.text"));
+        locationLabel.setForeground(java.awt.Color.black);
         locationLabel.setLabelFor(locationTextField);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(locationLabel, gridBagConstraints);
+        add(locationLabel, new java.awt.GridBagConstraints());
 
         locationTextField.setColumns(20);
+        locationTextField.setPreferredSize(new java.awt.Dimension(240, 20));
         locationTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 locationTextFieldActionPerformed(evt);
@@ -84,10 +83,8 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
         add(locationTextField, gridBagConstraints);
 
@@ -100,9 +97,10 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(selectButton, gridBagConstraints);
 
+        preferCheckBox.setToolTipText(Util.getString("HINT_pp"));
         preferCheckBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/catalog/impl/sun/Bundle").getString("LBL_preference"));
         preferCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -113,13 +111,25 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(preferCheckBox, gridBagConstraints);
+
+        descTextArea.setWrapStyleWord(true);
+        descTextArea.setLineWrap(true);
+        descTextArea.setEditable(false);
+        descTextArea.setForeground(new java.awt.Color(102, 102, 153));
+        descTextArea.setText(Util.getString("DESC_catalog_fmts"));
+        descTextArea.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(preferCheckBox, gridBagConstraints);
+        add(descTextArea, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -172,6 +182,7 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox preferCheckBox;
+    private javax.swing.JTextArea descTextArea;
     private javax.swing.JTextField locationTextField;
     private javax.swing.JLabel locationLabel;
     private javax.swing.JButton selectButton;

@@ -40,7 +40,7 @@ final class CatalogMounterPanel extends javax.swing.JPanel implements ChangeList
         catalogComboBox.setModel(model.getCatalogComboBoxModel());
         updateCatalogPanel();
         
-        model.setChangeListener(this);
+        model.addChangeListener(this);
     }
 
     
@@ -63,6 +63,7 @@ final class CatalogMounterPanel extends javax.swing.JPanel implements ChangeList
         setPreferredSize(new java.awt.Dimension(380, 100));
         setMinimumSize(new java.awt.Dimension(380, 100));
         catalogLabel.setText(Util.getString ("CatalogMounterPanel.catalogLabel.text"));
+        catalogLabel.setForeground(java.awt.Color.black);
         catalogLabel.setLabelFor(catalogComboBox);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -83,6 +84,7 @@ final class CatalogMounterPanel extends javax.swing.JPanel implements ChangeList
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(parentPanel, gridBagConstraints);
@@ -93,13 +95,13 @@ final class CatalogMounterPanel extends javax.swing.JPanel implements ChangeList
         Customizer cust = model.getCatalogCustomizer();
         cust.setObject(model.getCatalog());
         parentPanel.removeAll();
-        Component catalogPanel = (Component) cust;        
+        Component catalogPanel = (Component) cust;
         parentPanel.add(catalogPanel, BorderLayout.CENTER);
     }
     
     public void stateChanged(ChangeEvent e) {
         updateCatalogPanel();
-        revalidate();        
+        revalidate();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

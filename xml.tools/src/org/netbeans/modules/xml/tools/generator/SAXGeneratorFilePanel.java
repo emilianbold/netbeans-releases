@@ -100,12 +100,12 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         descTextArea.setWrapStyleWord(true);
         descTextArea.setLineWrap(true);
         descTextArea.setEditable(false);
+        descTextArea.setForeground(new java.awt.Color(102, 102, 153));
         descTextArea.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/tools/generator/Bundle").getString("DESC_saxw_files"));
         descTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(descTextArea, gridBagConstraints);
 
@@ -114,14 +114,14 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         interfaceLabel.setLabelFor(interfaceTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(interfaceLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
         add(interfaceTextField, gridBagConstraints);
 
@@ -130,14 +130,14 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         handlerImplLabel.setLabelFor(handlerImplTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(handlerImplLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
         add(handlerImplTextField, gridBagConstraints);
 
@@ -146,14 +146,14 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         stubLabel.setLabelFor(stubTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(stubLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
         add(stubTextField, gridBagConstraints);
 
@@ -162,14 +162,14 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         parsletLabel.setLabelFor(parsletTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(parsletLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
         add(parsletTextField, gridBagConstraints);
 
@@ -178,14 +178,14 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         parsletImplLabel.setLabelFor(parsletImplTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(parsletImplLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
         add(parsletImplTextField, gridBagConstraints);
 
@@ -193,7 +193,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(saveCheckBox, gridBagConstraints);
 
@@ -202,7 +202,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         saveLabel.setLabelFor(saveTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(saveLabel, gridBagConstraints);
 
@@ -210,7 +210,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
         add(saveTextField, gridBagConstraints);
 

@@ -31,6 +31,7 @@ import org.netbeans.modules.xml.catalog.spi.*;
 import org.netbeans.modules.xml.catalog.impl.*;
 import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
 import org.openide.util.HelpCtx;
+import java.awt.event.ActionEvent;
 
 /**
  * Node representing catalog root in the Runtime tab. It retrieves all
@@ -63,16 +64,16 @@ public final class CatalogRootNode extends AbstractNode {
     
     protected SystemAction[] createActions() {
         return new SystemAction[] {
-            SystemAction.get(NewAction.class),
-            null,
-            SystemAction.get(PropertiesAction.class)            
+            SystemAction.get(CatalogRootNode.MountAction.class),
+//            null,
+//            SystemAction.get(PropertiesAction.class)
         };
     }
 
     /** We can mount entity catalogs. */
-    public NewType[] getNewTypes() {
-        return new NewType[] {new CatalogMounter()};
-    }
+//    public NewType[] getNewTypes() {
+//        return new NewType[] {new CatalogMounter()};
+//    }
     
     /** 
      * Mounts new catalalog as specified by user. 
@@ -89,9 +90,20 @@ public final class CatalogRootNode extends AbstractNode {
             model = new CatalogMounterModel(it);
             Object rpanel = new CatalogMounterPanel(model);
             DialogDescriptor dd = new DialogDescriptor(rpanel,
-                                  Util.getString ("PROP_Mount_Catalog"), false, this); // NOI18N
+                                  Util.getString ("PROP_Mount_Catalog"), true, this);
             dd.setHelpCtx(new HelpCtx(CatalogMounterPanel.class));
             myDialog = TopManager.getDefault().createDialog(dd);
+
+            // resize dialog on model change
+            
+//            final Window win = myDialog;            
+//            model.addChangeListener(new ChangeListener() {
+//                public void stateChanged(ChangeEvent e) {
+//                    win.pack();  
+//                }
+//            });
+            
+            myDialog.setSize(450, 250);  //^ packing never creates bigger window :-(
             myDialog.show();
         }
 
@@ -205,7 +217,7 @@ public final class CatalogRootNode extends AbstractNode {
                 while (it.hasNext()) {
                     keys.add(it.next());    //!!! use immutable key wrappers, some
                                             // instances may overwrite equals() so
-                                            // it cannot be aused as a children key
+                                            // they cannot be used as a children key
                 }
             }
             setKeys(keys);
@@ -241,5 +253,41 @@ public final class CatalogRootNode extends AbstractNode {
         }
         
     }
- 
+
+    
+    /**
+     * Give to action your own name
+     */
+    private static final class MountAction extends NodeAction {
+        
+        
+        public MountAction() {
+        }
+        
+        public String getName() {
+            return Util.getString("LBL_mount");
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(MountAction.class);
+        }
+        
+        protected synchronized boolean enable(Node[] activatedNodes) {
+            return activatedNodes.length > 0;            
+        }
+        
+        protected synchronized void performAction(Node[] activatedNodes) {
+            if (enable(activatedNodes) == false) return;            
+            try {
+                CatalogMounter newType = 
+                    ((CatalogRootNode)activatedNodes[0]).new CatalogMounter();
+                newType.create();
+            } catch (IOException ex) {
+                //??? ignore
+            } finally {
+            }
+        }
+        
+    }
+    
 }

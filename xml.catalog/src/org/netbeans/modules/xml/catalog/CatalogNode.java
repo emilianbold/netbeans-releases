@@ -25,6 +25,7 @@ import org.openide.actions.*;
 import org.netbeans.modules.xml.catalog.spi.*;
 import org.netbeans.modules.xml.catalog.impl.*;
 import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
+import java.awt.event.ActionEvent;
 
 /**
  * Node representing a catalog.
@@ -65,8 +66,8 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
     protected SystemAction[] createActions() {
         return new SystemAction[] {
             SystemAction.get(RefreshAction.class),
-            SystemAction.get(DeleteAction.class),
-            
+            SystemAction.get(CatalogNode.UnmountAction.class),
+            null,
             //!!! sometimes added by BeanNode
             SystemAction.get(CustomizeAction.class)
         };
@@ -225,6 +226,37 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
                 reload();
             }
             
+        }
+        
+    }
+
+    /**
+     * Give to the action your own name
+     */
+    private static final class UnmountAction extends NodeAction {
+        
+        public UnmountAction() {
+        }
+        
+        public String getName() {
+            return Util.getString("LBL_unmount");
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(UnmountAction.class);
+        }
+        
+        protected boolean enable(Node[] activatedNodes) {
+            return activatedNodes.length > 0;
+        }
+        
+        protected void performAction(Node[] activatedNodes) {
+            if (enable(activatedNodes) == false) return;
+            try {
+                ((CatalogNode)activatedNodes[0]).destroy();
+            } catch (IOException ex) {
+                //??? ignore
+            }
         }
         
     }

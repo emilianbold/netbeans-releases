@@ -37,7 +37,8 @@ final class CatalogMounterModel extends Object {
     
     private ComboBoxModel cxModel = null;  // model containig CatalogMounterModel.Entries
     
-    private ChangeListener changeListener = null;
+    private List changeListeners = new ArrayList(2);
+        
     
     /** Creates new CatalogMounterModel */
     public CatalogMounterModel(Iterator providers) {        
@@ -79,10 +80,15 @@ final class CatalogMounterModel extends Object {
     }
 
     /**
-     * A view can listen on our state.
+     * Anyone listen on our state, it fires in the add order.
      */
-    public void setChangeListener(ChangeListener l) {
-        changeListener = l;
+    public void addChangeListener(ChangeListener l) {
+        changeListeners.add(l);
+    }
+
+    
+    public void removeChangeListener(ChangeListener l) {
+        changeListeners.remove(l);
     }
     
     // ~~~~~~~~~~~~~~~~~~~~~~ IMPL ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
@@ -101,7 +107,15 @@ final class CatalogMounterModel extends Object {
             catalog = Util.createProvider(entry.src);
         }
         
-        if (changeListener != null) changeListener.stateChanged(new ChangeEvent(this));
+        fireStateChanged();
+    }
+
+    private void fireStateChanged() {
+
+        for (Iterator it = changeListeners.iterator(); it.hasNext();) {
+            ChangeListener next = (ChangeListener) it.next();
+            next.stateChanged(new ChangeEvent(this));
+        }
     }
     
     /**

@@ -48,7 +48,10 @@ public class SystemCatalogCustomizer extends javax.swing.JPanel implements Custo
 
         setLayout(new java.awt.GridBagLayout());
 
+        jTextArea1.setWrapStyleWord(true);
+        jTextArea1.setLineWrap(true);
         jTextArea1.setEditable(false);
+        jTextArea1.setForeground(new java.awt.Color(102, 102, 153));
         jTextArea1.setText(Util.getString ("SystemCatalogCustomizer.readOnly.text"));
         jTextArea1.setBorder(null);
         jTextArea1.setOpaque(false);
@@ -58,7 +61,6 @@ public class SystemCatalogCustomizer extends javax.swing.JPanel implements Custo
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(jTextArea1, gridBagConstraints);
 
     }//GEN-END:initComponents
