@@ -138,6 +138,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
             GridBagLayout l = new GridBagLayout();
             this.setLayout (l);
             JLabel label = new JLabel (NbBundle.getMessage(LocationChooser.class,"TXT_PlatformType"));
+            label.setDisplayedMnemonic (NbBundle.getMessage(LocationChooser.class,"MNE_PlatformType").charAt(0));
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = c.gridy = GridBagConstraints.RELATIVE;
             c.gridwidth = GridBagConstraints.REMAINDER;
@@ -157,6 +158,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
             c.weightx = 1.0;
             l.setConstraints(this.tf,c);
             this.add (tf);
+            label.setLabelFor (this.tf);
             JPanel fill = new JPanel ();
             c = new GridBagConstraints();
             c.gridx = c.gridy = GridBagConstraints.RELATIVE;

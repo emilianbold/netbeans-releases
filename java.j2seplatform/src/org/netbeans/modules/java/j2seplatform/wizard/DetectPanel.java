@@ -172,6 +172,7 @@ public class DetectPanel extends javax.swing.JPanel {
         jPanel1.add(sources, gridBagConstraints);
 
         jButton1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("LBL_Browse"));
+        jButton1.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("MNE_BrowseSources").charAt(0));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectSources(evt);
@@ -186,6 +187,7 @@ public class DetectPanel extends javax.swing.JPanel {
         jPanel1.add(jButton1, gridBagConstraints);
 
         jButton2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("LBL_Browse"));
+        jButton2.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("MNE_BrowseJavadoc").charAt(0));
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectJavadoc(evt);

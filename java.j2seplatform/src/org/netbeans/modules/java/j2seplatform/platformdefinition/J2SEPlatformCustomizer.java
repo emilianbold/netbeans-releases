@@ -99,6 +99,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                     break;
                 default:
                     assert false : "Illegal type of panel";     //NOI18N
+                    return;
             }
             label.setText (NbBundle.getMessage(J2SEPlatformCustomizer.class,key));
             label.setDisplayedMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class,mneKey).charAt(0));
