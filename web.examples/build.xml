@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project basedir="." default="netbeans" name="web/examples">
+    <import file="../../nbbuild/default.xml"/>
+    
+    <target name="init" depends="default.init">
+        <property value="org-netbeans-modules-web-examples" name="code.name.base.dashes"/>
+        <property value="modules" name="module.jar.dir"/>
+        <property value="${module.jar.dir}/${code.name.base.dashes}.jar" name="module.jar"/>
+        <property value="${code.name.base.dashes}.nbm" name="nbm"/>
+        <property value="false" name="nbm.needs.restart"/>
+        <property location="manifest.mf" name="manifest.mf"/>
+        <property location="src" name="src.dir"/>
+        <property location="build/classes" name="build.classes.dir"/>
+        <patternset id="web/examples.files">
+            <include name="${module.jar}"/>
+        </patternset>
+        <path id="cp">
+            <pathelement location="${projects/projectapi.dir}/${nb.modules/autoload.dir}/org-netbeans-modules-projectapi.jar"/>
+            <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>
+            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+        </path>
+    </target>
+    
+    <target depends="init" name="compile">
+        <mkdir dir="${build.classes.dir}"/>
+        <javac includeantruntime="false" source="1.4" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" destdir="${build.classes.dir}" srcdir="${src.dir}">
+            <classpath refid="cp"/>
+        </javac>
+        <copy todir="${build.classes.dir}">
+            <fileset excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt" dir="${src.dir}"/>
+        </copy>
+    </target>
+    
+    <target depends="init,compile,zip-examples" name="jar">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${module.jar.dir}"/>
+        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+        <jar manifest="manifest-subst.mf" compress="false" jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}">
+            <fileset dir="${build.classes.dir}"/>
+        </jar>
+    </target>
+    
+    <target depends="jar" name="reload">
+        <nbinstaller action="reinstall" module="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
+    </target>
+    
+    <target depends="init,jar" name="netbeans">
+        <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${module.jar}">
+            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+                <patternset refid="web/examples.files"/>
+            </fileset>
+       </genlist>
+    </target>
+    
+    <target depends="init,netbeans" name="nbm">
+        <mkdir dir="build"/>
+        <makenbm needsrestart="${nbm.needs.restart}" 
+                 distribution="http://${dist.base}/${nbm}" 
+                 homepage="http://${domain}.${homepage.base}/" 
+                 module="${module.jar}" 
+                 productDir="${netbeans.dest.dir}/${cluster.dir}"
+                 file="build/${nbm}">
+            <license file="${license.file}"/>
+            <signature alias="${nbm_alias}" storepass="${storepass}" keystore="${keystore}"/>
+        </makenbm>
+    </target>
+    
+    <target depends="init" name="clean">
+        <delete dir="build"/>
+        <delete>
+            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+                <patternset refid="web/examples.files"/>
+            </fileset>
+        </delete>
+    </target>
+    
+    <target name="zip-examples">
+        <property name="examples" location="${build.classes.dir}/org/netbeans/modules/web/examples"/>
+        <mkdir dir="${examples}"/>
+        <zip basedir="jstl" excludes="CVS" destfile="${examples}/jstl.zip"/>
+    </target>
+    
+    <target name="tryme">
+        <ant dir="../../build" target="tryme" inheritAll="false"/>
+    </target>
+</project>

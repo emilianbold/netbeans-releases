@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!-- TODO include licence -->
+
+<filesystem>
+    <folder name="Templates">
+        <folder name="Project">
+	    <folder name="Web">
+		<folder name="Samples">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/examples/descriptions/webSamplesCategory.html"/>
+                	<file name="jstl.zip" url="jstl.zip">
+                          <attr name="template" boolvalue="true"/>
+                          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/examples/descriptions/jstl.html"/>
+                          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
+                          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
+                          <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.examples.WebSampleProjectIterator"/>
+                        </file>
+                </folder>
+	    </folder>
+        </folder>
+    </folder>
+</filesystem>
