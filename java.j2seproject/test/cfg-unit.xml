@@ -27,6 +27,8 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
+                <!-- exclude testing of build-impl.xml from commit validation; it is slow -->
+                <exclude name="org/netbeans/modules/java/j2seproject/BuildImplTest.class"/>
             </patternset>
         </testset>
     </testbag>
