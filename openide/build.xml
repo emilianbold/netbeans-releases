@@ -20,6 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 <project name="openide" default="netbeans" basedir=".">
 
   <property name="jdkdocs" value="public"/>
+  <property name="binroot" value=".."/>
 
   <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
 
