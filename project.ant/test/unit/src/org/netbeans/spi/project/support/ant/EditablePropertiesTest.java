@@ -192,6 +192,7 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals(expected, output);
         assertEquals(ep.getProperty("key1"), "one; two; three");
         assertEquals(ep.getProperty("key2"), "1. line;2. line;3. lineone;more;line;");
+        assertEquals(ep.getProperty("key"), "");
     }
         
     public void testSorting() throws Exception {
@@ -286,6 +287,12 @@ public class EditablePropertiesTest extends NbTestCase {
                 "_b\\u4567=\\"+System.getProperty("line.separator")+"    val\\u1234"+System.getProperty("line.separator")+
                 "_@!#$%^=\\"+System.getProperty("line.separator")+"    !@#$%^&*(){}"+System.getProperty("line.separator");
         assertEquals(expected, output);
+        assertEquals("a space a", ep.getProperty("a a"));
+        assertEquals("val"+(char)0x1234, ep.getProperty("b"+(char)0x4567));
+        assertEquals("!@#$%^&*(){}", ep.getProperty("@!#$%^"));
+        assertEquals("a space a", ep.getProperty("_a a"));
+        assertEquals("val"+(char)0x1234, ep.getProperty("_b"+(char)0x4567));
+        assertEquals("!@#$%^&*(){}", ep.getProperty("_@!#$%^"));
     }
     
     // test that iterator implementation is OK
