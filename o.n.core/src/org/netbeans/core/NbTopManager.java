@@ -149,10 +149,14 @@ public abstract class NbTopManager extends TopManager {
         System.setProperty ("netbeans.buildnumber", versions.getProperty ("VERS_Build_Number")); // NOI18N
         */
         Package p = Package.getPackage ("org.openide"); // NOI18N
-        System.setProperty ("org.openide.specification.version", p.getSpecificationVersion ());
-        System.setProperty ("org.openide.version", p.getImplementationVersion ());
-        System.setProperty ("org.openide.major.version", p.getSpecificationTitle ());
-        System.setProperty ("netbeans.buildnumber", p.getImplementationVersion ());
+        if (null == System.getProperty ("org.openide.specification.version"))
+            System.setProperty ("org.openide.specification.version", p.getSpecificationVersion ());
+        if (null == System.getProperty ("org.openide.version"))
+            System.setProperty ("org.openide.version", p.getImplementationVersion ());
+        if (null == System.getProperty ("org.openide.major.version"))
+            System.setProperty ("org.openide.major.version", p.getSpecificationTitle ());
+        if (null == System.getProperty ("netbeans.buildnumber"))
+            System.setProperty ("netbeans.buildnumber", p.getImplementationVersion ());
     }
 
     /** Constructs a new manager.
