@@ -110,10 +110,15 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
         for (int i=0; i < components.length; i++) {
             LayoutConstraints constr = getConstraints(i + index);
             if (constr instanceof AbsoluteLayoutConstraints) {
+                AbsoluteLayoutConstraints alc = (AbsoluteLayoutConstraints)constr;
                 Component comp = components[i];
-                Rectangle bounds = ((AbsoluteLayoutConstraints)constr).getBounds();
+                Rectangle bounds = alc.getBounds();
                 if (bounds.width == -1 || bounds.height == -1) {
-                    Dimension pref = comp.getPreferredSize();
+                    Dimension pref = !(comp instanceof javax.swing.JComponent)
+                                            && alc.refComponent != null ?
+                        alc.refComponent.getPreferredSize() :
+                        comp.getPreferredSize();
+
                     if (bounds.width == -1)
                         bounds.width = pref.width;
                     if (bounds.height == -1)
