@@ -106,9 +106,7 @@ public final class TAXUtil {
     /**
      */
     public static void notifyTreeException (TreeException exc) {
-        String message = exc.getMessage();
-        NotifyDescriptor nd = new NotifyDescriptor.Message (message, NotifyDescriptor.WARNING_MESSAGE);
-        TopManager.getDefault().notify (nd);
+        notifyWarning (exc.getMessage());
     }
 
 }
