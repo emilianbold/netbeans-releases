@@ -168,7 +168,7 @@ then
     fi
     xauth generate $display .
     export DISPLAY=$display
-    sleep 4 # give X time to start
+    sleep 2 # give X time to start
     mwm &
     mwmpid=$!
     trap "kill $mwmpid; kill $xpid; rm -f $xauthority" EXIT
