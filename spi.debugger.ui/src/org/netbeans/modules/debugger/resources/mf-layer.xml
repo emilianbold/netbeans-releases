@@ -159,7 +159,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="F4[org-netbeans-modules-debugger-support-actions-RunToCursorAction].instance" />
         <file name="SA-F7[org-netbeans-modules-debugger-support-actions-StepOutAction].instance" />
         <file name="F7[org-netbeans-modules-debugger-support-actions-StepIntoAction].instance" />
-        <file name="S-F7[org-netbeans-modules-debugger-support-actions-StepOverAction].instance" />
+        <file name="F8[org-netbeans-modules-debugger-support-actions-StepOverAction].instance" />
         <file name="C-F5[org-netbeans-modules-debugger-support-actions-ContinueAction].instance" />
         <file name="S-F5[org-netbeans-modules-debugger-support-actions-FinishAction].instance" />
         <file name="A-F5[org-netbeans-modules-debugger-support-actions-StartAction].instance" />
