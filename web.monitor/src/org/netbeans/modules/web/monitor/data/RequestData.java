@@ -308,7 +308,7 @@ public class RequestData extends BaseBean {
 	// Create a set of headers and add a cookie header
 	if(len == 0) { 
 	    buf.append(ckname);
-	    buf.append(";");  //NOI18N
+	    buf.append("=");  //NOI18N
 	    buf.append(ckvalue); 
 	    if(debug) log("New cookie string is " + buf.toString()); //NOI18N
 	    setCookieHeader(buf.toString()); 
