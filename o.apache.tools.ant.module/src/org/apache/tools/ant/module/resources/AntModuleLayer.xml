@@ -137,6 +137,9 @@ Microsystems, Inc. All Rights Reserved.
   <Archive name="docs/ant-api.zip"/>
 </Javadoc>
 ]]>
+        <!-- #14574: -->
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
       </file>
     </folder>
   </folder>
