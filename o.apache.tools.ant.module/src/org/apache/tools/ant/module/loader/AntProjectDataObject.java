@@ -52,6 +52,11 @@ public class AntProjectDataObject extends MultiDataObject implements PropertyCha
         checkIterator ();
         addPropertyChangeListener (this);
     }
+    
+    /** @deprecated for debugging with Bean Browser only! */
+    public AntProjectCookie getAntProjectCookie () {
+        return (AntProjectCookie) getCookie (AntProjectCookie.class);
+    }
 
     private void checkIterator () {
         FileObject prim = getPrimaryFile ();

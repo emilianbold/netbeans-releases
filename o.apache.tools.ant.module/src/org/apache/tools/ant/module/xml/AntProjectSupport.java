@@ -44,7 +44,7 @@ import org.apache.tools.ant.module.api.AntProjectCookie;
 public class AntProjectSupport implements AntProjectCookie, DocumentListener, FileChangeListener, org.w3c.dom.events.EventListener, Runnable {
   
     private final File file;
-    private final FileObject fo;
+    private FileObject fo;
 
     private transient Document projDoc = null; // [PENDING] SoftReference
     private transient Throwable exception = null;
@@ -89,6 +89,7 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     }
     
     private EditorCookie getEditor () {
+        FileObject fo = getFileObject ();
         if (fo == null) return null;
         if (editor == null) {
             synchronized (this) {
@@ -109,6 +110,10 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     }
     
     public FileObject getFileObject () {
+        if (fo != null && ! fo.isValid ()) { // #11065
+            AntModule.err.log ("AntProjectSupport fo=" + fo + " was not valid, clearing");
+            fo = null;
+        }
         return fo;
     }
     
@@ -139,6 +144,7 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     }
     
     private void parseDocument () {
+        FileObject fo = getFileObject ();
         AntModule.err.log ("AntProjectSupport.parseDocument: fo=" + fo);
         try {
             DOMParser parser = new DOMParser ();
@@ -228,6 +234,7 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     }
     
     public String toString () {
+        FileObject fo = getFileObject ();
         if (fo != null) {
             try {
                 return DataObject.find (fo).getNodeDelegate ().getDisplayName ();
@@ -240,6 +247,7 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     }
     
     private synchronized void regenerate () {
+        FileObject fo = getFileObject ();
         AntModule.err.log("AntProjectSupport.regenerate: fo=" + fo);
         if (projDoc == null) throw new IllegalStateException ();
         try {
