@@ -82,7 +82,15 @@ public final class BuildImplTest extends NbTestCase {
         AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, subFolder != null ? subFolder + getName() : getName(), (String)null, (String)null);
         FileObject root = aph.getProjectDirectory();
         for (int i=0; i<numberOfSourceFiles; i++) {
-            FileObject source = FileUtil.createData(root, "src/pkg/Source"+i+".java");
+            String res = "src/pkg/Source" + i + ".java";
+            FileObject source;
+            try {
+                source = FileUtil.createData(root, res);
+            } catch (IOException e) {
+                // Debugging for issue #50802.
+                System.err.println("While calling FileUtil.createData(" + root + ", " + res + "): " + e);
+                throw e;
+            }
             generateJava(source, false);
             if (generateTests) {
                 source = FileUtil.createData(root, "test/pkg/Source"+i+"Test.java");

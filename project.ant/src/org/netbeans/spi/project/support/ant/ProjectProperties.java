@@ -199,6 +199,7 @@ final class ProjectProperties {
                             final FileObject _f;
                             if (f == null) {
                                 _f = FileUtil.createData(dir(), path);
+                                assert _f != null : "FU.cD must not return null; called on " + dir() + " + " + path; // #50802
                             } else {
                                 _f = f;
                             }
