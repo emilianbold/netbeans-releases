@@ -56,6 +56,7 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.modules.diff.builtin.Patch;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
+import org.openide.util.RequestProcessor;
 
 /**
  * Patch Action. It asks for a patch file and applies it to the selected file.
@@ -103,43 +104,52 @@ public class PatchAction extends NodeAction {
         return false;
     }
 
+    /**
+     * @return false to run in AWT thread.
+     */
+    protected boolean asynchronous() {
+        return false;
+    }
+    
     public void performAction(Node[] nodes) {
         DataObject do1 = (DataObject) nodes[0].getCookie(DataObject.class);
         if (do1 != null) {
-            FileObject fo = do1.getPrimaryFile();
-            File patch = getPatchFor(fo);
+            final FileObject fo = do1.getPrimaryFile();
+            final File patch = getPatchFor(fo);
             if (patch == null) return ;
-            Patch.FileDifferences[] fileDiffs;
-            try {
-                fileDiffs = Patch.parse(new InputStreamReader(new FileInputStream(patch), PATCHING_IO_ENCODING));
-            } catch (IOException ioex) {
-                ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
-                    NbBundle.getMessage(PatchAction.class, "EXC_PatchParsingFailed", ioex.getLocalizedMessage())));
-                return ;
-            }
-            int numDiffs = 0;
-            for (int i = 0; i < fileDiffs.length; i++) {
-                numDiffs += fileDiffs[i].getDifferences().length;
-            }
-            if (numDiffs == 0) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(PatchAction.class, "MSG_NoDifferences", patch.getName())));
-                return ;
-            }
-            /*
-            System.out.println("Have diffs = "+fileDiffs+", length = "+fileDiffs.length);
-            for (int i = 0; i < fileDiffs.length; i++) {
-                System.out.println(" Difference "+i+" : "+fileDiffs[i]);
-                Difference[] diffs = fileDiffs[i].getDifferences();
-                for (int j = 0; j < diffs.length; j++) {
-                    System.out.println("  Diff["+j+"] = "+diffs[j]);
-                    System.out.println("TEXT1 = \n"+diffs[j].getFirstText()+"TEXT2 = \n"+diffs[j].getSecondText()+"");
+            RequestProcessor.getDefault().post(new Runnable () {
+                public void run() {
+                    Patch.FileDifferences[] fileDiffs;
+                    try {
+                        fileDiffs = Patch.parse(new InputStreamReader(new FileInputStream(patch), PATCHING_IO_ENCODING));
+                    } catch (IOException ioex) {
+                        ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
+                            NbBundle.getMessage(PatchAction.class, "EXC_PatchParsingFailed", ioex.getLocalizedMessage())));
+                        return ;
+                    }
+                    int numDiffs = 0;
+                    for (int i = 0; i < fileDiffs.length; i++) {
+                        numDiffs += fileDiffs[i].getDifferences().length;
+                    }
+                    if (numDiffs == 0) {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            NbBundle.getMessage(PatchAction.class, "MSG_NoDifferences", patch.getName())));
+                        return ;
+                    }
+                    /*
+                    System.out.println("Have diffs = "+fileDiffs+", length = "+fileDiffs.length);
+                    for (int i = 0; i < fileDiffs.length; i++) {
+                        System.out.println(" Difference "+i+" : "+fileDiffs[i]);
+                        Difference[] diffs = fileDiffs[i].getDifferences();
+                        for (int j = 0; j < diffs.length; j++) {
+                            System.out.println("  Diff["+j+"] = "+diffs[j]);
+                            System.out.println("TEXT1 = \n"+diffs[j].getFirstText()+"TEXT2 = \n"+diffs[j].getSecondText()+"");
+                        }
+                    }
+                    */
+                    applyFileDiffs(fileDiffs, fo);
                 }
-            }
-            */
-            applyFileDiffs(fileDiffs, fo);
-            //createFileBackup(fo);
-            //applyDiffsTo(diffs, fo);
+            });
         }
     }
 
