@@ -282,24 +282,32 @@ public final class TestUtil extends ProxyLookup {
      * @return the file object
      */
     public static FileObject createFileFromContent(URL content, FileObject parent, String path) throws IOException {
-        assert parent.isFolder();
+        if (parent == null) {
+            throw new IllegalArgumentException("null parent");
+        }
+        Assert.assertTrue("folder", parent.isFolder());
         FileObject fo = parent;
         StringTokenizer tok = new StringTokenizer(path, "/");
         boolean touch = false;
         while (tok.hasMoreTokens()) {
+            Assert.assertNotNull("fo is null (parent=" + parent + " path=" + path + ")", fo);
             String name = tok.nextToken();
             if (tok.hasMoreTokens()) {
                 FileObject sub = fo.getFileObject(name);
                 if (sub == null) {
-                    fo = fo.createFolder(name);
+                    FileObject fo2 = fo.createFolder(name);
+                    Assert.assertNotNull("createFolder(" + fo + ", " + name + ") -> null", fo2);
+                    fo = fo2;
                 } else {
-                    assert sub.isFolder();
+                    Assert.assertTrue("folder", sub.isFolder());
                     fo = sub;
                 }
             } else {
                 FileObject sub = fo.getFileObject(name);
                 if (sub == null) {
-                    fo = fo.createData(name);
+                    FileObject fo2 = fo.createData(name);
+                    Assert.assertNotNull("createData(" + fo + ", " + name + ") -> null", fo2);
+                    fo = fo2;
                 } else {
                     fo = sub;
                     touch = true;
