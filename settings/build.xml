@@ -76,8 +76,8 @@ Microsystems, Inc. All Rights Reserved.
       <delete file="core-settings.nbm"/>
       <delete dir="netbeans"/>
       <delete dir="Info"/>
-      <delete file="SettingsAPIs.zip"/>
-      <delete dir="SettingsAPIs"/>
+      <delete file="SettingsAPI.zip"/>
+      <delete dir="SettingsAPI"/>
       <delete dir="javadoc"/>
     </target>
 
@@ -88,8 +88,8 @@ Microsystems, Inc. All Rights Reserved.
     <target name="javadoc" description="Create Settings API documentation." depends="settingsapis">
       <copy todir="javadoc/">
         <fileset dir=".">
-          <include name="SettingsAPIs/**"/>
-          <include name="SettingsAPIs.zip"/>
+          <include name="SettingsAPI/**"/>
+          <include name="SettingsAPI.zip"/>
         </fileset>
       </copy>
     </target>
@@ -101,11 +101,11 @@ Microsystems, Inc. All Rights Reserved.
         <property name="openide.package-list.loc" location="${nbroot}/openide/OpenAPIs"/>
         <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 2002 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
         <echo message="Build Settings API documentation..."/>
-        <delete dir="SettingsAPIs"/>
-        <mkdir dir="SettingsAPIs"/>
-        <javadoc destdir="SettingsAPIs"
+        <delete dir="SettingsAPI"/>
+        <mkdir dir="SettingsAPI"/>
+        <javadoc destdir="SettingsAPI"
                  packagenames="org.netbeans.spi.settings"
-                 doctitle="NetBeans Settings APIs"
+                 doctitle="NetBeans Settings API"
                  use="true"
                  bottom="${apis-footer}"
                  splitindex="true"
@@ -134,15 +134,15 @@ Microsystems, Inc. All Rights Reserved.
                   packagelistLoc="${openide.package-list.loc}"
             />
         </javadoc>
-        <replace dir="SettingsAPIs" token="@FOOTER@" value="${apis-footer}">
+        <replace dir="SettingsAPI" token="@FOOTER@" value="${apis-footer}">
           <include name="**/doc-files/*.html"/>
         </replace>
-        <replace dir="SettingsAPIs" token="@OPENAPI@" value="${openide-docs-location}">
+        <replace dir="SettingsAPI" token="@OPENAPI@" value="${openide-docs-location}">
           <include name="**/doc-files/*.html"/>
         </replace>
         <copy file="src/org/netbeans/modules/settings/resources/properties-1_0.dtd"
-          tofile="SettingsAPIs/org/netbeans/spi/settings/doc-files/properties-1_0.dtd"/>
-        <zip zipfile="SettingsAPIs.zip" basedir="SettingsAPIs"/>
+          tofile="SettingsAPI/org/netbeans/spi/settings/doc-files/properties-1_0.dtd"/>
+        <zip zipfile="SettingsAPI.zip" basedir="SettingsAPI"/>
   </target>
 
   <target name="apichanges-generate" description="Regenerate HTML from XML API changes list.">
