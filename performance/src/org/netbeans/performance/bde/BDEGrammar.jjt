@@ -58,28 +58,42 @@ TOKEN : /* LITERALS */
   < #OCTAL_LITERAL: "0" (["0"-"7"])* >
 }
 
-TOKEN : /* IDENTIFIERS */
+void Letter() : {}
 {
-  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
-|
-  < CLASS_IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* ("." (<LETTER>|<DIGIT>)+)* >
-|
-  < #LETTER: ["_","a"-"z","A"-"Z"] >
-|
-  < #DIGIT: ["0"-"9"] >
-|
-  < REG_EXP: (<LETTER>|<DIGIT>|<REGEXP_CHAR>)+ >
-|
-  < #REGEXP_CHAR: ["*"] >
-|
-  //< STRING: (LETTER (<LETTER>|<DIGIT>)+ >
-  < STRING: ["_","0"-"9","a"-"z","A"-"Z"] (["_","0"-"9","a"-"z","A"-"Z"])* >
+  < ["_","a"-"z","A"-"Z"] >
+}
+
+void Digit() : {}
+{
+  < ["0"-"9"] >
+}
+
+void String() #String : {}
+{
+  < ["_","0"-"9","a"-"z","A"-"Z"] > (< ["_","0"-"9","a"-"z","A"-"Z"] >)*
 }
 
 ASTStart Start() #Start : {}
 {
-  TestDefinitionList()
+  [ LoadDefinition() ";" ] TestDefinitionList() [ ";" StoreDefinition() ]
   { return jjtThis; }
+}
+
+void LoadDefinition() #LoadDefinition : {}
+{
+// ClassName() is a little bit tricky
+  "load" [ ClassName() ]
+}
+
+void StoreDefinition() #StoreDefinition : {}
+{
+// ClassName() is a little bit tricky
+  "store" [ ClassName() ]
+}
+
+void Identifier() #Identifier : {}
+{
+  < ["_","a"-"z","A"-"Z"] ( ["_","a"-"z","A"-"Z"] | ["0"-"9"] )* >
 }
 
 void TestDefinitionList() #TestDefinitionList : {}
@@ -92,15 +106,9 @@ void TestDefinition() #TestDefinition : {}
     ClassName() [ "[" MethodFilterList() "]" ] [ "@" ArgDataList()]
 }
 
-void ClassName() #ClassName :
+void ClassName() #ClassName : {}
 {
-    Token t;
-}
-{
-    t=<CLASS_IDENTIFIER>
-    {
-       // jjtThis.setName(t.image);
-    }
+    < ["_","a"-"z","A"-"Z"] (["_","a"-"z","A"-"Z"] | ["0"-"9"])* ("." (["_","a"-"z","A"-"Z"] | ["0"-"9"])+)* >
 }
 
 void MethodFilterList() #MethodFilterList : {}
@@ -108,15 +116,9 @@ void MethodFilterList() #MethodFilterList : {}
     MethodFilter() ( "," MethodFilter())*
 }
 
-void MethodFilter() #MethodFilter :
+void MethodFilter() #MethodFilter : {}
 {
-   Token t;
-}
-{
-    t=<REG_EXP>
-    {
-        //jjtThis.setName(t.image);
-    }
+    < (["_","a"-"z","A"-"Z"] | ["0"-"9"] | "*")+ >
 }
 
 void ArgDataList() #ArgDataList: {}
@@ -136,7 +138,7 @@ void ArgData() #ArgData : {}
 
 void Id() #Id : {}
 {
-    <IDENTIFIER>
+    Identifier()
 }
 
 void ValSpecList() #ValSpecList : {}
@@ -158,9 +160,3 @@ void Integer() #Integer : {}
 {
     <INTEGER_LITERAL>
 }
-
-void String() #String : {}
-{
-    <STRING> | <IDENTIFIER>
-}
-

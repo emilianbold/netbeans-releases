@@ -8,13 +8,6 @@ public interface BDEParserConstants {
   int DECIMAL_LITERAL = 8;
   int HEX_LITERAL = 9;
   int OCTAL_LITERAL = 10;
-  int IDENTIFIER = 11;
-  int CLASS_IDENTIFIER = 12;
-  int LETTER = 13;
-  int DIGIT = 14;
-  int REG_EXP = 15;
-  int REGEXP_CHAR = 16;
-  int STRING = 17;
 
   int DEFAULT = 0;
 
@@ -30,19 +23,21 @@ public interface BDEParserConstants {
     "<DECIMAL_LITERAL>",
     "<HEX_LITERAL>",
     "<OCTAL_LITERAL>",
-    "<IDENTIFIER>",
-    "<CLASS_IDENTIFIER>",
-    "<LETTER>",
-    "<DIGIT>",
-    "<REG_EXP>",
-    "<REGEXP_CHAR>",
-    "<STRING>",
+    "<token of kind 11>",
+    "<token of kind 12>",
+    "<token of kind 13>",
+    "<token of kind 14>",
+    "\";\"",
+    "\"load\"",
+    "\"store\"",
+    "<token of kind 18>",
     "\":\"",
     "\"[\"",
     "\"]\"",
     "\"@\"",
+    "<token of kind 23>",
     "\",\"",
-    "\";\"",
+    "<token of kind 25>",
     "\"=\"",
     "\"..\"",
   };

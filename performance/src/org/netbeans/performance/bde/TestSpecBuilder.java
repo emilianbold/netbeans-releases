@@ -46,6 +46,16 @@ public final class TestSpecBuilder implements BDEParserVisitor {
         data = node.childrenAccept(this, data);
         return data;
     }
+
+    /** @return a String related to this node */
+    public Object visit(ASTString node, Object data) throws Exception { 
+        return node.getFirstToken().image.toString();
+    }
+    
+    /** @return a String related to this node */
+    public Object visit(ASTIdentifier node, Object data) throws Exception {
+        return node.getFirstToken().image.toString();
+    }
     
     public Object visit(ASTStart node, Object data) throws Exception {
         List list = new ArrayList(5);
@@ -53,6 +63,32 @@ public final class TestSpecBuilder implements BDEParserVisitor {
         return list;
     }
 
+    public Object visit(ASTLoadDefinition node, Object data) throws Exception {
+        int count = node.jjtGetNumChildren();
+        String file = null;
+        if (count == 1) {
+            Node n = node.jjtGetChild(0);
+            file = (String) n.jjtAccept(this, null);
+        }
+        LoadDefinition ld = new LoadDefinition(file);
+        List list = (List) data;
+        list.add(ld);
+        return null;
+    }
+    
+    public Object visit(ASTStoreDefinition node, Object data) throws Exception {
+        int count = node.jjtGetNumChildren();
+        String file = null;
+        if (count == 1) {
+            Node n = node.jjtGetChild(0);
+            file = (String) n.jjtAccept(this, null);
+        }
+        StoreDefinition sd = new StoreDefinition(file);
+        List list = (List) data;
+        list.add(sd);
+        return null;
+    }
+  
     /** Creates a List of TestDefinitions */
     public Object visit(ASTTestDefinitionList node, Object data) throws Exception {
         return node.childrenAccept(this, data);
@@ -132,7 +168,8 @@ public final class TestSpecBuilder implements BDEParserVisitor {
 
     /** Constructs a String that represents this Id */
     public Object visit(ASTId node, Object data) throws Exception { 
-        return node.getFirstToken().image.toString();
+        Node n = node.jjtGetChild(0);
+        return (String) n.jjtAccept(this, null);
     }
 
     /** Constructs a list of values */
@@ -175,10 +212,5 @@ public final class TestSpecBuilder implements BDEParserVisitor {
     /** @return an Integer related to this node */
     public Object visit(ASTInteger node, Object data) throws Exception { 
         return Integer.valueOf(node.getFirstToken().image.toString());
-    }
-
-    /** @return a String related to this node */
-    public Object visit(ASTString node, Object data) throws Exception { 
-        return node.getFirstToken().image.toString();
     }
 }
