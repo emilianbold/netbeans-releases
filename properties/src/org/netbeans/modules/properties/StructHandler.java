@@ -49,17 +49,23 @@ public class StructHandler extends Object {
     }
 
     
-    /** Reparses file. */
+    /** Reparses file. Fires changes. */
     PropertiesStructure reparseNowBlocking() {
+        return reparseNowBlocking(true);
+    }
+    
+    /** Reparses file. 
+     * @param fire true if should fire changes */
+    private PropertiesStructure reparseNowBlocking(boolean fire) {
         try {
             PropertiesParser parser = new PropertiesParser(propFileEntry);
 
             PropertiesStructure propStructure = parser.parseFile();
-            updatePropertiesStructure(propStructure);
+            updatePropertiesStructure(propStructure, fire);
             
             return propStructure;
         } catch (IOException e) {
-            updatePropertiesStructure(null);
+            updatePropertiesStructure(null, fire);
             
             return null;
         }
@@ -99,8 +105,9 @@ public class StructHandler extends Object {
     /** When parser finishes its job, it's called this method to set new values.
      *
      * @param newPropStructure new properties structure
+     * @param fire if should fire change when structure created anew
      */
-    private synchronized void updatePropertiesStructure(PropertiesStructure newPropStructure) {
+    private synchronized void updatePropertiesStructure(PropertiesStructure newPropStructure, boolean fire) {
         if(newPropStructure == null) {
             propStructureSRef = new SoftReference(null);
             return;
@@ -113,7 +120,9 @@ public class StructHandler extends Object {
             newPropStructure.setParent(this);
             propStructure = newPropStructure;
             propStructureSRef = new SoftReference(propStructure);
-            propStructure.structureChanged();
+            
+            if(fire)
+                propStructure.structureChanged();
         } else {
             // Update calls notification methods according to changes.
             propStructure.update(newPropStructure);
@@ -128,7 +137,9 @@ public class StructHandler extends Object {
             return propStructure;
 
         // No data available -> reparse file.
-        return reparseNowBlocking();
+        // PENDING don;t send change event when requesting data only.
+        // They could be garbaged before so no fire changes.
+        return reparseNowBlocking(false); 
     }
 
 }

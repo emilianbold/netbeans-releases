@@ -61,8 +61,8 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
         // Key or value? Only in the first column are keys.
         isKeyCell = (column == 0) ? true : false;
         
-        final JTextField c = (JTextField)super.getTableCellEditorComponent(table, value, isSelected, row, column);
-        Caret caret = c.getCaret();
+        final JTextField textField = (JTextField)super.getTableCellEditorComponent(table, value, isSelected, row, column);
+        Caret caret = textField.getCaret();
         caret.setVisible(true);
         caret.setDot(0);
         
@@ -75,18 +75,7 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
             caret.moveDot(result[3]);
         }
 
-        // It is necessary to get the focus via invoke later, cause
-        // the component is not visible yet.
-        if(!c.hasFocus()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    if(c.isShowing())
-                        c.requestFocus();
-                }            
-            });
-        }
-
-        return c;
+        return textField;
     }
 
 
