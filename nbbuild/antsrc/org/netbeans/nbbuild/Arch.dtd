@@ -58,6 +58,7 @@ HTML contents of the document, with substitutions.
 
 <!ELEMENT usecase %Flow; >
 <!ATTLIST usecase
+          id NMTOKEN #REQUIRED
           name CDATA #REQUIRED
 >
 
