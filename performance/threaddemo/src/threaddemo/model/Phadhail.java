@@ -44,7 +44,7 @@ public interface Phadhail {
     /**
      * will be child files
      * element type = Phadhail
-     * caller cannot mutate list
+     * caller cannot mutate list, and it might not be thread-safe
      * implementor cannot change list after creation (i.e. size & identity of elements)
      * it is expected that once the list is obtained, asking for elements is fast and nonblocking
      * (and then the read mutex is not required)

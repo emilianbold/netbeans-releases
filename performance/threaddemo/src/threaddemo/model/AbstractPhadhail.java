@@ -84,7 +84,6 @@ public abstract class AbstractPhadhail implements Phadhail {
             } else {
                 phs =  Collections.EMPTY_LIST;
             }
-            // XXX would a SoftReference be better?
             kids = new WeakReference(phs);
         }
         return phs;
@@ -92,15 +91,19 @@ public abstract class AbstractPhadhail implements Phadhail {
     
     private final class ChildrenList extends AbstractList {
         private final File[] files;
+        private final Phadhail[] kids;
         public ChildrenList(File[] files) {
             this.files = files;
+            kids = new Phadhail[files.length];
         }
         // These methods need not be called with the read mutex held
         // (see Phadhail.getChildren Javadoc).
         public Object get(int i) {
-            // XXX could also keep a Phadhail[] cache of kids
-            // to avoid doing so many hash lookups
-            return forFile(files[i], factory());
+            Phadhail ph = kids[i];
+            if (ph == null) {
+                ph = forFile(files[i], factory());
+            }
+            return ph;
         }
         public int size() {
             return files.length;
