@@ -1,4 +1,17 @@
 /*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+/*
  * SystemInfoTask.java
  *
  * Created on November 13, 2001, 12:23 PM
@@ -51,14 +64,6 @@ public class SystemInfoTask extends Task {
     }*/
     
     
-    public String getXTestProject() {
-        return "UnknownProject";
-        //return project;
-    }
-    
-    public String getBuild() {
-        return "UnknownBuild";
-    }
     
     public String getOsArch() {
         return System.getProperty("os.arch");
@@ -94,8 +99,6 @@ public class SystemInfoTask extends Task {
     public SystemInfo getSystemInfo() {
         SystemInfo si = new SystemInfo();
         si.xmlat_host = getHost();
-        si.xmlat_project = getXTestProject();
-        si.xmlat_build = getBuild();
         si.xmlat_osArch = getOsArch();
         si.xmlat_osName = getOsName();
         si.xmlat_osVersion = getOsVersion();
