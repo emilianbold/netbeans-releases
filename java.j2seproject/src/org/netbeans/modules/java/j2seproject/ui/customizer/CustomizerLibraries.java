@@ -91,47 +91,13 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider {
                                                jButtonMoveUpRT.getModel(), 
                                                jButtonMoveDownRT.getModel() );
         
-        jCheckBoxBuildSubprojects.setModel( uiProperties.NO_DEPENDENCIES_MODEL );
-                
-        // initPlatforms();
-        
+        jCheckBoxBuildSubprojects.setModel( uiProperties.NO_DEPENDENCIES_MODEL );                        
+        jComboBoxTarget.setModel(uiProperties.PLATFORM_MODEL);               
     }
         
     public HelpCtx getHelpCtx() {
         return new HelpCtx( CustomizerLibraries.class );
-    }
-        
-    private void initPlatforms() {
-        /*
-        Object value = j2seProperties.get (J2SEProjectProperties.JAVA_PLATFORM);
-        String activePlatform = (String) J2SEProjectUtil.getEvaluatedProperty(j2seProperties.getProject(), (String) value);
-        boolean activeFound = false;
-        String activeName = activePlatform;
-        // Read defined platforms
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        List platformNames = new ArrayList ();
-        for( int i = 0; i < platforms.length; i++ ) {
-            Specification spec = platforms[i].getSpecification();
-            //Show only nonbroken j2se platforms
-            if ("j2se".equalsIgnoreCase (spec.getName()) && platforms[i].getInstallFolders().size()>0) { // NOI18N
-                platformNames.add(platforms[i].getDisplayName());
-                String name = platforms[i].getDisplayName();
-                if (name.equals(activePlatform)) {
-                    activeFound = true;
-                    activeName = platforms[i].getDisplayName();
-                }
-            }
-        }
-        if (!activeFound) {
-            // Active platform was not found in the list of platforms.
-            // Perhaps this is project with broken references? Add it to combo even if the platform is broken
-            // to let the user to correct it
-            platformNames.add(activePlatform);
-        }
-        vps.register( jComboBoxTarget, (String[])platformNames.toArray(new String[platformNames.size()]),
-                J2SEProjectProperties.JAVA_PLATFORM, activeName);
-        */
-    }
+    }        
     
     
     /** This method is called from within the constructor to
@@ -550,8 +516,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider {
     }//GEN-END:initComponents
 
     private void createNewPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createNewPlatform
-        PlatformsCustomizer.showCustomizer(null);
-        initPlatforms ();
+        PlatformsCustomizer.showCustomizer(null);        
     }//GEN-LAST:event_createNewPlatform
     
     

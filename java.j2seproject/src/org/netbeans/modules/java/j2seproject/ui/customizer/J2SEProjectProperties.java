@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.ButtonModel;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -133,6 +134,7 @@ public class J2SEProjectProperties {
     DefaultListModel JAVAC_TEST_CLASSPATH_MODEL;
     DefaultListModel RUN_CLASSPATH_MODEL;
     DefaultListModel RUN_TEST_CLASSPATH_MODEL;
+    ComboBoxModel PLATFORM_MODEL;
     ListCellRenderer CLASS_PATH_LIST_RENDERER = new J2SEClassPathUi.ClassPathListCellRenderer();
     
     // CustomizerCompile
@@ -212,6 +214,7 @@ public class J2SEProjectProperties {
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_TEST_CLASSPATH ) ) );
         RUN_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_CLASSPATH ) ) );
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_TEST_CLASSPATH ) ) );
+        PLATFORM_MODEL = PlatformUiSupport.createComboBoxModel (projectProperties.getProperty(JAVA_PLATFORM));
                 
         // CustomizerCompile
         JAVAC_DEPRECATION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVAC_DEPRECATION );
@@ -300,6 +303,9 @@ public class J2SEProjectProperties {
         projectProperties.setProperty( JAVAC_TEST_CLASSPATH, javac_test_cp );
         projectProperties.setProperty( RUN_CLASSPATH, run_cp );
         projectProperties.setProperty( RUN_TEST_CLASSPATH, run_test_cp );
+        
+        //Handle platform selection
+        PlatformUiSupport.storePlatform (projectProperties, updateHelper, (String) PLATFORM_MODEL.getSelectedItem());
                 
         // Handle other special cases
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N
@@ -440,6 +446,7 @@ public class J2SEProjectProperties {
         }
         roots.putRoots(rootURLs,rootLabels);
     }
+    
     
     public static String getAntPropertyName( String property ) {
         if ( property != null && 
