@@ -16,22 +16,18 @@ package org.netbeans.modules.java.platform.wizard;
 import java.beans.*;
 import java.util.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.io.File;
 import javax.swing.event.*;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 
 import org.openide.*;
-import org.openide.explorer.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
-import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.java.platform.InstallerRegistry;
-import org.netbeans.modules.java.platform.wizard.InstallerKeys;
 import org.netbeans.spi.java.platform.PlatformInstall;
 
 /**
