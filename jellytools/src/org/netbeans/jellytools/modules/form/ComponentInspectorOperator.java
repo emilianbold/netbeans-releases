@@ -37,7 +37,7 @@ public class ComponentInspectorOperator extends TopComponentOperator {
      * @param contOper container where to find Component Inspector
      */
     public ComponentInspectorOperator(ContainerOperator contOper) {
-        super((TopComponent)contOper.waitSubComponent(new ComponentInspectorChooser()));
+        super(waitTopComponent(contOper, null, 0, new ComponentInspectorChooser()));
         copyEnvironment(contOper);
     }
     

@@ -13,7 +13,9 @@
 package org.netbeans.jellytools;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.util.Iterator;
+import java.util.Set;
 import javax.swing.JComponent;
 import org.netbeans.jellytools.actions.CloneViewAction;
 import org.netbeans.jellytools.actions.DockingAction;
@@ -23,6 +25,7 @@ import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
@@ -30,14 +33,17 @@ import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.util.DefaultVisualizer;
 
 import org.openide.windows.TopComponent;
 
-/**
- * Represents org.openide.windows.TopComponent. It is IDE wrapper for a lot of
+/** Represents org.openide.windows.TopComponent. It is IDE wrapper for a lot of
  * panels in IDE which can be docked to a window. TopComponent is for example
  * Filesystems tab in the Explorer, every tab in the Source Editor, every tab
- * in the Output Window, Property sheet and many more.
+ * in the Output Window, Property sheet and many more.<br>
+ * TopComponentOperator has slightly different behaviour of TopComponent Lookup.
+ * TopComponent can be located by TopComponentOperator anywhere inside current
+ * workspace or explicitly inside some Container.
  *
  * <p>
  * Usage:<br>
@@ -55,7 +61,6 @@ import org.openide.windows.TopComponent;
  *      Thread.sleep(1000);
  *      tco.close();
  * </pre>
- *
  * @author Adam.Sotona@sun.com
  * @author Jiri.Skrivanek@sun.com
  */
@@ -75,8 +80,9 @@ public class TopComponentOperator extends JComponentOperator {
      * @param index index of TopComponent to be find
      */
     public TopComponentOperator(ContainerOperator contOper, String topComponentName, int index) {
-        super((JComponent)waitComponent(contOper, new TopComponentChooser(topComponentName, contOper.getComparator()), index));
+        super(waitTopComponent(contOper, topComponentName, index, null));
         copyEnvironment(contOper);
+        makeComponentVisible();
     }
     
     /** Waits for TopComponent with given name in specified container.
@@ -108,6 +114,7 @@ public class TopComponentOperator extends JComponentOperator {
      */
     public TopComponentOperator(String topComponentName, int index) {
         this(waitTopComponent(topComponentName, index));
+
     }
     
     /** Waits for first TopComponent with given name in whole IDE.
@@ -116,22 +123,21 @@ public class TopComponentOperator extends JComponentOperator {
     public TopComponentOperator(String topComponentName) {
         this(topComponentName, 0);
     }
-    
-    /** Creates new instance from given TopComponent instance.
-     * @param topComponent TopComponent instance
-     */
-/*
-    public TopComponentOperator(TopComponent topComponent) {
-        super(topComponent);
-    }
-*/  
   
-    /** Creates new instance from given JComponent.
+    /** Creates new instance from given TopComponent.
      * This constructor is used in properties.PropertySheetOperator.
      * @param jComponent instance of JComponent
      */
     public TopComponentOperator(JComponent jComponent) {
         super(jComponent);
+        makeComponentVisible();
+    }
+    
+    public ComponentVisualizer getVisualizer() {
+        ComponentVisualizer v=super.getVisualizer();
+        if (v instanceof DefaultVisualizer)
+            ((DefaultVisualizer)v).switchTab(true);
+        return v;
     }
     
     /** Docks this TopComponent into new host. TopComponent is focused before
@@ -140,6 +146,8 @@ public class TopComponentOperator extends JComponentOperator {
      * or "DockingAction.NEW_SINGLE_FRAME")
      */
     public void dockViewInto(String newLocationPath) {
+        if (!(getSource() instanceof TopComponent)) 
+            throw new JemmyException("Trying to call dockViewInto(...) method on non-TopComponent object");
         makeComponentVisible();
         ((TopComponent)getSource()).requestFocus();
         // need to wait a little
@@ -150,6 +158,8 @@ public class TopComponentOperator extends JComponentOperator {
     /** Undocks this TopComponent. TopComponent is focused before
      * action is performed. */
     public void undockView() {
+        if (!(getSource() instanceof TopComponent)) 
+            throw new JemmyException("Trying to call undockView() method on non-TopComponent object");
         makeComponentVisible();
         ((TopComponent)getSource()).requestFocus();
         // need to wait a little
@@ -161,6 +171,8 @@ public class TopComponentOperator extends JComponentOperator {
      * action is performed. */
     public void cloneView() {
         makeComponentVisible();
+        if (!(getSource() instanceof TopComponent)) 
+            throw new JemmyException("Trying to call cloneView() method on non-TopComponent object");
         ((TopComponent)getSource()).requestFocus();
         // need to wait a little
         new EventTool().waitNoEvent(500);
@@ -171,6 +183,8 @@ public class TopComponentOperator extends JComponentOperator {
     public void close() {
         // used direct call of IDE API method because CloseViewAction closes
         // active TopComponent and not neccesarily this one
+        if (!(getSource() instanceof TopComponent)) 
+            throw new JemmyException("Trying to call close() method on non-TopComponent object");
         ((TopComponent)getSource()).close();
     }
     
@@ -181,18 +195,54 @@ public class TopComponentOperator extends JComponentOperator {
      * @return TopComponent instance or null if noone matching criteria was found
      */
     protected static JComponent findTopComponent(String name, int index) {
-        Iterator it=TopComponent.getRegistry().getOpened().iterator();
-        ComponentChooser chooser=new TopComponentChooser(name, Operator.getDefaultStringComparator());
+        return findTopComponent(null, name,  index, null);
+    }
+    
+    /** Finds index-th TopComponent with given name in IDE registry.
+     * It takes into account only showing ones.
+     * @param name name of TopComponent
+     * @param index index of TopComponent
+     * @param subchooser ComponentChooser to determine exact TopComponent
+     * @return TopComponent instance or null if noone matching criteria was found
+     */
+    protected static JComponent findTopComponent(ContainerOperator cont, String name, int index, ComponentChooser subchooser) {
+        Set s=TopComponent.getRegistry().getOpened();
+        StringComparator comparator=cont==null?Operator.getDefaultStringComparator():cont.getComparator();
         TopComponent c;
+        Iterator it=s.iterator();
         while (it.hasNext()) {
             c=(TopComponent)it.next();
-            if (c.isShowing() && chooser.checkComponent(c)) {
+            if (c.isShowing() && comparator.equals(c.getName(), name) && isUnder(cont, c) && (subchooser==null || subchooser.checkComponent(c))) {
+                index--;
+                if (index<0)
+                    return c;
+            }
+        }
+        it=s.iterator();
+        while (it.hasNext()) {
+            c=(TopComponent)it.next();
+            if ((!c.isShowing()) && isParentShowing(c) && comparator.equals(c.getName(), name) && isUnder(cont, c) && (subchooser==null || subchooser.checkComponent(c))) {
                 index--;
                 if (index<0)
                     return c;
             }
         }
         return null;
+    }
+
+    private static boolean isParentShowing(Component c) {
+        while (c!=null) {
+            if (c.isShowing()) return true;
+            c=c.getParent();
+        }
+        return false;
+    }
+    
+    private static boolean isUnder(ContainerOperator cont, Component c) {
+        if (cont==null) return true;
+        Component comp=cont.getSource();
+        while (comp!=c && c!=null) c=c.getParent();
+        return (comp==c);
     }
     
     /** Waits for index-th TopComponent with given name in IDE registry.
@@ -204,10 +254,23 @@ public class TopComponentOperator extends JComponentOperator {
      * @see #findTopComponent
      */
     protected static JComponent waitTopComponent(final String name, final int index) {
+        return waitTopComponent(null, name, index, null);
+    }
+    
+    /** Waits for index-th TopComponent with given name in IDE registry.
+     * It throws JemmyException when TopComponent is not find until timeout
+     * expires.
+     * @param name name of TopComponent
+     * @param index index of TopComponent
+     * @param subchooser ComponentChooser to determine exact TopComponent
+     * @return TopComponent instance or throws JemmyException if not found
+     * @see #findTopComponent
+     */
+    protected static JComponent waitTopComponent(final ContainerOperator cont, final String name, final int index, final ComponentChooser subchooser) {
         try {
             Waiter waiter = new Waiter(new Waitable() {
                 public Object actionProduced(Object obj) {
-                    return findTopComponent(name, index);
+                    return findTopComponent(cont, name, index, subchooser);
                 }
                 public String getDescription() {
                     return("Wait TopComponent with name="+name+
@@ -221,28 +284,6 @@ public class TopComponentOperator extends JComponentOperator {
             return((JComponent)waiter.waitAction(null));
         } catch(InterruptedException e) {
             return(null);
-        }
-    }
-    
-    /** Chooser to find TopComponent instance by its name.
-     * Used in findTopComponent method.
-     */
-    private static final class TopComponentChooser implements ComponentChooser {
-        
-        private String _name;
-        private StringComparator _comparator;
-        
-        public TopComponentChooser(String name, StringComparator comparator) {
-            _name=name;
-            _comparator = comparator;
-        }
-        
-        public boolean checkComponent(Component comp) {
-            return (comp instanceof TopComponent) && (_comparator.equals(comp.getName(), _name));
-        }
-        
-        public String getDescription() {
-            return "org.openide.windows.TopComponent";
         }
     }
 }

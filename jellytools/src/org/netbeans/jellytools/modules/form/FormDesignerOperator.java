@@ -40,7 +40,7 @@ public class FormDesignerOperator extends TopComponentOperator {
      * @param contOper ContainerOperator where to find FormDesigner
      */
     public FormDesignerOperator(ContainerOperator contOper) {
-        super((TopComponent)contOper.waitSubComponent(new FormDesignerChooser()));
+        super(waitTopComponent(contOper, null, 0, new FormDesignerChooser()));
         copyEnvironment(contOper);
     }
 

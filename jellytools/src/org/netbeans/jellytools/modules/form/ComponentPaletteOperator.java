@@ -44,7 +44,7 @@ public class ComponentPaletteOperator extends TopComponentOperator {
      * @param contOperator container where to find Component Palette
      */
     public ComponentPaletteOperator(ContainerOperator contOperator) {
-        super((TopComponent)contOperator.waitSubComponent(new PaletteTopComponentChooser()));
+        super(waitTopComponent(contOperator, null, 0, new PaletteTopComponentChooser()));
         copyEnvironment(contOperator);
     }
 

@@ -46,6 +46,7 @@ import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
+import org.openide.text.CloneableEditor;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.text.Line.Set;
@@ -73,6 +74,9 @@ import org.openide.text.Line.Set;
         eo.select("// My new comment");
         eo.deleteLine(10);
         eo.getToolbarButton("Toggle Bookmark").push();
+
+        // or you can find Editor anywhere in current workspace by
+        new EditorOperator(filename);
  * </pre>
  *
  * @author Jiri.Skrivanek@sun.com
@@ -97,7 +101,7 @@ public class EditorOperator extends TopComponentOperator {
      * @param filename name of file showed in the editor (it used to be label of tab)
      */
     public EditorOperator(String filename) {
-        super(filename);
+        this(filename, 0);
     }
     
     /** Waits for index-th visible TopComponent with given name in whole IDE.
@@ -105,7 +109,7 @@ public class EditorOperator extends TopComponentOperator {
      * @param index index of TopComponent to be find
      */    
     public EditorOperator(String filename, int index) {
-        super(filename, index);
+        super(waitTopComponent(null, filename, index, new EditorSubchooser()));
     }
 
     /** Waits for first visible TopComponent with given name in specified container.
@@ -114,7 +118,7 @@ public class EditorOperator extends TopComponentOperator {
      * @param filename name of file showed in the editor (it used to be label of tab)
      */    
     public EditorOperator(ContainerOperator contOper, String filename) {
-        super(contOper, filename);
+        this(contOper, filename, 0);
     }
 
     /** Waits for index-th visible TopComponent with given name in specified container.
@@ -124,7 +128,8 @@ public class EditorOperator extends TopComponentOperator {
      * @param index index of TopComponent to be find
      */    
     public EditorOperator(ContainerOperator contOper, String filename, int index) {
-        super(contOper, filename, index);
+        super(waitTopComponent(contOper, filename, index, new EditorSubchooser()));
+        copyEnvironment(contOper);
     }
 
 
@@ -702,6 +707,19 @@ public class EditorOperator extends TopComponentOperator {
         lblInputMode();
         lblRowColumn();
         lblStatusBar();
+    }
+    
+    /** SubChooser to determine Editor TopComponent
+     * Used in findTopComponent method.
+     */
+    private static final class EditorSubchooser implements ComponentChooser {
+        public boolean checkComponent(Component comp) {
+            return (comp instanceof CloneableEditor);
+        }
+        
+        public String getDescription() {
+            return "org.openide.text.CloneableEditor";
+        }
     }
 }
 

@@ -16,6 +16,7 @@ import java.awt.Container;
 import javax.swing.JDialog;
 import javax.swing.JTabbedPane;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
@@ -150,7 +151,9 @@ public class EditorWindowOperator extends NbFrameOperator {
      * @see EditorOperator
      */
     public EditorOperator getEditor() {
-        return new EditorOperator(this, "");
+        EditorOperator ed = new EditorOperator(new ContainerOperator((Container)tbpEditorTabbedPane().getSelectedComponent()),"");
+        ed.copyEnvironment(this);
+        return ed;
     }
     
     /** Selects page with given label and returns EditorOperator instance of
