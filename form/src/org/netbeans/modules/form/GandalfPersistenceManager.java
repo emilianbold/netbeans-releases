@@ -541,15 +541,20 @@ public class GandalfPersistenceManager extends PersistenceManager {
             org.w3c.dom.Node[] constrNodes = constraintsNode != null ?
                 findSubNodes(constraintsNode, XML_CONSTRAINT) : null;
 
-            if (constrNodes == null || constrNodes.length == 0)
-                loadConstraints(null, compExp, layoutSupport);
-            else {
+            boolean constraintsLoaded = false;
+
+            if (constrNodes != null && constrNodes.length > 0) {
                 // NB 3.1 used to save all constraints ever set. We must
                 // go through all of them, but only those of current layout
                 // will be loaded.
-                for (int i=0; i < constrNodes.length; i++)
-                    loadConstraints(constrNodes[i], compExp, layoutSupport);
+                for (int i=0; !constraintsLoaded && i < constrNodes.length; i++)
+                    constraintsLoaded = loadConstraints(constrNodes[i],
+                                                        compExp,
+                                                        layoutSupport);
             }
+
+            if (!constraintsLoaded)
+                setupDefaultComponentCode(compExp, layoutSupport);
         }
 
         ComponentContainer container =
@@ -640,9 +645,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
-    private void loadConstraints(org.w3c.dom.Node node,
-                                 CodeExpression compExp,
-                                 LayoutSupportManager layoutSupport)
+    private boolean loadConstraints(org.w3c.dom.Node node,
+                                    CodeExpression compExp,
+                                    LayoutSupportManager layoutSupport)
     {
         int convIndex = -1;
         String layout31ConstraintName = node != null ?
@@ -655,14 +660,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
 
         // skip constraints saved by NB 3.1 which are not for the current layout
-        if (convIndex >= 0 && layoutConvIndex >= 0
-                && convIndex != layoutConvIndex)
-            return;
+        if (convIndex < 0
+                || (layoutConvIndex >= 0 && convIndex != layoutConvIndex))
+            return false;
 
         org.w3c.dom.Node constrNode = null;
         org.w3c.dom.NamedNodeMap constrAttr = null;
 
-        if (convIndex >= 0 && reasonable31Constraints[convIndex]) {
+        if (/*convIndex >= 0 &&*/reasonable31Constraints[convIndex]) {
             org.w3c.dom.NodeList children = node.getChildNodes();
             if (children != null)
                 for (int i=0, n=children.getLength(); i < n; i++) {
@@ -675,31 +680,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
         }
 
+        if (constrNode == null)
+            return false;
+
         try { // obligatory try/catch block for finding methods and constructors
-
-        if (constrNode == null) { // no constraints found
-            if (convIndex < 0 && layoutConvIndex == LAYOUT_JSCROLL) {
-                // JScrollPane requires special add code although there are
-                // no constraints ...
-                if (setViewportViewMethod == null)
-                    setViewportViewMethod =
-                            javax.swing.JScrollPane.class.getMethod(
-                                    "setViewportView", // NOI18N
-                                    new Class[] { java.awt.Component.class });
-
-                CodeStructure.createStatement(
-                                  layoutSupport.getContainerCodeExpression(),
-                                  setViewportViewMethod,
-                                  new CodeExpression[] { compExp });
-            }
-            else { // create simple add method statement with no constraints
-                CodeStructure.createStatement(
-                        layoutSupport.getContainerDelegateCodeExpression(),
-                        getSimpleAddMethod(),
-                        new CodeExpression[] { compExp });
-            }
-            return;
-        }
 
         CodeStructure codeStructure = layoutSupport.getCodeStructure();
         CodeExpression contCodeExp = layoutSupport.getContainerCodeExpression();
@@ -708,7 +692,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if (convIndex == LAYOUT_BORDER) {
             if (!"BorderConstraints".equals(constrNode.getNodeName())) // NOI18N
-                return; // should not happen
+                return false; // should not happen
 
             node = constrAttr.getNamedItem("direction"); // NOI18N
             if (node != null) {
@@ -727,7 +711,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         else if (convIndex == LAYOUT_GRIDBAG) {
             if (!"GridBagConstraints".equals(constrNode.getNodeName())) // NOI18N
-                return; // should not happen
+                return false; // should not happen
 
             // create GridBagConstraints constructor expression
             if (gridBagConstrConstructor == null)
@@ -804,7 +788,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         else if (convIndex == LAYOUT_JTAB) {
             if (!"JTabbedPaneConstraints".equals(constrNode.getNodeName())) // NOI18N
-                return; // should not happen
+                return false; // should not happen
 
             Object tabName = null;
             Object toolTip = null;
@@ -904,7 +888,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         else if (convIndex == LAYOUT_JSPLIT) {
             if (!"JSplitPaneConstraints".equals(constrNode.getNodeName())) // NOI18N
-                return;
+                return false;
 
             node = constrAttr.getNamedItem("position");
             if (node != null) {
@@ -943,7 +927,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                     new Class[] { java.awt.Component.class });
                     addMethod = setRightComponentMethod;
                 }
-                else return;
+                else return false;
 
                 CodeStructure.createStatement(contCodeExp,
                                               addMethod,
@@ -953,7 +937,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         else if (convIndex == LAYOUT_CARD) {
             if (!"CardConstraints".equals(constrNode.getNodeName())) // NOI18N
-                return;
+                return false;
 
             node = constrAttr.getNamedItem("cardName"); // NOI18N
             if (node != null) {
@@ -972,7 +956,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         else if (convIndex == LAYOUT_JLAYER) {
             if (!"JLayeredPaneConstraints".equals(constrNode.getNodeName())) // NOI18N
-                return;
+                return false;
 
             CodeExpression[] boundsParams = new CodeExpression[4];
             String[] boundsAttrs = new String[] { "x", "y", "width", "height" }; // NOI18N
@@ -1013,7 +997,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         else if (convIndex == LAYOUT_ABSOLUTE) {
             if (!"AbsoluteConstraints".equals(constrNode.getNodeName())) // NOI18N
-                return;
+                return false;
 
             CodeExpression[] boundsParams = new CodeExpression[4];
             String[] boundsAttrs = new String[] { "x", "y", "width", "height" }; // NOI18N
@@ -1074,12 +1058,47 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
         }
 
+        return true;
+
         }
         catch (NoSuchMethodException ex) { // should not happen
             ex.printStackTrace();
         }
         catch (NoSuchFieldException ex) { // should not happen
             ex.printStackTrace();
+        }
+        return false;
+    }
+
+    private void setupDefaultComponentCode(CodeExpression compExp,
+                                           LayoutSupportManager layoutSupport)
+    {
+        if (layoutConvIndex == LAYOUT_JSCROLL) {
+            // JScrollPane requires special add code although there are
+            // no constraints ...
+            if (setViewportViewMethod == null) {
+                try {
+                    setViewportViewMethod =
+                            javax.swing.JScrollPane.class.getMethod(
+                                    "setViewportView", // NOI18N
+                                    new Class[] { java.awt.Component.class });
+                }
+                catch (NoSuchMethodException ex) { // should not happen
+                    ex.printStackTrace();
+                    return;
+                }
+            }
+
+            CodeStructure.createStatement(
+                              layoutSupport.getContainerCodeExpression(),
+                              setViewportViewMethod,
+                              new CodeExpression[] { compExp });
+        }
+        else { // create simple add method statement with no constraints
+            CodeStructure.createStatement(
+                    layoutSupport.getContainerDelegateCodeExpression(),
+                    getSimpleAddMethod(),
+                    new CodeExpression[] { compExp });
         }
     }
 
