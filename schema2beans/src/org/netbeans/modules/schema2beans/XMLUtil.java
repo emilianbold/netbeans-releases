@@ -636,6 +636,18 @@ public class XMLUtil {
         parser.parse(in);
         return locator.getDocumentLocator();
     }
+    
+    /** Test if character can be in attr value
+     */
+    public static boolean isAttrContent(int i) {
+        // return false for leading ACSII chars (except tab char)
+        if (i<9) return false;
+        if (i>9 && i<32) return false;
+        // return false for <, ]
+        if (i==60 || i==93) return false;
+        // otherwise return true
+        return true;
+    }
 
     private static class XPathLocator
         extends org.xml.sax.helpers.DefaultHandler implements ContentHandler {

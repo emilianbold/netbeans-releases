@@ -1273,11 +1273,26 @@ public class BeanProp implements BaseProperty {
 	
 	if (b != null) {
 	    Object oldValue = b.getAttributeValue(this, ap.getDtdName());
-	    b.setAttributeValue(this, ap.getDtdName(), value);
+	    b.setAttributeValue(this, ap.getDtdName(), normalizedAttrValue(value));
 	    
 	    //	Notify about this attribute changed value
 	    b.notifyBeansForChange(oldValue, value, name);
 	}
+    }
+    /** Checking attr value for correct chars, replace incorrect chars with blank characters
+     */
+    private String normalizedAttrValue(String value) {
+        if (value==null) return null;
+        StringBuffer sb = new StringBuffer();
+        for (int i=0;i<value.length();i++) {
+            char ch = value.charAt(i);
+            if (XMLUtil.isAttrContent((int)ch)) {
+                sb.append(ch);
+            } else {
+                sb.append(' ');
+            }
+        }
+        return sb.toString();
     }
     
     /**
