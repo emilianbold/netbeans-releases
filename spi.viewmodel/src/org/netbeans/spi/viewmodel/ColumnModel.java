@@ -49,18 +49,25 @@ public abstract class ColumnModel {
     public abstract Class getType ();
     
     /**
-     * Returns ID of column previous to this one. Default implementation returns 
-     * <code>null</code> - first column or unsorted.
+     * Returns ID of column this column should be installed before or 
+     * <code>null</code>. Defines default order of columns only. 
+     * This default order can be changed by user, and 
+     * {@link #getCurrentOrderNumber} and {@link #setCurrentOrderNumber} are
+     * used for sorting after that.
      *
-     * @return ID of column previous to this one or <code>null</code>
+     * @return ID of column this column should be installed before or 
+     * <code>null</code>
      */
     public String getPreviuosColumnID () {
         return null;
     }
     
     /**
-     * Returns ID of column next to this one. Default implementation returns 
-     * <code>null</code> - last column or unsorted.
+     * Returns ID of column this column should be installed after or 
+     * <code>null</code>. Defines default order of columns only. 
+     * This default order can be changed by user, and 
+     * {@link #getCurrentOrderNumber} and {@link #setCurrentOrderNumber} are
+     * used for sorting after that.
      *
      * @return ID of column next to this one or <code>null</code>
      */
@@ -142,9 +149,14 @@ public abstract class ColumnModel {
     public void setSortedDescending (boolean sortedDescending) {}
     
     /**
-     * Should return current order number of this column.
+     * Should return current order number of this column. Default value is 
+     * <code>-1</code>. Current order number is used when the default order
+     * defined by {@link #getPreviuosColumnID} and {@link #getNextColumnID}
+     * is changed by user. So getCurrentOrderNumber () method should return 
+     * <code>-1</code>, till the {@link #setCurrentOrderNumber} is called.
+     * And it should return newOrderNumber value after that.
      *
-     * @return current order number of this column
+     * @return current order number of this column or <code>-1</code>
      */
     public int getCurrentOrderNumber () {
         return -1;
