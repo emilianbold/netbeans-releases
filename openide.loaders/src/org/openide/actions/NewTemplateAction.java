@@ -332,7 +332,10 @@ public class NewTemplateAction extends NodeAction {
                 if (created != null && wizard instanceof DefaultTemplateWizard) {
                     // put the item in the recent list
                     selectedTemplate = wizard.getTemplate();
-                    if (selectedTemplate != null) addRecent (selectedTemplate);
+                    if (selectedTemplate != null) {
+                        // bugfix #36604; notify that the list recent used templates changed
+                        recentChanged = addRecent (selectedTemplate);
+                    }
                 }
             } catch (IOException e) {
                 ErrorManager em = ErrorManager.getDefault();
