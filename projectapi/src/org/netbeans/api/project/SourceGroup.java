@@ -17,6 +17,8 @@ import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
 import org.openide.filesystems.FileObject;
 
+// XXX should be PROP_* constants for rootFolder, name, displayName, icon
+
 /**
  * Representation of one area of sources.
  * @author Jesse Glick
