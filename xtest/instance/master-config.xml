@@ -43,8 +43,14 @@ Microsystems, Inc. All Rights Reserved.
         <module name="refactoring" testtypes="unit" attributes="full"/>
         <module name="web/freeform" testtypes="unit" attributes="full"/>
         <module name="core/output2" testtypes="unit" attributes="stable"/>
+        <module name="core/favorites" testtypes="unit" attributes="stable"/>
+        <module name="core/settings" testtypes="unit" attributes="stable"/>
+        <module name="core/windows" testtypes="unit" attributes="stable"/>
+        <module name="autoupdate" testtypes="unit" attributes="stable"/>
         <!-- removed (not runnable): html, schema2beans -->
-        <!-- other candidate modules in current default moduleconfig: autoupdate core/execution core/favorites core/multiview core/settings core/windows debuggercore debuggerjpda editor editor/fold editor/util extbrowser httpserver j2eeserver java/javacore mdr openide/masterfs refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks tomcatint/tomcat5 web/core web/jspparser web/webapi xml/api xml/core xml/schema xml/text-edit xml/xsl -->
+        <!-- hangs: core/execution -->
+        <!-- does not run: core/multiview -->
+        <!-- other candidate modules in current default moduleconfig: debuggercore debuggerjpda editor editor/fold editor/util extbrowser httpserver j2eeserver mdr refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks tomcatint/tomcat5 web/core web/jspparser web/webapi xml/api xml/core xml/schema xml/text-edit xml/xsl -->
     </config>
   
   <config name="unit-nb-nbm">
