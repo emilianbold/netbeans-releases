@@ -64,6 +64,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="openide" testtypes="qa-functional" attributes="validation"/>
         <module name="refactoring" testtypes="qa-functional" attributes="validation"/>
         <module name="web" testtypes="qa-functional" attributes="validation"/>
+        <module name="web/jspsyntax" testtypes="qa-functional" attributes="validation"/>
         <module name="form" testtypes="qa-functional" attributes="validation"/>
         <module name="java/project" testtypes="qa-functional" attributes="validation"/>
         <module name="editor" testtypes="qa-functional" attributes="validation"/>
