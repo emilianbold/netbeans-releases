@@ -761,6 +761,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         if (formModel == null)
             return;
 
+        formEditorSupport.setFormDesigner(this);
         ComponentInspector ci = ComponentInspector.getInstance();
         if (ci.getFocusedForm() != formEditorSupport) {
             ci.focusForm(formEditorSupport);

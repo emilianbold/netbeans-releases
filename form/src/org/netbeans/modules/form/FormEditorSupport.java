@@ -754,12 +754,28 @@ public class FormEditorSupport extends JavaEditor
     }
 
     private void multiViewClosed(CloneableTopComponent mvtc) {
+        Enumeration en = mvtc.getReference().getComponents();
+        boolean isLast = !en.hasMoreElements();
         if (multiviewTC == mvtc) {
             multiviewTC = null;
             formDesigner = null;
+            // Find another multiviewTC, possibly with loaded formDesigner
+            while (en.hasMoreElements()) {
+                multiviewTC = (CloneableTopComponent)en.nextElement();
+                FormDesigner designer = (FormDesigner)
+                    multiviewTC.getLookup().lookup(FormDesigner.class);
+                if (designer != null) {
+                    formDesigner = designer;
+                    break;
+                }
+            }
+            if (!isLast && (formDesigner == null) && formLoaded) {
+                // Only Java elements are opened in the remaining clones
+                closeForm();
+            }
         }
-        Enumeration en = mvtc.getReference().getComponents();
-        if (!en.hasMoreElements()) // last view of this form closed
+        
+        if (isLast) // last view of this form closed
             notifyClosed();
     }
 
