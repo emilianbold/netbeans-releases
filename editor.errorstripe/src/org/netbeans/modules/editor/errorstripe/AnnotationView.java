@@ -76,10 +76,13 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     
     private static final int STATUS_BOX_SIZE = 7;
     private static final int THICKNESS = STATUS_BOX_SIZE + 6;
-    private static final int PIXELS_FOR_LINE = 2/*height / lines*/;
-    private static final int LINE_SEPARATOR_SIZE = 0/*2*/;
+    /*package private*/ static final int PIXELS_FOR_LINE = 2/*height / lines*/;
+    /*package private*/ static final int LINE_SEPARATOR_SIZE = 0/*2*/;
     /*package private*/ static final int HEIGHT_OFFSET = 20;
     /*package private*/ static final int HEIGHT_LOWER_OFFSET = 10;
+    
+    /*package private*/ static final int UPPER_HANDLE = 4;
+    /*package private*/ static final int LOWER_HANDLE = 4;
     
     private BaseDocument doc;
     private JTextComponent  pane;
@@ -261,7 +264,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         return found;
     }
     
-    private int[] getLinesSpan(int currentLine) {
+    /*package private for tests*/int[] getLinesSpan(int currentLine) {
         double position  = modelToView(currentLine);
         
         if (position == (-1))
@@ -338,6 +341,12 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     
     /*package private*/ static int findNextUsedLine(int from, SortedMap/*<Mark>*/ marks) {
         SortedMap next = marks.tailMap(new Integer(from + 1));
+        
+        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+            ERR.log("AnnotationView.findNextUsedLine from: " + from);
+            ERR.log("AnnotationView.findNextUsedLine marks: " + marks);
+            ERR.log("AnnotationView.findNextUsedLine next: " + next);
+        }
         
         if (next.isEmpty()) {
             return Integer.MAX_VALUE;
@@ -577,34 +586,47 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         try {
             if (getComponentHeight() <= getUsableHeight()) {
                 //1:1 mapping:
-                int positionOffset = pane.viewToModel(new Point(1, (int) (offset - HEIGHT_OFFSET + Utilities.getEditorUI(pane).getLineHeight() / 2)));
+                int positionOffset = pane.viewToModel(new Point(1, (int) (offset - HEIGHT_OFFSET)));
                 int line = Utilities.getLineOffset(doc, positionOffset);
                 
                 if (ERR.isLoggable(VIEW_TO_MODEL_IMPORTANCE)) {
                     ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.viewToModel: line=" + line); // NOI18N
                 }
                 
+                double position = modelToView(line);
+                
+                if (offset < position || offset >= (position + PIXELS_FOR_LINE))
+                    return null;
+                
                 return getLinesSpan(line);
             } else {
                 int    blocksCount = (int) (getUsableHeight() / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE));
-                double blockSize = getUsableHeight() / blocksCount;
-                int    block = (int) ((offset - HEIGHT_OFFSET + blockSize) / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE)) + 1;
-                double yPos = (((double) pane.getHeight()) * block) / blocksCount;
+                int    block = (int) ((offset - HEIGHT_OFFSET) / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE));
+                double yPos = (getComponentHeight() * block) / blocksCount;
                 int    positionOffset = pane.viewToModel(new Point(0, (int) yPos));
-                int    line = Utilities.getLineOffset(doc, positionOffset);
+                int    line = Utilities.getLineOffset(doc, positionOffset) + 1;
+                int[] span = getLinesSpan(line);
+                double normalizedOffset = modelToView(span[0]);
                 
                 if (ERR.isLoggable(VIEW_TO_MODEL_IMPORTANCE)) {
                     ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.viewToModel: offset=" + offset); // NOI18N
                     ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.viewToModel: block=" + block); // NOI18N
                     ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.viewToModel: blocksCount=" + blocksCount); // NOI18N
-                    ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.viewToModel: blockSize=" + blockSize); // NOI18N
                     ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.viewToModel: pane.getHeight()=" + pane.getHeight()); // NOI18N
                     ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.viewToModel: yPos=" + yPos); // NOI18N
                     ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.viewToModel: positionOffset=" + positionOffset); // NOI18N
                     ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.viewToModel: line=" + line); // NOI18N
+                    ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.viewToModel: normalizedOffset=" + normalizedOffset); // NOI18N
                 }
                 
-                return getLinesSpan(line);
+                if (offset < normalizedOffset || offset >= (normalizedOffset + PIXELS_FOR_LINE)) {
+                    return null;
+                }
+                
+                if (block < 0)
+                    return null;
+                
+                return span;
             }
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
@@ -629,6 +651,9 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
 
     /*package private*/ Mark getMarkForPoint(double point) {
+        //Normalize the point:
+        point = ((int) (point / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE))) * (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE);
+        
         Mark a = getMarkForPointImpl(point);
         
         if (ERR.isLoggable(VIEW_TO_MODEL_IMPORTANCE)) {
@@ -636,12 +661,21 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.getAnnotationForPoint: a=" + a); // NOI18N
         }
         
-        for (short relative = -4; (relative <= 4) && (a == null); relative++) {
+        for (short relative = 1; relative < UPPER_HANDLE + 1 && a == null; relative++) {
             a = getMarkForPointImpl(point + relative);
-            
+
             if (ERR.isLoggable(VIEW_TO_MODEL_IMPORTANCE)) {
                 ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.getAnnotationForPoint: a=" + a); // NOI18N
                 ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.getAnnotationForPoint: relative=" + relative); // NOI18N
+            }
+        }
+        
+        for (short relative = 1; relative < LOWER_HANDLE + 1 && a == null; relative++) {
+            a = getMarkForPointImpl(point - relative);
+
+            if (ERR.isLoggable(VIEW_TO_MODEL_IMPORTANCE)) {
+                ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.getAnnotationForPoint: a=" + a); // NOI18N
+                ERR.log(VIEW_TO_MODEL_IMPORTANCE, "AnnotationView.getAnnotationForPoint: relative=-" + relative); // NOI18N
             }
         }
         

@@ -123,6 +123,54 @@ public class AnnotationViewTest extends TestCase {
         });
     }
     
+    public void testGetLinesSpanIsContinuous() throws Exception {
+        performTest(new Action() {
+            public void test(AnnotationView aView, BaseDocument document) throws Exception {
+                int startLine = 1;
+                int linesCount = Utilities.getRowCount(document);
+                
+                while (startLine < linesCount) {
+                    int[] span = aView.getLinesSpan(startLine);
+                    
+                    assertTrue(startLine >= span[0]);
+                    assertTrue(startLine <= span[1]);
+                    
+                    if (span[1] < linesCount) {
+                        int[] newSpan = aView.getLinesSpan(span[1] + 1);
+                        
+                        assertEquals(newSpan[0], span[1] + 1);
+                    }
+                    
+                    startLine = span[1] + 1;
+                }
+            }
+        });
+    }
+    
+    public void testMarkSensitiveStripe1() throws Exception {
+        performTest(new Action() {
+            public void test(AnnotationView aView, BaseDocument document) throws Exception {
+                double position = aView.modelToView(6);
+                double start    = position - AnnotationView.UPPER_HANDLE;
+                double end      = position + AnnotationView.PIXELS_FOR_LINE + AnnotationView.LOWER_HANDLE - 1;
+                
+                for (double pos = start; pos <= end; pos++) {
+                    Mark m = aView.getMarkForPoint(pos);
+                    
+                    assertNotNull("pos=" + pos + ", start=" + start + ", end=" + end + ", position=" + position, m);
+                }
+                
+                Mark m1 = aView.getMarkForPoint(start - 1);
+                
+                assertNull("There is a mark at position: " + (start - 1), m1);
+                
+                Mark m2 = aView.getMarkForPoint(end   + 1);
+                
+                assertNull("There is a mark at position: " + (end + 1), m2);
+            }
+        });
+    }
+    
     private static String[] getContents() {
         StringBuffer largeBuffer = new StringBuffer(16384);
         
@@ -132,7 +180,7 @@ public class AnnotationViewTest extends TestCase {
         
         String large = largeBuffer.toString();
         
-        String small = "\n\n\n\n";
+        String small = "\n\n\n\n\n\n\n\n";
         String medium = large.substring(0, 300);
         
         return new String[] {small, medium, large};
@@ -157,8 +205,8 @@ public class AnnotationViewTest extends TestCase {
         
         editor.setEditorKit(BaseKit.getKit(PlainKit.class));
         
-        TestMark mark1 = new TestMark(new Status(Status.STATUS_ERROR), null, null, new int[] {2, 2});
-        TestMark mark2 = new TestMark(new Status(Status.STATUS_OK), null, null, new int[] {2, 2});
+        TestMark mark1 = new TestMark(new Status(Status.STATUS_ERROR), null, null, new int[] {6, 6});
+        TestMark mark2 = new TestMark(new Status(Status.STATUS_OK), null, null, new int[] {6, 6});
         
         List marks = Arrays.asList(new Mark[]{mark1, mark2});
         
