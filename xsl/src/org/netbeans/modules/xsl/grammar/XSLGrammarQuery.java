@@ -34,6 +34,7 @@ import org.netbeans.modules.xml.spi.dom.*;
 import org.netbeans.modules.xsl.cookies.ScenarioCookie;
 import org.netbeans.modules.xsl.scenario.XSLScenario;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.PropertySupport;
 
 import org.w3c.dom.*;
 import org.w3c.dom.NodeList;
@@ -533,108 +534,130 @@ public class XSLGrammarQuery implements GrammarQuery{
             
             Attr attr = (Attr)ctx;
 
-            
+            boolean isXPath = false;
             String elName = attr.getOwnerElement().getNodeName();
             if (elName.startsWith(xslNamespacePrefix)) {
                 String xpathAttrName = (String)getExprAttributes().get(elName.substring(4));
                 if (xpathAttrName != null && xpathAttrName.equals(attr.getNodeName())) {
-                    // This is an XPath expression
-                    QueueEnumeration list = new QueueEnumeration();
-                                        
-                    int curIndex = prefix.length();
-                    while (curIndex > 0) {
-                        curIndex--;
-                        char curChar = prefix.charAt(curIndex);
-                        if (curChar == '(' || curChar == ',' || curChar == ' ') {
-                            curIndex++;
-                            break;
-                        }
-                    }
-                    
-                    String preExpression = prefix.substring(0, curIndex);
-                    String subExpression = prefix.substring(curIndex);
-                    
-                    int lastDiv = subExpression.lastIndexOf('/');
-                    String subPre = "";
-                    String subRest = "";
-                    if (lastDiv != -1) {
-                        subPre = subExpression.substring(0, lastDiv + 1);
-                        subRest = subExpression.substring(lastDiv + 1);
-                    } else {
-                        subRest = subExpression;
-                    }
-                    
-                    Object selScenarioObj = scenarioCookie.getModel().getSelectedItem();
-                    if (selScenarioObj instanceof XSLScenario) {
-                        XSLScenario scenario = (XSLScenario)selScenarioObj;
-                        Document doc = null;
-                        try {
-                            doc = scenario.getSourceDocument(dataObject);
-                        } catch(Exception e) {
-                            // We don't care, ignore
-                        }
-                        
-                        if (doc != null) {
-                            Element docElement = doc.getDocumentElement();
-
-                            Set childNodeNames = new TreeSet();
-                                
-                            String combinedXPath;
-                            if (subPre.startsWith("/")) {
-                                // This is an absolute XPath
-                                combinedXPath = subPre;
-                            } else {
-                                // This is a relative XPath 
-                                
-                                // Traverse up the documents tree looking for xsl:for-each
-                                String xslForEachName = xslNamespacePrefix + "for-each"; // NOI18N
-                                List selectAttrs = new LinkedList();
-                                Node curNode = attr.getOwnerElement();
-                                if (curNode != null) {
-                                    // We don't want to add select of our selfs
-                                    curNode = curNode.getParentNode();
-                                }
-                                
-                                while (curNode != null && !(curNode instanceof Document)) {
-                                    if (curNode.getNodeName().equals(xslForEachName)) {
-                                        selectAttrs.add(0, ((Element)curNode).getAttribute("select"));        
-                                    }
-
-                                    curNode = curNode.getParentNode();
-                                }
-
-                                combinedXPath = "";
-                                for (int ind = 0; ind < selectAttrs.size(); ind++) {
-                                    combinedXPath += selectAttrs.get(ind) + "/";
-                                }
-                                combinedXPath += subPre;
-                            }
-                                                        
-                            try {
-                                NodeList nodeList = XPathAPI.selectNodeList(doc, combinedXPath + "child::*");
-                                for (int ind = 0; ind < nodeList.getLength(); ind++) {
-                                    Node curResNode = nodeList.item(ind);
-                                    childNodeNames.add(curResNode.getNodeName());
-                                }
-                                
-                                nodeList = XPathAPI.selectNodeList(doc, combinedXPath + "@*");
-                                for (int ind = 0; ind < nodeList.getLength(); ind++) {
-                                    Node curResNode = nodeList.item(ind);
-                                    childNodeNames.add("@" + curResNode.getNodeName());
-                                }
-                            } catch (Exception e) {
-                               // We don't care, ignore
-                            }
-                            
-                            addItemsToEnum(list, childNodeNames, subRest, preExpression + subPre);
-                        }
-                    }
-                    
-                    addItemsToEnum(list, getXPathAxes(), subRest, preExpression + subPre);                
-                    addItemsToEnum(list, getXslFunctions(), subExpression, preExpression);
-                
-                    return list;
+                    // This is an XSLT element which should contain XPathExpression
+                    isXPath = true;
                 }
+            }
+            
+            String preExpression = "";
+            
+            if (!isXPath) {
+                // Check if we are inside { } for attribute value
+                String nodeValue = attr.getNodeValue();
+                int exprStart = nodeValue.lastIndexOf('{', prefix.length() - 1);
+                int exprEnd = nodeValue.indexOf('}', prefix.length());
+                System.out.println("exprStart: " + exprStart);
+                System.out.println("exprEnd: " + exprEnd);
+                if (exprStart != -1 && exprEnd != -1) {
+                    isXPath = true;
+                    preExpression = prefix.substring(0, exprStart + 1);
+                    prefix = prefix.substring(exprStart + 1);
+                }
+                
+            }
+            
+            if (isXPath) {
+                // This is an XPath expression
+                QueueEnumeration list = new QueueEnumeration();
+
+                int curIndex = prefix.length();
+                while (curIndex > 0) {
+                    curIndex--;
+                    char curChar = prefix.charAt(curIndex);
+                    if (curChar == '(' || curChar == ',' || curChar == ' ') {
+                        curIndex++;
+                        break;
+                    }
+                }
+
+                preExpression += prefix.substring(0, curIndex);
+                String subExpression = prefix.substring(curIndex);
+
+                int lastDiv = subExpression.lastIndexOf('/');
+                String subPre = "";
+                String subRest = "";
+                if (lastDiv != -1) {
+                    subPre = subExpression.substring(0, lastDiv + 1);
+                    subRest = subExpression.substring(lastDiv + 1);
+                } else {
+                    subRest = subExpression;
+                }
+
+                Object selScenarioObj = scenarioCookie.getModel().getSelectedItem();
+                if (selScenarioObj instanceof XSLScenario) {
+                    XSLScenario scenario = (XSLScenario)selScenarioObj;
+                    Document doc = null;
+                    try {
+                        doc = scenario.getSourceDocument(dataObject);
+                    } catch(Exception e) {
+                        // We don't care, ignore
+                    }
+
+                    if (doc != null) {
+                        Element docElement = doc.getDocumentElement();
+
+                        Set childNodeNames = new TreeSet();
+
+                        String combinedXPath;
+                        if (subPre.startsWith("/")) {
+                            // This is an absolute XPath
+                            combinedXPath = subPre;
+                        } else {
+                            // This is a relative XPath 
+
+                            // Traverse up the documents tree looking for xsl:for-each
+                            String xslForEachName = xslNamespacePrefix + "for-each"; // NOI18N
+                            List selectAttrs = new LinkedList();
+                            Node curNode = attr.getOwnerElement();
+                            if (curNode != null) {
+                                // We don't want to add select of our selfs
+                                curNode = curNode.getParentNode();
+                            }
+
+                            while (curNode != null && !(curNode instanceof Document)) {
+                                if (curNode.getNodeName().equals(xslForEachName)) {
+                                    selectAttrs.add(0, ((Element)curNode).getAttribute("select"));        
+                                }
+
+                                curNode = curNode.getParentNode();
+                            }
+
+                            combinedXPath = "";
+                            for (int ind = 0; ind < selectAttrs.size(); ind++) {
+                                combinedXPath += selectAttrs.get(ind) + "/";
+                            }
+                            combinedXPath += subPre;
+                        }
+
+                        try {
+                            NodeList nodeList = XPathAPI.selectNodeList(doc, combinedXPath + "child::*");
+                            for (int ind = 0; ind < nodeList.getLength(); ind++) {
+                                Node curResNode = nodeList.item(ind);
+                                childNodeNames.add(curResNode.getNodeName());
+                            }
+
+                            nodeList = XPathAPI.selectNodeList(doc, combinedXPath + "@*");
+                            for (int ind = 0; ind < nodeList.getLength(); ind++) {
+                                Node curResNode = nodeList.item(ind);
+                                childNodeNames.add("@" + curResNode.getNodeName());
+                            }
+                        } catch (Exception e) {
+                           // We don't care, ignore
+                        }
+
+                        addItemsToEnum(list, childNodeNames, subRest, preExpression + subPre);
+                    }
+                }
+
+                addItemsToEnum(list, getXPathAxes(), subRest, preExpression + subPre);                
+                addItemsToEnum(list, getXslFunctions(), subExpression, preExpression);
+
+                return list;
             }
         }
 
@@ -649,6 +672,33 @@ public class XSLGrammarQuery implements GrammarQuery{
         return EmptyEnumeration.EMPTY;
     }
     
+    public java.awt.Component getCustomizer(HintContext ctx) {
+        return new javax.swing.JLabel("Name=" + ctx.getNodeName() + ", value=" + ctx.getNodeValue());
+    }
+    
+    public boolean hasCustomizer(HintContext ctx) {
+        return true;
+    }
+
+    public org.openide.nodes.Node.Property[] getProperties(final HintContext ctx) {
+
+        if (ctx.getNodeType() != Node.ATTRIBUTE_NODE && ctx.getNodeValue() != null) {
+            return null;
+        }
+        
+        PropertySupport prop = new PropertySupport("Attribute value", String.class, 
+            "Attribute value", "The value of the attribute", true, true) {
+                public void setValue(Object value) {
+                    ctx.setNodeValue((String)value);
+                }
+                public Object getValue() {
+                    return ctx.getNodeValue();
+                }
+
+        };
+        return new org.openide.nodes.Node.Property[]{prop};
+    }
+
 ////////////////////////////////////////////////////////////////////////////////
 // Private helper methods    
     
@@ -683,21 +733,7 @@ public class XSLGrammarQuery implements GrammarQuery{
             }
         }
     }
-/*    
-    private List findXslValueOfSelects(Node curNode, String namespacePrefix) {
-        // Traverse up the documents tree looking for xsl:for-each
-        String xslForEachName = namespacePrefix + ":" + "for-each"; // NOI18N
-        List selectAttrs = new LinkedList();
-        while (curNode != null && !(curNode instanceof Document)) {
-            
-            if (curNode.getNodeName().equals(xslForEachName)) {
-                selectAttrs.add(((Element)curNode).getAttribute("select"));        
-            }
-            
-            curNode = curNode.getParentNode();
-        }
-    }
-*/    
+
     /**
      * This method traverses up the document tree, investigates it and updates 
      * prefixList, resultGrammarQuery, lastDoctypeSystem or lastDoctypePublic
