@@ -67,15 +67,15 @@ import org.openide.ErrorManager;
 
 public final class FoldHierarchyExecution implements DocumentListener {
     
-    private static final String PROPERTY_FOLD_HIERARCHY_MUTEX = "foldHierarchyMutex";
+    private static final String PROPERTY_FOLD_HIERARCHY_MUTEX = "foldHierarchyMutex"; //NOI18N
 
-    private static final String PROPERTY_FOLDING_ENABLED = "foldingEnabled";
+    private static final String PROPERTY_FOLDING_ENABLED = "code-folding-enable"; //NOI18N
 
     private static final boolean debug
-        = Boolean.getBoolean("netbeans.debug.editor.fold");
+        = Boolean.getBoolean("netbeans.debug.editor.fold"); //NOI18N
     
     private static final boolean debugFire
-        = Boolean.getBoolean("netbeans.debug.editor.fold.fire");
+        = Boolean.getBoolean("netbeans.debug.editor.fold.fire"); //NOI18N
     
     private static final FoldOperationImpl[] EMPTY_FOLD_OPERTAION_IMPL_ARRAY
         = new FoldOperationImpl[0];
@@ -596,7 +596,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
 
         if (debug) {
             /*DEBUG*/System.err.println("FoldHierarchy rebuild():" // NOI18N
-                + " FoldManager factory count=" + factoryListLength
+                + " FoldManager factory count=" + factoryListLength 
             );
         }
         
@@ -648,7 +648,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
             componentChangesListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     String propName = evt.getPropertyName();
-                    if ("document".equals(propName)) {
+                    if ("document".equals(propName)) { //NOI18N
                         rebuild();
                     } else if (PROPERTY_FOLDING_ENABLED.equals(propName)) {
                         foldingEnabledSettingChange();
