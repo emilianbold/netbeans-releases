@@ -25,17 +25,26 @@ import org.netbeans.modules.xml.spi.model.*;
  */
 class AttributeResultItem extends XMLResultItem {
 
+    // we are requested to avoid appending extra data
+    private boolean inline = false;
+    
     public AttributeResultItem(){
         selectionForeground = foreground = Color.green.darker().darker();        
     }
     
     public AttributeResultItem(GrammarResult res){
-        super(res.getNodeName());
-        selectionForeground = foreground = Color.green.darker().darker();        
+        this(res, false);
     }
 
+    public AttributeResultItem(GrammarResult res, boolean inline){
+        super(res.getNodeName());
+        selectionForeground = foreground = Color.green.darker().darker();        
+        this.inline = inline;
+    }
+    
     public String getReplacementText(int modifiers) {
-        return super.getReplacementText(modifiers) + "=\"";
+        String extend = inline ? "" : "=\"";
+        return super.getReplacementText(modifiers) + extend;
     }
     
 }
