@@ -18,8 +18,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.*;
-import threaddemo.model.Phadhail;
-import threaddemo.model.Phadhails;
+import threaddemo.model.*;
 import threaddemo.views.PhadhailViews;
 
 // XXX memory usage meter
@@ -48,7 +47,7 @@ public final class Main extends JFrame {
     }
     
     private final File root;
-    private final JRadioButton synchButton, lockedButton, spunButton, nodeButton, lookNodeButton, lookButton, rawButton;
+    private final JRadioButton synchButton, lockedButton, spunButton, swungButton, nodeButton, lookNodeButton, lookButton, rawButton;
     
     private Main(File root) {
         this.root = root;
@@ -58,12 +57,15 @@ public final class Main extends JFrame {
         synchButton = new JRadioButton("Synchronous", true);
         lockedButton = new JRadioButton("Locked", false);
         spunButton = new JRadioButton("Spun", false);
+        swungButton = new JRadioButton("Swung", false);
         modelGroup.add(synchButton);
         modelGroup.add(lockedButton);
         modelGroup.add(spunButton);
+        modelGroup.add(swungButton);
         modelPanel.add(synchButton);
         modelPanel.add(lockedButton);
         modelPanel.add(spunButton);
+        modelPanel.add(swungButton);
         getContentPane().add(modelPanel);
         JPanel viewPanel = new JPanel();
         ButtonGroup viewGroup = new ButtonGroup();
@@ -90,13 +92,15 @@ public final class Main extends JFrame {
     }
     
     private void showView() {
-        Phadhail model;
+        final Phadhail model;
         if (synchButton.isSelected()) {
             model = Phadhails.synchronous(root);
         } else if (lockedButton.isSelected()) {
             model = Phadhails.locked(root);
         } else if (spunButton.isSelected()) {
             model = Phadhails.spun(root);
+        } else if (swungButton.isSelected()) {
+            model = Phadhails.swung(root);
         } else {
             throw new IllegalStateException();
         }
@@ -112,7 +116,14 @@ public final class Main extends JFrame {
         } else {
             throw new IllegalStateException();
         }
-        JFrame frame = new JFrame(model.getPath());
+        final JFrame frame = new JFrame(model.getPath());
+        // For the benefit of Swung model which will produce the root path asynch:
+        model.addPhadhailListener(new PhadhailListener() {
+            public void nameChanged(PhadhailNameEvent ev) {
+                frame.setTitle(model.getPath());
+            }
+            public void childrenChanged(PhadhailEvent ev) {}
+        });
         frame.getContentPane().add(view);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.pack();

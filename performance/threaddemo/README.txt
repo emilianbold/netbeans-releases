@@ -25,7 +25,12 @@ Start the app. First select a threading model to use.
 
 2. Locked - same, but will use a read mutex for every access.
 
-3. Spun - uses Spin (spin.sf.net) to make the access asynch.
+3. Spun - uses Spin (spin.sf.net) to make the access asynch. FoxTrot would be
+   similar, I think.
+
+4. Swung - uses a technique similar to SwingWorker
+   (http://java.sun.com/docs/books/tutorial/uiswing/misc/threads.html)
+   to make the access fully asynch.
 
 (In all cases, there is some internal buffering using weak references. Every time
 you open a new view, though, System.gc() should clear it.)
@@ -52,14 +57,10 @@ The model supports mutations and events, so you can play with that too. Operatio
 - delete
 
 Also you can Open a file to get its contents in an editor window. To save you need
-to select Save from the node's context menu.
+to select Save from the node's context menu (currently broken in Look view).
 
-Currently no actions are supported in the Raw or Look views, so you cannot test these.
-
-It would be possible to add a fourth threading model: asynch with callbacks, like
-Swing Workers. Note that this means using SwingUtilities.invokeLater and is thus
-quite different internally from Spin, which uses a private event queue. (Foxtrot
-is similar to Spin in this respect, though the user API looks quite different
-because it does not use Proxy.)
+Currently no actions are supported in the Raw view, so you cannot test these. Raw view
+also currently does not listen for changes, so it will not work with the Swung model
+which relies on change events even with a read-only underlying model.
 
 -jglick@netbeans.org

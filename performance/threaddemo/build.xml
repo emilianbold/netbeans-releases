@@ -37,6 +37,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init">
         <available property="openide/build.xml" file="${nbroot}/openide/build.xml"/>
         <available property="looks/build.xml" file="${looks}/build.xml"/>
+        <property name="build.compiler.debug" value="true"/>
     </target>
     
     <target name="build-openide" depends="init" if="openide/build.xml">
@@ -48,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="build" depends="build-openide,build-looks">
-        <javac srcdir="src" destdir="src">
+        <javac srcdir="src" destdir="src" debug="true">
             <classpath refid="cp"/>
         </javac>
         <jar jarfile="threaddemo.jar" manifest="manifest.mf">

@@ -27,33 +27,11 @@ import spin.*;
  */
 final class SpunPhadhail extends Spin {
     
-    /**
-     * Could also use RequestProcessor but that seems to have a fair amount
-     * of overhead, esp. logging every task when in standalone mode.
-     * This is simpler and adequate for the purpose.
-     */
-    private static final class Worker extends Thread implements Starter {
-        
-        private final Queue tasks = new Queue();
-        
-        public Worker() {
-            start();
+    private static final Starter starter = new Starter() {
+        public void start(Runnable r) {
+            Worker.start(r);
         }
-        
-        public void run() {
-            while (true) {
-                Runnable next = (Runnable)tasks.get();
-                next.run();
-            }
-        }
-        
-        public void start(Runnable run) {
-            tasks.put(run);
-        }
-        
-    }
-    
-    private static final Starter starter = new Worker();
+    };
     
     private static final Map instances = new WeakHashMap(); // Map<Phadhail,Phadhail>
     
@@ -74,6 +52,15 @@ final class SpunPhadhail extends Spin {
     
     /** overridden to recursively wrap phadhails */
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if (args != null) {
+            for (int i = 0; i < args.length; i++) {
+                if (args[i] instanceof PhadhailListener) {
+                    // Need to wrap these too!
+                    Spin spin = new Spin(args[i], Spin.SPIN_OVER, starter);
+                    args[i] = spin.getProxy();
+                }
+            }
+        }
         Object result = super.invoke(proxy, method, args);
         if (result instanceof Phadhail) {
             return forPhadhail((Phadhail)result);

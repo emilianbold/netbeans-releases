@@ -113,6 +113,8 @@ final class LockedPhadhail implements Phadhail {
         PMUTEX.enterReadAccess();
         try {
             synchronized (LISTENER_LOCK) {
+                // XXX actually this is not 100% correct because the fired events
+                // will refer to an *unlocked* phadhail
                 ph.addPhadhailListener(l);
             }
         } finally {

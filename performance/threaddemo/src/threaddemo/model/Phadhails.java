@@ -35,6 +35,8 @@ public class Phadhails {
         return SpunPhadhail.forPhadhail(DefaultPhadhail.forFile(f));
     }
     
-    // XXX missing a callback impl using off-AWT asynch processing
+    public static Phadhail swung(File f) {
+        return SwungPhadhail.forPhadhail(DefaultPhadhail.forFile(f));
+    }
     
 }

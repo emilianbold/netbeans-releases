@@ -90,6 +90,8 @@ final class BufferedPhadhail implements Phadhail, PhadhailListener {
     }
     
     public void addPhadhailListener(PhadhailListener l) {
+        // XXX actually this is not 100% correct because the fired events
+        // will refer to an *unbuffered* phadhail
         ph.addPhadhailListener(l);
         if (listenerCount == 0) {
             ph.addPhadhailListener(this);
