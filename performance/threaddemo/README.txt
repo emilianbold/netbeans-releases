@@ -8,19 +8,8 @@ or just pass -D args to ant. Make sure openide.jar is up-to-date (check CVS).
 --> Only JDK 1.4 is supported.
 
 Default build target builds and runs the app. It creates a data model, called
-Phadhail, which is just a thin wrapper over basic aspects of File. You probably
-first want to do something like this:
-
-$ mkdir /tmp/testbigstuff
-$ mkdir /tmp/testbigstuff/biggish
-$ cd /tmp/testbigstuff/biggish
-$ perl -e 'for ("aaa" .. "ezz") {open TOUCH, ">$_"; close TOUCH}'
-$ mkdir /tmp/testbigstuff/whopper
-$ cd /tmp/testbigstuff/whopper
-$ perl -e 'for ("aaa" .. "zzz") {open TOUCH, ">$_"; close TOUCH}'
-
-That creates dirs containing 3.4k and 17.6k files, respectively. In your
-user.build.properties, set testdir=/tmp/testbigstuff for easy access.
+Phadhail, which is just a thin wrapper over basic aspects of File. XML files
+(*.xml) also have a parse-regenerate data model that you can view and use.
 
 Start the app. First select a threading model to use.
 
@@ -55,6 +44,11 @@ And select a view type:
 4. Look. The Looks API is used to represent the data but this is displayed
    directly in a JTree without using the Nodes or Explorer APIs at all.
 
+You probably first want to create some test data. About 500 files is good for
+playing with.
+
+Press Show to show the file tree.
+
 Play with time to open a large folder, responsiveness, repainting, etc.
 
 The model supports mutations and events, so you can play with that too. Operations:
@@ -64,7 +58,13 @@ The model supports mutations and events, so you can play with that too. Operatio
 - delete
 
 Also you can Open a file to get its contents in an editor window. To save you need
-to select Save from the node's context menu (currently broken in Look view).
+to select Save from the node's context menu. For XML files, you can expand them,
+make text edits to see the reparse, or delete elements to see the regeneration.
+
+You can click View Index in the file tree to see an index of the counts of all XML
+elements in all XML files in the tree. This is supposed to updated live as changes
+are made. This view can help you test the effect of an app feature that involves a
+fair amount of computation and a lot of background read access to data models.
 
 Currently no actions are supported in the Raw view, so you cannot test these. Raw view
 also currently does not listen for changes, so it will not work with the Swung model
