@@ -176,6 +176,7 @@ public final class ProjectManager {
                 public Object run() throws IOException {
                     // Read access, but still needs to synch on the cache since there
                     // may be >1 reader.
+                    try {
                     synchronized (dir2Proj) {
                         Object o;
                         do {
@@ -262,6 +263,24 @@ public final class ProjectManager {
                             }
                         }
                     }
+    // Log project creation exception here otherwise it can get lost
+    // in following scenario:
+    // If project creation calls ProjectManager.postWriteRequest() (what for 
+    // example FreeformSources.initSources does) and then it throws an 
+    // exception then this exception can get lost because leaving read mutex
+    // will immediately execute the runnable posted by 
+    // ProjectManager.postWriteRequest() and if this runnable fails (what
+    // for FreeformSources.initSources will happen because
+    // AntBasedProjectFactorySingleton.getProjectFor() will not find project in
+    // its helperRef cache) then only this second fail is logged, but the cause - 
+    // the failure to create project - is never logged. So, better log it here:
+                } catch (Error e) {
+                    ErrorManager.getDefault().notify(e);
+                    throw e;
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(e);
+                    throw e;
+                }
                 }
             });
         } catch (MutexException e) {
