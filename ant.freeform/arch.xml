@@ -334,6 +334,13 @@ Microsystems, Inc. All Rights Reserved.
     </api>
    </li>
    <li>
+    <api group="java" name="GeneralQueriesAPI" type="import" category="devel">
+     <p>
+      For checking file collocation.
+     </p>
+    </api>
+   </li>
+   <li>
     <api group="java" name="Datasystems" type="import" category="official">
      <p>
       Used to provide the logical view, etc.
