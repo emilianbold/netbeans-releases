@@ -269,8 +269,12 @@ public class ProjectTab extends TopComponent
             // Sel paths missing
         }
         initValues( id );
-        btv.expandNodes( exPaths );
-        selectPaths( selPaths );
+// fix for #55701 (Expanding of previously expanded folder in explorer slows down startup)
+// the expansion scales very bad now and can prolong startup up to several minutes
+// disabling the expansion of nodes after start altogether, hopefully temporarily
+// (thus getting back to how it worked in NB 4.0 FCS)
+//        btv.expandNodes( exPaths );
+//        selectPaths( selPaths );
 
     }
     
