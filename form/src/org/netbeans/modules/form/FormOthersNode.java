@@ -21,6 +21,8 @@ import org.openide.cookies.*;
 import org.openide.actions.*;
 import org.openide.util.actions.SystemAction;
 
+import org.netbeans.modules.form.actions.AddAction;
+
 /**
  * This class represents the root node of "Other Components".
  *
@@ -42,8 +44,8 @@ class FormOthersNode extends FormNode {
         ArrayList actions = new ArrayList(10);
 
         if (!getFormModel().isReadOnly()) {
-//            actions.add(SystemAction.get(AddComponentAction.class));
-//            actions.add(null);
+            actions.add(SystemAction.get(AddAction.class));
+            actions.add(null);
             actions.add(SystemAction.get(PasteAction.class));
             actions.add(null);
             actions.add(SystemAction.get(ReorderAction.class));

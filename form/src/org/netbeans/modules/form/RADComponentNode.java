@@ -177,6 +177,8 @@ public class RADComponentNode extends FormNode
                     actions.add(null);
                 }
 
+                actions.add(SystemAction.get(AddAction.class));
+                actions.add(null);
                 actions.add(SystemAction.get(EditContainerAction.class));
                 RADComponent topComp =
                     component.getFormModel().getTopRADComponent();
