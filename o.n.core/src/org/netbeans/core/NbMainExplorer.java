@@ -315,13 +315,19 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     ));
   }
 
-  /** Adds listener to the explorer panel.
-  */
   public void open () {
-    super.open ();
+    open(TopManager.getDefault().getWindowManager().getCurrentWorkspace());
+  }
+  
+  /** Adds listener to the explorer panel in addition
+  * to normal behaviour.
+  */
+  public void open (Workspace workspace) {
+    super.open (workspace);
     if (!listenersRegistered) {
       for (int i = 0; i < managers.length; i++) {
-        managers[i].addPropertyChangeListener (managersListener); // synchronization of property sheet, activated nodes, title
+        managers[i].addPropertyChangeListener (managersListener); 
+        // synchronization of property sheet, activated nodes, title
       }
       // add listeners to changes on the roots
       for (int i = 0; i < roots.length; i++) {
@@ -335,9 +341,9 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
   /** Removes listeners.
   */
-  public boolean canClose () {
-    boolean result = super.canClose();
-    if (result) {
+  public boolean canClose (Workspace workspace, boolean last) {
+    boolean result = super.canClose(workspace, last);
+    if (result && last) {
       for (int i = 0; i < managers.length; i++) {
         managers[i].removePropertyChangeListener (managersListener);
       }
@@ -440,6 +446,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  21   Gandalf   1.20        7/28/99  David Simonek   canClose updates
 *  20   Gandalf   1.19        7/21/99  David Simonek   properties switcher fixed
 *  19   Gandalf   1.18        7/19/99  Jesse Glick     Context help.
 *  18   Gandalf   1.17        7/16/99  Ian Formanek    Fixed bug #1800 - You can
