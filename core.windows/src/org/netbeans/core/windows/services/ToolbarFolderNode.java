@@ -53,7 +53,6 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
     static SystemAction[] topStaticActions;
 
     private DataFolder folder;
-    public static final ResourceBundle bundle = NbBundle.getBundle (ToolbarFolderNode.class);
 
     public ToolbarFolderNode () {
         this (NbPlaces.getDefault().toolbars ());
@@ -82,7 +81,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
         return new NewType[] {
                    new NewType () {
                        public String getName () {
-                           return bundle.getString ("PROP_newToolbarName");
+                           return NbBundle.getBundle (ToolbarFolderNode.class).getString ("PROP_newToolbarName");
                        }
                        public void create () throws IOException {
                            newToolbar();
@@ -90,7 +89,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
                    },
                    new NewType () {
                        public String getName () {
-                           return bundle.getString ("PROP_newToolbarConfigName");
+                           return NbBundle.getBundle (ToolbarFolderNode.class).getString ("PROP_newToolbarConfigName");
                        }
                        public void create () throws IOException {
                            newConfiguration();
@@ -100,6 +99,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
     }
     
     void newToolbar () {
+        ResourceBundle bundle = NbBundle.getBundle (ToolbarFolderNode.class);
         NotifyDescriptor.InputLine il = new NotifyDescriptor.InputLine
                                         (bundle.getString ("PROP_newToolbarLabel"),
                                          bundle.getString ("PROP_newToolbarDialog"));
@@ -132,6 +132,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
     }
 
     void newConfiguration () {
+        ResourceBundle bundle = NbBundle.getBundle (ToolbarFolderNode.class);
         NotifyDescriptor.InputLine il = new NotifyDescriptor.InputLine
                                         (bundle.getString ("PROP_newToolbarConfigLabel"),
                                          bundle.getString ("PROP_newToolbarConfigDialog"));
@@ -198,6 +199,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
 
     /** Creates properties for this node */
     public Node.PropertySet[] getPropertySets () {
+        ResourceBundle bundle = NbBundle.getBundle (ToolbarFolderNode.class);
         Sheet sheet = Sheet.createDefault();
         sheet.get(Sheet.PROPERTIES).put(
             new PropertySupport.ReadWrite(
@@ -454,7 +456,6 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
         static SystemAction[] staticActions;
 
         private DataFolder folder;
-        private static final ResourceBundle bundle = NbBundle.getBundle (ToolbarFolderNode.class);
 
         /** Toolbar folder node.
         */
@@ -476,7 +477,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
             return new NewType[] {
                        new NewType () {
                            public String getName () {
-                               return bundle.getString ("PROP_newToolbarSeparator");
+                               return NbBundle.getBundle (ToolbarFolderNode.class).getString ("PROP_newToolbarSeparator");
                            }
                            public void create () throws IOException {
                                newToolbarSeparator();
@@ -573,16 +574,16 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
             ss.put(
                 new PropertySupport.Name(
                     this,
-                    bundle.getString("PROP_ToolbarName"),
-                    bundle.getString("HINT_ToolbarName")
+                    NbBundle.getBundle (ToolbarFolderNode.class).getString("PROP_ToolbarName"),
+                    NbBundle.getBundle (ToolbarFolderNode.class).getString("HINT_ToolbarName")
                 )
             );
             ss.put(
                 new PropertySupport.ReadWrite(
                     "visible", // NOI18N
                     Boolean.class,
-                    bundle.getString("PROP_ToolbarVisible"),
-                    bundle.getString("HINT_ToolbarVisible")
+                    NbBundle.getBundle (ToolbarFolderNode.class).getString("PROP_ToolbarVisible"),
+                    NbBundle.getBundle (ToolbarFolderNode.class).getString("HINT_ToolbarVisible")
                 ) {
                     public void setValue(Object v) {
                         currentConfiguration().setToolbarVisible(ToolbarPool.getDefault().findToolbar(folder.getName()), ((Boolean)v).booleanValue());
