@@ -28,9 +28,11 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="work/user/jspparser-data"/>
         <mkdir dir="work/user/jspparser-data2"/>
         <mkdir dir="work/user/jspparser-data3"/>
+        <mkdir dir="work/user/project3"/>
         <unzip src="unit/data/data.zip" dest="${xtest.workdir}/user/jspparser-data" />
         <unzip src="unit/data/data2.zip" dest="${xtest.workdir}/user/jspparser-data2" />
         <unzip src="unit/data/data3.zip" dest="${xtest.workdir}/user/jspparser-data3" />
+        <unzip src="unit/data/project3.zip" dest="${xtest.workdir}/user/" />
     </target>
     
     <target name="unit-compiler">
@@ -43,6 +45,8 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${web/jspparser.dir}/${nb.modules/autoload.dir}/jsp-parser.jar"/>
                 <pathelement location="../../external/servlet-api-2.4.jar"/>
                 <pathelement location="../../external/jsp-api-2.0.jar"/>
+                <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
+                <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>
             </classpath>
         </buildTests>        
     </target>

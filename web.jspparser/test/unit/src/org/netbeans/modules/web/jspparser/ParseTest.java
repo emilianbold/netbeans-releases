@@ -21,12 +21,20 @@ import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
 import junit.framework.*;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
 import org.netbeans.junit.*;
+import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.project.ui.OpenProjectList;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.core.jsploader.JspParserAccess;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+
 
 /** JUnit test suite with Jemmy support
  *
@@ -70,15 +78,54 @@ public class ParseTest extends NbTestCase {
     }
     
     public void testAnalysisFunction() throws Exception {
-        jspExamplesAppTest("jspparser-data3/jsp-examples/jsp2/el/functions.jsp");
+        parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/el/functions.jsp");
     }
     
     public void testAnalysisXMLTextRotate() throws Exception {
-        jspExamplesAppTest("jspparser-data3/jsp-examples/jsp2/jspx/textRotate.jspx");
+        parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate.jspx");
     }
     
     public void testAnalysisTagLibFromTagFiles() throws Exception {
         midnightAppTest("jspparser-data2/midnight-jsp2.0/testTagLibs.jsp");
+    }
+
+    public void testProjectAnalysisFunction() throws Exception {
+        parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/el/functions.jsp");
+    }
+    
+    public void parserTestInProject(String projectFolderName, String pagePath) throws Exception{
+        log("Parsing test of page  " + pagePath + " in project " + projectFolderName + " started.");
+        String projectPath = Manager.getWorkDirPath() + "/" + projectFolderName;
+        Object o = ProjectSupport.openProject(projectPath);
+        if ( o != null)
+            log("Project " + projectPath + " opened.");
+        else
+            log("Project " + projectPath + " was not opened.");
+        Project project = (Project)o;
+        File f = new File(pagePath);
+        FileObject jspFo = FileUtil.fromFile(f)[0];
+        if (jspFo == null) 
+            log (pagePath + " not found.");
+        org.netbeans.modules.web.api.webmodule.WebModule wm = WebModule.getWebModule(jspFo);
+        log("Parsing page " + pagePath);
+        JspParserAPI.ParseResult result = JspParserFactory.getJspParser()
+                .analyzePage(jspFo, JspParserAccess.getJspParserWM(wm), JspParserAPI.ERROR_IGNORE);
+        
+        if (ProjectSupport.closeProject(ProjectUtils.getInformation(project).getName()))
+            log ("Project closed.");
+        File goldenF = null;
+        File outFile = null;
+        try {
+            goldenF = getGoldenFile();
+        }
+        finally {
+            String fName = (goldenF == null) ? ("temp" + fileNr++ + ".result") : getBrotherFile(goldenF, "result");
+            outFile = new File(getWorkDir(), fName);
+            writeOutResult(result, outFile);
+        }
+        
+        assertNotNull(outFile);
+        assertFile(outFile, goldenF, getWorkDir());
     }
     
     /** Runs the test for a file from the midnight test application (data2.zip).
@@ -102,24 +149,8 @@ public class ParseTest extends NbTestCase {
         log("FileParse called");
     }
     
-    /** Runs the test for a file from JSP examples test application (data3.zip).
-     *  @param path resource path of the file within the web module, separated by /
-     */
-    public void jspExamplesAppTest(String path) throws Exception {
-        try{
-            FileObject wmRoot = TestUtil.getFileInWorkDir("jspparser-data3/jsp-examples", this);
-            FileObject res = TestUtil.getFileInWorkDir(path, this);
-            if (!FileUtil.isParentOf (wmRoot, res)) {
-                wmRoot = null;
-            }
-            analyzeIt(wmRoot, res);
-            
-        }catch(RuntimeException e){
-            e.printStackTrace();
-            e.printStackTrace(getRef());
-            fail("Initialization of test failed! ->" + e);
-        }
-    }
+    
+   
     
     private static int fileNr = 1;
     
@@ -145,7 +176,6 @@ public class ParseTest extends NbTestCase {
         assertNotNull(outFile);
         assertFile(outFile, goldenF, getWorkDir());
     }
-    
     
     
     private void writeOutResult(JspParserAPI.ParseResult result, File outFile) throws IOException {
