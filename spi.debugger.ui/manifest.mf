@@ -3,3 +3,6 @@ Netbeans-Module-Name: Debugger Module
 
 Name: com/netbeans/developer/modules/debugger/DebuggerSettings.class
 Netbeans-Module-Class: Option
+
+Name: com/netbeans/developer/modules/debugger/JavaDebuggerNode.class
+Netbeans-Module-Class: Environment
