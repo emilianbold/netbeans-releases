@@ -26,6 +26,12 @@ import java.util.HashMap;
  */
 public class FindEditorTest extends NbTestCase {
     
+    static {
+        //issue 31879, force registration of NB editors so this
+        //test can pass when editor tests are run standalone
+       org.netbeans.core.NonGui.registerPropertyEditors(); 
+    }
+    
     public FindEditorTest(String name) {
         super(name);
     }

@@ -306,12 +306,43 @@ public class NonGui extends NbTopManager implements Runnable {
     }
     
     /** Lazily loads classes */ // #9951
-    private final Class getKlass(String cls) {
+    private static final Class getKlass(String cls) {
         try {
-            return Class.forName(cls, false, getClass().getClassLoader());
+            return Class.forName(cls, false, NonGui.class.getClassLoader());
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(e.getLocalizedMessage());
         }
+    }
+    
+    /**Flag to avoid multiple adds of the same path to the
+     * of PropertyEditorManager if multiple tests call 
+     * registerPropertyEditors() */
+    private static boolean editorsRegistered=false;
+    /** Register NB specific property editors.
+     *  Allows property editor unit tests to work correctly without 
+     *  initializing full NetBeans environment.
+     *  @since 1.98 */
+    public static final void registerPropertyEditors() {
+        //issue 31879
+        if (editorsRegistered) return;
+        String[] syspesp = PropertyEditorManager.getEditorSearchPath();
+        String[] nbpesp = new String[] {
+            "org.netbeans.beaninfo.editors", // NOI18N
+            "org.openide.explorer.propertysheet.editors", // NOI18N
+        };
+        String[] allpesp = new String[syspesp.length + nbpesp.length];
+        System.arraycopy(nbpesp, 0, allpesp, 0, nbpesp.length);
+        System.arraycopy(syspesp, 0, allpesp, nbpesp.length, syspesp.length);
+        PropertyEditorManager.setEditorSearchPath(allpesp);
+        PropertyEditorManager.registerEditor (java.lang.Character.TYPE, getKlass("org.netbeans.beaninfo.editors.CharEditor")); //NOI18N
+        PropertyEditorManager.registerEditor(getKlass("[Ljava.lang.String;"), getKlass("org.netbeans.beaninfo.editors.StringArrayEditor")); // NOI18N
+        // bugfix #28676, register editor for a property which type is array of data objects
+        PropertyEditorManager.registerEditor(getKlass("[Lorg.openide.loaders.DataObject;"), getKlass("org.netbeans.beaninfo.editors.DataObjectArrayEditor")); // NOI18N
+        // use replacement hintable/internationalizable primitive editors - issues 20376, 5278
+        PropertyEditorManager.registerEditor (Integer.TYPE, getKlass("org.netbeans.beaninfo.editors.IntEditor"));
+        PropertyEditorManager.registerEditor (Boolean.TYPE, getKlass("org.netbeans.beaninfo.editors.BoolEditor"));
+        StartLog.logProgress ("PropertyEditors registered"); // NOI18N
+        editorsRegistered = true;
     }
 
     /** Initialization of the manager.
@@ -333,20 +364,7 @@ public class NonGui extends NbTopManager implements Runnable {
         System.arraycopy(nbbisp, 0, allbisp, 0, nbbisp.length);
         System.arraycopy(sysbisp, 0, allbisp, nbbisp.length, sysbisp.length);
         Introspector.setBeanInfoSearchPath(allbisp);
-        String[] syspesp = PropertyEditorManager.getEditorSearchPath();
-        String[] nbpesp = new String[] {
-            "org.netbeans.beaninfo.editors", // NOI18N
-            "org.openide.explorer.propertysheet.editors", // NOI18N
-        };
-        String[] allpesp = new String[syspesp.length + nbpesp.length];
-        System.arraycopy(nbpesp, 0, allpesp, 0, nbpesp.length);
-        System.arraycopy(syspesp, 0, allpesp, nbpesp.length, syspesp.length);
-        PropertyEditorManager.setEditorSearchPath(allpesp);
-        PropertyEditorManager.registerEditor (java.lang.Character.TYPE, getKlass("org.netbeans.beaninfo.editors.CharEditor"));
-        PropertyEditorManager.registerEditor(getKlass("[Ljava.lang.String;"), getKlass("org.netbeans.beaninfo.editors.StringArrayEditor")); // NOI18N
-        // bugfix #28676, register editor for a property which type is array of data objects
-        PropertyEditorManager.registerEditor(getKlass("[Lorg.openide.loaders.DataObject;"), getKlass("org.netbeans.beaninfo.editors.DataObjectArrayEditor")); // NOI18N
-        StartLog.logProgress ("PropertyEditors registered"); // NOI18N
+        registerPropertyEditors();
 
         // -----------------------------------------------------------------------------------------------------
 
