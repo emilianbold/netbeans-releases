@@ -32,6 +32,7 @@ import org.openide.text.IndentEngine;
 import org.openide.TopManager;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.LocalFileSystem;
+import com.netbeans.developer.modules.text.java.JCStorage;
 
 /**
 * Module installation class for editor
@@ -79,14 +80,17 @@ public class EditorModule implements ModuleInstall {
   /** Module installed again. */
   public void restored () {
 
+    NbEditorSettings.initLocale();
+
     // initializations
     FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
     File rootDir = ((LocalFileSystem)rfs).getRootDirectory();
 
-    DialogSupport.init();
     DialogSupport.setDialogCreator(new NbDialogCreator());
-    ExtSettings.init(rootDir.getAbsolutePath() + File.separator + DB_DIR);
+    ExtSettings.init();
+    NbEditorSettings.init();
     KitSupport.init();
+    JCStorage.init(rootDir.getAbsolutePath() + File.separator + DB_DIR);
 
     // preload some classes for faster editor opening
     BaseKit.getKit(NbEditorJavaKit.class).createDefaultDocument();
@@ -135,15 +139,15 @@ public class EditorModule implements ModuleInstall {
     }
 
     public int indentLine (Document doc, int offset) {
-      return formatter.indentLine((BaseDocument)doc, offset);
+      return formatter.indentLine(doc, offset);
     }
     
     public int indentNewLine (Document doc, int offset) {
-      return formatter.indentNewLine((BaseDocument)doc, offset);
+      return formatter.indentNewLine(doc, offset);
     }
     
     public Writer createWriter (Document doc, int offset, Writer writer) {
-      return formatter.createWriter((BaseDocument)doc, offset, writer);
+      return formatter.createWriter(doc, offset, writer);
     }
 
   }
@@ -152,6 +156,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  18   Gandalf   1.17        7/20/99  Miloslav Metelka 
  *  17   Gandalf   1.16        7/9/99   Miloslav Metelka 
  *  16   Gandalf   1.15        6/9/99   Miloslav Metelka 
  *  15   Gandalf   1.14        6/9/99   Ian Formanek    ---- Package Change To 

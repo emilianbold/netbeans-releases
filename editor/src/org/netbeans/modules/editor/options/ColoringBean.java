@@ -21,42 +21,24 @@ import com.netbeans.editor.Coloring;
 public class ColoringBean implements java.io.Serializable {
 
   /** Encapsulated Coloring */
-  transient Coloring coloring;
+  Coloring coloring;
+  
+  /** Default Coloring */
+  transient Coloring defaultColoring;
+
   /** example text */
   transient String example;
 
   public ColoringBean() {
   }
   
-  public void setColoring(Coloring co) {
-    coloring = co;
-  }
   public Coloring getColoring() {
     return coloring;
   }
-  
 
-  // props
-
-  public void setFont(Font f) {
-    coloring = Coloring.changeFont(coloring, f);
-  }
-  public Font getFont() {
-    return coloring.getFont();
+  public void setColoring(Coloring coloring) {
+    this.coloring = coloring;
   }
 
-  public void setForeColor(Color color) {
-    coloring = Coloring.changeForeColor(coloring, color);
-  }
-  public Color getForeColor() {
-    return coloring.getForeColor();
-  }
-
-  public void setBackColor(Color color) {
-    coloring = Coloring.changeBackColor(coloring, color);
-  }
-  public Color getBackColor() {
-    return coloring.getBackColor();
-  }
 }
 

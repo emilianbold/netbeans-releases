@@ -52,8 +52,6 @@ public class ColoringBeanBeanInfo extends SimpleBeanInfo {
         descriptors = new PropertyDescriptor[0];
       }
     }
-    System.out.println ("OH AH I AM CALLED: ");
-    Thread.dumpStack();
     return descriptors;
   }
 
@@ -77,6 +75,7 @@ public class ColoringBeanBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  3    Gandalf   1.2         7/20/99  Miloslav Metelka 
  *  2    Gandalf   1.1         7/3/99   Ian Formanek    Changed package 
  *       statement to make it compilable
  *  1    Gandalf   1.0         6/30/99  Ales Novak      

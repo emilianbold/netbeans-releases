@@ -8,4 +8,6 @@ OpenIDE-Module-Update-Location: http://update.netbeans.com/eap/developer30/updat
 Name: com/netbeans/developer/modules/text/options/AllOptions.class
 OpenIDE-Module-Class: Option
 
+Name: com/netbeans/developer/modules/text/java/JCUpdateAction.class
+OpenIDE-Module-Class: Action
 

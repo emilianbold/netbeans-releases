@@ -31,7 +31,7 @@ public class AllOptions extends ContextSystemOption {
     addOption(new HTMLOptions());
 
     PrintSettings ps = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
-    ps.addOption(new PrintOptions());
+    ps.addOption(new PlainPrintOptions());
     ps.addOption(new JavaPrintOptions());
     ps.addOption(new HTMLPrintOptions());
   }
@@ -44,6 +44,7 @@ public class AllOptions extends ContextSystemOption {
 
 /*
  * Log
+ *  4    Gandalf   1.3         7/20/99  Miloslav Metelka 
  *  3    Gandalf   1.2         7/9/99   Ales Novak      print options change
  *  2    Gandalf   1.1         7/3/99   Ian Formanek    Changed package 
  *       statement to make it compilable
