@@ -18,6 +18,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="nbroot" value=".."/>
   <property name="f4jroot" value="../../f4j_all"/>
   <property name="nbext" value="${nbroot}/nbbuild"/>
+  <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="${nbext}/standard-nbm-license.txt"/>
   
@@ -78,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
     <makenbm file="j2eeserver.nbm"
              topdir="."
              module="netbeans/modules/autoload/j2eeserver.jar"
-             homepage="http://${homepage.base}/j2eeserver.html"
+             homepage="http://j2eeserver.${homepage.base}/"
              distribution="${dist.base}/j2eeserver.nbm">
       <license file="${license.file}" />
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
