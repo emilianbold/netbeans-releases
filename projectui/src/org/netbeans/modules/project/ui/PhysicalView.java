@@ -114,7 +114,7 @@ public class PhysicalView {
     }
    
         
-    private static final class GroupNode extends FilterNode implements PropertyChangeListener {
+    static final class GroupNode extends FilterNode implements PropertyChangeListener {
         
         private static final DataFilter VISIBILITY_QUERY_FILTER = new DataFilter() {
             public boolean acceptDataObject(DataObject obj) {                
@@ -123,7 +123,7 @@ public class PhysicalView {
             }
         };
 
-        private static final String GROUP_NAME_PATTERN = NbBundle.getMessage(
+        static final String GROUP_NAME_PATTERN = NbBundle.getMessage(
             PhysicalView.class, "FMT_PhysicalView_GroupName" ); // NOI18N
 
         private Project project;

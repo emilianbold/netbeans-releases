@@ -23,12 +23,16 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
@@ -48,18 +52,18 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     private ExplorerManager manager;
     private SourceGroup[] folders;
     private BeanTreeView btv;
-    private String projectDisplayName;
+    private Project project;
     
     private static JScrollPane SAMPLE_SCROLL_PANE = new JScrollPane();
     
     /** Creates new form BrowseFolders */
-    public BrowseFolders( SourceGroup[] folders, String projectDisplayName ) {
+    public BrowseFolders( SourceGroup[] folders, Project project ) {
         initComponents();
         this.folders = folders;
-        this.projectDisplayName = projectDisplayName;
+        this.project = project;
         
         manager = new ExplorerManager();        
-        AbstractNode rootNode = new AbstractNode( new SourceGroupsChildren( folders, projectDisplayName ) );
+        AbstractNode rootNode = new AbstractNode( new SourceGroupsChildren( folders, project ) );
         manager.setRootContext( rootNode );
         
         // Create the templates view
@@ -118,9 +122,9 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
         
-    public static FileObject showDialog( SourceGroup[] folders, String projectDisplayName ) {
+    public static FileObject showDialog( SourceGroup[] folders, Project project ) {
         
-        BrowseFolders bf = new BrowseFolders( folders, projectDisplayName );
+        BrowseFolders bf = new BrowseFolders( folders, project );
         
         JButton options[] = new JButton[] { 
             //new JButton( NbBundle.getMessage( BrowseFolders.class, "LBL_BrowseFolders_Select_Option") ), // NOI18N
@@ -181,14 +185,14 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         private SourceGroup[] groups;
         private SourceGroup group;
         private FileObject fo;
-        private String projectDisplayName;
+        private Project project;
         
-        public SourceGroupsChildren( SourceGroup[] groups, String projectDisplayName ) {
+        public SourceGroupsChildren( SourceGroup[] groups, Project project ) {
             this.groups = groups;
-            this.projectDisplayName = projectDisplayName;
+            this.project = project;
         }
                 
-        public SourceGroupsChildren( FileObject fo, SourceGroup group ) {            
+        public SourceGroupsChildren( FileObject fo, SourceGroup group ) {
             this.fo = fo;
             this.group = group;
         }
@@ -211,40 +215,24 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             if ( key instanceof SourceGroup ) {
                 folder = ((SourceGroup)key).getRootFolder();
                 group = (SourceGroup)key;
+                FilterNode fn = new FilterNode( 
+                    new PhysicalView.GroupNode( project, group, folder.equals( project.getProjectDirectory() ), DataFolder.findFolder( folder ) ), 
+                    new SourceGroupsChildren( folder, group ) );
+                return new Node[] { fn };
             }
             else if ( key instanceof Key ) {
                 folder = ((Key)key).folder;
                 group = ((Key)key).group;    
+                FilterNode fn = new FilterNode( 
+                    DataFolder.findFolder( folder ).getNodeDelegate(), 
+                    new SourceGroupsChildren( folder, group ) );
+                return new Node[] { fn };
             }
-
-            try {
-                DataObject dobj = DataObject.find( folder );
-                FilterNode fn = new FilterNode(dobj.getNodeDelegate(), new SourceGroupsChildren( folder, group ) );
-            
-                if ( key instanceof SourceGroup ) {
-                    // XXX Create node to handle icons.
-                    
-                    String groupDisplayName = group.getDisplayName();
-                    
-                    
-                    if ( groupDisplayName.equals( projectDisplayName ) ) {
-                        fn.setDisplayName( groupDisplayName );
-                    }
-                    else {
-                        fn.setDisplayName( MessageFormat.format(
-                            NbBundle.getMessage( BrowseFolders.class, "FMT_TargetChooser_GroupProjectNameBadge" ),
-                            new Object[] { groupDisplayName, projectDisplayName } ) );
-                    }
-                    
-                }
-            
-                return new Node[] { fn };            
-            }
-            catch ( DataObjectNotFoundException e ) {
-                return null;
+            else {
+                return new Node[0];
             }
         }
-                
+        
         private Collection getKeys() {
 			
             if ( groups != null ) {
@@ -255,7 +243,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                 ArrayList children = new ArrayList( files.length );
                 
                 for( int i = 0; i < files.length; i++ ) {
-                    if ( files[i].isFolder() && group.contains( files[i] ) ) {
+                    if ( files[i].isFolder() && group.contains( files[i] ) && VisibilityQuery.getDefault().isVisible( files[i] ) ) {
                         children.add( new Key( files[i], group ) );
                     }
                 }

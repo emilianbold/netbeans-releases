@@ -381,7 +381,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             
             SourceGroup group = (SourceGroup)locationComboBox.getSelectedItem();
             
-            fo = BrowseFolders.showDialog( new SourceGroup[] { group }, ProjectUtils.getInformation( project ).getDisplayName() );
+            fo = BrowseFolders.showDialog( new SourceGroup[] { group }, project );
                         
             if ( fo != null && fo.isFolder() ) {
                 String relPath = FileUtil.getRelativePath( group.getRootFolder(), fo );
@@ -425,9 +425,13 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
                     setText( groupDisplayName );
                 }
                 else {
+                    setText( MessageFormat.format( PhysicalView.GroupNode.GROUP_NAME_PATTERN,
+                        new Object[] { groupDisplayName, projectDisplayName, group.getRootFolder().getName() } ) );
+                    /*
                     setText( MessageFormat.format(
                         NbBundle.getMessage( SimpleTargetChooserPanelGUI.class, "FMT_TargetChooser_GroupProjectNameBadge" ), // NOI18N
                         new Object[] { groupDisplayName, projectDisplayName } ) );
+                    */
                 }
                 
                 setIcon( group.getIcon( false ) );
