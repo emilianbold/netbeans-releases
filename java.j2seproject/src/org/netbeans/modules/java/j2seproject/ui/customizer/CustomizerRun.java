@@ -320,13 +320,13 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel, HelpC
         
         String workDir = jTextWorkingDirectory.getText();
         if (workDir.equals("")) {
-            workDir = FileUtil.toFile(j2seProperties.getProject().getProjectDirectory()).toString();
+            workDir = FileUtil.toFile(j2seProperties.getProject().getProjectDirectory()).getAbsolutePath();
         }
         chooser.setSelectedFile(new File(workDir));
         chooser.setDialogTitle(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Working_Directory_Browse_Title"));
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
-            jTextWorkingDirectory.setText(file.toString());
+            jTextWorkingDirectory.setText(file.getAbsolutePath());
         }
     }//GEN-LAST:event_jButtonWorkingDirectoryBrowseActionPerformed
     
