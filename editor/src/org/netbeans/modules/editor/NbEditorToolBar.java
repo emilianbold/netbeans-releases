@@ -385,6 +385,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                                     jtbp.setBorderPainted(false);
                                     jtbp.setContentAreaFilled(false);
                                     jtbp.addMouseListener(sharedMouseListener);
+                                    jtbp.setMargin (new Insets(2, 1, 0, 1));
                                 }
 
                             } else if (obj instanceof Component) {
@@ -394,6 +395,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                                     button.setContentAreaFilled(false);
                                     button.setBorderPainted(false);
                                     button.addMouseListener(sharedMouseListener);
+                                    button.setMargin (new Insets(2, 1, 0, 1));
                                 }
 
                             }
