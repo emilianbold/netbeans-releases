@@ -21,6 +21,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.src.nodes.SourceChildren;
+import org.openide.text.*;
 import org.openide.util.NbBundle;
 
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
@@ -73,23 +74,62 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       }
     }
 
-    // 1. open editor
-    super.open();
-
-    // 2. open form window
-    getFormTopComponent ().open ();
-    
-    // 3. show the ComponentInspector
+    // 1. show the ComponentInspector
     FormEditor.getComponentInspector().focusForm (getFormManager ());
     FormEditor.getComponentInspector().open ();
 
-    // 4. Focus form window
+    // 2. open editor
+    super.open();
+
+    // 3. Open and focus form window
+    getFormTopComponent ().open ();
     getFormTopComponent ().requestFocus ();
     
     // clear status line
     TopManager.getDefault ().setStatusText ("");
   }
   
+  /* Calls superclass.
+  * @param pos Where to place the caret.
+  * @return always non null editor
+  */
+  protected EditorSupport.Editor openAt(PositionRef pos) {
+    // status line - Opening form
+    TopManager.getDefault ().setStatusText (
+      java.text.MessageFormat.format (
+        NbBundle.getBundle (FormEditorSupport.class).getString ("FMT_OpeningForm"),
+        new Object[] { formObject.getName () }
+      )
+    );
+
+    // load the form
+    synchronized (OPEN_FORM_LOCK) {
+      if (!formLoaded) {
+        if (!loadForm ()) {
+          TopManager.getDefault ().setStatusText ("");
+          return null; // [PENDING]
+        }
+      }
+    }
+
+    // 1. open form window
+    getFormTopComponent ().open ();
+    
+    // 2. show the ComponentInspector
+    FormEditor.getComponentInspector().focusForm (getFormManager ());
+    FormEditor.getComponentInspector().open ();
+
+    // 3. Focus form window
+    getFormTopComponent ().requestFocus ();
+    
+    // clear status line
+    TopManager.getDefault ().setStatusText ("");
+
+    // 4. open editor
+    return super.openAt (pos);
+
+  }
+
   public FormDataObject getFormObject () {
     return formObject;
   }
@@ -267,6 +307,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  25   Gandalf   1.24        7/24/99  Ian Formanek    Fixed bug with opening 
+ *       form via class element nodes.
  *  24   Gandalf   1.23        7/14/99  Ian Formanek    supportsAdvancedFeatures
  *       is checked before the form is loaded
  *  23   Gandalf   1.22        7/12/99  Ian Formanek    Notifies form load 
