@@ -265,9 +265,9 @@ public class FormUtils
             return o; // no need to change reference
         }
 
-        if (o instanceof Font)
+        if (o.getClass() == Font.class)
             return Font.getFont(((Font)o).getAttributes());
-        if (o instanceof Color)
+        if (o.getClass() == Color.class)
             return new Color(((Color)o).getRGB());
         if (o instanceof Dimension)
             return new Dimension((Dimension)o);
