@@ -329,8 +329,7 @@ public class BaseDocumentUnitTestCase extends NbTestCase {
                 newMark += length;
                 changed |= 2;
             }
-            System.out.println("offset=" + offset + ", length=" + length
-                + ", changed=" + changed + ", newDot=" + newDot + ", newMark=" + newMark);
+
             if (changed != 0) {
                 if (newMark == newDot) {
                     setDot(newDot);
