@@ -179,7 +179,7 @@ public class CreateTableDialog {
                 ttab.add(new TypeElement(iterkey, iterval));
             }
 
-            JComboBox combo = new JComboBox(ttab);
+            final JComboBox combo = new JComboBox(ttab);
             combo.setSelectedIndex(0);
             table.setDefaultEditor(String.class, new DataCellEditor(new JTextField()));
             table.getColumn("type").setCellEditor(new DefaultCellEditor(combo)); // NOI18N
@@ -263,6 +263,10 @@ public class CreateTableDialog {
                                   else if (enuele.isUnique()&&!enuele.isPrimaryKey())
                                       cmdcol = cmd.createUniqueColumn(name);
                                   else cmdcol = cmd.createColumn(name);
+                                  
+                                  //bugfix for #31064
+                                  combo.setSelectedItem(combo.getSelectedItem());
+                                  
                                   cmdcol.setColumnType(Specification.getType(enuele.getType().getType()));
                                   cmdcol.setColumnSize(enuele.getSize());
                                   cmdcol.setDecimalSize(enuele.getScale());

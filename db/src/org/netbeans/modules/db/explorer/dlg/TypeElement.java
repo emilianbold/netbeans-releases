@@ -13,57 +13,23 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import org.netbeans.lib.ddl.*;
-import org.openide.DialogDescriptor;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.db.explorer.*;
-
-/**
-* xxx
-*
-* @author Slavek Psenicka
-*/
-
-class TypeElement
-{
+class TypeElement {
     private String tstr, tname;
 
-    public TypeElement(String typestr, String name)
-    {
+    public TypeElement(String typestr, String name) {
         tstr = typestr;
         tname = name;
     }
 
-    public String getType()
-    {
+    public String getType() {
         return tstr;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return tname;
     }
 
-    public String toString()
-    {
+    public String toString() {
         return tname;
     }
 }
-
-
-
-/*
- * <<Log>>
- *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
- * $
- */
