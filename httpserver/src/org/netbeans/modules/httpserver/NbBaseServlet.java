@@ -37,6 +37,7 @@ import org.openide.TopManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.SharedClassObject;
 
 /** Base servlet for servlets which access NetBeans Open APIs
 *
@@ -87,12 +88,14 @@ public abstract class NbBaseServlet extends HttpServlet {
     */
     protected boolean checkAccess(HttpServletRequest request) throws IOException {
 
-        HttpServerSettings settings = HttpServerSettings.OPTIONS;
+        HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject (HttpServerSettings.class);
+        if (settings == null)
+            return false;
 
         if (settings.getHostProperty ().getHost ().equals(HttpServerSettings.ANYHOST))
             return true;
 
-        HashSet hs = HttpServerSettings.OPTIONS.getGrantedAddressesSet();
+        HashSet hs = settings.getGrantedAddressesSet();
 
         if (hs.contains(request.getRemoteAddr().trim()))
             return true;
@@ -103,7 +106,7 @@ public abstract class NbBaseServlet extends HttpServlet {
         // ask user
         try {
             String address = request.getRemoteAddr().trim();
-            if (HttpServerSettings.OPTIONS.allowAccess(InetAddress.getByName(address), pathI)) return true;
+            if (settings.allowAccess(InetAddress.getByName(address), pathI)) return true;
         } catch (Exception ex) {
             TopManager.getDefault().notifyException(ex);
             return false;

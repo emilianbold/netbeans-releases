@@ -106,15 +106,19 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
     private static Properties mappedServlets = new Properties();
 
-    /** http settings */
-    // public static HttpServerSettings OPTIONS = (HttpServerSettings)findObject (HttpServerSettings.class, true);
-    public static HttpServerSettings OPTIONS = new HttpServerSettings();
+    /** http settings
+     * @deprecated use <CODE>SharedClassObject.findObject()</CODE>
+     */
+    public static HttpServerSettings OPTIONS = null;
 
     /** last used servlet name */
     private static int lastUsedName = 0;
     /** map names of servlets to paths */
     private static HashMap nameMap = new HashMap();
 
+    /** Lock for the httpserver operations */
+    private static Object httpLock;
+    
     /** Used to remember the state of the running property during the deserialization */
     private boolean pendingRunning = true;
 
@@ -122,6 +126,16 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     private boolean pendingRestart = false;
 
     static final long serialVersionUID =7387407495740535307L;
+    
+    /**
+     * Obtains lock for httpserver synchronization
+     */
+    static final Object httpLock () {
+        if (httpLock == null) {
+            httpLock = new Object ();
+        }
+        return httpLock;
+    }
 
     public HttpServerSettings() {
     }
@@ -155,10 +169,10 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
     /** Intended to be called by the thread which succeeded to start the server */
     void runSuccess() {
-        synchronized (HttpServerSettings.OPTIONS) {
+        synchronized (httpLock ()) {
             currentRetries = 0;
             running = true;
-            HttpServerSettings.OPTIONS.notifyAll();
+            httpLock ().notifyAll();
         }
     }
 
@@ -254,7 +268,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         if (this.running == running)
             return;
 
-        synchronized (HttpServerSettings.OPTIONS) {
+        synchronized (httpLock ()) {
             if (running) {
                 // running status is set by another thread
                 HttpServerModule.initHTTPServer();
@@ -282,7 +296,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
             return;
 
         // implement the change
-        synchronized (HttpServerSettings.OPTIONS) {
+        synchronized (httpLock ()) {
             this.repositoryBaseURL = newURL;
             restartIfNecessary(false);
         }
@@ -304,7 +318,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
             return;
 
         // implement the change
-        synchronized (HttpServerSettings.OPTIONS) {
+        synchronized (httpLock ()) {
             this.classpathBaseURL = newURL;
             restartIfNecessary(false);
         }
@@ -327,7 +341,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
             return;
 
         // implement the change
-        synchronized (HttpServerSettings.OPTIONS) {
+        synchronized (httpLock ()) {
             oldURL = this.javadocBaseURL;
             this.javadocBaseURL = newURL;
             restartIfNecessary(false);
@@ -367,7 +381,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
             return;
 
         // implement the change
-        synchronized (HttpServerSettings.OPTIONS) {
+        synchronized (httpLock ()) {
             oldURL = this.wrapperBaseURL;
             this.wrapperBaseURL = newURL;
             restartIfNecessary(false);
@@ -391,7 +405,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         Object old = getProperty(PROP_PORT);
         int port = ((old == null) ? DEFAULT_PORT : ((Integer)old).intValue());
         
-        synchronized (HttpServerSettings.OPTIONS) {
+        synchronized (httpLock ()) {
             old = putProperty(PROP_PORT, new Integer(p), false);
             if (old != null) {
                 if (p == ((Integer)old).intValue())
@@ -573,7 +587,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
     /** Appends the address to the list of addresses which have been granted access. */
     private void appendAddressToGranted(String addr) {
-        synchronized (HttpServerSettings.OPTIONS) {
+        synchronized (httpLock ()) {
             String granted = getGrantedAddresses().trim();
             if ((granted.length() > 0) &&
                     (granted.charAt(granted.length() - 1) != ';') &&

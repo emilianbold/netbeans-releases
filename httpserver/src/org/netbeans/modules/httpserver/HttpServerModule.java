@@ -41,6 +41,7 @@ import org.apache.tomcat.core.Context;
 import org.apache.tomcat.logging.TomcatLogger;
 import org.apache.tomcat.context.*;
 import org.apache.tomcat.service.PoolTcpConnector;
+import org.openide.util.SharedClassObject;
 
 /**
 * Module installation class for Http Server
@@ -60,7 +61,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
     */
     public void restored() {
         try {
-            org.openide.util.HttpServer.registerServer(HttpServerSettings.OPTIONS);
+            org.openide.util.HttpServer.registerServer(httpserverSettings ());
         }
         catch (SecurityException e) {}
     }
@@ -70,12 +71,12 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
     public void close () {
         // stop the server, don't set the running status
         try {
-            org.openide.util.HttpServer.deregisterServer(HttpServerSettings.OPTIONS);
+            org.openide.util.HttpServer.deregisterServer(httpserverSettings ());
         }
         catch (SecurityException e) {
             // pending - why do I get SecurityException ?
         }
-        synchronized (HttpServerSettings.OPTIONS) {
+        synchronized (HttpServerSettings.httpLock ()) {
             stopHTTPServer();
         }
     }
@@ -84,18 +85,18 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
     static void initHTTPServer() {
         if (inSetRunning)
             return;
-        synchronized (HttpServerSettings.OPTIONS) {
+        synchronized (HttpServerSettings.httpLock ()) {
             if (inSetRunning)
                 return;
             inSetRunning = true;
             try {
-                if ((serverThread != null) && (!HttpServerSettings.OPTIONS.running)) {
+                if ((serverThread != null) && (!httpserverSettings ().running)) {
                     // another thread is trying to start the server, wait for a while and then stop it if it's still bad
                     try {
                         Thread.currentThread().sleep(2000);
                     }
                     catch (InterruptedException e) {}
-                    if ((serverThread != null) && (!HttpServerSettings.OPTIONS.running)) {
+                    if ((serverThread != null) && (!httpserverSettings ().running)) {
                         serverThread.stop();
                         serverThread = null;
                     }
@@ -106,11 +107,11 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                                            try {
                                                server = buildServer();
                                                server.start();
-                                               HttpServerSettings.OPTIONS.runSuccess();
+                                               httpserverSettings ().runSuccess();
                                                // this is not a debug message, this is a server startup message
-                                               if (HttpServerSettings.OPTIONS.isStartStopMessages())
+                                               if (httpserverSettings ().isStartStopMessages())
                                                    System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
-                                                                      getString("CTL_ServerStarted"), new Object[] {new Integer(HttpServerSettings.OPTIONS.getPort())}));
+                                                                      getString("CTL_ServerStarted"), new Object[] {new Integer(httpserverSettings ().getPort())}));
                                            }
                                            catch (ThreadDeath td) {
                                                throw td;
@@ -123,17 +124,17 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                                                // couldn't start
                                                serverThread = null;
                                                inSetRunning = false;
-                                               HttpServerSettings.OPTIONS.runFailure();
+                                               httpserverSettings ().runFailure();
                                            }
                                            catch (Throwable ex) {
                                                ex.printStackTrace();
                                                // couldn't start
                                                serverThread = null;
                                                inSetRunning = false;
-                                               HttpServerSettings.OPTIONS.runFailure();
+                                               httpserverSettings ().runFailure();
                                            }
                                            finally {
-                                               HttpServerSettings.OPTIONS.setStartStopMessages(true);
+                                               httpserverSettings ().setStartStopMessages(true);
                                            }
                                        }
                                    };
@@ -141,9 +142,10 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                 }
                 // wait for the other thread to start the server
                 try {
-                    HttpServerSettings.OPTIONS.wait(HttpServerSettings.SERVER_STARTUP_TIMEOUT);
+                    HttpServerSettings.httpLock ().wait(HttpServerSettings.SERVER_STARTUP_TIMEOUT);
                 }
                 catch (Exception e) {
+                    TopManager.getDefault().getErrorManager().notify( ErrorManager.INFORMATIONAL, e);
                 }
             }
             finally {
@@ -156,7 +158,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
     static void stopHTTPServer() {
         if (inSetRunning)
             return;
-        synchronized (HttpServerSettings.OPTIONS) {
+        synchronized (HttpServerSettings.httpLock ()) {
             if (inSetRunning)
                 return;
             inSetRunning = true;
@@ -164,12 +166,6 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                 if ((serverThread != null) && (server != null)) {
                     try {
                         server.stop();
-                        /* an attempt to stop all threads
-                        Enumeration enum = server.getContexts ();
-                        while (enum.hasMoreElements ()) 
-                            server.shutdownContext ((Context)enum.nextElement ());
-                        server.shutdown ();
-                         */
                         serverThread.join();
                     }
                     catch (InterruptedException e) {
@@ -185,7 +181,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                     }
                     serverThread = null;
                     // this is not a debug message, this is a server shutdown message
-                    if (HttpServerSettings.OPTIONS.isStartStopMessages())
+                    if (httpserverSettings ().isStartStopMessages())
                         System.out.println(NbBundle.getBundle(HttpServerModule.class).
                                            getString("CTL_ServerStopped"));
                 }
@@ -213,7 +209,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
     
 
     private static ContextManager buildServer() throws Exception {
-        HttpServerSettings op = HttpServerSettings.OPTIONS;
+        HttpServerSettings op = httpserverSettings ();
 
         NbLogger logger = new NbLogger();
         logger.setName("tc_log");
@@ -276,5 +272,11 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         }
     }
 
+    /** 
+     * Obtains settings of this module
+     */
+    private static HttpServerSettings httpserverSettings () {
+        return (HttpServerSettings)SharedClassObject.findObject (HttpServerSettings.class, true);
+    }
 }
 

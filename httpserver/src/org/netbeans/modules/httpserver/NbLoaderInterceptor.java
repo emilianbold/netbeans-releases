@@ -14,13 +14,8 @@
 package org.netbeans.modules.httpserver;
 
 import org.apache.tomcat.core.*;
-import java.beans.*;
-import java.io.*;
-import java.io.IOException;
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.StringTokenizer;
 
+import org.openide.util.SharedClassObject;
 import org.openide.TopManager;
 
 /** Interceptor which tells the server about the classloader to be used by the 
@@ -34,15 +29,13 @@ public class NbLoaderInterceptor extends BaseInterceptor {
     }
 
     private void setNbLoader( ContextManager cm ) throws TomcatException {
-        HttpServerSettings op = HttpServerSettings.OPTIONS;
+        HttpServerSettings op = (HttpServerSettings)SharedClassObject.findObject (HttpServerSettings.class, true);
         
         cm.setParentClassLoader(TopManager.getDefault().systemClassLoader());
-        //ctx.getServletLoader().setParentLoader(TopManager.getDefault().systemClassLoader());
-        
     }
     
     public void contextInit(Context ctx) throws TomcatException {
-	if( ctx.getDebug() > 0 ) ctx.log("NbLoaderInterceptor - init");
+	if( ctx.getDebug() > 0 ) ctx.log("NbLoaderInterceptor - init"); // NOI18N
 	ContextManager cm=ctx.getContextManager();
 	
 	try {
@@ -50,7 +43,7 @@ public class NbLoaderInterceptor extends BaseInterceptor {
 	    setNbLoader( cm );
 
 	} catch (Exception e) {
-            String msg = "NbLoaderInterceptor failed";
+            String msg = "NbLoaderInterceptor failed";  // NOI18N
 	    System.out.println(msg);
 	}
 
