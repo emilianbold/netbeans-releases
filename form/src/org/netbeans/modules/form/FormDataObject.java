@@ -37,9 +37,6 @@ public class FormDataObject extends JavaDataObject {
 
   private static java.util.ResourceBundle formBundle = com.netbeans.ide.util.NbBundle.getBundle (FormDataObject.class);
 
-  /** The icon base for FormDataObject */
-  private static final String URL_ICON_BASE = "com/netbeans/developer/modules/resources/formObject";
-
   /** lock for closing window */
   private static final Object OPEN_FORM_LOCK = new Object ();
 
@@ -266,6 +263,7 @@ public class FormDataObject extends JavaDataObject {
 
 /*
  * Log
+ *  9    Gandalf   1.8         3/22/99  Ian Formanek    
  *  8    Gandalf   1.7         3/17/99  Ian Formanek    
  *  7    Gandalf   1.6         3/17/99  Ian Formanek    
  *  6    Gandalf   1.5         3/16/99  Ian Formanek    
