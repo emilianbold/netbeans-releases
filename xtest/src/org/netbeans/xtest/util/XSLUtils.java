@@ -96,5 +96,27 @@ public class XSLUtils {
         Transformer transformer = getTransformer(xsl);
         transform(inputXML,outputXML,xsl);
     }
+    
+    // here are also some extension to Xalan transformer --- these are used by the XTest's XSL scripts
+    
+    // replace 'original' string by 'replacement' string in 'input' string
+    public static String replaceString(String input, String original, String replacement) {
+        int index=0;
+        int newIndex;
+        StringBuffer resultBuffer = new StringBuffer(input.length());
+        while (((newIndex = input.indexOf(original,index)) > -1)&(index < input.length())) {
+            if (index < newIndex) {
+                resultBuffer.append(input.substring(index,newIndex));
+            }
+            resultBuffer.append(replacement);
+            index = newIndex + original.length();
+        }
+        
+        if (index < input.length()) {
+            resultBuffer.append(input.substring(index));
+        }
+        
+        return resultBuffer.toString();
+    }
 
 }
