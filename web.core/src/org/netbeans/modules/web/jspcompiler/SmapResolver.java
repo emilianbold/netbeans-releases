@@ -164,6 +164,10 @@ public class SmapResolver {
                 int hashPresent = token.indexOf(FID_DELIM);
                 if (hashPresent > -1) { // there's a hash => there's a fileid indicator
                     fileIndex = token.substring(hashPresent + 1, token.indexOf(':'));
+                    if ((fileIndex != null) && (fileIndex.indexOf(',') > -1)) {
+                        fileIndex = fileIndex.substring(0,fileIndex.indexOf(','));
+                    }
+                    
                 }
                 storeLine(token, fileIndex);
             }
@@ -321,7 +325,6 @@ public class SmapResolver {
         TreeMap tm = new TreeMap(fsection);
         Object o = tm.firstKey();
         String s = (String)fsection.get(o);
-        System.out.println("s: " + s);
         return s;
     }
 
