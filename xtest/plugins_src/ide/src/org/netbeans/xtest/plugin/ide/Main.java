@@ -76,17 +76,21 @@ public class Main extends Object {
 
     
     private static void prepareModuleLoaderClassPath() {
-        String moduleLoaderName = System.getProperty("xtest.useclassloader");
+        String moduleLoaderName = System.getProperty("xtest.ide.use.classloader");
         if (moduleLoaderName != null) {
-            System.out.println("Using module "+moduleLoaderName+" classloader to load tests");
-            String testbagClassPath = System.getProperty("tbag.classpath");
-            if (testbagClassPath != null) {
-                // set appropriate property
-                String patchesProperty = "netbeans.patches."+moduleLoaderName;
-                System.out.println("Setting system property "+patchesProperty+" to "+testbagClassPath);
-                System.setProperty(patchesProperty, testbagClassPath);
+            if (!moduleLoaderName.equals("openide")) { // openide is handler in the executor build script	
+                System.out.println("Using module "+moduleLoaderName+" classloader to load tests");
+                String testbagClassPath = System.getProperty("tbag.classpath");
+                if (testbagClassPath != null) {
+                    // set appropriate property
+                    String patchesProperty = "netbeans.patches."+moduleLoaderName;
+                    System.out.println("Setting system property "+patchesProperty+" to "+testbagClassPath);
+                    System.setProperty(patchesProperty, testbagClassPath);
+                } else {
+                    System.out.println("TestBag classpath (tbag.classpath) property not defined - there is nothing to load");
+                }
             } else {
-                System.out.println("TestBag classpath (tbag.classpath) property not defined - there is nothing to load");
+            	System.out.println("Using openide classlaoder to load the tests");
             }
         }
     }
