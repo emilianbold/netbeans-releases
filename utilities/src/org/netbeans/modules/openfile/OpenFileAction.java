@@ -16,12 +16,15 @@ package org.netbeans.modules.openfile;
 
 
 import java.io.File;
+import java.util.Enumeration;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.JFileChooser;
 
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.util.actions.CallableSystemAction;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.JarFileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -75,6 +78,30 @@ public class OpenFileAction extends CallableSystemAction {
             NbBundle.getBundle(getClass()).getString("TXT_TxtFilter")));
         
         chooser.setFileFilter(currentFilter);
+        
+        if (currDir == null)
+        {
+            String defaultDir = null;
+            try
+            {
+                Enumeration enu = TopManager.getDefault().getRepository().getFileSystems();
+                while (enu.hasMoreElements())
+                {
+                    FileSystem fs = (FileSystem)enu.nextElement();
+                    if (fs != null && fs.isValid() && fs.isHidden() == false && fs instanceof JarFileSystem == false && fs.getSystemName() != null)
+                    {
+                        defaultDir = fs.getSystemName();
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                defaultDir = null;
+            }
+            if (defaultDir != null)
+                currDir = new File(defaultDir);
+        }
         
         if(currDir != null) 
             chooser.setCurrentDirectory (currDir);
