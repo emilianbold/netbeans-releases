@@ -43,6 +43,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="javahelp.jar.dir" value="${nb.modules/docs.dir}"/>
         <property name="javahelp.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="javahelp.jar" value="${javahelp.jar.dir}/${javahelp.jar.basename}"/>
+	<property name="javac.source" value="1.4" />
     </target>
 
     <target name="files-init" depends="basic-init">
@@ -115,7 +116,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile" depends="init">
         <mkdir dir="${build.classes.dir}"/>
-        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="1.4" includeantruntime="false">
+        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" includeantruntime="false">
             <classpath refid="cp"/>
         </javac>
         <copy todir="${build.classes.dir}">
@@ -130,7 +131,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- XXX consider deleting the .class file first to force a rebuild -->
         <javac srcdir="${src.dir}" destdir="${build.classes.dir}"
                debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}"
-               source="1.4" includes="${javac.includes}" optimize="${build.compiler.optimize}" includeantruntime="false">
+               source="${javac.source}" includes="${javac.includes}" optimize="${build.compiler.optimize}" includeantruntime="false">
             <classpath refid="cp"/>
         </javac>
     </target>
@@ -264,7 +265,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${build.test.unit.classes.dir}"/>
         <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}"
-               source="1.4" optimize="${build.compiler.optimize}" includeantruntime="false">
+               source="${javac.source}" optimize="${build.compiler.optimize}" includeantruntime="false">
                <exclude name="**/jars/**"/><!-- XXX for core only; fix in core, not here -->
             <classpath refid="test.unit.cp"/>
         </javac>
@@ -282,7 +283,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- XXX consider deleting the .class file first to force a rebuild -->
         <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}"
-               source="1.4" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
+               source="${javac.source}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
             <classpath refid="test.unit.cp"/>
         </javac>
     </target>

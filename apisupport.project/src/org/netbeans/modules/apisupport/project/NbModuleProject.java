@@ -234,6 +234,7 @@ final class NbModuleProject implements Project {
         defaults.put("test.qa-functional.src.dir", "test/qa-functional/src"); // NOI18N
         defaults.put("build.test.unit.classes.dir", "build/test/unit/classes"); // NOI18N
         defaults.put("module.classpath", computeModuleClasspath());
+        defaults.put("javac.source", "1.4");
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
         return PropertyUtils.sequentialPropertyEvaluator(predefs, new PropertyProvider[] {
             PropertyUtils.fixedPropertyProvider(stock),
@@ -341,7 +342,7 @@ final class NbModuleProject implements Project {
         //XXX Workaround of core/bootstrap
         //Why it is not in the nbbuild/templates/modules.xml ???
         if ("org.netbeans".equals(this.getCodeNameBase())) {    //NOI18N
-            return helper.resolveFile(eval.evaluate("${netbeans.dest.dir}/platform4/${module.jar}"));   //NOI18N
+            return helper.resolveFile(eval.evaluate("${netbeans.dest.dir}/platform5/${module.jar}"));   //NOI18N
         }
         else {
             return helper.resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")); // NOI18N
@@ -463,6 +464,13 @@ final class NbModuleProject implements Project {
             }
         }
         return extraCompilationUnits;
+    }
+
+    /** Get the Java source level used for this module. Default is 1.4. */
+    public String getJavacSource() {
+        String javacSource = evaluator().getProperty("javac.source");
+	assert javacSource != null;
+	return javacSource;
     }
     
     private final class Info implements ProjectInformation {
