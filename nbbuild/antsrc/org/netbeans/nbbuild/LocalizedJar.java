@@ -361,9 +361,9 @@ public class LocalizedJar extends MatchingTask {
                             is = MatchingTask.class.getResourceAsStream ("/org/apache/tools/ant/defaultManifest.mf");
                             time = System.currentTimeMillis ();
                         }
-                        Manifest mani;
+                        java.util.jar.Manifest mani;
                         try {
-                            mani = new Manifest (is);
+                            mani = new java.util.jar.Manifest (is);
                         } finally {
                             is.close ();
                         }
