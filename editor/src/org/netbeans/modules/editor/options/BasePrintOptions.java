@@ -21,6 +21,7 @@ import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.modules.editor.EditorModule;
 
 import org.openide.text.PrintSettings;
 import org.openide.util.HelpCtx;
@@ -59,6 +60,7 @@ public class BasePrintOptions extends OptionSupport {
     }
 
     public String displayName() {
+
         String name;
         try {
             name = getString(OPTIONS_PREFIX + PRINT_PREFIX + getTypeName());
@@ -96,6 +98,7 @@ public class BasePrintOptions extends OptionSupport {
             printColoringMapInitializer.updateSettingsMap(kitClass, settingsMap);
         }
     }
+    
 
     public boolean getPrintLineNumberVisible() {
         return ((Boolean)getSettingValue(SettingsNames.PRINT_LINE_NUMBER_VISIBLE)).booleanValue();
@@ -106,6 +109,7 @@ public class BasePrintOptions extends OptionSupport {
     }
 
     public Map getPrintColoringMap() {
+        EditorModule.init();
         Map cm = SettingsUtil.getColoringMap(getKitClass(), true, true);
         cm.put(null, getKitClass().getName() ); // add kit class
         return cm;

@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import org.netbeans.editor.SettingsNames;
 import java.util.List;
+import org.netbeans.modules.editor.EditorModule;
 
 /**
 * Options for the base editor kit
@@ -95,6 +96,7 @@ public class OptionSupport extends SystemOption {
      * @param settingName name of the setting to get.
      */
     public Object getSettingValue(String settingName) {
+        EditorModule.init();
         return Settings.getValue(kitClass, settingName);
     }
 

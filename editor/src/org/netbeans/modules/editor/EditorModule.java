@@ -92,12 +92,30 @@ public class EditorModule extends ModuleInstall {
 
 
     /** PrintOptions to be installed */
-    Class[] printOpts = new Class[] {
+    static Class[] printOpts = new Class[] {
         PlainPrintOptions.class,
         JavaPrintOptions.class,
         HTMLPrintOptions.class
     };
+    
+    static boolean inited = false;
 
+    
+    public static void init(){
+        if (inited) return;
+        NbEditorSettingsInitializer.init();
+        PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
+
+        // Start listening on addition/removal of print options
+        BasePrintOptions bpo = (BasePrintOptions) BasePrintOptions.findObject(BasePrintOptions.class, true);
+        bpo.init();
+        
+        for (int i = 0; i < printOpts.length; i++) {
+            ps.addOption((SystemOption)SharedClassObject.findObject(printOpts[i], true));
+        }
+        inited = true;
+    }
+    
     /** Module installed again. */
     public void restored () {
 
@@ -149,10 +167,12 @@ public class EditorModule extends ModuleInstall {
         // Settings
         //NbEditorSettingsInitializer.init(); moving to NbEditorKit in accordance with the bug #21976
 
+
 	// defer the rest of initialization, but enable a bit of paralelism
 //        org.openide.util.RequestProcessor.postRequest (this, 0, Thread.MIN_PRIORITY);
 
         // Options
+            /*
         PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
 
         // Start listening on addition/removal of print options
@@ -162,7 +182,7 @@ public class EditorModule extends ModuleInstall {
         for (int i = 0; i < printOpts.length; i++) {
             ps.addOption((SystemOption)SharedClassObject.findObject(printOpts[i], true));
         }
-
+*/
         // Autoregistration
         try {
             Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
@@ -198,6 +218,8 @@ public class EditorModule extends ModuleInstall {
     /** Called when module is uninstalled. Overrides superclass method. */
     public void uninstalled() {
 
+        inited = false;
+        
         // Options
         PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
 

@@ -90,7 +90,7 @@ public class NbEditorKit extends ExtKit {
     public NbEditorKit(){
         super();
         // lazy init of MIME options
-        NbEditorSettingsInitializer.init();
+        EditorModule.init();
         AllOptionsFolder.getDefault().loadMIMEOption(this.getClass());
     }
 
