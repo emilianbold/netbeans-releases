@@ -103,33 +103,7 @@ Microsystems, Inc. All Rights Reserved.
     change, or are wondering how to convert existing code to be compatible.
 </p>
 
-      <hr/><h1><a name="list-all-apis">Index of APIs</a></h1>
-      <changelist style="list-all-apis"/>
-
-      <h1><a name="incompat-by-date">Incompatible changes by date</a></h1>
-      <p>Not all deprecations are listed here, assuming that the deprecated
-        APIs continue to essentially work.
-      </p>
-      <changelist style="incompat-by-date"/>
-
-      <h1><a name="all-by-date">All changes by date</a></h1>
-      <changelist style="all-by-date"/>
-
-      <h1><a name="all-by-version">Changes by version</a></h1>
-      <p>
-        These API specification versions may be used to indicate that a module
-        requires a certain API feature in order to function. For example, if you
-        see here a feature you need which is labelled <samp>0.4</samp>, your
-        manifest should contain in its main attributes the line:
-      </p>
-      <pre>OpenIDE-Module-Module-Dependencies: org.netbeans.spi.viewmodel/1 &gt; 0.4</pre>
-      <changelist style="all-by-version"/>
-
-      <h1><a name="all-by-class">Changes by affected class</a></h1>
-      <changelist style="all-by-class"/>
-
-      <hr/><h1><a name="details-by-api">Details of all changes by API and date</a></h1>
-      <changelist style="details-by-api"/>
+      <hr/><standard-changelists module-code-name="org.netbeans.spi.viewmodel/1"/>
 
       <hr/><p>@FOOTER@</p>
 
