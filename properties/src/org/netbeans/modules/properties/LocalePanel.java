@@ -455,6 +455,8 @@ public class LocalePanel extends JPanel {
         languageCombo.setSelectedItem(selectedLocale.getLanguage());
         countryCombo.setSelectedItem(selectedLocale.getCountry());
         variantCombo.setSelectedItem(selectedLocale.getVariant());
+        
+        supportedList.ensureIndexIsVisible(supportedList.getSelectedIndex());
     }//GEN-LAST:event_supportedListValueChanged
 
     private void variantComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variantComboActionPerformed
