@@ -63,9 +63,9 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
         suite.addTest(new PropertyType_NbClassPath("testByInPlace"));
         suite.addTest(new PropertyType_NbClassPath("testCustomizerCancel"));
         suite.addTest(new PropertyType_NbClassPath("testCustomizerAddDirectory"));
-        suite.addTest(new PropertyType_NbClassPath("testCustomizerAddJar"));
         suite.addTest(new PropertyType_NbClassPath("testCustomizerRemove"));
         suite.addTest(new PropertyType_NbClassPath("testCustomizerUp"));
+        suite.addTest(new PropertyType_NbClassPath("testCustomizerAddJar"));
         
         // must rewrite test specs to add this test 
         //suite.addTest(new PropertyType_NbClassPath("testCustomizerDown"));
@@ -82,21 +82,23 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
     
     public void testCustomizerAddJar() {
         propertyValue_L = ADDJAR + FS_Data_path_data_jar;
-        propertyValueExpectation_L = "one.jar:two.zip:" + FS_Data_path + ":" + FS_Data_path_data_jar;
+        propertyValueExpectation_L = "two.zip:one.jar:"+ FS_Data_path_data_jar;
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerRemove() {
         propertyValue_L = REMOVE + FS_Data_path;
-        propertyValueExpectation_L = "one.jar:two.zip:" + FS_Data_path_data_jar;
+        //propertyValueExpectation_L = "one.jar:two.zip:" + FS_Data_path_data_jar;
+        propertyValueExpectation_L = "one.jar:two.zip";
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
 
     public void testCustomizerUp() {
         propertyValue_L = UP + "two.zip";
-        propertyValueExpectation_L = "two.zip:one.jar:" + FS_Data_path_data_jar;
+        //propertyValueExpectation_L = "two.zip:one.jar:" + FS_Data_path_data_jar;
+        propertyValueExpectation_L = "two.zip:one.jar";
         waitDialog = false;
         lastTest = true;
         setByCustomizerOk(propertyName_L, true);

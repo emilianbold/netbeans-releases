@@ -33,6 +33,7 @@ import org.netbeans.test.oo.gui.jelly.form.ComponentInspector;
 import org.netbeans.test.oo.gui.jello.JelloOKOnlyDialog;
 
 import org.netbeans.test.oo.gui.jam.JamPropertyButton;
+import org.netbeans.test.oo.gui.jam.JamUtilities;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.jemmy.JemmyProperties;
@@ -101,6 +102,7 @@ public abstract class PropertyEditorsTest extends NbTestCase {
             propertyInitialValue = getValue(propertyName);
             openAndGetPropertyCustomizer(propertyName);
             setCustomizerValue();
+            JamUtilities.waitEventQueueEmpty(500);
             propertyCustomizer.ok();
             err.println("=========================== Trying to set value by customizer-ok {name="+propertyName+" / value="+propertyValue+"} - finished.");
             verifyPropertyValue(expectance);
