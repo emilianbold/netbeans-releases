@@ -699,7 +699,11 @@ class AntGrammar implements GrammarQuery {
         public String getDisplayName() {
             return null;
         }
-        
+       
+        // TODO in MyElement return true for really empty elements such as "pathelement"
+        public boolean isEmptyElement() {
+            return false;
+        } 
     }
     
     private static class MyEntityReference extends AbstractResultNode implements EntityReference {
