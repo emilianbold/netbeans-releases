@@ -50,6 +50,14 @@ public final class DefaultSplitContainer extends AbstractModeContainer {
         // To be able to move split dividers.
         panel.setMinimumSize(new Dimension(1, 1));
     }
+    
+    public void requestAttention (TopComponent tc) {
+        tabbedHandler.requestAttention(tc);
+    }
+    
+    public void cancelRequestAttention (TopComponent tc) {
+        tabbedHandler.cancelRequestAttention(tc);
+    }
 
     /** */
     protected Component getModeComponent() {

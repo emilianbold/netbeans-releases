@@ -23,8 +23,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultSingleSelectionModel;
@@ -243,10 +245,39 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         int index = getButtonIndex(clickedButton);
         commandMgr.showPopup(mouseEvent, index);
     }
+    
+    private SlidingButton buttonFor (TopComponent tc) {
+        int idx = 0;
+        for (Iterator i=dataModel.getTabs().iterator(); i.hasNext();) {
+            TabData td = (TabData) i.next();
+            if (td.getComponent() == tc) {
+                break;
+            }
+            if (!i.hasNext()) {
+                idx = -1;
+            } else {
+                idx++;
+            }
+        }
+        if (idx >= 0 && idx < dataModel.size()) {
+            return getButton(idx);
+        } else {
+            return null;
+        }
+    }
+    
+    public void setBlinking (TopComponent tc, boolean val) {
+        SlidingButton button = buttonFor (tc);
+        if (button != null) {
+            button.setBlinking(val);
+        }
+    }
 
     /** Triggers slide operation by changing selected index */
     public void userClickedSlidingButton(Component clickedButton) {
         int index = getButtonIndex(clickedButton);
+        SlidingButton button = (SlidingButton) buttons.get(index);
+        button.setBlinking(false);
         
         if (index != selModel.getSelectedIndex() || !isActive()) {
             TopComponent tc = (TopComponent)dataModel.getTab(index).getComponent();
@@ -264,6 +295,8 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         if (index < 0) {
             return false;
         }
+        SlidingButton button = (SlidingButton) buttons.get(index);
+        button.setBlinking(false);
         TopComponent tc = (TopComponent)dataModel.getTab(index).getComponent();
         if (tc == null) {
             return false;
@@ -364,9 +397,16 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     
     private void syncWithModel () {
         assert SwingUtilities.isEventDispatchThread();
-        
+        Set blinks = null;
         for (Iterator iter = buttons.iterator(); iter.hasNext(); ) {
-            gestureRecognizer.detachButton((SlidingButton)iter.next());
+            SlidingButton curr = (SlidingButton) iter.next();
+            if (curr.isBlinking()) {
+                if (blinks == null) {
+                    blinks = new HashSet();
+                }
+                blinks.add (curr.getData());
+            }
+            gestureRecognizer.detachButton(curr);
         }
         removeAll();
         buttons.clear();
@@ -374,7 +414,11 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         List dataList = dataModel.getTabs();
         SlidingButton curButton;
         for (Iterator iter = dataList.iterator(); iter.hasNext(); ) {
-            curButton = new SlidingButton((TabData)iter.next(), dataModel.getOrientation());
+            TabData td = (TabData) iter.next();
+            curButton = new SlidingButton(td, dataModel.getOrientation());
+            if (blinks != null && blinks.contains(td)) {
+                curButton.setBlinking(true);
+            }
             gestureRecognizer.attachButton(curButton);
             buttons.add(curButton);
             add(curButton);

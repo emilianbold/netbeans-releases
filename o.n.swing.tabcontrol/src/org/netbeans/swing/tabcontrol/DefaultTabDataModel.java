@@ -327,9 +327,17 @@ public class DefaultTabDataModel implements TabDataModel {
         fireIntervalRemoved(lde);
     }
 
+    /**
+     * Remove a range of tabs from <code>start</code> up to <i>and including</i> 
+     * <code>finish</code>.
+     */
     public void removeTabs(int start, int end) {
         java.util.List affected = list.subList(start, end);
-        list.removeRange(start, end);
+        if (start == end) {
+            list.remove(start);
+        } else {
+            list.removeRange(start, end + 1);
+        }
         ComplexListDataEvent lde = new ComplexListDataEvent(this,
                                                             ListDataEvent.INTERVAL_REMOVED,
                                                             start, end);
@@ -343,7 +351,6 @@ public class DefaultTabDataModel implements TabDataModel {
             m.put(new Integer(indices[i]), data[i]);
         }
         Arrays.sort(indices);
-//        for (int i=indices.length-1; i >= 0; i--) {
         for (int i = 0; i < indices.length; i++) {
             Integer key = new Integer(indices[i]);
             TabData currData = (TabData) m.get(key);

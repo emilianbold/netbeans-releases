@@ -74,6 +74,9 @@ public interface View {
     public int CHANGE_UI_UPDATE    = 61;
     public int CHANGE_PROJECT_NAME = 62;
     
+    public int TOPCOMPONENT_REQUEST_ATTENTION = 63;
+    public int TOPCOMPONENT_CANCEL_REQUEST_ATTENTION = 64;
+    
     /** Provides GUI changes to manifest model changes to user. */
     public void changeGUI(ViewEvent[] viewEvents, WindowSystemSnapshot snapshot);
     

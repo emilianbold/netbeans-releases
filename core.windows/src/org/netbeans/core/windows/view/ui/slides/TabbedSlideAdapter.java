@@ -76,6 +76,15 @@ public final class TabbedSlideAdapter implements Tabbed {
         selModel = new DefaultSingleSelectionModel();
         slideBar = new SlideBar(this, (SlideBarDataModel)dataModel, selModel);
     }
+    
+    public void requestAttention (TopComponent tc) {
+        slideBar.setBlinking(tc, true);
+    }
+    
+    public void cancelRequestAttention (TopComponent tc) {
+        slideBar.setBlinking(tc, false);
+    }
+    
 
     private void setSide (String side) {
         int orientation = SlideBarDataModel.WEST;
@@ -242,6 +251,11 @@ public final class TabbedSlideAdapter implements Tabbed {
         int newIndex = indexOf(comp);
         if (selModel.getSelectedIndex() != newIndex) {
             selModel.setSelectedIndex(newIndex);
+        }
+        if (comp instanceof TopComponent) {
+            //Inelegant to do this here, but it guarantees blinking stops
+            TopComponent tc = (TopComponent) comp;
+            tc.cancelRequestAttention();
         }
     }
     

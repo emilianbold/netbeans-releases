@@ -101,10 +101,12 @@ public class MetalSlidingButtonUI extends SlidingButtonUI {
     }
     
     protected void paintBackground (Graphics2D g, AbstractButton button) {
+        hiddenToggle.setBackground (button.getBackground());
         hiddenToggle.paint(g);
     }
     
     protected void paintButtonPressed(Graphics g, AbstractButton b) {    
+        hiddenToggle.setBackground (b.getBackground());
         hiddenToggle.paint(g);
     }
     

@@ -34,6 +34,7 @@ class GenericGlowingChiclet {
     public static final int STATE_SELECTED = 2;
     public static final int STATE_ACTIVE = 4;
     public static final int STATE_CLOSING = 8;
+    public static final int STATE_ATTENTION = 16;
 
     //Basic apple colors.  Package access so that GtkChiclet can install its own
     //defaults if the GTK classes it proxies for colors are not available or
@@ -62,6 +63,10 @@ class GenericGlowingChiclet {
         new Color(255, 238, 220), new Color(238, 137, 109),
         new Color(255, 50, 50), new Color(255, 237, 40)};
 
+    static Color[] attention = new Color[]{
+        new Color(255, 255, 220), new Color(238, 237, 109),
+        new Color(255, 255, 50), new Color(255, 237, 40)};
+        
     private Color upperTop = selectedActive[0];
     private Color upperBottom = selectedActive[1];
     private Color lowerTop = selectedActive[2];
@@ -124,6 +129,8 @@ class GenericGlowingChiclet {
             Color[] nue;
             if ((state & STATE_CLOSING) != 0) {
                 nue = closing;
+            } else if ((state & STATE_ATTENTION) != 0) {
+                nue = attention;
             } else {
                 switch (state) {
                     case STATE_PRESSED | STATE_ACTIVE:

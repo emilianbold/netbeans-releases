@@ -199,12 +199,18 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         // background body, colored according to state
         boolean selected = isSelected(index);
         boolean focused = selected && isActive();
-        if (focused) {
+        boolean attention = isAttention(index);
+        if (focused && !attention) {
             ColorUtil.xpFillRectGradient((Graphics2D) g, x, y, width, height,
                                          focusFillBrightC, focusFillDarkC);
-        } else if (selected && isMoreThanOne()) {
+        } else if (selected && isMoreThanOne() && !attention) {
             g.setColor(selFillC);
             g.fillRect(x, y, width, height);
+        } else if (attention) {
+            Color a = new Color (255, 255, 128);
+            Color b = new Color (230, 200, 64);
+            ColorUtil.xpFillRectGradient((Graphics2D) g, x, y, width, height,
+                                         a, b);         
         } else {
             ColorUtil.xpFillRectGradient((Graphics2D) g, x, y, width, height,
                                          unselFillBrightC, unselFillDarkC);

@@ -101,7 +101,14 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
 
         return tabbed;
     }
+    
+    public void requestAttention (TopComponent tc) {
+        tabbed.requestAttention(tc);
+    }
 
+    public void cancelRequestAttention (TopComponent tc) {
+        tabbed.cancelRequestAttention(tc);
+    }
     
     public Component getComponent() {
         return tabbed.getComponent();

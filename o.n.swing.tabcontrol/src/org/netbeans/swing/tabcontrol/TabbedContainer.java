@@ -556,6 +556,38 @@ public class TabbedContainer extends JComponent {
             firePropertyChange(PROP_ACTIVE, !active, active);
         }
     }
+    
+    /**
+     * Cause the tab at the specified index to blink or otherwise suggest that
+     * the user should click it.
+     */
+    public final void requestAttention (int tab) {
+        getUI().requestAttention(tab);
+    }
+    
+    public final void cancelRequestAttention (int tab) {
+        getUI().cancelRequestAttention(tab);
+    }
+    
+    /**
+     * Cause the specified tab to blink or otherwisse suggest that the user should
+     * click it.
+     */
+    public final boolean requestAttention (TabData data) {
+        int idx = getModel().indexOf(data);
+        boolean result = idx >= 0;
+        if (result) {
+            requestAttention (idx);
+        }
+        return result;
+    }    
+    
+    public final void cancelRequestAttention (TabData data) {
+        int idx = getModel().indexOf(data);
+        if (idx != -1) {
+            cancelRequestAttention(idx);
+        }
+    }
 
     /**
      * Determine if this component thinks it is &quot;active&quot;, which

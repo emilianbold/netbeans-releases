@@ -126,6 +126,14 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
         return new MouseAdapter() {}; //XXX
     }
     
+    public void requestAttention (int tab) {
+        //not implemented
+    }
+    
+    public void cancelRequestAttention (int tab) {
+        //not implemented
+    }
+    
     protected ChangeListener createSelectionListener() {
         return new ChangeListener() {
             private int lastKnownSelection = -1;

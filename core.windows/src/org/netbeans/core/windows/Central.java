@@ -49,6 +49,18 @@ final class Central implements ControllerHandler {
     }
 
     
+    public void topComponentRequestAttention (ModeImpl mode, TopComponent tc) {
+        String modeName = getModeName(mode);
+        viewRequestor.scheduleRequest (
+            new ViewRequest(modeName, View.TOPCOMPONENT_REQUEST_ATTENTION, tc, tc));
+    }
+    
+    public void topComponentCancelRequestAttention (ModeImpl mode, TopComponent tc) {
+        String modeName = getModeName(mode);
+        viewRequestor.scheduleRequest (
+            new ViewRequest(modeName, View.TOPCOMPONENT_CANCEL_REQUEST_ATTENTION, tc, tc));
+    }    
+    
     /////////////////////
     // Mutators >>
     /** Sets visible or invisible window system and requests view accordingly. */

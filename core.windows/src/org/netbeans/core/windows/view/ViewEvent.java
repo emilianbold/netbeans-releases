@@ -97,6 +97,8 @@ public class ViewEvent {
             case View.CHANGE_TOPCOMPONENT_TOOLTIP_CHANGED : typeStr = "CHANGE_TOPCOMPONENT_TOOLTIP_CHANGED"; break; //NOI18N
             case View.CHANGE_UI_UPDATE : typeStr = "CHANGE_UI_UPDATE"; break; //NOI18N
             case View.CHANGE_VISIBILITY_CHANGED : typeStr = "CHANGE_VISIBILITY_CHANGED"; break; //NOI18N
+            case View.TOPCOMPONENT_REQUEST_ATTENTION : typeStr = "TOPCOMPONENT_REQUEST_ATTENTION"; break; //NOI18N
+            case View.TOPCOMPONENT_CANCEL_REQUEST_ATTENTION : typeStr = "TOPCOMPONENT_CANCEL_REQUEST_ATTENTION"; break; //NOI18N
         }
         buf.append(typeStr);
         buf.append("\nnewValue="); //NOI18N

@@ -89,7 +89,7 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
     }
 
     private void adjustSelectionForEvent(ListDataEvent e) {
-        if (e.getType() == e.CONTENTS_CHANGED) {
+        if (e.getType() == e.CONTENTS_CHANGED || sel == -1) {
             return;
         }
         int start = e.getIndex0();
@@ -141,6 +141,7 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
     }
 
     public void indicesAdded(ComplexListDataEvent e) {
+        if (sel < 0) return;
         int[] indices = e.getIndices();
         java.util.Arrays.sort(indices);
         int offset = 0;
@@ -158,6 +159,7 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
     }
 
     public void indicesRemoved(ComplexListDataEvent e) {
+        if (sel < 0) return;
         int[] indices = e.getIndices();
         java.util.Arrays.sort(indices);
         int offset = -1;
@@ -177,12 +179,13 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
             sel = -1;
             fireStateChanged();
         } else if (offset != 0) {
-            sel += offset;
+            sel = Math.max( -1, Math.min (sel + offset, -1));
             fireStateChanged();
         }
     }
 
     public void indicesChanged(ComplexListDataEvent e) {
+        if (sel < 0) return;
         if (e instanceof VeryComplexListDataEvent) { //it always will be
 
             ArrayDiff dif = ((VeryComplexListDataEvent) e).getDiff();

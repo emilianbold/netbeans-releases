@@ -27,6 +27,7 @@ import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.text.View;
+import org.netbeans.swing.tabcontrol.SlidingButton;
 import org.netbeans.swing.tabcontrol.SlidingButtonUI;
 import org.netbeans.swing.tabcontrol.plaf.GenericGlowingChiclet;
 
@@ -73,7 +74,7 @@ public class AquaSlidingButtonUI extends SlidingButtonUI {
    protected void paintBackground(Graphics2D graph, AbstractButton b) {
         chic.setNotch(false, false);
 
-        chic.setState(0);
+        chic.setState(((SlidingButton) b).isBlinkState() ? GenericGlowingChiclet.STATE_ATTENTION : 0);
         chic.setArcs(0.5f, 0.5f, 0.5f, 0.5f);
         chic.setBounds(0, 1, b.getWidth() - 2, b.getHeight() - 2);
         chic.setAllowVertical(true);
@@ -87,6 +88,7 @@ public class AquaSlidingButtonUI extends SlidingButtonUI {
         state |= b.getModel().isSelected() ? GenericGlowingChiclet.STATE_SELECTED : 0;
         state |= b.getModel().isPressed() ? GenericGlowingChiclet.STATE_PRESSED : 0;
         state |= b.getModel().isRollover() ? GenericGlowingChiclet.STATE_ACTIVE : 0;
+        state |= ((SlidingButton) b).isBlinkState() ? GenericGlowingChiclet.STATE_ATTENTION : 0;
         chic.setState(state);
         chic.setArcs(0.5f, 0.5f, 0.5f, 0.5f);
         chic.setBounds(0, 1, b.getWidth() - 2, b.getHeight() - 2);

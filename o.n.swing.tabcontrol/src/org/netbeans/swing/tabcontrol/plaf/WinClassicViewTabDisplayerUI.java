@@ -230,16 +230,20 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         // background body, colored according to state
         boolean selected = isSelected(index);
         boolean focused = isFocused(index);
+        boolean attention = isAttention(index);
+        
         Paint result = null;
-        if (focused) {
+        if (focused && !attention) {
             result =
                     ColorUtil.getGradientPaint(x, y, getSelGradientColor(),
                                                //NOI18N
                                                x + width, y,
                                                UIManager.getColor(
                                                        "TabbedPane.background"));
-        } else if (selected) {
+        } else if (selected && !attention) {
             result = UIManager.getColor("TabbedPane.background"); //NOI18N
+        } else if (attention) {
+            result = WinClassicEditorTabCellRenderer.ATTENTION_COLOR;
         } else {
             result = UIManager.getColor("tab_unsel_fill");
         }

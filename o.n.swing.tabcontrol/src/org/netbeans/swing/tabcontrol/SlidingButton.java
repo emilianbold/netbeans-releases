@@ -12,10 +12,12 @@
  */
 package org.netbeans.swing.tabcontrol;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.Timer;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -41,7 +43,7 @@ public final class SlidingButton extends JToggleButton {
     /** orientation of this button */
     private int orientation;
     /** Ascoiated tab data */
-    private TabData buttonData;
+    private TabData data;
         
      
     /** Create a new button representing TabData from the model.
@@ -52,7 +54,7 @@ public final class SlidingButton extends JToggleButton {
         super(buttonData.getText(), buttonData.getIcon(), false);
         
         this.orientation = orientation;
-        this.buttonData = buttonData;
+        data = buttonData;
         // XXX
         //setFont (displayer.getFont());
         setFocusable(false);
@@ -66,7 +68,6 @@ public final class SlidingButton extends JToggleButton {
         setBorderPainted(false);
 //        setHorizontalTextPosition(SwingConstants.);
 //        setVerticalTextPosition(SwingConstants.CENTER);
-        
         // note, updateUI() is called from superclass constructor
     }
 
@@ -77,11 +78,12 @@ public final class SlidingButton extends JToggleButton {
 
     public void removeNotify() {
         super.removeNotify();
+        setBlinking(false);
         //XXX register with tooltip manager
     }
     
     public String getToolTipText() {
-        return buttonData.getTooltip();
+        return data.getTooltip();
     }
     
     /************** Swing standard technique for attaching UI class *********/
@@ -104,6 +106,53 @@ public final class SlidingButton extends JToggleButton {
     /** Returns orinetation of this button */
     public int getOrientation() {
         return orientation;
+    }
+    
+    public boolean isBlinking() {
+        return blinkState;
+    }
+    
+    private Timer blinkTimer = null;
+    private boolean blinkState = false;
+    public void setBlinking (boolean val) {
+        if (!val && blinkTimer != null) {
+            blinkTimer.stop();
+            blinkTimer = null;
+            boolean wasBlinkState = blinkState;
+            blinkState = false;
+            if (wasBlinkState) {
+                repaint();
+            }
+        } else if (val && blinkTimer == null) {
+            blinkTimer = new Timer(700, new BlinkListener());
+            blinkState = true;
+            blinkTimer.start();
+            repaint();
+        }
+    }
+    
+    private class BlinkListener implements ActionListener {
+        public void actionPerformed (ActionEvent ae) {
+            blinkState = !blinkState;
+            repaint();
+        }
+    }
+    
+    /**
+     * Used by the UI to determine whether to use the blink
+     * color or the regular color
+     */
+    public final boolean isBlinkState() {
+        return blinkState;
+    }
+    
+    public final Color getBackground() {
+        return isBlinkState() ? 
+            new Color(252, 250, 244) : super.getBackground();
+    }
+    
+    public TabData getData() {
+        return data;
     }
     
 }

@@ -98,6 +98,14 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
             }
         });
     }
+    
+    public void requestAttention (TopComponent tc) {
+        //not implemented
+    }
+    
+    public void cancelRequestAttention (TopComponent tc) {
+        //not implemented
+    }
 
     /** */
     protected Component getModeComponent() {

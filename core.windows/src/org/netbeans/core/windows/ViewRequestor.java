@@ -119,7 +119,9 @@ class ViewRequestor {
             || type == View.CHANGE_TOPCOMPONENT_ACTIVATED
             || type == View.CHANGE_DND_PERFORMED
             || type == View.CHANGE_UI_UPDATE
-            || type == View.CHANGE_PROJECT_NAME;
+            || type == View.CHANGE_PROJECT_NAME
+            || type == View.TOPCOMPONENT_CANCEL_REQUEST_ATTENTION
+            || type == View.TOPCOMPONENT_REQUEST_ATTENTION;
             
         synchronized(requests) {
             Object oldValue = null;

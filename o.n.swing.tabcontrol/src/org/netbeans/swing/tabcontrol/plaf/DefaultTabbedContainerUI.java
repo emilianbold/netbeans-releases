@@ -185,6 +185,13 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         tabDisplayer.getSelectionModel().addChangeListener(selectionListener);
 
     }
+    
+    
+    /** Used by unit tests */
+    TabDisplayer getTabDisplayer() {
+        return tabDisplayer;
+    }
+
     private MouseListener forward = null;
 
     /** This method is final.  Subclasses which need to provide additional initialization should override
@@ -612,6 +619,14 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         r.x += p.x;
         r.y += p.y;
         return r;
+    }
+    
+    protected void requestAttention (int tab) {
+        tabDisplayer.requestAttention (tab);
+    }
+    
+    protected void cancelRequestAttention (int tab) {
+        tabDisplayer.cancelRequestAttention(tab);
     }
     
     public void setShowCloseButton (boolean val) {

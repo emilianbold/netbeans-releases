@@ -100,7 +100,18 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
         return (WindowManagerImpl)Lookup.getDefault().lookup(WindowManager.class);
     }
+    
+    public void topComponentRequestAttention(TopComponent tc) {
+        ModeImpl mode = (ModeImpl) findMode(tc);
+        
+        central.topComponentRequestAttention(mode, tc);
+    }
 
+    public void topComponentCancelRequestAttention(TopComponent tc) {
+        ModeImpl mode = (ModeImpl) findMode(tc);
+        
+        central.topComponentCancelRequestAttention(mode, tc);
+    }
 
     /////////////////////////
     // API impelementation >>

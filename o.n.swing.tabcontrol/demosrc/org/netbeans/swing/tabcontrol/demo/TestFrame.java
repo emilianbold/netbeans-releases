@@ -63,10 +63,16 @@ public class TestFrame extends javax.swing.JFrame {
          */
         
         try {
-            //UIManager.setLookAndFeel(new javax.swing.plaf.metal.MetalLookAndFeel());
+//            UIManager.setLookAndFeel(new javax.swing.plaf.metal.MetalLookAndFeel());
         } catch (Exception e) {
         }
 
+//        UIManager.put ("EditorTabDisplayerUI", "org.netbeans.swing.tabcontrol.plaf.WinClassicEditorTabDisplayerUI");
+//        UIManager.put ("ViewTabDisplayerUI", "org.netbeans.swing.tabcontrol.plaf.WinClassicViewTabDisplayerUI");
+//        UIManager.put ("EditorTabDisplayerUI", "org.netbeans.swing.tabcontrol.plaf.WinXPEditorTabDisplayerUI");
+//        UIManager.put ("ViewTabDisplayerUI", "org.netbeans.swing.tabcontrol.plaf.WinXPViewTabDisplayerUI");
+        
+        
         JLabel jb1 = new JLabel("Label 1");
         final JButton jb2 = new JButton("Button 2 - Update UI");
         JButton jb3 = new JButton("Click me to remove this tab");
@@ -90,6 +96,14 @@ public class TestFrame extends javax.swing.JFrame {
         JTA.setColumns(80);
         JTA.setLineWrap(true);
         
+        JButton jb7 = new JButton ("Remove non-contiguous tabs");
+        JButton jb8 = new JButton ("Discontig add");
+        
+        JButton jb9 = new JButton ("Contig add");
+        JButton jb10 = new JButton ("Contig remove");
+        
+        JButton jb11 = new JButton ("Discontig add and remove");
+        
 
         TabData tab0 = new TabData(jtr, myIcon, "0 JTree", "0");
         TabData tab1 = new TabData(jb1, myIcon, "1 Tab 1", "1");
@@ -107,17 +121,17 @@ public class TestFrame extends javax.swing.JFrame {
                                    "7");
         TabData tab8 = new TabData(new JLabel("gioo"), myIcon,
                                    "8 something", "8");
-        TabData tab9 = new TabData(new JButton("foo"), myIcon, "9 foob",
+        TabData tab9 = new TabData(jb7, myIcon, "9 Discontig remove",
                                    "9");
         TabData tab10 = new TabData(new JLabel("gioo"), myIcon, "10 wiggle",
                                     "10");
-        TabData tab11 = new TabData(new JButton("foo"), myIcon, "11 bumble",
+        TabData tab11 = new TabData(jb8, myIcon, "11 Discontig add",
                                     "11");
-        TabData tab12 = new TabData(new JLabel("mooble"), myIcon,
-                                    "12 poodle", "12");
-        TabData tab13 = new TabData(new JButton("fooble"), myIcon,
-                                    "13 hoover", "13");
-        TabData tab14 = new TabData(new JLabel("gooble"), myIcon, "14 snip",
+        TabData tab12 = new TabData(jb9, myIcon,
+                                    "12 contig add", "12");
+        TabData tab13 = new TabData(jb10, myIcon,
+                                    "13 contig remove", "13");
+        TabData tab14 = new TabData(jb11, myIcon, "14 MUNGE",
                                     "14");
 
         TabDataModel mdl = new DefaultTabDataModel(new TabData[]{
@@ -130,8 +144,10 @@ public class TestFrame extends javax.swing.JFrame {
         );
          */
         
-        final TabbedContainer tab = new TabbedContainer(mdl, TabbedContainer.TYPE_EDITOR);
-        tab.setActive(true);    
+        final TabbedContainer tab = new TabbedContainer(mdl, TabbedContainer.TYPE_VIEW);
+        tab.setActive(true);
+        tab.requestAttention(5);
+        tab.requestAttention(3);
         
         jb6.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
@@ -161,6 +177,72 @@ public class TestFrame extends javax.swing.JFrame {
                 tab.updateUI();
             }
         });
+        
+        jb7.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                tab.getModel().removeTabs(new int[] {1, 3, 7, 8});
+            }
+        });
+        
+        jb8.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                int[] idxs = new int [] { 1, 3, 6, 8};
+                TabData[] td = new TabData[] {
+                    new TabData(new JButton("inserted 1"), myIcon, "I-1", "tip"),
+                    new TabData(new JButton("inserted 3"), myIcon, "I-3", "tip"),
+                    new TabData(new JButton("inserted 6"), myIcon, "I-6", "tip"),
+                    new TabData(new JButton("inserted 8"), myIcon, "I-8", "tip"),
+                    
+                };
+                tab.getModel().addTabs(idxs, td);
+            }
+        });  
+        
+        jb9.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                int[] idxs = new int [] { 1, 3, 6, 8};
+                TabData[] td = new TabData[] {
+                    new TabData(new JButton("inserted c 1"), myIcon, "Ic-1", "tip"),
+                    new TabData(new JButton("inserted c 2"), myIcon, "Ic-2", "tip"),
+                    new TabData(new JButton("inserted c 3"), myIcon, "Ic-3", "tip"),
+                    new TabData(new JButton("inserted c 4"), myIcon, "Ic-4", "tip"),
+                    
+                };
+                tab.getModel().addTabs(1, td);
+            }
+        }); 
+        
+        jb10.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                tab.getModel().removeTabs(1, 4);
+            }
+        });  
+        
+        jb11.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                TabData[] data = (TabData[]) tab.getModel().getTabs().toArray(new TabData[0]);
+                
+                TabData[] newData = new TabData [ data.length - 3];
+                int ct = 0;
+                
+                //strip out some tabs
+                for (int i=0; i < data.length; i++) {
+                    newData[ct] = data[i];
+                    if (i != 2 && i != 3 && i != 7) {
+                        ct++;
+                    }
+                }
+                
+                //replace one tab
+                newData[1] = new TabData (new JLabel ("Hi there"), myIcon, "New tab", "foo");
+                //swap some tabs
+                TabData td = newData[8];
+                newData[8] = newData[7];
+                newData[7] = td;
+                
+                tab.getModel().setTabs(newData);
+            }
+        });  
 
         tab.setActive(true);
         

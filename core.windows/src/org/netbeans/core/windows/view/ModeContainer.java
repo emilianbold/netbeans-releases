@@ -54,5 +54,9 @@ public interface ModeContainer {
     public void updateToolTip(TopComponent tc);
     
     public void updateIcon(TopComponent tc);
+    
+    public void requestAttention(TopComponent tc);
+
+    public void cancelRequestAttention(TopComponent tc);
 }
 

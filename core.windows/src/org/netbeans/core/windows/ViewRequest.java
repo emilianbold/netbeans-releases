@@ -118,6 +118,12 @@ final class ViewRequest {
             case  View.CHANGE_PROJECT_NAME :
                 tp = "CHANGE_PROJECT_NAME"; //NOI18N
                 break;
+            case  View.TOPCOMPONENT_REQUEST_ATTENTION :
+                tp = "TOPCOMPONENT_REQUEST_ATTENTION"; //NOI18N
+                break;
+            case  View.TOPCOMPONENT_CANCEL_REQUEST_ATTENTION :
+                tp = "TOPCOMPONENT_CANCEL_REQUEST_ATTENTION"; //NOI18N
+                break;
             default :
                 tp = "UNKNOWN";
                 break;

@@ -148,6 +148,14 @@ public class ModeView extends ViewElement {
     public void updateIcon(TopComponent tc) {
         container.updateIcon(tc);
     }
+    
+    public void requestAttention (TopComponent tc) {
+        container.requestAttention(tc);
+    }
+
+    public void cancelRequestAttention (TopComponent tc) {
+        container.cancelRequestAttention(tc);
+    }
 
     // XXX
     public void updateFrameState() {

@@ -90,6 +90,26 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         int i = getSelectionModel().getSelectedIndex();
         return i == -1 ? null : getTopComponentAt(i);
     }
+    
+    public void requestAttention (TopComponent tc) {
+        int idx = indexOf(tc);
+        if (idx >= 0) {
+            requestAttention(idx);
+        } else {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
+                "RequestAttention on component unknown to container: " + tc); //NOI18N
+        }
+    }
+    
+    public void cancelRequestAttention (TopComponent tc) {
+        int idx = indexOf(tc);
+        if (idx >= 0) {
+            cancelRequestAttention(idx);
+        } else {
+            throw new IllegalArgumentException ("TopComponent " + tc 
+                + " is not a child of this container"); //NOI18N
+        }
+    }    
 
     public void insertComponent(String name, javax.swing.Icon icon, Component comp, String toolTip, int position) {
         TabData td = new TabData (comp, icon, name, toolTip);

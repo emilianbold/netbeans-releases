@@ -144,6 +144,8 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
                 boolean leftmost = ((AquaEditorTabCellRenderer) c).isLeftmost();
                 boolean closing = pressed
                         && ((AquaEditorTabCellRenderer) c).inCloseButton();
+                boolean attention = !pressed && !closing 
+                        && ((AquaEditorTabCellRenderer) c).isAttention();
 
                 //add in a pixel for rightmost/leftmost so we don't clip off 
                 //antialiasing of the curve
@@ -165,6 +167,9 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
                 }
                 if (closing) {
                     state |= GenericGlowingChiclet.STATE_CLOSING;
+                }
+                if (attention) {
+                    state |= GenericGlowingChiclet.STATE_ATTENTION;
                 }
                 chiclet.setArcs(leftarc, rightarc, leftarc, rightarc);
 

@@ -419,6 +419,37 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 hierarchy.setMaximizedModeView(hierarchy.getModeViewForAccessor(wsa.getMaximizedModeAccessor()));
                 hierarchy.updateDesktop(wsa);
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
+            } else if (changeType == View.TOPCOMPONENT_REQUEST_ATTENTION) {
+                if (DEBUG) {
+                    debugLog("Top component request attention");
+                }
+                ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
+                if (modeView != null) {
+                   TopComponent tc = (TopComponent) viewEvent.getNewValue();
+                   if (tc == null) {
+                       throw new NullPointerException ("Top component is null for attention request"); //NOI18N
+                   }
+                   modeView.requestAttention (tc); 
+                } else {
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
+                        "Could not find mode " + viewEvent.getSource());
+                }
+            } else if (changeType == View.TOPCOMPONENT_CANCEL_REQUEST_ATTENTION) {
+                if (DEBUG) {
+                    debugLog("Top component cancel request attention"); //NOI18N
+                }
+                ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
+                if (modeView != null) {
+                   TopComponent tc = (TopComponent) viewEvent.getNewValue();
+                   if (tc == null) {
+                       throw new NullPointerException ("Top component is null for attention cancellation request"); //NOI18N
+                   }
+                   modeView.cancelRequestAttention (tc); 
+                } else {
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
+                        "Could not find mode " + viewEvent.getSource());
+                }
+                
             }
         }
         

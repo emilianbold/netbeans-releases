@@ -199,6 +199,10 @@ public abstract class AbstractTabCellRenderer extends JLabel
     protected final boolean isRightmost() {
         return (state & TabState.RIGHTMOST) != 0;
     }
+    
+    protected final boolean isAttention() {
+        return (state & TabState.ATTENTION) != 0;
+    }
 
     /**
      * Convenience getter to determine if the current state indicates

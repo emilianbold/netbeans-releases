@@ -32,6 +32,7 @@ class MetalEditorTabCellRenderer extends AbstractTabCellRenderer {
     private static final MetalRightClippedTabPainter rightBorder = new MetalRightClippedTabPainter();
     private static final MetalLeftClippedTabPainter leftBorder = new MetalLeftClippedTabPainter();
 
+    static final Color ATTENTION_COLOR = new Color(255, 238, 120);
     /**
      * Creates a new instance of MetalEditorTabCellRenderer
      */
@@ -130,6 +131,10 @@ class MetalEditorTabCellRenderer extends AbstractTabCellRenderer {
         public void paintInterior(Graphics g, Component c) {
             MetalEditorTabCellRenderer mtr = (MetalEditorTabCellRenderer) c;
 
+            if (mtr.isAttention()) {
+                g.setColor(ATTENTION_COLOR);
+            }
+            
             Polygon p = getInteriorPolygon(c);
             g.fillPolygon(p);
             Rectangle r = new Rectangle();
@@ -250,6 +255,11 @@ class MetalEditorTabCellRenderer extends AbstractTabCellRenderer {
 
         public void paintInterior(Graphics g, Component c) {
             Polygon p = getInteriorPolygon(c);
+            MetalEditorTabCellRenderer mtr = (MetalEditorTabCellRenderer) c;
+            if (mtr.isAttention()) {
+                g.setColor(ATTENTION_COLOR);
+            }
+            
             g.fillPolygon(p);
         }
 
@@ -344,6 +354,10 @@ class MetalEditorTabCellRenderer extends AbstractTabCellRenderer {
 
         public void paintInterior(Graphics g, Component c) {
             Polygon p = getInteriorPolygon(c);
+            MetalEditorTabCellRenderer mtr = (MetalEditorTabCellRenderer) c;
+            if (mtr.isAttention()) {
+                g.setColor(ATTENTION_COLOR);
+            }
             g.fillPolygon(p);
         }
 

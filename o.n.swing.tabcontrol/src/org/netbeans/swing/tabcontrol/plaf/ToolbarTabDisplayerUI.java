@@ -104,7 +104,15 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
             }
         }
         return null;
-    }    
+    }  
+    
+    public void requestAttention (int tab) {
+        //not implemented
+    }
+    
+    public void cancelRequestAttention (int tab) {
+        //not implemented
+    }
     
     protected ChangeListener createSelectionListener() {
         return new ChangeListener() {

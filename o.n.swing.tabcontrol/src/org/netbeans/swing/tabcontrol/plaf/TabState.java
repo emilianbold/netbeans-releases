@@ -12,6 +12,22 @@
  */
 package org.netbeans.swing.tabcontrol.plaf;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import javax.swing.Timer;
+import javax.swing.event.ListDataEvent;
+import org.netbeans.swing.tabcontrol.TabData;
+import org.netbeans.swing.tabcontrol.event.ArrayDiff;
+import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
+import org.netbeans.swing.tabcontrol.event.VeryComplexListDataEvent;
+import org.openide.util.Utilities;
+
 /**
  * Used by BasicTabDisplayerUI and its subclasses.
  * Tracks and manages the state of tabs, mainly which one currently contains the
@@ -142,7 +158,18 @@ public abstract class TabState {
      */
     public static final int MOUSE_IN_TABS_AREA = 4096;
 
+    /**
+     * Bitmask indicating that the mouse is inside the close button and has 
+     * been pressed.
+     */
     public static final int MOUSE_PRESSED_IN_CLOSE_BUTTON = 8192;
+    
+    /**
+     * Bitmask indicating that the tab is in "attention" mode - blinking or
+     * flashing to get the user's attention.
+     */
+    public static final int ATTENTION = 16384;
+    
     /**
      * Indicates the last constant defined - renderers that wish to add their
      * own bitmasks should use multiples of this number
@@ -223,6 +250,9 @@ public abstract class TabState {
         }
         if (tab == selectedIndex - 1) {
             result |= BEFORE_SELECTED;
+        }
+        if (isAlarmTab(tab)) {
+            result |= ATTENTION;
         }
         return result;
     }
@@ -328,6 +358,7 @@ public abstract class TabState {
         prev = selectedIndex;
         selectedIndex = i;
         curr = i;
+        removeAlarmTab(i);
         possibleChange(prev, curr, SELECTED);
         return prev;
     }
@@ -356,8 +387,304 @@ public abstract class TabState {
         boolean prev = active;
         active = b;
         possibleChange(prev, b, ACTIVE);
+        removeAlarmTab(selectedIndex);
         return prev;
     }
+    
+    private boolean isAlarmTab (int tab) {
+        return attentionToggle && alarmTabs.contains(new Integer(tab));
+    }
+    
+    private final HashSet alarmTabs = new HashSet(6);
+    
+    /** Add a tab to the list of those which should "flash" or otherwise give
+     * some notification to the user to get their attention */
+    public final void addAlarmTab (int alarmTab) {
+        Integer in = new Integer(alarmTab);
+        boolean added = alarmTabs.contains(in);
+        boolean wasEmpty = alarmTabs.isEmpty();
+        if (!added) {
+            alarmTabs.add (new Integer(alarmTab));
+            repaintTab (alarmTab);
+        }
+        if (wasEmpty) {
+            startAlarmTimer();
+            attentionToggle = true;
+            repaintTab (alarmTab);
+        }
+    }
+    
+    /** Remove a tab to the list of those which should "flash" or otherwise give
+     * some notification to the user to get their attention */
+    public final void removeAlarmTab (int alarmTab) {
+        Integer in = new Integer(alarmTab);
+        boolean contained = alarmTabs.contains(in);
+        if (contained) {
+            alarmTabs.remove(in);
+            boolean empty = alarmTabs.isEmpty();
+            boolean wasAttentionToggled = attentionToggle;
+            if (alarmTabs.isEmpty()) {
+                stopAlarmTimer();
+            }
+            if (wasAttentionToggled) {
+                repaintTab(alarmTab);
+            }
+        }
+    }
+    
+    private Timer alarmTimer = null;
+    private boolean attentionToggle = false;
+    private final void startAlarmTimer() {
+        if (alarmTimer == null) {
+            ActionListener al = new ActionListener() {
+                public void actionPerformed (ActionEvent ae) {
+                    attentionToggle = !attentionToggle;
+                    Timer timer = (Timer) ae.getSource();
+                    for (Iterator i=alarmTabs.iterator(); i.hasNext();) {
+                        repaintTab (((Integer) i.next()).intValue());
+                    }
+                }
+            };
+            alarmTimer = new Timer (700, al);
+            alarmTimer.setRepeats(true);
+        }
+        alarmTimer.start();
+    }
+    
+    private final void stopAlarmTimer() {
+        if (alarmTimer != null && alarmTimer.isRunning()) {
+            alarmTimer.stop();
+            attentionToggle = false;
+            repaintAllTabs(); //XXX optimize
+        }
+    }
+    
+    boolean hasAlarmTabs() {
+        return alarmTabs != null && !alarmTabs.isEmpty();
+    }
+    
+    void pruneAlarmTabs(int max) {
+        if (!hasAlarmTabs()) {
+            return;
+        }
+        for (Iterator i=alarmTabs.iterator(); i.hasNext();) {
+            if (((Integer) i.next()).intValue() >= max) {
+                i.remove();
+            }
+        }
+        if (alarmTabs.isEmpty()) {
+            stopAlarmTimer();
+        }
+    }
+    
+    int[] getAlarmTabs() {
+        int[] alarms = (int[]) Utilities.toPrimitiveArray((Integer[]) alarmTabs.toArray(new Integer[0]));
+        Arrays.sort(alarms);
+        return alarms;
+    }
+    
+    //Handling of insertions/deletions where we'll need to update the 
+    //list of blinking tabs here.
+    void intervalAdded (ListDataEvent evt) {
+        if (!hasAlarmTabs()) return;
+        int start = evt.getIndex0();
+        int end = evt.getIndex1();
+        int[] alarms = (int[]) Utilities.toPrimitiveArray((Integer[]) alarmTabs.toArray(new Integer[0]));
+        boolean changed = false;
+        for (int i=0; i < alarms.length; i++) {
+            if (alarms[i] >= start) {
+                alarms[i] += (end - start) + 1;
+                changed = true;
+            }
+        }
+        if (changed) {
+            alarmTabs.clear();
+            for (int i=0; i < alarms.length; i++) {
+                addAlarmTab(alarms[i]);
+            }
+        }
+    }
+    
+    void intervalRemoved (ListDataEvent evt) {
+        if (!hasAlarmTabs()) return;
+        int start = evt.getIndex0();
+        int end = evt.getIndex1();
+        
+        int[] alarms = (int[]) Utilities.toPrimitiveArray((Integer[]) alarmTabs.toArray(new Integer[0]));
+        Arrays.sort(alarms);
+        
+        if (end == start) {
+            //Faster to handle this case separately
+            boolean changed = true;
+            for (int i=0; i < alarms.length; i++) {
+                if (alarms[i] > end) {
+                    alarms[i]--;
+                } else if (alarms[i] == end) {
+                    alarms[i] = -1;
+                }
+            }
+            if (changed) {
+                alarmTabs.clear();
+                boolean added = false;
+                for (int i=0; i < alarms.length; i++) {
+                    if (alarms[i] != -1) {
+                        addAlarmTab(alarms[i]);
+                        added = true;
+                    }
+                }
+                if (!added) {
+                    stopAlarmTimer();
+                }
+            }            
+            return;
+        }
+        
+        boolean changed = false;
+        for (int i=0; i < alarms.length; i++) {
+            if (alarms[i] >= start && alarms[i] <= end) {
+                alarms[i] = -1;
+                changed = true;
+            }
+        }
+        for (int i=0; i < alarms.length; i++) {
+            if (alarms[i] > end) {
+                alarms[i] -= (end - start) + 1;
+                changed = true;
+            }
+        }
+        if (changed) {
+            alarmTabs.clear();
+            boolean added = false;
+            for (int i=0; i < alarms.length; i++) {
+                if (alarms[i] != -1) {
+                    addAlarmTab(alarms[i]);
+                    added = true;
+                }
+            }
+            if (!added) {
+                stopAlarmTimer();
+            }
+        }
+    }
+    
+    void indicesAdded (ComplexListDataEvent e) {
+        if (!hasAlarmTabs()) return;
+        int[] alarms = (int[]) Utilities.toPrimitiveArray((Integer[]) alarmTabs.toArray(new Integer[0]));
+        java.util.Arrays.sort(alarms);
+
+        int[] indices = e.getIndices();
+        java.util.Arrays.sort(indices);
+        
+        boolean changed = false;
+        for (int i=0; i < indices.length; i++) {
+            for (int j=0; j < alarms.length; j++) {
+                if (alarms[j] >= indices[i]) {
+                    alarms[j]++;
+                    changed = true;
+                }
+            }
+        }
+        if (changed) {
+            alarmTabs.clear();
+            for (int i=0; i < alarms.length; i++) {
+                if (alarms[i] != -1) {
+                    addAlarmTab(alarms[i]);
+                }
+            }
+        }
+    }
+    
+    void indicesRemoved (ComplexListDataEvent e) {
+        if (!hasAlarmTabs()) return;
+        int[] indices = e.getIndices();
+        java.util.Arrays.sort(indices);
+        
+        int[] alarms = (int[]) Utilities.toPrimitiveArray((Integer[]) alarmTabs.toArray(new Integer[0]));
+        java.util.Arrays.sort(alarms);
+        
+        if (alarms[alarms.length -1] < indices[0]) {
+            //Some tab removed after the last blinking tab, don't care
+            return;
+        }
+
+        boolean changed = false;
+        for (int i=0; i < alarms.length; i++) {
+            //First weed out all deleted alarm tabs
+            for (int j=0; j < indices.length; j++) {
+                if (alarms[i] == indices[j]) {
+                    alarms[i] = -1;
+                    changed = true;
+                }
+            }
+        }
+        for (int i=0; i < alarms.length; i++) {
+            //Now decrement those that remain that are affected
+            int alarm = alarms[i];
+            for (int j=0; j < indices.length; j++) {
+                if (alarm > indices[j]) {
+                    alarms[i]--;
+                    changed = true;
+                }
+            }
+        }
+        
+        if (changed) {
+            alarmTabs.clear();
+            boolean addedSome = false;
+            for (int i=0; i < alarms.length; i++) {
+                if (alarms[i] >= 0) {
+                    addAlarmTab(alarms[i]);
+                    addedSome = true;
+                }
+            }
+            if (!addedSome) {
+                stopAlarmTimer();
+            }
+        }        
+        
+        repaintAllTabs();
+    }
+    
+    void indicesChanged (ComplexListDataEvent e) {
+        if (!hasAlarmTabs()) return;
+        if (e instanceof VeryComplexListDataEvent) { //it always will be
+            VeryComplexListDataEvent ve = (VeryComplexListDataEvent) e;
+            
+            ArrayDiff dif = ((VeryComplexListDataEvent) e).getDiff();
+            
+            List old = Arrays.asList(dif.getOldData());
+            List nue = Arrays.asList(dif.getNewData());
+            
+            int[] alarms = (int[]) Utilities.toPrimitiveArray((Integer[]) alarmTabs.toArray(new Integer[0]));
+            
+            boolean changed = false;
+            for (int i=0; i < alarms.length; i++) {
+                Object o = old.get(alarms[i]);
+                int idx = nue.indexOf(o);
+                changed |= idx != alarms[i];
+                alarms[i] = nue.indexOf(o);
+            }
+            if (changed) {
+                alarmTabs.clear();
+                boolean addedSome = false;
+                for (int i=0; i < alarms.length; i++) {
+                    if (alarms[i] >= 0) {
+                        addAlarmTab(alarms[i]);
+                        addedSome = true;
+                    }
+                }
+                if (!addedSome) {
+                    stopAlarmTimer();
+                }
+            }             
+        }
+    }
+
+    
+    void contentsChanged(ListDataEvent evt) {
+        if (!hasAlarmTabs()) return;
+        //Do nothing, just means some text or icons changed
+    }    
 
     //Change types
     /** Change type indicating no change happened (i.e. calling setSelected() with the same value it was previously
@@ -508,6 +835,9 @@ public abstract class TabState {
                     type = ALL_TABS;
                     go = true;
                 }
+                break;
+            case ATTENTION:
+                go = true;
         }
         if (go) {
             if (type == ALL_TABS) {

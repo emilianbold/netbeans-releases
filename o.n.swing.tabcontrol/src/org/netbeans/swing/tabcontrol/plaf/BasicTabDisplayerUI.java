@@ -12,6 +12,7 @@
  */
 package org.netbeans.swing.tabcontrol.plaf;
 
+import javax.swing.event.ListDataEvent;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
@@ -24,6 +25,7 @@ import java.awt.event.*;
 import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
+import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 
 /**
  * Base class for tab displayer UIs which use cell renderers to display tabs.
@@ -116,6 +118,11 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         tabState = null;
         defaultRenderer = null;
         super.uninstall();
+    }
+    
+    /** Used by unit tests */
+    TabState getTabState() {
+        return tabState;
     }
 
     /**
@@ -217,6 +224,10 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
     public Rectangle getTabRect(int idx, Rectangle rect) {
         if (rect == null) {
             rect = new Rectangle();
+        }
+        if (idx < 0 || idx >= displayer.getModel().size()) {
+            rect.x = rect.y = rect.width = rect.height = 0;
+            return rect;
         }
         rect.x = layoutModel.getX(idx);
         rect.y = layoutModel.getY(idx);
@@ -451,6 +462,15 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
     protected void processMouseWheelEvent(MouseWheelEvent e) {
         //do nothing
     }
+    
+    protected final void requestAttention (int tab) {
+        tabState.addAlarmTab(tab);
+    }
+    
+    protected final void cancelRequestAttention (int tab) {
+        tabState.removeAlarmTab(tab);
+    }
+    
 
     protected void modelChanged() {
         tabState.clearTransientStates();
@@ -459,6 +479,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         //sync
         int idx = selectionModel.getSelectedIndex();
         tabState.setSelected(idx);
+        tabState.pruneAlarmTabs(displayer.getModel().size());
         super.modelChanged();
     }
 
@@ -503,16 +524,10 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         }
 
         protected void repaintAllTabs() {
-            getTabsVisibleArea(scratch);
-            if (scratch.height < displayer.getHeight()) {
-                //Ensure any gap at the bottom is repainted
-                scratch.y = 0;
-                scratch.height = displayer.getHeight();
-            }
-/*            displayer.repaint(scratch.x, scratch.y, scratch.width,
-                              scratch.height);
-                              */
-            //XXX optimize this
+            //XXX would be nicer to just repaint the tabs area,
+            //but we also need to repaint below all the tabs in the
+            //event of activated/deactivated.  No actual reason to
+            //repaint the buttons here.
             displayer.repaint();
         }
 
@@ -532,6 +547,10 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
                               scratch.height);
         }
     }
+    
+    protected ModelListener createModelListener() {
+        return new BasicModelListener();
+    }    
 
     private class BasicDisplayerPropertyChangeListener
             extends DisplayerPropertyChangeListener {
@@ -720,10 +739,43 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
             assert e.getSource() == selectionModel : "Unknown event source: "
                     + e.getSource();
             int idx = selectionModel.getSelectedIndex();
-            tabState.setSelected(idx);
-            if (idx != -1) {
+            tabState.setSelected(idx >= 0 ? idx : -1);
+            if (idx >= 0) {
                 makeTabVisible (selectionModel.getSelectedIndex());
             }
         }
     }
+    
+    /**
+     * Listener on data model which will pass modified indices to the
+     * TabState object, so it can update which tab indices are flashing in
+     * "attention" mode, if any.
+     */
+    protected class BasicModelListener extends ModelListener {
+        public void contentsChanged(ListDataEvent e) {
+            super.contentsChanged(e);
+            tabState.contentsChanged(e);
+        }
+
+        public void indicesAdded(ComplexListDataEvent e) {
+            super.indicesAdded(e);
+            tabState.indicesAdded(e);
+        }
+
+        public void indicesChanged(ComplexListDataEvent e) {
+            tabState.indicesChanged(e);
+        }
+
+        public void indicesRemoved(ComplexListDataEvent e) {
+            tabState.indicesRemoved(e);
+        }
+
+        public void intervalAdded(ListDataEvent e) {
+            tabState.intervalAdded(e);
+        }
+
+        public void intervalRemoved(ListDataEvent e) {
+            tabState.intervalRemoved(e);
+        }
+    }    
 }

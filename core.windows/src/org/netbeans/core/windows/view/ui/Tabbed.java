@@ -31,6 +31,10 @@ import java.awt.event.ActionListener;
  */
 public interface Tabbed {
     
+    public void requestAttention(TopComponent tc);
+
+    public void cancelRequestAttention(TopComponent tc);
+    
     public void addTopComponent(String name, Icon icon, TopComponent tc, String toolTip);
 
     public void insertComponent(String name, Icon icon, Component comp, String toolTip, int position);

@@ -13,6 +13,7 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
+import javax.swing.event.ListDataEvent;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
@@ -38,6 +39,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.swing.tabcontrol.LocationInformer;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
+import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
+import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
 
 /**
  * Basic UI class for view tabs - non scrollable tabbed displayer, which shows all
@@ -83,6 +86,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         dataModel = displayer.getModel();
         layoutModel = new ViewTabLayoutModel(dataModel, displayer);
         dataModel.addChangeListener (controller);
+        dataModel.addComplexListDataListener(controller);
         displayer.addPropertyChangeListener (controller);
         selectionModel.addChangeListener (controller);
         displayer.addMouseListener(controller);
@@ -106,6 +110,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         ToolTipManager.sharedInstance().unregisterComponent(displayer);
         displayer.removePropertyChangeListener (controller);
         dataModel.removeChangeListener(controller);
+        dataModel.removeComplexListDataListener(controller);
         selectionModel.removeChangeListener(controller);
         displayer.removeMouseListener(controller);
         displayer.removeMouseMotionListener(controller);
@@ -505,9 +510,12 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     }
 
     public Rectangle getTabRect(int index, Rectangle destination) {
+        if (destination == null) {
+            destination = new Rectangle();
+        }
         if (index < 0 || index > displayer.getModel().size()) {
-            throw new ArrayIndexOutOfBoundsException("Tab index out of " +
-                "bounds: " + index);
+            destination.setBounds (0,0,0,0);
+            return destination;
         }
         destination.x = layoutModel.getX(index);
         destination.width = layoutModel.getW(index);
@@ -534,14 +542,64 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         
         return -1;
     }
+    
+    protected int createRepaintPolicy () {
+        return TabState.REPAINT_SELECTION_ON_ACTIVATION_CHANGE
+                | TabState.REPAINT_ON_SELECTION_CHANGE
+                | TabState.REPAINT_ON_MOUSE_ENTER_TAB
+                | TabState.REPAINT_ON_MOUSE_ENTER_CLOSE_BUTTON
+                | TabState.REPAINT_ON_MOUSE_PRESSED;
+    }
+    
+    protected final TabState tabState = new ViewTabState();
+    
+    private class ViewTabState extends TabState {
+        public int getRepaintPolicy(int tab) {
+            return createRepaintPolicy();
+        }
+        
+        public void repaintAllTabs() {
+            displayer.repaint();
+        }
+        
+        public void repaintTab (int tab) {
+            if (tab < 0 || tab > displayer.getModel().size()) {
+                //This can happen because we can be notified
+                //of a change on a tab that has just been removed
+                //from the model
+                return;
+            }
+            Rectangle r = getTabRect(tab, null);
+            displayer.repaint(r);
+        }
+    }
+    
+    /**
+     * Determine if the tab should be flashing
+     */
+    protected boolean isAttention (int tab) {
+        return (tabState.getState(tab) & TabState.ATTENTION) != 0;
+    }
+    
+
+    protected void requestAttention (int tab) {
+        tabState.addAlarmTab(tab);
+    }    
+    
+    protected void cancelRequestAttention (int tab) {
+        tabState.removeAlarmTab(tab);
+    }
 
     /**
      * Listen to mouse events and handles selection behaviour and close icon
      * button behaviour.
      */
     abstract class Controller extends MouseAdapter
-            implements MouseMotionListener, ChangeListener, PropertyChangeListener, ActionListener {
+            implements MouseMotionListener, ChangeListener, PropertyChangeListener, ActionListener, ComplexListDataListener {
 
+        //XXX should be able to replace most of this class with 
+        //tabState - we're already using it to manage the blinking state
+                
         /**
          * index of tab whose close icon currently pressed, -1 otherwise
          */
@@ -598,6 +656,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         public void mousePressed(MouseEvent e) {
             Point p = e.getPoint();
             int i = getLayoutModel().indexOfPoint(p.x, p.y);
+            tabState.setPressed(i);
             SingleSelectionModel sel = getSelectionModel();
             selectionChanged = i != sel.getSelectedIndex();
             // invoke possible selection change
@@ -606,6 +665,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                     i, e);
                 if (change) {
                     getSelectionModel().setSelectedIndex(i);
+                    tabState.setSelected(i);
                 }
             } 
             // update pressed state
@@ -642,6 +702,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         public void mouseReleased(MouseEvent e) {
             // close button must not be active when selection change was
             // triggered by mouse press
+            tabState.setPressed(-1);
             if (shouldReact(e) && !selectionChanged) {
                 setClosePressed(-1);
                 Point point = e.getPoint();
@@ -731,6 +792,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             // sync of indexes
             int oldValue = mouseInCloseButton;
             mouseInCloseButton = isNow;
+            tabState.setCloseButtonContainsMouse(isNow);
             if (isNow == -1) {
                 // exit from close area
                 TabLayoutModel tlm = getLayoutModel();
@@ -755,7 +817,44 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         public void actionPerformed(ActionEvent e) {
             performPinAction();
         }
+
+        public void indicesAdded(ComplexListDataEvent e) {
+            tabState.indicesAdded(e);
+        }
+
+        /**
+         * Elements have been removed at the indices specified by the event's
+         * getIndices() value
+         *
+         * @param e The event
+         */
+        public void indicesRemoved(ComplexListDataEvent e) {
+            tabState.indicesRemoved(e);
+        }
+
+        /**
+         * Elements have been changed at the indices specified by the event's
+         * getIndices() value.  If the changed data can affect display width (such
+         * as a text change or a change in icon size), the event's
+         * <code>isTextChanged()</code> method will return true.
+         *
+         * @param e The event
+         */
+        public void indicesChanged(ComplexListDataEvent e) {
+            tabState.indicesChanged(e);
+        }
         
+        public void intervalAdded (ListDataEvent evt) {
+            tabState.intervalAdded(evt);
+        }
+        
+        public void intervalRemoved (ListDataEvent evt) {
+            tabState.intervalRemoved(evt);
+        }
+        
+        public void contentsChanged(ListDataEvent evt) {
+            tabState.contentsChanged(evt);
+        }
     } // end of Controller
     
 

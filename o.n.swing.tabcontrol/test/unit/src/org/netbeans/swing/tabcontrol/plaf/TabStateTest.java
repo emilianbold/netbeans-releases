@@ -323,11 +323,4 @@ public class TabStateTest extends TestCase {
     }
     
     private int policy = 0;
-
-    
-    // TODO add test methods here, they have to start with 'test' name.
-    // for example:
-    // public void testHello() {}
-    
-    
 }

@@ -50,6 +50,14 @@ public final class SlideBarContainer extends AbstractModeContainer {
         panel.add(this.tabbedHandler.getComponent(), BorderLayout.CENTER);
     }
     
+    public void requestAttention (TopComponent tc) {
+        tabbedHandler.requestAttention(tc);
+    }
+
+    public void cancelRequestAttention (TopComponent tc) {
+        tabbedHandler.cancelRequestAttention (tc);
+    }    
+    
     public void setTopComponents(TopComponent[] tcs, TopComponent selected) {
         super.setTopComponents(tcs, selected);
     }

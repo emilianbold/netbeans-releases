@@ -37,6 +37,7 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicGraphicsUtils;
+import org.netbeans.swing.tabcontrol.SlidingButton;
 import org.netbeans.swing.tabcontrol.SlidingButtonUI;
 
 /** 
@@ -78,11 +79,15 @@ public class WindowsSlidingButtonUI extends SlidingButtonUI {
         super.installDefaults(b);
 	if(!defaults_initialized) {
             try {
-                dashedRectGapX = ((Integer)UIManager.get("Button.dashedRectGapX")).intValue();
-                dashedRectGapY = ((Integer)UIManager.get("Button.dashedRectGapY")).intValue();
-                dashedRectGapWidth = ((Integer)UIManager.get("Button.dashedRectGapWidth")).intValue();
-                dashedRectGapHeight = ((Integer)UIManager.get("Button.dashedRectGapHeight")).intValue();
-
+                //Null checks so this can be tested on other platforms
+                Integer in = ((Integer)UIManager.get("Button.dashedRectGapX"));
+                dashedRectGapX = in == null ? 3 : in.intValue();
+                in = ((Integer)UIManager.get("Button.dashedRectGapY"));
+                dashedRectGapY = in == null ? 3 : in.intValue();
+                in = ((Integer)UIManager.get("Button.dashedRectGapWidth"));
+                dashedRectGapWidth = in == null ? 3 : in.intValue();
+                in = ((Integer)UIManager.get("Button.dashedRectGapHeight"));
+                dashedRectGapHeight = in == null ? 3 : in.intValue();
                 focusColor = UIManager.getColor(getPropertyPrefix() + "focus");
                 defaults_initialized = true;
             } catch (NullPointerException npe) {
@@ -101,15 +106,24 @@ public class WindowsSlidingButtonUI extends SlidingButtonUI {
 	defaults_initialized = false;
     }    
     
-    protected void paintBackground (Graphics2D g, AbstractButton button) {
-	super.paintBackground(g, button);
-    }
-    
+    protected void paintBackground(Graphics2D g, AbstractButton b) {
+        if (((SlidingButton) b).isBlinkState()) {
+            g.setColor(WinClassicEditorTabCellRenderer.ATTENTION_COLOR);
+            g.fillRect (0, 0, b.getWidth(), b.getHeight());
+        } else {
+            super.paintBackground(g, b);
+        }
+    }    
     
     protected void paintButtonPressed(Graphics g, AbstractButton b) {
         // This is a special case in which the toggle button in the
         // Rollover JToolBar will render the button in a pressed state
         Color oldColor = g.getColor();
+        
+        if (((SlidingButton) b).isBlinkState()) {
+            g.setColor(WinClassicEditorTabCellRenderer.ATTENTION_COLOR);
+            g.fillRect (0, 0, b.getWidth(), b.getHeight());
+        }
         
         int w = b.getWidth();
         int h = b.getHeight();

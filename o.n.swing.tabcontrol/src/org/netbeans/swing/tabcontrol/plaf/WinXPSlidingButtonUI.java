@@ -39,6 +39,7 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicGraphicsUtils;
+import org.netbeans.swing.tabcontrol.SlidingButton;
 import org.netbeans.swing.tabcontrol.SlidingButtonUI;
 
 /** 
@@ -108,12 +109,17 @@ public class WinXPSlidingButtonUI extends WindowsSlidingButtonUI {
         super.paint(g, c);
     }
     
-    protected void paintBackground (Graphics2D g, AbstractButton button) {
-        hiddenToggle.paint(g);
+    protected void paintBackground(Graphics2D g, AbstractButton b) {
+        if (((SlidingButton) b).isBlinkState()) {
+            g.setColor(WinClassicEditorTabCellRenderer.ATTENTION_COLOR);
+            g.fillRect (0, 0, b.getWidth(), b.getHeight());
+            hiddenToggle.setFont(b.getFont());
+        } else {
+            hiddenToggle.paint(g);
+        }
     }
     
     protected void paintButtonPressed(Graphics g, AbstractButton b) {    
         hiddenToggle.paint(g);
     }
-   
 }

@@ -203,4 +203,8 @@ public abstract class TabbedContainerUI extends ComponentUI {
     
     public abstract boolean isShowCloseButton ();
 
+    protected abstract void requestAttention (int tab);
+    
+    protected abstract void cancelRequestAttention (int tab);
+    
 }

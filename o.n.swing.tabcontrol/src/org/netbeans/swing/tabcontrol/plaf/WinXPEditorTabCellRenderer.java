@@ -253,7 +253,13 @@ final class WinXPEditorTabCellRenderer extends AbstractTabCellRenderer {
 
     private static final Paint getPaint(int xTop, int yTop, int xBot, int yBot,
                                         WinXPEditorTabCellRenderer ren) {
-        if (ren.isSelected() || (ren.isPressed() && !ren.inCloseButton())) {
+              
+        if (!ren.isSelected() && !ren.isPressed() && ren.isAttention()) {
+            Color a = new Color (255, 255, 128);
+            Color b = new Color (230, 200, 64);
+                return ColorUtil.getGradientPaint(xTop, yTop, a, xBot,
+                                                  yBot, b);
+        } else if (ren.isSelected() || (ren.isPressed() && !ren.inCloseButton())) {
             if (ren.isActive()) {
                 return ColorUtil.getGradientPaint(xTop, yTop,
                                                   getTopActiveSelectedColor(),

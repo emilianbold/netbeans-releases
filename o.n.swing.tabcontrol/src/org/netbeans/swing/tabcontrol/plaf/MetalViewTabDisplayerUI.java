@@ -210,8 +210,12 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                                       int width, int height) {
         boolean selected = isSelected(index);
         boolean highlighted = selected && isActive();
-        if (highlighted) {
+        boolean attention = isAttention (index);
+        if (highlighted && !attention) {
             g.setColor(getActBgColor());
+            g.fillRect(x, y, width, height - 3);
+        } else if (attention) {
+            g.setColor(MetalEditorTabCellRenderer.ATTENTION_COLOR);
             g.fillRect(x, y, width, height - 3);
         } else {
             g.setColor(getInactBgColor());

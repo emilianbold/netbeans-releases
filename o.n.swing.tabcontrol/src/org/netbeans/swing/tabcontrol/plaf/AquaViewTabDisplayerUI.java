@@ -218,6 +218,9 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         if (isSelected(index)) {
             state |= GenericGlowingChiclet.STATE_SELECTED;
         }
+        if (isAttention(index)) {
+            state |= GenericGlowingChiclet.STATE_ATTENTION;
+        }
 
         chiclet.setState(state);
         chiclet.setBounds(x, y, width, height);
@@ -319,10 +322,14 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             Point p = e.getPoint();
             int i = getLayoutModel().indexOfPoint(p.x, p.y);
             int closeRectIdx = inCloseIconRect(p);
+            tabState.setPressed(i);
+            tabState.setCloseButtonContainsMouse(closeRectIdx);
+            tabState.setMousePressedInCloseButton(closeRectIdx);            
             // invoke possible selection change
             if ((i != -1) && closeRectIdx == -1) {
                 if (shouldPerformAction (TabDisplayer.COMMAND_SELECT, i, e)) {
                     getSelectionModel().setSelectedIndex(i);
+                    tabState.setSelected(i);
                 }
             }
             if (shouldReact(e) && closeRectIdx != -1) {
@@ -339,6 +346,8 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         }
 
         public void mouseReleased(MouseEvent e) {
+            tabState.setMousePressedInCloseButton(-1);
+            tabState.setPressed(-1);
             // close button must not be active when selection change was
             // triggered by mouse press
             if (shouldReact(e)) {
@@ -360,10 +369,12 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
 
         public void mouseEntered(MouseEvent me) {
             setContainsMouse(true);
+            tabState.setMouseInTabsArea(true);
         }
 
         public void mouseExited(MouseEvent me) {
             setContainsMouse(false);
+            tabState.setMouseInTabsArea(false);
         }
     } // end of OwnController
 

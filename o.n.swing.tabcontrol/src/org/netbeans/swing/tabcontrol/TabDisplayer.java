@@ -337,6 +337,31 @@ public final class TabDisplayer extends JComponent implements Accessible {
     public final Dimension getMinimumSize() {
         return getUI().getMinimumSize(this);
     }
+    
+    /**
+     * Cause the specified tab to flash or otherwise call attention to itself
+     * without changing selection or focus.  Supported by VIEW and EDITOR type
+     * UIs.
+     */
+    public final void requestAttention (int tab) {
+        getUI().requestAttention(tab);
+    }
+    
+    /**
+     * Cause a tab, if blinking, to stop.
+     */
+    public final void cancelRequestAttention (int tab) {
+        getUI().cancelRequestAttention (tab);
+    }
+    
+    public final boolean requestAttention (TabData data) {
+        int idx = getModel().indexOf(data);
+        boolean result = idx >= 0;
+        if (result) {
+            requestAttention (idx);
+        }
+        return result;
+    }
 
     /**
      * Accessor only for TabDisplayerUI when installing the UI

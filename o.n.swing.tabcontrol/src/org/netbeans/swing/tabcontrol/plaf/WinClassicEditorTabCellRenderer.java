@@ -32,6 +32,8 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
     private static final TabPainter rightClip = new WinClassicRightClipPainter();
     private static final TabPainter normal = new WinClassicPainter();
     
+    static final Color ATTENTION_COLOR = new Color(255, 238, 120);    
+    
     private static boolean isGenericUI = !"Windows".equals(
         UIManager.getLookAndFeel().getID());
 
@@ -143,9 +145,13 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
                 ((Graphics2D) g).setPaint(ColorUtil.getGradientPaint(0, 0, getSelGradientColor(), ren.getWidth(), 0, UIManager.getColor(
                         "TabbedPane.background")));//NOI18N
             } else {
-                g.setColor(ren.isSelected() ?
-                           UIManager.getColor("TabbedPane.background") :
-                           UIManager.getColor("tab_unsel_fill")); //NOI18N
+                if (!ren.isAttention()) {
+                    g.setColor(ren.isSelected() ?
+                               UIManager.getColor("TabbedPane.background") :
+                               UIManager.getColor("tab_unsel_fill")); //NOI18N
+                } else {
+                    g.setColor(ATTENTION_COLOR);
+                }
             }
             Polygon p = getInteriorPolygon(c);
             g.fillPolygon(p);
@@ -273,9 +279,13 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
                 ((Graphics2D) g).setPaint(ColorUtil.getGradientPaint(0, 0, getSelGradientColor(), ren.getWidth(), 0, UIManager.getColor(
                         "TabbedPane.background")));//NOI18N
             } else {
-                g.setColor(ren.isSelected() ?
+                if (!ren.isAttention()) {
+                    g.setColor(ren.isSelected() ?
                            UIManager.getColor("TabbedPane.background") :
                            UIManager.getColor("tab_unsel_fill")); //NOI18N
+                } else {
+                    g.setColor(ATTENTION_COLOR);
+                }
             }
             Polygon p = getInteriorPolygon(c);
             g.fillPolygon(p);
@@ -366,9 +376,13 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
                 ((Graphics2D) g).setPaint(ColorUtil.getGradientPaint(0, 0, getSelGradientColor(), ren.getWidth(), 0, UIManager.getColor(
                         "TabbedPane.background")));//NOI18N
             } else {
-                g.setColor(ren.isSelected() ?
-                           UIManager.getColor("TabbedPane.background") :
+                if (!ren.isAttention()) {
+                    g.setColor(ren.isSelected() ?
+                           UIManager.getColor("TabbedPane.background") : //NOI18N
                            UIManager.getColor("tab_unsel_fill")); //NOI18N
+                } else {
+                    g.setColor(ATTENTION_COLOR);
+                }
             }
 
             Polygon p = getInteriorPolygon(c);
