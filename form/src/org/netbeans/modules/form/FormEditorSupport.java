@@ -1259,7 +1259,7 @@ public class FormEditorSupport extends JavaEditor
         // when active TopComponent changes, check if we should open or close
         // the form editor group of windows (Inspector, Palette, Properties)
         WindowManager wm = WindowManager.getDefault();
-        TopComponentGroup group = wm.findTopComponentGroup("form"); // NOI18N
+        final TopComponentGroup group = wm.findTopComponentGroup("form"); // NOI18N
         if (group == null)
             return; // group not found (should not happen)
 
@@ -1274,10 +1274,20 @@ public class FormEditorSupport extends JavaEditor
             }
         }
 
-        if (designerSelected && !Boolean.TRUE.equals(groupVisible))
-            group.open();
-        else if (!designerSelected && !Boolean.FALSE.equals(groupVisible))
-            group.close();
+        if (designerSelected && !Boolean.TRUE.equals(groupVisible)) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    group.open();
+                }
+            });
+        }
+        else if (!designerSelected && !Boolean.FALSE.equals(groupVisible)) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    group.close();
+                }
+            });
+        }
 
         groupVisible = designerSelected ? Boolean.TRUE : Boolean.FALSE;
     }
