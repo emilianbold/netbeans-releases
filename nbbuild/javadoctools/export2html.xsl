@@ -50,10 +50,23 @@ Microsystems, Inc. All Rights Reserved.
         an API?</a> to understand why we list DTDs, file formats, etc.) and with
         a stability category (see <a
         href="http://openide.netbeans.org/tutorial/api-design.html#life">API
-        life-cycle</a> for a list of possible categories and their descriptions).
+        life-cycle</a> for a list of possible API stability 
+        categories and their meaning).
         The aim is to provide as detailed a definition of NetBeans module 
         external interfaces as possible and give other developers a chance to decide
         whether they want to depend on a particular API or not.
+        <p/>
+        Some of these APIs are part of the 
+        <a href="http://www.netbeans.org/products/platform/index.html">NetBeans Platform</a>
+        (for example lookup,
+        loaders, utilities, nodes, explorer, window systems, multiview, etc.), some of them
+        are specific to 
+        <a href="http://www.netbeans.org/products/ide/index.html">NetBeans IDE</a> 
+        (projects, javacore, diff, etc.) and some
+        are not included in the release at all and are just provided for download
+        (usually via autoupdate). Basically when building an application based on
+        <em>NetBeans</em> one is free to choose the set of modules and their APIs 
+        to satisfy one's needs.
         <p/>
         To get the API of your module listed here, see the documentation for the 
         Javadoc building
