@@ -205,7 +205,8 @@ public class JDKSearchAction extends CancelableWizardAction  {
         if((list != null)){
             for (int i=0;i<list.length;i++){
                 if((list[i].startsWith("j2se") || list[i].startsWith("java") ||
-                   list[i].startsWith("j2sdk") || list[i].startsWith("jdk"))) {
+                   list[i].startsWith("j2sdk") || list[i].startsWith("jdk")) ||
+                   list[i].startsWith("IBMJava2")) {
                     if (rootDir.endsWith("\\") || rootDir.endsWith("/")) {
                         jdkHome=rootDir+list[i];
                     } else {
