@@ -230,6 +230,7 @@
     </tocitem>
   <tocitem text="Debug Tabs in Output Window" target="debug.output.window"></tocitem>
   <tocitem text="Source Editor Debugging Features" target="debug.source.editor"></tocitem>
+  <tocitem text="Current Context in the Debugger" target="debug.current-context"></tocitem>
   </tocitem>
   <tocitem text="Starting a Debugging Session" target="debug.sessions.jump">
     <tocitem text="Running a Program in the Debugger" target="debug.running.debugger" />
