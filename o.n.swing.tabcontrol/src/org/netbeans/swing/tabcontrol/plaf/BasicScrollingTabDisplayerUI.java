@@ -340,6 +340,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
                 gImg.setComposite(AlphaComposite.Src);
                 gImg.setColor(new Color(0, 0, 0, 0));
                 gImg.fillRect(0, 0, 16, 18);
+                gImg.setClip( 0, 0, 16, 18 );
                 super.paintComponent(gImg);
                 gImg.dispose();
                 if (enabled) {
