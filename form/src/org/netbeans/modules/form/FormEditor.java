@@ -16,8 +16,8 @@ package com.netbeans.developer.modules.loaders.form;
 import java.awt.*;
 import java.beans.*;
 import java.lang.reflect.Method;
-import java.util.Vector;
-import java.util.Enumeration;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.text.MessageFormat;
 import javax.swing.*;
 
@@ -85,7 +85,7 @@ final public class FormEditor extends Object {
 // ---------------------------------------------------
 // Private static variables
 
-  private static Vector errorLog = new Vector ();
+  private static ArrayList errorLog = new ArrayList ();
   private static ComponentInspector componentInspector;
   private static EmptyInspectorNode emptyInspectorNode;
   
@@ -565,19 +565,37 @@ final public class FormEditor extends Object {
 
 
   static void clearLog () {
-    errorLog.removeAllElements ();
+    errorLog.clear ();
   }
 
   public static void fileError (String desc, Throwable t) {
-    errorLog.addElement (new ErrorLogItem (desc, t, ErrorLogItem.ERROR));
+    errorLog.add (new ErrorLogItem (desc, t, ErrorLogItem.ERROR));
   }
 
   public static void fileWarning (String desc, Throwable t) {
-    errorLog.addElement (new ErrorLogItem (desc, t, ErrorLogItem.WARNING));
+    errorLog.add (new ErrorLogItem (desc, t, ErrorLogItem.WARNING));
   }
 
   public static void displayErrorLog () {
     if (errorLog.size () == 0) return;
+    for (Iterator it = errorLog.iterator (); it.hasNext ();) {
+      ErrorLogItem item = (ErrorLogItem)it.next ();
+      if (item.getType () == ErrorLogItem.WARNING) {
+        System.out.println("WARNING: "+item.getDescription ());
+      } else {
+        System.out.println("ERROR: "+item.getDescription ());
+      }
+      if (item.getThrowable () != null) {
+        System.out.println("Details:");
+        item.getThrowable ().printStackTrace ();
+      }
+    }
+    TopManager.getDefault ().notify (new NotifyDescriptor.Message (
+          com.netbeans.ide.util.NbBundle.getBundle (FormEditor.class).getString ("ERR_BetaErrorsNotification"),
+          NotifyDescriptor.WARNING_MESSAGE
+        )
+     ); 
+    
     //new ErrorLogDialog (errorLog).show ();
     clearLog ();
   }
@@ -586,6 +604,8 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  13   Gandalf   1.12        5/16/99  Ian Formanek    Persistence 
+ *       failure-proofness improved
  *  12   Gandalf   1.11        5/16/99  Ian Formanek    
  *  11   Gandalf   1.10        5/15/99  Ian Formanek    
  *  10   Gandalf   1.9         5/15/99  Ian Formanek    
