@@ -14,14 +14,18 @@ Microsystems, Inc. All Rights Reserved.
 
 <!--
 ToDo:
-- use nested classpath tags in javac [in progress -jglick]
+- use nested classpath tags in javac for modules:
+  html httpserver i18n icebrowser image jarpackager java javadoc
+  objectbrowser projects properties utilities vcscvs web
 - handle Japanese sanely
-- substitute @BUILDNUMBER@ in manifests, Versioning.properties
-- proper NBM task (with .xml, info, etc.)
+- proper NBM task (with Info.xml, etc.)
 - build validator DTD for this build system
 - if experimental <obsolete> task can be used, do so for netbeans/firststart dirs, maybe
+- clean targets
+- see how many JARs can actually be moved from lib/ext/ (or modules/patches/) to modules/ext/
+- delete obsolete jars.cfg (from trunk anyway)
 Modules:
-(ant)
+ant (has build system, but not integrated into master)
 crosscompile
 emacs
 innertesters
@@ -39,7 +43,7 @@ treefs
   <!-- Override this with the Ant command, e.g. -Dmodules=... -->
   <property name="modules" value="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,openidex,projects,properties,text,usersguide,utilities,vcscvs,web"/>
 
-  <!-- Ditto: -->
+  <!-- Ditto (note: need not necessarily be a number at all): -->
   <property name="buildnumber" value="123"/>
 
   <!-- Best to leave this alone, though, unless you know what you are doing: -->
@@ -213,12 +217,6 @@ treefs
     <echo message="Build created; see NetBeans-${buildnumber}.zip (in nbbuild/)."/>
     <echo message="If you like, you may run the IDE straight from"/>
     <echo message="the nbbuild/firststart/bin/ directory."/>
-  </target>
-
-  <target name="ant-extensions">
-    <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
-    <javac srcdir="antsrc" destdir="antsrc"/>
-    <jar jarfile="nbantext.jar" basedir="antsrc"/>
   </target>
 
 </project>
