@@ -65,6 +65,8 @@ SystemFileSystem
         </folder>
     </folder>
     
-    
+    <folder name="Workplace">
+         <!-- Workplace of the IDE -->
+    </folder>    
     
 </filesystem>

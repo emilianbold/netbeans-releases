@@ -16,887 +16,139 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <filesystem>
-    <!-- Moved to varios packages see comments
+
+    <!--
     <folder name="Actions">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-    -->
-        <!--
-        <folder name="Build">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-        -->
-            <!-- <file name="org-openide-actions-BuildAllAction.instance"/> Moved to core-compiler -->
-            <!-- <file name="org-openide-actions-BuildAction.instance"/> Moved to core-compiler -->
-            <!-- <file name="org-openide-actions-CleanAllAction.instance"/> Moved to core-compiler -->
-            <!-- <file name="org-openide-actions-CleanAction.instance"/> Moved to core-compiler -->
-            <!-- <file name="org-openide-actions-CompileAllAction.instance"/> Moved to core-compiler -->
-            <!-- <file name="org-openide-actions-CompileAction.instance"/> Moved to core-compiler -->
-            <!-- <file name="org-openide-actions-ExecuteAction.instance"/> Moved to core-execution -->
-            <!-- <file name="org-netbeans-core-actions-NextOutJumpAction.instance"/> Moved to core-compilation -->
-            <!-- <file name="org-netbeans-core-actions-PreviousOutJumpAction.instance"/> Moved to core compilation -->
-            <!-- <file name="org-netbeans-core-actions-SetArgumentsAction.instance"/> Moved to core-execution -->
-            <!-- <file name="org-netbeans-core-actions-StopCompileAction.instance"/> Moved to core-compiler -->
-        <!--    
-        </folder>
-        -->
-        <!-- Moved to core-ui 
-        <folder name="Edit">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-CopyAction.instance"/>
-            <file name="org-openide-actions-CutAction.instance"/>
-            <file name="org-openide-actions-DeleteAction.instance"/>
-            <file name="org-openide-actions-FindAction.instance"/>
-            <file name="org-openide-actions-GotoAction.instance"/>
-            <file name="org-openide-actions-PasteAction.instance"/>
-            <file name="org-openide-actions-RedoAction.instance"/>
-            <file name="org-openide-actions-ReplaceAction.instance"/>
-            <file name="org-openide-actions-UndoAction.instance"/>
-        </folder>
-        -->
-        <!-- Moved to core-ide 
-        <folder name="Help">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-netbeans-core-actions-AboutAction.instance"/>
-            <file name="org-netbeans-core-actions-TipOfTheDayAction.instance"/>
-        </folder>
-        -->
-        <!-- Moved to core-ui
-        <folder name="System">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-netbeans-core-actions-MountAction.instance"/>
-            <file name="org-netbeans-core-actions-ConfigureShortcutsAction.instance"/>
-            <file name="org-openide-actions-CustomizeBeanAction.instance"/>
-            <file name="org-openide-actions-EditAction.instance"/>
-            <file name="org-netbeans-core-actions-SystemExit.instance"/>
-            <file name="org-openide-actions-FileSystemAction.instance"/>
-            <file name="org-openide-actions-GarbageCollectAction.instance"/>
-            <file name="org-netbeans-core-actions-OptionsAction.instance"/>
-            <file name="org-openide-actions-InstantiateAction.instance"/>
-            <file name="org-openide-actions-MoveDownAction.instance"/>
-            <file name="org-openide-actions-MoveUpAction.instance"/>
-            <file name="org-openide-actions-NewAction.instance"/>
-            <file name="org-netbeans-core-actions-OpenExplorerAction.instance"/>
-            <file name="org-openide-actions-OpenAction.instance"/>
-            <file name="org-openide-actions-PopupAction.instance"/>
-            <file name="org-openide-actions-PrintAction.instance"/>
-            <file name="org-openide-actions-PageSetupAction.instance"/>
-            <file name="org-openide-filesystems-RefreshAction.instance"/>
-            <file name="org-netbeans-core-actions-UnmountFSAction.instance"/>
-            <file name="org-openide-actions-RenameAction.instance"/>
-            <file name="org-openide-actions-ReorderAction.instance"/>
-            <file name="org-openide-actions-SaveAllAction.instance"/>
-            <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
-            <file name="org-openide-actions-SaveAction.instance"/>
-            <file name="org-openide-actions-ToolsAction.instance"/>
-            <file name="org-openide-actions-ViewAction.instance"/>
-            <file name="org-openide-actions-NewTemplateAction.instance"/>
-            <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance"/>
-            <file name="org-netbeans-core-actions-SetupWizardAction.instance"/>
-            <file name="org-netbeans-core-actions-MemoryMeterAction.instance"/>
-        </folder>
-        -->
-        <!-- Moved to core-ui 
-        <folder name="View">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-CloseViewAction.instance"/>
-            <file name="org-openide-actions-CustomizeAction.instance"/>
-            <file name="org-netbeans-core-actions-EditorViewAction.instance"/>
-            <file name="org-netbeans-core-actions-ExecutionViewAction.instance"/>
-            <file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
-            <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
-            <file name="org-netbeans-core-actions-FocusPreviousWorkspaceAction.instance"/>            
-            <file name="org-netbeans-core-actions-PreviousWorkspaceAction.instance"/>
-            <file name="org-netbeans-core-actions-FocusNextWorkspaceAction.instance"/>
-            <file name="org-netbeans-core-actions-NextWorkspaceAction.instance"/>
-            <file name="org-netbeans-core-actions-WorkspaceExplorerAction.instance"/>
-            <file name="org-netbeans-core-actions-OutputWindowAction.instance"/>
-            <file name="org-openide-actions-PropertiesAction.instance"/>
-            <file name="org-netbeans-core-actions-StatusLineAction.instance"/>
-            <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
-            <file name="org-openide-actions-WorkspaceSwitchAction.instance"/>
-        </folder>
-        -->
-        
-        <!-- Moved to core-windows
-        <folder name="Window">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-CloneViewAction.instance"/>
-            <file name="org-netbeans-core-actions-DockingAction.instance"/>
-            <file name="org-openide-actions-PreviousTabAction.instance"/>
-            <file name="org-openide-actions-NextTabAction.instance"/>
-            <file name="org-netbeans-core-actions-OpenedWindowsAction.instance"/>
-            <file name="org-openide-actions-UndockAction.instance"/>
-        </folder>
-        -->
-    <!--    
+        You can add Actions into this folder in xml-layer of
+        your module.
     </folder>
     -->
-    <!-- Moved to core-ide
+
+    <!-- 
     <folder name="Welcome">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-        <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance">
-            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-NewTemplateAction.html" />
-        </file>
+        Folder for customizing Welcome dialog. You can add 
+        components into the welcome dialog using your xml-layer
+        in your module.
     </folder>
     -->
+    
     <!-- moved to various packages see comments
     <folder name="Menu">
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+        Adding Actions into subfolders of this folder in xml-layer
+        of your module will customize the MainWindow.
+    </folder>    
     -->  
-      <!-- Moved to core-ui 
-      <folder name="File">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-          <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance"/>
-          <attr name="org-netbeans-core-actions-NewTemplateCallableAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator1[javax-swing-JSeparator].instance"/>
-          <attr name="Separator1[javax-swing-JSeparator].instance/org-netbeans-core-actions-NewFileSystemAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-NewFileSystemAction.instance"/>
-          <attr name="org-netbeans-core-actions-NewFileSystemAction.instance/org-netbeans-core-actions-UnmountFSAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-UnmountFSAction.instance"/>
-          <attr name="org-netbeans-core-actions-UnmountFSAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator2[javax-swing-JSeparator].instance"/>
-          <attr name="Separator2[javax-swing-JSeparator].instance/org-openide-actions-SaveAction.instance" boolvalue="true" />7
-          <file name="org-openide-actions-SaveAction.instance"/>
-          <attr name="org-openide-actions-SaveAction.instance/org-openide-actions-SaveAllAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-SaveAllAction.instance"/>
-          <attr name="org-openide-actions-SaveAllAction.instance/Separator3[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator3[javax-swing-JSeparator].instance"/>
-          <attr name="Separator3[javax-swing-JSeparator].instance/org-openide-actions-PrintAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-PrintAction.instance"/>
-          <attr name="org-openide-actions-PrintAction.instance/org-openide-actions-PageSetupAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-PageSetupAction.instance"/>
-          <attr name="org-openide-actions-PageSetupAction.instance/Separator4[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator4[javax-swing-JSeparator].instance"/>
-          <attr name="Separator4[javax-swing-JSeparator].instance/org-netbeans-core-actions-SystemExit.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-SystemExit.instance"/>
-      </folder>
-      <attr name="File/Edit" boolvalue="true" />
-      <folder name="Edit">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-          <file name="org-openide-actions-UndoAction.instance"/>
-          <attr name="org-openide-actions-UndoAction.instance/org-openide-actions-RedoAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-RedoAction.instance"/>
-          <attr name="org-openide-actions-RedoAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator1[javax-swing-JSeparator].instance"/>
-          <attr name="Separator1[javax-swing-JSeparator].instance/org-openide-actions-CutAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-CutAction.instance"/>
-          <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-CopyAction.instance"/>
-          <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-PasteAction.instance"/>
-          <attr name="org-openide-actions-PasteAction.instance/org-openide-actions-DeleteAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-DeleteAction.instance"/>
-          <attr name="org-openide-actions-DeleteAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator2[javax-swing-JSeparator].instance"/>
-          <attr name="Separator2[javax-swing-JSeparator].instance/org-openide-actions-FindAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-FindAction.instance"/>
-          <attr name="org-openide-actions-FindAction.instance/org-openide-actions-ReplaceAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-ReplaceAction.instance"/>
-          <attr name="org-openide-actions-ReplaceAction.instance/org-openide-actions-GotoAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-GotoAction.instance"/>
-      </folder>
-      -->
-      <!--
-      <attr name="Edit/View" boolvalue="true" />
-      <folder name="View">
-      -->
-          <!-- Moved to core-ui
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-          <file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
-          <attr name="org-openide-actions-OpenLocalExplorerAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator1[javax-swing-JSeparator].instance"/>
-          <attr name="Separator1[javax-swing-JSeparator].instance/org-netbeans-core-actions-GlobalPropertiesAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
-          <attr name="org-netbeans-core-actions-GlobalPropertiesAction.instance/org-netbeans-core-actions-ExplorerViewAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-ExplorerViewAction.instance"/>
-          <attr name="org-netbeans-core-actions-ExplorerViewAction.instance/org-netbeans-core-actions-EditorViewAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-EditorViewAction.instance"/>
-          <attr name="org-netbeans-core-actions-EditorViewAction.instance/org-netbeans-core-actions-OutputWindowAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-OutputWindowAction.instance"/>
-          -->
-          <!-- moved to core-execution 
-          <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-core-actions-ExecutionViewAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-ExecutionViewAction.instance"/>
-          <attr name="org-netbeans-core-actions-ExecutionViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
-          -->
-          <!-- moved to core-ui
-          <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
-          -->
-          <!-- Moved to core-windows 
-          <attr name="org-netbeans-core-actions-HTMLViewAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator2[javax-swing-JSeparator].instance"/>
-          <attr name="Separator2[javax-swing-JSeparator].instance/org-openide-actions-WorkspaceSwitchAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-WorkspaceSwitchAction.instance"/>
-          -->
-      <!--
-      </folder>
-      -->
-      <!-- Moved to core-compiler/execution
-      <attr name="View/Build" boolvalue="true" />
-      <folder name="Build">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-          -->
-          <!-- moved to core-compiler
-          <file name="org-openide-actions-CompileAction.instance"/>
-          <attr name="org-openide-actions-CompileAction.instance/org-openide-actions-CompileAllAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-CompileAllAction.instance"/>
-          <attr name="org-openide-actions-CompileAllAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator1[javax-swing-JSeparator].instance"/>
-          <attr name="Separator1[javax-swing-JSeparator].instance/org-openide-actions-BuildAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-BuildAction.instance"/>
-          <attr name="org-openide-actions-BuildAction.instance/org-openide-actions-BuildAllAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-BuildAllAction.instance"/>
-          <attr name="org-openide-actions-BuildAllAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator2[javax-swing-JSeparator].instance"/>
-          <attr name="Separator2[javax-swing-JSeparator].instance/org-openide-actions-CleanAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-CleanAction.instance"/>
-          <attr name="org-openide-actions-CleanAction.instance/org-openide-actions-CleanAllAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-CleanAllAction.instance"/>
-          <attr name="org-openide-actions-CleanAllAction.instance/Separator3[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator3[javax-swing-JSeparator].instance"/>
-          <attr name="Separator3[javax-swing-JSeparator].instance/org-netbeans-core-actions-StopCompileAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-StopCompileAction.instance"/>          
-          <attr name="org-netbeans-core-actions-StopCompileAction.instance/Separator4[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator4[javax-swing-JSeparator].instance"/>
-          <attr name="Separator4[javax-swing-JSeparator].instance/org-netbeans-core-actions-NextOutJumpAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-NextOutJumpAction.instance"/>
-          <attr name="org-netbeans-core-actions-NextOutJumpAction.instance/org-netbeans-core-actions-PreviousOutJumpAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-PreviousOutJumpAction.instance"/>
-          -->
-          <!-- moved to core-execution 
-          <attr name="org-netbeans-core-actions-PreviousOutJumpAction.instance/Separator5[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator5[javax-swing-JSeparator].instance"/>
-          <attr name="Separator5[javax-swing-JSeparator].instance/org-netbeans-core-actions-SetArgumentsAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-SetArgumentsAction.instance"/>
-          <attr name="org-netbeans-core-actions-SetArgumentsAction.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-ExecuteAction.instance"/>
-          -->
-       <!-- Moved to core-compiler/execution   
-       </folder>
-       -->
-       
-       <!-- Moved tp core-ui
-       <attr name="Build/Tools" boolvalue="true" />
-       <folder name="Tools">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-          <file name="org-openide-actions-ToolsAction.instance"/>
-          <attr name="org-openide-actions-ToolsAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator1[javax-swing-JSeparator].instance"/>
-          <attr name="Separator1[javax-swing-JSeparator].instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
-          -->
-          <!-- OK to have both separators here: cf. #7391 -->
-          <!--
-          <file name="Separator2[javax-swing-JSeparator].instance"/>
-          <attr name="Separator2[javax-swing-JSeparator].instance/org-netbeans-core-actions-SetupWizardAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-SetupWizardAction.instance"/>
-          <attr name="org-netbeans-core-actions-SetupWizardAction.instance/org-netbeans-core-actions-ConfigureShortcutsAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-ConfigureShortcutsAction.instance"/>
-          <attr name="org-netbeans-core-actions-ConfigureShortcutsAction.instance/org-netbeans-core-actions-OptionsAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-OptionsAction.instance"/>
-       </folder>
-       -->
-       
-       <!-- Moved to core-windows
-       <attr name="Tools/Window" boolvalue="true" />
-       <folder name="Window">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-          <file name="org-netbeans-core-actions-AttachFrameAction.instance"/>
-          <attr name="org-netbeans-core-actions-AttachFrameAction.instance/org-netbeans-core-actions-DetachFrameAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-DetachFrameAction.instance"/>
-          <attr name="org-netbeans-core-actions-DetachFrameAction.instance/org-netbeans-core-actions-FrameResidenceAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-FrameResidenceAction.instance"/>
-          <attr name="org-netbeans-core-actions-FrameResidenceAction.instance/org-netbeans-core-actions-MakeDominantAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-MakeDominantAction.instance"/>
-          <attr name="org-netbeans-core-actions-MakeDominantAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator1[javax-swing-JSeparator].instance"/>
-          <attr name="Separator1[javax-swing-JSeparator].instance/org-openide-actions-UndoAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-UndockAction.instance"/>
-          <attr name="org-openide-actions-UndockAction.instance/org-netbeans-core-actions-DockingAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-DockingAction.instance"/>
-          <attr name="org-netbeans-core-actions-DockingAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator2[javax-swing-JSeparator].instance"/>
-          <attr name="Separator2[javax-swing-JSeparator].instance/org-openide-actions-CloneViewAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-CloneViewAction.instance"/>
-          <attr name="org-openide-actions-CloneViewAction.instance/Separator3[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator3[javax-swing-JSeparator].instance"/>
-          <attr name="Separator3[javax-swing-JSeparator].instance/org-openide-actions-NextTabAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-NextTabAction.instance"/>
-          <attr name="org-openide-actions-NextTabAction.instance/org-openide-actions-PreviousTabAction.instance" boolvalue="true" />
-          <file name="org-openide-actions-PreviousTabAction.instance"/>
-          <attr name="org-openide-actions-PreviousTabAction.instance/Separator4[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator4[javax-swing-JSeparator].instance"/>
-          <attr name="Separator4[javax-swing-JSeparator].instance/org-netbeans-core-actions-OpenedWindowsAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-OpenedWindowsAction.instance"/>
-       </folder>
-       -->
-       <!-- Moved to core-ide 
-       <attr name="Window/Help" boolvalue="true" />
-       <folder name="Help">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-          <file name="Separator1[javax-swing-JSeparator].instance"/>
-          -->
-          <!-- Miscellaneous help menu items (URLs) now installed by utilities module. -->
-          <!--
-          <attr name="Separator1[javax-swing-JSeparator].instance/org-netbeans-core-actions-WelcomeAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-WelcomeAction.instance"/>
-          <attr name="org-netbeans-core-actions-WelcomeAction.instance/org-netbeans-core-actions-AboutAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-AboutAction.instance"/>
-       </folder>
-       -->
-    <!--   
-    </folder>
-    -->
+    
 
     <folder name="Toolbars">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
         <file name="Standard.xml" url="Standard.xml"/> <!-- pending how to work with toolbars settings -->
 
-        <!-- 
-        <folder name="Build">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+        <!--
+            Adding Actions into subfolders of this folder in xml-layer
+            of your module will customize the MainWindow toolbars.
         -->
-            <!-- moved to core compiler 
-            <file name="org-openide-actions-BuildAllAction.instance"/>
-            <attr name="org-openide-actions-BuildAllAction.instance/org-openide-actions-BuildAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-BuildAction.instance"/>            
-            <attr name="org-openide-actions-BuildAction.instance/org-netbeans-core-actions-NextOutJumpAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-NextOutJumpAction.instance"/>
-            -->
-            <!-- moved to core-execution
-            <attr name="org-netbeans-core-actions-NextOutJumpAction.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-ExecuteAction.instance"/>
-            -->
-        <!--    
-        </folder>
-        -->
-        <!-- Moved to core-ui
-        <folder name="Data">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-FindAction.instance"/>
-            <attr name="org-openide-actions-FindAction.instance/org-netbeans-core-actions-GlobalPropertiesAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
-        </folder>
-        <folder name="Edit">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-CutAction.instance"/>
-            <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-CopyAction.instance"/>
-            <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-PasteAction.instance"/>
-            <attr name="org-openide-actions-PasteAction.instance/org-openide-actions-DeleteAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-DeleteAction.instance"/>
-            <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-UndoAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-UndoAction.instance"/>
-            <attr name="org-openide-actions-UndoAction.instance/org-openide-actions-RedoAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-RedoAction.instance"/>
-        </folder>
-        <folder name="System">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance"/>
-            <attr name="org-netbeans-core-actions-NewTemplateCallableAction.instance/org-openide-actions-SaveAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-SaveAction.instance"/>
-            <attr name="org-openide-actions-SaveAction.instance/org-openide-actions-SaveAllAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-SaveAllAction.instance"/>
-            <attr name="org-openide-actions-SaveAllAction.instance/org-openide-actions-PrintAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-PrintAction.instance"/>
-        </folder>
-        <folder name="Memory">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-netbeans-core-actions-MemoryMeterAction.instance"/>
-            <attr name="org-netbeans-core-actions-MemoryMeterAction.instance/org-openide-actions-GarbageCollectAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-GarbageCollectAction.instance"/>
-        </folder>
-        -->
-        <!-- Moved to core-ide
-        <folder name="View">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-netbeans-core-actions-OutputWindowAction.instance"/>
-            <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-core-actions-ExecutionViewAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-ExecutionViewAction.instance"/>
-            <attr name="org-netbeans-core-actions-ExecutionViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
-        </folder>
-        -->
+        
     </folder>
 
-  <!-- Moved to various modules 
-  <folder name="Shortcuts">
-  -->
-    <!-- <file name="SA-C[org-netbeans-core-actions-StopCompileAction].instance" /> moved to core-compiler -->
-    <!-- <file name="C-Z[org-openide-actions-UndoAction].instance" /> moved to core-ui -->
-    <!-- <file name="S-F11[org-openide-actions-BuildAllAction].instance" /> moved to core-compiler -->
-    <!-- <file name="DELETE[org-openide-actions-DeleteAction].instance" /> moved to core-ui -->
-    <!-- <file name="C-Y[org-openide-actions-RedoAction].instance" /> moved to core-ui -->
-    <!-- <file name="S-F9[org-openide-actions-CompileAllAction].instance" /> moved to core-compiler -->
-    <!-- <file name="C-X[org-openide-actions-CutAction].instance" /> moved to core-ui -->
-    <!-- <file name="F12[org-netbeans-core-actions-NextOutJumpAction].instance" /> moved to core-compiler -->
-    <!-- <file name="S-F12[org-netbeans-core-actions-PreviousOutJumpAction].instance" /> moved to core-compiler -->
-    <!-- <file name="S-F8[org-openide-actions-ToggleBreakpointAction].instance" /> PENDING Debugger ? moved to core-ide -->
-    <!-- <file name="F11[org-openide-actions-BuildAction].instance" /> moved to core-compiler -->
-    <!-- <file name="F9[org-openide-actions-CompileAction].instance" /> moved to core-compiler -->
-    <!-- <file name="C-G[org-openide-actions-GotoAction].instance" /> moved to core-ui -->
-    <!-- <file name="C-7[org-netbeans-core-actions-HTMLViewAction].instance" /> moved to core-ui -->
-    <!-- <file name="A-RIGHT[org-openide-actions-NextTabAction].instance" /> moved to core-ui -->
-    <!-- <file name="C-V[org-openide-actions-PasteAction].instance" /> moved to core-ui -->
-    <!-- <file name="F6[org-openide-actions-ExecuteAction].instance" /> moved to core-execution -->
-    <!-- <file name="C-F[org-openide-actions-FindAction].instance" /> moved to core-ui -->
-    <!-- <file name="C-6[org-netbeans-core-actions-ExecutionViewAction].instance" /> moved to core-execution -->
-    <!-- <file name="A-LEFT[org-openide-actions-PreviousTabAction].instance" /> moved to core-ui --> 
-    <!-- <file name="C-4[org-netbeans-core-actions-OutputWindowAction].instance" /> moved to core-ui -->
-    <!-- <file name="C-F4[org-openide-actions-CloseViewAction].instance" /> moved to core-ui -->
-    <!-- <file name="C-S[org-openide-actions-SaveAction].instance" /> moved to core-ui -->
-    <!-- <file name="C-C[org-openide-actions-CopyAction].instance" /> moved to core-ui -->
-    <!-- <file name="C-3[org-netbeans-core-actions-EditorViewAction].instance" /> moved to core-ui -->
-    <!-- <file name="C-H[org-openide-actions-ReplaceAction].instance" /> moved to core-ui -->
-    <!-- <file name="C-2[org-netbeans-core-actions-ExplorerViewAction].instance" /> moved to core-ui -->
-    <!-- <file name="C-1[org-netbeans-core-actions-GlobalPropertiesAction].instance" /> moved to core-ui -->
-    <!-- <file name="C-P[org-openide-actions-PrintAction].instance" /> moved to core-ui -->
-    <!-- <file name="C-0[org-openide-actions-OpenLocalExplorerAction].instance" /> moved to core-ui -->
-    <!-- <file name="CS-F7[org-openide-actions-AddWatchAction].instance" /> PENDING Debugger moved to core-ide -->
-    <!-- <file name="C-N[org-netbeans-core-actions-NewTemplateCallableAction].instance" /> moved to core-ui -->
-    <!-- <file name="S-F10[org-openide-actions-PopupAction].instance" /> moved to core-ui -->
-    <!-- <file name="CS-DOWN[org-netbeans-core-actions-FocusNextWorkspaceAction].instance" /> moved to core-ui -->
-    <!-- <file name="CS-UP[org-netbeans-core-actions-FocusPreviousWorkspaceAction].instance" /> moved to core-ui -->
-    <!-- <file name="CS-F12[org-netbeans-core-actions-WorkspaceExplorerAction].instance" /> moved to core-ui -->
-  <!--  
-  </folder>
-  -->
+    <!-- 
+    <folder name="Shortcuts">
+        You can customize keyboard shorcuts using this folder in the
+        xml-layer of your module.
+    </folder>
+    -->
+
+    <folder name="Startup">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+    </folder>
 
 
-  <folder name="Startup">
-    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-  </folder>
+    <folder name="Templates">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
 
-
-  <folder name="Templates">
-    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-    <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
-
-        <!-- moved to core-ui
-        <folder name="Folder">
-            <attr name="template" boolvalue="true"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesFolder.html" />
-            <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.FolderIterator.create" />
-        </folder>
-        -->
-      <!-- templates for services in Lookup, should have the same subdirectory as objects under the -->
-
-      <!-- moved to various folders
-      <folder name="Services">
-        <attr name="simple" boolvalue="false" />
-      -->
-        <!-- moved to core-ui
-        <folder name="Browsers">
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif" />
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-        </folder>
-
-        <folder name="ScriptType">
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/scriptTypes.gif" />
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-        </folder>
-
-        <folder name="IndentEngine">
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif" />
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        <!-- 
+        <folder name="Services">
+            templates for services in Lookup, should have the same subdirectory as 
+            objects under the
         </folder>
         -->
             
-        <!-- moved to core-compiler 
-        <folder name="CompilerType">
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/compilerTypes.gif" />
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        <!-- 
+        <folder name="Mount">
+            folder for all registered filesystem templates
         </folder>
         -->
-        
-        <!-- moved to core-execution 
-        <folder name="DebuggerType">
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/debuggerTypes.gif" />
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-          <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        </folder>
-
-        <folder name="Executor">
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionTypes.gif" />
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-        </folder>
-        -->
-      <!--
-      </folder>
-      -->
-      
-      <!-- folder for all registered filesystem templates -->
-      <!-- moved to core-ui 
-      <folder name="Mount">
-      -->
-          <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
-          <!--
-          <attr name="simple" boolvalue="false" />
-          <attr name="org-netbeans-core-ExLocalFileSystem.settings/org-netbeans-core-ExJarFileSystem.settings" boolvalue="true" />
-          <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesFileSystems.html"/>
-          
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
-          <file name="org-netbeans-core-ExLocalFileSystem.settings" url="ExLocalFileSystem.settings">
-              <attr name="template" boolvalue="true" />
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-              <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.MountNode.createIterator" />
-              <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesLocalFS.html"/>
-          </file>
-          <file name="org-netbeans-core-ExJarFileSystem.settings" url="ExJarFileSystem.settings">
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-              <attr name="template" boolvalue="true" />
-              <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.MountNode.createIterator" />
-              <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesJarFS.html"/>
-          </file>
-      </folder>
-      -->
-  </folder>
-
-  <!-- moved to core-ui
-  <folder name="Wizards">
-    <folder name="Setup">
-      <file name="org-netbeans-core-ui-IDESettingsPanel.instance">
-        <attr name="basic" boolvalue="true" />
-      </file>
-      <file name="org-netbeans-core-ui-ModuleSelectionPanel.instance" />
     </folder>
-  </folder>
-  -->
-
-  <!-- register services with Lookup -->
-  
-  <folder name="Services">
-
-    <!-- folder for HTML browsers and very simple browser -->
-    <!-- moved to core-ui
-    <folder name="Browsers">
-      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif" />
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-      <file name="SwingBrowser.ser" url="SwingBrowser.ser">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.Bundle"/>
-      </file>
-      <attr name="helpID" stringvalue="org.netbeans.core.services.Browsers"/>
-    </folder>
-
-    <folder name="ScriptType">
-      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/scriptTypes.gif" />
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-      <attr name="SystemFileSystem.layer" stringvalue="project"/>
-      <attr name="helpID" stringvalue="org.netbeans.core.services.ScriptTypes"/>
-    </folder>
-
-    <folder name="IndentEngine">
-      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif" />
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-      <attr name="helpID" stringvalue="org.netbeans.core.services.IndentEngines"/>
-    </folder>
-    -->
-    <!-- moved to core-compiler 
-    <folder name="CompilerType">
-      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/compilerTypes.gif" />
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-      <attr name="SystemFileSystem.layer" stringvalue="project"/>
-      <attr name="helpID" stringvalue="org.netbeans.core.services.CompilerTypes"/>
-    </folder>
-    -->
-    
-    <!-- moved to core-execution 
-    <folder name="DebuggerType">
-      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/debuggerTypes.gif" />
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-      <attr name="SystemFileSystem.layer" stringvalue="project"/>
-      <attr name="helpID" stringvalue="org.netbeans.core.services.DebuggerTypes"/>
-    </folder>
-
-    <folder name="Executor">
-      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionTypes.gif" />
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-      <attr name="SystemFileSystem.layer" stringvalue="project"/>
-      <attr name="helpID" stringvalue="org.netbeans.core.services.ExecutorTypes"/>
-    </folder>
-    -->
-    
-    
-    <folder name="MIMEResolver">
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/mime.gif" />        
-      <attr name="SystemFileSystem.layer" stringvalue="project"/>
-    </folder>
-
-    <folder name="Hidden">
-      <attr name="hidden" boolvalue="true" />
-
-        <!-- in memory EntityCalalog intance (it serves for deprecated method implementations) -->
-        <file name="org-openide-loaders-XMLDataObject-compat.instance" >
-            <attr name="instanceClass" stringvalue="org.openide.xml.EntityCatalog" />
-            <attr name="instanceCreate" methodvalue="org.openide.loaders.XMLDataObject.createEntityCatalog"/>
-        </file>
-
-        <!-- Permit test modules to be (re)deployed. -->
-        <file name="org-netbeans-core-module-tester.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.core.modules.TestModuleDeployer"/>
-            <attr name="instanceOf" stringvalue="org.netbeans.core.modules.TestModuleDeployer"/>
-            <attr name="instanceCreate" methodvalue="org.netbeans.core.modules.ModuleSystem.getTestModuleDeployer"/>
-        </file>
-        
-        <!--
-        Register the default error manager. It looks for the system property org.openide.ErrorManager
-        first, but normally just loads an NbErrorManager singleton. Modules wishing to provide a
-        different error manager should place an instance in this folder and make sure it comes before
-        this one so it can override. However this one will still be used during the early startup
-        phases before module layer merging and folder lookup are ready.
-        -->
-        <file name="org-netbeans-core-default-error-manager.instance">
-            <attr name="instanceClass" stringvalue="org.openide.ErrorManager"/>
-            <attr name="instanceOf" stringvalue="org.openide.ErrorManager"/>
-            <attr name="instanceCreate" methodvalue="org.netbeans.core.NbTopManager.getDefaultErrorManager"/>
-        </file>
-        
-    </folder>
-    
-    <!-- moved to core-ide    
-    <file name="org-netbeans-core-IDESettings.settings" url="IDESettings.settings">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/ideSettings.gif" />
-    </file>
-    -->
-    
-    <!-- moved to core-ui  
-    <file name="org-netbeans-core-output-OutputSettings.settings" url="OutputSettings.settings">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/outputSettings.gif" />
-    </file>
-    -->
-    
-    <!-- moved to core-ui  
-    <file name="org-openide-explorer-propertysheet-PropertySheetSettings.settings" url="PropertySheetSettings.settings">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/propertysheet/propertySheetSettings.gif" />
-    </file>
-    -->
-    
-    <!-- moved to core-ide
-    <file name="org-openide-src-nodes-SourceOptions.settings" url="SourceOptions.settings">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/src/sourceOptions.gif" />
-    </file>
-    -->
-    
-    <!-- moved to core-execution
-    <file name="org-netbeans-core-execution-ExecutionSettings.settings" url="ExecutionSettings.settings">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionSettings.gif" />
-    </file>
-    -->
-
-    <!-- moved to core-ui  
-    <file name="org-openide-text-PrintSettings.settings" url="PrintSettings.settings">
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/printSettings.gif" />
-    </file>
-    -->
-
-  </folder> <!-- Services -->
-
-  <!-- moved to various modules
-  <folder name="UI">
-  -->
-  
-    <!-- settings categories UI presentation -->
-    <!--
-    <folder name="Services">
-      <attr name="helpID" stringvalue="org.netbeans.core.ControlPanelNode" />
-      -->
-      <!-- moved to core-ui -->
-      <!--
-      <folder name="IDEConfiguration">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-
-        <folder name="LookAndFeel">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-
-          <file name="Actions.instance">
-            <attr name="instanceCreate" newvalue="org.netbeans.core.ActionsPoolNode" />
-            <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-          </file>
-
-          <file name="org-openide-src-nodes-SourceOptions.shadow">
-<![CDATA[Services/org-openide-src-nodes-SourceOptions.settings
-SystemFileSystem
-]]>
-          </file>
-
-          <file name="Menu.instance">
-            <attr name="instanceCreate" newvalue="org.netbeans.core.MenuFolderNode" />
-            <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-          </file>
-
-          <file name="org-netbeans-core-output-OutputSettings.shadow">
-<![CDATA[Services/org-netbeans-core-output-OutputSettings.settings
-SystemFileSystem
-]]>
-          </file>
-
-          <file name="org-openide-explorer-propertysheet-PropertySheetSettings.shadow">
-<![CDATA[Services/org-openide-explorer-propertysheet-PropertySheetSettings.settings
-SystemFileSystem
-]]>
-          </file>
-
-          <file name="Toolbar.instance">
-            <attr name="instanceCreate" newvalue="org.netbeans.core.ToolbarFolderNode" />
-            <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-          </file>
-
-          <file name="Workspace.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.nodes.WorkspacePoolContext.getDefault" />
-            <attr name="instanceClass" stringvalue="org.netbeans.core.windows.nodes.WorkspacePoolContext" />
-          </file>
-
-        </folder> --><!-- LookAndFeel -->
-        <!--    
-        <folder name="System">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-
-          <file name="FileSystems.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createFileSystems" />
-            <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-          </file>
-
-          <file name="Modules.instance">
-            <attr name="instanceCreate" newvalue="org.netbeans.core.ui.ModuleNode" />
-            <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-          </file>
-
-          <file name="ObjectTypes.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createObjectTypes" />
-            <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-          </file>
-
-          <file name="org-openide-text-PrintSettings.shadow">
-            <![CDATA[Services/org-openide-text-PrintSettings.settings
-SystemFileSystem
-]]>
-          </file>
-
-          <file name="Startup.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createStartup" />
-            <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-          </file>
-
-          <file name="org-netbeans-core-IDESettings.shadow">
-<![CDATA[Services/org-netbeans-core-IDESettings.settings
-SystemFileSystem
-]]>
-          </file>
-
-          <file name="Welcome.instance">
-            <attr name="instanceCreate" newvalue="org.netbeans.core.ui.WelcomeFolderNode" />
-            <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-          </file>
-
-          <file name="MIMEResolver.shadow">
-<![CDATA[Services/MIMEResolver
-SystemFileSystem
-]]>
-          </file>
-
-        </folder> --> <!-- System -->
-
-        <!--
-        <folder name="ServerAndExternalToolSettings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-          -->  
-          <!-- link to HTML browsers -->
-          <!--
-          <file name="Browsers.shadow">
-<![CDATA[Services/Browsers
-SystemFileSystem
-]]>
-          </file>
-
-          <file name="ScriptTypes.shadow">
-<![CDATA[Services/ScriptType
-SystemFileSystem
-]]>
-          </file>
-        </folder> --> <!-- ServerAndExternalToolSettings -->
-      <!--  
-      </folder> --> <!-- IDEConfiguration -->
-      
-      <!-- moved to core-compiler 
-      <folder name="Building">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-
-        <file name="CompilerTypes.shadow">
-<![CDATA[Services/CompilerType
-SystemFileSystem
-]]>
-        </file>
-      </folder> --> <!-- Building -->
-
-      <!-- moved to core-ide
-      <folder name="SourceCreationAndManagement">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-
-        <file name="Templates.instance">
-          <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createTemplate" />
-          <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-        </file>
-      </folder> --> <!-- SourceCreationAndManagement -->
-
-      <!-- moved to core-ui
-      <folder name="Editing">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-
-        <file name="IndentationEngines.shadow">
-<![CDATA[Services/IndentEngine
-SystemFileSystem
-]]>
-        </file>
-      </folder> --> <!-- Editing -->
-
-      <!-- moved to core-execution 
-      <folder name="DebuggingAndExecuting">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-
-        <file name="DebuggerTypes.shadow">
-<![CDATA[Services/DebuggerType
-SystemFileSystem
-]]>
-        </file>
-
-        <file name="org-netbeans-core-execution-ExecutionSettings.shadow">
-<![CDATA[Services/org-netbeans-core-execution-ExecutionSettings.settings
-SystemFileSystem
-]]>
-        </file>
-
-        <file name="Executors.shadow">
-<![CDATA[Services/Executor
-SystemFileSystem
-]]>
-        </file>
-
-      </folder> --> <!-- DebuggingAndExecuting -->
 
     <!-- 
-    </folder> --> <!-- Services -->
-  <!--
-  </folder> --> <!-- UI -->
+    <folder name="Wizards">
+        You can customize the SetupWizard in this folder in xml-layer
+        of your module.
+    </folder>
+    -->
 
-  
-  <!-- workplace of the IDE -->
-  <!-- moved to core-ide PENDING
-  <folder name="Workplace">
-  </folder>
-  -->
+    <folder name="Services">
+    
+        <!-- 
+        Register services with Lookup here in xml-layer of 
+        your module.
+        -->
+    
+        <folder name="MIMEResolver">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/mime.gif" />        
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
+        </folder>
 
-  <!-- mounted filesystems in the IDE-->
-  <!-- PENDING -->
-  <folder name="Mount">
+        <folder name="Hidden">
+            <attr name="hidden" boolvalue="true" />
+
+            <!-- in memory EntityCalalog intance (it serves for deprecated method implementations) -->
+            <file name="org-openide-loaders-XMLDataObject-compat.instance" >
+                <attr name="instanceClass" stringvalue="org.openide.xml.EntityCatalog" />
+                <attr name="instanceCreate" methodvalue="org.openide.loaders.XMLDataObject.createEntityCatalog"/>
+            </file>
+
+            <!-- Permit test modules to be (re)deployed. -->
+            <file name="org-netbeans-core-module-tester.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.core.modules.TestModuleDeployer"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.core.modules.TestModuleDeployer"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.modules.ModuleSystem.getTestModuleDeployer"/>
+            </file>
+        
+            <!--
+            Register the default error manager. It looks for the system property org.openide.ErrorManager
+            first, but normally just loads an NbErrorManager singleton. Modules wishing to provide a
+            different error manager should place an instance in this folder and make sure it comes before
+            this one so it can override. However this one will still be used during the early startup
+            phases before module layer merging and folder lookup are ready.
+            -->
+            <file name="org-netbeans-core-default-error-manager.instance">
+                <attr name="instanceClass" stringvalue="org.openide.ErrorManager"/>
+                <attr name="instanceOf" stringvalue="org.openide.ErrorManager"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.NbTopManager.getDefaultErrorManager"/>
+            </file>
+        
+        </folder>
+    </folder> 
+
+    <!-- moved to various modules
+    <folder name="UI">
+        You can customize the appearance of the options tree in the 
+        Tools | Options dialog uising this folder in the xml-layer
+        of your module.
+    </folder>
+    -->
+    
+    <!--
+    <folder name="Workplace">
+         Workplace of the IDE - an alternative to projects. 
+    </folder>
+    -->
+
+    <folder name="Mount">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
         <attr name="SystemFileSystem.layer" stringvalue="project"/>
@@ -908,108 +160,38 @@ SystemFileSystem
         
         <!-- SystemFileSystem should be the first one -->
         <attr name="OpenIDE-Folder-Order" stringvalue="SystemFileSystem" />
-  </folder>
+        
+        <!-- 
+        Mounted filesystems
+        -->    
+    </folder>  
 
-  <folder name="Workplace">
-  </folder>
-    
-  
-  <!-- default workspaces, frames and their layout defined by core-->
-  
-  <!-- distributed between core-ui and core-ide -->
-  
-  <!-- This should reside in the core-windows -->
-  <folder name="Windows">
-    <attr name="SystemFileSystem.layer" stringvalue="project"/>
-    <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
-    <folder name="WindowManager">
-    </folder>
-  </folder>
-      <!-- <attr name="Editing/Running" boolvalue="true" /> moved to core-ide -->
-      
-      <!-- moved to core-ui 
-      <file name="Editing.wswksp" url="windowmanager/Editing.wswksp" />
-      <folder name="Editing">
-        <file name="explorer.wsmode" url="windowmanager/Editing/explorer.wsmode" />
-        <folder name="explorer">
-          <attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" />
-          <file name="filesystems.wstcref" url="windowmanager/Editing/explorer/filesystems.wstcref" />
-          <attr name="runtime.wstcref/properties.wstcref" boolvalue="true" />
-          <file name="runtime.wstcref" url="windowmanager/Editing/explorer/runtime.wstcref" />
-          <file name="properties.wstcref" url="windowmanager/Editing/explorer/properties.wstcref" />
-        </folder>
-        <file name="editor.wsmode" url="windowmanager/Editing/editor.wsmode" />
-        <folder name="editor">
-        </folder>
-        <file name="properties.wsmode" url="windowmanager/Editing/properties.wsmode" />
-        <folder name="properties">
-          <file name="properties.wstcref" url="windowmanager/Editing/properties/properties.wstcref" />
-        </folder>
-        <file name="output.wsmode" url="windowmanager/Editing/output.wsmode" />
-        <folder name="output">
-          <file name="output.wstcref" url="windowmanager/Editing/output/output.wstcref" />
-        </folder>
-        <file name="execution.wsmode" url="windowmanager/Editing/execution.wsmode" />
-        <folder name="execution">
-          <file name="execution.wstcref" url="windowmanager/Editing/execution/execution.wstcref" />
-        </folder>
-      </folder>
-      -->
-      <!-- moved to core-execution
-      <file name="Running.wswksp" url="windowmanager/Running.wswksp" />
-      <folder name="Running">
-        <file name="explorer.wsmode" url="windowmanager/Running/explorer.wsmode" />
-        <folder name="explorer">
-          <attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" />
-          <file name="filesystems.wstcref" url="windowmanager/Running/explorer/filesystems.wstcref" />
-          <file name="runtime.wstcref" url="windowmanager/Running/explorer/runtime.wstcref" />
-        </folder>
-        <file name="editor.wsmode" url="windowmanager/Running/editor.wsmode" />
-        <folder name="editor">
-        </folder>
-        <file name="properties.wsmode" url="windowmanager/Running/properties.wsmode" />
-        <folder name="properties">
-          <file name="properties.wstcref" url="windowmanager/Running/properties/properties.wstcref" />
-        </folder>
-        <file name="output.wsmode" url="windowmanager/Running/output.wsmode" />
-        <folder name="output">
-          <file name="output.wstcref" url="windowmanager/Running/output/output.wstcref" />
-        </folder>
-        <file name="execution.wsmode" url="windowmanager/Running/execution.wsmode" />
-        <folder name="execution">
-          <file name="execution.wstcref" url="windowmanager/Running/execution/execution.wstcref" />
-        </folder>
-      </folder>
-    
-    </folder>
+    <!-- PENDING: This should be moved to the core-windows
+         as soon as the classes are better separated.
     -->
-    <!-- moved to core-ui PENDING
-    <folder name="Components">
-      <file name="filesystems.settings" url="components/filesystems.settings" >
-      </file>
-      <file name="runtime.settings" url="components/runtime.settings" >
-      </file>
-      <file name="output.settings" url="components/output.settings" >
-      </file>
-      <file name="execution.settings" url="components/execution.settings" >
-      </file>
-      <file name="properties.settings" url="components/properties.settings" >
-      </file>
+    <folder name="Windows">
+        <attr name="SystemFileSystem.layer" stringvalue="project"/>
+        <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
+        <folder name="WindowManager">
+        </folder>
+        
+        <!-- 
+        Use this folder and it's subfolfder in your xml-layer to define
+        workspaces, frames and their layout.
+        -->
+        
     </folder>
-    
-  </folder>
-  -->
   
-  <!-- Lines marked as erroneous: -->
-  <folder name="Editors">
-    <folder name="AnnotationTypes">
-      <file name="org-netbeans-core-compiler-error.xml" url="error-annotation.xml"/>
+    <!-- Lines marked as erroneous: -->
+    <folder name="Editors">
+        <folder name="AnnotationTypes">
+            <file name="org-netbeans-core-compiler-error.xml" url="error-annotation.xml"/>
+        </folder>
     </folder>
-  </folder>
 
-  <!-- For debugging only, comment out if desired: -->
-  <file name="debug-sfs-structure[org-netbeans-core-projects-SystemFileSystem$StructureNode].instance"/>
-
-  &dtds;
+    <!-- For debugging only, comment out if desired: -->
+    <file name="debug-sfs-structure[org-netbeans-core-projects-SystemFileSystem$StructureNode].instance"/>
+    
+    &dtds;
   
 </filesystem>
