@@ -162,6 +162,14 @@ public abstract class NbTopManager extends TopManager {
             "org.netbeans.core.NbTopManager$Lkp" // NOI18N
           );
         }
+
+        if (System.getProperties ().get ("java.naming.factory.initial") == null) { // NOI18N
+          // our implementation of JNDI service
+          System.getProperties().put (
+            "java.naming.factory.initial", // NOI18N
+            "org.netbeans.core.lookup.Jndi" // NOI18N
+          );
+        }
         
         // Enforce JDK 1.3+ since we would not work without it.
         if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.3")) < 0) { // NOI18N
