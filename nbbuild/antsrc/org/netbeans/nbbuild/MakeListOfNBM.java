@@ -13,11 +13,6 @@
 
 package org.netbeans.nbbuild;
 
-// IMPORTANT! You may need to mount ant.jar before this class will
-// compile. So mount the JAR modules/ext/ant.jar (NOT modules/ant.jar)
-// from your IDE installation directory in your Filesystems before
-// continuing to ensure that it is in your classpath.
-
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.taskdefs.*;
 import org.apache.tools.ant.types.*;
@@ -28,9 +23,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 /**
- *
  * @author  Michal Zlamal
- * @version 
  */
 public class MakeListOfNBM extends Task {
     String targetName = null;
@@ -50,7 +43,7 @@ public class MakeListOfNBM extends Task {
     public void execute () throws BuildException {
         if ( targetName == "null" ) new BuildException( "You have to specify target used to make NBMs" );
         if ( outputFile == "null" ) new BuildException( "You have to specify output directoty" );
-        log ("Generating information about the NBMs");
+        log ("Generating information for Auto Update...");
         
         Task nbms[] = ((Target) this.getProject().getTargets().get(targetName)).getTasks();
         UpdateTracking track = new UpdateTracking( (new File( this.getProject().getBaseDir(), outputFile )).getAbsolutePath() );
