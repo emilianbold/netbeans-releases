@@ -288,9 +288,13 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       return new HelpCtx (PropertiesCloneableTopComponent.class);
     }
     
-    public void editCellAt(int row, int column) {
-      ((BundleEditPanel)mainPanel).stopEditing();
-      ((BundleEditPanel)mainPanel).getTable().editCellAt(row, column);
+    public void editCellAt(final int row,final int column) {
+      SwingUtilities.invokeLater(new Runnable() {
+        public void run() {
+          ((BundleEditPanel)mainPanel).stopEditing();
+          ((BundleEditPanel)mainPanel).getTable().editCellAt(row, column);
+        }
+      });
     }
 
     /** Inits the subcomponents. */ 
