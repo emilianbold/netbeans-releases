@@ -629,7 +629,7 @@ public class XSLGrammarQuery implements GrammarQuery{
             Iterator it = set.iterator();
             while ( it.hasNext()) {
                 Object next = it.next();
-                if (next instanceof String) {
+                if (next != resultElements) {
                     String nextText = namespacePrefix + (String)next;
                     if (nextText.startsWith(startWith)) {
                         enum.put(new MyElement(nextText));
