@@ -478,6 +478,7 @@ public class XSLGrammarQuery implements GrammarQuery{
             
         } else if (node instanceof Document) {
             //??? it should be probably only root element name
+            if (prefixList.size() == 0) return EmptyEnumeration.EMPTY;
             addXslElementsToEnum(list, getElementDecls().keySet(), prefixList.get(0) + ":", prefix);
         } else {
             return EmptyEnumeration.EMPTY;
