@@ -41,69 +41,86 @@ public class OpenFileAction extends CallableSystemAction {
     /** Generated serial version UID. */
     static final long serialVersionUID = -3424129228987962529L;
     
-    /** Cache of last directory. */
+    /** stores the last current directory of the file chooser */
     private static File currDir;
 
     
-    /** Gets action name. Implements superclass abstract method. */
+    /** */
     public String getName() {
-        return SettingsBeanInfo.getString("LBL_openFile");
+        return SettingsBeanInfo.getString("LBL_openFile");              //NOI18N
     }
 
-    /** Gets action help context. Implements superclass abstract method. */
+    /** */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(OpenFileAction.class);
     }
 
-    /** Gets action icon resource. Overrides superclass method. */
+    /** */
     protected String iconResource() {
         return "org/netbeans/modules/openfile/openFile.gif"; // NOI18N
     }
 
-    /** Actually perfoms action. Implements superclass abstract method. */
-    public void performAction() {
-        JFileChooser chooser = new JFileChooser();
+    /**
+     * Resolves directory to be set as a current directory for the file chooser.
+     * If the file chooser has already been displayed since the beginning
+     * of the current NetBeans session, the last used current directory
+     * is returned. Otherwise, the root of the first visible valid non-JAR
+     * filesystem, having a non-empty system name, is returned.
+     * <p>
+     * <em>Warning:</em> The returned directory may not exist&nbsp;-
+     * <code>JFileChooser</code> should handle such situations.
+     *
+     * @return  directory to be used as a current directory,
+     *          or <code>null</code> if the resulution failed
+     */
+    private File resolveInitialDirectory() {
+        if (currDir != null) {
+            return currDir;
+        }
+        try {
+            Enumeration enu = Repository.getDefault().getFileSystems();
+            while (enu.hasMoreElements()) {
+                FileSystem fs = (FileSystem) enu.nextElement();
+                if (fs != null && fs.isValid() && fs.isHidden() == false
+                        && fs instanceof JarFileSystem == false
+                        && fs.getSystemName() != null) {
+                    return new File(fs.getSystemName());
+                }
+            }
+        } catch (Exception ex) { }
+        return null;
+    }
+    
+    /**
+     * Creates and initializes a file chooser.
+     *
+     * @return  the initialized file chooser
+     */
+    private JFileChooser prepareFileChooser() {
+        JFileChooser chooser = new JFileChooser(resolveInitialDirectory());
         HelpCtx.setHelpIDString(chooser, getHelpCtx().getHelpID());
         
-        FileFilter currentFilter = chooser.getFileFilter();
-        
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        
         chooser.setMultiSelectionEnabled(true);
         
+        /* initialize file filters */
+        FileFilter currentFilter = chooser.getFileFilter();
         chooser.addChoosableFileFilter(new Filter(
             new String[] {OpenFile.JAVA_EXT},
             NbBundle.getBundle(getClass()).getString("TXT_JavaFilter")));
         chooser.addChoosableFileFilter(new Filter(
             new String[] {OpenFile.TXT_EXT}, 
             NbBundle.getBundle(getClass()).getString("TXT_TxtFilter")));
-        
         chooser.setFileFilter(currentFilter);
         
-        if (currDir == null) {
-            String defaultDir = null;
-            try {
-                Enumeration enu = Repository.getDefault().getFileSystems();
-                while (enu.hasMoreElements()) {
-                    FileSystem fs = (FileSystem) enu.nextElement();
-                    if (fs != null && fs.isValid() && fs.isHidden() == false
-                            && fs instanceof JarFileSystem == false
-                            && fs.getSystemName() != null) {
-                        defaultDir = fs.getSystemName();
-                        break;
-                    }
-                }
-            } catch (Exception ex) {
-                defaultDir = null;
-            }
-            if (defaultDir != null) {
-                currDir = new File(defaultDir);
-            }
-        }
-        
-        if (currDir != null) {
-            chooser.setCurrentDirectory (currDir);
-        }
+        return chooser;
+    }
+    
+    /**
+     * {inheritDoc} Displays a file chooser dialog and opens the selected files.
+     */
+    public void performAction() {
+        JFileChooser chooser = prepareFileChooser();
         File[] files = null;
         
         while (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
@@ -136,26 +153,42 @@ public class OpenFileAction extends CallableSystemAction {
     }
     
 
-    /** Filter for file chooser. */
+    /** File chooser filter that filters files by their names' suffixes. */
     private static class Filter extends FileFilter {
         
-        /** Extensions accepted by this filter. */
+        /** suffixes accepted by this filter */
         private String[] extensions;
         
-        /** Localized description of this filter. */
+        /** localized description of this filter */
         private String description;
         
         
-        /** Constructor. */
+        /**
+         * Creates a new filter that accepts files having specified suffixes.
+         * The filter is case-insensitive.
+         * <p>
+         * The filter does not use file <em>extensions</em> but it just
+         * tests whether the file name ends with the specified string.
+         * So it is recommended to pass a file name extension including the
+         * preceding dot rather than just the extension.
+         *
+         * @param  extensions  list of accepted suffixes
+         * @param  description  name of the filter
+         */
         public Filter(String[] extensions, String description) {
-            this.extensions = extensions;
+            
+            this.extensions = new String[extensions.length];
+            for (int i = 0; i < extensions.length; i++) {
+                this.extensions[i] = extensions[i].toUpperCase();
+            }
             this.description = description;
         }
         
         
         /**
-         * Accepts file or not. 
-         * @return true if file is accepted by this filter.
+         * @return  <code>true</code> if the file's name ends with one of the
+         *          strings specified by the constructor or if the file
+         *          is a directory, <code>false</code> otherwise
          */
         public boolean accept(File file) {
             if (file.isDirectory()) {
@@ -170,10 +203,7 @@ public class OpenFileAction extends CallableSystemAction {
             return false;
         }
         
-        /**
-         * Gets filter description. Implements <code>FileFilter</code>
-         * interface method.
-         */
+        /** */
         public String getDescription() {
             return description;
         }

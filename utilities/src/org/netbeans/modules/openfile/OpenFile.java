@@ -71,19 +71,20 @@ import org.openide.util.RequestProcessor;
  * Opens files when requested. Main functionality.
  *
  * @author Jaroslav Tulach, Jesse Glick
+ * @author Marian Petras
  */
 public class OpenFile extends Object {
 
-    /** Extenstion for .java files. */
-    static final String JAVA_EXT = ".JAVA"; // NOI18N
-    /** Extension for .txt files. */
-    static final String TXT_EXT = ".TXT"; // NOI18N
-    /** Extension for .zip files. */
-    private static final String ZIP_EXT = ".ZIP"; // NOI18N
-    /** Extension for .jar files. */
-    private static final String JAR_EXT = ".JAR"; // NOI18N
+    /** extenstion for .java files (including the dot) */
+    static final String JAVA_EXT = ".JAVA";                             //NOI18N
+    /** extension for .txt files (including the dot) */
+    static final String TXT_EXT = ".TXT";                               //NOI18N
+    /** extension for .zip files (including the dot) */
+    private static final String ZIP_EXT = ".ZIP";                       //NOI18N
+    /** extension for .jar files (including the dot) */
+    private static final String JAR_EXT = ".JAR";                       //NOI18N
     /** Name of package keyword. */
-    private static final String PACKAGE = "package"; // NOI18N
+    private static final String PACKAGE = "package";                    //NOI18N
 
     /** For debug purposes. */
     private static final ErrorManager em
@@ -129,6 +130,9 @@ public class OpenFile extends Object {
                      InetAddress address,
                      int port,
                      int line) {
+        /*
+         * Try to canonicalize the file:
+         */
         try {
             file = file.getCanonicalFile();
         } catch (IOException exc) {
@@ -136,10 +140,13 @@ public class OpenFile extends Object {
             em.log(exc.getMessage());
         }
 
+        /*
+         * If the file doesn't exist or if it is not a plain file, display
+         * an error message (in a separate thread) and exit:
+         */
         em.log("    file: " + file);
         em.log("    file.exists: " + file.exists());
         em.log("    file.isFile: " + file.isFile());
-
         if ((file.exists() == false) || (file.isFile() == false)) {
             final String fileName = file.toString();
             new Thread (new Runnable() {
@@ -428,6 +435,68 @@ public class OpenFile extends Object {
         
         return null;
     }
+
+    /**
+     * Searches repository for a <code>FileObject</code> best matching
+     * to the specified <code>File</code>.
+     * <p>
+     * If there is just one <code>FileObject</code> found, it is returned.
+     * If there are more <code>FileObject</code>s found (at most one
+     * in each filesystem), then one of the following algorithms is used
+     * for finding the best matching one:</p>
+     * <ul>
+     *     <li>if the <code>FileObject</code> is a Java file, we try to find
+     *         a file whose path relative to the filesystem (it resides in)
+     *         matches the package name declared in the source code</li>
+     *     <li>for non-Java files, we choose the file having the shortest
+     *         name (relative to the filesystem it resides in)</li>
+     * </ul>
+     *
+     * @param  f  file to find a <code>FileObject</code> for
+     * @return  matching <code>FileObject</code>,
+     *          or <code>null</code> if none is found
+     */
+    private static FileObject findInRepository(File f) {
+        FileObject[] candidates = FileUtil.fromFile(f);
+
+        /* no FileObject found: */
+        if (candidates.length == 0) {
+            return null;
+        }
+
+        /* one FileObject found: */
+        if (candidates.length == 1) {
+            return candidates[0];
+        }
+
+        /* more FileObject's found - select the best one: */
+        if (f.toString().toUpperCase().endsWith(JAVA_EXT)) {
+            String wantedPkg = findJavaPackage(f);
+            if (wantedPkg == null) {
+                return candidates[0];
+            }
+            for (int i = 0; i < candidates.length; i++) {
+                String pkg = candidates[i].isRoot()
+                             ? ""                                       //NOI18N
+                             : candidates[i].getParent().getPackageName('.');
+                if (pkg.equals(wantedPkg)) {
+                    return candidates[i];
+                }
+            }
+            return candidates[0];
+        } else {
+            FileObject best = candidates[0];
+            int bestNameLen = best.getPackageName('.').length();
+            for (int i = 1; i < candidates.length; i++) {
+                int nameLen = candidates[i].getPackageName('.').length();
+                if (nameLen < bestNameLen) {
+                    best = candidates[i];
+                    bestNameLen = nameLen;
+                }
+            }
+            return best;
+        }
+    }
     
     /**
      * Try to find the file object corresponding to a given file on disk.
@@ -440,133 +509,132 @@ public class OpenFile extends Object {
         String fileName = f.toString();
         String fileNameUpper = fileName.toUpperCase();
         
-        // Handle ZIP/JAR files by mounting and displaying.
+        FileObject fObject;
+
+        /* Handle ZIP/JAR files by mounting and displaying: */
         if (fileNameUpper.endsWith(ZIP_EXT) || fileNameUpper.endsWith(JAR_EXT)) {
             return handleZipJar(f);
         }
         
-        // Next see if it is present in an existing file systems.
-        FileObject[] fObjects = FileUtil.fromFile(f);
+        /* Next see if it is present in an existing file systems: */
+        if ((fObject = findInRepository(f)) != null) {
+            return fObject;
+        }
 
-        // Has found something from already mounted filesystems.
-        if (fObjects.length > 0) {
-            FileObject fileObj = fObjects[0];
-
-            // And if there is more then one possible FileObjects, try to find one in correct package
-            if (fObjects.length > 1) {
-                // Find java file with SAME package
-                if (fileNameUpper.endsWith(JAVA_EXT)) {
-                    // file package
-                    String pkg = findJavaPackage(f);
-                
-                    for (int i = 0; i < fObjects.length; i++) {
-                        // FileObject package
-                        String pkg_i = ""; // NOI18N
-                        if (fObjects[i].isRoot() == false) {
-                            FileObject parent = fObjects[i].getParent();
-                            pkg_i = parent.getPackageName('.');
-                        }
-                        
-                        if (pkg.equals (pkg_i)) { // yes, this is right package
-                            fileObj = fObjects[i];
-                            break;
-                        }
-                    }
-                } else {
-                    // Find file with the shortest package name
-                    String shortName = fileObj.getPackageName('.');
-
-                    for (int i = 1; i < fObjects.length; i++) {
-                        String name_i = fObjects[i].getPackageName('.');
-                        if (name_i.length() < shortName.length()) {
-                            fileObj   = fObjects[i];
-                            shortName = name_i;
-                        }
-                    }
-                }
-            }
-            return fileObj;
+        /* Handle Java files: */
+        if (fileNameUpper.endsWith(JAVA_EXT)) {
+            return handleJavaFile(f);
         }
         
-        // Not found. For Java files, it is reasonable to mount the package root.
-        String pkg = null;
+        File dirToMount;
+        if ((dirToMount = f.getParentFile()) == null) {
+            return null;
+        }
+        LocalFileSystem fs;
+        if ((fs = mountDirectory(dirToMount)) == null) {
+            return null;
+        }
+        return fs.findResource(f.getName());
+    }
+
+    /** */
+    private static FileObject handleJavaFile(File f) {
+
+        /*
+         * Not found. For Java files, it is reasonable to mount
+         * the package root.
+         */
         // packageKnown will only be true if
-        // a .java is used and its package decl
-        // indicates a real dir
+        // a .java is used and its package declaration
+        // indicates a real directory
         boolean packageKnown = false;
-        if (fileNameUpper.endsWith(JAVA_EXT)) { // NOI18N
-            pkg = findJavaPackage(f);
-        }
-        
-        // Now try to go through the package name piece by piece and get the right parent directory.
+        String pkg = findJavaPackage(f);
+        String pkgtouse = null;
         if (pkg == null) {
-            pkg = ""; // assume default package // NOI18N
             packageKnown = false;
         } else {
             packageKnown = true;
-        }
-        String prefix = pkg.replace('.', File.separatorChar);
-        File dir = f.getParentFile();
-        String pkgtouse = ""; // NOI18N
-        while (!pkg.equals("") && dir != null) { // NOI18N
-            int lastdot = pkg.lastIndexOf('.');
-            String trypkg;
-            String trypart;
-            if (lastdot == -1) {
-                trypkg = ""; // NOI18N
-                trypart = pkg;
-            } else {
-                trypkg = pkg.substring(0, lastdot);
-                trypart = pkg.substring(lastdot + 1);
-            }
-            if (dir.getName().equals(trypart) && dir.getParentFile() != null) {
-                // Worked so far.
-                dir = dir.getParentFile();
-                pkg = trypkg;
-                if (pkgtouse.equals("")) { // NOI18N
-                    pkgtouse = trypart;
+    
+            /*
+             * Now try to go through the package name piece by piece
+             * and get the right parent directory.
+             */
+            File dir = f.getParentFile();
+            while (!pkg.equals("") && dir != null) {                //NOI18N
+                int lastDot = pkg.lastIndexOf('.');
+                String pkgName = (lastDot == -1)
+                                 ? pkg
+                                 : pkg.substring(lastDot + 1);
+                String dirName = dir.getName();
+                if (dirName.equals(pkgName)
+                        && (dir = dir.getParentFile()) != null) {
+                    // Worked so far.
+                    pkgtouse = pkgtouse == null ? pkgName
+                                                : pkgName + '.' + pkgtouse;
                 } else {
-                    pkgtouse = trypart + "." + pkgtouse; // NOI18N
+                    // No dice.
+                    packageKnown = false;
+                    break;
                 }
-            } else {
-                // No dice.
-                packageKnown = false;
-                break;
+                pkg = (lastDot == -1)
+                      ? ""                                          //NOI18N
+                      : pkg.substring(0, lastDot);
             }
         }
-        
-        // Ask what to mount (if anything). Prompt appropriately with the possible
-        // mount points, as well as the recommended one if there is one (i.e. for valid *.java).
-        File[] dirToMount = new File[] {null};
-        String[] mountPackage = new String[] {null};
-        int pkgLevel = 0;
-        if (!pkgtouse.equals("")) { // NOI18N
-            int pos = -1;
-            do {
-                pos = pkgtouse.indexOf('.', pos + 1);
-                pkgLevel++;
-            } while (pos != -1);
-        }
-        
-        if (!packageKnown) {
+
+        int pkgLevel;
+        if (packageKnown) {
+            pkgLevel = 0;
+            if (pkgtouse != null) {
+                int pos = -1;
+                do {
+                    pos = pkgtouse.indexOf('.', pos + 1);
+                    pkgLevel++;
+                } while (pos != -1);
+            }
+        } else {
             pkgLevel = -1;
         }
-        // PENDING This is just partial temporary solution.
-        // All files except java will be mounted directly (like under default package).
-        if (!fileNameUpper.endsWith(JAVA_EXT)) { // NOI18N
-            // Text fiel mount to default package without asking.
-            dirToMount[0] = f.getParentFile();            
-            mountPackage[0] = ""; // NOI18N
-        } else {
-            askForMountPoint (f, pkgLevel, dirToMount, mountPackage);
-        }
-        if (dirToMount[0] == null) {
+
+        /*
+         * Ask what to mount (if anything). Prompt appropriately with
+         * the possible mount points, as well as the recommended one
+         * if there is one (i.e. for valid *.java).
+         */
+        File[] dirToMountContainer = new File[1];
+        String[] mountPackageContainer = new String[1];
+        askForMountPoint(f,
+                         pkgLevel,
+                         dirToMountContainer,
+                         mountPackageContainer);
+        File dirToMount = dirToMountContainer[0];
+        String mountPackage = mountPackageContainer[0];
+
+        if (dirToMount == null) {
             return null;
         }
-        // Mount it.
+        LocalFileSystem fs;
+        if ((fs = mountDirectory(dirToMount)) == null) {
+            return null;
+        }
+        
+        return fs.findResource(
+                mountPackage.equals("")                                 //NOI18N
+                ? f.getName()
+                : mountPackage.replace('.', '/') + '/' + f.getName());
+    }
+
+    /**
+     * Mounts a local directory to the repository.
+     *
+     * @param  dirToMount  directory to mount
+     * @return  filesystem representing the mounted directory;
+     *          or <code>null</code> if mounting failed
+     */
+    private static LocalFileSystem mountDirectory(File dirToMount) {
         LocalFileSystem fs = new LocalFileSystem();
         try {
-            fs.setRootDirectory(dirToMount[0]);
+            fs.setRootDirectory(dirToMount);
         } catch (PropertyVetoException e3) {
             ErrorManager.getDefault().notify(e3);
             return null;
@@ -577,18 +645,15 @@ public class OpenFile extends Object {
         
         Repository repo = Repository.getDefault();
         if (repo.findFileSystem(fs.getSystemName()) != null) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    MessageFormat.format(
-                            NbBundle.getBundle(OpenFile.class)
-                                    .getString("MSG_wasAlreadyMounted"),
-                            new Object[] {fs.getSystemName()})));
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                            NbBundle.getMessage(OpenFile.class,
+                                                "MSG_wasAlreadyMounted",//NOI18N
+                                                fs.getSystemName())));
             return null;
         }
         repo.addFileSystem(fs);
-        
-        return fs.findResource(mountPackage[0].replace('.', '/')
-                               + (mountPackage[0].equals("") ? "" : "/") // NOI18N
-                               + f.getName());
+        return fs;
     }
 
     /**
