@@ -14,15 +14,16 @@
 package org.netbeans.modules.xml.dtd.grammar;
 
 import junit.framework.*;
-import org.netbeans.junit.*;
 import java.util.*;
 import java.util.StringTokenizer;
 
 /**
+ * Tests DTD code completion for exact content models.
+ * It contains tescases covering all known bugs.
  *
  * @author Petr Kuzel
  */
-public class ContentModelTest extends NbTestCase {
+public class ContentModelTest extends TestCase {
     
     public ContentModelTest(java.lang.String testName) {
         super(testName);
@@ -33,7 +34,7 @@ public class ContentModelTest extends NbTestCase {
     }
     
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(ContentModelTest.class);
+        TestSuite suite = new TestSuite(ContentModelTest.class);
         
         return suite;
     }
@@ -61,7 +62,7 @@ public class ContentModelTest extends NbTestCase {
         System.out.println("testWhatCanFollow");
 
         Enumeration in, gold;
-        
+
         // test Element and multiplicity group models ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         in = new InputEnumeration("");
@@ -201,7 +202,11 @@ public class ContentModelTest extends NbTestCase {
         in = new InputEnumeration("a b b b");
         gold = new InputEnumeration("b");
         probe("(a*, b*)", in, gold);
-        
+
+        in = new InputEnumeration("book");
+        gold = new InputEnumeration("book price");
+        probe("(book+, price?)", in, gold);
+
     }
 
     /**

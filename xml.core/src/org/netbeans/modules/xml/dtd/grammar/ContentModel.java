@@ -160,14 +160,14 @@ abstract class ContentModel {
 
     /**
      * Does need the content model a reset because it is in final state?
-     * @return true if it i sin final state
+     * @return true if it is in final state
      */
     protected boolean terminated() {
         return false;
     }
     
     /**
-     * Is the content model optional? A static characteristics.
+     * Is the content model in current state optional?
      */
     protected boolean isOptional() {
         return false;
@@ -399,7 +399,7 @@ abstract class ContentModel {
         }
 
         protected boolean isOptional() {
-            if (min == 0) return true;
+            if (min <= current) return true;
             return peer.isOptional();
         }
         
