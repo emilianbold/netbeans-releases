@@ -43,6 +43,7 @@ public class IdxPropertyPatternPanel extends javax.swing.JPanel
     "READ / WRITE", "READ ONLY", "WRITE ONLY"
   };
 
+static final long serialVersionUID =8551245035767258531L;
   /** Initializes the Form */
   public IdxPropertyPatternPanel() {
     initComponents ();

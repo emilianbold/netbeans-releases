@@ -24,6 +24,7 @@ import org.openide.util.actions.CallableSystemAction;
 /** Opens a file by file chooser. */
 public class OpenFileAction extends CallableSystemAction {
   
+static final long serialVersionUID =-3424129228987962529L;
   public String getName () {
     return SettingsBeanInfo.getString ("LBL_openFile");
   }

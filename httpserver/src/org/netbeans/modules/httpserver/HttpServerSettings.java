@@ -96,6 +96,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   /** Used to remember the state of the running property during the deserialization */                                      
   private boolean pendingRunning = true;
 
+static final long serialVersionUID =7387407495740535307L;
   public HttpServerSettings() {
   }
 
@@ -428,6 +429,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  16   Gandalf   1.15        8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  15   Gandalf   1.14        8/9/99   Petr Jiricka    Fixed bug with multiple 
  *       restarts of the server on IDE startup
  *  14   Gandalf   1.13        7/3/99   Petr Jiricka    

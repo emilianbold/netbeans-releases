@@ -44,6 +44,7 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
   private java.awt.Dialog biDialog = null;
   
   
+static final long serialVersionUID =-4937492476805017833L;
   /** Human presentable name of the action. This should be
   * presented as an item in a menu.
   * @return the name of the action
@@ -154,6 +155,8 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
 
 /*
  * Log
+ *  3    Gandalf   1.2         8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
  *       generation fix
  *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    

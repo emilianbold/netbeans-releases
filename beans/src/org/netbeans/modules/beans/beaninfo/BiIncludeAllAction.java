@@ -25,6 +25,7 @@ import org.openide.util.actions.NodeAction;
 */
 public class BiIncludeAllAction extends NodeAction  {
 
+static final long serialVersionUID =2294556438860885914L;
   /** generated Serialized Version UID */
   //static final long serialVersionUID = 1391479985940417455L;
 
@@ -81,6 +82,8 @@ public class BiIncludeAllAction extends NodeAction  {
 
 /*
  * Log
+ *  2    Gandalf   1.1         8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    
  * $
  */

@@ -135,6 +135,7 @@ public final class BorderEditor extends PropertyEditorSupport { // implements or
     UnknownBorderNode unknownBorder;
     Node root;
 
+static final long serialVersionUID =3211506006576003689L;
     BorderPanel() {
       root = new AbstractNode (new Children.Array ());
       noBorder = new NoBorderNode();
@@ -431,6 +432,8 @@ public final class BorderEditor extends PropertyEditorSupport { // implements or
 
 /*
  * Log
+ *  8    Gandalf   1.7         8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  7    Gandalf   1.6         8/2/99   Ian Formanek    preview of XML 
  *       serialization of borders
  *  6    Gandalf   1.5         7/8/99   Jesse Glick     Context help.

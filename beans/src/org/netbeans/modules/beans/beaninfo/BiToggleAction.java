@@ -25,6 +25,7 @@ import org.openide.util.actions.NodeAction;
 */
 public class BiToggleAction extends NodeAction  {
 
+static final long serialVersionUID =3773842179168178798L;
   /** generated Serialized Version UID */
   //static final long serialVersionUID = 1391479985940417455L;
 
@@ -95,6 +96,8 @@ public class BiToggleAction extends NodeAction  {
 
 /*
  * Log
+ *  2    Gandalf   1.1         8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    
  * $
  */

@@ -33,6 +33,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
   
   private Dialog dialog;  
 
+static final long serialVersionUID =4317314528606244073L;
   /** Initializes the Form */
   public UEventSetPatternPanel() {
     initComponents ();

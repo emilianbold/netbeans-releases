@@ -43,6 +43,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
     "READ / WRITE", "READ ONLY", "WRITE ONLY"
   };
 
+static final long serialVersionUID =4959196907494713555L;
   /** Initializes the Form */
   public PropertyPatternPanel( ) {
     initComponents ();

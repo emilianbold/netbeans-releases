@@ -48,6 +48,7 @@ public class BiPanel extends ExplorerPanel  {
  private PropertySheetView psv;
  private BeanTreeView btv;
   
+static final long serialVersionUID =4088175782441275332L;
   BiPanel( Node biNode ) {
    createContent( biNode );
  }
@@ -99,6 +100,8 @@ public class BiPanel extends ExplorerPanel  {
 
 /*
  * Log
+ *  2    Gandalf   1.1         8/9/99   Ian Formanek    Generated Serial Version
+ *       UID
  *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    
  * $
  */
