@@ -1299,7 +1299,10 @@ public class FormEditorSupport extends JavaEditor
 
         if (designerSelected && !Boolean.TRUE.equals(groupVisible)) {
             group.open();
-            ComponentInspector.getInstance().requestActive();
+            ComponentInspector inspector = ComponentInspector.getInstance();
+            if (!Boolean.TRUE.equals(inspector.getClientProperty("isSliding"))) { // NOI18N
+                inspector.requestVisible();
+            }
         }
         else if (!designerSelected && !Boolean.FALSE.equals(groupVisible)) {
             group.close();
