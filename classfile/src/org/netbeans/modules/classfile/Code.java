@@ -81,6 +81,12 @@ public final class Code {
 		//ClassFile.skip(in, len); FIXME
             }
         }
+        if (lineNumberTable == null)
+            lineNumberTable = new int[0];
+        if (localVariableTable == null)
+            localVariableTable = new LocalVariableTableEntry[0];
+        if (localVariableTypeTable == null)
+            localVariableTypeTable = new LocalVariableTypeTableEntry[0];
     }
     
     private void loadLineNumberTable(DataInputStream in, ConstantPool pool) throws IOException {

@@ -31,14 +31,14 @@ public abstract class Field {
 
     private int iName;
     private int iType;
-    private String typeSignature;
     private String _name;
     private String _type;
 
     int access;
     ClassFile classFile;
-    private Map annotations;
-    protected AttributeMap attributes;
+    Map annotations;
+    String typeSignature;
+    AttributeMap attributes;
 
     /** Creates new Field */
     Field(DataInputStream in, ConstantPool pool, ClassFile classFile, 
@@ -184,7 +184,7 @@ public abstract class Field {
         return attributes;
     }
     
-    private void loadAnnotations() {
+    void loadAnnotations() {
 	if (annotations == null)
 	    annotations = ClassFile.buildAnnotationMap(classFile.constantPool, 
 						       attributes);
