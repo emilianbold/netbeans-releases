@@ -112,7 +112,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public FileObject getContentDirectory() throws java.io.IOException {
-        return getFile ("build.dir"); //NOI18N
+        return getFile ("build.web.dir"); //NOI18N
     }
 
     public org.netbeans.modules.schema2beans.BaseBean getDeploymentDescriptor (String location) {

@@ -77,6 +77,8 @@ public class WebProjectProperties {
     public static final String SRC_DIR = "src.dir";
     public static final String WEB_DOCBASE_DIR = "web.docbase.dir"; //TODO create property descriptor
     public static final String BUILD_DIR = "build.dir";
+    public static final String BUILD_WEB_DIR = "build.web.dir";
+    public static final String BUILD_GENERATED_DIR = "build.generated.dir";
     public static final String BUILD_CLASSES_DIR = "build.classes.dir";
     public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes";
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir";

@@ -57,6 +57,8 @@ Microsystems, Inc. All Rights Reserved.
         <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
         <fail unless="src.dir">Must set src.dir</fail>
         <fail unless="build.dir">Must set build.dir</fail>
+        <fail unless="build.web.dir">Must set build.web.dir</fail>
+        <fail unless="build.generated.dir">Must set build.generated.dir</fail>
         <fail unless="dist.dir">Must set dist.dir</fail>
         <fail unless="build.classes.dir">Must set build.classes.dir</fail>
         <fail unless="dist.javadoc.dir">Must set dist.javadoc.dir</fail>
@@ -85,7 +87,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile" depends="init,deps-jar">
         <mkdir dir="${{build.classes.dir}}"/>
-        <copy todir="${{build.dir}}">
+        <copy todir="${{build.web.dir}}">
           <fileset dir="${{web.docbase.dir}}"/>
         </copy>
         <xsl:choose>
@@ -111,7 +113,7 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-libraries/web:library[web:path-in-war]">
             <xsl:variable name="copyto" select=" web:path-in-war"/>
             <xsl:variable name="libfile" select="web:file"/>
-            <copyfiles todir="${{build.dir}}/{$copyto}" files="{$libfile}"/>
+            <copyfiles todir="${{build.web.dir}}/{$copyto}" files="{$libfile}"/>
         </xsl:for-each>
     </target>
 
@@ -121,10 +123,31 @@ Microsystems, Inc. All Rights Reserved.
         <classpath path="${{jspc.classpath}}"/> 
       </taskdef> 
 
+      <mkdir dir="${{build.generated.dir}}/jsps/src"/>
       <jasper2
              validateXml="false" 
-             uriroot="${{basedir}}/${{build.dir}}" 
-             outputDir="${{basedir}}/${{build.dir}}/WEB-INF/src" /> 
+             uriroot="${{basedir}}/${{build.web.dir}}" 
+             outputDir="${{basedir}}/${{build.generated.dir}}/jsps/src" /> 
+             
+       <mkdir dir="${{basedir}}/${{build.generated.dir}}/jsps/classes"/>
+        <xsl:choose>
+            <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
+                <javac srcdir="${{basedir}}/${{build.generated.dir}}/jsps/src" destdir="${{basedir}}/${{build.generated.dir}}/jsps/classes" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.home}}/bin/javac">
+                    <classpath>
+                        <path path="${{javac.classpath}}"/>
+                        <path path="${{jspc.classpath}}"/>
+                    </classpath>
+                </javac>
+            </xsl:when>
+            <xsl:otherwise>
+                <javac srcdir="${{basedir}}/${{build.generated.dir}}/jsps/src" destdir="${{basedir}}/${{build.generated.dir}}/jsps/classes" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false">
+                    <classpath>
+                        <path path="${{javac.classpath}}"/>
+                        <path path="${{jspc.classpath}}"/>
+                    </classpath>
+                </javac>
+            </xsl:otherwise>
+        </xsl:choose>
     </target> 
 
 
@@ -171,7 +194,7 @@ Microsystems, Inc. All Rights Reserved.
         <dirname property="dist.jar.dir" file="${{dist.war}}"/>
         <mkdir dir="${{dist.jar.dir}}"/>
         <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
-            <fileset dir="${{build.dir}}"/>
+            <fileset dir="${{build.web.dir}}"/>
         </jar>
     </target>
 
