@@ -179,6 +179,7 @@ Microsystems, Inc. All Rights Reserved.
     	<path id="compiletest.classpath">        
     		<pathelement location="${xtest.home}/lib/openide-13javac-workaround.jar"/>
 	        <pathelement location="${netbeans.home}/lib/core.jar"/>
+		<pathelement location="${netbeans.home}/lib/ext/boot.jar"/>
 	        <fileset dir="${netbeans.home}/lib">
                     <include name="openide*.jar"/>
                 </fileset>
