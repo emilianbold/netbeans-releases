@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -101,7 +101,7 @@ public class MTestExecutor extends Task {
      */
 
     public void execute() throws BuildException {
-        
+
         if (null == targetParamClasspathProp || 0 == targetParamClasspathProp.length())
             throw new BuildException("Attribute 'targetParamClasspathProp' has to be set.");
         
@@ -171,6 +171,17 @@ public class MTestExecutor extends Task {
                     String testsetDir = testbag.getTestsets()[j].getDir();
                     stb.append( testsetDir );
                     stb.append( ";" );
+                    
+                    // add compiled tests to classpath work/sys/test/qa-functional/classes
+                    stb.append( ant_new.getProject().getProperty( "tbag.classpath.root" ) );
+                    stb.append( "/" );
+                    stb.append( ant_new.getProject().getProperty( "tbag.classpath.work" ) );
+                    stb.append( "/" );
+                    stb.append(MTestConfigTask.getMTestConfig().getTesttype());
+                    stb.append( "/" );
+                    stb.append("classes");
+                    stb.append( ";" );
+
                     // check if this testset contains setup dir
                     if ( ! testsetContainsSetupDir) {
                         if (testbag.getSetupDir().equals(testsetDir)) {
@@ -229,9 +240,12 @@ public class MTestExecutor extends Task {
          for (int i=0; i<testbag.getTestsets().length; i++) {
             Testbag.Testset testset = testbag.getTestsets()[i];
             TestScanner ts = new TestScanner();
-            
+
+            // set in cfg-xxx.xml (e.g. <testset dir="unit/src">)
             ts.setBasedir(project.resolveFile(testset.getDir()));
-            //fs.setBasePath(path);
+
+            // scan for tests in compile dest dir instead of in src dir
+            ts.setBasePath(getProject().getProperty("compile.destdir"));
 
             /*
             for (int i=0; i<additionalPatterns.size(); i++) {

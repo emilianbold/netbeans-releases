@@ -29,6 +29,9 @@ public class CompileTestsTask extends TestsActionTask {
     /** sources to compile
      */
     public static final String COMPILE_SRCDIR = "compile.srcdir";
+    /** destination dir of compiled sources
+     */
+    public static final String COMPILE_DESTDIR = "compile.destdir";
     /**
      * classpath used for compilation along with junit */
     public static final String COMPILE_CLASSPATH  = "compile.classpath";
@@ -49,6 +52,7 @@ public class CompileTestsTask extends TestsActionTask {
     
     //    
     protected Path srcDir;
+    protected Path destDir;
     protected Path compileClasspath;
     protected String compileExcludes;
     
@@ -62,6 +66,10 @@ public class CompileTestsTask extends TestsActionTask {
     // for compiling
     public void setSrcDir(Path srcDir) {
         this.srcDir = srcDir;
+    }
+
+    public void setDestDir(Path destDir) {
+        this.destDir = destDir;
     }
     
     public void setClasspath(Path compileClasspath) {
@@ -109,6 +117,9 @@ public class CompileTestsTask extends TestsActionTask {
     protected void runCompileAction() {
         if (srcDir != null) {
             addProperty(COMPILE_SRCDIR,srcDir.toString());
+        }
+        if (destDir != null) {
+            addProperty(COMPILE_DESTDIR,destDir.toString());
         }
         if (compileClasspath != null) {
             addProperty(COMPILE_CLASSPATH,compileClasspath.toString());

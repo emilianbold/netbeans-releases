@@ -8,3 +8,4 @@
 **/src/META-INF/**
 **/nbproject/**
 **/build.xml
+**/classes/**
