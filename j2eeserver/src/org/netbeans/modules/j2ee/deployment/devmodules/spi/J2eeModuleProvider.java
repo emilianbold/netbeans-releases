@@ -38,6 +38,7 @@ import org.netbeans.modules.j2ee.deployment.impl.TargetServer;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
+import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.api.VerifierSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -87,6 +88,21 @@ public abstract class J2eeModuleProvider {
     
     public final ServerDebugInfo getServerDebugInfo () {
         ServerInstance si = ServerRegistry.getInstance ().getServerInstance (getServerInstanceID ());
+        StartServer ss = si.getStartServer();
+        if (ss == null) {
+            return null;
+        }
+        // AS8.1 needs to have server running to get accurate debug info, and also need a non-null target 
+        // But getting targets from AS8.1 require start server which would hang UI, so avoid start server
+        // Note: for debug info after deploy, server should already start.
+        if (! si.isRunning() && ss.needsStartForTargetList()) {
+            if (ss.isAlsoTargetServer(null)) {
+                return ss.getDebugInfo(null);
+            } else {
+                return null;
+            }
+        }
+        
         Target target = null;
         if (si != null) {
             ServerTarget[] sts = si.getTargets();
