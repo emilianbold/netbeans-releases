@@ -79,19 +79,10 @@ public class TargetServer {
     }
     
     private void init(DeployProgressUI ui) {
-        if (targets != null)
-            return;
-        
-        if (instance.getStartServer().isAlsoTargetServer(null)) {
-            if (debugMode) {
-                instance.startDebugTarget(null, ui);
-            } else {
-                instance.start(ui);
-            }
-        }
-        
-        this.targets = dtarget.getServer().toTargets();
-        
+        if (targets == null) {
+            instance.start(ui);
+            targets = dtarget.getServer().toTargets();
+        }        
         // see if we want and can incremental
         if (dtarget.doFastDeploy()) {
             incremental = instance.getIncrementalDeployment();
@@ -289,7 +280,7 @@ public class TargetServer {
                 availablesMap.put(keyOf(ids[i]), ids[i]);
             }
         } catch (TargetException te) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, te);
+            throw (IllegalArgumentException) ErrorManager.getDefault().annotate(new IllegalArgumentException(), te);
         }
         return availablesMap;
     }
@@ -374,16 +365,34 @@ public class TargetServer {
     
     public boolean startTargets(boolean debugMode, DeployProgressUI ui) {
         this.debugMode = debugMode;
-        init(ui);
+        if (instance.getStartServer().isAlsoTargetServer(null)) {
+            if (debugMode) {
+                if (! instance.startDebugTarget(null, ui)) {
+                    return false;
+                }
+            } else {
+                if (! instance.start(ui)) {
+                    return false;
+                }
+            }
+            this.targets = dtarget.getServer().toTargets();
+            return true;
+        }
+        
+        instance.start(ui);
+        this.targets = dtarget.getServer().toTargets();
         if (debugMode) {
-            for (int i=0; i<targets.length; i++)
+            for (int i=0; i<targets.length; i++) {
                 if (! instance.startDebugTarget(targets[i], ui))
                     return false;
+            }
         } else {
-            for (int i=0; i<targets.length; i++)
+            for (int i=0; i<targets.length; i++) {
                 if (! instance.startTarget(targets[i], ui))
                     return false;
+            }
         }
+
         return true;
     }
     
