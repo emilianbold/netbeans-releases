@@ -30,6 +30,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeListener;
 import org.openide.loaders.*;
+import org.openide.util.Mutex;
 import org.openide.windows.*;
 import org.openide.util.NbBundle;
 
@@ -554,7 +555,9 @@ public class DataEditorSupport extends CloneableEditorSupport {
             this.editor = editor;
         }
         
-        public void propertyChange (java.beans.PropertyChangeEvent ev) {
+        public void propertyChange(final PropertyChangeEvent ev) {
+            Mutex.EVENT.writeAccess(new Runnable() {
+                public void run() {
             if (Node.PROP_DISPLAY_NAME.equals(ev.getPropertyName())) {
                 updateTitles();
             }
@@ -563,6 +566,8 @@ public class DataEditorSupport extends CloneableEditorSupport {
                     editor.setIcon(obj.getNodeDelegate().getIcon (java.beans.BeanInfo.ICON_COLOR_16x16));
                 }
             }
+                }
+            });
         }
         
     } // end of DataNodeListener
