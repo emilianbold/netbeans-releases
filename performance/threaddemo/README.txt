@@ -72,8 +72,28 @@ nonmodal dialog) can help you test the effect of an app feature that
 involves some computation as well as heavy background write access to
 data models.
 
-Currently no actions are supported in the Raw view, so you cannot test these. Raw view
-also currently does not listen for changes, so it will not work with the Swung model
-which relies on change events even with a read-only underlying model.
+Major known problems:
+
+- Currently no actions are supported in the Raw view, so you cannot test these. Raw view
+  also currently does not listen for changes, so it will not work with the Swung model
+  which relies on change events even with a read-only underlying model.
+
+- Node view has not been updated to show XML parse structure.
+
+- Spun model seems to cause problems for scrollbar painting in raw look views.
+
+- Spun and Swung models may give assertion errors when used with nodes, as
+  Look and Children do not always ask for things from AWT.
+
+- Mutex-based models may deadlock when refactoring due to multi-thread behavior
+  of CloneableEditorSupport.openDocument().
+
+- Swung model may not behave correctly in general.
+
+- Simplistic DomProvider XML model means that textual changes trigger a full
+  reparse, so e.g. nodes for existing elements are collapsed even though they
+  are not in the affected area.
+
+- Element index does not seem to give accurate tallies in all cases.
 
 -jglick@netbeans.org
