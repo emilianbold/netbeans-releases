@@ -172,10 +172,16 @@ public class AttrProp implements BaseAttribute {
         //	Get rid of both heading and trailing " character
         //	(we assume that they live in pair)
         //
-        if (value.charAt(0) == '"')	// NOI18N
+        int valueLen = value.length();
+        if (value.charAt(0) == '"')	{ // NOI18N
+            if (valueLen == 1)
+                failed(Common.getMessage("TooLittleDeclaration_msg", value));
             value = value.substring(1, value.length()-1);
-        else if (value.charAt(0) == '\'')	// NOI18N
+        } else if (value.charAt(0) == '\'')	{ // NOI18N
+            if (valueLen == 1)
+                failed(Common.getMessage("TooLittleDeclaration_msg", value));
             value = value.substring(1, value.length()-1);
+        }
 	
 	//	Name Type_OR_Enums DefValue_OR_#Opt [Val for #FIXED]
         switch(this.state) {

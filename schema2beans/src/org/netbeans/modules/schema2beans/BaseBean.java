@@ -621,7 +621,7 @@ public abstract class BaseBean implements Cloneable, Bean {
      */
     public void setAttributeValue(String propName, String name,
 				  String value) {
-	this.beanProp(propName).setAttributeValue(0, name, value);
+        this.beanProp(propName).setAttributeValue(0, name, value);
     }
     
     /**
@@ -1006,7 +1006,15 @@ public abstract class BaseBean implements Cloneable, Bean {
 	String[] ret = new String[list.size()];
 	return (String[])list.toArray(ret);
     }
-    
+
+    public void write(File f) throws IOException, Schema2BeansRuntimeException {
+        OutputStream out = new FileOutputStream(f);
+        try {
+            write(out);
+        } finally {
+            out.close();
+        }
+    }
     
     /**
      *  Write the current schema2beans graph as an XML document.
