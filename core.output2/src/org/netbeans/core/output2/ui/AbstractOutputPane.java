@@ -31,6 +31,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Iterator;
+import org.openide.util.Lookup;
 
 /**
  * A scroll pane containing an editor pane, with special handling of the caret
@@ -137,7 +138,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         textView.addMouseWheelListener(this);
         textView.addMouseMotionListener(this);
         textView.addKeyListener(this);
-
+        
         getViewport().addMouseListener(this);
         getHorizontalScrollBar().setModel(sbmodel2);
         getHorizontalScrollBar().addMouseListener(this);
@@ -186,8 +187,26 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     
     protected void setEditorKit(EditorKit kit) {
         Document doc = textView.getDocument();
+        
         textView.setEditorKit(kit);
         textView.setDocument(doc);
+        updateKeyBindings();
+    }
+    
+    /**
+     * Setting the editor kit will clear the action map/key map connection
+     * to the TopComponent, so we reset it here.
+     */
+    protected final void updateKeyBindings() {
+        Keymap keymap = textView.getKeymap();
+        ActionMap actionmap  = textView.getActionMap();
+        
+        Keymap km = (Keymap)Lookup.getDefault().lookup(Keymap.class);        
+        
+        if (km != null) {
+            keymap.setResolveParent (km);
+        }
+        actionmap.setParent(getActionMap());
     }
     
     protected EditorKit getEditorKit() {

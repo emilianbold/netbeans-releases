@@ -72,6 +72,7 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
         }
         textView.setEditorKit (new OutputEditorKit(isWrapped(), textView));
         super.setDocument(doc);
+        updateKeyBindings();
     }
     
     public void setWrapped (boolean val) {
