@@ -46,7 +46,12 @@ class FileStateEditor extends ListImageEditor {
     public void attachEnv (PropertyEnv env) {
         super.attachEnv (env);
         
-        prop = (Node.Property)env.getFeatureDescriptor ();
+        try {
+            prop = (Node.Property)env.getFeatureDescriptor ();
+        } catch (ClassCastException cce) {
+            ClassCastException cce2 = new ClassCastException("Expected a Node.Property but got a " + env.getFeatureDescriptor() + " descriptor " + env.getFeatureDescriptor().getClass().getName());
+            throw cce2;
+        }
     }
     
     public String getAsText () {
