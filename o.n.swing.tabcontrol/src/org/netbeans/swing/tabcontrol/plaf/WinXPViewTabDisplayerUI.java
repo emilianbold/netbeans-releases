@@ -79,7 +79,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
      */
     private WinXPViewTabDisplayerUI(TabDisplayer displayer) {
         super(displayer);
-        prefSize = new Dimension(Integer.MAX_VALUE, 17);
+        prefSize = new Dimension(100, 17);
     }
 
     public static ComponentUI createUI(JComponent c) {

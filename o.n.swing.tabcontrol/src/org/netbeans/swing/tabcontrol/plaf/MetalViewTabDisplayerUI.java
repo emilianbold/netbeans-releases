@@ -68,7 +68,7 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
      */
     private MetalViewTabDisplayerUI(TabDisplayer displayer) {
         super(displayer);
-        prefSize = new Dimension(Integer.MAX_VALUE, 19);
+        prefSize = new Dimension(100, 19);
     }
 
     public static ComponentUI createUI(JComponent c) {

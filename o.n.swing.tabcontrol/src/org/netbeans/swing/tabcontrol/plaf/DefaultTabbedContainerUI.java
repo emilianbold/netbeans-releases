@@ -174,6 +174,7 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         actionListener = createDisplayerActionListener();
         container.setLayout(createLayout());
         hierarchyListener = new ContainerHierarchyListener();
+        forward = new ForwardingMouseListener(container);
         installContentDisplayer();
         installTabDisplayer();
         installBorders();
@@ -183,8 +184,8 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         // that the selection has changed. Otherwise strange focus effects kick in, eg. when the winsys snapshot gets undated beforehand..
         tabDisplayer.getSelectionModel().addChangeListener(selectionListener);
 
-
     }
+    private MouseListener forward = null;
 
     /** This method is final.  Subclasses which need to provide additional initialization should override
      * <code>uninstall()</code>
@@ -207,6 +208,7 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         propertyChangeListener = null;
         contentDisplayerLayout = null;
         actionListener = null;
+        forward = null;
     }
 
     /** Subclasses may override this method to do anything they need to do on installUI().  It will
@@ -299,6 +301,10 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
     protected void installListeners() {
         container.addComponentListener(componentListener);
         container.addHierarchyListener (hierarchyListener);
+        //Allow mouse events to be forwarded as if they came from the 
+        //container
+        tabDisplayer.addMouseListener (forward);
+        contentDisplayer.addMouseListener (forward);
     }
 
     /**
@@ -337,6 +343,8 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         container.removeHierarchyListener (hierarchyListener);
         componentListener = null;
         propertyChangeListener = null;
+        tabDisplayer.removeMouseListener (forward);
+        contentDisplayer.removeMouseListener (forward);
     }
 
     /**
@@ -1696,5 +1704,63 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         if (gratuitous) {
             SYNCHRONOUS_PAINTING = true;
         }
+    }
+    
+    private static final class ForwardingMouseListener implements MouseListener {
+        private final Container c;
+        public ForwardingMouseListener (Container c) {
+            this.c = c;
+        }
+        public void mousePressed (MouseEvent me) {
+            forward (me);
+        }
+        
+        public void mouseReleased (MouseEvent me) {
+            forward (me);
+        }
+        
+        public void mouseClicked (MouseEvent me) {
+            forward (me);
+        }
+        
+        public void mouseEntered (MouseEvent me) {
+            forward (me);
+        }
+        
+        public void mouseExited (MouseEvent me) {
+            forward (me);
+        }
+        
+        private void forward (MouseEvent me) {
+            MouseListener[] ml = c.getMouseListeners();
+            if (ml.length == 0) {
+                return;
+            }
+            MouseEvent me2 = SwingUtilities.convertMouseEvent(
+                (Component) me.getSource(), me, c);
+            
+            for (int i=0; i < ml.length; i++) {
+                switch (me2.getID()) {
+                    case MouseEvent.MOUSE_ENTERED :
+                        ml[i].mouseEntered(me2);
+                        break;
+                    case MouseEvent.MOUSE_EXITED :
+                        ml[i].mouseExited(me2);
+                        break;
+                    case MouseEvent.MOUSE_PRESSED :
+                        ml[i].mousePressed(me2);
+                        break;
+                    case MouseEvent.MOUSE_RELEASED :
+                        ml[i].mouseReleased(me2);
+                        break;
+                    case MouseEvent.MOUSE_CLICKED :
+                        ml[i].mouseClicked(me2);
+                        break;
+                    default :
+                        assert false;
+                }
+            }
+        }
+        
     }
 }

@@ -69,7 +69,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
      */
     private WinClassicViewTabDisplayerUI(TabDisplayer displayer) {
         super(displayer);
-        prefSize = new Dimension(Integer.MAX_VALUE, 19); //XXX ???
+        prefSize = new Dimension(100, 19); 
     }
 
     public static ComponentUI createUI(JComponent c) {

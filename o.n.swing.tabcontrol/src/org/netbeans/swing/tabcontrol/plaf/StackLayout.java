@@ -117,32 +117,18 @@ borderDump((javax.swing.JComponent)comp, "");*/
     }
 
     public Dimension minimumLayoutSize(Container parent) {
-        return visibleComp == null ?
-                getEmptySize() : preferredLayoutSize(parent);
+        return getEmptySize();
     }
 
     public Dimension preferredLayoutSize(Container parent) {
-        Dimension d = parent.getSize();
-        if (visibleComp != null) {
-            Dimension d1 = visibleComp.getPreferredSize();
-            d.width = Math.max(d.width, d1.width);
-            d.height = Math.max(d.height, d1.height);
-        } else {
-            if (d.width == 0) {
-                return getEmptySize();
-            }
-        }
-        return d;
+        return getEmptySize();
     }
 
     /**
      * Specifies default size of empty container
      */
     private static Dimension getEmptySize() {
-        if (emptySize == null) {
-            emptySize = new Dimension(100, 100);
-        }
-        return emptySize;
+        return new Dimension(50, 50);
     }
 
 }

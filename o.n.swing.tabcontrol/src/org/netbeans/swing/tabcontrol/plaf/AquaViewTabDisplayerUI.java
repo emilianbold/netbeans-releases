@@ -57,7 +57,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
      */
     private AquaViewTabDisplayerUI(TabDisplayer displayer) {
         super(displayer);
-        prefSize = new Dimension(Integer.MAX_VALUE, 19); //XXX huh?
+        prefSize = new Dimension(100, 19); //XXX huh?
     }
 
     public static ComponentUI createUI(JComponent c) {
