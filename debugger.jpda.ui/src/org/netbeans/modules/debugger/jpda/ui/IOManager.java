@@ -49,6 +49,7 @@ public class IOManager {
     private OutputWriter                    debuggerOut;
     private String                          name;
     private JPDADebugger                    debugger;
+    private boolean                         closed = false;
     
     /** output writer Thread */
     private Hashtable                       lines = new Hashtable ();
@@ -101,6 +102,8 @@ public class IOManager {
                                     } else
                                         debuggerOut.println (t.text);
                                     debuggerOut.flush ();
+                                    if (closed)
+                                        debuggerOut.close ();
                                 //}
                                // if ((t.where & STATUS_OUT) != 0) 
                                     StatusDisplayer.getDefault ().setStatusText (t.text);
@@ -117,6 +120,7 @@ public class IOManager {
 
     void closeStream () {
         debuggerOut.close ();
+        closed = true;
     }
 
     void close () {
