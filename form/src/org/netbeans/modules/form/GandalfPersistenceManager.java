@@ -1812,6 +1812,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             String propName = nameNode.getNodeValue();
             Node.Property [] props = metacomp.getSyntheticProperties();
             Node.Property property = null;
+            Class expectedPropertyType = null;
             for (int j=0; j < props.length; j++) {
                 if (props[j].getName().equals(propName)) {
                     property = props[j];
@@ -1820,16 +1821,26 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
 
             if (property == null) {
-                PersistenceException ex = new PersistenceException(
-                                       "Unknown synthetic property"); // NOI18N
-                String msg = createLoadingErrorMessage(
-                    FormUtils.getBundleString("MSG_ERR_UnknownProperty"), // NOI18N
-                    propNode);
-                ErrorManager.getDefault().annotate(
-                    ex, ErrorManager.ERROR, null, msg, null, null);
-                nonfatalErrors.add(ex);
-                continue;
+                if ("menuBar".equals(propName) // NOI18N
+                    && metacomp instanceof RADVisualFormContainer)
+                {   // compatibility hack for loading form's menu bar, part 1
+                    // (menubar is no longer a synthetic property, but it was
+                    // in NB 3.2)
+                    expectedPropertyType = String.class;
+                }
+                else { // unknown synthetic property
+                    PersistenceException ex = new PersistenceException(
+                                           "Unknown synthetic property"); // NOI18N
+                    String msg = createLoadingErrorMessage(
+                        FormUtils.getBundleString("MSG_ERR_UnknownProperty"), // NOI18N
+                        propNode);
+                    ErrorManager.getDefault().annotate(
+                        ex, ErrorManager.ERROR, null, msg, null, null);
+                    nonfatalErrors.add(ex);
+                    continue;
+                }
             }
+            else expectedPropertyType = property.getValueType();
 
             org.w3c.dom.Node typeNode = attrs.getNamedItem(ATTR_PROPERTY_TYPE);
             org.w3c.dom.Node valueNode = attrs.getNamedItem(ATTR_PROPERTY_VALUE);
@@ -1858,7 +1869,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     nonfatalErrors.add(t);
                     continue;
                 }
-                if (!property.getValueType().isAssignableFrom(propertyType)) {
+                if (!expectedPropertyType.isAssignableFrom(propertyType)) {
                     PersistenceException ex = new PersistenceException(
                                            "Incompatible property type"); // NOI18N
                     String msg = createLoadingErrorMessage(
@@ -1911,7 +1922,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 continue;
             }
 
-            // compatibility hack for loading form's menu bar
+            // compatibility hack for loading form's menu bar, part 2
             if ("menuBar".equals(propName)
                 && value instanceof String
                 && metacomp instanceof RADVisualFormContainer)
