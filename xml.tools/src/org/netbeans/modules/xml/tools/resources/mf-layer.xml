@@ -19,21 +19,65 @@ Microsystems, Inc. All Rights Reserved.
     <!-- register services with Lookup -->
     <folder name="Services">
         <folder name="Hidden">
-            <file name="org-netbeans-modules-xml-tools-actions-CSSStyleAction.instance" />
-            <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance" />
-            <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance" />
-            <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance" />
+            <file name="org-netbeans-modules-xml-tools-actions-CSSStyleAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.actions.CSSStyleAction" />
+                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.tools.actions.CSSStyleAction" />
+                <attr name="instanceOf"    stringvalue="org.openide.util.actions.SystemAction, org.openide.util.actions.CallableSystemAction, org.openide.util.actions.NodeAction, org.openide.util.actions.CookieAction, org.netbeans.modules.xml.core.actions.CollectDTDAction$DTDAction, org.netbeans.modules.xml.tools.actions.CSSStyleAction" />
+            </file>
+            <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.actions.CheckAction" />
+                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.tools.actions.CheckAction" />
+                <attr name="instanceOf"    stringvalue="org.openide.util.actions.SystemAction, org.openide.util.actions.CallableSystemAction, org.openide.util.actions.NodeAction, org.openide.util.actions.CookieAction, org.netbeans.modules.xml.core.actions.CollectXMLAction$XMLAction, org.netbeans.modules.xml.tools.actions.CheckAction" />
+            </file>
+            <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.actions.CheckDTDAction" />
+                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.tools.actions.CheckDTDAction" />
+                <attr name="instanceOf"    stringvalue="org.openide.util.actions.SystemAction, org.openide.util.actions.CallableSystemAction, org.openide.util.actions.NodeAction, org.openide.util.actions.CookieAction, org.netbeans.modules.xml.core.actions.CollectDTDAction$DTDAction, org.netbeans.modules.xml.tools.actions.CheckDTDAction" />
+            </file>
+            <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.actions.ValidateAction" />
+                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.tools.actions.ValidateAction" />
+                <attr name="instanceOf"    stringvalue="org.openide.util.actions.SystemAction, org.openide.util.actions.CallableSystemAction, org.openide.util.actions.NodeAction, org.openide.util.actions.CookieAction, org.netbeans.modules.xml.core.actions.CollectXMLAction$XMLAction, org.netbeans.modules.xml.tools.actions.ValidateAction" />
+            </file>
 
-            <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.instance" />
+            <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.doclet.DocletAction" />
+                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.tools.doclet.DocletAction" />
+                <attr name="instanceOf"    stringvalue="org.openide.util.actions.SystemAction, org.openide.util.actions.CallableSystemAction, org.openide.util.actions.NodeAction, org.openide.util.actions.CookieAction, org.netbeans.modules.xml.core.actions.CollectDTDAction$DTDAction, org.netbeans.modules.xml.tools.doclet.DocletAction" />
+            </file>
 
-            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateSupportFactory$Creator.instance" />
-            <file name="org-netbeans-modules-xml-tools-generator-DTDGenerateSupportFactory$Creator.instance" />
+            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateSupportFactory$Creator.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.generator.XMLGenerateSupportFactory$Creator" />
+                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.tools.generator.XMLGenerateSupportFactory$Creator" />
+                <attr name="instanceOf"    stringvalue="org.netbeans.modules.xml.core.XMLDataObject$XMLCookieFactoryCreator, org.netbeans.modules.xml.tools.generator.XMLGenerateSupportFactory$Creator" />
+            </file>
+            <file name="org-netbeans-modules-xml-tools-generator-DTDGenerateSupportFactory$Creator.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.generator.DTDGenerateSupportFactory$Creator" />
+                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.tools.generator.DTDGenerateSupportFactory$Creator" />
+                <attr name="instanceOf"    stringvalue="org.netbeans.modules.xml.core.DTDDataObject$DTDCookieFactoryCreator, org.netbeans.modules.xml.tools.generator.DTDGenerateSupportFactory$Creator" />
+            </file>
 
-            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance" />
-            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance" />
-            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance" />
+            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDTDAction" />
+                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDTDAction" />
+                <attr name="instanceOf"    stringvalue="org.openide.util.actions.SystemAction, org.openide.util.actions.CallableSystemAction, org.openide.util.actions.NodeAction, org.openide.util.actions.CookieAction, org.netbeans.modules.xml.tools.generator.XMLGenerateAction, org.netbeans.modules.xml.core.actions.CollectXMLAction$XMLAction, org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDTDAction" />
+            </file>
+            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDocumentHandlerAction" />
+                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDocumentHandlerAction" />
+                <attr name="instanceOf"    stringvalue="org.openide.util.actions.SystemAction, org.openide.util.actions.CallableSystemAction, org.openide.util.actions.NodeAction, org.openide.util.actions.CookieAction, org.netbeans.modules.xml.tools.generator.XMLGenerateAction, org.netbeans.modules.xml.core.actions.CollectDTDAction$DTDAction, org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDocumentHandlerAction" />
+            </file>
+            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDOMScannerAction" />
+                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDOMScannerAction" />
+                <attr name="instanceOf"    stringvalue="org.openide.util.actions.SystemAction, org.openide.util.actions.CallableSystemAction, org.openide.util.actions.NodeAction, org.openide.util.actions.CookieAction, org.netbeans.modules.xml.tools.generator.XMLGenerateAction, org.netbeans.modules.xml.core.actions.CollectDTDAction$DTDAction, org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDOMScannerAction" />
+            </file>
 
-            <file name="org-netbeans-modules-xml-tools-transform-actions-TransformAction.instance" />
+            <file name="org-netbeans-modules-xml-tools-transform-actions-TransformAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.transform.actions.TransformAction" />
+                <attr name="instanceCreate"   newvalue="org.netbeans.modules.xml.tools.transform.actions.TransformAction" />
+                <attr name="instanceOf"    stringvalue="org.openide.util.actions.SystemAction, org.openide.util.actions.CallableSystemAction, org.openide.util.actions.NodeAction, org.openide.util.actions.CookieAction, org.netbeans.modules.xml.core.actions.CollectXMLAction$XMLAction, org.netbeans.modules.xml.tools.transform.actions.TransformAction" />
+            </file>
         </folder>
     </folder>
 
@@ -49,6 +93,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance" />
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance" />
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance" />
+            <file name="org-netbeans-modules-xml-tools-transform-actions-TransformAction.instance" />
         </folder>
     </folder>
 

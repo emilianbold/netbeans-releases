@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/emptyDTD.html" />
             </file>
 
-            <file name="StyleSheet.xml" url="templates/StyleSheet.xml.template">
+            <file name="StyleSheet.xsl" url="templates/StyleSheet.xml.template">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />

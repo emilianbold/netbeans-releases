@@ -43,10 +43,9 @@ import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.ext.ExtSettingsNames;
 
-import org.netbeans.modules.xml.core.actions.CollectXMLAction;
-import org.netbeans.modules.xml.core.actions.CollectDTDAction;
-
-
+/**
+ *
+ */
 public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
     /** Name assigned to initializer */
@@ -108,8 +107,7 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
                 (Arrays.asList (new String[] {
                     OpenAction.class.getName(),
                     null,
-                    CollectDTDAction.class.getName(),
-//                     "org.netbeans.modules.xml.tools.actions.CheckDTDAction", // NOI18N
+                    "org.netbeans.modules.xml.core.actions.CollectDTDAction", // NOI18N
                     null,
                 }));
             dtdActionNames.addAll (commonActionNames);
@@ -131,9 +129,7 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
                     OpenAction.class.getName(),
                     ViewAction.class.getName(),
                     null,
-                    CollectXMLAction.class.getName(),
-//                     "org.netbeans.modules.xml.tools.actions.CheckAction", // NOI18N
-//                     "org.netbeans.modules.xml.tools.actions.ValidateAction", // NOI18N
+                    "org.netbeans.modules.xml.core.actions.CollectXMLAction", // NOI18N
                     null,
                 }));
             xmlActionNames.addAll (commonActionNames);
