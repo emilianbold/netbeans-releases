@@ -198,6 +198,14 @@ Microsystems, Inc. All Rights Reserved.
         <module name="performance"   testtypes="qa-functional"  attributes="measure_ui"/>  
   </config>
   
+  <config name="qa-performance-ide">
+ 	<module name="performance"   testtypes="unit"  attributes="measure_ide"/>  
+  </config>
+  
+  <config name="qa-performance-ui">
+        <module name="performance"   testtypes="qa-functional"  attributes="measure_ui"/>  
+  </config>
+  
   <config name="qa-web-performance">
  	<module name="web"   testtypes="qa-performance"  attributes="measure_ui"/>  
   </config>
