@@ -247,7 +247,6 @@ public class TomcatManager implements DeploymentManager {
         username = uname;
         password = passwd;
         tomcatManagerConfig = new TomcatManagerConfig(getCatalinaDir() + SERVERXML_PATH);
-        tomcatPlatform = new TomcatPlatformImpl(getCatalinaHomeDir(), getCatalinaBaseDir(), getDisplayName());
     }
 
     public InstanceProperties getInstanceProperties() {
@@ -1474,7 +1473,10 @@ public class TomcatManager implements DeploymentManager {
         return process;
     }
     
-    public TomcatPlatformImpl getTomcatPlatform() {
+    public synchronized TomcatPlatformImpl getTomcatPlatform() {
+        if (tomcatPlatform == null) {
+            tomcatPlatform = new TomcatPlatformImpl(getCatalinaHomeDir(), getCatalinaBaseDir(), getDisplayName());
+        }
         return tomcatPlatform;
     }
 }
