@@ -76,7 +76,7 @@ public class NbMultiTaskDef extends Task {
         }
         
         if (loader == null && classpath != null) {
-            log("Using Ant' classloader.", Project.MSG_DEBUG);
+            log("Using Ant classloader.", Project.MSG_DEBUG);
             AntClassLoader al = new AntClassLoader(project, classpath,
                                                    false);
             // need to load Task via system classloader or the new
