@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="projects test setup" basedir="." default="build">
@@ -32,19 +32,15 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="jartest-classpath" if="jarcode.classpath">
 	<path id="openide">
-	    <pathelement location="../../../../../../../../openide/openide-13javac-workaround.jar"/>
-            <fileset dir="../../../../../../../../openide/netbeans/lib">
-	            <include name="openide*.jar"/>
-            </fileset>
+            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
         </path>
     </target>
         
     <target name="srctest-classpath" if="srccode.classpath">
 	<path id="openide">
-	    <pathelement location="../../../../../../../../openide/openide-13javac-workaround.jar"/>
-            <fileset dir="../../../../../../../../openide/netbeans/lib">
-	            <include name="openide*.jar"/>
-            </fileset>
+            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>	    
         </path>
     </target>
     
