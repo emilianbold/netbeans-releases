@@ -70,7 +70,7 @@ Microsystems, Inc. All Rights Reserved.
       <folder name="java">
           <file name="org-netbeans-modules-web-core-resources-library-servlet.xml">
               <![CDATA[
-                  <!DOCTYPE JavaLibrary PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
+                  <!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
                   <Library>
                       <Archive name="modules/ext/servlet-2.2.jar"/>
                   </Library>
