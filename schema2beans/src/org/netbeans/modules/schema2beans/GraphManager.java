@@ -229,246 +229,52 @@ public class GraphManager extends Object {
 	return this.root;
     }
 
-    // Find the root element, skipping over DOCTYPEs, comments, etc.
-    // Returns null if there isn't one.
-    static protected Element getRootElement(Document doc) {
-        return doc.getDocumentElement();
-    }
-
-    // Given @param doc what should it's DOCTYPE name be.
-    static protected String getDocTypeName(Document doc) {
-        // First look for a DOCTYPE
-        NodeList children = doc.getChildNodes();
-        int length = children.getLength();
-        for (int i = 0; i < length; ++i) {
-            Node node = children.item(i);
-            if (node instanceof DocumentType) {
-                DocumentType docType = (DocumentType) node;
-                return docType.getName();
-            }
-        }
-        // Otherwise, check the first node of the actual document
-        Node rootNode = getRootElement(doc);
-        return rootNode.getNodeName();
-    }
-
     /**
      *	OutputStream version of write()
      */
-    void write(OutputStream out)
-	throws IOException, Schema2BeansException {
-	//
-	//	Code specific to the DOM implementation:
-	//
-	if (this.document == null)
-	    throw new Schema2BeansException(Common.getMessage("CantGetDocument_msg"));
-	if (this.docWriter != null)
-	    this.docWriter.write(out, this.document);
-	else {
-        write(out, null);
-	}
+    void write(OutputStream out) throws IOException, Schema2BeansException {
+        //
+        //	Code specific to the DOM implementation:
+        //
+        if (this.document == null)
+            throw new Schema2BeansException(Common.getMessage("CantGetDocument_msg"));
+        if (this.docWriter != null)
+            this.docWriter.write(out, this.document);
+        else {
+            XMLUtil.DOMWriter domWriter = getDOMWriter();
+            domWriter.write(out, document);
+        }
     }
 
-    protected void write(OutputStream out, String encoding) throws java.io.IOException, Schema2BeansException {
-        java.io.Writer w;
-        if (encoding == null)
-            encoding = "UTF-8";
-        w = new BufferedWriter(new OutputStreamWriter(out, encoding));
-        write(w, encoding);
-        w.flush();
+    protected void write(OutputStream out, String encoding) throws java.io.IOException {
+        XMLUtil.DOMWriter domWriter = getDOMWriter();
+        domWriter.write(out, encoding, document);
     }
 
-    protected void write(java.io.Writer out) throws java.io.IOException, Schema2BeansException {
-        write(out, (String) null);
+    protected void write(java.io.Writer out) throws java.io.IOException {
+        XMLUtil.DOMWriter domWriter = getDOMWriter();
+        domWriter.setWriter(out);
+        domWriter.write(document);
     }
 
-    protected void write(java.io.Writer out, String encoding) throws java.io.IOException, Schema2BeansException {
-        out.write("<?xml version=\"1.0\"");    // NOI18N
-        if (encoding != null) {
-            out.write(" encoding=\""+encoding+"\"?>\n");    // NOI18N
-        } else
-            out.write(" encoding=\"UTF-8\"?>\n");    // NOI18N
-        if (docTypePublic != null || docTypeSystem != null) {
-            String docName = getDocTypeName(document);
-            DocumentType docType = document.getDoctype();
-            NamedNodeMap entities = null;
-            if (docType != null)
-                entities = docType.getEntities();
-            write(out, docName, docTypePublic, docTypeSystem, entities);
-            out.write("\n");
-        }
-        NodeList children = document.getChildNodes();
-        int length = children.getLength();
-        // First print out any DocumentTypes
-        for (int i = 0; i < length; ++i) {
-            Node node = children.item(i);
-            if (node instanceof DocumentType) {
-                write(out, node);
-                out.write("\n");
-            }
-        }
-        // Now print everything, but DocumentTypes
-        for (int i = 0; i < length; ++i) {
-            Node node = children.item(i);
-            if (!(node instanceof DocumentType)) {
-                write(out, node);
-                out.write("\n");
-            }
-        }
-
-        out.flush();
+    protected void write(java.io.Writer out, String encoding) throws java.io.IOException {
+        XMLUtil.DOMWriter domWriter = getDOMWriter();
+        domWriter.setWriter(out);
+        domWriter.write(document, encoding);
     }
 
     public void write(java.io.Writer out, Node node) throws java.io.IOException, Schema2BeansException {
-        boolean needsReturnBetweenChildren = false;
-
-        NodeList children = node.getChildNodes();
-        if (node instanceof Element) {
-            out.write("<"+node.getNodeName());
-            write(out, node.getAttributes());
-            if (children.getLength() == 0) {
-                out.write("/>");
-                return;
-            }
-            out.write(">");
-        } else if (node instanceof Text) {
-            printXML(out, node.getNodeValue(), false);
-        } else if (node instanceof Document) {
-            needsReturnBetweenChildren = true;
-        } else if (node instanceof DocumentType) {
-            write(out, (DocumentType) node);
-        } else if (node instanceof Comment) {
-            write(out, (Comment) node);
-        } else if (node instanceof Entity) {
-            write(out, (Entity) node);
-        } else if (node instanceof ProcessingInstruction) {
-            write(out, (ProcessingInstruction) node);
-        } else {
-            System.out.println("! schema2beans found unknown node type in DOM graph:");
-            System.out.println("write: node.getClass="+node.getClass()+" node="+node);
-            System.out.println("write: nodename="+node.getNodeName()+" nodevalue="+node.getNodeValue());
-            System.out.println("write: getAttributes="+node.getAttributes());
-        }
-        
-        int length = children.getLength();
-        for (int i = 0; i < length; ++i) {
-            write(out, children.item(i));
-            if (needsReturnBetweenChildren)
-                out.write("\n");
-        }
-        if (node instanceof Element) {
-            out.write("</"+node.getNodeName()+">");
-        }
+        XMLUtil.DOMWriter domWriter = getDOMWriter();
+        domWriter.setWriter(out);
+        domWriter.write(node);
     }
 
-    protected void write(java.io.Writer out, DocumentType docType) throws java.io.IOException, Schema2BeansException {
-        //System.out.println("! FOUND DOCTYPE for "+docType.getName());
-        if (docTypePublic != null || docTypeSystem != null) {
-            // The header printing has already taken care of the DOCTYPE.
-            return;
-        }
-        write(out, docType.getName(), docType.getPublicId(),
-              docType.getSystemId(), docType.getEntities());
-    }
-
-    protected void write(java.io.Writer out, String docName, String publicId,
-                         String systemId, NamedNodeMap entities) throws java.io.IOException, Schema2BeansException {
-        out.write("<!DOCTYPE "+docName);	// NOI18N
-        if (publicId != null) {
-            out.write(" PUBLIC \"");	// NOI18N
-            XMLUtil.printXML(out, publicId);
-            out.write("\"");	// NOI18N
-            if (systemId == null)
-                systemId = "SYSTEM";	// NOI18N
-        }
-        if (systemId != null) {
-            out.write(" \"");	// NOI18N
-            XMLUtil.printXML(out, systemId);
-            out.write("\"");	// NOI18N
-        }
-        if (entities != null) {
-            int length = entities.getLength();
-            if (length > 0) {
-                out.write(" [");	// NOI18N
-                for (int i = 0; i < length; ++i) {
-                    Node node = entities.item(i);
-                    write(out, node);
-                }
-                out.write("]");	// NOI18N
-            }
-        }
-        out.write(">");	// NOI18N
-    }
-
-    protected void write(java.io.Writer out, Comment comment) throws java.io.IOException {
-        // Does not need to have anything escaped (no printXML).
-        out.write("<!--");
-        String text = comment.getNodeValue();
-        // A comment is not allow to have "--" inside of it.
-        int pos = text.indexOf("--");
-        while (pos >= 0) {
-            out.write(text.substring(0, pos));
-            out.write("&#x2d;&#x2d;");
-            text = text.substring(pos+2, text.length());
-            pos = text.indexOf("--");
-        }
-        out.write(text);
-        out.write("-->");
-    }
-
-    protected void write(java.io.Writer out, Entity entity) throws java.io.IOException {
-        out.write("<!ENTITY "+entity.getNodeName());
-        /*
-          We don't seem to be able to get any useful info out of the
-          Entity object.
-          
-        out.write(" notation ");
-        if (entity.getNotationName() != null)
-            out.write(entity.getNotationName());
-        out.write(" publicid ");
-        if (entity.getPublicId() != null)
-            out.write(entity.getPublicId());
-        out.write(" systemid ");
-        if (entity.getSystemId() != null)
-            out.write(entity.getSystemId());
-        */
-        out.write(" UNKNOWN>");
-    }
-
-    protected void write(java.io.Writer out, ProcessingInstruction pi) throws java.io.IOException {
-        // Does not need to have anything escaped (no printXML).
-        if ("xml".equals(pi.getTarget())) {
-            // We've already printed out the standard xml PI, suppress this one.
-            return;
-        }
-        out.write("<?"+pi.getTarget()+" "+pi.getData()+"?>");
-    }
-
-    /**
-     * This is used to print attributes.
-     */
-    protected void write(java.io.Writer out, NamedNodeMap nodes) throws java.io.IOException {
-        int length = nodes.getLength();
-        for (int i = 0; i < length; ++i) {
-            Node node = nodes.item(i);
-            out.write(" ");
-            out.write(node.getNodeName());
-            out.write("=\"");
-            XMLUtil.printXML(out, node.getNodeValue());
-            out.write("\"");
-        }
-    }
-
-    protected void printXML(java.io.Writer out, String msg, boolean attribute) throws java.io.IOException {
-        if (writeCData && msg.indexOf("]]>") < 0) {
-            boolean shouldEscape = XMLUtil.shouldEscape(msg);
-            if (shouldEscape)
-                out.write("<![CDATA[");
-            out.write(msg);
-            if (shouldEscape)
-                out.write("]]>");
-        } else
-            XMLUtil.printXML(out, msg, attribute);
+    protected XMLUtil.DOMWriter getDOMWriter() {
+        XMLUtil.DOMWriter domWriter = new XMLUtil.DOMWriter();
+        domWriter.setDocTypePublic(docTypePublic);
+        domWriter.setDocTypeSystem(docTypeSystem);
+        domWriter.setWriteCData(writeCData);
+        return domWriter;
     }
     
     /**
