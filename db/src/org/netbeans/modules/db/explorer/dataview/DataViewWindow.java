@@ -38,6 +38,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.*;
 import org.openide.windows.TopComponent;
 
+import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
@@ -67,7 +68,7 @@ public class DataViewWindow extends TopComponent {
             setLayout (layout);
 
             // Data model
-            dbadaptor = new DataModel(info.getDatabaseConnection());
+            dbadaptor = new DataModel(info);
 
             // Query area and button
             JPanel subpane = new JPanel();
@@ -441,7 +442,7 @@ public class DataViewWindow extends TopComponent {
     }
 
     class DataModel extends AbstractTableModel {
-        DBConnection dbcon;
+        DatabaseNodeInfo node_info;
         Vector coldef;
         Vector data;
         boolean editable = false;
@@ -449,10 +450,10 @@ public class DataViewWindow extends TopComponent {
         static final long serialVersionUID =7729426847826999963L;
 
         /** Constructor */
-        public DataModel(DBConnection dbcon)
+        public DataModel(DatabaseNodeInfo node_info)
         throws SQLException
         {
-            this.dbcon = dbcon;
+            this.node_info = node_info;
         }
 
         /** Executes command
@@ -461,8 +462,16 @@ public class DataViewWindow extends TopComponent {
         public void execute(String command) throws Exception {
             if (command.length() == 0) return;
 
-            Connection con = dbcon.createJDBCConnection();
-            Statement stat = con.createStatement();
+            Connection con;
+            Statement stat;
+            try {
+                con = node_info.getConnection();
+                stat = con.createStatement();
+            } catch ( Exception exc ) {
+                String message = MessageFormat.format(bundle.getString("EXC_ConnectionIsBroken"), new String[] {exc.getMessage()}); // NOI18N
+                throw new DatabaseException(message);
+            }
+
             ResultSet rs;
 
             if (command.toLowerCase().startsWith("select")) { //NOI18N
@@ -546,7 +555,6 @@ public class DataViewWindow extends TopComponent {
                 TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CommandExecuted"), NotifyDescriptor.INFORMATION_MESSAGE)); //NOI18N
             }
             stat.close();
-            con.close();
         }
 
         /** Returns column name
