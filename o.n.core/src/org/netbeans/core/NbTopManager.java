@@ -60,6 +60,8 @@ import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleManager;
 import org.netbeans.core.modules.ModuleSystem;
 import org.netbeans.core.projects.TrivialProjectManager;
+import org.netbeans.core.windows.MainWindow;
+import org.netbeans.core.windows.PersistenceManager;
 import org.netbeans.core.windows.util.WindowUtils;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.lookup.InstanceContent;
@@ -350,28 +352,6 @@ public abstract class NbTopManager /*extends TopManager*/ {
         }
     }
 
-    private static WindowManager wmgr = null;
-    private static final Object windowManagerLock = new String("NbTopManager.windowManagerLock"); // NOI18N
-    /** @return a window manager impl or null */
-    private static WindowManager getDefaultWindowManager() {
-        synchronized (windowManagerLock) {
-            if (wmgr == null) {
-                wmgr = (WindowManager)Lookup.getDefault().lookup(WindowManager.class);
-            }
-            return wmgr;
-        }
-    }
-    /** @return the main window from the window manager impl or null */
-    static Frame getMainWindow() {
-        WindowManager m = getDefaultWindowManager();
-        if (m != null) {
-            return m.getMainWindow();
-        } else {
-            return null;
-        }
-    }
-
-
     /** Adds new explorer manager that will rule the selection of current
     * nodes until the runnable is running.
     *
@@ -379,9 +359,9 @@ public abstract class NbTopManager /*extends TopManager*/ {
     * @param em explorer manager 
     */
     public void attachExplorer (Runnable run, ExplorerManager em) {
-        WindowManager m = getDefaultWindowManager();
-        if (m instanceof WindowManagerImpl) {
-            ((WindowManagerImpl)m).attachExplorer(run, em);
+        WindowManagerImpl m = WindowManagerImpl.getInstance();
+        if (m != null) {
+            m.attachExplorer(run, em);
         }
     }
 
@@ -398,7 +378,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
                     return new NbDialog(d, NbPresenter.currentModalDialog);
                 }
                 else {
-                    return new NbDialog(d, getMainWindow());
+                    return new NbDialog(d, MainWindow.getDefault());
                 }
             }
         });
@@ -425,13 +405,13 @@ public abstract class NbTopManager /*extends TopManager*/ {
                         if (NbPresenter.currentModalDialog != null) {
                             presenter = new NbDialog((DialogDescriptor) descriptor, NbPresenter.currentModalDialog);
                         } else {
-                            presenter = new NbDialog((DialogDescriptor) descriptor, getMainWindow());
+                            presenter = new NbDialog((DialogDescriptor) descriptor, MainWindow.getDefault());
                         }
                     } else {
                         if (NbPresenter.currentModalDialog != null) {
                             presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog, true);
                         } else {
-                            presenter = new NbPresenter(descriptor, getMainWindow(), true);
+                            presenter = new NbPresenter(descriptor, MainWindow.getDefault(), true);
                         }
                     }
 
@@ -571,7 +551,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
                         if (!isWinsysSaved) {
                             try {
                                 //Winsys was not saved yet, save now
-                                ((WindowManagerImpl)getDefaultWindowManager()).persistenceManager ().writeXMLWaiting ();
+                                PersistenceManager.getDefault().writeXMLWaiting ();
                             } catch (IOException ioe) {
                                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
                             }

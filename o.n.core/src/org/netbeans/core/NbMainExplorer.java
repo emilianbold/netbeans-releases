@@ -154,7 +154,7 @@ public final class NbMainExplorer extends CloneableTopComponent
     * backward serialization compatibility.
     * Performed with delay, when WS is in consistent state. */
     public void open (Workspace workspace) {
-        WindowManagerImpl.deferredPerformer().putRequest(
+        DeferredPerformer.getDefault().putRequest(
             this, new DeferredPerformer.DeferredContext(workspace, true)
         );
     }
@@ -699,7 +699,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         // deserialization, so we must wait for it
         protected final void scheduleValidation() {
             valid = false;
-            WindowManagerImpl.deferredPerformer().putRequest(this, null);
+            DeferredPerformer.getDefault().putRequest(this, null);
         }
         
         /* Updated accessible name of the tree view */
@@ -1136,7 +1136,7 @@ public final class NbMainExplorer extends CloneableTopComponent
 
                 // possible change in list of roots
                 // defer refresh request if window system is in inconsistent state
-                WindowManagerImpl.deferredPerformer().putRequest(
+                DeferredPerformer.getDefault().putRequest(
                     NbMainExplorer.getExplorer(), 
                     new DeferredPerformer.DeferredContext(null, true)
                 );
