@@ -49,6 +49,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/util/*.class"/>
                 <include name="org/openide/util/actions/*Test.class"/>
                 <include name="org/openide/xml/*.class"/>
+                <include name="org/openide/explorer/FindHelpTest.class"/>
+                <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetTab"/>
             </patternset>
         </testset>      
     </testbag>
@@ -57,6 +59,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/explorer/propertysheet/*.class"/>
+                <exclude name="org/openide/explorer/propertysheet/FindHelpTest.class"/>
                 <include name="org/openide/explorer/view/*.class"/>
             </patternset>
         </testset>        
@@ -83,6 +86,8 @@ Microsystems, Inc. All Rights Reserved.
 		<!-- Nodes -->
 		<include name="org/openide/nodes/FilterNodeTest.class"/>
 		<include name="org/openide/nodes/CookieSetTest*class"/>
+                <!-- Implementation was apparently killed during a refactoring: -->
+                <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetRow"/>
             </patternset>
         </testset>      
     </testbag>
