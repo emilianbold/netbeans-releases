@@ -117,7 +117,7 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
      * Updates exact, start and end filter lists.
      */
     private void refreshFilters (Set newFilters) {
-        Iterator i = filter.iterator ();
+        Iterator i = newFilters.iterator ();
         while (i.hasNext ()) {
             String p = (String) i.next ();
             if (p.startsWith ("*"))
