@@ -1,0 +1,62 @@
+OpenIDE-Module: org.netbeans.modules.web.core/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/core/Bundle.properties
+OpenIDE-Module-Install: org/netbeans/modules/web/core/ServletSupportModule.class
+OpenIDE-Module-Layer: org/netbeans/modules/web/core/resources/layer.xml
+OpenIDE-Module-Specification-Version: 1.5
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1,org.netbeans.modules.j2eeserver/1, org.netbeans.modules.httpserver/1, org.netbeans.modules.html/1, org.netbeans.modules.jarpackager/2
+OpenIDE-Module-Package-Dependencies: [org.apache.jasper.Constants], [org.apache.tomcat.core.Context]
+Class-Path: ext/jasper.jar
+
+Name: org/netbeans/modules/web/core/EditQueryStringAction.class
+OpenIDE-Module-Class: Action
+
+Name: org/netbeans/modules/web/core/jsploader/JspLoader.class
+OpenIDE-Module-Class: Loader
+
+Name: org/netbeans/modules/web/core/jsploader/JspServletDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.netbeans.modules.java.JavaDataObject
+
+Name: org/netbeans/modules/web/core/jsploader/ServletDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.netbeans.modules.java.JavaDataObject
+
+Name: org/netbeans/modules/web/core/jsploader/ConvertToServletAction.class
+OpenIDE-Module-Class: Action
+
+Name: org/netbeans/modules/web/core/jsploader/ConvertToJavaAction.class
+OpenIDE-Module-Class: Action
+
+Name: org/netbeans/modules/web/html/HtmlLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.netbeans.modules.html.HtmlDataObject
+
+Name: org/netbeans/modules/web/context/WebAppLoader.class
+OpenIDE-Module-Class: Loader
+
+Name: org/netbeans/modules/web/context/WebContextLoader.class
+OpenIDE-Module-Class: Loader
+
+Name: org/netbeans/modules/web/context/WebClassesLoader.class
+OpenIDE-Module-Class: Loader
+
+Name: org/netbeans/modules/web/context/WebLibJarContentLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.netbeans.modules.web.context.LibJarObject
+
+Name: org/netbeans/modules/web/context/WebLibLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.netbeans.modules.jarpackager.JarDataObject
+
+Name: org/netbeans/modules/web/context/WebInfLoader.class
+OpenIDE-Module-Class: Loader
+
+Name: org/netbeans/modules/web/context/actions/PackageWarAction.class
+OpenIDE-Module-Class: Action
+
+Name: org/netbeans/modules/web/context/actions/ConvertToWarAction.class
+OpenIDE-Module-Class: Action
+
+

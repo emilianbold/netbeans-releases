@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+  <folder name="Templates">
+    <attr name="JarPackager/JSP_Servlet" boolvalue="true"/>
+    <folder name="JSP_Servlet">
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Servlet_JSP.html" />
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+
+      <file name="webapp.warImage" url="templates/WebModule.template">
+          <attr name="template" boolvalue="true"/>
+          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/context/resources/WebModule.html"/>
+          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.context.WebAppWizardIterator.singleton"/>
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.context.Bundle"/>
+      </file>
+      <file name="JSP.jsp" url="templates/JSP.template">
+          <attr name="template" boolvalue="true"/>
+          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+      </file>
+      <file name="Servlet.java" url="templates/Servlet.template">
+          <attr name="template" boolvalue="true"/>
+          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Servlet.html"/>
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+          <attr name="org.netbeans.modules.web.IsServletFile" boolvalue="true"/>
+          <attr name="NetBeansAttrDebuggerType" methodvalue="org.netbeans.modules.j2ee.impl.ServerExecSupport.getServerDebuggerType"/>
+          <attr name="NetBeansAttrExecutor" methodvalue="org.netbeans.modules.j2ee.impl.ServerExecSupport.getServerExecutor"/>
+      </file>
+      <!-- use template description from HTML module -->
+      <file name="Html.html" url="nbresloc:/org/netbeans/modules/html/templates/html.html">
+         <attr name="template" boolvalue="true" />
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.html.Bundle"/>
+      </file>
+      <attr name="webapp.warImage/JSP.jsp" boolvalue="true"/>
+      <attr name="JSP.jsp/Servlet.java" boolvalue="true"/>
+      <attr name="Servlet.java/Html.html" boolvalue="true"/>
+    </folder>
+  </folder>
+
+  <folder name="Actions">
+    <folder name="Build">
+      <file name="Set Request Parameters[org-netbeans-modules-web-core-EditQueryStringAction].instance" />
+      <file name="Execute (restart server)[org-netbeans-modules-web-core-execution-Execute2Action].instance" />
+    </folder>
+    <folder name="System">
+      <file name="View Servlet[org-netbeans-modules-web-core-jsploader-EditServletAction].instance" />
+    </folder>
+    <folder name="Tools">
+      <file name="Convert to Servlet...[org-netbeans-modules-web-core-jsploader-ConvertToServletAction].instance" />
+      <file name="Convert to Servlet...[org-netbeans-modules-web-core-jsploader-ConvertToJavaAction].instance" />
+    </folder>
+  </folder>
+
+  <folder name="Mount">
+      <folder name="java">
+          <file name="org-netbeans-modules-web-core-resources-library-servlet.xml">
+              <![CDATA[
+                  <!DOCTYPE JavaLibrary PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
+                  <Library>
+                      <Archive name="modules/ext/servlet-2.2.jar"/>
+                  </Library>
+              ]]>
+          </file>
+      </folder>
+  </folder>
+    <folder name="Services">
+	<folder name="Hidden">
+	    <attr name="hidden" boolvalue="true" />
+	    <file name="org-netbeans-modules-web-core-resources-EntityCatalog.xml" >
+		<![CDATA[
+		    <!DOCTYPE catalog PUBLIC "-//NetBeans//Entity Mapping Registration 1.0//EN" "http://www.netbeans.org/dtds/EntityCatalog-1_0.dtd">
+		    <catalog>
+			<!-- public ID defined by XMLDataObject -->
+			<public publicId="-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web.dtd"/>
+                        <public publicId="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-jsptaglib_1_1.dtd"/>
+		    </catalog>
+		]]>
+	    </file>
+	</folder>
+
+    <file name="org-netbeans-modules-web-core-ServletSettings.settings">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/servletSettings.gif" />
+        <attr name="SystemFileSystem.layer" stringvalue="project" />
+        <![CDATA[<?xml version="1.0"?>
+        <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+            <settings version="1.0">
+                <module name="org.netbeans.modules.web.core" spec="1.4"/>
+                <instanceof class="java.io.Externalizable"/>
+                <instanceof class="org.openide.util.SharedClassObject"/>
+                <instanceof class="org.netbeans.modules.web.core.WebBrowser$Factory"/>
+                <instanceof class="org.netbeans.modules.web.core.ServletSettings"/>
+                <instanceof class="org.openide.options.SystemOption"/>
+                <instanceof class="java.io.Serializable"/>
+                <instanceof class="java.lang.Object"/>
+                <instance class="org.netbeans.modules.web.core.ServletSettings"/>
+            </settings>
+        ]]>
+    </file>
+
+    <!-- Recognize text/x-jsp -->
+    <folder name="MIMEResolver">
+      <file name="org-netbeans-modules-web-core-resources-mime-resolver.xml" url="mime-resolver.xml">
+      </file>
+    </folder>
+
+  </folder>
+
+    <folder name="UI">
+        <folder name="Services">
+            <folder name="Building">
+                <file name="org-netbeans-modules-web-core-ServletSettings.shadow">
+<![CDATA[Services/org-netbeans-modules-web-core-ServletSettings.settings
+SystemFileSystem
+]]>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+  <folder name="J2EE">
+    <folder name="ExecPerformersStorage">
+        <file name="org-netbeans-modules-web-execution-JspExecPerformer$Factory.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.JspExecPerformer$Factory.getJspFactory" />
+        </file>    
+        <file name="org-netbeans-modules-web-execution-HtmlExecPerformer$Factory.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.HtmlExecPerformer$Factory.getHtmlFactory" />
+        </file>    
+        <file name="org-netbeans-modules-web-execution-ServletExecPerformer$Factory.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.ServletExecPerformer$Factory.getJavaFactory" />
+        </file>    
+        <file name="org-netbeans-modules-web-execution-WebModuleExecPerformer$Factory.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.WebModuleExecPerformer$Factory.getWebModuleFactory" />
+        </file>    
+        <file name="org-netbeans-modules-web-execution-WebAppExecPerformer$Factory.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.WebAppExecPerformer$Factory.getWebAppFactory" />
+        </file>    
+    </folder>
+  </folder>
+  
+    <folder name="Editors">
+        <folder name="AnnotationTypes">
+            <file name="XMLJ2eeAnnotation.xml" url="XMLJ2eeAnnotation.xml"/>
+      </folder>
+    </folder>  
+
+</filesystem>
