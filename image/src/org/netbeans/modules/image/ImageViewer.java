@@ -144,12 +144,12 @@ public class ImageViewer extends CloneableTopComponent {
                     
                     double actualDistance = gridDistance;
                     for(int i = (int)actualDistance; i < x ;actualDistance += gridDistance, i = (int)actualDistance) {
-                        g.drawLine(i,0,i,y);
+                        g.drawLine(i,0,i,(y-1));
                     }
 
                     actualDistance = gridDistance;
                     for(int j = (int)actualDistance; j < y; actualDistance += gridDistance, j = (int)actualDistance) {
-                        g.drawLine(0,j,x,j);
+                        g.drawLine(0,j,(x-1),j);
                     }
                 }
                 
