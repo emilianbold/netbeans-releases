@@ -103,14 +103,7 @@ public class Util {
         assert toolName != null;
         for (Iterator it = installFolders.iterator(); it.hasNext();) {
             FileObject root = (FileObject) it.next();
-            FileObject bin = null;
-            switch (Utilities.getOperatingSystem()) {
-                case Utilities.OS_MAC:
-                    bin = root.getFileObject("Commands");        //NOI18N
-                    break;
-                default:
-                    bin = root.getFileObject("bin");             //NOI18N
-            }
+            FileObject bin = root.getFileObject("bin");             //NOI18N
             if (bin == null) {
                 continue;
             }

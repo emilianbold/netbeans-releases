@@ -15,6 +15,7 @@ package org.netbeans.modules.java.platform;
 import java.io.File;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 
 
@@ -29,6 +30,7 @@ public class PlatformSettings extends SystemOption {
     private static PlatformSettings instance;
 
     private static final String PROP_PLATFORMS_FOLDER = "platformsFolder"; //NOI18N
+    private static final String APPLE_JAVAVM_FRAMEWORK_PATH = "/System/Library/Frameworks/JavaVM.framework/Versions/";//NOI18N
 
     public PlatformSettings () {
 
@@ -41,10 +43,16 @@ public class PlatformSettings extends SystemOption {
     public File getPlatformsFolder () {
         String folderName = (String)this.getProperty(PROP_PLATFORMS_FOLDER);
         if (folderName == null) {
-            File  f = new File(System.getProperty("user.home"));  //NOI18N
-            File tmp;
-            while ((tmp = f.getParentFile())!=null) {
-                f = tmp;
+            File f;
+            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                f = new File (APPLE_JAVAVM_FRAMEWORK_PATH);
+            }
+            else {
+                f = new File(System.getProperty("user.home"));  //NOI18N
+                File tmp;
+                while ((tmp = f.getParentFile())!=null) {
+                    f = tmp;
+                }
             }
             return f;
         }
