@@ -13,10 +13,21 @@
 
 package org.netbeans.beaninfo.editors;
 
+import java.awt.Color;
 import java.beans.*;
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import java.util.*;
+import javax.swing.ButtonGroup;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
@@ -28,8 +39,6 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 
@@ -39,7 +48,7 @@ import org.openide.util.Lookup;
  * @author Jaroslav Tulach
  */
 public final class ObjectEditor extends PropertyEditorSupport 
-implements ExPropertyEditor, PropertyChangeListener {
+implements ExPropertyEditor {
     /** Name of the custom property that can be passed in PropertyEnv. 
      * Should contain superclass that is allowed to be 
      */
@@ -50,22 +59,15 @@ implements ExPropertyEditor, PropertyChangeListener {
      */
     private static final String PROP_NULL = "nullValue"; // NOI18N
     /** Name of the custom property that can be passed in PropertyEnv. 
-     * A node to display as root of the custom editor
-     */
-    private static final String PROP_NODE = "node"; // NOI18N
-    /** Name of the custom property that can be passed in PropertyEnv. 
      * A lookup to use to query for results.
      */
     private static final String PROP_LOOKUP = "lookup"; // NOI18N
     
     /** custom editor */
-    private ExplorerPanel customEditor;
+    private ObjectPanel customEditor;
     
     /** super class to search for */
     private Lookup.Template template;
-    
-    /** root node to use */
-    private Node root;
     
     /** null or name to use for null value */
     private String nullValue;
@@ -83,19 +85,6 @@ implements ExPropertyEditor, PropertyChangeListener {
      */
     public synchronized void attachEnv(PropertyEnv env) {
         Object obj = env.getFeatureDescriptor ().getValue (PROP_SUPERCLASS);
-        /*
-         //Some debugging code - not working correctly for default diff 
-         //engine, though it is passing correct values.  Possibly recent
-         //changes to Lookup caused this?
-        if ("Default Diff Engine".equals(env.getFeatureDescriptor().getDisplayName())) {
-            System.err.println(System.identityHashCode(this) + " got " + obj + " as superclass from " + env.getFeatureDescriptor() + " = " + env.getFeatureDescriptor().getDisplayName() + Thread.currentThread());
-            Exception e = new Exception();
-            e.fillInStackTrace();
-            StackTraceElement[] s = e.getStackTrace();
-            System.err.println("Caller: " + s[1].getFileName() + ":" + s[1].getLineNumber());
-            System.err.println("Caller: " + s[2].getFileName() + ":" + s[2].getLineNumber());
-        }
-         */
         if (obj instanceof Class) {
             template = new Lookup.Template ((Class)obj);
         } else {
@@ -115,9 +104,10 @@ implements ExPropertyEditor, PropertyChangeListener {
         
         obj = env.getFeatureDescriptor ().getValue (PROP_LOOKUP);
         lookup = obj instanceof Lookup ? (Lookup)obj : null;
-        
-        obj = env.getFeatureDescriptor ().getValue (PROP_NODE);
-        root = obj instanceof Node ? (Node)obj : null;
+        //Don't allow editing in the case only one item and tags are null
+        if (getTags()==null || getTags().length <= 1) {
+            env.getFeatureDescriptor().setValue("canEditAsText",Boolean.FALSE); //NOI18N
+        }
     }
     
     /** A lookup to work on.
@@ -128,17 +118,6 @@ implements ExPropertyEditor, PropertyChangeListener {
         return l == null ? Lookup.getDefault () : l;
     }
     
-    /** A root node to start search from.
-     */
-    protected synchronized Node root () {
-        if (root == null) {
-            root = new org.netbeans.core.ui.LookupNode (
-                org.netbeans.core.NbPlaces.getDefault().findSessionFolder ("/Services") // NOI18N
-            ); 
-        }
-        return root;
-    }
-
     /** A template to use.
      */
     protected Lookup.Template template () {
@@ -149,57 +128,6 @@ implements ExPropertyEditor, PropertyChangeListener {
         return template;
     }
     
-    /** Notification of changes in custom property editor.
-     */
-    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-        Node[] arr = customEditor.getExplorerManager ().getSelectedNodes ();
-        if (arr.length != 1) {
-            //Commenting the line below out - the Diff module causes a write
-            //to the folder.  This will cause the tree to be rebuilt, and 
-            //BeanTreeView will post setting the selection to null to the
-            //event thread.  This causes an NPE in the diff module (perhaps it
-            //should handle null by restoring the default).  Since there
-            //is no reasonable way for the user to set the tree to have no
-            //selection, should do no harm to simply do nothing here.
-            
-//            setValue (null);
-            return;
-        }
-        
-        try {
-            InstanceCookie ic = (InstanceCookie)arr[0].getCookie (InstanceCookie.class);
-            boolean accept;
-            if (ic instanceof InstanceCookie.Of) {
-                InstanceCookie.Of of = (InstanceCookie.Of)ic;
-                accept = of.instanceOf (template ().getType ());
-            } else {
-                accept = ic != null && template ().getType ().isAssignableFrom (ic.instanceClass ());
-            }
-
-            if (accept) {
-                synchronized (customEditor.getTreeLock()) {
-                    setValue (ic.instanceCreate ());
-                }
-                return;
-            }
-        } catch (ClassNotFoundException ex) {
-            ErrorManager.getDefault ().notify (
-                ErrorManager.INFORMATIONAL, ex
-            );
-        } catch (java.io.IOException ex) {
-            ErrorManager.getDefault ().notify (
-                ErrorManager.INFORMATIONAL, ex
-            );
-        }
-        
-        setValue (null);
-    }
-    
-    /** For a given Item tries to find appropriate node.
-     * @param item item we are looking for
-     * @param node root node to search from
-     * @return node that represents the 
-     */
     public String getAsText() {
         Object value = getValue ();
         if (value == null) {
@@ -220,7 +148,7 @@ implements ExPropertyEditor, PropertyChangeListener {
             return NbBundle.getMessage (ObjectEditor.class, "CTL_NullItem");
         }
         
-        return itemDisplayName (item);
+        return item.getDisplayName();
     }
     
     /** Searches between items whether there is one with the same display name.
@@ -239,8 +167,9 @@ implements ExPropertyEditor, PropertyChangeListener {
         while (it.hasNext ()) {
             Lookup.Item item = (Lookup.Item)it.next ();
             
-            if (itemDisplayName (item).equals (str)) {
+            if (item.getDisplayName().equals (str)) {
                 setValue (item.getInstance ());
+                firePropertyChange();
                 return;
             }
         }
@@ -259,6 +188,9 @@ implements ExPropertyEditor, PropertyChangeListener {
      */
     public java.lang.String[] getTags() {
         Collection allItems = lookup ().lookup (template ()).allItems ();
+        if (allItems.size() <= 1) {
+            return null;
+        }
    
         ArrayList list = new ArrayList (allItems.size () + 1);
         if (nullValue != null) {
@@ -268,7 +200,7 @@ implements ExPropertyEditor, PropertyChangeListener {
         Iterator it = allItems.iterator ();
         while (it.hasNext ()) {
             Lookup.Item item = (Lookup.Item)it.next ();
-            list.add (itemDisplayName (item));
+            list.add (item.getDisplayName());
         }
         
         String[] retValue = new String[list.size()];
@@ -279,127 +211,110 @@ implements ExPropertyEditor, PropertyChangeListener {
     /** Yes we have custom editor.
      */
     public boolean supportsCustomEditor() {
-        return true;
+        //Don't allow custom editor if there will be nothing to show
+        return getTags()!= null && getTags().length > 1;
     }
     
-    /** Creates custom property editor.
-     */
     public synchronized Component getCustomEditor () {
+        if (!supportsCustomEditor()) {
+            return null;
+        }
         if (customEditor != null) {
-            ExplorerManager em = customEditor.getExplorerManager ();
-            selectNode (em, getValue ());
             return customEditor;
         }
-        
-        final ExplorerPanel panel = new ExplorerPanel () {
-            //Fix for listener leak
-            //If editor was displayed once and the value set, then displayed
-            //again, listener would be added twice.
-            public void addNotify() {
-                super.addNotify();
-                getExplorerManager().addPropertyChangeListener(ObjectEditor.this);
-            }
-            public void removeNotify() {
-                getExplorerManager().removePropertyChangeListener(ObjectEditor.this);
-                super.removeNotify();
-            }
-        };
-        ExplorerManager em = panel.getExplorerManager ();
-        BeanTreeView btv = new BeanTreeView();
-        btv.getAccessibleContext().setAccessibleName(
-            NbBundle.getMessage(ObjectEditor.class, "ACSN_ObjectTree")); //NOI18N
-        btv.getAccessibleContext().setAccessibleDescription(
-            NbBundle.getMessage(ObjectEditor.class, "ACSD_ObjectTree")); //NOI18N
-        panel.add (btv);
-        em.setRootContext (root ());
-        
-        selectNode (em, getValue ());
-        
+        Lookup.Result contents = lookup().lookup(template());
+        ObjectPanel panel = new ObjectPanel(contents);
         return customEditor = panel;
     }
-    
-    /** Updates selected node in explorer based on the provided value.
-     * @param value value to select
-     * @param em manager to select the value in
-     */
-    private void selectNode (ExplorerManager em, Object value) {
-        Node node = root ();
-        if (value != null) {
-            Lookup.Template t = new Lookup.Template (
-                template ().getType (),
-                template ().getId (),
-                value // instance to search for
-            );
-            Lookup.Item item = lookup ().lookupItem (t);
+
+    private class ObjectPanel extends JPanel implements ActionListener {
+        public ObjectPanel(Lookup.Result res) {
+            getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(ObjectEditor.class, 
+                "ACSN_ObjectTree")); //NOI18N
+            getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ObjectEditor.class, "ACSD_ObjectTree")); //NOI18N
             
-            if (item != null) {
-                node = itemToNode (item);
-            }
-        }             
+            setLayout (new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+            int row = 0;
+            ButtonGroup bg = new ButtonGroup();
+            Font bold = getFont().deriveFont(Font.BOLD);
+            //For default metal L&F where labels are by default bold
+            Font plain = getFont().deriveFont(Font.PLAIN); 
+            
+            Collection c = res.allItems();
+            Lookup.Item[] items = new Lookup.Item[c.size()];
+            items = (Lookup.Item[]) c.toArray(items);
 
-        try {
-            em.setSelectedNodes (new Node[] { node });
-        } catch (PropertyVetoException ex) {
-            ErrorManager.getDefault ().notify (ex);
-        }
-    }
-    
-    
-    /** Finds a display name of an item.
-     * @param item
-     * @return the human readable string
-     */
-    private String itemDisplayName (Lookup.Item item) {
-        return item.getDisplayName ();
-    }
-
-    /** Locates a node for given lookup item.
-     * @param item item to search for
-     * @return node
-     */
-    private Node itemToNode (Lookup.Item item) {
-        String id = item.getId ();
-        
-        // DANGER!!!
-        // The following condition assumes that
-        // the lookup id's names are in the form XX[/path/
-        // If they are not the itemToNode will
-        // return root()
-        
-        if ((id.length()>3) &&(id.charAt(2) == '[')) {
-            id = id.substring (3);
-            // try to find the node from root node
-            StringTokenizer tok = new StringTokenizer (id, "/"); // NOI18N
-            Node root = root ();
-            while (tok.hasMoreElements () && root != null) {
-                String next = tok.nextToken ();
-                Node n = root.getChildren ().findChild (next);
-                if (n == null) {
-                    // try to search via names of data objects
-                    DataFolder df = (DataFolder)root.getCookie (DataFolder.class);
-                    if (df != null) {
-                        DataObject[] arr = df.getChildren ();
-                        for (int i = 0; i < arr.length; i++) {
-                            if (arr[i].getName ().equals (next)) {
-                                n = arr[i].getNodeDelegate ();
-                                // fix of #28701, sometimes FilterNode of n is child of root, but n isn't
-                                Node n2 = root.getChildren ().findChild ( n.getName() );
-                                if (n2 != null)
-                                    n = n2;
-                                break;
-                            }
-                        }
-                    }
+            int BASE_LEFT_INSET=7;
+            for (int i=0; i < items.length; i++) {
+                JRadioButton rb = new ItemRadioButton(items[i], bold);
+                if (items[i].getInstance().equals(getValue())) {
+                    rb.setSelected(true);
                 }
-                root = n;
-            }
-            
-            if (root != null) {
-                return root;
+                rb.addActionListener(this);
+                bg.add(rb);
+                String description = getDescription(items[i]);
+                
+                gbc.gridx=0;
+                gbc.gridy=row;
+                gbc.insets = new Insets(i==0 ? 7 : 0, BASE_LEFT_INSET, 
+                    description != null ? 1 : i==items.length-1 ? 7: 4, BASE_LEFT_INSET);
+                gbc.fill=gbc.HORIZONTAL;
+                add(rb, gbc);
+                row++;
+                if (description != null) {
+                    JLabel lbl = new JLabel(description);
+                    lbl.setLabelFor(rb);
+                    lbl.setFont(plain);
+                    int left = rb.getIcon() != null ? rb.getIcon().getIconWidth() : 20;
+                    gbc.insets = new Insets(0, BASE_LEFT_INSET + 
+                        left, 4, BASE_LEFT_INSET + left);
+                    gbc.gridx=0;
+                    gbc.gridy=row;
+                    add(lbl, gbc);
+                    row++;
+               }
             }
         }
-        // default fallback for not recognized items
-        return root();
+        
+        private String getDescription (Lookup.Item item) {
+            String id = item.getId ();
+            String result = null;
+            try {
+                result = Introspector.getBeanInfo(item.getInstance().getClass()).getBeanDescriptor().getShortDescription();
+            } catch (IntrospectionException ie) {
+                //do nothing
+            }
+            String toCheck = item.getInstance().getClass().getName();
+            toCheck = toCheck.lastIndexOf('.')!=-1 ? 
+                toCheck.substring(toCheck.lastIndexOf('.')+1) : toCheck; //NOI18N
+            if (toCheck.equals(result)) {
+                result = null;
+            } 
+            return result;
+        }
+        
+        public void actionPerformed(ActionEvent ae) {
+            Lookup.Item item = ((ItemRadioButton) ae.getSource()).item;
+            Object o = item.getInstance();
+            setValue (item.getInstance());
+            ObjectEditor.this.firePropertyChange();
+        }
+        
+        private class ItemRadioButton extends JRadioButton {
+            Lookup.Item item;
+            public ItemRadioButton(Lookup.Item item, Font font) {
+                this.item = item;
+                setName(item.getId());
+                setText(item.getDisplayName());
+                setFont(font);
+                getAccessibleContext().setAccessibleName(getName());
+                getAccessibleContext().setAccessibleDescription(
+                    getText());
+            }
+        }
     }
 }
 
