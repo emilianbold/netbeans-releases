@@ -80,8 +80,11 @@
 	<mapID target="proj_webfree_debug" url="nbdocs:/org/netbeans/modules/usersguide/project/proj_webfree_debug.html" />
 	<mapID target="add_web_to_j2ee_app" url="web/warpkg/add_web_to_j2ee_app.html" /> 
 	<mapID target="about_web_service" url="web/webservice/about_jwsd.html" />
+	<mapID target="about_web_service_rpc" url="web/webservice/about_jwsd_rpc.html" />
+	<mapID target="about_web_service_message" url="web/webservice/about_jwsd_message.html" />
 	<mapID target="ws_process" url="web/webservice/ws_process.html" />
 	<mapID target="create_ws" url="web/webservice/create_ws.html" />
+	<mapID target="create_ws_message" url="web/webservice/create_ws_message.html" />
 	<mapID target="create_ws_customize" url="web/webservice/create_ws_customize.html" />
 	<mapID target="add_ws_operation" url="web/webservice/add_ws_operation.html" />
 	<mapID target="webservicesxml" url="web/webservice/webservicesxml.html" />
@@ -92,6 +95,7 @@
 	<mapID target="add_soap_message" url="web/webservice/add_soap_message.html" />
 	<mapID target="test_ws" url="web/webservice/test_ws.html" />
 	<mapID target="build_ws" url="web/webservice/build_ws.html" />
+	<mapID target="build_ws_message" url="web/webservice/build_ws_message.html" />
 	<mapID target="expose_ws" url="web/webservice/expose_ws.html" />
 	<mapID target="create_wsc" url="web/webserviceclient/create_wsc.html" />
 	<mapID target="call_ws_operation" url="web/webserviceclient/call_ws_operation.html" />
