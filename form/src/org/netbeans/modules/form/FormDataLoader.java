@@ -80,10 +80,18 @@ public class FormDataLoader extends MultiFileLoader {
   protected FileObject findPrimaryFile (FileObject fo) {
     String ext = fo.getExt();
     if (ext.equals(JAVA_EXTENSION))
-      return fo;
+      return (findFile (fo, FORM_EXTENSION) == null) ? null : fo;
 
-    if (ext.equals(CLASS_EXTENSION) || ext.equals (FORM_EXTENSION))
+    if (ext.equals (FORM_EXTENSION)) {
       return findFile(fo, JAVA_EXTENSION);
+    }
+    
+    if (ext.equals(CLASS_EXTENSION)) {
+      if (findFile (fo, FORM_EXTENSION) != null)
+        return findFile(fo, JAVA_EXTENSION);
+      else
+        return null;
+    }
 
     return null;
   }
@@ -168,6 +176,8 @@ public class FormDataLoader extends MultiFileLoader {
 
 /*
  * Log
+ *  10   Gandalf   1.9         3/24/99  Ian Formanek    Fixed stealing of plain 
+ *       Java objects
  *  9    Gandalf   1.8         3/17/99  Ian Formanek    
  *  8    Gandalf   1.7         3/16/99  Ian Formanek    
  *  7    Gandalf   1.6         3/16/99  Ian Formanek    
