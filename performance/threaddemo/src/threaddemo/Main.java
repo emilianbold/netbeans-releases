@@ -51,6 +51,7 @@ public final class Main extends JFrame {
     private final JRadioButton synchButton, lockedButton, spunButton, swungButton, nodeButton, lookNodeButton, lookButton, rawButton;
     
     private Main(File root) {
+        super("Thread Demo");
         this.root = root;
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
         JPanel modelPanel = new JPanel();
