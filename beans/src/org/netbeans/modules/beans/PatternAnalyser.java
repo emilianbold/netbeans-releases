@@ -149,15 +149,18 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         // Analyze each method
         for ( int i = 0; i < methods.length ; i++ ) {
             MethodElement method = methods[i];
-
             String name = method.getName().getName();
+            int len = name.length();
 
-            if ( name.startsWith( GET_PREFIX ) || name.startsWith( SET_PREFIX ) || name.startsWith( IS_PREFIX ) ) {
+            if ( (name.startsWith(GET_PREFIX) && len>GET_PREFIX.length())
+              || (name.startsWith(SET_PREFIX) && len>SET_PREFIX.length())
+              || (name.startsWith(IS_PREFIX) && len>IS_PREFIX.length()) ) {
                 PropertyPattern pp = analyseMethodForProperties( method );
                 if ( pp != null )
                     addProperty( pp );
             }
-            if ( name.startsWith( ADD_PREFIX ) || name.startsWith( REMOVE_PREFIX ) )  {
+            if ( (name.startsWith(ADD_PREFIX) && len>ADD_PREFIX.length()) 
+              || (name.startsWith(REMOVE_PREFIX) && len>REMOVE_PREFIX.length()) )  {
                 analyseMethodForEventSets( method, adds, removes );
             }
         }
