@@ -731,6 +731,10 @@
 <mapID target="NetbeansDebuggerNodePropertiesSheet" url="debug/properties/debug_node_properties.html" />
 <mapID target="NetbeansDebuggerClassesPropertiesSheet" url="debug/properties/classes_properties.html" />
 
+<mapID target="org.netbeans.modules.httpserver.HttpServerNode_properties" url="webbrowser/httpserver_properties.html" />
+<mapID target="org.netbeans.modules.httpserver.HttpServerNode_expert" url="webbrowser/httpserver_expert.html" />
+
+
 <mapID target="set.arguments.window" url="run/arguments.html" />
 
   <mapID target="org.openide.util.HelpCtx.DEFAULT_HELP" url="pending.html" />
