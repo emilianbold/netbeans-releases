@@ -289,10 +289,13 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             //In such a case typing somewhere in the end of this 'badly' recognized block
             //would slow down the typing rapidy due to the backtracking oven a long token chain.
             //
-            //So we suppose tha tag has less than 20 attributes (and one attribute-value pair consumes 4 tokens)
+            //So we suppose that tag has less than 20 attributes (and one attribute-value pair consumes 4 tokens)
             int maxBacktrace = 20 * 4;
             
             do {
+                //test whether the token is not an error token
+                if(tracking.getTokenID() == JspTagTokenContext.ERROR) return COMPLETION_HIDE;
+                
                 String image = tracking.getImage();
                 //System.out.println("tracking: " + tracking);
                 
@@ -332,7 +335,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 //search previous token
                 tracking = tracking.getPrevious();
                 
-            } while(maxBacktrace-- > 0); 
+            } while((maxBacktrace-- > 0) && (tracking != null)); 
             
         }//eof JSP tag
         
