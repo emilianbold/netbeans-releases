@@ -151,7 +151,7 @@ public class DataObjectSearchGroup extends SearchGroup {
         /* 1st try - is the SearchInfo object in the node's lookup? */
         SearchInfo info = (SearchInfo)
                           node.getLookup().lookup(SearchInfo.class);
-        if (info != null) {
+        if (info != null && info.canSearch()) {
             return info;
         }
 
