@@ -13,14 +13,11 @@
 
 package org.netbeans.modules.project.uiapi;
 
-import javax.swing.Action;
-import javax.swing.Icon;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.util.Lookup;
 
-/** Utility methods for the projectUI module.
- * @author Petr Hrebejk
+/**
+ * Way of getting implementations of UI components defined in projects/projectui.
+ * @author Petr Hrebejk, Jesse Glick
  */
 public class Utilities {
     
@@ -28,19 +25,26 @@ public class Utilities {
     
     /** Gets action factory from the global Lookup.
      */
-    public static ActionsFactory getActionsFactory() {        
-        return (ActionsFactory)Lookup.getDefault().lookup( ActionsFactory.class );        
+    public static ActionsFactory getActionsFactory() {
+        ActionsFactory instance = (ActionsFactory) Lookup.getDefault().lookup(ActionsFactory.class);
+        assert instance != null;
+        return instance;
     }
     
     /** Gets the projectChooser fatory from the global Lookup
      */
     public static ProjectChooserFactory getProjectChooserFactory() {
-        return (ProjectChooserFactory)Lookup.getDefault().lookup( ProjectChooserFactory.class );
+        ProjectChooserFactory instance = (ProjectChooserFactory) Lookup.getDefault().lookup(ProjectChooserFactory.class);
+        assert instance != null;
+        return instance;
     }
     
     /** Gets an object the OpenProjects can delegate to
      */
     public static OpenProjectsTrampoline getOpenProjectsTrampoline() {
-        return (OpenProjectsTrampoline)Lookup.getDefault().lookup( OpenProjectsTrampoline.class );
-    }    
+        OpenProjectsTrampoline instance = (OpenProjectsTrampoline) Lookup.getDefault().lookup(OpenProjectsTrampoline.class);
+        assert instance != null;
+        return instance;
+    }
+    
 }
