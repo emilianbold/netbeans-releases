@@ -17,6 +17,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,13 +33,18 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.project.ant.FileChangeSupport;
+import org.netbeans.modules.project.ant.FileChangeSupportEvent;
+import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
@@ -46,15 +52,6 @@ import org.openide.util.MutexException;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.netbeans.modules.project.ant.FileChangeSupport;
-import org.netbeans.modules.project.ant.FileChangeSupportListener;
-import org.openide.filesystems.FileLock;
-
-import java.io.FileOutputStream;
-
-import org.netbeans.modules.project.ant.FileChangeSupportEvent;
-
-import java.util.Properties;
 
 /**
  * Support for working with Ant properties and property files.
@@ -200,13 +197,24 @@ public class PropertyUtils {
         
         private final File properties;
         private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        private Map/*<String,String>*/ cached = null;
+        private long cachedTime = 0L;
         
         public FilePropertyProvider(File properties) {
             this.properties = properties;
             FileChangeSupport.DEFAULT.addListener(this, properties);
         }
         
-        public Map getProperties() {
+        public Map/*<String,String>*/ getProperties() {
+            long currTime = properties.lastModified();
+            if (cached == null || cachedTime != currTime) {
+                cachedTime = currTime;
+                cached = loadProperties();
+            }
+            return cached;
+        }
+        
+        private Map/*<String,String>*/ loadProperties() {
             // XXX does this need to run in PM.mutex.readAccess?
             if (properties.isFile() && properties.canRead()) {
                 try {
@@ -227,6 +235,7 @@ public class PropertyUtils {
         }
         
         private void fireChange() {
+            cachedTime = -1L; // force reload
             ChangeListener[] ls;
             synchronized (this) {
                 if (listeners.isEmpty()) {
@@ -642,12 +651,13 @@ public class PropertyUtils {
         return new SequentialPropertyEvaluator(preprovider, providers);
     }
     
-    private static final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeListener {
+    private static final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeListener, Runnable {
         
         private final PropertyProvider preprovider;
         private final PropertyProvider[] providers;
         private Map/*<String,String>*/ defs;
         private final List/*<PropertyChangeListener>*/ listeners = new ArrayList();
+        private boolean dirty = false;
         
         public SequentialPropertyEvaluator(PropertyProvider preprovider, PropertyProvider[] providers) {
             this.preprovider = preprovider;
@@ -664,6 +674,7 @@ public class PropertyUtils {
         }
         
         public String getProperty(String prop) {
+            run();
             if (defs == null) {
                 return null;
             }
@@ -671,6 +682,7 @@ public class PropertyUtils {
         }
         
         public String evaluate(String text) {
+            run();
             if (text == null) {
                 throw new NullPointerException("Attempted to pass null to PropertyEvaluator.evaluate"); // NOI18N
             }
@@ -683,6 +695,7 @@ public class PropertyUtils {
         }
         
         public Map getProperties() {
+            run();
             return defs;
         }
         
@@ -695,6 +708,17 @@ public class PropertyUtils {
         }
         
         public void stateChanged(ChangeEvent e) {
+            // Can be called many times in a row (e.g. after adding/removing many JARs: #47910).
+            // Need to avoid firing a property change each and every time, since it is expensive.
+            dirty = true;
+            ProjectManager.mutex().postReadRequest(this);
+        }
+        
+        public void run() {
+            if (!dirty) {
+                return;
+            }
+            dirty = false;
             Map/*<String,String>*/ newdefs = compose(preprovider, providers);
             // compose() may return null upon circularity errors
             Map/*<String,String>*/ _defs = defs != null ? defs : Collections.EMPTY_MAP;

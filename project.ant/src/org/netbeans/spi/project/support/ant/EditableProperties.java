@@ -221,6 +221,7 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
     /**
      * Convenience method to set a property.
      * Same behavior as {@link #put} but has the correct argument types.
+     * (Slightly slower however.)
      * @param key a property name; cannot be null nor empty
      * @param value the desired value; cannot be null
      * @return previous value of the property or null if there was not any

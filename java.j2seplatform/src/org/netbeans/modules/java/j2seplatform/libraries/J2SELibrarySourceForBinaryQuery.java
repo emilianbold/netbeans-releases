@@ -16,20 +16,17 @@ package org.netbeans.modules.java.j2seplatform.libraries;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.ErrorManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.WeakListeners;
 
 /**
@@ -53,15 +50,8 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                 List classes = libs[i].getContent("classpath");    //NOI18N
                 for (Iterator it = classes.iterator(); it.hasNext();) {
                     URL entry = (URL) it.next();
-                    FileObject file = URLMapper.findFileObject (entry);
-                    if (file != null) {
-                        try {
-                            if (file.getURL().equals(binaryRoot)) {
-                                return new Result (entry, libs[i]);
-                            }
-                        } catch (FileStateInvalidException e) {
-                            ErrorManager.getDefault().notify(e);
-                        }
+                    if (entry.equals(binaryRoot)) {
+                        return new Result(entry, libs[i]);
                     }
                 }
             }
@@ -104,7 +94,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         }
         
         public synchronized void addChangeListener (ChangeListener l) {
-            assert l != null : "Listener can not be null";  //NOI18N
+            assert l != null : "Listener cannot be null"; // NOI18N
             if (this.listeners == null) {
                 this.listeners = new ArrayList ();
             }
@@ -112,7 +102,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         }
         
         public synchronized void removeChangeListener (ChangeListener l) {
-            assert l != null : "Listener can not be null";  //NOI18N
+            assert l != null : "Listener cannot be null"; // NOI18N
             if (this.listeners == null) {
                 return;
             }

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -77,7 +78,12 @@ final class ProjectProperties {
      * @return the applicable properties (created if empty; never null)
      */
     public EditableProperties getProperties(String path) {
-        return getPP(path).getEditableProperties();
+        EditableProperties ep = getPP(path).getEditablePropertiesOrNull();
+        if (ep != null) {
+            return ep.cloneProperties();
+        } else {
+            return new EditableProperties(true);
+        }
     }
     
     /**
@@ -139,7 +145,7 @@ final class ProjectProperties {
             return helper.getProjectDirectory();
         }
         
-        public EditableProperties getEditableProperties() {
+        public EditableProperties getEditablePropertiesOrNull() {
             if (!loaded) {
                 properties = null;
                 FileObject fo = dir().getFileObject(path);
@@ -160,11 +166,7 @@ final class ProjectProperties {
                 }
                 loaded = true;
             }
-            if (properties != null) {
-                return properties.cloneProperties();
-            } else {
-                return new EditableProperties(true);
-            }
+            return properties;
         }
         
         public boolean put(EditableProperties nue) {
@@ -256,7 +258,12 @@ final class ProjectProperties {
         }
         
         public Map getProperties() {
-            return getEditableProperties();
+            Map/*<String,String>*/ props = getEditablePropertiesOrNull();
+            if (props != null) {
+                return Collections.unmodifiableMap(props);
+            } else {
+                return Collections.EMPTY_MAP;
+            }
         }
         
         public synchronized void addChangeListener(ChangeListener l) {
@@ -283,7 +290,9 @@ final class ProjectProperties {
         
         private void diskChange() {
             // XXX should check for a possible clobber from in-memory data
-            loaded = false;
+            if (!writing) {
+                loaded = false;
+            }
             fireChange();
             if (!writing) {
                 helper.fireExternalChange(path);

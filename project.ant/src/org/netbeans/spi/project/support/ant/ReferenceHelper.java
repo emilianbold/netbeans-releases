@@ -218,7 +218,7 @@ public final class ReferenceHelper {
                 EditableProperties props = h.getProperties(propertiesFile);
                 String forProjPathProp = "project." + forProjName; // NOI18N
                 if (!forProjPath.equals(props.getProperty(forProjPathProp))) {
-                    props.setProperty(forProjPathProp, forProjPath);
+                    props.put(forProjPathProp, forProjPath);
                     h.putProperties(propertiesFile, props);
                     success = true;
                 }
@@ -235,7 +235,7 @@ public final class ReferenceHelper {
                 props = h.getProperties(propertiesFile);
                 String refPathProp = "reference." + forProjName + '.' + getUsableReferenceID(artifact.getID()); // NOI18N
                 if (!refPath.equals(props.getProperty(refPathProp))) {
-                    props.setProperty(refPathProp, refPath);
+                    props.put(refPathProp, refPath);
                     h.putProperties(propertiesFile, props);
                     success = true;
                 }
@@ -649,15 +649,15 @@ public final class ReferenceHelper {
                         fileID = file.getParentFile().getName()+"-"+file.getName();
                     }
                     fileID = PropertyUtils.getUsablePropertyName(fileID);
-                    String prop = findReferenceID(fileID, "file.reference.", file.getAbsolutePath());
+                    String prop = findReferenceID(fileID, "file.reference.", file.getAbsolutePath()); // NOI18N
                     if (prop == null) {
                         prop = generateUniqueID(fileID, "file.reference.", file.getAbsolutePath()); // NOI18N
                     }
-                    if (!path.equals(props.getProperty("file.reference."+prop))) {
-                        props.setProperty("file.reference."+prop, path);
+                    if (!path.equals(props.getProperty("file.reference." + prop))) { // NOI18N
+                        props.put("file.reference." + prop, path); // NOI18N
                         h.putProperties(propertiesFile, props);
                     }
-                    return "${file.reference."+prop+'}';
+                    return "${file.reference." + prop + '}'; // NOI18N
                 }
             }
         });
@@ -698,7 +698,11 @@ public final class ReferenceHelper {
         }
         File projDir = FileUtil.toFile(proj.getProjectDirectory());
         assert projDir != null : proj.getProjectDirectory();
-        return findReferenceID(getUsableReferenceID(ProjectUtils.getInformation(proj).getName()), "project.", projDir.getAbsolutePath());
+        String usableID = getUsableReferenceID(ProjectUtils.getInformation(proj).getName());
+        String path = projDir.getAbsolutePath();
+        String id = findReferenceID(usableID, "project.", path); // NOI18N
+        assert id != null : "Did not have a ref ID for " + artifact + " with usable ID " + usableID + " and path " + path + " among " + h.getStandardPropertyEvaluator().getProperties();
+        return id;
     }
 
     /**
