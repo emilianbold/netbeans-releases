@@ -55,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="ide_command_line_suffix" depends="set_bootclasspath_jdk142,set_bootclasspath_jdk150">
         <!--  We are using modified rt.jar instead of hack on the bootclasspath, so if you try to run performance tests on your own jdk uncomment this line
         <property name="xtest.ide.commandline.suffix" value="-J-Xbootclasspath/p:${xtest.tmpdir}/hack_jdk.zip -J-Dorg.netbeans.performance.repeat=5"/> -->
-        <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
     </target>
     
     
@@ -163,5 +163,29 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
     
-    
+
+    <target name="runidetest_java" depends="ide_command_line_suffix">
+        <delete dir="${xtest.workdir}/sys/ide"/>
+        <copy todir="${xtest.workdir}/sys/ide">
+            <fileset dir="${xtest.workdir}/sys/ide_backup"/>
+        </copy>
+        <antcall target="copy_released_ide_cfg_file"/>
+       
+        <executeTests pluginName="ide">
+            <classpath refid="jemmy.and.jelly.path"/>
+            <classpath refid="performance.testutilities"/>
+            
+            <property name="xtest.enable.assertions" value="false" /> 
+            <property name="xtest.ide.reuse.userdir" value="true" />
+            <property name="xtest.timeout" value="5400000" />
+            
+            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
+            
+<!--            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true -J-Dorg.netbeans.mdr.persistence.btreeimpl.btreestorage.MDRCache.threshhold=1000 -J-Dorg.netbeans.javacore.ASTCache.size=16"/>
+-->
+        </executeTests>
+        
+        <antcall target="copy_original_ide_cfg_file"/>
+    </target>
+        
 </project>
