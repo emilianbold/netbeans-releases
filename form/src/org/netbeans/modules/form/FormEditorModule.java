@@ -34,18 +34,16 @@ import com.netbeans.developer.modules.loaders.form.palette.*;
 */
 public class FormEditorModule extends ModuleInstall {
 
-  private static final String AWT_CATEGORY_NAME = "AWT";
-  private static final String SWING_CATEGORY_NAME = "Swing";
-  private static final String SWING2_CATEGORY_NAME = "Swing2";
-  private static final String BEANS_CATEGORY_NAME = "Beans";
-  private static final String LAYOUTS_CATEGORY_NAME = "Layouts";
-  private static final String BORDERS_CATEGORY_NAME = "Borders";
+  private static final String AWT_CATEGORY_NAME = NbBundle.getBundle (FormEditorModule.class).getString ("CTL_Palette_AWT");
+  private static final String SWING_CATEGORY_NAME = NbBundle.getBundle (FormEditorModule.class).getString ("CTL_Palette_Swing");
+  private static final String SWING2_CATEGORY_NAME = NbBundle.getBundle (FormEditorModule.class).getString ("CTL_Palette_Swing2");
+  private static final String BEANS_CATEGORY_NAME = NbBundle.getBundle (FormEditorModule.class).getString ("CTL_Palette_Beans");
+  private static final String LAYOUTS_CATEGORY_NAME = NbBundle.getBundle (FormEditorModule.class).getString ("CTL_Palette_Layouts");
+  private static final String BORDERS_CATEGORY_NAME = NbBundle.getBundle (FormEditorModule.class).getString ("CTL_Palette_Borders");
 
   static final long serialVersionUID =1573432625099425394L;
   /** Module installed for the first time. */
   public void installed () {
-//    System.out.println("FormEditorModule: installed");
-
   // ---------------------------------------------------------------------------
   // 1. create FormEditor actions
     installActions ();
@@ -87,18 +85,18 @@ public class FormEditorModule extends ModuleInstall {
     try {
       // install actions into menu
       Utilities2.createAction (InstallBeanAction.class, 
-        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Tools"), 
-        "UnmountFSAction", true, true, false, false
+        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Tools"), /* NO I18N */
+        "UnmountFSAction", true, true, false, false /* NO I18N */
       );
 
       Utilities2.createAction (ComponentInspectorAction.class, 
-        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "View"), 
-        "HTMLViewAction", true, false, false, false
+        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "View"), /* NO I18N */
+        "HTMLViewAction", true, false, false, false /* NO I18N */
       );
 
       // install actions into toolbar
-      DataFolder formFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Form");
-      DataFolder paletteFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Palette");
+      DataFolder formFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Form"); /* NO I18N */
+      DataFolder paletteFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Palette"); /* NO I18N */
   
       DataObject[] formInstances = {
         Utilities2.createAction (ComponentInspectorAction.class, formFolder),
@@ -111,7 +109,7 @@ public class FormEditorModule extends ModuleInstall {
       Utilities2.createAction (PaletteAction.class, paletteFolder);
 
       // install actions into action pool
-      DataFolder formActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Form");
+      DataFolder formActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Form"); /* NO I18N */
       Utilities2.createAction (InstallBeanAction.class, formActions);
       Utilities2.createAction (ComponentInspectorAction.class, formActions);
       Utilities2.createAction (PaletteAction.class, formActions);
@@ -126,7 +124,7 @@ public class FormEditorModule extends ModuleInstall {
       Utilities2.createAction (TestModeAction.class, formActions);
 
     } catch (Exception e) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) {
+      if (System.getProperty ("netbeans.debug.exceptions") != null) { /* NO I18N */
         e.printStackTrace ();
       }
       // ignore failure to install
@@ -136,24 +134,24 @@ public class FormEditorModule extends ModuleInstall {
   private void uninstallActions () {
     try {
       // remove actions from menu
-      Utilities2.removeAction (InstallBeanAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Tools"));
-      Utilities2.removeAction (ComponentInspectorAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "View"));
+      Utilities2.removeAction (InstallBeanAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Tools")); /* NO I18N */
+      Utilities2.removeAction (ComponentInspectorAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "View")); /* NO I18N */
 
       // remove actions from toolbar
-      DataFolder formFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Form");
-      DataFolder paletteFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Palette");
+      DataFolder formFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Form"); /* NO I18N */
+      DataFolder paletteFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Palette"); /* NO I18N */
   
-      InstanceDataObject.remove (formFolder, Utilities.getShortClassName (ComponentInspectorAction.class), ComponentInspectorAction.class.getName ());
-      InstanceDataObject.remove (formFolder, Utilities.getShortClassName (TestModeAction.class), TestModeAction.class.getName ());
-      InstanceDataObject.remove (formFolder, Utilities.getShortClassName (DesignModeAction.class), DesignModeAction.class.getName ());
-      InstanceDataObject.remove (formFolder, Utilities.getShortClassName (ShowGridAction.class), ShowGridAction.class.getName ());
-      InstanceDataObject.remove (paletteFolder, Utilities.getShortClassName (PaletteAction.class), PaletteAction.class.getName ());
+      Utilities2.removeAction (ComponentInspectorAction.class, formFolder);
+      Utilities2.removeAction (TestModeAction.class, formFolder);
+      Utilities2.removeAction (DesignModeAction.class, formFolder);
+      Utilities2.removeAction (ShowGridAction.class, formFolder);
+      Utilities2.removeAction (PaletteAction.class, paletteFolder);
 
       if (formFolder.getChildren ().length == 0) formFolder.delete ();
       if (paletteFolder.getChildren ().length == 0) paletteFolder.delete ();
 
       // remove actions from action pool
-      DataFolder formActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Form");
+      DataFolder formActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Form"); /* NO I18N */
       Utilities2.removeAction (ComponentInspectorAction.class, formActions);
       Utilities2.removeAction (InstallBeanAction.class, formActions);
       Utilities2.removeAction (PaletteAction.class, formActions);
@@ -170,7 +168,7 @@ public class FormEditorModule extends ModuleInstall {
       if (formActions.getChildren ().length == 0) formActions.delete ();
 
     } catch (Exception e) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) {
+      if (System.getProperty ("netbeans.debug.exceptions") != null) { /* NO I18N */
         e.printStackTrace ();
       }
       // ignore failure to uninstall
@@ -181,7 +179,7 @@ public class FormEditorModule extends ModuleInstall {
     try {
       FileUtil.extractJar (
         TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
-        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/form/resources/templates.jar")
+        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/form/resources/templates.jar") /* NO I18N */
       );
     } catch (java.io.IOException e) {
       TopManager.getDefault ().notifyException (e);
@@ -191,11 +189,11 @@ public class FormEditorModule extends ModuleInstall {
   private void createComponentPalette () {
     FileObject root = TopManager.getDefault ().getRepository ().getDefaultFileSystem ().getRoot ();
     FileObject paletteFolder;
-    if ((paletteFolder = root.getFileObject ("Palette")) == null) {
+    if ((paletteFolder = root.getFileObject ("Palette")) == null) { /* NO I18N */
       try {
-        paletteFolder = root.createFolder ("Palette");
+        paletteFolder = root.createFolder ("Palette"); /* NO I18N */
       } catch (java.io.IOException e) {
-        TopManager.getDefault ().notify (new NotifyDescriptor.Message (NbBundle.getBundle (FormEditorModule.class).getString ("ERR_CreatingPalette"), NotifyDescriptor.ERROR_MESSAGE));
+        TopManager.getDefault ().notify (new NotifyDescriptor.Message (NbBundle.getBundle (FormEditorModule.class).getString ("ERR_CreatingPalette"), NotifyDescriptor.ERROR_MESSAGE)); /* NO I18N */
         return;
       }
     }
@@ -283,7 +281,7 @@ public class FormEditorModule extends ModuleInstall {
     }
 
     if ((categoryErrors.size () != 0) || (componentErrors.size () != 0)) {
-      TopManager.getDefault ().notify (new NotifyDescriptor.Message (NbBundle.getBundle (FormEditorModule.class).getString ("ERR_ProblemsCreatingPalette"), NotifyDescriptor.WARNING_MESSAGE));
+      TopManager.getDefault ().notify (new NotifyDescriptor.Message (NbBundle.getBundle (FormEditorModule.class).getString ("ERR_ProblemsCreatingPalette"), NotifyDescriptor.WARNING_MESSAGE)); /* NO I18N */
     }
   }
 
@@ -293,12 +291,12 @@ public class FormEditorModule extends ModuleInstall {
       String fileName = formatName (classNames[i]);
       FileLock lock = null;
       try {
-        if (folder.getFileObject (fileName+".instance") == null) {
-          FileObject fo = folder.createData (fileName, "instance");
+        if (folder.getFileObject (fileName+".instance") == null) { /* NO I18N */
+          FileObject fo = folder.createData (fileName, "instance"); /* NO I18N */
           if ((iconNames != null) && (iconNames [i] != null)) {
             lock = fo.lock ();
             java.io.OutputStream os = fo.getOutputStream (lock);
-            String ic = "icon="+iconNames[i];
+            String ic = "icon="+iconNames[i]; /* NO I18N */
             os.write (ic.getBytes ());
           }
           DataObject obj = DataObject.find (fo);
@@ -327,7 +325,7 @@ public class FormEditorModule extends ModuleInstall {
   }
 
   private String formatName (String className) {
-    return className.substring (className.lastIndexOf (".") + 1) + "[" + className.replace ('.', '-') + "]";
+    return className.substring (className.lastIndexOf (".") + 1) + "[" + className.replace ('.', '-') + "]"; /* NO I18N */
   }
   
 // -----------------------------------------------------------------------------
@@ -335,63 +333,63 @@ public class FormEditorModule extends ModuleInstall {
   
   /** The default AWT Components */
   private final static String[] defaultAWTComponents = new String[] {
-    "java.awt.Label",
-    "java.awt.Button",
-    "java.awt.TextField",
-    "java.awt.TextArea",
-    "java.awt.Checkbox",
-    "java.awt.Choice",
-    "java.awt.List",
-    "java.awt.Scrollbar",
-    "java.awt.ScrollPane",
-    "java.awt.Panel",
-    "java.awt.Canvas",
-    "java.awt.MenuBar",
-    "java.awt.PopupMenu",
+    "java.awt.Label", /* NO I18N */
+    "java.awt.Button", /* NO I18N */
+    "java.awt.TextField", /* NO I18N */
+    "java.awt.TextArea", /* NO I18N */
+    "java.awt.Checkbox", /* NO I18N */
+    "java.awt.Choice", /* NO I18N */
+    "java.awt.List", /* NO I18N */
+    "java.awt.Scrollbar", /* NO I18N */
+    "java.awt.ScrollPane", /* NO I18N */
+    "java.awt.Panel", /* NO I18N */
+    "java.awt.Canvas", /* NO I18N */
+    "java.awt.MenuBar", /* NO I18N */
+    "java.awt.PopupMenu", /* NO I18N */
   };
 
   /** The default Swing Components */
   private final static String[] defaultSwingComponents = new String[] {
-    "javax.swing.JLabel",
-    "javax.swing.JButton",
-    "javax.swing.JCheckBox",
-    "javax.swing.JRadioButton",
-    "javax.swing.JComboBox",
-    "javax.swing.JList",
-    "javax.swing.JTextField",
-    "javax.swing.JTextArea",
-    "javax.swing.JToggleButton",
-    "javax.swing.JPanel",
-    "javax.swing.JTabbedPane",
-    "javax.swing.JScrollBar",
-    "javax.swing.JScrollPane",
-    "javax.swing.JMenuBar",
-    "javax.swing.JPopupMenu",
+    "javax.swing.JLabel", /* NO I18N */
+    "javax.swing.JButton", /* NO I18N */
+    "javax.swing.JCheckBox", /* NO I18N */
+    "javax.swing.JRadioButton", /* NO I18N */
+    "javax.swing.JComboBox", /* NO I18N */
+    "javax.swing.JList", /* NO I18N */
+    "javax.swing.JTextField", /* NO I18N */
+    "javax.swing.JTextArea", /* NO I18N */
+    "javax.swing.JToggleButton", /* NO I18N */
+    "javax.swing.JPanel", /* NO I18N */
+    "javax.swing.JTabbedPane", /* NO I18N */
+    "javax.swing.JScrollBar", /* NO I18N */
+    "javax.swing.JScrollPane", /* NO I18N */
+    "javax.swing.JMenuBar", /* NO I18N */
+    "javax.swing.JPopupMenu", /* NO I18N */
   };
 
   /** The default Swing Components - Swing2 category */
   private final static String[] defaultSwing2Components = new String[] {
-    "javax.swing.JSlider",
-    "javax.swing.JProgressBar",
-    "javax.swing.JSplitPane",
-    "javax.swing.JPasswordField",
-    "javax.swing.JSeparator",
-    "javax.swing.JTextPane",
-    "javax.swing.JEditorPane",
-    "javax.swing.JTree",
-    "javax.swing.JTable",
-    "javax.swing.JToolBar",
-    "javax.swing.JInternalFrame",
-    "javax.swing.JLayeredPane",
-    "javax.swing.JDesktopPane",
-    "javax.swing.JOptionPane",
+    "javax.swing.JSlider", /* NO I18N */
+    "javax.swing.JProgressBar", /* NO I18N */
+    "javax.swing.JSplitPane", /* NO I18N */
+    "javax.swing.JPasswordField", /* NO I18N */
+    "javax.swing.JSeparator", /* NO I18N */
+    "javax.swing.JTextPane", /* NO I18N */
+    "javax.swing.JEditorPane", /* NO I18N */
+    "javax.swing.JTree", /* NO I18N */
+    "javax.swing.JTable", /* NO I18N */
+    "javax.swing.JToolBar", /* NO I18N */
+    "javax.swing.JInternalFrame", /* NO I18N */
+    "javax.swing.JLayeredPane", /* NO I18N */
+    "javax.swing.JDesktopPane", /* NO I18N */
+    "javax.swing.JOptionPane", /* NO I18N */
   };
 
-  /*
-  private final static String[] defaultDBComponents = new String[] {
-    "com.netbeans.sql.JDBCRowSet",
-    "com.netbeans.sql.components.DataNavigator",
-  };*/
+
+//  private final static String[] defaultDBComponents = new String[] {
+//    "com.netbeans.sql.JDBCRowSet", /* NO I18N */
+//    "com.netbeans.sql.components.DataNavigator", /* NO I18N */
+//  };
 
   /** The default Swing Components - beans category */
   private final static String[] defaultBeansComponents = new String[] {
@@ -400,55 +398,57 @@ public class FormEditorModule extends ModuleInstall {
 
   /** The default Layout Components */
   private final static String[] defaultLayoutsComponents = new String[] {
-    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout",
-    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout",
-    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridLayout",
-    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignCardLayout",
-    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignAbsoluteLayout",
-    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout",
-    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBoxLayout",
+    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout", /* NO I18N */
+    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout", /* NO I18N */
+    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridLayout", /* NO I18N */
+    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignCardLayout", /* NO I18N */
+    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignAbsoluteLayout", /* NO I18N */
+    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout", /* NO I18N */
+    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBoxLayout", /* NO I18N */
   };
 
   /** The default Layout Components */
   private final static String[] defaultLayoutsIcons = new String[] {
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/flowLayout.gif",
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/borderLayout.gif",
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/gridLayout.gif",
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/cardLayout.gif",
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/absoluteLayout.gif",
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/gridBagLayout.gif",
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/boxLayout.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/flowLayout.gif", /* NO I18N */
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/borderLayout.gif", /* NO I18N */
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/gridLayout.gif", /* NO I18N */
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/cardLayout.gif", /* NO I18N */
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/absoluteLayout.gif", /* NO I18N */
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/gridBagLayout.gif", /* NO I18N */
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/boxLayout.gif", /* NO I18N */
   };
   
   /** The default Swing Borders */
   private final static String[] defaultBorders = new String[] {
-    "com.netbeans.developerx.loaders.form.formeditor.border.EmptyBorderInfo",
-    "com.netbeans.developerx.loaders.form.formeditor.border.LineBorderInfo",
-    "com.netbeans.developerx.loaders.form.formeditor.border.MatteIconBorderInfo",
-    "com.netbeans.developerx.loaders.form.formeditor.border.MatteColorBorderInfo",
-    "com.netbeans.developerx.loaders.form.formeditor.border.TitledBorderInfo",
-    "com.netbeans.developerx.loaders.form.formeditor.border.EtchedBorderInfo",
-    "com.netbeans.developerx.loaders.form.formeditor.border.BevelBorderInfo",
-    "com.netbeans.developerx.loaders.form.formeditor.border.SoftBevelBorderInfo",
-    "com.netbeans.developerx.loaders.form.formeditor.border.CompoundBorderInfo",
+    "com.netbeans.developerx.loaders.form.formeditor.border.EmptyBorderInfo", /* NO I18N */
+    "com.netbeans.developerx.loaders.form.formeditor.border.LineBorderInfo", /* NO I18N */
+    "com.netbeans.developerx.loaders.form.formeditor.border.MatteIconBorderInfo", /* NO I18N */
+    "com.netbeans.developerx.loaders.form.formeditor.border.MatteColorBorderInfo", /* NO I18N */
+    "com.netbeans.developerx.loaders.form.formeditor.border.TitledBorderInfo", /* NO I18N */
+    "com.netbeans.developerx.loaders.form.formeditor.border.EtchedBorderInfo", /* NO I18N */
+    "com.netbeans.developerx.loaders.form.formeditor.border.BevelBorderInfo", /* NO I18N */
+    "com.netbeans.developerx.loaders.form.formeditor.border.SoftBevelBorderInfo", /* NO I18N */
+    "com.netbeans.developerx.loaders.form.formeditor.border.CompoundBorderInfo", /* NO I18N */
   };
   
   /** The default Swing Borders */
   private final static String[] defaultBordersIcons = new String[] {
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/border.gif",
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/lineBorder.gif",
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/matteIconBorder.gif",
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/matteColorBorder.gif",
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/titledBorder.gif",
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/etchedBorder.gif",
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/bevelBorder.gif",
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/softBevelBorder.gif",
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/compoundBorder.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/border.gif", /* NO I18N */
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/lineBorder.gif", /* NO I18N */
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/matteIconBorder.gif", /* NO I18N */
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/matteColorBorder.gif", /* NO I18N */
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/titledBorder.gif", /* NO I18N */
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/etchedBorder.gif", /* NO I18N */
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/bevelBorder.gif", /* NO I18N */
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/softBevelBorder.gif", /* NO I18N */
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/compoundBorder.gif", /* NO I18N */
   };
 }
 
 /*
  * Log
+ *  39   Gandalf   1.38        1/4/00   Ian Formanek    Proper Removal of 
+ *       actions, I18Nzed
  *  38   Gandalf   1.37        1/4/00   Ian Formanek    Uses 
  *       Utilities2.createAction for Toolbars and action pool
  *  37   Gandalf   1.36        11/27/99 Patrik Knakal   
