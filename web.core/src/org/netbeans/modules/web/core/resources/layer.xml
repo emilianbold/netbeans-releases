@@ -158,11 +158,20 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
   
-    <folder name="Editors">
+  <folder name="Editors">
         <folder name="AnnotationTypes">
             <file name="XMLJ2eeAnnotation.xml" url="XMLJ2eeAnnotation.xml"/>
-      </folder>
-    </folder>
+        </folder>
+        <folder name="text">
+            <folder name="x-jsp">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-web-core-jsploader-EditServletAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/View Servlet.instance"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+  </folder>
     
   <folder name="Shortcuts">
     <file name="C-Q.instance">
