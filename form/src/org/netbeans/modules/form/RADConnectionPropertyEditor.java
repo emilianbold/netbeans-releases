@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* $Id$ */
-
 package org.netbeans.modules.form;
 
 import java.awt.*;
@@ -20,7 +18,9 @@ import java.beans.*;
 import java.text.MessageFormat;
 
 import org.openide.TopManager;
-import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+import org.openide.options.SystemOption;
+import org.openide.explorer.propertysheet.*;
+import org.openide.explorer.propertysheet.editors.*;
 
 /**
  * RADConnectionPropertyEditor is a property editor for ListModel, which
@@ -35,12 +35,21 @@ public class RADConnectionPropertyEditor
                XMLPropertyEditor,
                NamedPropertyEditor
 {
-
     protected PropertyChangeSupport support;
     private Class propertyType;
     private RADComponent rcomponent;
     private RADConnectionDesignValue emptyValue = null;
-    private RADConnectionDesignValue currentValue = emptyValue;
+    private RADConnectionDesignValue designValue = emptyValue;
+    private Object realValue = null;
+
+    private static Color valueColor;
+    static {
+        PropertySheetSettings pss = (PropertySheetSettings)SystemOption.findObject(PropertySheetSettings.class);
+        if (pss != pss)
+            valueColor = pss.getValueColor();
+        else
+            valueColor = new Color(0,0,128);
+    }
 
     /** Creates a new RADConnectionPropertyEditor */
     public RADConnectionPropertyEditor(Class propertyType) {
@@ -65,14 +74,15 @@ public class RADConnectionPropertyEditor
     // PropertyEditor implementation
 
     public Object getValue() {
-        return currentValue;
+        return designValue != null ? designValue : realValue;
     }
 
     public void setValue(Object value) {
         if (value instanceof RADConnectionDesignValue) {
-            currentValue =(RADConnectionDesignValue)value;
+            designValue =(RADConnectionDesignValue)value;
         } else {
-            currentValue = emptyValue;
+            designValue = emptyValue;
+            realValue = value;
         }
         support.firePropertyChange("", null, null); // NOI18N
     }
@@ -81,9 +91,7 @@ public class RADConnectionPropertyEditor
     }
 
     public String getAsText() {
-        if (currentValue != null)
-            return currentValue.getName();
-        else return FormEditor.getFormBundle().getString("CTL_CONNECTION_NOT_SET"); //"<Not Set>";
+        return null;
     }
 
     public String[] getTags() {
@@ -91,10 +99,24 @@ public class RADConnectionPropertyEditor
     }
 
     public boolean isPaintable() {
-        return false;
+        return true;
     }
 
     public void paintValue(Graphics g, Rectangle rectangle) {
+        String label;
+        if (designValue != null)
+            label = designValue.getName();
+        else if (realValue != null)
+            label = realValue.toString();
+        else
+            label = "null"; //FormEditor.getFormBundle().getString("CTL_CONNECTION_NOT_SET"); // NOI18N
+
+        Color color = g.getColor();
+        g.setColor(valueColor);
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(label, rectangle.x + 4,
+                            rectangle.y + (rectangle.height - fm.getHeight()) / 2 + fm.getAscent());
+        g.setColor(color);
     }
 
     public boolean supportsCustomEditor() {
@@ -103,45 +125,45 @@ public class RADConnectionPropertyEditor
 
     public java.awt.Component getCustomEditor() {
         ParametersPicker pp = new ParametersPicker(rcomponent.getFormManager(), rcomponent, propertyType);
-        pp.setPropertyValue(currentValue);
+        pp.setPropertyValue(designValue);
         return pp;
     }
 
     public String getJavaInitializationString() {
-        if (currentValue != null) {
-            if (currentValue.needsInit) {
-                currentValue.initialize();
+        if (designValue != null) {
+            if (designValue.needsInit) {
+                designValue.initialize();
             }
 
-            switch (currentValue.type) {
+            switch (designValue.type) {
                 case RADConnectionDesignValue.TYPE_VALUE:
-                    if ("java.lang.String".equals(currentValue.requiredTypeName)) return "\""+currentValue.value+"\""; // NOI18N
-                    else if ("long".equals(currentValue.requiredTypeName)) return currentValue.value+"L"; // NOI18N
-                    else if ("float".equals(currentValue.requiredTypeName)) return currentValue.value+"F"; // NOI18N
-                    else if ("double".equals(currentValue.requiredTypeName)) return currentValue.value+"D"; // NOI18N
-                    else return currentValue.value;
-                case RADConnectionDesignValue.TYPE_CODE: return currentValue.userCode;
+                    if ("java.lang.String".equals(designValue.requiredTypeName)) return "\""+designValue.value+"\""; // NOI18N
+                    else if ("long".equals(designValue.requiredTypeName)) return designValue.value+"L"; // NOI18N
+                    else if ("float".equals(designValue.requiredTypeName)) return designValue.value+"F"; // NOI18N
+                    else if ("double".equals(designValue.requiredTypeName)) return designValue.value+"D"; // NOI18N
+                    else return designValue.value;
+                case RADConnectionDesignValue.TYPE_CODE: return designValue.userCode;
                 case RADConnectionDesignValue.TYPE_PROPERTY:
-                    PropertyDescriptor pd = currentValue.getProperty();
+                    PropertyDescriptor pd = designValue.getProperty();
                     if (pd == null) return null; // failed to initialize => do not generate code
                     else {
-                        if (currentValue.radComponent instanceof FormContainer) {
+                        if (designValue.radComponent instanceof FormContainer) {
                             return pd.getReadMethod().getName() + "()"; // [FUTURE: Handle indexed properties] // NOI18N
                         } else {
-                            return currentValue.radComponentName + "." + pd.getReadMethod().getName() + "()"; // [FUTURE: Handle indexed properties] // NOI18N
+                            return designValue.radComponentName + "." + pd.getReadMethod().getName() + "()"; // [FUTURE: Handle indexed properties] // NOI18N
                         }
                     }
                 case RADConnectionDesignValue.TYPE_METHOD:
-                    if (currentValue.radComponent instanceof FormContainer) {
-                        return currentValue.methodName + "()"; // NOI18N
+                    if (designValue.radComponent instanceof FormContainer) {
+                        return designValue.methodName + "()"; // NOI18N
                     } else {
-                        return currentValue.radComponentName + "." + currentValue.methodName + "()"; // NOI18N
+                        return designValue.radComponentName + "." + designValue.methodName + "()"; // NOI18N
                     }
                 case RADConnectionDesignValue.TYPE_BEAN:
-                    if (currentValue.radComponent instanceof FormContainer) {
+                    if (designValue.radComponent instanceof FormContainer) {
                         return "this"; // NOI18N
                     } else {
-                        return currentValue.radComponentName;
+                        return designValue.radComponentName;
                     }
             }
         }
@@ -464,9 +486,9 @@ public class RADConnectionPropertyEditor
 
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         org.w3c.dom.Element el = doc.createElement(XML_CONNECTION);
-        if (currentValue == null) return null;
+        if (designValue == null) return null;
         String typeString;
-        switch (currentValue.type) {
+        switch (designValue.type) {
             case RADConnectionDesignValue.TYPE_VALUE: typeString = VALUE_VALUE; break;
             case RADConnectionDesignValue.TYPE_PROPERTY: typeString = VALUE_PROPERTY; break;
             case RADConnectionDesignValue.TYPE_METHOD: typeString = VALUE_METHOD; break;
@@ -476,24 +498,24 @@ public class RADConnectionPropertyEditor
                 typeString = VALUE_CODE; break;
         }
         el.setAttribute(ATTR_TYPE, typeString);
-        switch (currentValue.type) {
+        switch (designValue.type) {
             case RADConnectionDesignValue.TYPE_VALUE:
-                el.setAttribute(ATTR_VALUE, currentValue.value);
-                el.setAttribute(ATTR_REQUIRED_TYPE, currentValue.requiredTypeName);
+                el.setAttribute(ATTR_VALUE, designValue.value);
+                el.setAttribute(ATTR_REQUIRED_TYPE, designValue.requiredTypeName);
                 break;
             case RADConnectionDesignValue.TYPE_PROPERTY:
-                el.setAttribute(ATTR_COMPONENT, currentValue.radComponentName);
-                el.setAttribute(ATTR_NAME, currentValue.propertyName);
+                el.setAttribute(ATTR_COMPONENT, designValue.radComponentName);
+                el.setAttribute(ATTR_NAME, designValue.propertyName);
                 break;
             case RADConnectionDesignValue.TYPE_METHOD:
-                el.setAttribute(ATTR_COMPONENT, currentValue.radComponentName);
-                el.setAttribute(ATTR_NAME, currentValue.methodName);
+                el.setAttribute(ATTR_COMPONENT, designValue.radComponentName);
+                el.setAttribute(ATTR_NAME, designValue.methodName);
                 break;
             case RADConnectionDesignValue.TYPE_BEAN:
-                el.setAttribute(ATTR_COMPONENT, currentValue.radComponentName);
+                el.setAttribute(ATTR_COMPONENT, designValue.radComponentName);
                 break;
             case RADConnectionDesignValue.TYPE_CODE:
-                el.setAttribute(ATTR_CODE, currentValue.userCode);
+                el.setAttribute(ATTR_CODE, designValue.userCode);
                 break;
         }
 
