@@ -13,9 +13,15 @@
 
 package org.netbeans.core.actions;
 
+import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
+
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.actions.Presenter;
 
 import org.netbeans.core.Splash;
 
@@ -23,7 +29,7 @@ import org.netbeans.core.Splash;
 *
 * @author Ian Formanek
 */
-public class AboutAction extends CallableSystemAction {
+public class AboutAction extends CallableSystemAction implements Presenter.Menu {
 
     public void performAction () {
         Splash.showSplashDialog ();
@@ -36,7 +42,16 @@ public class AboutAction extends CallableSystemAction {
     public String iconResource () {
         return "org/netbeans/core/resources/actions/about.gif"; // NOI18N
     }
-
+    
+    //#46565: Do not display icon in Help menu item
+    public JMenuItem getMenuPresenter() {
+        JMenuItem item = new JMenuItem();
+        item.setAction(this);
+        item.setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/actions/empty.gif", true))); // NOI18N
+        Mnemonics.setLocalizedText(item,getName());
+        return item;
+    }
+    
     public HelpCtx getHelpCtx() {
         return new HelpCtx(AboutAction.class);
     }

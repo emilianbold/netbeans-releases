@@ -13,18 +13,24 @@
 
 package org.netbeans.modules.welcome;
 
+import java.util.Iterator;
+import java.util.Set;
+import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
+
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.Utilities;
+import org.openide.util.actions.Presenter;
 import org.openide.windows.TopComponent;
-import java.util.Iterator;
-import java.util.Set;
 
 /**
  * Show the welcome screen.
  * @author  Richard Gregor
  */
-public class ShowWelcomeAction extends CallableSystemAction {
+public class ShowWelcomeAction extends CallableSystemAction implements Presenter.Menu {
 
     public void performAction() {        
         WelcomeComponent topComp = null;
@@ -50,7 +56,16 @@ public class ShowWelcomeAction extends CallableSystemAction {
     }
     
     protected String iconResource() {
-        return "org/netbeans/modules/welcome/resources/welcome.gif";
+        return "org/netbeans/modules/welcome/resources/welcome.gif";  //NOI18N
+    }
+    
+    //#46565: Do not display icon in Help menu item
+    public JMenuItem getMenuPresenter() {
+        JMenuItem item = new JMenuItem();
+        item.setAction(this);
+        item.setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/actions/empty.gif", true))); // NOI18N
+        Mnemonics.setLocalizedText(item,getName());
+        return item;
     }
     
     public HelpCtx getHelpCtx() {
