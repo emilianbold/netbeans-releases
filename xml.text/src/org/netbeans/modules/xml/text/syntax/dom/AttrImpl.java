@@ -148,8 +148,8 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
             }            
         }
         if (next == null) return;                
+        BaseDocument doc = (BaseDocument)syntax.getDocument();
         if (next.getTokenID() == VALUE) {
-            BaseDocument doc = (BaseDocument)syntax.getDocument();
             doc.atomicLock();
             try {
                 doc.remove( next.getOffset() + 1, next.getImage().length() - 2 );
@@ -163,7 +163,11 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
         }
         
         try {
-            first = syntax.getTokenChain(first.getOffset(), next.getOffset() + next.getImage().length());
+        	int endOffset = next.getOffset() + next.getImage().length();
+        	if (endOffset > doc.getLength()) {
+        		endOffset = doc.getLength();
+        	}
+            first = syntax.getTokenChain(first.getOffset(), endOffset);
         } catch (BadLocationException e) {
             throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
         }
