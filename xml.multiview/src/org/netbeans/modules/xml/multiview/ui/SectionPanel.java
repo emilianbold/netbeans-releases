@@ -344,10 +344,10 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
                                 tf.requestFocus();
                             } else if (opt.equals(RefreshSaveDialog.OPTION_REFRESH)) {
                                 rollbackValue(tf);
-                                sectionView.getErrorPanel().clearError();
+                                sectionView.validateView();
                             } else {
                                 setValue(tf, tf.getText());
-                                sectionView.getErrorPanel().clearError();
+                                sectionView.validateView();
                             }
                         } else {
                             org.openide.DialogDescriptor desc = new RefreshDialog(sectionView.getErrorPanel());
@@ -358,12 +358,13 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
                                 tf.requestFocus();
                             } else if (opt.equals(RefreshDialog.OPTION_REFRESH)) {
                                 rollbackValue(tf);
-                                sectionView.getErrorPanel().clearError();
+                                sectionView.validateView();
                             }
                         }
                     } else {
                         if (!tf.getText().equals(orgValue)) {
                             setValue(tf, tf.getText());
+                            sectionView.validateView();
                         }
                     }
                 }

@@ -191,8 +191,8 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                     Utils.replaceDocument(doc,newDoc);
                     //setDocumentValid(true);
                     //if (saveAfterNodeChanges){
-                        SaveCookie savec = (SaveCookie) getCookie(SaveCookie.class);
-                        if (savec!=null) savec.save();
+                    //    SaveCookie savec = (SaveCookie) getCookie(SaveCookie.class);
+                    //    if (savec!=null) savec.save();
                     //}
                     // this is necessary for correct undo behaviour
                     //getEditorSupport().getUndo().discardAllEdits();

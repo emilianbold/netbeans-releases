@@ -104,9 +104,7 @@ public class ErrorPanel extends javax.swing.JPanel {
             }
         }
         this.error=error;
-        //errorContainer = error.getErrorComponentContainer();
-        
-        errorLabel.setText(errorMessage, (error.getErrorComponentContainer()==null?false:true));
+        errorLabel.setText(errorMessage);
         errorLabel.setIcon(new javax.swing.ImageIcon(
             getClass().getResource("/org/netbeans/modules/xml/multiview/resources/error-glyph.gif"))); //NOI18N
     }
@@ -114,8 +112,7 @@ public class ErrorPanel extends javax.swing.JPanel {
     public void clearError() {
         error=null;
         errorLabel.setIcon(null);
-        errorLabel.setText(" ");
-        //errorContainer=null;
+        errorLabel.setText("");
         errorMessage="";
     }
     
@@ -125,14 +122,13 @@ public class ErrorPanel extends javax.swing.JPanel {
             //setForeground(SectionVisualTheme.hyperlinkColor);
             setForeground(UIManager.getDefaults().getColor("ToolBar.dockingForeground")); //NOI18N
             setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-            setText(" "); //NOI18N
+            setText(""); //NOI18N
         }
-        
-        void setText(String text, boolean link) {
-            if (link) setText("<html><u>"+text+"</u></html>"); //NOI18N
-            else setText(text);
+
+        public void setText(String text) {
+            if (text.length()==0) super.setText(" "); //NOI18N
+            else super.setText("<html><u>"+text+"</u></html>"); //NOI18N
         }
-       
     }
     
 
