@@ -333,7 +333,7 @@ public class MakeNBM extends Task {
 	long jarModified = file.lastModified (); // may be 0
 	//log ("Ensuring existence of NBM file " + file);
 	Jar jar = (Jar) project.createTask ("jar");
-	jar.setJarfile (file.getAbsolutePath ());
+	jar.setJarfile (file);
 	//jar.setBasedir (topdir.getAbsolutePath ());
 	jar.setCompress ("true");
 	//jar.createInclude ().setName ("netbeans/");
