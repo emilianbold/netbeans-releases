@@ -30,7 +30,6 @@ To implement:
 - nbrescurr: where nbres: suffices
 - use of org.netbeans.core from modules (except apisupport to reload, autoupdate, maybe projects)
 - System.getProperty("java.version").startsWith(...) [cf. #16813]
-- overrides of initialize(), addNotify(), removeNotify() that do not somewhere call super
 -->
 
 <project name="Source Monitor" default="all" basedir=".">
