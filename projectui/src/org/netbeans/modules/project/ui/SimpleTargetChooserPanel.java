@@ -67,8 +67,16 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     }
 
     public HelpCtx getHelp() {
-        // XXX
+        if ( bottomPanel != null ) {
+            HelpCtx bottomHelp = bottomPanel.getHelp();
+            if ( bottomHelp != null ) {
+                return bottomHelp;
+            }
+        }
+        
+        //XXX
         return null;
+        
     }
 
     public boolean isValid() {

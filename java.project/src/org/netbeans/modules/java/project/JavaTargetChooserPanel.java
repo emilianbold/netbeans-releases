@@ -73,8 +73,16 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
     }
 
     public HelpCtx getHelp() {
-        // XXX
+        if ( bottomPanel != null ) {
+            HelpCtx bottomHelp = bottomPanel.getHelp();
+            if ( bottomHelp != null ) {
+                return bottomHelp;
+            }
+        }
+        
+        //XXX
         return null;
+        
     }
 
     public boolean isValid() {              
