@@ -26,6 +26,7 @@ import org.openide.util.actions.CookieAction;
 import org.openide.loaders.*;
 import org.openide.src.*;
 import org.openide.filesystems.*;
+import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.cookies.*;
 
 import java.lang.reflect.*;
