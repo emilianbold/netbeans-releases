@@ -79,7 +79,8 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
             new CustomizeScriptPanel.CustomizeScriptWizardPanel (),
             new SelectFolderPanel.SelectFolderWizardPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_menu_to_add_to"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_menu_locn"), DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Menu")).getNodeDelegate (), false, true, PROP_FOLDER_MENU),
             new SelectFolderPanel.SelectFolderWizardPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_toolbar"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_toolbar_locn"), DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Toolbars")).getNodeDelegate (), false, false, PROP_FOLDER_TOOL),
-            new SelectFolderPanel.SelectFolderWizardPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_proj_folder"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_select_project_locn"), DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Workplace")).getNodeDelegate(), true, false, PROP_FOLDER_PROJ),
+            // #28214: for now, use Filesystems rather than the active Project tab:
+            new SelectFolderPanel.SelectFolderWizardPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_proj_folder"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_select_project_locn"), RepositoryNodeFactory.getDefault().repository(DataFilter.ALL), true, false, PROP_FOLDER_PROJ),
             new SelectKeyboardShortcutPanel.SelectKeyboardShortcutWizardPanel (),
         };
     }
