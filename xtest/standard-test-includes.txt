@@ -1,0 +1,4 @@
+**/src/**/*.class
+**/src/**/data/**
+**/src/**/*.jar
+**/src/**/*.xml
