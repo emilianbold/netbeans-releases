@@ -68,7 +68,12 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="../../core/settings" target="javadoc"/>
         <copy file="../../core/settings/javadoc/SettingsAPI.zip" tofile="netbeans/docs/SettingsAPI.zip"/>
         <ant dir="../../java/api" target="javadoc"/>
-        <copy file="../../java/api/javadoc/JavaSupportAPIs.zip" tofile="netbeans/docs/JavaSupportAPIs.zip"/>
+        <!-- XXX inconsistent naming in prj40_prototype branch: -->
+        <copy tofile="netbeans/docs/JavaSupportAPIs.zip">
+            <fileset dir="../../java/api/javadoc">
+                <include name="JavaSupportAPI*.zip"/>
+            </fileset>
+        </copy>
         <ant dir="../../java/srcmodel" target="javadoc"/>
         <copy file="../../java/srcmodel/javadoc/JavaHierarchyAPI.zip" tofile="netbeans/docs/JavaHierarchyAPI.zip"/>
     </target>

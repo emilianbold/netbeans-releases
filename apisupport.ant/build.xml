@@ -35,10 +35,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jars" depends="compile">
-        <mkdir dir="netbeans/modules/eager"/>
+        <mkdir dir="netbeans/modules"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <jar jarfile="netbeans/modules/eager/apisupport-ant.jar" manifest="manifest-subst.mf" compress="false">
+        <jar jarfile="netbeans/modules/apisupport-ant.jar" manifest="manifest-subst.mf" compress="false">
             <fileset dir="src" excludesfile="../../nbbuild/standard-jar-excludes.txt">
                 <exclude name="**/*.class"/>
                 <exclude name="META-INF/*.properties"/>
@@ -135,7 +135,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="netbeans" description="Build standalone NBM.">
         <makenbm file="apisupport-ant.nbm"
                  topdir="."
-                 module="netbeans/modules/eager/apisupport-ant.jar"
+                 module="netbeans/modules/apisupport-ant.jar"
                  homepage="http://apisupport.${homepage.base}/"
                  distribution="http://${dist.base}/apisupport-ant.nbm">
             <license file="${license.file}"/>
@@ -145,7 +145,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="reload-build" depends="netbeans">
         <mkdir dir="reload"/>
-        <copy file="netbeans/modules/eager/apisupport-ant.jar" tofile="reload/apisupport-ant.jar"/>
+        <copy file="netbeans/modules/apisupport-ant.jar" tofile="reload/apisupport-ant.jar"/>
     </target>
 
     <target name="reload" depends="reload-build" description="Test changes to the module.">
