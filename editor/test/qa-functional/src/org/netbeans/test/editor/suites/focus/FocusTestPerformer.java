@@ -220,15 +220,7 @@ public class FocusTestPerformer extends JellyTestCase {
             log("testGoToLine flush results:");
             flushResult();
         } catch (Exception ex) {
-            String element="";
-            StackTraceElement[] els=ex.getStackTrace();
-            for (int i=0;i < els.length;i++) {
-                if (els[i].getClassName().indexOf("FocusTestPerformer") > -1) {
-                    element=els[i].toString();
-                    break;
-                }
-            }
-            assertTrue("Exception "+ex.getClass().getName()+": "+ex.getMessage()+" at "+element,false);
+            assertTrue("Exception "+ex.getClass().getName()+": "+ex.getMessage(),false);
         } finally {
             log("testGoToLine closing editor:");
             finishEditor();
@@ -262,15 +254,7 @@ public class FocusTestPerformer extends JellyTestCase {
             log("testFind flush results:");
             flushResult();
         } catch (Exception ex) {
-            String element="";
-            StackTraceElement[] els=ex.getStackTrace();
-            for (int i=0;i < els.length;i++) {
-                if (els[i].getClassName().indexOf("FocusTestPerformer") > -1) {
-                    element=els[i].toString();
-                    break;
-                }
-            }
-            assertTrue("Exception "+ex.getClass().getName()+": "+ex.getMessage()+" at "+element,false);
+            assertTrue("Exception "+ex.getClass().getName()+": "+ex.getMessage(),false);
         } finally {
             log("testFind closing editor:");
             finishEditor();
@@ -292,6 +276,7 @@ public class FocusTestPerformer extends JellyTestCase {
             if (osname.indexOf("solaris") > -1 || osname.indexOf("sunos") > -1) {
                 log("This test case couldn't be run in Solaris platform.");
                 this.assertTrue("Solaris system.",true);
+                
                 return;
             }
             Robot robot=new Robot();
@@ -309,15 +294,7 @@ public class FocusTestPerformer extends JellyTestCase {
             }
             flushResult();
         } catch (Exception ex) {
-            String element="";
-            StackTraceElement[] els=ex.getStackTrace();
-            for (int i=0;i < els.length;i++) {
-                if (els[i].getClassName().indexOf("FocusTestPerformer") > -1) {
-                    element=els[i].toString();
-                    break;
-                }
-            }
-            assertTrue("Exception "+ex.getClass().getName()+": "+ex.getMessage()+" at "+element,false);
+            assertTrue("Exception "+ex.getClass().getName()+": "+ex.getMessage(),false);
         } finally {
             log("TabsSwitching closing editor:");
             finishEditor();
@@ -326,6 +303,14 @@ public class FocusTestPerformer extends JellyTestCase {
     }
     
     public static void main(String[] args) throws Exception {
+        Object o=org.openide.options.SystemOption.findObject(org.openide.actions.NextTabAction.class);
+        
+
+        if (o != null) {
+            org.openide.actions.NextTabAction act=(org.openide.actions.NextTabAction)o;
+            Object o2=act.getActionMapKey();
+            System.out.println(o2);
+        }
         //new CheckActionsListPerformer("testCheckActions").testCheckActions();
     }
     
