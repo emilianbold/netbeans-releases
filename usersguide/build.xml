@@ -34,7 +34,8 @@ Microsystems, Inc. All Rights Reserved.
         </fileset>
       </classpath>
     </javac>
-    <javac destdir="demosrc" srcdir="demosrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <!-- #24191: always turn on debug info for these sources -->
+    <javac destdir="demosrc" srcdir="demosrc" deprecation="true" debug="true">
       <classpath>
         <pathelement location="release/beans/TimerBean.jar"/>
       </classpath>
