@@ -30,9 +30,4 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
 
-    <target name="test-preinit" depends="init">
-        <property name="test-unit-sys-prop.test.ant.home" location="${ant.dir}/ant"/>
-        <property name="test-unit-sys-prop.test.ant.bridge" location="${ant.dir}/ant/nblib/bridge.jar"/>
-    </target>
-
 </project>
