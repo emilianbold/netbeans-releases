@@ -47,7 +47,6 @@ public abstract class NbBaseServlet extends HttpServlet {
                                             
   /** Initializes the servlet. */                                          
   public void init() throws ServletException {
-System.out.println("initializing " + getClass().getName());
   }
 
   /** Processes the request for both HTTP GET and POST methods
@@ -114,12 +113,10 @@ System.out.println("initializing " + getClass().getName());
   throws IOException {
     String pathI = request.getPathInfo();
     if (pathI == null) {
-System.out.println("classpath pathI je null");
       return false;
     }
     if (pathI.length() == 0) return false;
     if (pathI.charAt(0) == '/') pathI = pathI.substring(1);
-System.out.println("classpath pathI is " + pathI);
     InputStream is = TopManager.getDefault().systemClassLoader().getResourceAsStream(pathI);
     if (is == null) return false;
 
@@ -146,10 +143,8 @@ System.out.println("classpath pathI is " + pathI);
   throws IOException {
     String pathI = request.getPathInfo();
     if (pathI == null) {
-System.out.println("repository pathI je null");
       return false;
     }  
-System.out.println("repository pathI is " + pathI);    
     FileObject fo = TopManager.getDefault().getRepository().findResource(pathI);
     if (fo == null) {
       // try with the trailing /
@@ -312,6 +307,7 @@ System.out.println("repository pathI is " + pathI);
 
 /*
  * Log
+ *  3    Gandalf   1.2         10/7/99  Petr Jiricka    Removed debug println
  *  2    Gandalf   1.1         10/4/99  Petr Jiricka    
  *  1    Gandalf   1.0         9/30/99  Petr Jiricka    
  * $
