@@ -172,8 +172,6 @@ public class LogViewer extends Thread {
         try {
             File logFile = getLogFile(timestamp);
             reader = new BufferedReader(new FileReader(logFile));
-            // do not show older output
-            reader.skip(logFile.length());
             // remember error msg
             String errorMsg = "";
             while (!stop && !inOut.isClosed()) {
@@ -214,7 +212,7 @@ public class LogViewer extends Thread {
                 try {
                     synchronized(this) {
                         if (!stop &&  !inOut.isClosed()) {
-                            wait(2000);
+                            wait(1000);
                         }
                     }
                 } catch(InterruptedException ex) {
