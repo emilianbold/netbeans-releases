@@ -365,10 +365,16 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
 
                 <folder name="Popup">
-                    <!--<file name="format"/>
-                    <attr name="format/Separator6.instance" boolvalue="true"/>-->
-                    <attr name="Separator4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="format"/>
+                    <attr name="format/Separator5.instance" boolvalue="true"/>
 
+                    <file name="Separator5.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="Separator5.instance/org-openide-windows-TopComponent" boolvalue="true"/>
+                    
+                    
+                    <attr name="Separator6.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>    
                     <file name="org-openide-actions-ToolsAction.instance"/>
                     <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
                     <attr name="org-openide-actions-ToolsAction.instance/generate-gutter-popup" boolvalue="true"/>
