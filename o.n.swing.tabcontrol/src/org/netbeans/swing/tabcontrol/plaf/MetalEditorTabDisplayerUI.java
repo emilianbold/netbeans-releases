@@ -233,7 +233,7 @@ public final class MetalEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
         }
     }
 
-    private static class RightIcon extends LeftIcon {
+    private static class RightIcon implements Icon {
         public int getIconWidth() {
             return ICON_WIDTH;
         }
@@ -262,7 +262,7 @@ public final class MetalEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
         }
     }
 
-    private static class DownIcon extends LeftIcon {
+    private static class DownIcon implements Icon {
         public int getIconHeight() {
             return ICON_HEIGHT;
         }
