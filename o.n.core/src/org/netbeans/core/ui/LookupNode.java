@@ -77,6 +77,27 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
 
 
     public final SystemAction[] createActions () {
+        DataFolder df = (DataFolder) super.getCookie (DataFolder.class);
+        if (df != null) {
+            String name = df.getPrimaryFile ().getPackageNameExt ('/', '.');
+            // if it is node representing a setting ui category hide New action
+            // otherwise settings will be created under system/UI/... folder
+            // and will be unreachable with the System Lookup
+            if (name.startsWith("UI")) {
+                return new SystemAction[] {
+                    SystemAction.get(FileSystemAction.class),
+                    null,
+                    SystemAction.get(PasteAction.class),
+                    null,
+                    SystemAction.get(MoveUpAction.class),
+                    SystemAction.get(MoveDownAction.class),
+                    SystemAction.get(ReorderAction.class),
+                    null,
+                    SystemAction.get(ToolsAction.class),
+                    SystemAction.get(PropertiesAction.class),
+                };
+            }
+        }
         return new SystemAction[] {
             SystemAction.get(FileSystemAction.class),
             null,
