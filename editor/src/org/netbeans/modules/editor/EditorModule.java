@@ -69,6 +69,13 @@ import java.util.Iterator;
 import org.openide.text.CloneableEditor;
 import java.util.HashSet;
 import org.netbeans.modules.editor.options.BasePrintOptions;
+import org.openide.loaders.OperationEvent;
+import org.openide.loaders.OperationListener;
+import org.openide.loaders.OperationAdapter;
+import org.openide.src.SourceElement;
+import org.openide.cookies.SourceCookie;
+import org.netbeans.modules.editor.java.JCUpdater;
+import org.openide.loaders.DataFolder;
 
 
 /**
@@ -180,6 +187,9 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
 //            );
 //        }
 
+        TopManager.getDefault().getLoaderPool().addOperationListener(new RepositOperations());
+        
+        
         // Start listening on DataObject.Registry
         if (rl == null) {
             rl = new DORegistryListener();
@@ -467,6 +477,85 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
             return ret;
         }
         
+    }
+
+    /** Listens to repository operations like move, delete and rename of the 
+        classes or packages and updates parser DB */
+    private static final class RepositOperations extends OperationAdapter {
+
+        public void operationMove(OperationEvent.Move ev){
+            DataObject dobj = ev.getObject();
+            if (dobj==null){
+                return;
+            }
+            SourceCookie sc = (SourceCookie)dobj.getCookie(SourceCookie.class);
+            if (sc == null){
+                return;
+            }
+            removeClass(ev.getOriginalPrimaryFile(),null);
+        }
+        
+        public void operationDelete(OperationEvent ev){
+            DataObject dobj = ev.getObject();
+            if (dobj==null){
+                return;
+            }
+            SourceCookie sc = (SourceCookie)dobj.getCookie(SourceCookie.class);
+            if (sc == null){
+                return;
+            }
+            removeClass(dobj.getPrimaryFile(),null);
+        }
+        
+        
+        public void operationRename(OperationEvent.Rename ev){
+            DataObject dobj = ev.getObject();
+            if (dobj==null) return;
+            
+            DataFolder df = (DataFolder)dobj.getCookie(DataFolder.class);
+            String replacedName = replaceName(dobj.getPrimaryFile().getPackageName('.'), ev.getOriginalName());
+            
+            if(df!=null){
+                inspectFolder(df, replacedName);
+                return;
+            }
+            
+            SourceCookie sc = (SourceCookie)dobj.getCookie(SourceCookie.class);
+            if (sc == null) return;
+            
+            removeClass(dobj.getPrimaryFile(),replacedName);
+        }
+
+        
+        private String replaceName(String newName, String oldName){
+            StringBuffer sb = new StringBuffer(newName);
+            sb.replace(newName.lastIndexOf(".")+1,newName.length(),oldName); //NOI18N
+            return sb.toString();
+        }
+        
+        private void inspectFolder(DataFolder df, String oldFolderName) {
+            DataObject[] children = df.getChildren();
+            for (int i = 0; i < children.length; i++) {
+                DataObject dob = children[i];
+                if (dob instanceof DataFolder) {
+                    inspectFolder((DataFolder)dob, (oldFolderName+"."+dob.getPrimaryFile().getName())); //NOI18N
+                } else if(dob!=null){
+                    SourceCookie sc = (SourceCookie)dob.getCookie(SourceCookie.class);
+                    if (sc == null) continue;
+                    removeClass(dob.getPrimaryFile(), oldFolderName+"."+dob.getPrimaryFile().getName()); //NOI18N
+                }
+            }
+        }
+                
+        private void removeClass(final FileObject fob, final String oldName){
+            final JCUpdater update = new JCUpdater();
+            // Update changes in parser DB on background in thread with minPriority
+            RequestProcessor.postRequest(new Runnable() {
+                public void run() {
+                    update.removeClass(fob,oldName);
+                }
+            }, 0,Thread.MIN_PRIORITY);        
+        }
     }
     
 }
