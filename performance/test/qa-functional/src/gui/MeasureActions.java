@@ -27,16 +27,13 @@ public class MeasureActions  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
 
-/*
-    TEMPORARY commented -> try to solve never finixhed tests
-
         suite.addTest(new ExpandNodesProjectsView("testExpandProjectNode", "Expand Project node"));
         suite.addTest(new ExpandNodesProjectsView("testExpandSourcePackagesNode", "Expand Source Packages node"));
         suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith50JavaFiles", "Expand folder with 50 java files"));
         suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith100JavaFiles", "Expand folder with 100 java files"));
         suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith100TxtFiles", "Expand folder with 100 txt files"));
         suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith100XmlFiles", "Expand folder with 100 xml files"));
-*/
+
         suite.addTest(new OpenFiles("testOpening20kBJavaFile", "Open Java file (20kB)"));
         suite.addTest(new OpenFilesWithOpenedEditor("testOpening20kBJavaFile", "Open Java file (20kB) if Editor opened"));
 
@@ -66,11 +63,13 @@ public class MeasureActions  {
         suite.addTest(new JavaCompletionInEditor("measureTime", "Invoke Code Completion dialog in Editor"));
         suite.addTest(new TypingInEditor("measureTime", "Type a character in Editor"));
 
-/*
-    TEMPORARY commented -> try to solve never finixhed tests
 
         suite.addTest(new CloseEditor("testClosing20kBJavaFile", "Close Java file (20kB)"));
 //TODO Form designer isn't TopComponent        suite.addTest(new CloseEditor("testClosing20kBFormFile", "Close Form file (20kB)"));
+
+/*
+    TEMPORARY commented -> try to solve never finixhed tests
+ 
         suite.addTest(new CloseAllEditors("testClosingAllJavaFiles", "Close All Documents if 10 Java files opened"));
         
         suite.addTest(new CloseEditorTab("testClosingTab", "Close on tab from Editor window"));
@@ -78,15 +77,15 @@ public class MeasureActions  {
         suite.addTest(new CloseEditorModified("testClosingModifiedJavaFile", "Close modified Java file"));
         
         suite.addTest(new SaveModifiedFile("testSaveModifiedJavaFile", "Save modified Java file"));
-
+*/
         suite.addTest(new SelectCategoriesInNewFile("testSelectGUIForms","Select GUI Forms in New File"));
         suite.addTest(new SelectCategoriesInNewFile("testSelectXML","Select XML in New File"));
         suite.addTest(new SelectCategoriesInNewFile("testSelectOther","Select Other in New File"));
-
+/*
         suite.addTest(new ExpandNodesInOptions("testExpandEditorSettings", "Expand node Editor Settings in Tools | Options"));
         
         suite.addTest(new ExpandNodesInComponentInspector("testExpandContainerJFrame","Expand Container node in Component Inspector"));
-
+*/
         suite.addTest(new RefreshFolder("testRefreshFolderWith50JavaFiles", "Refresh folder with 50 java files"));
         suite.addTest(new RefreshFolder("testRefreshFolderWith100JavaFiles", "Refresh folder with 100 java files"));
         suite.addTest(new RefreshFolder("testRefreshFolderWith100XmlFiles", "Refresh folder with 100 xml files"));
