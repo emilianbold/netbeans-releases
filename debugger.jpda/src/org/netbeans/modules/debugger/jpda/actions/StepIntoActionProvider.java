@@ -58,24 +58,21 @@ implements Executor, PropertyChangeListener {
     private StepRequest stepRequest;
     private ThreadReference tr;
     private String position;
-    private ContextProvider lookupProvider;
+    private ContextProvider contextProvider;
     private boolean smartSteppingStepOut;
 
-    public StepIntoActionProvider (ContextProvider lookupProvider) {
+    public StepIntoActionProvider (ContextProvider contextProvider) {
         super (
-            (JPDADebuggerImpl) lookupProvider.lookupFirst 
+            (JPDADebuggerImpl) contextProvider.lookupFirst 
                 (null, JPDADebugger.class)
         );
-        this.lookupProvider = lookupProvider;
+        this.contextProvider = contextProvider;
         getSmartSteppingFilterImpl ().addPropertyChangeListener (this);
-        SourcePath ec = (SourcePath) lookupProvider.
+        SourcePath ec = (SourcePath) contextProvider.
             lookupFirst (null, SourcePath.class);
         ec.addPropertyChangeListener (this);
-        for (Iterator i = lookupProvider.lookup(null, Properties.class).iterator(); i.hasNext(); ) {
-            if (((Properties) i.next()).containsKey(SS_STEP_OUT)) {
-                smartSteppingStepOut = true;
-            }
-        }
+        Map properties = (Map) contextProvider.lookupFirst (null, Map.class);
+        smartSteppingStepOut = properties.containsKey (SS_STEP_OUT);
     }
 
 
@@ -157,7 +154,7 @@ implements Executor, PropertyChangeListener {
         JPDAThread t = getDebuggerImpl ().getThread (tr);
         boolean stop = (!np.equals (position)) && 
                        getCompoundSmartSteppingListener ().stopHere 
-                           (lookupProvider, t, getSmartSteppingFilterImpl ());
+                           (contextProvider, t, getSmartSteppingFilterImpl ());
         if (stop) {
             removeStepRequests ();
             getDebuggerImpl ().setStoppedState (tr);
@@ -187,7 +184,7 @@ implements Executor, PropertyChangeListener {
 
     private StepActionProvider getStepActionProvider () {
         if (stepActionProvider == null) {
-            List l = lookupProvider.lookup (null, ActionsProvider.class);
+            List l = contextProvider.lookup (null, ActionsProvider.class);
             int i, k = l.size ();
             for (i = 0; i < k; i++)
                 if (l.get (i) instanceof StepActionProvider)
@@ -230,7 +227,7 @@ implements Executor, PropertyChangeListener {
     
     private SmartSteppingFilterImpl getSmartSteppingFilterImpl () {
         if (smartSteppingFilterImpl == null)
-            smartSteppingFilterImpl = (SmartSteppingFilterImpl) lookupProvider.
+            smartSteppingFilterImpl = (SmartSteppingFilterImpl) contextProvider.
                 lookupFirst (null, SmartSteppingFilter.class);
         return smartSteppingFilterImpl;
     }
@@ -240,7 +237,7 @@ implements Executor, PropertyChangeListener {
     private CompoundSmartSteppingListener getCompoundSmartSteppingListener () {
         if (compoundSmartSteppingListener == null)
             compoundSmartSteppingListener = (CompoundSmartSteppingListener) 
-                lookupProvider.lookupFirst (null, CompoundSmartSteppingListener.class);
+                contextProvider.lookupFirst (null, CompoundSmartSteppingListener.class);
         return compoundSmartSteppingListener;
     }
 
