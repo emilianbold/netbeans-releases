@@ -263,6 +263,7 @@ public class ProjectsRootNode extends AbstractNode {
                          Lookups.singleton( SearchInfoFactory
                                             .createSearchInfoBySubnodes( n ))} )
                    : n.getLookup() );
+            OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         }
         
         public String getDisplayName() {
