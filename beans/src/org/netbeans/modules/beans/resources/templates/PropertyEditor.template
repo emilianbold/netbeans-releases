@@ -11,7 +11,6 @@ import java.beans.*;
 /**
  *
  * @author  __USER__
- * @version 
  */
 public class PropertyEditor extends PropertyEditorSupport {
 

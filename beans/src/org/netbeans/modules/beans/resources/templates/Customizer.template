@@ -9,7 +9,6 @@ package Templates.Beans;
 /**
  *
  * @author  __USER__
- * @version 
  */
 public class Customizer extends javax.swing.JPanel {
 
