@@ -1,0 +1,6 @@
+public class Foo {
+    public Foo() {
+        String s;
+        s.charAt(index);
+    }
+}

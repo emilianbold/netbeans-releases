@@ -1,0 +1,12 @@
+Object o;
+o.clone();
+o.equals(o);
+o.finalize();
+o.getClass();
+o.hashCode();
+o.notify();
+o.notifyAll();
+o.toString();
+o.wait();
+o.wait(time);
+o.wait(time, nanos);
