@@ -30,13 +30,22 @@ public class ConfigureShortcutsAction extends org.openide.util.actions.CallableS
     */
     public void performAction () {
         ShortcutsEditor se = new ShortcutsEditor ();
-        DialogDescriptor dd = new DialogDescriptor (se, NbBundle.getBundle (ConfigureShortcutsAction.class).getString("CTL_ConfigureShortcuts_Title"));
+        DialogDescriptor dd = new DialogDescriptor (
+            se,
+            NbBundle.getBundle (ConfigureShortcutsAction.class).getString("CTL_ConfigureShortcuts_Title"),
+            true,
+            new Object[] {DialogDescriptor.OK_OPTION},
+            DialogDescriptor.OK_OPTION, 
+            DialogDescriptor.BOTTOM_ALIGN,
+            null,
+            null
+        );
         TopManager.getDefault ().createDialog (dd).show ();
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            se.flushChanges();
-        } else {
-            se.resetChanges();
-        }
+//        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+//            se.flushChanges();
+//        } else {
+//            se.resetChanges();
+//        }
     }
 
     /** URL to this action.
