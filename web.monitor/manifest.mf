@@ -1,8 +1,5 @@
 OpenIDE-Module: org.netbeans.modules.web.monitor/1
-OpenIDE-Module-Name: HTTP Monitor
-OpenIDE-Module-Display-Category: Web
-OpenIDE-Module-Short-Description: Tracks data flow inside the servlet engine
-OpenIDE-Module-Long-Description: The HTTP Monitor is a tool for debugging web applictions. It records data about the HTTP requests processed by the server and also allows these requests to be replayed. 
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/monitor/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/web/monitor/MonitorModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/web/monitor/layer.xml
 OpenIDE-Module-Specification-Version: 1.4
