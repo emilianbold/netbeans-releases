@@ -240,6 +240,14 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         prop = new ProjectBasedirProperty (bundle.getString ("PROP_basedir"), bundle.getString ("HINT_basedir"));
         props.put (prop);
         // id prop unnecessary, since project name functions as an ID
+        // Build sequence
+        Element projElement = proj.getProjectElement ();
+        if (projElement != null && projElement.getAttribute("default") != null) {
+            Element defTarget = AntTargetNode.BuildSequenceProperty.getTargetElement(projElement.getAttribute("default"), projElement);
+            if (defTarget != null) {
+                props.put (new AntTargetNode.BuildSequenceProperty(defTarget));
+            }
+        }
     }
 
     public void propertyChange (PropertyChangeEvent evt) {

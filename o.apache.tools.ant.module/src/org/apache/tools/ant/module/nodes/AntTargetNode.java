@@ -124,6 +124,7 @@ public class AntTargetNode extends ElementNode {
             props.put (prop);
         }
         props.put (new DependsProperty (proj));
+        props.put (new BuildSequenceProperty(el));
     }
 
     private class DependsProperty extends AntProperty {
@@ -328,4 +329,117 @@ public class AntTargetNode extends ElementNode {
         return false;
     }
 
+    /**
+     * Node displaying the sequence of all called targets when executing.
+     */
+    public static class BuildSequenceProperty extends org.openide.nodes.Node.Property {
+        
+        protected org.w3c.dom.Element el;
+                
+        /** Creates new BuildSequenceProperty.
+         * @param el Element representing the target.
+         * @param name the name of the target.
+         * @param proj AntProjectCookie of the Ant file
+         */
+        public BuildSequenceProperty (Element el) { //, String name, AntProjectCookie proj) {
+            super (String.class);
+            this.el = el;
+            this.setDisplayName (NbBundle.getMessage (AntTargetNode.class, "PROP_target_sequence"));
+            this.setShortDescription (NbBundle.getMessage (AntTargetNode.class, "HINT_target_sequence"));
+        }
+              
+        /** Computes the dependencies of all called targets and returns an ordered
+         * sequence String.
+         */
+        protected String computeTargetDependencies() {
+            // get ProjectElement
+            Element proj = (Element) el.getParentNode ();
+            if (proj == null) {
+                // just return current target name
+                return el.getAttribute ("name");
+            } else {
+                // List with all called targets. the last called target is the first
+                // in the list
+                List callingList = new LinkedList(); 
+                // add this target.
+                addTarget(callingList, el, 0, proj); // add main target
+                return getReverseString(callingList);
+            }
+        }
+
+        /** Adds a target to the List. Calls depends-on targets recursively.
+         * @param runningList List containing the ordered targets.
+         * @param target the target that should be added
+         * @param pos position where this target should be inserted
+         * @projectElement the Element of the Ant project.
+         */
+        protected List addTarget(List runningList, Element target, int pos, Element projectElement) {
+            String targetName = target.getAttribute ("name"); //getName();
+            if (targetName == null) return runningList;
+            
+            // search target, skip it if found
+            for (int x=0; x < runningList.size(); x++) {
+                if (targetName.equals(runningList.get(x))) {
+                    return runningList;
+                }
+            }
+            //add target at the given position...
+            runningList.add(pos, targetName);
+            
+            // check dependenciesList
+            String dependsString = target.getAttribute ("depends");
+            if (dependsString == null) return runningList;
+            
+            // add each target of the dependencies List
+            StringTokenizer st = new StringTokenizer(dependsString, ",");
+            while (st.hasMoreTokens()) {
+                Element dependsTarget = getTargetElement(st.nextToken(), projectElement);
+                if (dependsTarget != null) {
+                    addTarget(runningList, dependsTarget, (pos + 1), projectElement);
+                }
+            }
+            
+            return runningList;
+        }
+        
+        /** Returns the Element of a target given by its name. */
+        public static Element getTargetElement(String targetName, Element projectElement) {
+            NodeList nl = projectElement.getElementsByTagName ("target"); // NOI18N
+            for (int i = 0; i < nl.getLength (); i++) {
+                Element target = (Element) nl.item (i);
+                String name = target.getAttribute ("name"); // NOI18N
+                if (targetName.equals (name)) {
+                    return target;
+                }
+            }
+            return null;
+        }
+ 
+        /** Returns a String of all Elements in the List in reverse order. */
+        protected String getReverseString (List l) {
+            StringBuffer sb = new StringBuffer ();
+            for (int x= (l.size() - 1); x > -1; x--) {
+                sb.append (l.get(x));
+                if (x > 0) sb.append (", ");
+            }
+            return sb.toString ();
+        }
+        
+        public void setValue (Object o) {
+            // do nothing
+        }
+        /** Returns the value of this property. */
+        public Object getValue () {
+            return computeTargetDependencies();
+        }
+
+        /** Returns always false. */
+        public boolean canWrite() {
+            return false;
+        }
+        /** See Node.Propery. */
+        public boolean canRead() {
+            return true;
+        }
+    }
 }
