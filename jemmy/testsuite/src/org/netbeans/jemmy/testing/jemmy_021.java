@@ -8,6 +8,7 @@ import java.awt.event.*;
 import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.testing.*;
 import org.netbeans.jemmy.operators.*;
+import org.netbeans.jemmy.operators.JTextComponentOperator.NoSuchTextException;
 
 import org.netbeans.jemmy.demo.Demonstrator;
 
@@ -81,6 +82,25 @@ public class jemmy_021 extends JemmyTest {
 		return(1);
 	    }
 	    
+	    try {
+		to.selectText("0987654321");
+		getOutput().printErrLine("0987654321 text was found!");
+		finalize();
+		return(1);
+	    } catch(NoSuchTextException e) {
+		//that's good
+		getOutput().printLine("0987654321 text was not found!");
+	    }
+	    try {
+		to.changeCaretPosition("0987654321", true);
+		getOutput().printErrLine("0987654321 text was found!");
+		finalize();
+		return(1);
+	    } catch(NoSuchTextException e) {
+		//that's good
+		getOutput().printLine("0987654321 text was not found!");
+	    }
+
 	    Demonstrator.nextStep("Select first twenty simbols\n" + 
 				  "Note: caret return is a simbol");
 	    

@@ -19,6 +19,7 @@ package org.netbeans.jemmy.operators;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Timeoutable;
@@ -104,6 +105,21 @@ implements Outputable, Timeoutable {
     
     /**
      * Constructor.
+     * Waits component in container first.
+     * Uses cont's timeout and output for waiting and to init operator.
+     * @throws TimeoutExpiredException
+     */
+    public JPopupMenuOperator(ContainerOperator cont) {
+	this((JPopupMenu)
+	     waitComponent(cont, 
+			   new JPopupMenuFinder(ComponentSearcher.
+						getTrueChooser("Popup")),
+			   0));
+	copyEnvironment(cont);
+    }
+
+    /**
+     * Constructor.
      * Waits component first.
      * @throws TimeoutExpiredException
      */
@@ -173,6 +189,52 @@ implements Outputable, Timeoutable {
 	} catch(InterruptedException e) {
 	    return(null);
 	}
+    }
+
+    /**
+     * Waits popup defined by <code>popupChooser</code> parameter.
+     * @param popupChooser
+     */
+    public static JPopupMenuOperator waitJPopupMenu(final ComponentChooser popupChooser) {
+	try {
+	    WindowOperator wind = new WindowOperator(new WindowWaiter().waitWindow(new ComponentChooser() {
+		    public boolean checkComponent(Component comp) {
+			ComponentSearcher searcher = new ComponentSearcher((Container)comp);
+			searcher.setOutput(JemmyProperties.getCurrentOutput().createErrorOutput());
+			return(searcher.findComponent(popupChooser) != null);
+		    }
+		    public String getDescription() {
+			return("Window containing \"" + popupChooser.getDescription() + "\" popup");
+		    }
+		}));
+	    return(new JPopupMenuOperator(wind));
+	} catch(InterruptedException e) {
+	    throw(new JemmyException("Popup waiting has been interrupted", e));
+	}
+    }
+
+    /**
+     * Waits popup containing menu item with <code>menuItemText</code> text.
+     * @param menuItemText
+     */
+    public static JPopupMenuOperator waitJPopupMenu(final String menuItemText) {
+	return(waitJPopupMenu(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    if(comp instanceof JPopupMenu) {
+			ComponentSearcher searcher = new ComponentSearcher((Container)comp);
+			searcher.setOutput(JemmyProperties.getCurrentOutput().createErrorOutput());
+			return(searcher.findComponent(new JMenuItemOperator.
+						      JMenuItemByLabelFinder(menuItemText,
+									     Operator.getDefaultStringComparator())) != 
+			       null);
+		    } else {
+			return(false);
+		    }
+		}
+		public String getDescription() {
+		    return("Popup containing \"" + menuItemText + "\" menu item");
+		}
+	    }));
     }
 
     /**

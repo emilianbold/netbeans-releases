@@ -22,6 +22,7 @@ import org.netbeans.jemmy.ActionProducer;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyInputException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Outputable;
 import org.netbeans.jemmy.TestOut;
@@ -565,6 +566,7 @@ public class JTextComponentOperator extends JComponentOperator
      * @see #changeCaretPosition(int)
      * @see #getPositionByText(String, int)
      * @throws TimeoutExpiredException
+     * @throws NoSuchTextException
      */
     public void changeCaretPosition(String text, int index, boolean before) {
 	output.printLine("Put caret " + 
@@ -576,6 +578,9 @@ public class JTextComponentOperator extends JComponentOperator
 	    clickMouse(1);
 	}
 	int offset = getPositionByText(text, index);
+	if(offset == -1) {
+	    throw(new NoSuchTextException(text));
+	}
 	offset = before ? offset : offset + text.length();
 	changeCaretPosition(offset);
     }
@@ -589,6 +594,7 @@ public class JTextComponentOperator extends JComponentOperator
      * @see #changeCaretPosition(int)
      * @see #getPositionByText(String, int)
      * @throws TimeoutExpiredException
+     * @throws NoSuchTextException
      */
     public void changeCaretPosition(String text, boolean before) {
 	changeCaretPosition(text, 0, before);
@@ -600,6 +606,7 @@ public class JTextComponentOperator extends JComponentOperator
      * @param caretPosition Position to start type text
      * @see #typeText(String)
      * @throws TimeoutExpiredException
+     * @throws NoSuchTextException
      */
     public void typeText(String text, int caretPosition) {
 	output.printLine("Typing text \"" + text + "\" from " +
@@ -650,6 +657,7 @@ public class JTextComponentOperator extends JComponentOperator
      * @see #selectText(String)
      * @see #getPositionByText(String, int)
      * @throws TimeoutExpiredException
+     * @throws NoSuchTextException
      */
     public void selectText(String text, int index) {
 	output.printLine("Select " +
@@ -661,6 +669,9 @@ public class JTextComponentOperator extends JComponentOperator
 	    clickMouse(1);
 	}
 	int start = getPositionByText(text, index);
+	if(start == -1) {
+	    throw(new NoSuchTextException(text));
+	}
 	selectText(start, start + text.length());
     }
 
@@ -670,6 +681,7 @@ public class JTextComponentOperator extends JComponentOperator
      * @see #selectText(String, int)
      * @see #selectText(int, int)
      * @throws TimeoutExpiredException
+     * @throws NoSuchTextException
      */
     public void selectText(String text) {
 	selectText(text, 0);
@@ -1235,6 +1247,19 @@ public class JTextComponentOperator extends JComponentOperator
 	    return(two);
 	} else {
 	    return(one);
+	}
+    }
+
+    /**
+     * Can be throught during a text operation 
+     * if text has not been found in the component.
+     */
+    public class NoSuchTextException extends JemmyInputException {
+	/**
+	 * Constructor.
+	 */
+	public NoSuchTextException(String text) {
+	    super("No such text as \"" + text + "\"", getSource());
 	}
     }
 

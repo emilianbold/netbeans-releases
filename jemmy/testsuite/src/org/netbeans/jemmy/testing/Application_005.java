@@ -11,8 +11,10 @@ import javax.swing.event.*;
 public class Application_005 extends TestFrame {
 
     JPopupMenu popup;
+    JPopupMenu wrongPopup;
     JList list;
     JTree tree;
+    JCheckBox showWrong;
     
     public Application_005() {
 	super("Application_005");
@@ -37,6 +39,11 @@ public class Application_005 extends TestFrame {
 
 	list = new JList();
 
+	wrongPopup = new JPopupMenu();
+	JMenuItem wpb = new JMenuItem("Huge row ...........................................................................................................................................");
+	wrongPopup.add(wpb);
+	//	tree.add(wrongPopup);
+
 	popup = new JPopupMenu();
 	JMenuItem pb = new JMenuItem("XXX");
 	pb.addActionListener(new ActionListener() {
@@ -46,14 +53,17 @@ public class Application_005 extends TestFrame {
 		}
 	    });
 	popup.add(pb);
-	tree.add(popup);
+	//	tree.add(popup);
 	
 	tree.addMouseListener(new PopupListener());
-
-	getContentPane().setLayout(new BorderLayout());
 	JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
 					  new JScrollPane(tree),
 					  new JScrollPane(list));
+
+	showWrong = new JCheckBox("Show Huge Popup");
+
+	getContentPane().setLayout(new BorderLayout());
+	getContentPane().add(showWrong, BorderLayout.SOUTH);
 	getContentPane().add(split, BorderLayout.CENTER);
 
 	setSize(400, 200);
@@ -91,10 +101,28 @@ public class Application_005 extends TestFrame {
             maybeShowPopup(e);
         }
 
-        private void maybeShowPopup(MouseEvent e) {
+        private void maybeShowPopup(final MouseEvent e) {
             if (e.isPopupTrigger()) {
-                popup.show(e.getComponent(),
-                           e.getX(), e.getY());
+		try{
+		    new Thread(new Runnable() {
+			    public void run() {
+				try{
+				    if(showWrong.isSelected()) {
+					wrongPopup.show(e.getComponent(),
+							e.getX(), e.getY());		
+					Thread.sleep(2000);
+					wrongPopup.setVisible(false);
+				    }
+				    popup.show(e.getComponent(),
+					       e.getX(), e.getY());
+				} catch(Exception exxx) {
+				    exxx.printStackTrace();
+				}
+			    }
+			}).start();
+		} catch(Exception exx) {
+		    exx.printStackTrace();
+		}
             }
         }
     }
