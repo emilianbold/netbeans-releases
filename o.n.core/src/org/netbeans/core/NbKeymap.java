@@ -28,13 +28,13 @@ final class NbKeymap implements Keymap {
   String name;
   /** Parent keymap */
   Keymap parent;
-  /** Hashtable holding key - action mappings */
+  /** Hashtable holding KeyStroke > Action mappings */
   Map bindings;
   /** Default action */
   Action defaultAction;
   /** Listeners set */
   HashSet listeners;
-  /** hash table to map (Action -> KeyStroke[]) */
+  /** hash table to map (Action -> ArrayList of KeyStrokes) */
   Map actions;
 
   /** Default constructor
@@ -90,56 +90,49 @@ final class NbKeymap implements Keymap {
 
   public Action[] getBoundActions() {
     int i = 0;
-    Action[] actions = null;
+    Action[] actionsArray = null;
     synchronized (this) {
-      actions = new Action[bindings.size()];
+      actionsArray = new Action[bindings.size()];
       for (Iterator iter = bindings.values().iterator(); iter.hasNext(); ) {
-        actions[i++] = (Action) iter.next();
+        actionsArray[i++] = (Action) iter.next();
       }
     }
-    return actions;
+    return actionsArray;
   }
 
   public KeyStroke[] getKeyStrokesForAction(Action a) {
-    Map actions;
-    if (this.actions == null) {
-      actions = this.actions = new HashMap (bindings.size ());
-    } else {
-      actions = this.actions;
+    if (actions == null) {
+      buildReverseMapping ();
     }
 
-    
-
-    KeyStroke[] strokes = (KeyStroke[])actions.get (a);
+    List strokes = (List)actions.get (a);
     if (strokes != null) {
-      return strokes;
+      return (KeyStroke[])strokes.toArray(new KeyStroke[strokes.size ()]);
+    } else {
+      return new KeyStroke[0];
     }
+  }
+
+  private void buildReverseMapping () {
+    Map localActions = actions = new HashMap ();
     
-    // searches for all entries which have value a
-    // and add them to the resulting array
-    Set result = new HashSet(5);
-    Map.Entry curEntry = null;
-    int count = 0;
     synchronized (this) {
       Set entries = bindings.entrySet();
       for (Iterator it = bindings.entrySet().iterator(); it.hasNext(); ) {
-        curEntry = (Map.Entry)it.next();
-        if (curEntry.getValue().equals(a)) {
-          result.add(curEntry.getKey());
-          count++;
+        Map.Entry curEntry = (Map.Entry)it.next();
+        Action curAction = (Action) curEntry.getValue();
+        KeyStroke curKey = (KeyStroke) curEntry.getKey();
+
+        List keysForAction = (List)localActions.get (curAction);
+        if (keysForAction == null) {
+          keysForAction = Collections.synchronizedList (new ArrayList (1));
+          localActions.put (curAction, keysForAction);
         }
-
-        actions.put (curEntry.getValue (), new KeyStroke[] { (KeyStroke)curEntry.getKey () });
-        
+        keysForAction.add (curKey);
       }
-      strokes = (KeyStroke[])result.toArray(new KeyStroke[count]);
     }
-
-    actions.put (a, strokes);
-    
-    return strokes;
   }
-
+  
   public synchronized boolean isLocallyDefined(KeyStroke key) {
     return bindings.containsKey(key);
   }
@@ -191,6 +184,8 @@ final class NbKeymap implements Keymap {
 
 /*
 * Log
+*  7    src-jtulach1.6         12/1/99  Ian Formanek    Fixed multiple KeyStrokes
+*       per Action bug
 *  6    src-jtulach1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  5    src-jtulach1.4         5/5/99   Jaroslav Tulach Speeded up a bit.
