@@ -40,11 +40,17 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
     /** Array of property descriptors. */
     private static PropertyDescriptor[] desc;
 
-    private static java.util.ResourceBundle formBundle = org.openide.util.NbBundle.getBundle(FormLoaderSettingsBeanInfo.class);
-
-    // initialization of the array of descriptors
-    static {
+    /** Descriptor of valid properties
+     * @return array of properties
+     */
+    public PropertyDescriptor[] getPropertyDescriptors() {
+        if (desc != null)
+            return desc;
+        
         try {
+            java.util.ResourceBundle formBundle =
+                org.openide.util.NbBundle.getBundle(FormLoaderSettingsBeanInfo.class);
+            
             desc = new PropertyDescriptor[] {
 //                new PropertyDescriptor(FormLoaderSettings.PROP_INDENT_AWT_HIERARCHY, FormLoaderSettings.class,
 //                                       "getIndentAWTHierarchy", "setIndentAWTHierarchy"), // NOI18N
@@ -167,13 +173,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
         } catch (IntrospectionException ex) {
             throw new InternalError();
         }
-    }
 
-
-    /** Descriptor of valid properties
-     * @return array of properties
-     */
-    public PropertyDescriptor[] getPropertyDescriptors() {
         return desc;
     }
 
@@ -205,14 +205,19 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
     final public static class OutputLevelEditor extends java.beans.PropertyEditorSupport {
         /** Display Names for alignment. */
-        private static final String[] names = {
-            formBundle.getString("VALUE_OutputLevel_Minimum"),
-            formBundle.getString("VALUE_OutputLevel_Normal"),
-            formBundle.getString("VALUE_OutputLevel_Maximum"),
-        };
+        private static String[] names; 
 
         /** @return names of the possible directions */
         public String[] getTags() {
+            if (names == null) {
+                java.util.ResourceBundle formBundle =
+                    org.openide.util.NbBundle.getBundle(FormLoaderSettingsBeanInfo.class);
+                names = new String[] {
+                    formBundle.getString("VALUE_OutputLevel_Minimum"),
+                    formBundle.getString("VALUE_OutputLevel_Normal"),
+                    formBundle.getString("VALUE_OutputLevel_Maximum"),
+                };
+            }
             return names;
         }
 

@@ -70,9 +70,6 @@ final public class FormEditor extends Object
 
     /** The resource bundle for the form editor */
     private static ResourceBundle formBundle = NbBundle.getBundle(FormEditor.class);
-    /** Settings of FormEditor */
-    private static FormLoaderSettings formSettings = (FormLoaderSettings)
-                   SharedClassObject.findObject(FormLoaderSettings.class, true);
 
     /** The default width of the form window */
     public static final int DEFAULT_FORM_WIDTH = 300;
@@ -96,7 +93,8 @@ final public class FormEditor extends Object
 
     /** Provides the settings for the FormEditor */
     public static FormLoaderSettings getFormSettings() {
-        return formSettings;
+        return (FormLoaderSettings)
+            SharedClassObject.findObject(FormLoaderSettings.class, true);
     }
 
     // used by GandalfPersistenceManager only

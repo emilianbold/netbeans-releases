@@ -27,9 +27,6 @@ import java.util.HashMap;
  */
 final public class FormPropertyEditorManager extends Object
 {
-    private static FormLoaderSettings formSettings = (FormLoaderSettings)
-                   SharedClassObject.findObject(FormLoaderSettings.class, true);
-
     private static HashMap editorsCache = new HashMap(30);
 
     private static HashMap expliciteEditors = new HashMap(10);
@@ -97,6 +94,9 @@ final public class FormPropertyEditorManager extends Object
         Class[] edClasses = (Class[]) editorsCache.get(type);
         if (edClasses != null)
             return edClasses;
+
+        FormLoaderSettings formSettings = (FormLoaderSettings)
+            SharedClassObject.findObject(FormLoaderSettings.class, true);
 
         ArrayList editorsList = new ArrayList(5);
 
