@@ -47,6 +47,11 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="org-netbeans-modules-usersguide-sep.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 </file>
+                <!-- And another below, for "third-party" helpsets (e.g. Ant's): -->
+                <attr name="org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-usersguide-lower-sep.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-usersguide-lower-sep.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                </file>
             </folder>
         </folder>
     </folder>
@@ -61,6 +66,14 @@ Microsystems, Inc. All Rights Reserved.
 <helpsetref url="nbdocs:/org/netbeans/modules/usersguide/ide.hs"/>
 ]]>
                 <attr boolvalue="false" name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"/>
+            </file>
+            <attr name="org-netbeans-modules-usersguide-helpset.xml/org-netbeans-modules-usersguide-above-regular.txt" boolvalue="true"/>
+            <file name="org-netbeans-modules-usersguide-above-regular.txt">
+                <![CDATA[Only a marker: above regular helpsets, below IDE help.]]>
+            </file>
+            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
+            <file name="org-netbeans-modules-usersguide-below-regular.txt">
+                <![CDATA[Only a marker: below regular helpsets, above third-party helpsets.]]>
             </file>
         </folder>
     </folder>
