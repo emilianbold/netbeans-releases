@@ -46,6 +46,8 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="xalan" classname="org.netbeans.xtest.XalanLauncher"/>
             <taskdef name="getResultsDirs" classname="org.netbeans.xtest.pe.GetResultsDirsTask"/>
             <taskdef name="testruninfo" classname="org.netbeans.xtest.pe.TestRunInfoTask"/>
+            <taskdef name="regenerateXML" classname="org.netbeans.xtest.pe.RegenerateXMLTask"/>
+            <taskdef name="transformXML" classname="org.netbeans.xtest.pe.TransformXMLTask"/>
         </nbtaskdef>
         <property name="tasks-defined" value="true"/>
     </target>
@@ -83,6 +85,11 @@ Microsystems, Inc. All Rights Reserved.
             <param name="running.mode" value="run"/>
         </antcall>
         
+        <!-- regenerate and transform results. -->
+        <regenerateXML inputDir="${xtest.results}"/>
+	<transformXML inputDir="${xtest.results}"
+                      outputDir="${xtest.results}"/>              
+                      
         <get-system-property systemProperty="xtest.errors"/>
         <antcall target="print-errors"/>
         
