@@ -562,6 +562,10 @@ public final class NbMainExplorer extends CloneableTopComponent {
         private MiniStatusBar getMiniStatusBar () {
             if (miniStatusBar==null) {
                 miniStatusBar = new MiniStatusBar (getExplorerManager ());
+                Font f = UIManager.getFont("Tree.font"); //NOI18N
+                if (f != null) {
+                    miniStatusBar.setFont(f);
+                }
             }
             return miniStatusBar;
         }
