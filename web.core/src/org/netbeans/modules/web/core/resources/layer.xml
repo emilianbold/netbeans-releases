@@ -128,36 +128,28 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="template" boolvalue="true"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/ContextListener.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-<!--
-            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>
--->            
+            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>          
         </file> 
 
         <file name="ContextAttributeListener.java" url="templates/ContextAttributeListener.template">
             <attr name="template" boolvalue="true"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/ContextAttributeListener.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-<!--
-            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>
--->            
+            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>            
         </file>
 
         <file name="SessionListener.java" url="templates/SessionListener.template">
             <attr name="template" boolvalue="true"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/SessionListener.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-<!--
             <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>
--->            
         </file>
 
         <file name="SessionAttributeListener.java" url="templates/SessionAttributeListener.template">
             <attr name="template" boolvalue="true"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/SessionAttributeListener.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-<!--
             <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>
--->            
         </file>
                         
       </folder>
