@@ -180,6 +180,8 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- Implementation was apparently killed during a refactoring (see #16430): -->
                 <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetRow"/>
                 <include name="org/openide/explorer/ExplorerPanelTest.class/testSelectedNodesInDeserializedPanel"/>
+                <!-- issue #46587, issue #46589-->
+                <include name="org/openide/WizardDescriptorOrderTest.class"/>
             </patternset>
         </testset>
     </testbag>
