@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -49,7 +49,7 @@ public class BundleEditPanel extends JPanel {
     
     /** PropertiesDataObject this panel presents. */
     private PropertiesDataObject obj;
-
+    
     /** Listener on settings (colors particulary) changes. */
     private PropertyChangeListener settingsListener;
     
@@ -63,9 +63,9 @@ public class BundleEditPanel extends JPanel {
     /** Creates new form BundleEditPanel */
     public BundleEditPanel(final PropertiesDataObject obj, PropertiesTableModel propTableModel) {
         this.obj = obj;
-
-        initComponents ();
-        initAccessibility ();
+        
+        initComponents();
+        initAccessibility();
         initSettings();
         
         // Sets table column model.
@@ -73,16 +73,16 @@ public class BundleEditPanel extends JPanel {
         
         // Sets table model.
         table.setModel(propTableModel);
-
+        
         // Sets table cell editor.
         JTextField textField = new JTextField();
         textField.setBorder(new LineBorder(Color.black));
         table.setDefaultEditor(PropertiesTableModel.StringPair.class,
-            new PropertiesTableCellEditor(textField, textComment, textValue, valueLabel));
-
+        new PropertiesTableCellEditor(textField, textComment, textValue, valueLabel));
+        
         // Sets renderer.
         table.setDefaultRenderer(PropertiesTableModel.StringPair.class, new TableViewRenderer());
-
+        
         // property change listener - listens to editing state of the table
         table.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -91,7 +91,7 @@ public class BundleEditPanel extends JPanel {
                 }
             }
         });
-
+        
         // listens on clikcs on table header, detects column and sort accordingly to chosen one
         table.getTableHeader().addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -120,7 +120,7 @@ public class BundleEditPanel extends JPanel {
         });
         
     } // End of constructor.
-
+    
     
     /** Stops editing if editing is in run. */
     private void stopEditing() {
@@ -129,7 +129,7 @@ public class BundleEditPanel extends JPanel {
         if (cellEdit != null)
             cellEdit.stopCellEditing();
     }
-
+    
     /** Updates the enabled status of the fields */
     private void updateEnabled() {
         // always edit value
@@ -145,19 +145,19 @@ public class BundleEditPanel extends JPanel {
             textComment.setEnabled(false);
         }
     }
-
+    
     /** Returns the main table with all values */
     public JTable getTable() {
         return table;
     }
-
+    
     /** Initializes <code>settings</code> variable. */
     private void initSettings() {
         if(settings == null)
             synchronized(getClass()) {
                 if(settings == null) {
                     settings = TableViewSettingsFactory.getTableViewSettings();
-
+                    
                     // Listen on changes of setting settings.
                     settings.addPropertyChangeListener(WeakListener.propertyChange(settingsListener = new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {
@@ -172,13 +172,14 @@ public class BundleEditPanel extends JPanel {
     private void initAccessibility() {
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_BundleEditPanel"));
         commentLabel.setDisplayedMnemonic((NbBundle.getBundle(BundleEditPanel.class).getString("LBL_CommentLabel_Mnem")).charAt(0));
-        valueLabel.setDisplayedMnemonic((NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel_Mnem")).charAt(0));                
-            
-       // table.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_CTL_Table"));                
+        valueLabel.setDisplayedMnemonic((NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel_Mnem")).charAt(0));
+        
+        table.getAccessibleContext().setAccessibleName(NbBundle.getBundle(BundleEditPanel.class).getString("ACSN_CTL_Table"));
+        table.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACSD_CTL_Table"));
         textValue.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_CTL_TEXTVALUE"));
         addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_LBL_AddPropertyButton"));
         textComment.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_CTL_TEXTCOMMENT"));
-        autoResizeCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_CTL_AutoResize"));        
+        autoResizeCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_CTL_AutoResize"));
         removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_LBL_RemovePropertyButton"));
     }
     
@@ -236,8 +237,8 @@ public class BundleEditPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 0);
         valuePanel.add(commentLabel, gridBagConstraints);
 
-        textComment.setLineWrap(true);
         textComment.setEditable(false);
+        textComment.setLineWrap(true);
         textComment.setRows(3);
         textComment.setEnabled(false);
         jScrollPane2.setViewportView(textComment);
@@ -259,8 +260,8 @@ public class BundleEditPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 0);
         valuePanel.add(valueLabel, gridBagConstraints);
 
-        textValue.setLineWrap(true);
         textValue.setEditable(false);
+        textValue.setLineWrap(true);
         textValue.setRows(3);
         textValue.setEnabled(false);
         jScrollPane3.setViewportView(textValue);
@@ -337,14 +338,14 @@ public class BundleEditPanel extends JPanel {
         add(buttonPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
-
+    
     private void autoResizeCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoResizeCheckActionPerformed
         if(autoResizeCheck.isSelected())
             table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         else
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
     }//GEN-LAST:event_autoResizeCheckActionPerformed
-
+    
     private void removeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         int selectedRow = table.getSelectedRow();
         
@@ -356,21 +357,21 @@ public class BundleEditPanel extends JPanel {
         
         // Don't remove elemnt with key == null ( this is only case -> when there is an empty file with comment only)
         if(key == null)
-            return; 
+            return;
         
         NotifyDescriptor.Confirmation msg = new NotifyDescriptor.Confirmation(
-            MessageFormat.format(
-                NbBundle.getBundle(BundleEditPanel.class).getString("MSG_DeleteKeyQuestion"),
-                new Object[] { key }
-            ),
-            NotifyDescriptor.OK_CANCEL_OPTION
+        MessageFormat.format(
+        NbBundle.getBundle(BundleEditPanel.class).getString("MSG_DeleteKeyQuestion"),
+        new Object[] { key }
+        ),
+        NotifyDescriptor.OK_CANCEL_OPTION
         );
-                
+        
         if (TopManager.getDefault().notify(msg).equals(NotifyDescriptor.OK_OPTION)) {
             try {
                 // Starts "atomic" acion for special undo redo manager of open support.
                 obj.getOpenSupport().atomicUndoRedoFlag = new Object();
-
+                
                 for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
                     PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
                     if (entry != null) {
@@ -386,146 +387,146 @@ public class BundleEditPanel extends JPanel {
             }
         }
     }//GEN-LAST:event_removeButtonActionPerformed
-
+    
     private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         stopEditing();
-
+        
         final Dialog[] dialog = new Dialog[1];
         final Element.ItemElem item = new Element.ItemElem(
-            null, 
-            new Element.KeyElem(null, ""), // NOI18N
-            new Element.ValueElem(null, ""), // NOI18N
-            new Element.CommentElem(null, "") // NOI18N
+        null,
+        new Element.KeyElem(null, ""), // NOI18N
+        new Element.ValueElem(null, ""), // NOI18N
+        new Element.CommentElem(null, "") // NOI18N
         );
         final JPanel panel = new PropertyPanel(item);
-
+        
         DialogDescriptor dd = new DialogDescriptor(
-            panel,
-            NbBundle.getBundle(BundleEditPanel.class).getString("CTL_NewPropertyTitle"),
-            true,
-            DialogDescriptor.OK_CANCEL_OPTION,
-            DialogDescriptor.OK_OPTION,
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt2) {
-                    // OK pressed
-                    if(evt2.getSource() == DialogDescriptor.OK_OPTION) {
-                        dialog[0].setVisible(false);
-                        dialog[0].dispose();
-
-                        final String key = item.getKey();
-                        String value = item.getValue();
-                        String comment = item.getComment();
-
-                        boolean keyAdded = false;
+        panel,
+        NbBundle.getBundle(BundleEditPanel.class).getString("CTL_NewPropertyTitle"),
+        true,
+        DialogDescriptor.OK_CANCEL_OPTION,
+        DialogDescriptor.OK_OPTION,
+        new ActionListener() {
+            public void actionPerformed(ActionEvent evt2) {
+                // OK pressed
+                if(evt2.getSource() == DialogDescriptor.OK_OPTION) {
+                    dialog[0].setVisible(false);
+                    dialog[0].dispose();
+                    
+                    final String key = item.getKey();
+                    String value = item.getValue();
+                    String comment = item.getComment();
+                    
+                    boolean keyAdded = false;
+                    
+                    try {
+                        // Starts "atomic" acion for special undo redo manager of open support.
+                        obj.getOpenSupport().atomicUndoRedoFlag = new Object();
                         
-                        try {
-                            // Starts "atomic" acion for special undo redo manager of open support.
-                            obj.getOpenSupport().atomicUndoRedoFlag = new Object();
-
-                            // add key to all entries
-                            for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {            
-                                PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
+                        // add key to all entries
+                        for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
+                            PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
+                            
+                            if (entry != null && !entry.getHandler().getStructure().addItem(key, value, comment)) {
+                                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                                MessageFormat.format(
+                                NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
+                                new Object[] {
+                                    UtilConvert.unicodesToChars(item.getKey()),
+                                    Util.getLocaleLabel(entry)
+                                }
+                                ),
+                                NotifyDescriptor.ERROR_MESSAGE);
+                                TopManager.getDefault().notify(msg);
+                            } else {
+                                keyAdded = true;
+                            }
+                        }
+                    } finally {
+                        // Finishes "atomic" undo redo action for special undo redo manager of open support.
+                        obj.getOpenSupport().atomicUndoRedoFlag = null;
+                    }
+                    
+                    if(keyAdded) {
+                        // Item was added succesfully, go to edit it.
+                        // PENDING: this is in request processor queue only
+                        // due to reason that properties structure has just after
+                        // adding new item inconsistence gap until it's reparsed anew.
+                        // This should be removed when the parsing will be redsigned.
+                        RequestProcessor.postRequest(new Runnable() {
+                            public void run() {
+                                // Find indexes.
+                                int rowIndex = obj.getBundleStructure().getKeyIndexByName(key);
                                 
-                                if (entry != null && !entry.getHandler().getStructure().addItem(key, value, comment)) {
-                                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                                        MessageFormat.format(
-                                            NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
-                                            new Object[] {
-                                                UtilConvert.unicodesToChars(item.getKey()),
-                                                Util.getLocaleLabel(entry)
+                                if((rowIndex != -1)) {
+                                    final int row = rowIndex;
+                                    final int column = 1; // Default locale.
+                                    
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        public void run() {
+                                            // Autoscroll to cell if possible and necessary.
+                                            if(table.getAutoscrolls()) {
+                                                Rectangle cellRect = table.getCellRect(row, column, false);
+                                                if (cellRect != null) {
+                                                    table.scrollRectToVisible(cellRect);
+                                                }
                                             }
-                                        ),
-                                        NotifyDescriptor.ERROR_MESSAGE);
-                                    TopManager.getDefault().notify(msg);
-                                } else {
-                                    keyAdded = true;
+                                            
+                                            // Update selection & edit.
+                                            table.getColumnModel().getSelectionModel().setSelectionInterval(row, column);
+                                            table.getSelectionModel().setSelectionInterval(row, column);
+                                            
+                                            table.editCellAt(row, column);
+                                        }
+                                    });
                                 }
                             }
-                        } finally {
-                            // Finishes "atomic" undo redo action for special undo redo manager of open support.
-                            obj.getOpenSupport().atomicUndoRedoFlag = null;
-                        }
-
-                        if(keyAdded) {
-                            // Item was added succesfully, go to edit it.
-                            // PENDING: this is in request processor queue only 
-                            // due to reason that properties structure has just after
-                            // adding new item inconsistence gap until it's reparsed anew.
-                            // This should be removed when the parsing will be redsigned.
-                            RequestProcessor.postRequest(new Runnable() {
-                                public void run() {
-                                    // Find indexes.
-                                    int rowIndex = obj.getBundleStructure().getKeyIndexByName(key);
-
-                                    if((rowIndex != -1)) {
-                                        final int row = rowIndex;
-                                        final int column = 1; // Default locale.
-
-                                        SwingUtilities.invokeLater(new Runnable() {
-                                            public void run() {
-                                                // Autoscroll to cell if possible and necessary.
-                                                if(table.getAutoscrolls()) { 
-                                                    Rectangle cellRect = table.getCellRect(row, column, false);
-                                                    if (cellRect != null) {
-                                                        table.scrollRectToVisible(cellRect);
-                                                    }
-                                                }
-
-                                                // Update selection & edit.
-                                                table.getColumnModel().getSelectionModel().setSelectionInterval(row, column);
-                                                table.getSelectionModel().setSelectionInterval(row, column);
-
-                                                table.editCellAt(row, column);
-                                            }
-                                        });
-                                    }
-                                }
-                            });
-                        }
-                        
-                    // Cancel pressed
-                    } else if (evt2.getSource() == DialogDescriptor.CANCEL_OPTION) {
-                        dialog[0].setVisible(false);
-                        dialog[0].dispose();
+                        });
                     }
+                    
+                    // Cancel pressed
+                } else if (evt2.getSource() == DialogDescriptor.CANCEL_OPTION) {
+                    dialog[0].setVisible(false);
+                    dialog[0].dispose();
                 }
             }
+        }
         );
-
+        
         dialog[0] = TopManager.getDefault().createDialog(dd);
         dialog[0].show();
     }//GEN-LAST:event_addButtonActionPerformed
-
-
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane scrollPane;
-    private javax.swing.JPanel buttonPanel;
-    private javax.swing.JTable table;
-    private javax.swing.JLabel valueLabel;
-    private javax.swing.JTextArea textValue;
-    private javax.swing.JButton addButton;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTextArea textComment;
+    private javax.swing.JButton addButton;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JPanel tablePanel;
-    private javax.swing.JCheckBox autoResizeCheck;
-    private javax.swing.JLabel commentLabel;
-    private javax.swing.JPanel valuePanel;
+    private javax.swing.JPanel buttonPanel;
+    private javax.swing.JTextArea textComment;
     private javax.swing.JButton removeButton;
+    private javax.swing.JPanel tablePanel;
+    private javax.swing.JLabel commentLabel;
+    private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JPanel valuePanel;
+    private javax.swing.JTable table;
+    private javax.swing.JCheckBox autoResizeCheck;
+    private javax.swing.JTextArea textValue;
+    private javax.swing.JLabel valueLabel;
     // End of variables declaration//GEN-END:variables
-
-
+    
+    
     /** Header renderer used in table view. */
     private class TableViewHeaderRenderer extends DefaultTableCellRenderer {
         /** Sorted column. */
         private int column;
-
+        
         /** Overrides superclass method. */
         public Component getTableCellRendererComponent(JTable table, Object value,
-                     boolean isSelected, boolean hasFocus, int row, int column) {
-
-            this.column = column;             
-
+        boolean isSelected, boolean hasFocus, int row, int column) {
+            
+            this.column = column;
+            
             if (table != null) {
                 JTableHeader header = table.getTableHeader();
                 if (header != null) {
@@ -534,42 +535,42 @@ public class BundleEditPanel extends JPanel {
                     this.setFont(header.getFont());
                 }
             }
-
+            
             setText((value == null) ? "" : value.toString()); // NOI18N
             this.setBorder(UIManager.getBorder("TableHeader.cellBorder")); // NOI18N
             return this;
         }
-
+        
         /** Overrides superclass method. Adds painting ascending/descending marks for sorted column header. */
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             
             int sortIndex = table.convertColumnIndexToView(obj.getBundleStructure().getSortIndex());
-
+            
             // If the column is the sorted one draw mark on its header.
             if(column == sortIndex ) {
-
+                
                 Color oldColor = g.getColor();
-
+                
                 FontMetrics fm = g.getFontMetrics();
                 Rectangle space = fm.getStringBounds(" ", g).getBounds(); // NOI18N
                 Rectangle mark = fm.getStringBounds("\u25B2", g).getBounds(); // NOI18N
                 Rectangle bounds = this.getBounds();
-
+                
                 Insets insets = this.getInsets();
-
+                
                 BevelBorderUIResource bevelUI = (BevelBorderUIResource)BorderUIResource.getLoweredBevelBorderUIResource();
-
+                
                 boolean ascending = obj.getBundleStructure().getSortOrder();
-
-                int x1, x2, x3, y1, y2, y3; 
-
+                
+                int x1, x2, x3, y1, y2, y3;
+                
                 if(ascending) {
                     // Ascending order.
                     x1 = space.width + mark.width/2;
                     x2 = space.width;
                     x3 = space.width + mark.width;
-
+                    
                     y1 = bounds.y + insets.top+2;
                     y2 = bounds.y + bounds.height - insets.bottom-2;
                     y3 = y2;
@@ -578,12 +579,12 @@ public class BundleEditPanel extends JPanel {
                     x1 = space.width;
                     x2 = space.width + mark.width;
                     x3 = space.width + mark.width/2;
-
+                    
                     y1 = bounds.y + insets.top + 2;
                     y2 = y1;
                     y3 = bounds.y + bounds.height - insets.bottom - 2;
                 }
-
+                
                 // Draw bevel border.
                 // Draw shadow outer color.
                 g.setColor(bevelUI.getShadowOuterColor(this));
@@ -591,73 +592,73 @@ public class BundleEditPanel extends JPanel {
                     g.drawLine(x1, y1, x2, y2);
                 else
                     g.drawPolyline(new int[] {x2, x1, x3}, new int[] {y2, y1, y3}, 3);
-
-                // Draw shadow inner color.
-                g.setColor(bevelUI.getShadowInnerColor(this));
-                if(ascending)
-                    g.drawLine(x1, y1+1, x2+1, y2-1);
-                else
-                    g.drawPolyline(new int[] {x2-1, x1+1, x3}, new int[] {y2+1, y1+1, y3-1}, 3);
-
-                // Draw highlihght outer color.
-                g.setColor(bevelUI.getHighlightOuterColor(this));
-                if(ascending)
-                    g.drawPolyline(new int[] {x1, x3, x2}, new int[] {y1, y3, y2}, 3);
-                else
-                    g.drawLine(x2, y2, x3, y3);
-
-                // Draw highlight inner color.
-                g.setColor(bevelUI.getHighlightInnerColor(this));
-                if(ascending)
-                    g.drawPolyline(new int[] {x1, x3-1, x2+1}, new int[] {y1+1, y3-1, y2-1}, 3);
-                else
-                    g.drawLine(x2-1, y2+1, x3, y3-1);
-
-                g.setColor(oldColor);
+                    
+                    // Draw shadow inner color.
+                    g.setColor(bevelUI.getShadowInnerColor(this));
+                    if(ascending)
+                        g.drawLine(x1, y1+1, x2+1, y2-1);
+                    else
+                        g.drawPolyline(new int[] {x2-1, x1+1, x3}, new int[] {y2+1, y1+1, y3-1}, 3);
+                        
+                        // Draw highlihght outer color.
+                        g.setColor(bevelUI.getHighlightOuterColor(this));
+                        if(ascending)
+                            g.drawPolyline(new int[] {x1, x3, x2}, new int[] {y1, y3, y2}, 3);
+                        else
+                            g.drawLine(x2, y2, x3, y3);
+                        
+                        // Draw highlight inner color.
+                        g.setColor(bevelUI.getHighlightInnerColor(this));
+                        if(ascending)
+                            g.drawPolyline(new int[] {x1, x3-1, x2+1}, new int[] {y1+1, y3-1, y2-1}, 3);
+                        else
+                            g.drawLine(x2-1, y2+1, x3, y3-1);
+                        
+                        g.setColor(oldColor);
             }
         }
     } // End of inner class TableViewHeaderRenderer.
-
     
-    /** 
+    
+    /**
      * This subclass of Default column model is provided due correct set of column widths,
      * see the JTable and horizontal scrolling problem in Java Discussion Forum.
      */
     private class TableViewColumnModel extends DefaultTableColumnModel {
         /** Helper listener. */
         private AncestorListener ancestorListener;
-
+        
         /** Table header rendrer. */
         private final TableCellRenderer headerRenderer = new TableViewHeaderRenderer();
-
+        
         /** Overrides superclass method. */
         public void addColumn(TableColumn aColumn) {
             if (aColumn == null) {
                 throw new IllegalArgumentException("Object is null"); // NOI18N
             }
-
+            
             tableColumns.addElement(aColumn);
             aColumn.addPropertyChangeListener(this);
-
+            
             // this method call is only difference with overriden superclass method
             adjustColumnWidths();
-
+            
             // set header renderer this 'ugly' way (for each column),
             // in jdk1.2 is not possible to set default renderer
             // for JTableHeader like in jdk1.3
             aColumn.setHeaderRenderer(headerRenderer);
-
+            
             // Post columnAdded event notification
-                fireColumnAdded(new TableColumnModelEvent(this, 0,
-                getColumnCount() - 1));
+            fireColumnAdded(new TableColumnModelEvent(this, 0,
+            getColumnCount() - 1));
         }
-
+        
         /** Helper method adjusting the table according top component or mode which contains it, the
          * minimal width of column is 1/10 of screen width. */
         private void adjustColumnWidths() {
             // The least initial width of column (1/10 of screen witdh).
             int columnWidth = Toolkit.getDefaultToolkit().getScreenSize().width/10;
-
+            
             // Try to set widths according parent (viewport) width.
             int totalWidth = 0;
             TopComponent tc = (TopComponent)SwingUtilities.getAncestorOfClass(TopComponent.class, table);
@@ -674,26 +675,26 @@ public class BundleEditPanel extends JPanel {
                                 ancestorListener = null;
                             }
                         }
-
+                        
                         /** Does nothing. */
                         public void ancestorMoved(AncestorEvent evt) {
                         }
-
+                        
                         /** Does nothing. */
                         public void ancestorRemoved(AncestorEvent evt) {
                         }
                     });
                 }
             }
-
+            
             // Decrease of insets of scrollpane and insets set in layout manager.
-            // Note: Layout constraints hardcoded instead of getting via method call -> 
+            // Note: Layout constraints hardcoded instead of getting via method call ->
             // keep consistent with numbers in initComponents method.
             totalWidth -= scrollPane.getInsets().left + scrollPane.getInsets().right + 12 + 11;
-
+            
             // Helper variable for keeping additional pixels which remains after division.
             int remainder = 0;
-
+            
             // If calculations were succesful try to set the widths in case calculated width
             // for one column is not less than 1/10 of screen width.
             if(totalWidth > 0) {
@@ -703,43 +704,45 @@ public class BundleEditPanel extends JPanel {
                     remainder = totalWidth % table.getColumnCount();
                 }
             }
-
+            
             // Set the column widths.
             for (int i = 0; i < table.getColumnCount(); i++) {
                 TableColumn column = table.getColumnModel().getColumn(i);
-
+                
                 // Add remainder to first column.
                 if(i==0) {
                     // It is necessary to set both 'widths', see javax.swing.TableColumn.
                     column.setPreferredWidth(columnWidth + remainder);
-                    column.setWidth(columnWidth + remainder); 
-                } else {                    
+                    column.setWidth(columnWidth + remainder);
+                } else {
                     // It is necessary to set both 'widths', see javax.swing.TableColumn.
                     column.setPreferredWidth(columnWidth);
                     column.setWidth(columnWidth);
                 }
             }
-
+            
             // Recalculate total column width.
             recalcWidthCache();
-
+            
             // Revalidate table so the widths will fit properly.
             table.revalidate();
-
+            
             // Repaint header afterwards. Seems stupid but necessary.
             table.getTableHeader().repaint();
         }
     } // End of inner class TableViewColumnModel.
-
+    
     
     /** Renderer which renders cells in table view. */
     private class TableViewRenderer extends DefaultTableCellRenderer {
         /** Overrides superclass method. */
         public Component getTableCellRendererComponent(JTable table,
-                Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-
-            PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)value;
-
+        Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            
+            if(value==null) return this;
+            
+            PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)value;                        
+            
             setFont(table.getFont());
             
             if(hasFocus) {
@@ -760,7 +763,7 @@ public class BundleEditPanel extends JPanel {
             }
             
             setValue(text == null ? "" : text); // NOI18N
-
+            
             // Set background color.
             if(sp.isKeyType())
                 setBackground(settings.getKeyBackground());
@@ -770,7 +773,7 @@ public class BundleEditPanel extends JPanel {
                 else
                     setBackground(settings.getShadowColor());
             }
-
+            
             // Set foregound color.
             if(sp.isKeyType())
                 setForeground(settings.getKeyColor());
@@ -781,36 +784,36 @@ public class BundleEditPanel extends JPanel {
             Color back = getBackground();
             boolean colorMatch = (back != null) && (back.equals(table.getBackground()) ) && table.isOpaque();
             setOpaque(!colorMatch);
-
+            
             return this;
         }
-
+        
         /** Overrides superclass method. It adds the highlighting of search occurences in it. */
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-
+            
             // If there is a highlihgt flag set do additional drawings.
             if(FindPerformer.getFindPerformer(BundleEditPanel.this.table).isHighlightSearch()) {
                 String text = getText();
                 String findString = FindPerformer.getFindPerformer(BundleEditPanel.this.table).getFindString();
-
+                
                 // If there is a findString and the cell could contain it go ahead.
                 if(text != null && text.length()>0 && findString != null && findString.length()>0) {
                     int index = 0;
                     int width = (int)g.getFontMetrics().getStringBounds(findString, g).getWidth();
-
-                    Color oldColor = g.getColor();                    
+                    
+                    Color oldColor = g.getColor();
                     // In each iteration highlight one occurence of findString in this cell.
                     while((index = text.indexOf(findString, index)) >= 0) {
-
+                        
                         int x = (int)g.getFontMetrics().getStringBounds(text.substring(0, index), g).getWidth()+this.getInsets().left;
-
+                        
                         g.setColor(settings.getHighlightBackground());
                         g.fillRect(x, 0, width, g.getClipBounds().height);
-
+                        
                         g.setColor(settings.getHighlightColor());
                         g.drawString(findString, x, -(int)g.getFontMetrics().getStringBounds(findString, g).getY());
-
+                        
                         index += findString.length();
                     }
                     // Reset original color.
@@ -835,19 +838,19 @@ public class BundleEditPanel extends JPanel {
             TableCellEditor editor = getCellEditor();
             if(editor != null) {
                 editor.removeCellEditorListener(this);
-
+                
                 // requestFocus();
-                if (editorComp != null) { 
+                if (editorComp != null) {
                     remove(editorComp);
                 }
-
+                
                 Rectangle cellRect = getCellRect(editingRow, editingColumn, false);
-
+                
                 setCellEditor(null);
                 setEditingColumn(-1);
                 setEditingRow(-1);
                 editorComp = null;
-
+                
                 repaint(cellRect);
             }
         }

@@ -73,8 +73,8 @@
           <SubComponents>
             <Component class="javax.swing.JTextArea" name="textComment">
               <Properties>
-                <Property name="lineWrap" type="boolean" value="true"/>
                 <Property name="editable" type="boolean" value="false"/>
+                <Property name="lineWrap" type="boolean" value="true"/>
                 <Property name="rows" type="int" value="3"/>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
@@ -107,8 +107,8 @@
           <SubComponents>
             <Component class="javax.swing.JTextArea" name="textValue">
               <Properties>
-                <Property name="lineWrap" type="boolean" value="true"/>
                 <Property name="editable" type="boolean" value="false"/>
+                <Property name="lineWrap" type="boolean" value="true"/>
                 <Property name="rows" type="int" value="3"/>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
