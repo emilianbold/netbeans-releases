@@ -76,8 +76,6 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     // private final String[] recommendedTypes = null;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     
-    private Project project;
-    
     //GUI Builder
     private TemplatesPanelGUI.Builder builder;
     
@@ -110,7 +108,6 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             projectsModel.insertElementAt( p, 0 );
         }
         projectsComboBox.setSelectedItem( p );
-        project = p;
     }
     
     
@@ -152,6 +149,13 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         return PREF_DIM;
     }
     
+    private String getCategory () {
+        return ((TemplatesPanelGUI)this.templatesPanel).getSelectedCategoryName ();
+    }
+    
+    public void setCategory (String category) {
+        ((TemplatesPanelGUI)this.templatesPanel).setSelectedCategoryByName (category);
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -252,7 +256,10 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         public void actionPerformed (ActionEvent event) {
+            String cat = getCategory ();
+            setKeys (Collections.EMPTY_LIST);
             this.updateKeys ();
+            setCategory (cat);
         }
                 
         
@@ -286,14 +293,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     }
     
     
-    private static class FileChildren extends Children.Keys {
+    private final class FileChildren extends Children.Keys {
         
         private DataFolder root;
-        private Project project;
                 
-        public FileChildren (Project p, DataFolder folder) {
+        public FileChildren (DataFolder folder) {
             this.root = folder;
-            this.project = p;
             assert this.root != null : "Root can not be null";  //NOI18N
         }
         
@@ -308,7 +313,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         protected Node[] createNodes(Object key) {
             if (key instanceof DataObject) {
                 DataObject dobj = (DataObject)key;
-                if (isTemplate(dobj) && OpenProjectList.isRecommended (project, dobj.getPrimaryFile ())) {
+                if (isTemplate(dobj) && OpenProjectList.isRecommended (getProject (), dobj.getPrimaryFile ())) {
                     return new Node[] {
                         new FilterNode (dobj.getNodeDelegate(),Children.LEAF)
                     };
@@ -327,7 +332,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         public Children createTemplatesChildren(DataFolder folder) {
-            return new FileChildren (project, folder);
+            return new FileChildren (folder);
         }
         
         public void fireChange() {
