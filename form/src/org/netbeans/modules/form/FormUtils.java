@@ -67,6 +67,8 @@ public class FormUtils
     static final Object PROP_EXPERT = new Object();
     static final Object PROP_HIDDEN = new Object();
 
+    /** A table modifying categories of properties taken from Swing beaninfos
+     * (which is not always very nice). */
     private static Object[][] propsClassifications = {
         { java.awt.Component.class, CLASS_AND_SUBCLASSES,
                 "locale", PROP_HIDDEN,
@@ -174,6 +176,34 @@ public class FormUtils
                 "appletContext", PROP_HIDDEN,
                 "codeBase", PROP_HIDDEN,
                 "documentBase", PROP_HIDDEN }
+    };
+
+    /** List of components that should never be containers; some of them are
+     * not specified in original Swing beaninfos. */
+    private static String[] forbiddenContainers = {
+        "javax.swing.JLabel", // NOI18N
+        "javax.swing.JButton", // NOI18N
+        "javax.swing.JToggleButton", // NOI18N
+        "javax.swing.JCheckBox", // NOI18N
+        "javax.swing.JRadioButton", // NOI18N
+        "javax.swing.JComboBox", // NOI18N
+        "javax.swing.JList", // NOI18N
+        "javax.swing.JTextField", // NOI18N
+        "javax.swing.JTextArea", // NOI18N
+        "javax.swing.JScrollBar", // NOI18N
+        "javax.swing.JSlider", // NOI18N
+        "javax.swing.JProgressBar", // NOI18N
+        "javax.swing.JFormattedTextField", // NOI18N
+        "javax.swing.JPasswordField", // NOI18N
+        "javax.swing.JSpinner", // NOI18N
+        "javax.swing.JSeparator", // NOI18N
+        "javax.swing.JTextPane", // NOI18N
+        "javax.swing.JEditorPane", // NOI18N
+        "javax.swing.JTree", // NOI18N
+        "javax.swing.JTable", // NOI18N
+        "javax.swing.JOptionPane", // NOI18N
+        "javax.swing.JColorChooser", // NOI18N
+        "javax.swing.JFileChooser", // NOI18N
     };
 
     /** The properties whose changes are ignored in JComponent subclasses */
@@ -529,41 +559,61 @@ public class FormUtils
     // ---------
 
     public static boolean isContainer(Class beanClass) {
-        if (beanClass == null || !Container.class.isAssignableFrom(beanClass))
-            return false;
-
         Map containerBeans = formSettings.getContainerBeans();
-        Boolean isContReg = containerBeans == null ? null :
-                            getRegisteredIsContainer(beanClass, containerBeans);
-        boolean isCont;
+        Object registered = containerBeans != null ?
+                              containerBeans.get(beanClass.getName()) : null;
+        if (registered instanceof Boolean)
+            return ((Boolean)registered).booleanValue();
 
-        if (isContReg != null)
-            isCont = isContReg.booleanValue();
-        else { // not registered, find "isContainer" attribute in BeanDescriptor
+        // not registered
+        boolean isContainer;
+        if (!canBeContainer(beanClass))
+            isContainer = false;
+        else { // find "isContainer" attribute in BeanDescriptor
             Object isContainerValue = null;
             try {
                 BeanDescriptor desc = Utilities.getBeanInfo(beanClass)
-                                                    .getBeanDescriptor();
+                                                  .getBeanDescriptor();
                 if (desc != null)
                    isContainerValue = desc.getValue("isContainer"); // NOI18N
             }
             catch (IntrospectionException ex) { // ignore
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
+                ex.printStackTrace();
             }
-
-            // hack for JDK 1.4 bug: JFormattedTextField has not isContainer set
-            if (isContainerValue == null
-                  && "javax.swing.JFormattedTextField".equals(beanClass.getName())) // NOI18N
-                isCont = false;
-            else // can be false only if the attribute is explicitly set to false
-                isCont = isContainerValue instanceof Boolean ?
-                         ((Boolean)isContainerValue).booleanValue() : true;
-
-            setIsContainer(beanClass, isCont);
+            isContainer = isContainerValue instanceof Boolean ?
+                          ((Boolean)isContainerValue).booleanValue() : true;
         }
 
-        return isCont;
+        if (beanClass.getName().startsWith("javax.swing.")) // NOI18N
+            setIsContainer(beanClass, isContainer);
+
+        return isContainer;
+    }
+
+    public static boolean canBeContainer(Class beanClass) {
+        if (beanClass == null
+                || !java.awt.Container.class.isAssignableFrom(beanClass))
+            return false;
+
+        String beanClassName = beanClass.getName();
+        for (int i=0; i < forbiddenContainers.length; i++)
+            if (beanClassName.equals(forbiddenContainers[i])) {
+                System.out.println("container forbidden: "+beanClassName);
+                return false;
+            }
+
+        Object isContainerValue = null;
+        try {
+            BeanDescriptor desc = Utilities.getBeanInfo(beanClass)
+                                                    .getBeanDescriptor();
+            if (desc != null)
+               isContainerValue = desc.getValue("isContainer"); // NOI18N
+        }
+        catch (IntrospectionException ex) { // ignore
+            ex.printStackTrace();
+        }
+        return isContainerValue instanceof Boolean ?
+                 ((Boolean)isContainerValue).booleanValue() : true;
     }
 
     public static void setIsContainer(Class beanClass, boolean isContainer) {
@@ -571,12 +621,11 @@ public class FormUtils
             return;
 
         Map containerBeans = formSettings.getContainerBeans();
-        if (containerBeans == null) {
+        if (containerBeans == null)
             containerBeans = new HashMap();
-            formSettings.setContainerBeans(containerBeans);
-        }
 
         containerBeans.put(beanClass.getName(), new Boolean(isContainer));
+        formSettings.setContainerBeans(containerBeans);
     }
 
     public static void removeIsContainerRegistration(Class beanClass) {
@@ -585,21 +634,7 @@ public class FormUtils
             return;
 
         containerBeans.remove(beanClass.getName());
-
-        if (containerBeans.isEmpty())
-            formSettings.setContainerBeans(null);
-    }
-
-    private static Boolean getRegisteredIsContainer(Class beanClass, Map map) {
-        Object val = map.get(beanClass.getName());
-        if (val instanceof Boolean)
-            return (Boolean) val;
-
-        if (beanClass.isAssignableFrom(Container.class))
-            return null;
-
-        beanClass = beanClass.getSuperclass();
-        return getRegisteredIsContainer(beanClass, map);
+        formSettings.setContainerBeans(containerBeans);
     }
 
     // ---------

@@ -77,9 +77,10 @@ public class FormLoaderSettings extends SystemOption {
     public static final String PROP_SELECTED_PALETTE = "selectedPalette"; // NOI18N
     /** Property name of the showComponentsNames property */
     public static final String PROP_SHOW_COMPONENTS_NAMES = "showComponentsNames"; // NOI18N    
-    
+
+    public static final String PROP_CONTAINER_BEANS = "containerBeans"; // NOI18N
     /** Property name of the openFormsInOneWindow property */
-    public static final String PROP_OPEN_FORMS_IN_ONE_WINDOW = "openFormsInOneWindow"; // NOI18N
+//    public static final String PROP_OPEN_FORMS_IN_ONE_WINDOW = "openFormsInOneWindow"; // NOI18N
     /** Property name of the formDesignerBackgroundColor property */
     public static final String PROP_FORMDESIGNER_BACKGROUND_COLOR = "formDesignerBackgroundColor"; // NOI18N
     /** Property name of the formDesignerBorderColor property */
@@ -162,7 +163,7 @@ public class FormLoaderSettings extends SystemOption {
     private static boolean showComponentsNames = false;
     
     /** Opened forms are docked into one FormDesigner window, otherwise each form into one single window */
-    private static boolean openFormsInOneWindow = true;
+//    private static boolean openFormsInOneWindow = true;
     /** The color of FormDesigner window's background */
     private static java.awt.Color formDesignerBackgroundColor = new java.awt.Color(255, 255, 255);
     /** The color of border around designed component */
@@ -538,19 +539,17 @@ public class FormLoaderSettings extends SystemOption {
         firePropertyChange(PROP_SHOW_COMPONENTS_NAMES, new Boolean(!value), new Boolean(value));
     }    
     
-    // :::::::::::: FormDesigner    
-    
-    /** Getter for the openFormsInOneWindow option */
-    public boolean getOpenFormsInOneWindow() {
-        return openFormsInOneWindow;
-    }
-    
-    /** Setter for the openFormsInOneWindow option */
-    public void setOpenFormsInOneWindow(boolean value) {
-        if (value == openFormsInOneWindow) return;
-        openFormsInOneWindow = value;
-        firePropertyChange(PROP_OPEN_FORMS_IN_ONE_WINDOW, new Boolean(!value), new Boolean(value));
-    }    
+//    /** Getter for the openFormsInOneWindow option */
+//    public boolean getOpenFormsInOneWindow() {
+//        return openFormsInOneWindow;
+//    }
+//    
+//    /** Setter for the openFormsInOneWindow option */
+//    public void setOpenFormsInOneWindow(boolean value) {
+//        if (value == openFormsInOneWindow) return;
+//        openFormsInOneWindow = value;
+//        firePropertyChange(PROP_OPEN_FORMS_IN_ONE_WINDOW, new Boolean(!value), new Boolean(value));
+//    }    
     
     /** Getter for the formDesignerBackgroundColor option */
     public java.awt.Color getFormDesignerBackgroundColor() {
@@ -579,8 +578,6 @@ public class FormLoaderSettings extends SystemOption {
         formDesignerBorderColor = value;
         firePropertyChange(PROP_FORMDESIGNER_BORDER_COLOR, oldValue, formDesignerBorderColor);
     }      
-        
-    // ::::::::::::
 
     public Map getContainerBeans() {
         return containerBeans;
@@ -588,6 +585,7 @@ public class FormLoaderSettings extends SystemOption {
 
     public void setContainerBeans(Map map) {
         containerBeans = map;
+        firePropertyChange(PROP_CONTAINER_BEANS, null, null);
     }
 
     // XXX(-tdt) Hmm, backward compatibility with com.netbeans package name

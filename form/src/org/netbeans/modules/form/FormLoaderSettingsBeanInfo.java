@@ -86,10 +86,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        "getWorkspace", "setWorkspace"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_SELECTED_PALETTE, FormLoaderSettings.class,
                                        "getSelectedPalette", "setSelectedPalette"), // NOI18N
-                new PropertyDescriptor("containerBeans", FormLoaderSettings.class, // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_CONTAINER_BEANS, FormLoaderSettings.class, // NOI18N
                                        "getContainerBeans", "setContainerBeans"), // NOI18N
-                new PropertyDescriptor(FormLoaderSettings.PROP_OPEN_FORMS_IN_ONE_WINDOW, FormLoaderSettings.class, // NOI18N
-                                       "getOpenFormsInOneWindow", "setOpenFormsInOneWindow"), // NOI18N
+//                new PropertyDescriptor(FormLoaderSettings.PROP_OPEN_FORMS_IN_ONE_WINDOW, FormLoaderSettings.class, // NOI18N
+//                                       "getOpenFormsInOneWindow", "setOpenFormsInOneWindow"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR, FormLoaderSettings.class, // NOI18N
                                        "getFormDesignerBackgroundColor", "setFormDesignerBackgroundColor"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_FORMDESIGNER_BORDER_COLOR, FormLoaderSettings.class, // NOI18N
@@ -183,26 +183,26 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[15].setPropertyEditorClass(PalettesEditor.class);
 
             desc[16].setHidden(true);
-            
-            desc[17].setDisplayName(formBundle.getString("PROP_OPEN_FORMS_IN_ONE_WINDOW"));
-            desc[17].setShortDescription(formBundle.getString("HINT_OPEN_FORMS_IN_ONE_WINDOW"));
-            desc[17].setHidden(true);
-            
-            desc[18].setDisplayName(formBundle.getString("PROP_FORMDESIGNER_BACKGROUND_COLOR"));
-            desc[18].setShortDescription(formBundle.getString("HINT_FORMDESIGNER_BACKGROUND_COLOR"));
-            
-            desc[19].setDisplayName(formBundle.getString("PROP_FORMDESIGNER_BORDER_COLOR"));
-            desc[19].setShortDescription(formBundle.getString("HINT_FORMDESIGNER_BORDER_COLOR"));
-            
-            desc[20].setDisplayName(formBundle.getString("PROP_SHOW_COMPONENT_NAMES"));
-            desc[20].setShortDescription(formBundle.getString("HINT_SHOW_COMPONENT_NAMES"));
-//            desc[20].setHidden(true);
 
-            desc[21].setDisplayName(formBundle.getString("PROP_VARIABLES_LOCAL"));
-            desc[21].setShortDescription(formBundle.getString("HINT_VARIABLES_LOCAL"));
-            desc[21].setExpert(true);
+//            desc[17].setDisplayName(formBundle.getString("PROP_OPEN_FORMS_IN_ONE_WINDOW"));
+//            desc[17].setShortDescription(formBundle.getString("HINT_OPEN_FORMS_IN_ONE_WINDOW"));
+//            desc[17].setHidden(true);
+            
+            desc[17].setDisplayName(formBundle.getString("PROP_FORMDESIGNER_BACKGROUND_COLOR"));
+            desc[17].setShortDescription(formBundle.getString("HINT_FORMDESIGNER_BACKGROUND_COLOR"));
+            
+            desc[18].setDisplayName(formBundle.getString("PROP_FORMDESIGNER_BORDER_COLOR"));
+            desc[18].setShortDescription(formBundle.getString("HINT_FORMDESIGNER_BORDER_COLOR"));
+            
+            desc[19].setDisplayName(formBundle.getString("PROP_SHOW_COMPONENT_NAMES"));
+            desc[19].setShortDescription(formBundle.getString("HINT_SHOW_COMPONENT_NAMES"));
+//            desc[19].setHidden(true);
 
-            desc[22].setHidden(true);
+            desc[20].setDisplayName(formBundle.getString("PROP_VARIABLES_LOCAL"));
+            desc[20].setShortDescription(formBundle.getString("HINT_VARIABLES_LOCAL"));
+            desc[20].setExpert(true);
+
+            desc[21].setHidden(true);
 
             return desc;
             
