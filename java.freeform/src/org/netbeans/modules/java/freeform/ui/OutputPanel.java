@@ -64,6 +64,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     
     private void update() {
         int index = sourceFolder.getSelectedIndex();
+        assert index >= 0;
         ProjectModel.CompilationUnitKey key = (ProjectModel.CompilationUnitKey)compUnitsKeys.get(index);
         JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
         updateCompilationUnitJavadoc(cu);
@@ -89,6 +90,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             sourceFolder.setSelectedIndex(0);
             ignoreEvent = false;
         }
+        
         loadOutput();        
         
         // enable/disable "Separate Classpath" checkbox
@@ -98,8 +100,11 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         
         // disable ouput panel and Add Output button if there is 
         // no compilation unit ot be configured
-        addOutput.setEnabled(compUnitsKeys.size() > 0);
+        addOutput.setEnabled(compUnitsKeys.size() > 0);        
         output.setEnabled(compUnitsKeys.size() > 0);
+        javadoc.setEnabled(compUnitsKeys.size() > 0);
+        javadocBrowse.setEnabled(compUnitsKeys.size() > 0);
+        updateButtons();
     }
     
     /** This method is called from within the constructor to
@@ -447,7 +452,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     }
     
     private void updateButtons() {
-        removeOutput.setEnabled(listModel.getSize() > 0 && output.getSelectedIndex() != -1);
+        removeOutput.setEnabled(output.isEnabled() && listModel.getSize() > 0 && output.getSelectedIndex() != -1);
     }
     
     private void removeOutputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeOutputActionPerformed
