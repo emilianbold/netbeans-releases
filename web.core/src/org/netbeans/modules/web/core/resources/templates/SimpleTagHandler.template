@@ -24,18 +24,26 @@ public class TagHandler extends SimpleTagSupport {
     */
     public void doTag() throws JspException {
         
-        // TODO: you can output a static text or process the tag body
-        /*
         JspWriter out=getJspContext().getOut();
+
         try {
-            out.print("Hello: ");
+            // TODO: insert code to write html before writing the body content.
+            // e.g.:
+            //
+            // out.println("<B>" + attribute_1 + "</B>");
+            // out.println("    <BLOCKQUOTE>");
 
             JspFragment f=getJspBody();
             if (f != null) f.invoke(out);
 
+            // TODO: insert code to write html after writing the body content.
+            // e.g.:
+            //
+            // out.println("    </BLOCKQUOTE>");
+
         } catch (java.io.IOException ex) {
             throw new JspException(ex.getMessage());
         }
-        */
+
     }
 }
