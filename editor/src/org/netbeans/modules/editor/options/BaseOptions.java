@@ -166,6 +166,7 @@ public class BaseOptions extends OptionSupport {
     static final long serialVersionUID =-5469192431366914841L;
     
     private static final String HELP_ID = "editing.global"; // !!! NOI18N
+    private static final String NO_INDENT_ENGINE = "NO_INDENT_ENGINE"; // NOI18N
     
     /** Whether formatting debug messages should be displayed */
     private static final boolean debugFormat
@@ -1093,7 +1094,13 @@ public class BaseOptions extends OptionSupport {
                     Object handle = setMap.get(INDENT_ENGINE_PROP);
                     if (handle instanceof String){
                         Object instance = null;
-                        Lookup.Template tmp = new Lookup.Template(null, (String)handle, null);
+                        String handleString = (String) handle;
+                        
+                        if (handleString.equals(NO_INDENT_ENGINE)){
+                            return IndentEngine.getDefault();
+                        }
+                        
+                        Lookup.Template tmp = new Lookup.Template(null, handleString, null);
                         Lookup.Item item = Lookup.getDefault().lookupItem(tmp);
                         if (item != null) {
                             instance = item.getInstance();
@@ -1101,6 +1108,7 @@ public class BaseOptions extends OptionSupport {
                                 return (IndentEngine) instance;
                             }
                         }
+
                     }
                 }
             }
@@ -1151,6 +1159,7 @@ public class BaseOptions extends OptionSupport {
 
             if (!BASE.equals(getTypeName())){
                 Map map = new HashMap();
+                if (id == null) id = NO_INDENT_ENGINE; 
                 map.put(INDENT_ENGINE_PROP, id);
                 updateSettings(PropertiesMIMEProcessor.class, map);
             }
