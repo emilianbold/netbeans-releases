@@ -752,7 +752,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         /** Implementation of <code>EditCookie</code> interface. */
         public void edit() {
             PropertiesEditor editor = (PropertiesEditor)PropertiesEditorSupport.super.openCloneableTopComponent();
-            editor.requestFocus();
+            editor.requestActive();
             
             Element.ItemElem item = myEntry.getHandler().getStructure().getItem(key);
             if (item != null) {

@@ -20,6 +20,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.Action;
 
 import org.openide.actions.*;
 import org.openide.cookies.EditCookie;
@@ -69,8 +70,8 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
         
         setActions(
             new SystemAction[] {
-                SystemAction.get(OpenAction.class),
                 SystemAction.get(EditAction.class),
+                SystemAction.get(OpenAction.class),
                 SystemAction.get(FileSystemAction.class),
                 null,
                 SystemAction.get(CutAction.class),
@@ -98,6 +99,10 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
         Element.ItemElem item = getItem();
         PropertyChangeListener pcl = WeakListener.propertyChange(this, item);
         item.addPropertyChangeListener(pcl);
+    }
+    
+    public Action getPreferredAction() {
+        return getActions(false)[0];
     }
 
     /** Gets <code>Element.ItemElem</code> represented by this node.

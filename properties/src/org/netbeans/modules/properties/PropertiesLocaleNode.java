@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JPanel;
 
 import org.openide.actions.*;
@@ -82,8 +83,8 @@ public final class PropertiesLocaleNode extends FileEntryNode
      */
     protected SystemAction[] createActions () {
         return new SystemAction[] {
-            SystemAction.get(OpenAction.class),
             SystemAction.get(EditAction.class),
+            SystemAction.get(OpenAction.class),
             SystemAction.get(FileSystemAction.class),
             null,
             SystemAction.get(CutAction.class),
@@ -101,6 +102,9 @@ public final class PropertiesLocaleNode extends FileEntryNode
         };
     }
 
+    public Action getPreferredAction() {
+        return getActions(false)[0];
+    }
     
     /** Gets help context. Overrides superclass method. */ 
     public HelpCtx getHelpCtx() {
