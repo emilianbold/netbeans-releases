@@ -1256,6 +1256,37 @@
    <mapID target="org.netbeans.modules.vcs.RetrievingDialog" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.nodes.DebuggerView" url="pending.html" />
    <mapID target="org.netbeans.modules.group.CreateGroupAction" url="pending.html" />
+ 
+   <!--VCS CSH and VCS property sheet helpIDs-->
+   <mapID target="org.netbeans.modules.cvsclient.NbJavaCvsFileSystem_properties" url="vcs-nb/cvs-nb/cvs_fsproperties.html" />
+   <mapID target="org.netbeans.modules.cvsclient.NbJavaCvsFileSystem_expert" url="vcs-nb/cvs-nb/cvs_fsproperties.html" />
+   <mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem_properties" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />
+   <mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem_expert" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />
+   <mapID target="org.netbeans.modules.vcscore.grouping.MainVcsGroupNode_properties" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />
+   <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupNode_properties" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />
+   
+   <!--Begin helpIDs for Versioning Explorer-->
+   <!--Generic VCS FS node-->
+   <mapID target="org.netbeans.modules.vcscore.VcsVersioningSystem" url="pending.html" />
+   <!--Generic VCS properties and expert tabs-->
+   <mapID target="org.netbeans.modules.vcscore.VcsVersioningSystem_properties" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcscore.VcsVersioningSystem_expert" url="pending.html" />
+   <!--Built-in CVS FS node-->
+   <mapID target="org.netbeans.modules.cvsclient.versioning.JavaCvsVersioningSystem" url="pending.html" />
+   <!--Built-in CVS properties and expert tabs-->
+   <mapID target="org.netbeans.modules.cvsclient.versioning.JavaCvsVersioningSystem_properties" url="pending.html" />
+   <mapID target="org.netbeans.modules.cvsclient.versioning.JavaCvsVersioningSystem_expert" url="pending.html" />
+
+   <!--Begin helpIDs for VCS Commands nodes in Runtime tab-->
+   <!--helpID for the properties sheet of FS nodes in Runtime tab-->
+   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode_properties" url="pending.html" />
+   <!--helpID for the properties sheet of Generic VCS commands on Runtime tab-->
+   <mapID target="org.netbeans.modules.vcscore.runtime.VcsRuntimeCommand_properties" url="pending.html" />
+   <!--3 sheets of Built-in CVS client commands on Runtime tab-->
+   <mapID target="org.netbeans.modules.cvsclient.commands.JavaCvsRuntimeCommand_properties" url="pending.html" />
+   <mapID target="org.netbeans.modules.cvsclient.commands.JavaCvsRuntimeCommand_switches" url="pending.html" />
+   <mapID target="org.netbeans.modules.cvsclient.commands.JavaCvsRuntimeCommand_global" url="pending.html" />
+   
    <!--Mount CVS Wizard; Versioning | Mount CVS; on all wizard panes-->
    <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.WDPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" />
    <!--csh for VCS Generic mount wizard-->
