@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
 import org.openide.nodes.Node;
+import org.openide.loaders.DataObject;
 import org.netbeans.modules.xml.multiview.cookies.SectionFocusCookie;
 /**
  *
@@ -30,8 +31,13 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
     private NodeSectionPanel activePanel;
     private InnerPanelFactory factory;
     boolean sectionSelected;
-    
-    
+    private DataObject dataObject = null;
+
+    public SectionView(DataObject dataObject) {
+
+        this.dataObject = dataObject;
+    }
+
     public SectionView(InnerPanelFactory factory) {
         super();
         this.factory=factory;
@@ -249,5 +255,8 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
             }
         }
     }
-    
+
+    public DataObject getDataObject() {
+        return dataObject;
+    }
 }
