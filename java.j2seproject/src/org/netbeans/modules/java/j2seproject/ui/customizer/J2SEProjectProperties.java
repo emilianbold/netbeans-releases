@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -46,10 +46,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
-
-
 /**
- *
  * @author Petr Hrebejk
  */
 public class J2SEProjectProperties {
@@ -454,7 +451,5 @@ public class J2SEProjectProperties {
             return property;
         }
     }
-
-    
     
 }
