@@ -580,7 +580,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
   </target>
   <target name="javadoc" depends="init,open-apis-check-timestamps,open-apis-maybe-skip" if="open-apis-force-rebuild"
           description="Create Open API documentation.">
-    <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
+    <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4.1/docs/api"/>
     <property name="execution-docs-location" value="http://www.netbeans.org/download/dev/javadoc/ExecutionAPI"/>
     <property name="io-docs-location" value="http://www.netbeans.org/download/dev/javadoc/InputOutputAPI"/>
     <!-- XXX delete (and @COMPILER@ token below too) when deprecated by Projects: -->
@@ -675,8 +675,9 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <replace dir="javadoc/OpenAPIs" token="@TOP@" value="../../../../../../">
       <include name="*/*/*/*/*/*/*.html"/>
     </replace>
-    <!-- [PENDING] fuller check mode too, checking on-line links and more HTML files? -->
-    <checklinks basedir="javadoc/OpenAPIs" checkexternal="false">
+    <!-- [PENDING] fuller check mode too, checking more HTML files? -->
+    <property name="javadoc.check.external.links" value="false"/>
+    <checklinks basedir="javadoc/OpenAPIs" checkexternal="${javadoc.check.external.links}">
       <include name="overview-summary.html"/>
       <include name="**/package-summary.html"/>
       <include name="**/doc-files/**/*.html"/>
