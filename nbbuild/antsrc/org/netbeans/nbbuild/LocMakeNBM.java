@@ -236,8 +236,7 @@ public class LocMakeNBM extends Task {
     String license_prop = project.getProperty( license_prop_name) ;
     File license = null ;
     if( license_prop != null) {
-      license = new File( getProject().getBaseDir().getAbsolutePath() + 
-			  File.separator + license_prop) ;
+      license = new File( license_prop ) ;
     }
     return( license) ;
   }
