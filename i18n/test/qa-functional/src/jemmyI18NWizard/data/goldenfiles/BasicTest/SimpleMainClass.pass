@@ -1,0 +1,30 @@
+/*
+ * SimpleMainClass.java
+ *
+ * Created on 29. duben 2001, 22:53
+ */
+
+package jemmyI18NWizard.data;
+
+/**
+ *
+ * @author  vn104997
+ * @version 1.0
+ */
+public class SimpleMainClass {
+    String string1 = null;
+
+    /** Creates new SimpleMainClass */
+    public SimpleMainClass() {
+        string1 = java.util.ResourceBundle.getBundle("jemmyI18NWizard/data/Bundle").getString("Testing_sequence:_\"{}()[]");
+    }
+
+    /**
+    * @param args the command line arguments
+    */
+    public static void main (String args[]) {
+        System.out.println(java.util.ResourceBundle.getBundle("jemmyI18NWizard/data/Bundle").getString("there_is_something_rotten_in_the_state_of_Danemark..."));
+        System.out.println(java.util.ResourceBundle.getBundle("jemmyI18NWizard/data/Bundle").getString("\u0025\t\u0026"));
+    }
+
+}
