@@ -20,7 +20,6 @@ import org.netbeans.modules.xml.multiview.ItemComboBoxHelper;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.netbeans.modules.xml.tools.generator.ValidatingTextField;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -87,7 +86,6 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             primaryKeyClassTextField.setVisible(false);
 
             initPrimaryKeyFieldComboBox();
-            primaryKeyFieldComboBox.setEditor(new ValidatingTextField());
             final ItemComboBoxHelper primaryKeyComboBoxHelper = new ItemComboBoxHelper(dataObject,
                     primaryKeyFieldComboBox) {
                 public String getItemValue() {
@@ -179,7 +177,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
 
     private void initPrimaryKeyFieldComboBox() {
         final JComboBox primaryKeyFieldComboBox = getPrimaryKeyFieldComboBox();
-        primaryKeyFieldComboBox.removeAll();
+        primaryKeyFieldComboBox.removeAllItems();
         primaryKeyFieldComboBox.addItem(PK_COMPOUND);
         CmpField[] cmpFields = entityHelper.cmpFields.getCmpFields();
         for (int i = 0; i < cmpFields.length; i++) {
