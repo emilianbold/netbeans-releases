@@ -229,12 +229,19 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
         debugLog("Scheduling event firing: propName=" + propName); // NOI18N
         debugLog("\toldValue=" + (oldValue instanceof Object[] ? Arrays.asList((Object[])oldValue) : oldValue)); // NOI18N
         debugLog("\tnewValue=" + (newValue instanceof Object[] ? Arrays.asList((Object[])newValue) : newValue)); // NOI18N
-        
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                support.firePropertyChange(propName, oldValue, newValue);
-            }
-        });
+
+        // PENDING When #37529 finished, then uncomment the next row and move the 
+        // checks of AWT thread away.
+        //  WindowManagerImpl.assertEventDispatchThread();
+        if(SwingUtilities.isEventDispatchThread()) {
+            support.firePropertyChange(propName, oldValue, newValue);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    support.firePropertyChange(propName, oldValue, newValue);
+                }
+            });
+        }
     }
     
     private static void debugLog(String message) {

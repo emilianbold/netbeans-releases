@@ -359,11 +359,18 @@ public final class ModeImpl implements Mode {
     
     void doFirePropertyChange(final String propName,
     final Object oldValue, final Object newValue) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                changeSupport.firePropertyChange(propName, oldValue, newValue);
-            }
-        });
+        // PENDING When #37529 finished, then uncomment the next row and move the
+        // checks of AWT thread away.
+        //  WindowManagerImpl.assertEventDispatchThread();
+        if(SwingUtilities.isEventDispatchThread()) {
+            changeSupport.firePropertyChange(propName, oldValue, newValue);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    changeSupport.firePropertyChange(propName, oldValue, newValue);
+                }
+            });
+        }
     }
     
     /** @return string description of this mode */

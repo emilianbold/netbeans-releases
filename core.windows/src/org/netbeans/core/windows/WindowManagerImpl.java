@@ -694,11 +694,18 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     
     void doFirePropertyChange(final String propName,
     final Object oldValue, final Object newValue) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                changeSupport.firePropertyChange(propName, oldValue, newValue);
-            }
-        });
+        // PENDING When #37529 finished, then uncomment the next row and move the
+        // checks of AWT thread away.
+        //  WindowManagerImpl.assertEventDispatchThread();
+        if(SwingUtilities.isEventDispatchThread()) {
+            changeSupport.firePropertyChange(propName, oldValue, newValue);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    changeSupport.firePropertyChange(propName, oldValue, newValue);
+                }
+            });
+        }
     }
 
     // PENDING used in persistence only, revise how to restrict its usage only there.
