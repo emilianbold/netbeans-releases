@@ -38,7 +38,7 @@ final class SubnodesSearchInfo implements SearchInfo {
     /**
      */
     public boolean canSearch() {
-        final Node[] nodes = node.getChildren().getNodes();
+        final Node[] nodes = node.getChildren().getNodes(true);
         for (int i = 0; i < nodes.length; i++) {
             SearchInfo searchInfo = Utils.getSearchInfo(nodes[i]);
             if (searchInfo != null && searchInfo.canSearch()) {
@@ -51,7 +51,7 @@ final class SubnodesSearchInfo implements SearchInfo {
     /**
      */
     public Iterator objectsToSearch() {
-        final Node[] nodes = node.getChildren().getNodes();
+        final Node[] nodes = node.getChildren().getNodes(true);
         if (nodes.length == 0) {
             return SimpleSearchInfo.EMPTY_SEARCH_INFO.objectsToSearch();
         }
