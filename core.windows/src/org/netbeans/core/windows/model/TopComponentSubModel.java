@@ -80,24 +80,27 @@ final class TopComponentSubModel {
         int index = tcIDs.indexOf(tcID);
         
         int position;
-        if(index > -1) {
-            position = index;
-            if(position < 0) {
-                position = 0;
-            } else if(position > openedTopComponents.size()) {
-                position = openedTopComponents.size();
-            }
-        } else {
+        if(index < 0 || index > openedTopComponents.size()) {
             position = openedTopComponents.size();
+        } else {
+            position = index;
         }
-        
+        // additional double check if we got the same instance of topcomponent
+        //#39914 + #43401 - no need to remove this one without fixing the inconsistency, it will fail later on TabbedAdapter.
+        TopComponent persTC = getTopComponent(tcID);
+        if (persTC != tc) {
+            String message = "Model in inconsistent state, generated TC ID=" + tcID + " for " + tc.getClass() + ":" + tc.hashCode() + " but" +
+            " that ID is reserved for TC=" + persTC.getClass() + ":" + persTC.hashCode();
+            assert false : message;
+        }
+        //-- end of check..
         openedTopComponents.add(position, tc);
         if(!tcIDs.contains(tcID)) {
             tcIDs.add(tcID);
         }
         
         if(selectedTopComponentID == null && !isNullSelectionAllowed()) {
-            selectedTopComponentID = getID(tc);
+            selectedTopComponentID = tcID;
         }
         
         // XXX - should be deleted after TopComponent.isSliding is introduced
