@@ -26,7 +26,8 @@ public interface ClassPathImplementation {
 
     /**
      * Returns list of entries, the list is unmodifiable.
-     * @return List of PathResourceImplementation
+     * @return List of PathResourceImplementation, never returns null
+     * it may return an empty List
      */
     public List /*<PathResourceImplementation>*/ getResources();
 

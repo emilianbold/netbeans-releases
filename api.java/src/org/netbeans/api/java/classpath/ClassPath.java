@@ -203,16 +203,23 @@ public final class ClassPath {
     public synchronized List entries() {
         if (this.entriesCache == null) {
             List resources = impl.getResources();
-            List cache = new ArrayList ();
-            for (Iterator it = resources.iterator(); it.hasNext();) {
-                PathResourceImplementation pr = (PathResourceImplementation)it.next();
-                URL[] roots = pr.getRoots();
-                for (int i=0; i <roots.length; i++) {
-                    Entry e = new Entry (roots[i]);
-                    cache.add (e);
-                }
+            //The ClassPathImplementation.getResources () should never return
+            // null but it was not explicitly stated in the javadoc
+            if (resources == null) {
+                this.entriesCache = Collections.EMPTY_LIST;
             }
-            this.entriesCache = Collections.unmodifiableList (cache);
+            else {
+                List cache = new ArrayList ();
+                for (Iterator it = resources.iterator(); it.hasNext();) {
+                    PathResourceImplementation pr = (PathResourceImplementation)it.next();
+                    URL[] roots = pr.getRoots();
+                    for (int i=0; i <roots.length; i++) {
+                        Entry e = new Entry (roots[i]);
+                        cache.add (e);
+                    }
+                }
+                this.entriesCache = Collections.unmodifiableList (cache);
+            }
         }
         return this.entriesCache;
     }
