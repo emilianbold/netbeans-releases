@@ -538,6 +538,13 @@ Microsystems, Inc. All Rights Reserved.
             ]]>
         </file>    
 
+
+        <!-- in memory EntityCalalog intance (it serves for deprecated method implementations) -->
+        <file name="org-openide-loaders-XMLDataObject-compat.instance" >
+            <attr name="instanceClass" stringvalue="org.openide.xml.EntityCatalog" />
+            <attr name="instanceCreate" methodvalue="org.openide.loaders.XMLDataObject.createEntityCatalog"/>
+        </file>
+
     </folder>
   </folder>
   

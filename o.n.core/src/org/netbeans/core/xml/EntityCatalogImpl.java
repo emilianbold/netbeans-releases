@@ -15,12 +15,14 @@ package org.netbeans.core.xml;
 
 import java.io.*;
 import java.util.*;
+import java.beans.*;
 
 import javax.swing.event.*;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
+import org.openide.*;
 import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.*;
@@ -73,17 +75,21 @@ public class EntityCatalogImpl extends EntityCatalog {
      * XMLDataObject.Processor implementation recognizing EntityCatalog.PUBLIC_ID DTDs
      * giving them instance cookie returning registered entries.
      */
-    public static class RegistrationProcessor extends DefaultHandler implements XMLDataObject.Processor, InstanceCookie, Runnable {
+    public static class RegistrationProcessor extends DefaultHandler implements XMLDataObject.Processor, InstanceCookie, Runnable, PropertyChangeListener {
 
         private XMLDataObject peer;
         private Map map;
         private RequestProcessor.Task parsingTask = RequestProcessor.createRequest(this);
+        private EntityCatalogImpl instance = null;
 
         // Processor impl
 
         public void attachTo (XMLDataObject xmlDO) {
+            
+            if (xmlDO == peer) return;  //ignore double attachements
+            
             peer = xmlDO;                        
-            map = new Hashtable();  //be synchronized
+            peer.addPropertyChangeListener(WeakListener.propertyChange(this, peer));  //listen at PROP_DOCUMENT
             parsingTask.schedule(0);
         }
 
@@ -103,7 +109,7 @@ public class EntityCatalogImpl extends EntityCatalog {
         // Runnable impl (can be a task body)
 
         public void run() {
-            map.clear();
+            map = new Hashtable();  //be synchronized
 
             try {
                 String loc = peer.getPrimaryFile().getURL().toExternalForm();
@@ -122,10 +128,16 @@ public class EntityCatalogImpl extends EntityCatalog {
                 reader.parse(src);
             } catch (SAXException ex) {
                 // ignore
-                //ex.printStackTrace();
+                ErrorManager err = 
+                    (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
+                err.notify(err.INFORMATIONAL, ex);
+                
             } catch (IOException ex) {
                 // ignore
-                //ex.printStackTrace();
+                ErrorManager err = 
+                    (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
+                err.notify(err.INFORMATIONAL, ex);
+
             }
         }
 
@@ -135,15 +147,43 @@ public class EntityCatalogImpl extends EntityCatalog {
             return EntityCatalogImpl.class;
         }
 
+        /** We return singleton instance */
         public Object instanceCreate() throws IOException, ClassNotFoundException {
-            parsingTask.waitFinished();
-
-            return new EntityCatalogImpl (map);
+            
+            if (instance == null) {
+                synchronized (this) {
+                    if (instance == null) {
+                        parsingTask.waitFinished();                        
+                        instance = new EntityCatalogImpl (map);
+                    }
+                }
+            }
+            return instance;
         }
 
         //do not understand what it means, but it must return the value
         public String instanceName() {
             return "org.netbeans.core.xml.EntityCatalogImpl"; // NOI18N
         }
+
+        /**
+          * Perform synchronous update on fileobject change.
+          */
+        public void propertyChange(PropertyChangeEvent e) {
+            
+            if (instance == null) {
+                synchronized(this) {
+                    if (instance == null) return;
+                }
+            }
+            
+            if (XMLDataObject.PROP_DOCUMENT.equals(e.getPropertyName())) {            
+                System.err.println("XML file have changed. reparsing " + peer.getPrimaryFile() );
+                //update it sync
+                run();
+                instance.id2uri = map;  //replace map
+            }
+        }
+        
     }
 }
