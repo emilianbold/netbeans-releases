@@ -67,7 +67,9 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                        new PropertyDescriptor (IDESettings.PROP_UIMODE, IDESettings.class, 
                                                "getUIMode", "setUIMode"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_TABBEDCONTAINERUI, IDESettings.class, 
-                                               "getTabbedContainerUI", "setTabbedContainerUI") // NOI18N
+                                               "getTabbedContainerUI", "setTabbedContainerUI"), // NOI18N
+                       new PropertyDescriptor (IDESettings.PROP_SHOW_TOOLTIPS_IN_IDE, IDESettings.class,
+                                               "getShowToolTipsInIDE", "setShowToolTipsInIDE") // NOI18N                                               
                    };
 
             desc[0].setDisplayName (Main.getString ("PROP_SHOW_TIPS_ON_STARTUP"));
@@ -108,6 +110,9 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             desc[12].setShortDescription(bundleTabbedContainerUI.getString("HINT_TabbedContainerUI"));
             desc[12].setPropertyEditorClass(TabbedContainerUIPropertyEditor.class);
             desc[12].setHidden(true);
+            
+            desc[13].setDisplayName (Main.getString ("PROP_SHOW_TOOLTIPS_IN_IDE"));
+            desc[13].setShortDescription (Main.getString ("HINT_SHOW_TOOLTIPS_IN_IDE"));            
 
 	    return desc;
         } catch (IntrospectionException ex) {

@@ -50,6 +50,8 @@ public class IDESettings extends SystemOption {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 801136840705717911L;
 
+    /** showToolTipsInIDE property name */
+    public static final String PROP_SHOW_TOOLTIPS_IN_IDE = "showToolTipsInIDE"; // NOI18N    
     /** showTipsOnStartup property name */
     public static final String PROP_SHOW_TIPS_ON_STARTUP = "showTipsOnStartup"; // NOI18N
     /** lastTip property name */
@@ -92,6 +94,7 @@ public class IDESettings extends SystemOption {
     // ------------------------------------------
     // properties
 
+    private static boolean showToolTips = true;    
     private static boolean showTips = true;
     private static int lastTip = -1;
     private static boolean confirmDelete = true;
@@ -124,6 +127,23 @@ public class IDESettings extends SystemOption {
         firePropertyChange (PROP_MODULES_SORT_MODE, new Integer (oldValue), new Integer (nue));
     }
 
+    /** Getter for ShowToolTipsInIDE
+     * @return true if dialog will be shown*/
+    public boolean getShowToolTipsInIDE() {
+        return showToolTips;
+    }
+
+    /** Setter for ShowToolTipsInIDE
+    * @param value true if on the next start of corona the dialog will be shown
+    *              false otherwise */
+    public void setShowToolTipsInIDE(boolean value) {
+        if (showToolTips == value) return;
+        showToolTips = value;
+        javax.swing.ToolTipManager.sharedInstance().setEnabled(value);
+        // fire the PropertyChange
+        firePropertyChange (PROP_SHOW_TOOLTIPS_IN_IDE, new Boolean (!showToolTips), new Boolean (showToolTips));
+    }
+    
     /** Getter for ShowTipsOnStartup
      * @return true if dialog will be shown*/
     public boolean getShowTipsOnStartup() {
