@@ -40,12 +40,6 @@ public class TMIDResolver extends org.netbeans.modules.j2ee.deployment.plugins.a
         if (contextRoot == null)
             return EMPTY_TMID_ARRAY;
 
-        //PENDING: filter using app dir; for now, if asked just return empty, which would affect 
-        // auto-undeploy when alternating deploy b/w apps sharing same context root.
-        String contentDir = (String) queryInfo.get(KEY_CONTENT_DIR);
-        if (contentDir != null)
-            return EMPTY_TMID_ARRAY;
-        
         ArrayList result = new ArrayList();
         try {
             TargetModuleID[] tmidList = tm.getAvailableModules(ModuleType.WAR, targetList);
