@@ -223,7 +223,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         
         // ignore unvalid mainClass ???
         
-        return sourcesRoot.getFileObject (mainClass, "java"); // NOI18N
+        return sourcesRoot.getFileObject (mainClass+ ".java"); // NOI18N
     }
 
     static String getPackageName (String displayName) {
