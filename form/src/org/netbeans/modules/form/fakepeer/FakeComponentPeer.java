@@ -346,7 +346,8 @@ abstract class FakeComponentPeer implements FakePeer
             FakePeerUtils.drawLoweredBox(g,0,0,sz.width,sz.height);
 
             // by default display the class name
-            g.setFont(new Font("Dialog", Font.BOLD, 12)); // NOI18N
+            Font origFont = g.getFont(); 
+            g.setFont(origFont.deriveFont(Font.BOLD, origFont.getSize() + 1)); 
 
             String className = _target.getClass().getName();
             className = className.substring(className.lastIndexOf('.') + 1);

@@ -194,9 +194,7 @@ public class EventsAction extends CookieAction {
 
     private static void setBoldFontForMenuText(JMenuItem mi) {
         java.awt.Font font = mi.getFont();
-        mi.setFont(new java.awt.Font(font.getFontName(),
-                                     font.getStyle() | java.awt.Font.BOLD,
-                                     font.getSize()));
+        mi.setFont(font.deriveFont(font.getStyle() | java.awt.Font.BOLD));
     }
 
     private static void addSortedMenuItem(JMenu menu, JMenuItem menuItem) {
