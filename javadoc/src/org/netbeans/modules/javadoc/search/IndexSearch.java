@@ -37,6 +37,13 @@ public class IndexSearch extends TopComponent {
   private SearchEngine searchEngine = null;
 
   private static ResourceBundle bundle = NbBundle.getBundle(IndexSearch.class);
+
+  /** Button titles */
+
+  private static final String STR_FIND = bundle.getString ("CTL_SEARCH_ButtonFind");
+  private static final String STR_STOP = bundle.getString ("CTL_SEARCH_ButtonStop");
+
+
   /** Initializes the Form */
   public IndexSearch() {
     initComponents ();
@@ -52,8 +59,9 @@ public class IndexSearch extends TopComponent {
 
     resultsScrollPane.validate();
 
-    searchComboBox.setMaximumRowCount( 4 );
+    searchButton.setText( STR_FIND );
 
+    searchComboBox.setMaximumRowCount( 4 );
     // Make the combobox do the same action as searchButton
     searchComboBox.getEditor().addActionListener (new java.awt.event.ActionListener () {
       public void actionPerformed (java.awt.event.ActionEvent evt) {
@@ -175,7 +183,7 @@ public class IndexSearch extends TopComponent {
 
     javax.swing.SwingUtilities.invokeLater( new Runnable() {
       public void run() {
-        searchButton.setText( "Search" );
+        searchButton.setText( STR_FIND );
         resultsList.revalidate();    
       }
     } );
@@ -231,7 +239,7 @@ public class IndexSearch extends TopComponent {
         tasks.add( searchThread );
         searchThread.go();
       }
-      searchButton.setText( "Stop" );
+      searchButton.setText( STR_STOP );
     }
 
     /** Stops the search */
