@@ -74,7 +74,7 @@
 	  <tocitem text="Creating a JSP File" target="jsp_create" />
 	  <tocitem text="Creating an HTML File" target="html_create" />
 	  <tocitem text="Editing a JSP or HTML File" target="jsp_edit" />
-          <tocitem text="Encoding JSP File" target="jsp_encoding" />
+          <tocitem text="Encoding a JSP File" target="jsp_encoding" />
 	  <tocitem text="Defining a Custom Tag in a JSP File" target="jsp_usetaglib"/>
           <tocitem text="Defining an Applet in a JSP File" target="jsp_useapplet"/>
 	  <tocitem text="Defining a Tomcat Database Connection Pool in a JSP File" target="jsp_connectionpool_tomcat"/>
