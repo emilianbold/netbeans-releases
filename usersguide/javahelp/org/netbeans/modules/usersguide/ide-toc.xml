@@ -396,20 +396,17 @@
     <tocitem text="Setting a Bean's Icon" target="beans.icon" />
     <tocitem text="Adding a Bean to the Component Palette" target="beans.adding" />
   </tocitem>
+
 <tocitem text="Working With Javadoc Documentation" target="javadoc.jump">
-    <tocitem text="Searching Through Javadoc-Generated Documentation" target="javadoc.search"/>
-    <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
-    <tocitem text="Showing Documentation From the Source Editor" target="javadoc.source_editor"/>
-    <tocitem text="Commenting Java Source Code" target="javadoc.comment.jump">
-      <tocitem text="Format of a Javadoc Comment" target="javadoc.comment"/>
-      <tocitem text="Adding a Comment to Java Source Code" target="javadoc.addcomment"/>
-      <tocitem text="Checking Comments for Accuracy" target="javadoc.accuracy"/>
-    </tocitem>
-    <tocitem text="Mounting Javadoc Filesystems" target="javadoc.filesystem.jump">
-      <tocitem text="Mounting a Javadoc Filesystem" target="javadoc.search.path"/>
-      <tocitem text="Configuring a Javadoc Filesystem" target="javadoc.filesystem.configure"/>
-      <tocitem text="Removing a Javadoc Filesystem" target="javadoc.filesystem.unmount"/>
-    </tocitem>
+   <tocitem text="Showing Javadoc Documentation" target="javadoc.source_editor"/>
+   <tocitem text="Adding a Javadoc Comment" target="javadoc.addcomment"/>
+   <tocitem text="Searching Through Javadoc Documentation" target="javadoc.search"/>
+   <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
+   <tocitem text="Correcting a Javadoc Comments" target="javadoc.accuracy"/>
+   <tocitem text="Mounting a Javadoc Filesystem" target="javadoc.search.path"/>
+   <tocitem text="Configuring a Javadoc Filesystem" target="javadoc.filesystem.configure"/>
+   <tocitem text="Removing a Javadoc Filesystem" target="javadoc.filesystem.unmount"/>
+
     <tocitem text="Setting Javadoc Options" target="javadoc.settings.jump">
       <tocitem text="Turning Off Exact Case Matching" target="javadoc.case.sensitive"/>
       <tocitem text="Specifying an Output Directory for Javadoc Files" target="javadoc.output"/>
@@ -420,6 +417,7 @@
       </tocitem>
     </tocitem>
   </tocitem>
+
   <tocitem text="Using the JAR Packager" target="jarpackager">
     <tocitem text="Creating a JAR File" target="jarpackager.creating" />
     <tocitem text="The JAR Contents Property Editor" target="jarpackager.contentpane" />
