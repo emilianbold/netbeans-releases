@@ -990,7 +990,8 @@ public final class DebuggerManager {
             ne = getCurrentSession ().getCurrentEngine ();
         DebuggerEngine old = currentEngine;
         currentEngine = ne;
-        firePropertyChange (PROP_CURRENT_ENGINE, old, currentEngine);
+        if (ne != old)
+            firePropertyChange (PROP_CURRENT_ENGINE, old, currentEngine);
     }
 
 
