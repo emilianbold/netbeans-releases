@@ -28,9 +28,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile-with-classic-Javac">
     <javac srcdir="src" destdir="src">
       <classpath>
-        <!-- XXX This should be fixed, possibly TopSecurityManager -->
-	<!-- cannot even access ICE Browser classes at runtime: -->
-        <pathelement location="../icebrowser/release/modules/ext/icebrowserlitebean.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
 	<pathelement location="release/lib/ext/regexp.jar"/>
 	<pathelement location="release/lib/ext/jaxp.jar"/>
