@@ -106,7 +106,6 @@ implements FileChangeListener {
         assertSameDataObject ("same data object2", obj1, obj3);
         InstanceCookie inst3 = (InstanceCookie)obj3.getCookie(InstanceCookie.class);
         assertNull("Had instance", inst3);
-        fail ("KUK");
     }
     
     
