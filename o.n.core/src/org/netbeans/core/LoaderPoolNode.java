@@ -198,15 +198,18 @@ public final class LoaderPoolNode extends AbstractNode {
         if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
             err.log("Before sort: " + loaders);
         }
-        List sortedLoaders = Utilities.topologicalSort(loaders, deps);
-        if (sortedLoaders != null) {
-            loaders = sortedLoaders;
+        
+        try {
+            loaders = Utilities.topologicalSort(loaders, deps);
             if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 err.log("After sort: " + loaders);
             }
-        } else {
-            err.log(ErrorManager.WARNING, "Contradictory loader ordering: " + deps + "; example problematic loader: " + Utilities.topologicalSortError(loaders, deps));
-            // leave order as it was
+        } catch (TopologicalSortException ex) {
+            err.log(ErrorManager.WARNING, "Contradictory loader ordering: " + deps); // NOI18N
+            Set[] bad = ex.unsortableSets();
+            for (int i = 0; i < bad.length; i++) {
+                err.log (ErrorManager.WARNING, " Conflict #" + i + ": " + bad[i]); // NOI18N
+            }
         }
         update ();
     }
