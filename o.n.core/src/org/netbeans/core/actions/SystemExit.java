@@ -18,13 +18,7 @@ import java.awt.Dimension;
 import java.util.Iterator;
 import java.beans.BeanInfo;
 
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.ListCellRenderer;
-import javax.swing.JList;
-import javax.swing.UIManager;
-import javax.swing.ImageIcon;
-import javax.swing.DefaultListModel;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
@@ -33,8 +27,7 @@ import javax.swing.border.CompoundBorder;
 import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.TopManager;
 import com.netbeans.ide.NotifyDescriptor;
-import com.netbeans.developer.impl.CoronaDialog;
-import com.netbeans.developer.impl.awt.ButtonBar;
+import com.netbeans.ide.DialogDescriptor;
 import com.netbeans.ide.util.HelpCtx;
 import com.netbeans.ide.util.actions.ActionPerformer;
 import com.netbeans.ide.util.actions.CallableSystemAction;
@@ -49,6 +42,10 @@ import com.netbeans.ide.cookies.SaveCookie;
 public class SystemExit extends CallableSystemAction {
   /** generated Serialized Version UID */
   static final long serialVersionUID = 5198683109749927396L;
+
+  private static JButton[] exitOptions;
+  private static Object[] secondaryExitOptions;
+  private static java.awt.Dialog exitDialog;
 
  /** Human presentable name of the action. This should be
   * presented as an item in a menu.
@@ -74,48 +71,46 @@ public class SystemExit extends CallableSystemAction {
 
   public void performAction() {
     java.util.Set set = com.netbeans.ide.loaders.DataObject.getRegistry ().getModifiedSet ();
-    if (!set.isEmpty())
-      new ExitDlg(TopManager.getDefault().getWindowManager().getMainWindow()).show();
-    else {
+    if (!set.isEmpty()) {
+      if (exitDialog == null) {
+        exitOptions = new JButton[] {
+          new JButton (NbBundle.getBundle(SystemExit.class).getString("CTL_Save")),
+          new JButton (NbBundle.getBundle(SystemExit.class).getString("CTL_SaveAll")),
+          new JButton (NbBundle.getBundle(SystemExit.class).getString("CTL_DiscardAll")),
+        };
+        secondaryExitOptions = new Object[] {
+          new JButton (NbBundle.getBundle(SystemExit.class).getString("CTL_Cancel")),
+        };
+        ExitDlgComponent exitComponent = new ExitDlgComponent ();
+        DialogDescriptor exitDlgDescriptor = new DialogDescriptor (
+            exitComponent,                                                   // inside component
+            NbBundle.getBundle(SystemExit.class).getString("CTL_ExitTitle"), // title
+            true,                                                            // modal
+            exitOptions,                                                     // options
+            secondaryExitOptions [0],                                        // initial value
+            DialogDescriptor.RIGHT_ALIGN,                                    // option align
+            null,                                                            // HelpCtx // [PENDING]
+            exitComponent                                                    // Action Listener
+        );
+        exitDlgDescriptor.setAdditionalOptions (secondaryExitOptions);
+        exitDialog = TopManager.getDefault ().createDialog (exitDlgDescriptor);
+      }
+      exitDialog.show ();
+    } else {
       com.netbeans.ide.TopManager.getDefault().exit();
     }
   }
 
 
   /** Dialog which is shown when any file is not saved. */
-  private static class ExitDlg extends CoronaDialog {
-  /** generated Serialized Version UID */
-  static final long serialVersionUID = 1877692790854373689L;
+  private static class ExitDlgComponent extends JPanel implements java.awt.event.ActionListener {
     JList list;
     DefaultListModel listModel;
 
     /** Constructs new dlg */
-    public ExitDlg(java.awt.Frame frame) {
-      super(frame, createBB(), true);
+    public ExitDlgComponent () {
+      setLayout (new java.awt.BorderLayout ());
 
-      setDefaultCloseOperation (javax.swing.JDialog.DO_NOTHING_ON_CLOSE);
-      addWindowListener (new java.awt.event.WindowAdapter () {
-          public void windowClosing (java.awt.event.WindowEvent evt) {
-            setVisible (false);
-            dispose ();
-          }
-        }
-      );
-
-      // attach cancel also to Escape key
-      getRootPane().registerKeyboardAction(
-        new java.awt.event.ActionListener() {
-          public void actionPerformed(java.awt.event.ActionEvent evt) {
-            setVisible (false);
-            dispose ();
-          }
-        },
-        javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0, true),
-        javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-      );
-
-
-      setTitle(NbBundle.getBundle(SystemExit.class).getString("CTL_ExitTitle"));
       listModel = new DefaultListModel();
       Iterator iter = DataObject.getRegistry ().getModifiedSet ().iterator();
       while (iter.hasNext()) {
@@ -125,50 +120,39 @@ public class SystemExit extends CallableSystemAction {
 
       list = new JList(listModel);
       list.setBorder(new EmptyBorder(2, 2, 2, 2));
+      list.addListSelectionListener (new javax.swing.event.ListSelectionListener () {
+          public void valueChanged (javax.swing.event.ListSelectionEvent evt) {
+            updateSaveButton ();
+          }
+        }
+      );
+      updateSaveButton ();
       JScrollPane scroll = new JScrollPane (list);
       scroll.setBorder (new CompoundBorder (new EmptyBorder (5, 5, 5, 5), scroll.getBorder ()));
-      getCustomPane().add(scroll);
+      add(scroll, java.awt.BorderLayout.CENTER);
       list.setCellRenderer(new ExitDlgListCellRenderer());
-      pack();
-      setResizable(false);
-      center();
     }
 
-    /** Creates the button bar for this dialog */
-    private static ButtonBar createBB() {
-      return new ButtonBar(new String[] {
-        NbBundle.getBundle(SystemExit.class).getString("CTL_Save"),
-        NbBundle.getBundle(SystemExit.class).getString("CTL_SaveAll"),
-        NbBundle.getBundle(SystemExit.class).getString("CTL_DiscardAll")
-      },
-      new String[] {
-        NbBundle.getBundle(SystemExit.class).getString("CTL_Cancel")
-      });
+    private void updateSaveButton () {
+      exitOptions [0].setEnabled (list.getSelectedIndex () != -1);
     }
 
     /** @return preffered size */
     public Dimension getPreferredSize() {
       Dimension prev = super.getPreferredSize();
-      return new Dimension(Math.max(400, prev.width), Math.max(150, prev.height));
+      return new Dimension(Math.max(300, prev.width), Math.max(150, prev.height));
     }
 
     /** This method is called when is any of buttons pressed */
-    protected void buttonPressed(ButtonBar.ButtonBarEvent evt) {
-      int index = getButtonBar().getButtonIndex(evt.getButton());
-      switch (index) {
-      case 0:
+    public void actionPerformed (java.awt.event.ActionEvent evt) {
+      if (exitOptions[0].equals (evt.getSource ())) {
         save(false);
-        break;
-      case 1:
+      } else if (exitOptions[1].equals (evt.getSource ())) {
         save(true);
-        break;
-      case 2:
+      } else if (exitOptions[2].equals (evt.getSource ())) {
         theEnd();
-        break;
-      case 3:
-        setVisible (false);
-        dispose();
-        break;
+      } else if (secondaryExitOptions[0].equals (evt.getSource ())) {
+        exitDialog.setVisible (false);
       }
     }
 
@@ -207,13 +191,13 @@ public class SystemExit extends CallableSystemAction {
       }
       if (listModel.isEmpty()) {
         theEnd();
-      }
+      } 
     }
 
     /** Exit the IDE */
     private void theEnd() {
-      setVisible (false);
-      dispose();
+      exitDialog.setVisible (false);
+      exitDialog.dispose();
       TopManager.getDefault().exit();
     }
 
@@ -273,6 +257,8 @@ public class SystemExit extends CallableSystemAction {
 
 /*
  * Log
+ *  9    Gandalf   1.8         3/29/99  Ian Formanek    CoronaDialog -> 
+ *       DialogDescriptor
  *  8    Gandalf   1.7         3/9/99   Jaroslav Tulach ButtonBar  
  *  7    Gandalf   1.6         3/5/99   Ales Novak      
  *  6    Gandalf   1.5         1/20/99  Jaroslav Tulach 
