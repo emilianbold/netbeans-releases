@@ -15,6 +15,8 @@
 package org.netbeans.modules.i18n;
 
 
+import java.util.HashMap;
+
 import javax.swing.JPanel;
 import javax.swing.text.StyledDocument;
 
@@ -107,4 +109,12 @@ public abstract class I18nSupport {
         public void replace(HardCodedString hardString, I18nString i18nString);
     }
 
+    /** Factory inteface for creating <code>I18nSupport</code> instances. */
+    public interface Factory {
+        
+        /** Creates <code>I18nSupport</code> instance for specified data object and document. */
+        public I18nSupport create(DataObject dataObject, StyledDocument document);
+    } // End of nested I18nSupportFactory class.
+    
 }
+

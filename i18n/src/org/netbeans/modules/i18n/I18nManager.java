@@ -24,13 +24,12 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
-
-import org.netbeans.modules.form.FormDataObject;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.DialogDescriptor;
@@ -91,29 +90,27 @@ public class I18nManager {
     
     /** Get i18n support. */
     private void initSupport(StyledDocument document, DataObject sourceDataObject) {
+        I18nSupport.Factory factory = FactoryRegistry.getFactory(sourceDataObject.getClass().getName());
         
-        if(isFormDataObject(sourceDataObject))
-            support = new FormI18nSupport(sourceDataObject, document);
-        else
-            support = new JavaI18nSupport(sourceDataObject, document);
+        support = factory.create(sourceDataObject, document);
     }
     
     /** The 'heart' method called by <code>I18nAction</code>. */
     public void internationalize(StyledDocument document, DataObject sourceDataObject) {
         // If there is insert i18n action working on the same document -> cancel it.
         ((InsertI18nStringAction)SystemAction.get(InsertI18nStringAction.class)).cancel();
-        
+
         // If there is i18n action working -> cancel it.
         closeDialog();
 
         // Initilialize support.
         initSupport(document, sourceDataObject);
-       
+
         // initialize the component
         EditorCookie ec = (EditorCookie)sourceDataObject.getCookie(EditorCookie.class);
         if(ec == null)
             return;
-        
+
         JEditorPane[] panes = ec.getOpenedPanes();
         if(panes == null) {
             NotifyDescriptor.Message message = new NotifyDescriptor.Message(
@@ -143,7 +140,7 @@ public class I18nManager {
     private boolean find() {
         // Actual find on finder.
         hcString = support.getFinder().findNextHardCodedString();
-        
+
         if(hcString != null) {
             // Highlight found hard coded string.
             Caret caret = (Caret)caretWRef.get();
@@ -333,25 +330,6 @@ public class I18nManager {
         
         if(topComponent != null)
             topComponent.close();
-    }
-
-    /** Utility method. 
-     * @param dataObject checked <code>DataObject</code>
-     * @return true if form module is available and <code>dataObject</code> is instnce of <code>FormDataObject</code> */
-    private static boolean isFormDataObject(DataObject dataObject) {
-        try {
-             // Test for form module presence.
-            Class formModule = Class.forName("org.netbeans.modules.form.FormEditorModule", // NOI18N
-                false, I18nManager.class.getClassLoader());
-
-            // Form module is available -> call dependent code.
-            if(dataObject instanceof FormDataObject)
-                return true;
-        } catch (NoClassDefFoundError err) {
-        } catch (ClassNotFoundException e) {
-        }
-
-        return false;
     }
 
 }
