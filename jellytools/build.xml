@@ -11,55 +11,27 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project name="jellytools" default="jars" basedir=".">
-  <import file="../nbbuild/default.xml"/>
-
-  <property name="nbext" value="../nbbuild"/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" location="${nbext}/standard-nbm-license.txt"/>
-  <property name="build.compiler.debug" value="true"/>
-
-    <target name="init" depends="default.init">
-      <patternset id="jellytools.files">
-        <!-- All files created for NBM -->
-        <include name="${nb.system.dir}/Modules/org-netbeans-modules-jellytools.xml"/>
-        <include name="${nb.modules.dir}/org-netbeans-modules-jellytools.jar"/>
-        <include name="${nb.docs.dir}/jelly2-nb-javadoc.zip"/>
-        <include name="${nb.modules.dir}/ext/jelly2-nb.jar"/>
-        <include name="${nb.sources.dir}/jelly2-nb-src.zip"/>
-      </patternset>
-      <path id="jellytools.classpath">
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-        <pathelement location="${core/output2.dir}/${nb.modules.dir}/org-netbeans-core-output2.jar"/>
-        <pathelement location="${core/windows.dir}/${nb.modules.dir}/org-netbeans-core-windows.jar"/>
-        <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-swing-tabcontrol.jar"/> <!--XXX core.???.dir? -->
-        <pathelement location="${core.dir}/${nb.lib.dir}/org-netbeans-swing-plaf.jar"/>
-         
-        <pathelement location="../jemmy/jemmy.jar"/>
-        <pathelement location="../xtest/external/junit-3.8.1.jar"/>
-        <pathelement location="${xtest/nbjunit.dir}/${nb.modules.dir}/ext/nbjunit.jar"/>
-      </path>
+<project name="jellytools" default="jar-library" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+  
+    <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <!-- All files created for NBM -->
+            <include name="${module.jar}" />
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml" />
+            <include name="${nb.docs.dir}/jelly2-nb-javadoc.zip"/>
+            <include name="${nb.modules.dir}/ext/jelly2-nb.jar"/>
+            <include name="${nb.sources.dir}/jelly2-nb-src.zip"/>
+        </patternset>
     </target>
 
-    <target name="all" depends="jars,zipsrc,javadoc,javadocWithJemmy" description="Create jars, source zip and javadoc zip">
-    </target>
-
-    <target name="compile" depends="init,buildDependentModules">
-        <mkdir dir="build/classes"/>
-        <javac srcdir="src" destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-          <classpath>
-            <path refid="jellytools.classpath"/>
-          </classpath>
-          <include name="**/jellytools/**"/>
-        </javac>
-    </target>
+    <target name="all" depends="jar-library,zipsrc,javadoc,javadocWithJemmy" description="Create jars, source zip and javadoc zip"/>
 
     <target name="buildDependentModules">
-        <ant dir="../xtest/nbjunit" target="jar-nbjunit"/>
+        <ant dir="../xtest/nbjunit" target="jar-nbjunit" inheritAll="false"/>
     </target>
+    
+    <target name="compile" depends="buildDependentModules,projectized.compile"/>
 
     <target name="timestamp" unless="buildnumber">
       <tstamp>
@@ -67,50 +39,47 @@ Microsystems, Inc. All Rights Reserved.
       </tstamp>
     </target>
 
-    <target name="jars" depends="timestamp,compile" description="Create jars">
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-        <!-- Create jelly2 jar -->
-        <delete file="manifest-subst.mf"/>
-        <copy file="src/org/netbeans/jellytools/version_info" tofile="manifest-subst.mf" filtering="on"/>
-        <copy file="manifest-subst.mf" tofile="build/classes/org/netbeans/jellytools/version_info"/>
-        <copy file="src/org/netbeans/jellytools/timeouts" toDir="build/classes/org/netbeans/jellytools"/>
-        <jar basedir="build/classes" compress="false" jarfile="jelly2-nb.jar"
-             manifest="manifest-subst.mf" excludesfile="../nbbuild/standard-jar-excludes.txt">
-          <include name="**/jellytools/**"/>
+    <!-- Create jelly2-nb.jar which hold jellytools library clases -->
+    <target name="jar-library" depends="timestamp,compile" description="Create jelly2-nb.jar jar">
+        <!-- Update manifest in version_info -->
+        <manifest file="${build.classes.dir}/org/netbeans/jellytools/version_info" mode="update">
+             <attribute name="Jellytools-Build" value="${buildnumber}"/>
+        </manifest>
+        <jar basedir="${build.classes.dir}" compress="false" jarfile="jelly2-nb.jar"
+             manifest="${build.classes.dir}/org/netbeans/jellytools/version_info"
+             excludesfile="../nbbuild/standard-jar-excludes.txt">
         </jar>
      </target>
-
-    <!-- only to enable call both 'ant jar' and 'ant jars' -->
-    <target name="jar" depends="jars">
-    </target>
-
+     
     <target name="zipsrc" description="Create zip containing only sources">
         <zip zipfile="jelly2-nb-src.zip" basedir="src" 
-             includes="**/jellytools/**/*.java,org/netbeans/jellytools/version_info"
+             includes="org/netbeans/jellytools/**/*.java,org/netbeans/jellytools/version_info"
         />
     </target>
-
-    <target name="javadoc" description="Javadoc for jellytools">
-        <uptodate property="jelly2.javadoc.uptodate" targetfile="javadoc/jelly2-nb-javadoc.zip" >
-    	      <srcfiles dir= "src/org/netbeans/jellytools" includes="**/*.java"/>
-        </uptodate>
-        <antcall target="create-jelly2-javadoc"/>
+    
+    <target name="jar-with-module-deps" if="module.dependencies">
+        <property file="src/org/netbeans/jellytools/version_info"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" 
+             compress="${build.package.compress}" 
+             index="${build.package.index}" 
+             manifest="${manifest.mf}">
+            <manifest>
+                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
+                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
+                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
+                <attribute name="OpenIDE-Module-Specification-Version" value="${Jellytools-MajorVersion}.${Jellytools-MinorVersion}"/>
+            </manifest>
+            <fileset dir="${build.classes.dir}" includes="**/modules/jellytools/*"/>
+        </jar>
     </target>
-
-    <target name="create-jelly2-javadoc" unless="jelly2.javadoc.uptodate">
-        <mkdir dir="javadoc/jelly2-nb-javadoc"/>
-        <!-- Javadoc for jelly2 -->
-        <javadoc destdir="javadoc/jelly2-nb-javadoc" packagenames="org.netbeans.jellytools.*" Windowtitle="Jellytools API">
-            <sourcepath>
-                <pathelement location="src"/>
-            </sourcepath>
-            <classpath>
-                <path refid="jellytools.classpath"/>
-            </classpath>
-        </javadoc>
-        <zip zipfile="javadoc/jelly2-nb-javadoc.zip" basedir="javadoc/jelly2-nb-javadoc" includes="**"/>
+    
+    <target name="netbeans-extra" depends="jar-library,javadoc,zipsrc">
+        <copy file="jelly2-nb.jar" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+        <copy file="javadoc/jelly2-nb-javadoc.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/jelly2-nb-javadoc.zip"/>
+        <copy file="jelly2-nb-src.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.sources.dir}/jelly2-nb-src.zip"/>
     </target>
-
+    
     <target name="javadocWithJemmy" description="Javadoc for Jellytools and Jemmy">
         <mkdir dir="javadoc/jemmy-jelly2-nb-javadoc"/>
         <!-- Javadoc both for Jelly2 and Jemmy-->
@@ -120,70 +89,18 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="../jemmy/src"/>
             </sourcepath>
             <classpath>
-                <path refid="jellytools.classpath"/>
+                <path refid="cp"/>
             </classpath>
         </javadoc>
         <zip zipfile="javadoc/jemmy-jelly2-nb-javadoc.zip" basedir="javadoc/jemmy-jelly2-nb-javadoc" includes="**"/>
     </target>
-
-    <target  name="clean" depends="init" description="Clean all build products">
-        <delete dir="build"/>
+ 
+    <target  name="clean" depends="projectized.clean">
         <delete>
             <fileset dir=".">
-                <include name="**/*.class"/>
-                <include name="**/*.zip"/>
-                <include name="**/*.jar"/>
-                <exclude name="builds/*.jar"/>
-            </fileset>
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-                <patternset refID="jellytools.files"/>
+                <include name="*.zip"/>
+                <include name="*.jar"/>
             </fileset>
         </delete>
-        <delete file="jellytools.nbm"/>
-        <delete file="manifest-subst.mf"/>
-        <delete file="module-manifest-subst.mf"/>
-        <delete dir="javadoc"/>
     </target>
-
-  <target name="netbeans" depends="release">
-    <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
-      <enabled dir="${netbeans.dest.dir}/${cluster.dir}">
-        <include name="${nb.modules.dir}/org-netbeans-modules-jellytools.jar"/>
-      </enabled>
-    </createmodulexml>
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/org-netbeans-modules-jellytools.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="jellytools.files"/>
-      </fileset>
-    </genlist>
-  </target>
-
-  <target name="release" depends="jars,javadoc,zipsrc">
-    <property file="src/org/netbeans/jellytools/version_info"/>
-    <filter token="MODULE_VERSION_SUBST" value="${Jellytools-MajorVersion}.${Jellytools-MinorVersion}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="module-manifest.mf" tofile="module-manifest-subst.mf" filtering="on"/>
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-jellytools.jar"
-         manifest="module-manifest-subst.mf"
-         basedir="modulesrc"
-	 excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="false">
-    </jar>
-    <copy file="jelly2-nb.jar" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/jelly2-nb.jar" filtering="off"/>
-    <copy file="javadoc/jelly2-nb-javadoc.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/jelly2-nb-javadoc.zip" filtering="off"/>
-    <copy file="jelly2-nb-src.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.sources.dir}/jelly2-nb-src.zip" filtering="off"/>
-  </target>
-
-  <target name="nbm" depends="netbeans">
-    <makenbm file="jellytools.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules.dir}/org-netbeans-modules-jellytools.jar"
-             homepage="http://jellytools.${homepage.base}"
-             distribution="http://${dist.base}/jellytools.nbm">
-      <license file="${license.file}"/>
-<!--      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/> -->
-    </makenbm>
-  </target>
-  
 </project>
