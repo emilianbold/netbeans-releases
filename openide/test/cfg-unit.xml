@@ -30,34 +30,9 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="org/openide/actions/*Test.class"/>
                 <include name="org/openide/execution/*Test.class"/>
+                <!-- filesystems tests should be stable. If not file a bug: -->                
                 <include name="org/openide/filesystems/*.class"/>
-                <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileDataCreatedEvent"/>
-                <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileFolderCreatedEvent"/>
-                <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testGetOutputStream"/>
-                <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testLastModified"/>
-                <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testGetSize"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testFireFileAttributeChangedEvent"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testDelete"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testAddFileChangeListener"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testRemoveFileChangeListener"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testLastModified"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem1Test.class/testGetSize"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testDelete"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testGetInputStream"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testGetOutputStream"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testRename"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testLastModified"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem2Test.class/testGetSize"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileDeletedEvent"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileAttributeChangedEvent"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileRenamedEvent"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testDelete"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testGetInputStream"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testGetOutputStream"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testAddFileChangeListener"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testRemoveFileChangeListener"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testLastModified"/>
-                <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testGetSize"/>
+                <exclude  name="org/openide/filesystems/SystemFileSystemTest.class"/>                                         
                 <include name="org/openide/modules/*.class"/>
                 <include name="org/openide/loaders/*.class"/>                
                 <!-- Don't worry about these, cannot be fixed currently: -->
@@ -87,29 +62,18 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>        
     </testbag>
+
+    <testbag testattribs="stable,fs" executor="ide" name="testbag_fs_ide" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <include  name="org/openide/filesystems/SystemFileSystemTest.class"/>                                         
+            </patternset>
+        </testset>        
+    </testbag>
     
     <testbag testattribs="failing" executor="code" name="testbag_3" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>                
-                <include name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileDataCreatedEvent"/>
-                <include name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileFolderCreatedEvent"/>
-                <include name="org/openide/filesystems/LocalFileSystemTest.class/testGetOutputStream"/>
-                <include name="org/openide/filesystems/MultiFileSystem1Test.class/testFireFileAttributeChangedEvent"/>
-                <include name="org/openide/filesystems/MultiFileSystem1Test.class/testDelete"/>
-                <include name="org/openide/filesystems/MultiFileSystem1Test.class/testAddFileChangeListener"/>
-                <include name="org/openide/filesystems/MultiFileSystem1Test.class/testRemoveFileChangeListener"/>
-                <include name="org/openide/filesystems/MultiFileSystem2Test.class/testDelete"/>
-                <include name="org/openide/filesystems/MultiFileSystem2Test.class/testGetInputStream"/>
-                <include name="org/openide/filesystems/MultiFileSystem2Test.class/testGetOutputStream"/>
-                <include name="org/openide/filesystems/MultiFileSystem2Test.class/testRename"/>
-                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileDeletedEvent"/>
-                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileAttributeChangedEvent"/>
-                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testFireFileRenamedEvent"/>
-                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testDelete"/>
-                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testGetInputStream"/>
-                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testGetOutputStream"/>
-                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testAddFileChangeListener"/>
-                <include name="org/openide/filesystems/MultiFileSystem3Test.class/testRemoveFileChangeListener"/>
                 <!-- See above. -->
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart1"/>
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart5"/>
