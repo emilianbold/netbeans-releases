@@ -13,17 +13,19 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.sql.Connection;
 import java.text.MessageFormat;
 
-import org.openide.*;
-import org.openide.nodes.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
+
 import org.netbeans.lib.ddl.impl.Specification;
-import org.netbeans.modules.db.explorer.nodes.*;
+
 import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.modules.db.explorer.dlg.CreateTableDialog;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.TableOwnerOperations;
-import org.netbeans.modules.db.explorer.dlg.CreateTableDialog;
 
 public class CreateTableAction extends DatabaseAction {
     static final long serialVersionUID =-7008851466327604724L;
@@ -35,19 +37,26 @@ public class CreateTableAction extends DatabaseAction {
         else
             return;
 
-        try {
-            DatabaseNodeInfo xnfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-            TableOwnerOperations nfo = (TableOwnerOperations)xnfo.getParent(nodename);
-            Specification spec = (Specification)xnfo.getSpecification();
-            CreateTableDialog dlg = new CreateTableDialog(spec, (DatabaseNodeInfo)nfo);
-            if (dlg.run())
+        
+        final DatabaseNodeInfo xnfo = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
+        final String nodeName = node.getName();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run () {
                 try {
-                nfo.addTable(dlg.getTableName());
-                } catch ( DatabaseException de ) {
+                    TableOwnerOperations nfo = (TableOwnerOperations) xnfo.getParent(nodename);
+                    Specification spec = (Specification) xnfo.getSpecification();
+                    CreateTableDialog dlg = new CreateTableDialog(spec, (DatabaseNodeInfo) nfo);
+                    if (dlg.run())
+                        try {
+                            nfo.addTable(dlg.getTableName());
+                        } catch ( DatabaseException de ) {
+                            //PENDING
+                        }
+                } catch(Exception exc) {
+                    String message = MessageFormat.format(bundle.getString("EXC_UnableToCreateTable"), new String[] {nodeName, exc.getMessage()}); // NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                 }
-        } catch(Exception exc) {
-            String message = MessageFormat.format(bundle.getString("EXC_UnableToCreateTable"), new String[] {node.getName(), exc.getMessage()}); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-        }
+            }
+        }, 0);       
     }
 }

@@ -15,13 +15,15 @@ package org.netbeans.modules.db.explorer.actions;
 
 import java.text.MessageFormat;
 
-import org.openide.*;
-import org.openide.nodes.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 import org.netbeans.lib.ddl.impl.Specification;
-import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.dlg.AddTableColumnDialog;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
 
 public class AddColumnAction extends DatabaseAction {
     
@@ -41,15 +43,19 @@ public class AddColumnAction extends DatabaseAction {
         else
             return;
 
-        try {
-            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-            TableNodeInfo nfo = (TableNodeInfo)info.getParent(nodename);
-            AddTableColumnDialog dlg = new AddTableColumnDialog((Specification)nfo.getSpecification(), nfo);
-            if (dlg.run())
-                nfo.addColumn(dlg.getColumnName());
-        } catch(Exception exc) {
-            String message = MessageFormat.format(bundle.getString("ERR_UnableToAddColumn"), new String[] {exc.getMessage()}); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-        }
+        DatabaseNodeInfo info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
+        final TableNodeInfo nfo = (TableNodeInfo) info.getParent(nodename);
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run () {
+                AddTableColumnDialog dlg = new AddTableColumnDialog((Specification) nfo.getSpecification(), nfo);
+                if (dlg.run())
+                    try {
+                        nfo.addColumn(dlg.getColumnName());
+                    } catch(Exception exc) {
+                        String message = MessageFormat.format(bundle.getString("ERR_UnableToAddColumn"), new String[] {exc.getMessage()}); // NOI18N
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                    }
+            }
+        }, 0);
     }
 }

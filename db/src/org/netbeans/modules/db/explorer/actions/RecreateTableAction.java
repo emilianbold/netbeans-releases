@@ -24,6 +24,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 import org.netbeans.lib.ddl.impl.AbstractCommand;
@@ -48,83 +49,87 @@ public class RecreateTableAction extends DatabaseAction {
         else
             return;
         
-        try {
-            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-            TableListNodeInfo nfo = (TableListNodeInfo)info.getParent(nodename);
-            Specification spec = (Specification)nfo.getSpecification();
-            AbstractCommand cmd;
+        final DatabaseNodeInfo info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
+        final java.awt.Component par = WindowManager.getDefault().getMainWindow();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run () {
+                try {
+                    TableListNodeInfo nfo = (TableListNodeInfo) info.getParent(nodename);
+                    Specification spec = (Specification) nfo.getSpecification();
+                    AbstractCommand cmd;
 
-            // Get filename
-            JFileChooser chooser = new JFileChooser();
-            chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-            chooser.setDialogTitle(bundle.getString("RecreateTableFileOpenDialogTitle")); //NOI18N
-            chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-                public boolean accept(File f) {
-                    return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
-                }
-                
-                public String getDescription() {
-                    return bundle.getString("GrabTableFileTypeDescription"); //NOI18N
-                }
-            });
-
-            java.awt.Component par = WindowManager.getDefault().getMainWindow();
-            if (chooser.showOpenDialog(par) == JFileChooser.APPROVE_OPTION) {
-                File file = chooser.getSelectedFile();
-                if (file != null && file.isFile()) {
-                    FileInputStream fstream = new FileInputStream(file);
-                    ObjectInputStream istream = new ObjectInputStream(fstream);
-                    cmd = (AbstractCommand)istream.readObject();
-                    istream.close();
-                    cmd.setSpecification(spec);
-                } else
-                    return;
-            } else
-                return;
-
-            String newtab = cmd.getObjectName();
-            String msg = MessageFormat.format(bundle.getString("RecreateTableRenameNotes"), new String[] {cmd.getCommand()}); //NOI18N
-            msg = cmd.getCommand();
-            LabeledTextFieldDialog dlg = new LabeledTextFieldDialog(bundle.getString("RecreateTableRenameTable"), bundle.getString("RecreateTableNewName"), msg); //NOI18N
-            dlg.setStringValue(newtab);
-            boolean noResult = true;
-            while(noResult) {
-                if (dlg.run()) { // OK option
-                    try {
-                        if(!dlg.isEditable()) { // from file
-                            newtab = dlg.getStringValue();
-                            cmd.setObjectName(newtab);
-                            cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
-                            try {
-                                cmd.execute();
-                                nfo.addTable(newtab);
-                            } catch (org.netbeans.lib.ddl.DDLException exc) {
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
-                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(exc.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-                                continue;
-                            } catch (org.netbeans.modules.db.DatabaseException exc) {
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
-                                continue;
-                            }
-                            noResult = false;
-                        } else { // from editable text area
-                            DataViewWindow win = new DataViewWindow(info, dlg.getEditedCommand());
-                            if(win.executeCommand())
-                                noResult = false;
+                    // Get filename
+                    JFileChooser chooser = new JFileChooser();
+                    chooser.setDialogType(JFileChooser.OPEN_DIALOG);
+                    chooser.setDialogTitle(bundle.getString("RecreateTableFileOpenDialogTitle")); //NOI18N
+                    chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                        public boolean accept(File f) {
+                            return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
                         }
-                    } catch(Exception exc) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);                        
-                        String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+
+                        public String getDescription() {
+                            return bundle.getString("GrabTableFileTypeDescription"); //NOI18N
+                        }
+                    });
+
+                    if (chooser.showOpenDialog(par) == JFileChooser.APPROVE_OPTION) {
+                        File file = chooser.getSelectedFile();
+                        if (file != null && file.isFile()) {
+                            FileInputStream fstream = new FileInputStream(file);
+                            ObjectInputStream istream = new ObjectInputStream(fstream);
+                            cmd = (AbstractCommand)istream.readObject();
+                            istream.close();
+                            cmd.setSpecification(spec);
+                        } else
+                            return;
+                    } else
+                        return;
+
+                    String newtab = cmd.getObjectName();
+                    String msg = MessageFormat.format(bundle.getString("RecreateTableRenameNotes"), new String[] {cmd.getCommand()}); //NOI18N
+                    msg = cmd.getCommand();
+                    LabeledTextFieldDialog dlg = new LabeledTextFieldDialog(bundle.getString("RecreateTableRenameTable"), bundle.getString("RecreateTableNewName"), msg); //NOI18N
+                    dlg.setStringValue(newtab);
+                    boolean noResult = true;
+                    while(noResult) {
+                        if (dlg.run()) { // OK option
+                            try {
+                                if(!dlg.isEditable()) { // from file
+                                    newtab = dlg.getStringValue();
+                                    cmd.setObjectName(newtab);
+                                    cmd.setObjectOwner((String) info.get(DatabaseNodeInfo.SCHEMA));
+                                    try {
+                                        cmd.execute();
+                                        nfo.addTable(newtab);
+                                    } catch (org.netbeans.lib.ddl.DDLException exc) {
+                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(exc.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                                        continue;
+                                    } catch (org.netbeans.modules.db.DatabaseException exc) {
+                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                                        continue;
+                                    }
+                                    noResult = false;
+                                } else { // from editable text area
+                                    DataViewWindow win = new DataViewWindow(info, dlg.getEditedCommand());
+                                    if(win.executeCommand())
+                                        noResult = false;
+                                }
+                            } catch(Exception exc) {
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);                        
+                                String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                            }
+                        } else { // CANCEL option
+                            noResult = false;
+                        }
                     }
-                } else { // CANCEL option
-                    noResult = false;
+                } catch(Exception exc) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                    String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                 }
             }
-        } catch(Exception exc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
-            String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-        }
+        }, 0);
     }
 }
