@@ -76,6 +76,7 @@ import org.openide.execution.NbClassPath;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import java.io.File;
+import java.awt.Dimension;
 
 
 
@@ -122,6 +123,7 @@ public class BaseOptions extends OptionSupport {
     public static final String KEY_BINDING_LIST_PROP = "keyBindingList"; // NOI18N
     public static final String LINE_HEIGHT_CORRECTION_PROP = "lineHeightCorrection"; // NOI18N
     public static final String LINE_NUMBER_MARGIN_PROP = "lineNumberMargin"; // NOI18N
+    public static final String LINE_NUMBER_MARGIN_PROP_2 = "lineNumberMargin2"; // NOI18N    
     public static final String LINE_NUMBER_VISIBLE_PROP = "lineNumberVisible"; // NOI18N
     public static final String MACRO_MAP_PROP = "macroMap"; // NOI18N
     public static final String MARGIN_PROP = "margin"; // NOI18N
@@ -152,7 +154,7 @@ public class BaseOptions extends OptionSupport {
         INDENT_ENGINE_PROP,
         KEY_BINDING_LIST_PROP,
         LINE_HEIGHT_CORRECTION_PROP,
-        LINE_NUMBER_MARGIN_PROP,
+        LINE_NUMBER_MARGIN_PROP_2,
         LINE_NUMBER_VISIBLE_PROP,
         MACRO_MAP_PROP,
         MARGIN_PROP,
@@ -933,6 +935,17 @@ public class BaseOptions extends OptionSupport {
     public void setLineNumberMargin(Insets i) {
         setSettingValue(SettingsNames.LINE_NUMBER_MARGIN, i, LINE_NUMBER_MARGIN_PROP);
     }
+
+
+    //-------- used only for better UI repres=entation as a fix of the bug #17950 --
+    public Dimension getLineNumberMargin2() {
+        Insets ins =  (Insets)getSettingValue(SettingsNames.LINE_NUMBER_MARGIN);
+        return new Dimension(ins.left, ins.right);
+    }
+    public void setLineNumberMargin2(Dimension d) {
+        setLineNumberMargin(new Insets(0, d.width, 0, d.height));
+    }
+    //--------------------------------------------------------------------
     
     public boolean getStatusBarVisible() {
         return getSettingBoolean(SettingsNames.STATUS_BAR_VISIBLE);
