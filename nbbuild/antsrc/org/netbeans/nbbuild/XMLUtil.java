@@ -146,7 +146,7 @@ final class XMLUtil extends Object {
             || "org.apache.crimson.tree.XmlDocument".equals(dock.getName())) {  //NOI18N
                 
                 // these DOM implementations are self writing
-                Method write = dock.getDeclaredMethod("write", new Class[] {Writer.class});//NOI18N
+                Method write = dock.getDeclaredMethod("write", new Class[] {OutputStream.class});//NOI18N
                 write.invoke(doc,new Object[] {out});            
                 
             } else {
