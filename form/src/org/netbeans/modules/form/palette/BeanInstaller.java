@@ -192,13 +192,13 @@ public final class BeanInstaller
             if (obj instanceof FileObject) {
                 if ("class".equals(((FileObject)obj).getExt())) { // NOI18N
                     name =((FileObject)obj).getPackageName('.');
-                    if (name != null) createInstance(category, name, null);
+                    if (name != null) createInstance(category, name);
                 } else {
                     createShadow(category,(FileObject)obj);
                 }
             } else if (obj instanceof InstanceCookie) {
                 name =((InstanceCookie)obj).instanceName();
-                if (name != null) createInstance(category, name, null);
+                if (name != null) createInstance(category, name);
             } else if (obj instanceof ClassDataObject) {
                 try {
                     ((ClassDataObject)obj).createShadow(DataFolder.findFolder(category));
@@ -278,12 +278,14 @@ public final class BeanInstaller
         }
     }
 
-    static void createInstance(FileObject folder, String className, String iconName) {
+    static void createInstance(FileObject folder, String className) {
         // first check if the class is valid and can be loaded
         try {
             Class.forName(className, true, TopManager.getDefault().currentClassLoader());
         }
         catch (Throwable ex) {
+            if (ex instanceof ThreadDeath)
+                throw (ThreadDeath)ex;
             if (System.getProperty("netbeans.debug.exceptions") != null)
                 ex.printStackTrace();
 
@@ -298,39 +300,26 @@ public final class BeanInstaller
         }
 
         String fileName = formatName(className);
-        String beanName = className.substring(className.lastIndexOf('.')+1);
-        FileLock lock = null;
         try {
             if (folder.getFileObject(fileName+".instance") == null) { // NOI18N
                 FileObject fo = folder.createData(fileName, "instance"); // NOI18N
-                lock = fo.lock();
-                java.io.OutputStream os = fo.getOutputStream(lock);
-                if (iconName != null) {
-                    String ic = "icon=" + iconName + "\n"; // NOI18N
-                    os.write(ic.getBytes());
-                }
-                os.write(("name=" + beanName).getBytes()); // NOI18N
-                os.close();
-
                 DataObject dobj = DataObject.find(fo);
                 if (dobj != null) {
                     // enforce creation of node so that it is displayed
                     dobj.getNodeDelegate();
                 }
             }
-        } catch (java.io.IOException e) {
-            if (System.getProperty("netbeans.debug.exceptions") != null) e.printStackTrace();
+        }
+        catch (java.io.IOException e) {
+            if (System.getProperty("netbeans.debug.exceptions") != null)
+                e.printStackTrace();
             /* ignore */
-        } catch (Throwable t) {
-            if (t instanceof ThreadDeath) {
-                throw(ThreadDeath)t;
-            } else {
+        }
+        catch (Throwable t) {
+            if (t instanceof ThreadDeath)
+                throw (ThreadDeath)t;
+            else
                 t.printStackTrace();
-            }
-        } finally {
-            if (lock != null) {
-                lock.releaseLock();
-            }
         }
     }
 
