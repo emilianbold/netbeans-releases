@@ -206,6 +206,8 @@ class BiIconEditor extends PropertyEditorSupport {
             JLabel lab;
             setLayout(new BorderLayout(6, 6));
             setBorder(new EmptyBorder(6, 6, 6, 6));
+            getAccessibleContext().setAccessibleName(bundle.getString("ACS_IconPanelA11yName"));  // NOI18N
+            getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_IconPanelA11yDesc"));  // NOI18N
             JPanel p = new JPanel(new BorderLayout(3, 3));
             JPanel p1 = new JPanel(new BorderLayout());
             p1.setBorder(new TitledBorder(new EtchedBorder(), bundle.getString("CTL_ImageSourceType")));
