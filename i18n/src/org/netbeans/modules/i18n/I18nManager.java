@@ -42,6 +42,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
 import org.netbeans.api.project.Project;
 import org.openide.util.RequestProcessor;
+import org.openide.ErrorManager;
 
 
 /**
@@ -104,9 +105,7 @@ public class I18nManager {
         try {
             initSupport(sourceDataObject);
         } catch(IOException ioe) {
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                System.err.println("I18N: Document could not be loaded for "+sourceDataObject.getName()); // NOI18N
-            
+            ErrorManager.getDefault().notify(ErrorManager.USER, ioe);
             return;
         }
 

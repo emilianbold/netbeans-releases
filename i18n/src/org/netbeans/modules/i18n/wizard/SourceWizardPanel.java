@@ -59,6 +59,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.netbeans.modules.i18n.SelectorUtils;
+import org.openide.ErrorManager;
 
 /**
  * First panel used in I18N (test) Wizard.
@@ -315,8 +316,8 @@ final class SourceWizardPanel extends JPanel {
            
             descPanel.fireStateChanged();
         } catch (UserCancelException uce) {
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                System.err.println("I18N: User cancelled selection"); // NOI18N
+            ErrorManager.getDefault().notify(ErrorManager.USER, uce);
+
         }
     }//GEN-LAST:event_addButtonActionPerformed
 

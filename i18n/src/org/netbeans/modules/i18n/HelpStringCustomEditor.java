@@ -29,6 +29,7 @@ import org.netbeans.beaninfo.editors.StringEditor;
 
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
+import org.openide.ErrorManager;
 
 
 /**
@@ -172,8 +173,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         try {
             textField.getDocument().insertString(textField.getCaretPosition(), replace, null); // NOI18N
         } catch(BadLocationException ble) {
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                System.err.println("I18N: Text not inserted in property editor"); // NOI18N
+            ErrorManager.getDefault().notify(ErrorManager.USER, ble);
         }
     }
 

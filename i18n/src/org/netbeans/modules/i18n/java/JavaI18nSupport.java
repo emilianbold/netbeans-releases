@@ -54,6 +54,7 @@ import org.openide.src.Type;
 import org.openide.text.NbDocument;
 import org.openide.util.MapFormat;
 import org.openide.util.Lookup;
+import org.openide.ErrorManager;
 
 
 /** 
@@ -243,13 +244,9 @@ public class JavaI18nSupport extends I18nSupport {
                 // Trying to add new field.
                 sourceClass.addField(newField);
         } catch(SourceException se) {
-            // do nothing, means the field already exist
-            if(I18nUtil.isDebug()) // NOI18N
-                se.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.USER, se);
         } catch(NullPointerException npe) {
-            // something wrong happened, probably sourceDataObject was not initialized
-            if(I18nUtil.isDebug()) // NOI18N
-                npe.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.USER, npe);
         }
     }
 
@@ -650,8 +647,7 @@ public class JavaI18nSupport extends I18nSupport {
                             return new HardCodedString(extractString(hardString), hardStringStart, hardStringEnd);
                         }
                     } catch(BadLocationException ble) {
-                        if(I18nUtil.isDebug()) // NOI18N
-                            ble.printStackTrace();
+                        ErrorManager.getDefault().notify(ErrorManager.USER, ble);
                     } finally {
                         currentStringStart = -1;
                         currentStringEnd = -1;
@@ -713,9 +709,8 @@ public class JavaI18nSupport extends I18nSupport {
             /*
              * Handle the situation that some syntax error has been detected:
              */
-            if (I18nUtil.isDebug()) {
-                ex.printStackTrace();
-            }
+            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
+
             // Indicate error, but allow user what to do with the found hard coded string to be able go thru
             // this problem.
             // Note: All this shouldn't happen. The reason is 1) bad set reg exp format (in options) or 

@@ -60,6 +60,7 @@ import org.openide.util.UserCancelException;
 import org.openide.util.Lookup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.ErrorManager;
 
 
 /**
@@ -467,8 +468,7 @@ final class ResourceWizardPanel extends JPanel {
                     try {
                         support = FactoryRegistry.getFactory(source.getClass()).create(source);
                     } catch(IOException ioe) {
-                        if(I18nUtil.isDebug())
-                            System.err.println("I18N: Document could not be loaded for " + source.getName()); // NOI18N
+                        ErrorManager.getDefault().notify(ErrorManager.USER, ioe);
 
                         // Remove source from settings.
                         sourceMap.remove(source);

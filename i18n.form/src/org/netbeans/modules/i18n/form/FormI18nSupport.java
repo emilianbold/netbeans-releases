@@ -59,9 +59,6 @@ import org.openide.windows.TopComponent;
  */
 public class FormI18nSupport extends JavaI18nSupport {
 
-    /** Variable for debug purposes. */
-    private static final String DEBUG = "netbeans.debug.exceptions"; // NOI18N
-
     //see RADComponent and  RADVisualComponent
     private static final String RAD_PROPERTIES = "properties"; // NOI18N
     private static final String RAD_PROPERTIES2 = "properties2"; // NOI18N
@@ -525,13 +522,11 @@ public class FormI18nSupport extends JavaI18nSupport {
                 try {
                     value = property.getValue();
                 } catch(IllegalAccessException iae) {
-                    if(Boolean.getBoolean(DEBUG))
-                        iae.printStackTrace();
+                    ErrorManager.getDefault().notify(ErrorManager.USER, iae);
                     validProp = null;
                     continue; // next property
                 } catch(InvocationTargetException ite) {
-                    if(Boolean.getBoolean(DEBUG))
-                        ite.printStackTrace();
+                    ErrorManager.getDefault().notify(ErrorManager.USER, ite);
                     validProp = null;
                     continue; // next property
                 }
@@ -947,8 +942,7 @@ public class FormI18nSupport extends JavaI18nSupport {
                        try {
                            ((FormI18nFinder)finder).setLastPosition(document.createPosition(lastP));                   
                        } catch (BadLocationException ble) {
-                           if(Boolean.getBoolean(DEBUG))
-                               System.err.println("I18N: Form support: Position reset in guarded block not successful."); // NOI18N
+                           ErrorManager.getDefault().notify(ErrorManager.USER, ble);
                        } finally {
                            if(document instanceof AbstractDocument)
                                ((AbstractDocument)document).readUnlock();
@@ -956,11 +950,9 @@ public class FormI18nSupport extends JavaI18nSupport {
                     }
                });
             } catch (IllegalAccessException iae) {
-                if(Boolean.getBoolean(DEBUG))
-                    iae.printStackTrace();
+                ErrorManager.getDefault().notify(ErrorManager.USER, iae);
             } catch (InvocationTargetException ite) {
-                if(Boolean.getBoolean(DEBUG))
-                    ite.printStackTrace();
+                ErrorManager.getDefault().notify(ErrorManager.USER, ite);
             }
         }   
 

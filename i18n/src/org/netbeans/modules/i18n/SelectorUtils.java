@@ -46,6 +46,7 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import java.net.URL;
 import org.netbeans.api.project.ProjectInformation;
+import org.openide.ErrorManager;
 
 
 
@@ -119,9 +120,8 @@ public class SelectorUtils {
 	       );
       return (DataObject)selectedNodes[0].getCookie(DataObject.class);
     } catch (UserCancelException uce) {
-      if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-	System.err.println("I18N: User cancelled selection"); // NOI18N
-      return null;
+        ErrorManager.getDefault().notify(ErrorManager.USER, uce);
+        return null;
     }
 
   }
