@@ -88,7 +88,6 @@ abstract class LookTreeNode implements LookListener {
     private LookTreeNode(Look l, Object o) {
         this.representedObject = o;
         this.look = l;
-        l.attachTo(o);
         org.netbeans.modules.looks.Accessor.DEFAULT.addLookListener( l, representedObject, this );
     }
     
