@@ -118,6 +118,7 @@ public class NbTestConfig extends Task {
         mconfig = new MConfig(cfg);
         if (config_setup != null) {
             MConfig.Setup config_setup_object = (MConfig.Setup)allSetups.get(config_setup);
+            if (config_setup_object == null) throw new BuildException("Setup with name "+config_setup+" not found.");
             mconfig.setConfigSetup(config_setup_object);
         }
     }
@@ -170,13 +171,13 @@ public class NbTestConfig extends Task {
         for (int i = 0; i < attrs.getLength(); i++) {
             org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
             if (attr.getName().equals("dir")) { // <start dir="???">
-                ss.dir = new File(attr.getValue());
+                ss.dir = new File(ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties()));
             }
             if (attr.getName().equals("target")) { // <start target="???">
-                ss.target = attr.getValue();
+                ss.target = ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
             }
             if (attr.getName().equals("antfile")) { // <start antfile="???">
-                ss.antfile = attr.getValue();
+                ss.antfile = ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
             }
         }
         return ss;
@@ -277,6 +278,7 @@ public class NbTestConfig extends Task {
         
         if (setup != null) {
             MConfig.Setup module_setup = (MConfig.Setup)allSetups.get(setup);
+            if (module_setup == null) throw new BuildException("Setup with name "+setup+" not found.");
             group.setSetup(module_setup);
         }
         group.setProperties(module_props);
@@ -365,13 +367,13 @@ public class NbTestConfig extends Task {
         for (int i = 0; i < attrs.getLength(); i++) {
             org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
             if (attr.getName().equals("file")) { // <property file="???">
-                file = attr.getValue();
+                file = ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
             }
             else if (attr.getName().equals("name")) { // <property name="???">
-                name =  attr.getValue();
+                name =  ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
             }
             else if (attr.getName().equals("value")) { // <property value="???">
-                value = attr.getValue();
+                value = ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
             }
             else {
                 throw new BuildException ("Unexpected attribute '" + attr.getName() + "'.");
