@@ -118,18 +118,14 @@ public class ConstantPool {
 
     /* Return the collection of all unique class references in pool.
      *
-     * @return a Set of Strings specifying the referenced classnames.
+     * @return a Set of ClassNames specifying the referenced classnames.
      */
     public final Set getAllClassNames() {
-        /* Collect all class references.  The safest way to do this
-         * is to combine the ClassInfo constants with any UTF8Info
-         * constants which match the pattern "L*;".
-         */        
         Collection c = getAllConstantsImpl(CPClassInfo.class);
         Set set = new HashSet(c.size());
         for (Iterator i = c.iterator(); i.hasNext();) {
             CPClassInfo ci = (CPClassInfo)i.next();
-            set.add(ci.getInternalName());
+            set.add(ci.getClassName());
         }
         return Collections.unmodifiableSet(set);
     }

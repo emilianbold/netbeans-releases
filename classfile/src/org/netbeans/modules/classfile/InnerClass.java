@@ -29,9 +29,9 @@ import java.io.IOException;
  */
 public class InnerClass {
 
+    ClassName name;
+    ClassName outerClassName;
     String simpleName;
-    String fullName;
-    String outerClassName;
     int access;
     
     static InnerClass[] loadInnerClasses(DataInputStream in, ConstantPool pool) 
@@ -51,17 +51,9 @@ public class InnerClass {
     private void loadInnerClass(DataInputStream in, ConstantPool pool) 
       throws IOException {
         int index = in.readUnsignedShort();
-        if (index > 0)
-            fullName = 
-                ClassFile.externalizeClassName(pool.getClass(index).getName());
-        else
-            fullName = "<not defined>"; //NOI18N
+        name = (index > 0) ? pool.getClass(index).getClassName() : null;
         index = in.readUnsignedShort();
-        if (index > 0)
-            outerClassName =
-                ClassFile.externalizeClassName(pool.getClass(index).getName());
-        else
-            outerClassName = "<not defined>"; //NOI18N
+	outerClassName = (index > 0) ? pool.getClass(index).getClassName() : null;
         index = in.readUnsignedShort();
         if (index > 0) {
             CPUTF8Info entry = (CPUTF8Info)pool.get(index);
@@ -75,16 +67,15 @@ public class InnerClass {
      * "<not defined>" is returned.
      * @return the name of this class.
      */    
-    public final String getName() {
-        return fullName;
+    public final ClassName getName() {
+        return name;
     }
     
     /** Returns the name of the enclosing outer class, including 
-     *  its package (if any).  If the compiler didn't define this 
-     *  value, the string "<not defined>" is returned.
+     *  its package (if any).  
      * @return the name of this class, or null if not available.
      */    
-    public final String getOuterClassName() {
+    public final ClassName getOuterClassName() {
         return outerClassName;
     }
 
@@ -107,7 +98,7 @@ public class InnerClass {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("innerclass=");
-        sb.append(fullName);
+        sb.append(name);
         if (simpleName != null) {
             sb.append(" (");
             sb.append(simpleName);

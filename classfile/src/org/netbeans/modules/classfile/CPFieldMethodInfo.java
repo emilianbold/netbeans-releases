@@ -42,21 +42,9 @@ abstract class CPFieldMethodInfo extends CPNameAndTypeInfo {
         return iNameAndType;
     }
 
-    public final String getClassName() {
-        return ClassFile.externalizeClassName(
+    public final ClassName getClassName() {
+        return ClassName.getClassName(
             ((CPName)pool.cpEntries[iClass]).getName());
-    }
-
-    /**
-     * Return the name of the class, minus any package.
-     */
-    public final String getShortClassName() {
-        return shortClassName(getClassName());
-    }
-
-    private static String shortClassName(String clsName) {
-        int i = clsName.lastIndexOf('.');
-        return (i >= 0) ? clsName.substring(i+1) : clsName;
     }
 
     void setClassNameIndex(int index) {

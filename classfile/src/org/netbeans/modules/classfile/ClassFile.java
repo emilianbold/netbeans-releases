@@ -230,55 +230,21 @@ public class ClassFile {
         return classAccess;
     }
     
-    /** Returns the name of this class, including its package (if any).
-     * @return the full name of this class.
-     */    
-    public final String getFullName() {
-        return externalizeClassName(classInfo.getName());
-    }
-
-    /** Returns the name of this class, without any package prefix.
+    /** Returns the name of this class.
      * @return the name of this class.
      */
-    public final String getName() {
-        String clsName = classInfo.getInternalName();
-        int idx = clsName.lastIndexOf('/');
-        if (idx == -1)
-            return clsName;
-        return externalizeClassName(clsName.substring(idx + 1));
+    public final ClassName getName() {
+        return classInfo.getClassName();
     }
 
-    /** Returns the name of this class in "internal" format, separating
-     * package names with '/' and inner classes with '$'.
-     */
-    public final String getInternalName() {
-        return classInfo.getInternalName();
-    }
-
-    /** Returns the package this class is part of, or an empty string
-     * if it doesn't have one.
-     * @return the package of this class.
-     */
-    public final String getPackage() {
-        String clsName = classInfo.getInternalName();
-        int idx = clsName.lastIndexOf('/');
-        if (idx == -1)
-            return "";
-        String pkg = clsName.substring(0, idx);
-        return externalizeClassName(pkg);
-    }
-    
     /** Returns the name of this class's superclass.  A string is returned
      * instead of a ClassFile object to reduce object creation.
      * @return the name of the superclass of this class.
      */    
-    public final String getSuperClass() {
+    public final ClassName getSuperClass() {
         if (superClassInfo == null)
             return null;
-        String superClassName = 
-            externalizeClassName(superClassInfo.getName());
-        // Superclass name may be "" for java.lang.Object, although it should be null.
-        return (superClassName.length() > 0) ? superClassName : null;
+	return superClassInfo.getClassName();
     }
     
     /**
@@ -289,7 +255,7 @@ public class ClassFile {
         List l = new ArrayList();
         int n = interfaces.length;
         for (int i = 0; i < n; i++)
-            l.add(externalizeClassName(interfaces[i].getName()));
+            l.add(interfaces[i].getClassName());
         return l;
     }
     
@@ -339,45 +305,12 @@ public class ClassFile {
         return Arrays.asList(innerClasses);
     }
     
-    public static String externalizeClassName(String s) {
-        StringBuffer sb = new StringBuffer(s);
-	int arrays = 0;
-	boolean atBeginning = true;
-	int length = sb.length();
-	for (int i = 0; i < length; i++) {
-	    char ch = sb.charAt(i);
-	    switch (ch) {
-	      case '[': 
-		if (atBeginning)
-		    arrays++; 
-		break;
-
-	      case '/':
-	      case '$':
-		sb.setCharAt(i, '.');
-		atBeginning = false;
-		break;
-
-	      default:
-		atBeginning = false;
-	    }
-	}
-
-	if (arrays > 0) {
-	    sb.delete(0, arrays);
-	    for (int i = 0; i < arrays; i++)
-	      sb.append("[]");
-	}
-
-        return sb.toString();
-    }
-    
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("ClassFile: "); //NOI18N
         sb.append(Access.toString(classAccess));
         sb.append(' ');
-        sb.append(classInfo.getName());
+        sb.append(classInfo);
         if (synthetic)
             sb.append(" (synthetic)"); //NOI18N
         if (deprecated)
@@ -385,7 +318,7 @@ public class ClassFile {
         sb.append("\n   source: "); //NOI18N
         sb.append(sourceFileName);
         sb.append("\n   super: "); //NOI18N
-        sb.append(superClassInfo.getName());
+        sb.append(superClassInfo);
         sb.append("\n   ");
         if (interfaces.length > 0) {
             sb.append(arrayToString("interfaces", interfaces)); //NOI18N

@@ -32,16 +32,16 @@ public class CPClassInfo extends CPName {
 	super(pool, index);
     }
 
-    public String getName() {
+    public ClassName getClassName() {
         String name = super.getName();
-        return ClassFile.externalizeClassName(name);
-    }
-
-    public String getInternalName() {
-        return super.getName();
+        return ClassName.getClassName(name);
     }
 
     public final int getTag() {
 	return ConstantPool.CONSTANT_Class;
+    }
+
+    public String toString() {
+	return getClassName().toString();
     }
 }
