@@ -51,7 +51,7 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
         filter.addAll (reallyNew);
         refreshFilters (reallyNew);
 
-        pcs.firePropertyChange (PROP_EXCLUSION_PATTERNS, reallyNew, null);
+        pcs.firePropertyChange (PROP_EXCLUSION_PATTERNS, null, reallyNew);
     }
 
     /**
@@ -66,7 +66,7 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
         end = new ArrayList ();
         refreshFilters (filter);
 
-        pcs.firePropertyChange (PROP_EXCLUSION_PATTERNS, null, patterns);
+        pcs.firePropertyChange (PROP_EXCLUSION_PATTERNS, patterns, null);
     }
     
     /**

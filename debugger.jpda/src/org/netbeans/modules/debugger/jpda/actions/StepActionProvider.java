@@ -141,7 +141,8 @@ implements Executor {
         while (i.hasNext ())
             setEnabled (
                 i.next (),
-                debuggerState == getDebuggerImpl ().STATE_STOPPED
+                (debuggerState == getDebuggerImpl ().STATE_STOPPED) &&
+                (getDebuggerImpl ().getCurrentThread () != null)
             );
     }
     

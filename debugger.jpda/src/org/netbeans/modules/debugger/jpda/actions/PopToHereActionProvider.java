@@ -49,7 +49,7 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
     public void doAction (Object action) {
         try {
             JPDAThread t = getDebuggerImpl ().getCurrentThread ();
-            t.getCallStack () [0].popFrame ();
+            t.getCallStack (0, 1) [0].popFrame ();
         } catch (NoInformationException ex) {
         }
     }

@@ -89,7 +89,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
                             (t.getStackDepth () > 0);
         if (popToHere)
             try {
-                popToHere = ! debugger.getCurrentThread ().getCallStack () [0].
+                popToHere = ! debugger.getCurrentThread ().getCallStack (0, 1) [0].
                     equals (csf);
             } catch (NoInformationException ex) {
                 popToHere = false;

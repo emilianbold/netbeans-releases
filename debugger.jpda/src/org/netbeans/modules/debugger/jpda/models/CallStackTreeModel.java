@@ -49,7 +49,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  */
 public class CallStackTreeModel implements TreeModel {
 
-    private ContextProvider              lookupProvider;
+    private ContextProvider             lookupProvider;
     private JPDADebuggerImpl            debugger;
     private BasicCallStackTreeModel     model;
     //private Vector listeners = new Vector ();
@@ -82,7 +82,12 @@ public class CallStackTreeModel implements TreeModel {
             }
             // StackFrame of the same thread with the same index should 
             // be "equal"
-            r [i] = new CallStackFrameImpl(ch[i], this, id);
+            r [i] = new CallStackFrameImpl (
+                ch [i], 
+                this, 
+                id,
+                i
+            );
         }
         return r;
     }

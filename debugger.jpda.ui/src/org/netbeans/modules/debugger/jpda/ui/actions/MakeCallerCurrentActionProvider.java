@@ -105,7 +105,7 @@ public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
             JPDAThread t = debuggerImpl.getCurrentThread ();
             if (t == null) return;
             if (t.getStackDepth () <= index) return;
-            final CallStackFrame csf = t.getCallStack () [index];
+            final CallStackFrame csf = t.getCallStack (index, index + 1) [0];
             csf.makeCurrent ();
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {

@@ -85,7 +85,7 @@ implements Executor, PropertyChangeListener {
     public void doAction (Object action) {
         synchronized (getDebuggerImpl ().LOCK) {
             if (ssverbose)
-                System.out.println("\nSS:  StepInto!");
+                System.out.println("\nSS:  STEP INTO !!! *************");
             setStepRequest ();
             try {
                 getDebuggerImpl ().resume ();
@@ -99,7 +99,8 @@ implements Executor, PropertyChangeListener {
         while (i.hasNext ())
             setEnabled (
                 i.next (),
-                debuggerState == getDebuggerImpl ().STATE_STOPPED
+                (debuggerState == getDebuggerImpl ().STATE_STOPPED) &&
+                (getDebuggerImpl ().getCurrentThread () != null)
             );
     }
     
@@ -107,12 +108,17 @@ implements Executor, PropertyChangeListener {
         if (ev.getPropertyName () == SmartSteppingFilter.PROP_EXCLUSION_PATTERNS) {
             if (ev.getOldValue () != null) {
                 // remove some patterns
-                if (ssverbose)
+                if (ssverbose) {
                     System.out.println("\nSS:  exclusion patterns removed");
+                }
                 removeStepRequests ();
             } else {
-                if (ssverbose)
-                    System.out.println("\nSS:  exclusion patterns added");
+                if (ssverbose) {
+                    if (stepRequest == null)
+                        System.out.println("SS:  exclusion patterns has been added");
+                    else
+                        System.out.println("\nSS:    add exclusion patterns:");
+                }
                 addPatternsToRequest ((String[]) 
                     ((Set) ev.getNewValue ()).toArray (
                         new String [((Set) ev.getNewValue ()).size()]
@@ -152,7 +158,7 @@ implements Executor, PropertyChangeListener {
             getDebuggerImpl ().setStoppedState (tr);
         } else {
             if (ssverbose)
-                System.out.println("\nSS:  SMART STEPPING START! ********** ");
+                System.out.println("SS:  => do next step!");
             if (stepRequest != null)
                 stepRequest.enable ();
             else
@@ -175,7 +181,7 @@ implements Executor, PropertyChangeListener {
         super.removeStepRequests ();
         stepRequest = null;
         if (ssverbose)
-            System.out.println("SS:    remove Step request");
+            System.out.println("SS:    remove all patterns");
     }
     
     private void setStepRequest () {
@@ -192,8 +198,7 @@ implements Executor, PropertyChangeListener {
         stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
         
         if (ssverbose)
-            System.out.println("SS:    create new StepRequest ");
-
+            System.out.println("SS:    set patterns:");
         addPatternsToRequest (
             getSmartSteppingFilterImpl ().getExclusionPatterns ()
         );
@@ -224,7 +229,7 @@ implements Executor, PropertyChangeListener {
         for (i = 0; i < k; i++) {
             stepRequest.addClassExclusionFilter (patterns [i]);
             if (ssverbose)
-                System.out.println("SS:      add pattern " + patterns [i]);
+                System.out.println("SS:      " + patterns [i]);
         }
     }
 }

@@ -140,6 +140,18 @@ public interface JPDAThread {
     throws NoInformationException;
     
     /**
+     * Returns call stack for this thread on the given indexes.
+     *
+     * @param from a from index
+     * @param to a to index
+     * @throws NoInformationException if the thread is running or not able
+     *         to return callstack
+     * @return call stack
+     */
+    public abstract CallStackFrame[] getCallStack (int from, int to) 
+    throws NoInformationException;
+    
+    /**
      * Returns length of current call stack.
      *
      * @return length of current call stack

@@ -129,7 +129,7 @@ public class ThreadsNodeModel implements NodeModel {
             }
             if (t.isSuspended () && (t.getStackDepth () > 0)) {
                 try { 
-                    CallStackFrame sf = t.getCallStack () [0];
+                    CallStackFrame sf = t.getCallStack (0, 1) [0];
                     s += " " + CallStackNodeModel.getCSFName (session, sf, true);
                 } catch (NoInformationException e) {
                 }

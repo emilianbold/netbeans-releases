@@ -29,23 +29,20 @@ import org.netbeans.spi.viewmodel.NoInformationException;
 */
 public class CallStackFrameImpl implements CallStackFrame {
     
-    private ThreadReference thread;
-    private int index;
-    private CallStackTreeModel ctm;
-    private String id;
+    private ThreadReference     thread;
+    private int                 index;
+    private CallStackTreeModel  ctm;
+    private String              id;
     
     
     public CallStackFrameImpl (
-        StackFrame sf,
-        CallStackTreeModel ctm,
-        String id
+        StackFrame          sf,
+        CallStackTreeModel  ctm,
+        String              id,
+        int                 index
     ) {
-        try {
-            this.thread = sf.thread();
-            this.index = indexOf(thread.frames(), sf);
-        } catch (Exception e) {
-            // this stack frame is invalid
-        }
+        this.thread = sf.thread ();
+        this.index = index;
         this.ctm = ctm;
         this.id = id;
     }
@@ -229,15 +226,6 @@ public class CallStackFrameImpl implements CallStackFrame {
         } catch (Exception e) {
             return null;
         }
-    }
-    
-    private int indexOf (List frames, StackFrame frame) {
-        int n = frames.size();
-        Location loc = frame.location();
-        for (int i = 0; i < n; i++) {
-            if (loc.equals(((StackFrame)frames.get(i)).location())) return i;
-        }
-        return -1;
     }
 
     public boolean equals (Object o) {

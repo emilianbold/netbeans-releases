@@ -1,1 +1,2 @@
-org.netbeans.modules.debugger.jpda.ui.models.SourcesModel
+org.netbeans.modules.debugger.jpda.ui.models.SourcesModel$DefaultSourcesColumn
+org.netbeans.modules.debugger.jpda.ui.models.SourcesModel$SourcesUsedColumn

@@ -38,19 +38,15 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 */
 public class JPDAThreadImpl implements JPDAThread {
     
-    private ThreadReference tr;
-    private ThreadsTreeModel ttm;
+    private ThreadReference     threadReference;
+    private ThreadsTreeModel    ttm;
 
     public JPDAThreadImpl (
-        ThreadReference tr,
-        ThreadsTreeModel ttm
+        ThreadReference     threadReference,
+        ThreadsTreeModel    ttm
     ) {
-        this.tr = tr;
+        this.threadReference = threadReference;
         this.ttm = ttm;
-    }
-    
-    public ThreadReference getThreadReference () {
-        return tr;
     }
 
     /**
@@ -59,7 +55,7 @@ public class JPDAThreadImpl implements JPDAThread {
      * @return name of thread.
      */
     public String getName () {
-        return tr.name ();
+        return threadReference.name ();
     }
     
     /**
@@ -69,7 +65,7 @@ public class JPDAThreadImpl implements JPDAThread {
     */
     public JPDAThreadGroup getParentThreadGroup () {
         try {
-            ThreadGroupReference tgr = tr.threadGroup ();
+            ThreadGroupReference tgr = threadReference.threadGroup ();
             if (tgr == null) return null;
             return (JPDAThreadGroup) ttm.translate (tgr);
         } catch (UnknownTypeException e) {
@@ -89,8 +85,8 @@ public class JPDAThreadImpl implements JPDAThread {
     */
     public int getLineNumber (String stratum) {
         try {
-            if (tr.frameCount () < 1) return -1;
-            return tr.frame (0).location ().lineNumber (stratum);
+            if (threadReference.frameCount () < 1) return -1;
+            return threadReference.frame (0).location ().lineNumber (stratum);
         } catch (InvalidStackFrameException ex) {
             ex.printStackTrace ();
         } catch (IncompatibleThreadStateException ex) {
@@ -101,18 +97,26 @@ public class JPDAThreadImpl implements JPDAThread {
     }
 
     /**
-    */
+     * Returns current state of this thread.
+     *
+     * @return current state of this thread
+     */
     public int getState () {
         try {
-            return tr.status ();
+            return threadReference.status ();
         } catch (VMDisconnectedException ex) {
         }
         return STATE_UNKNOWN;
     }
     
+    /**
+     * Returns true if this thread is suspended by debugger.
+     *
+     * @return true if this thread is suspended by debugger
+     */
     public boolean isSuspended () {
         try {
-            return tr.isSuspended ();
+            return threadReference.isSuspended ();
         } catch (VMDisconnectedException ex) {
         }
         return false;
@@ -125,8 +129,8 @@ public class JPDAThreadImpl implements JPDAThread {
     */
     public String getClassName () {
         try {
-            if (tr.frameCount () < 1) return "";
-            return tr.frame (0).location ().declaringType ().name ();
+            if (threadReference.frameCount () < 1) return "";
+            return threadReference.frame (0).location ().declaringType ().name ();
         } catch (InvalidStackFrameException ex) {
             ex.printStackTrace ();
         } catch (IncompatibleThreadStateException ex) {
@@ -143,8 +147,8 @@ public class JPDAThreadImpl implements JPDAThread {
     */
     public String getMethodName () {
         try {
-            if (tr.frameCount () < 1) return "";
-            return tr.frame (0).location ().method ().name ();
+            if (threadReference.frameCount () < 1) return "";
+            return threadReference.frame (0).location ().method ().name ();
         } catch (InvalidStackFrameException ex) {
             ex.printStackTrace ();
         } catch (IncompatibleThreadStateException ex) {
@@ -161,8 +165,8 @@ public class JPDAThreadImpl implements JPDAThread {
     */
     public String getSourceName (String stratum) throws NoInformationException {
         try {
-            if (tr.frameCount () < 1) return "";
-            return tr.frame (0).location ().sourceName (stratum);
+            if (threadReference.frameCount () < 1) return "";
+            return threadReference.frame (0).location ().sourceName (stratum);
         } catch (InvalidStackFrameException ex) {
             ex.printStackTrace ();
         } catch (IncompatibleThreadStateException ex) {
@@ -181,8 +185,8 @@ public class JPDAThreadImpl implements JPDAThread {
     */
     public String getSourcePath (String stratum) throws NoInformationException {
         try {
-            if (tr.frameCount () < 1) return "";
-            return tr.frame (0).location ().sourcePath (stratum);
+            if (threadReference.frameCount () < 1) return "";
+            return threadReference.frame (0).location ().sourcePath (stratum);
         } catch (InvalidStackFrameException ex) {
             ex.printStackTrace ();
         } catch (IncompatibleThreadStateException ex) {
@@ -194,10 +198,30 @@ public class JPDAThreadImpl implements JPDAThread {
         return "";
     }
     
+    /**
+     * Returns call stack for this thread.
+     *
+     * @throws NoInformationException if the thread is running or not able
+     *         to return callstack
+     * @return call stack
+     */
     public CallStackFrame[] getCallStack () throws NoInformationException {
+        return getCallStack (0, getStackDepth ());
+    }
+    
+    /**
+     * Returns call stack for this thread on the given indexes.
+     *
+     * @param from a from index
+     * @param to a to index
+     * @throws NoInformationException if the thread is running or not able
+     *         to return callstack
+     * @return call stack
+     */
+    public CallStackFrame[] getCallStack (int from, int to) throws NoInformationException {
         try {
             return (CallStackFrame[]) ttm.getCallStackTreeModel ().getChildren (
-                tr, 0, 0
+                threadReference, from, to
             );
         } catch (UnknownTypeException e) {
             e.printStackTrace ();
@@ -205,38 +229,59 @@ public class JPDAThreadImpl implements JPDAThread {
         }
     }
     
+    /**
+     * Returns length of current call stack.
+     *
+     * @return length of current call stack
+     */
     public int getStackDepth () {
         try {
-            return getCallStack ().length;
-        } catch (NoInformationException e) {
+            return threadReference.frameCount ();
+        } catch (IncompatibleThreadStateException e) {
         }
         return 0;
     }
     
+    /**
+     * Suspends thread.
+     */
     public void suspend () {
         try {
             if (isSuspended ()) return;
-            tr.suspend ();
+            threadReference.suspend ();
         } catch (VMDisconnectedException ex) {
         }
     }
     
+    /**
+     * Unsuspends thread.
+     */
     public void resume () {
         try {
             if (!isSuspended ()) return;
-            tr.resume ();
+            threadReference.resume ();
         } catch (VMDisconnectedException ex) {
         }
         
     }
     
+    /**
+     * Sets this thread current.
+     *
+     * @see JPDADebugger#getCurrentThread
+     */
     public void makeCurrent () {
         ttm.getDebugger ().setCurrentThread (this);
     }
     
+    /**
+     * Returns monitor this thread is waiting on.
+     *
+     * @return monitor this thread is waiting on
+     */
     public ObjectVariable getContendedMonitor () {
         try {
-            ObjectReference or = tr.currentContendedMonitor ();
+            ObjectReference or = threadReference.currentContendedMonitor ();
             if (or == null) return null;
             LocalsTreeModel ltm = ttm.getLocalsTreeModel ();
             return ltm.getThis (or, "");
@@ -246,9 +291,14 @@ public class JPDAThreadImpl implements JPDAThread {
         return null;
     }
     
+    /**
+     * Returns monitors owned by this thread.
+     *
+     * @return monitors owned by this thread
+     */
     public ObjectVariable[] getOwnedMonitors () {
         try {
-            List l = tr.ownedMonitors ();
+            List l = threadReference.ownedMonitors ();
             LocalsTreeModel ltm = ttm.getLocalsTreeModel ();
             int i, k = l.size ();
             ObjectVariable[] vs = new ObjectVariable [k];
@@ -260,5 +310,9 @@ public class JPDAThreadImpl implements JPDAThread {
         } catch (UnsupportedOperationException e) {
         }
         return new ObjectVariable [0];
+    }
+    
+    public ThreadReference getThreadReference () {
+        return threadReference;
     }
 }

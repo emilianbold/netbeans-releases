@@ -246,6 +246,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public void fixClasses (Map classes) {
         synchronized (LOCK) {
+            
+            // 1) redefine classes
             Map map = new HashMap ();
             Iterator i = classes.keySet ().iterator ();
             while (i.hasNext ()) {
@@ -260,12 +262,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
             getVirtualMachine ().redefineClasses (map);
 
-            // pop obsoleted frames
+            // 2) pop obsoleted frames
             JPDAThread t = getCurrentThread ();
             CallStackFrame frame = getCurrentCallStackFrame ();
             if (t.getStackDepth () < 2) return;
             try {
-                if (!frame.equals (t.getCallStack () [0])) return;
+                if (!frame.equals (t.getCallStack (0, 1) [0])) return;
             } catch (NoInformationException ex) {
                 return;
             }
@@ -732,7 +734,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             setCurrentCallStackFrame (null);
         else
         try {
-            setCurrentCallStackFrame (thread.getCallStack () [0]);
+            setCurrentCallStackFrame (thread.getCallStack (0, 1) [0]);
         } catch (NoInformationException e) {
             setCurrentCallStackFrame (null);
         }
@@ -772,7 +774,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private void checkJSR45Languages (JPDAThread t) {
         if (t.getStackDepth () > 0)
             try {
-                CallStackFrame f = t.getCallStack () [0];
+                CallStackFrame f = t.getCallStack (0, 1) [0];
                 List l = f.getAvailableStrata ();
                 int i, k = l.size ();
                 for (i = 0; i < k; i++) {

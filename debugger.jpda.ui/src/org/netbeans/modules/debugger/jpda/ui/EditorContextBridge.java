@@ -21,6 +21,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.viewmodel.NoInformationException;
 
@@ -318,13 +319,24 @@ public class EditorContextBridge {
     }
 
     public static String getRelativePath (
-        CallStackFrame csf,
+        JPDAThread thread,
         String stratumn
     ) {
         try {
-            return convertSlash (csf.getSourcePath (stratumn));
+            return convertSlash (thread.getSourcePath (stratumn));
         } catch (NoInformationException e) {
-            return getRelativePath (csf.getClassName ());
+            return getRelativePath (thread.getClassName ());
+        }
+    }
+
+    public static String getRelativePath (
+        CallStackFrame frame,
+        String stratumn
+    ) {
+        try {
+            return convertSlash (frame.getSourcePath (stratumn));
+        } catch (NoInformationException e) {
+            return getRelativePath (frame.getClassName ());
         }
     }
 

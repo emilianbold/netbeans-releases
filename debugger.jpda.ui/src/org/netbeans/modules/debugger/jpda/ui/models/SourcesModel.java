@@ -29,6 +29,7 @@ import javax.swing.Action;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
@@ -48,7 +49,7 @@ import org.openide.util.NbBundle;
 /**
  * @author   Jan Jancura
  */
-public class SourcesModel extends ColumnModel implements TreeModel, TableModel,
+public class SourcesModel implements TreeModel, TableModel,
 NodeActionsProvider {
     
     private Listener listener;
@@ -131,56 +132,109 @@ NodeActionsProvider {
     }
     
     
-    // ColumnModel .............................................................
-    
-    
-    /**
-     * Returns unique ID of this column.
-     *
-     * @return unique ID of this column
-     */
-    public String getID () {
-        return "use";
-    }
-    
-    /** 
-     * Returns display name of this column.
-     *
-     * @return display name of this column
-     */
-    public String getDisplayName () {
-        return NbBundle.getBundle(SourcesModel.class).getString("CTL_SourcesModel_Column_Debugging_Name");
-    }
+    // ColumnModels ............................................................
     
     /**
-     * Returns type of column items.
-     *
-     * @return type of column items
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
      */
-    public Class getType () {
-        return Boolean.TYPE;
-    }
-    
-    /**
-     * Returns tooltip for given column. Default implementation returns 
-     * <code>null</code> - do not use tooltip.
-     *
-     * @return  tooltip for given node or <code>null</code>
-     */
-    public String getShortDescription () {
-        return NbBundle.getBundle(SourcesModel.class).getString("CTL_SourcesModel_Column_Debugging_Desc");
-    }
-    
-    /**
-     * True if column should be visible by default. Default implementation 
-     * returns <code>true</code>.
-     *
-     * @return <code>true</code> if column should be visible by default
-     */
-    public boolean initiallyVisible () {
-        return true;
-    }
+    public static class DefaultSourcesColumn extends AbstractColumn {
 
+        /**
+         * Returns unique ID of this column.
+         *
+         * @return unique ID of this column
+         */
+        public String getID () {
+            return "DefaultSourcesColumn";
+        }
+
+        /** 
+         * Returns display name of this column.
+         *
+         * @return display name of this column
+         */
+        public String getDisplayName () {
+            return NbBundle.getBundle (DefaultSourcesColumn.class).
+                getString ("CTL_SourcesModel_Column_Name_Name");
+        }
+
+        /**
+         * Returns tooltip for given column.
+         *
+         * @return  tooltip for given node
+         */
+        public String getShortDescription () {
+            return NbBundle.getBundle (DefaultSourcesColumn.class).getString
+                ("CTL_SourcesModel_Column_Name_Desc");
+        }
+
+        /**
+         * Returns type of column items.
+         *
+         * @return type of column items
+         */
+        public Class getType () {
+            return null;
+        }
+    }
+    
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     */
+    public static class SourcesUsedColumn extends AbstractColumn {
+
+        /**
+         * Returns unique ID of this column.
+         *
+         * @return unique ID of this column
+         */
+        public String getID () {
+            return "use";
+        }
+
+        /** 
+         * Returns display name of this column.
+         *
+         * @return display name of this column
+         */
+        public String getDisplayName () {
+            return NbBundle.getBundle (SourcesModel.class).getString 
+                ("CTL_SourcesModel_Column_Debugging_Name");
+        }
+
+        /**
+         * Returns type of column items.
+         *
+         * @return type of column items
+         */
+        public Class getType () {
+            return Boolean.TYPE;
+        }
+
+        /**
+         * Returns tooltip for given column. Default implementation returns 
+         * <code>null</code> - do not use tooltip.
+         *
+         * @return  tooltip for given node or <code>null</code>
+         */
+        public String getShortDescription () {
+            return NbBundle.getBundle (SourcesModel.class).getString 
+                ("CTL_SourcesModel_Column_Debugging_Desc");
+        }
+
+        /**
+         * True if column should be visible by default. Default implementation 
+         * returns <code>true</code>.
+         *
+         * @return <code>true</code> if column should be visible by default
+         */
+        public boolean initiallyVisible () {
+            return true;
+        }
+    }
+    
      
     // TableModel ..............................................................
     
@@ -349,6 +403,108 @@ NodeActionsProvider {
             SourcesModel m = getModel ();
             if (m == null) return;
             m.fireTreeChanged ();
+        }
+    }
+    
+    /**
+     * Defines model for one table view column. Can be used together with 
+     * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
+     */
+    public abstract static class AbstractColumn extends ColumnModel {
+        
+        Properties properties = Properties.getDefault ().
+            getProperties ("debugger").getProperties ("views");
+
+        
+        /**
+         * Set true if column is visible.
+         *
+         * @param visible set true if column is visible
+         */
+        public void setVisible (boolean visible) {
+            properties.setBoolean (getID () + ".visible", visible);
+        }
+
+        /**
+         * Set true if column should be sorted by default.
+         *
+         * @param sorted set true if column should be sorted by default 
+         */
+        public void setSorted (boolean sorted) {
+            properties.setBoolean (getID () + ".sorted", sorted);
+        }
+
+        /**
+         * Set true if column should be sorted by default in descending order.
+         *
+         * @param sortedDescending set true if column should be sorted by default 
+         *        in descending order
+         */
+        public void setSortedDescending (boolean sortedDescending) {
+            properties.setBoolean (getID () + ".sortedDescending", sortedDescending);
+        }
+    
+        /**
+         * Should return current order number of this column.
+         *
+         * @return current order number of this column
+         */
+        public int getCurrentOrderNumber () {
+            return properties.getInt (getID () + ".currentOrderNumber", -1);
+        }
+
+        /**
+         * Is called when current order number of this column is changed.
+         *
+         * @param newOrderNumber new order number
+         */
+        public void setCurrentOrderNumber (int newOrderNumber) {
+            properties.setInt (getID () + ".currentOrderNumber", newOrderNumber);
+        }
+
+        /**
+         * Return column width of this column.
+         *
+         * @return column width of this column
+         */
+        public int getColumnWidth () {
+            return properties.getInt (getID () + ".columnWidth", 150);
+        }
+
+        /**
+         * Is called when column width of this column is changed.
+         *
+         * @param newColumnWidth a new column width
+         */
+        public void setColumnWidth (int newColumnWidth) {
+            properties.setInt (getID () + ".columnWidth", newColumnWidth);
+        }
+
+        /**
+         * True if column should be visible by default.
+         *
+         * @return true if column should be visible by default
+         */
+        public boolean isVisible () {
+            return properties.getBoolean (getID () + ".visible", true);
+        }
+
+        /**
+         * True if column should be sorted by default.
+         *
+         * @return true if column should be sorted by default
+         */
+        public boolean isSorted () {
+            return properties.getBoolean (getID () + ".sorted", false);
+        }
+
+        /**
+         * True if column should be sorted by default in descending order.
+         *
+         * @return true if column should be sorted by default in descending order
+         */
+        public boolean isSortedDescending () {
+            return properties.getBoolean (getID () + ".sortedDescending", false);
         }
     }
 }

@@ -117,21 +117,20 @@ public class BreakpointOutput extends LazyActionsManagerListener
         else
             printText = classNamePattern.matcher (printText).replaceAll ("?");
 
-        CallStackFrame sf = null;
-        if ( (t != null) && (t.getStackDepth () > 0))
-            sf = t.getCallStack () [0]; 
         String language = DebuggerManager.getDebuggerManager ().
             getCurrentSession ().getCurrentLanguage ();
         
-        if (sf != null) {
-            printText = methodNamePattern.matcher (printText).replaceAll 
-                (sf.getMethodName ());
+        String methodName = t.getMethodName ();
+        if (methodName.equals ("")) methodName = "?";
+        printText = methodNamePattern.matcher (printText).replaceAll 
+            (methodName);
+        int lineNumber = t.getLineNumber (language);
+        if (lineNumber < 0)
             printText = lineNumberPattern.matcher (printText).replaceAll 
-                (String.valueOf (sf.getLineNumber (language)));
-        } else {
-            printText = methodNamePattern.matcher (printText).replaceAll ("?");
-            printText = lineNumberPattern.matcher (printText).replaceAll ("?");
-        }
+                ("?");
+        else
+            printText = lineNumberPattern.matcher (printText).replaceAll 
+                (String.valueOf (lineNumber));
              
         for (;;) {
             Matcher m = expressionPattern.matcher(printText);

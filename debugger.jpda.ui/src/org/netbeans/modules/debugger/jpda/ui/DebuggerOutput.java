@@ -219,10 +219,8 @@ PropertyChangeListener {
             int lineNumber = t.getLineNumber (language);
             try {
                 String sourceName = t.getSourceName (language);
-                CallStackFrame f = t.getStackDepth () > 0 ?
-                    t.getCallStack () [0] : null;
-                String relativePath = f != null ? 
-                    EditorContextBridge.getRelativePath (f, language) : null;
+                String relativePath = EditorContextBridge.getRelativePath 
+                    (t, language);
                 String url = (relativePath != null) ?
                     engineContext.getURL (relativePath) :
                     null;
