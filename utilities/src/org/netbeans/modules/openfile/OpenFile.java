@@ -199,8 +199,7 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
     String fileName = f.toString ();
     String fileNameUpper = fileName.toUpperCase ();
     // Handle ZIP/JAR files by mounting and displaying.
-    if (fileName.endsWith (".zip") || fileName.endsWith (".jar") ||
-        fileName.endsWith (".ZIP") || fileName.endsWith (".JAR")) {
+    if (fileNameUpper.endsWith (".ZIP") || fileNameUpper.endsWith (".JAR")) {
       JarFileSystem jfs = new JarFileSystem ();
       try {
         jfs.setJarFile (f);
@@ -232,15 +231,22 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
         if (fileNameUpper.startsWith (rootName)) {
           // the filesystem can contain the file
           String resource = fileName.substring (rootName.length ()).replace (File.separatorChar, '/');
+          if (resource.startsWith ("/"))
+            resource = resource.substring (1);
+          else if (resource.length () > 0)
+            continue;           // e.g. root = /tmp/foo but file = /tmp/foobar
           FileObject fo = fs.findResource (resource);
           if (fo != null) {
             return fo;
+          } else {
+            TopManager.getDefault ().notify (new NotifyDescriptor.Message ("Should have found " + fileName + " in " + root));
+            return null;
           }
         }
       }
     }
     // Not found. For Java files, it is reasonable to mount the package root.
-    if (fileName.endsWith (".java") || fileName.endsWith (".JAVA")) {
+    if (fileNameUpper.endsWith (".JAVA")) {
       // Try to find the package name and then infer a directory to mount.
       BufferedReader rd = null;
       String pkg = null;
@@ -351,6 +357,7 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
         }
         repo.addFileSystem (fs);
         String basename = f.getName ();
+        // XXX handle .JAVA here too
         return fs.find (pkgtouse, basename.substring (0, basename.lastIndexOf (".java")), "java");
       }
     }
