@@ -22,7 +22,6 @@ Microsystems, Inc. All Rights Reserved.
 <project name="openide" default="netbeans" basedir=".">
   <property name="binroot" location="../../nbextra"/>
 
-  <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="preprocess" classname="org.netbeans.nbbuild.Preprocess" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="postprocess" classname="org.netbeans.nbbuild.Postprocess" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
@@ -615,7 +614,6 @@ Included in JDK 1.3, else you may need to download it separately."/>
         </fileset>
       </classpath>
     </javac>
-    <tojar srcdir="api/examples" unpackeddir="api/examples/org/netbeans/examples/modules/minicomposer_tojar"/>
     <mkdir dir="examplemodules"/>
     <!-- Note: compression on, because these things are frequently emailed, -->
     <!-- and performance is irrelevant. -->
@@ -625,8 +623,27 @@ Included in JDK 1.3, else you may need to download it separately."/>
          manifest="api/examples/org/netbeans/examples/modules/minicomposer.mf"
 	 basedir="api/examples"
 	 includes="org/netbeans/examples/modules/minicomposer/"
-	 excludes="**/*.jar.MAKEME"
 	 compress="true"/>
+  </target>
+
+  <target name="example-minicomposer-test-build" description="Build minicomposer for testing purposes.">
+    <javac srcdir="api/examples" destdir="api/examples">
+      <include name="org/netbeans/examples/modules/minicomposer/"/>
+      <classpath>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
+      </classpath>
+    </javac>
+    <mkdir dir="examplemodules/minicomposer-test"/>
+    <jar jarfile="examplemodules/minicomposer-test/minicomposer.jar"
+         manifest="api/examples/org/netbeans/examples/modules/minicomposer.mf"
+	 basedir="api/examples"
+	 includes="org/netbeans/examples/modules/minicomposer/"
+	 compress="false"/>
+  </target>
+  <target name="example-minicomposer-test" depends="example-minicomposer-test-build" description="Try installing minicomposer into running IDE.">
+    <nbinstaller action="reinstall" module="examplemodules/minicomposer-test/minicomposer.jar"/>
   </target>
 
   <target name="openidex-all" depends="netbeans">
@@ -684,16 +701,11 @@ Set jmf.home to the location of your JMF installation to continue."/>
     <copy todir="examplemodules/apiexamples">
       <fileset dir="api/examples">
         <include name="org/netbeans/examples/modules/minicomposer/"/>
-        <exclude name="org/netbeans/examples/modules/minicomposer/templates.jar.MAKEME"/>
         <include name="org/netbeans/examples/modules/audioloader/"/>
         <include name="org/netbeans/examples/modules/globalactions/"/>
         <include name="org/netbeans/examples/scripts/"/>
       </fileset>
-    </copy>
-    <copy todir="examplemodules/apiexamples">
       <fileset dir="../sysprops/src"/>
-    </copy>
-    <copy todir="examplemodules/apiexamples">
       <fileset dir="../serialversion/src"/>
     </copy>
     <mkdir dir="examplemodules/apiexamples/manifests"/>
