@@ -99,11 +99,16 @@ public class TableNodeInfo extends DatabaseNodeInfo {
                     rset = drvSpec.getRow();
                     String cname = (String) rset.get(new Integer(4));
 
-                    if (ihash.containsKey(cname))
+                    if (ihash.containsKey(cname)) {
                         nfo = (DatabaseNodeInfo)ihash.get(cname);
-                    else
-                        if (ixhash.containsKey(cname))
+                        DatabaseNodeInfo tempInfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, rset);
+                        copyProperties(tempInfo, nfo);
+                    } else
+                        if (ixhash.containsKey(cname)) {
                             nfo = (DatabaseNodeInfo)ixhash.get(cname);
+                            DatabaseNodeInfo tempInfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, rset);
+                            copyProperties(tempInfo, nfo);
+                        }
                     //            else
                     //              if (fhash.containsKey(cname)) {
                     //                nfo = (DatabaseNodeInfo)fhash.get(cname);
@@ -121,6 +126,22 @@ public class TableNodeInfo extends DatabaseNodeInfo {
         }
     }
 
+    /**
+     * Copies all properties from soure to target. Existing properties are not 
+     * overwritten
+     */
+    private void copyProperties(DatabaseNodeInfo source, DatabaseNodeInfo target) {
+        Enumeration keys = source.keys();
+        while (keys.hasMoreElements()) {
+            String nextKey = keys.nextElement().toString();
+            
+            /*  existing properties are not overwritten*/
+            if (target.get(nextKey) == null) {
+                target.put(nextKey, source.get(nextKey));
+            }
+        }
+    }
+    
     public void setProperty(String key, Object obj)
     {
         try {
