@@ -986,6 +986,18 @@ public abstract class NbTopManager extends TopManager {
             }
             
         }
+        
+        /** Called when a system classloader changes.
+         */
+        public static final void systemClassLoaderChanged () {
+            Lookup lookup = Lookup.getDefault ();
+            if (lookup instanceof Lkp) {
+                lookup = ((Lkp)lookup).getLookups ()[0];
+                if (lookup instanceof org.netbeans.core.lookup.TMLookup) {
+                    ((org.netbeans.core.lookup.TMLookup)lookup).systemClassLoaderChanged ();
+                }
+            }
+        }
 
         /** When all module classes are accessible thru systemClassLoader, this
          * method is called to initialize the FolderLookup.
@@ -1035,6 +1047,7 @@ public abstract class NbTopManager extends TopManager {
             }
 	    StartLog.logEnd ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
         }
+        
         /* for testing only:
         protected void beforeLookup(Lookup.Template t) {
             super.beforeLookup(t);
