@@ -326,18 +326,27 @@ final class BrokenDataShadow extends MultiDataObject {
             }
             
             /* Does nothing, property is readonly */
-            public void setValue (Object val) {                
-            }
+            public void setValue (Object val) {
+                String newLink = (String)val;
 
-            /* Property is readonly */
-            public boolean canWrite () {
-                return false;
+                BrokenDataShadow bds = (BrokenDataShadow)getDataObject();
+                try {
+                    DataShadow.writeOriginal (bds.getPrimaryFile (), newLink, bds.origFSName);
+                    bds.origFOName = newLink;
+                } catch (IOException ex) {
+                    IllegalArgumentException e = new IllegalArgumentException (ex.getMessage ());
+                    org.openide.ErrorManager.getDefault ().annotate (e, ex);
+                    throw e;
+                }
+                bds.refresh ();
             }
         }                
         
         /** Class for original filesystem name property of broken link
         */
-        private final class FileSystemProperty extends PropertySupport.ReadOnly {
+        private final class FileSystemProperty extends PropertySupport.ReadWrite 
+        implements java.beans.PropertyEditor {
+            private java.beans.PropertyChangeSupport supp;
             
             public FileSystemProperty () {
                 super (
@@ -353,6 +362,88 @@ final class BrokenDataShadow extends MultiDataObject {
                 BrokenDataShadow bds = (BrokenDataShadow)getDataObject();
                 return bds.origFSName;
             }                        
+            
+            public void setValue (Object val) throws IllegalArgumentException {
+                String newFSName = (String)val;
+                
+                BrokenDataShadow bds = (BrokenDataShadow)getDataObject();
+                try {
+                    DataShadow.writeOriginal (bds.getPrimaryFile (), bds.origFOName, newFSName);
+                    bds.origFSName = newFSName;
+                } catch (IOException ex) {
+                    IllegalArgumentException e = new IllegalArgumentException (ex.getMessage ());
+                    org.openide.ErrorManager.getDefault ().annotate (e, ex);
+                    throw e;
+                }
+                bds.refresh ();
+            }
+            
+            public synchronized void addPropertyChangeListener (java.beans.PropertyChangeListener listener) {
+                if (supp == null) {
+                    supp = new java.beans.PropertyChangeSupport (this);
+                }
+                supp.addPropertyChangeListener (listener);
+            }
+            
+            public synchronized void removePropertyChangeListener (java.beans.PropertyChangeListener listener) {
+                if (supp == null) {
+                    supp.removePropertyChangeListener (listener);
+                }
+            }
+            
+            public String getAsText () {
+                String v = (String)getValue ();
+                FileSystem[] arr = Repository.getDefault ().toArray ();
+                for (int i = 0; i < arr.length; i++) {
+                    if (arr[i].getSystemName ().equals (v)) {
+                        return arr[i].getDisplayName ();
+                    }
+                }
+                return v;
+            }
+            
+            public java.awt.Component getCustomEditor () {
+                return null;
+            }
+            
+            public String getJavaInitializationString () {
+                return null;
+            }
+            
+            public String[] getTags () {
+                FileSystem[] arr = Repository.getDefault ().toArray ();
+                String[] v = new String[arr.length];
+                for (int i = 0; i < arr.length; i++) {
+                    v[i] = arr[i].getDisplayName ();
+                }
+                return v;
+            }
+            
+            public boolean isPaintable () {
+                return false;
+            }
+            
+            public void paintValue (java.awt.Graphics gfx, java.awt.Rectangle box) {
+            }
+            
+            public void setAsText (String text) throws java.lang.IllegalArgumentException {
+                FileSystem[] arr = Repository.getDefault ().toArray ();
+                String[] v = new String[arr.length];
+                for (int i = 0; i < arr.length; i++) {
+                    if (text.equals (arr[i].getDisplayName ())) {
+                        setValue (arr[i].getSystemName ());
+                    }
+                }
+            }
+            
+            public boolean supportsCustomEditor () {
+                return false;
+            }
+            
+            public java.beans.PropertyEditor getPropertyEditor () {
+                return this;
+            }
+            
         }
     }
 }

@@ -303,6 +303,29 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             throw (IOException) e.getException ();
         }
     }
+    
+    /** Overwrites existing file object with new link and fs.
+     * @exception IOException on I/O error
+     */
+    static void writeOriginal (final FileObject shadow, final String link, final String fs) throws IOException {
+        try {
+            MUTEX.writeAccess (new Mutex.ExceptionAction () {
+                public Object run () throws IOException {
+                    FileLock lock = shadow.lock ();
+                    Writer os = new OutputStreamWriter (shadow.getOutputStream (lock), "UTF-8");
+                    try {
+                        os.write (link+"\n"+fs+"\n"); // NOI18N
+                    } finally {
+                        os.close ();
+                        lock.releaseLock ();
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException ();
+        }
+    }
 
     /** Loads proper dataShadow from the file fileObject.
     *
