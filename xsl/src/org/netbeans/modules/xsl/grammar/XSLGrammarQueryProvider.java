@@ -10,21 +10,25 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xsl.grammar;
 
 import java.beans.FeatureDescriptor;
 import java.util.Enumeration;
-import org.netbeans.modules.xml.spi.model.GrammarEnvironment;
-import org.netbeans.modules.xml.spi.model.GrammarQuery;
-import org.netbeans.modules.xml.spi.model.GrammarQueryManager;
-import org.openide.filesystems.FileObject;
-import org.openide.util.enum.EmptyEnumeration;
-import org.openide.util.enum.SingletonEnumeration;
+
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
+
+import org.openide.filesystems.FileObject;
+import org.openide.util.enum.EmptyEnumeration;
+import org.openide.util.enum.SingletonEnumeration;
+
+import org.netbeans.modules.xml.spi.model.GrammarEnvironment;
+import org.netbeans.modules.xml.spi.model.GrammarQuery;
+import org.netbeans.modules.xml.spi.model.GrammarQueryManager;
+
+import org.netbeans.modules.xsl.XSLDataObject;
 
 /**
  * Provide DTD grammar. It must be registered at layer.
@@ -75,7 +79,7 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
         // try mime type
         FileObject fo = ctx.getFileObject();
         if (fo != null) {
-            if ("application/xslt+xml".equals(fo.getMIMEType())) {
+            if (XSLDataObject.MIME_TYPE.equals(fo.getMIMEType())) {
                 // almost forever, until client uses its own invalidation
                 // rules based e.g. on new node detection at root level
                 // or MIME type listening
