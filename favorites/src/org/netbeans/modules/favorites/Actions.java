@@ -44,6 +44,10 @@ import org.openide.windows.WindowManager;
 */
 public final class Actions extends Object {
     
+    /** Used to keep current dir from JFileChooser for Add to Favorites action
+     * on root node. */
+    private static File currentDir = null;
+    
     private Actions () {
         // noinstances
     }
@@ -340,7 +344,7 @@ public final class Actions extends Object {
                 ErrorManager.getDefault().notify(e);  
             }
         }
-
+        
         /**
          * 
          * @return FileObject or null if FileChooser dialog is cancelled
@@ -352,7 +356,10 @@ public final class Actions extends Object {
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setDialogTitle(NbBundle.getBundle(Actions.class).getString ("CTL_DialogTitle"));
             chooser.setApproveButtonText(NbBundle.getBundle(Actions.class).getString ("CTL_ApproveButtonText"));
-            int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() ); // Sow the chooser
+            if (currentDir != null) {
+                chooser.setCurrentDirectory(currentDir);
+            }
+            int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() ); // Show the chooser
             if ( option == JFileChooser.APPROVE_OPTION ) {                    
                 chooserSelection = chooser.getSelectedFile();
                 File selectedFile = FileUtil.normalizeFile(chooserSelection);
@@ -377,9 +384,10 @@ public final class Actions extends Object {
                     assert retVal != null;
                 }
             }
+            currentDir = chooser.getCurrentDirectory();
             return retVal;
         }
-
+        
         private void selectAfterAddition(final DataObject createdDO) {
             final Tab projectsTab = Tab.findDefault();
             projectsTab.open();
