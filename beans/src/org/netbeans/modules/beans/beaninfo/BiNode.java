@@ -49,6 +49,10 @@ public final class BiNode extends AbstractNode {
     private static String PROP_NULL_PROPERTIES = "nullProperties"; // NOI18N
     private static String PROP_NULL_EVENTS = "nullEvents"; // NOI18N
     private static String PROP_NULL_METHODS = "nullMethods"; // NOI18N
+    private static String PROP_LAZY_DESCRIPTOR = "lazyDescriptor"; // NOI18N
+    private static String PROP_LAZY_PROPERTIES = "lazyProperties"; // NOI18N
+    private static String PROP_LAZY_EVENTS = "lazyEvents"; // NOI18N
+    private static String PROP_LAZY_METHODS = "lazyMethods"; // NOI18N
     private static String PROP_BI_ICON_C16 = "iconColor16x16"; // NOI18N
     private static String PROP_BI_ICON_M16 = "iconMono16x16"; // NOI18N
     private static String PROP_BI_ICON_C32 = "iconColor32x32"; // NOI18N
@@ -154,6 +158,90 @@ public final class BiNode extends AbstractNode {
                 }
             };
 
+    private PropertySupport[] descLazySubnodeDescriptor =  new PropertySupport[] {
+                new PropertySupport.ReadWrite (
+                    PROP_NULL_DESCRIPTOR,
+                    Boolean.TYPE,
+                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_DESCRIPTOR ),
+                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_DESCRIPTOR )
+                ) {
+                    public Object getValue () {
+                        return new Boolean(  biAnalyser.isLazyDescriptor () );
+                    }
+                    public void setValue (Object val) throws
+                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        try {                            
+                            biAnalyser.setLazyDescriptor ( ((Boolean)val).booleanValue() );                            
+                        } catch (ClassCastException e) {
+                            throw new IllegalArgumentException ();
+                        }
+                    }
+                }
+            };
+
+    private PropertySupport[] propLazySubnodeProperties =  new PropertySupport[] {
+                new PropertySupport.ReadWrite (
+                    PROP_NULL_PROPERTIES,
+                    Boolean.TYPE,
+                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_PROPERTIES ),
+                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_PROPERTIES )
+                ) {
+                    public Object getValue () {
+                        return new Boolean( biAnalyser.isLazyProperties () );
+                    }
+                    public void setValue (Object val) throws
+                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        try {
+                            biAnalyser.setLazyProperties ( ((Boolean)val).booleanValue() );
+                        } catch (ClassCastException e) {
+                            throw new IllegalArgumentException ();
+                        }
+                    }
+                }
+            };
+
+    private PropertySupport[] eventLazySubnodeProperties =  new PropertySupport[] {
+                new PropertySupport.ReadWrite (
+                    PROP_NULL_EVENTS,
+                    Boolean.TYPE,
+                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_EVENTS ),
+                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_EVENTS )
+                ) {
+                    public Object getValue () {
+                        return new Boolean( biAnalyser.isLazyEventSets () );
+                    }
+                    public void setValue (Object val) throws
+                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        try {
+                            biAnalyser.setLazyEventSets ( ((Boolean)val).booleanValue() );
+                        } catch (ClassCastException e) {
+                            throw new IllegalArgumentException ();
+                        }
+                    }
+                }
+            };
+
+    private PropertySupport[] methodLazySubnodeProperties =  new PropertySupport[] {
+                new PropertySupport.ReadWrite (
+                    PROP_NULL_PROPERTIES,
+                    Boolean.TYPE,
+                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_METHODS ),
+                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_METHODS )
+                ) {
+                    public Object getValue () {
+                        return new Boolean( biAnalyser.isLazyMethods () );
+                    }
+                    public void setValue (Object val) throws
+                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        try {
+                            biAnalyser.setLazyMethods ( ((Boolean)val).booleanValue() );
+                        } catch (ClassCastException e) {
+                            throw new IllegalArgumentException ();
+                        }
+                    }
+                }
+            };
+            
     // constructors ..................................................................................
 
     /**
@@ -179,37 +267,43 @@ public final class BiNode extends AbstractNode {
                                new Class[] { BiFeature.Property.class, BiFeature.IdxProperty.class },
                                "CTL_NODE_Properties", // NOI18N
                                ICON_BASE_PATTERNS,
-                               propSubnodeProperties ),
+                               propSubnodeProperties, 
+                               null ),
 
                     new SubNode( biAnalyser,
                                new Class[] { BiFeature.EventSet.class },
                                "CTL_NODE_EventSets", // NOI18N
                                ICON_BASE_PATTERNS,
-                               eventSubnodeProperties )
+                               eventSubnodeProperties, 
+                               null )
             } : new Node[] {
                     new SubNode( biAnalyser,
                                new Class[] { BiFeature.Descriptor.class },
                                "CTL_NODE_Descriptor", // NOI18N
                                ICON_BASE_PATTERNS,
-                               descSubnodeDescriptor ),//new PropertySupport[0] ),
+                               descSubnodeDescriptor ,
+                               descLazySubnodeDescriptor ),//new PropertySupport[0] ),
 
                     new SubNode( biAnalyser,
                                new Class[] { BiFeature.Property.class, BiFeature.IdxProperty.class },
                                "CTL_NODE_Properties", // NOI18N
                                ICON_BASE_PATTERNS,
-                               propSubnodeProperties ),
+                               propSubnodeProperties,
+                               propLazySubnodeProperties ),
 
                     new SubNode( biAnalyser,
                                new Class[] { BiFeature.EventSet.class },
                                "CTL_NODE_EventSets", // NOI18N
                                ICON_BASE_PATTERNS,
-                               eventSubnodeProperties ),
+                               eventSubnodeProperties, 
+                               eventLazySubnodeProperties ),
 
                     new SubNode( biAnalyser, 
                            new Class[] { BiFeature.Method.class },
                            "CTL_NODE_Methods",
                            ICON_BASE_PATTERNS,
-                           methodSubnodeProperties )
+                           methodSubnodeProperties, 
+                           methodLazySubnodeProperties )
             });
         
         Sheet sheet = Sheet.createDefault();
@@ -405,7 +499,7 @@ public final class BiNode extends AbstractNode {
         private Class key; 
         
         SubNode ( BiAnalyser biAnalyser, Class[] keys, String titleKey, String iconBase,
-                  PropertySupport[] properties ) {
+                  PropertySupport[] properties, PropertySupport[] expert ) {
             super ( new BiChildren (  biAnalyser, keys ) );
             setDisplayName (NbBundle.getBundle(BiNode.class).
                             getString (titleKey));
@@ -420,7 +514,16 @@ public final class BiNode extends AbstractNode {
             for ( int i = 0; i < properties.length; i++ ) {
                 ps.put( properties[i] );
             }
+            
+            if( expert != null ){                
+                Sheet.Set eps = sheet.createExpertSet();
 
+                for ( int i = 0; i < expert.length; i++ ) {
+                    eps.put( expert[i] );
+                }
+                sheet.put(eps);
+            }
+            
             setSheet(sheet);
 
             getCookieSet().add ( this );
