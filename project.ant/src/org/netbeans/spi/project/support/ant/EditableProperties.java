@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,7 +51,7 @@ import java.util.Set;
  * This class is not thread-safe; use only from a single thread, or use {@link Collections#synchronizedMap}.
  * @author Jesse Glick, David Konecny
  */
-public final class EditableProperties extends AbstractMap implements Cloneable {
+public final class EditableProperties extends AbstractMap/*<String,String>*/ implements Cloneable {
     
     /** List of Item instances as read from the properties file. Order is important.
      * Saving properties will save then in this order. */
@@ -205,21 +205,13 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
         if (key == null || value == null) {
             throw new NullPointerException();
         }
-        Item item = (Item)itemIndex.get(key);
+        Item item = (Item)itemIndex.get((String) key);
         String result = null;
         if (item != null) {
             result = item.getValue();
-            if (value instanceof List) {
-                item.setValue((List)value);
-            } else {
-                item.setValue((String)value);
-            }
+            item.setValue((String) value);
         } else {
-            if (value instanceof List) {
-                item = new Item((String)key, (List)value);
-            } else {
-                item = new Item((String)key, (String)value);
-            }
+            item = new Item((String) key, (String) value);
             addItem(item, alphabetize);
         }
         return result;
@@ -250,19 +242,28 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
     }
 
     /**
-     * Convenience method to set a property which is array of items.
-     * Same behavior as {@link #put} with only difference that array items
-     * will be stored each on separate line. {@link #getProperty} will merge
-     * all array items into one String, so do not forget that item separators
-     * (like ';' or ':' in case of path like properties) must be included in
-     * the items.
+     * Sets a property to a value broken into segments for readability.
+     * Same behavior as {@link #setProperty(String,String)} with the difference that each item
+     * will be stored on its own line of text. {@link #getProperty} will simply concatenate
+     * all the items into one string, so generally separators
+     * (such as <samp>:</samp> for path-like properties) must be included in
+     * the items (for example, at the end of all but the last item).
      * @param key a property name; cannot be null nor empty
      * @param value the desired value; cannot be null; can be empty array
      * @return previous value of the property or null if there was not any
      */
     public String setProperty(String key, String[] value) {
         String result = getProperty(key);
-        put(key, Arrays.asList(value));
+        if (key == null || value == null) {
+            throw new NullPointerException();
+        }
+        List/*<String>*/ valueList = Arrays.asList(value);
+        Item item = (Item) itemIndex.get(key);
+        if (item != null) {
+            item.setValue(valueList);
+        } else {
+            addItem(new Item(key, valueList), alphabetize);
+        }
         return result;
     }
 
@@ -464,7 +465,7 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
         /**
          * Create new instance with key and value.
          */
-        public Item(String key, List value) {
+        public Item(String key, List/*<String>*/ value) {
             this.key = key;
             setValue(value);
         }
@@ -497,9 +498,9 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
             keyValueLines = null;
         }
 
-        public void setValue(List value) {
+        public void setValue(List/*<String>*/ value) {
             StringBuffer val = new StringBuffer();
-            ArrayList l = new ArrayList();
+            List/*<String>*/ l = new ArrayList();
             if (!value.isEmpty()) {
                 l.add(encode(key, true) + "=\\"); // NOI18N
                 Iterator it = value.iterator();
