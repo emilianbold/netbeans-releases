@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="core qa-performance test config">
 
     <!-- testbag common for all suites to setup usedir -->
-    <testbag testattribs="measure_ui or measure_menus or measure_dialogs or measure_actions or measure_setup or measure_memory_usage or memory_dialog or memory_action or memory_menu or measure_java or temp" prio="1"
+    <testbag testattribs="measure_ui or measure_menus or measure_dialogs or measure_actions or measure_setup or measure_memory_usage or memory_dialog or memory_action or memory_menu or measure_java or temp or memory_temp" prio="1"
              executor="ide_perf_setup" name="Setup IDE for UI responsiveness">
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -159,7 +159,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 -->    
 
-    <testbag testattribs="measure_memory_usage or memory_dialog" prio="2"
+    <testbag testattribs="measure_memory_usage or memory_dialog or memory_temp" prio="2"
              executor="ide_performance_memory_usage" name="Measure Memory Usage Dialog" >
 	<testset dir="qa-functional/src">
 	    <patternset>

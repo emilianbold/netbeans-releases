@@ -201,10 +201,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * Now all test can be used for measure UI responsiveness or look for memory leaks.
      */
     public void doMeasurement(){
-//        if(repeat_memory==-1)
+        if(repeat_memory==-1)
             measureTime();
-//        else
-//            measureMemoryUsage();
+        else
+            measureMemoryUsage();
     }
     
     /**
@@ -230,11 +230,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         long wait_after_open_heuristic = WAIT_AFTER_OPEN;
         
         long[] measuredTime = new long[repeat+1];
-        //        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         
         // issue 56091 and applied workarround on the next line 
         // JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
-        
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.getCurrentDispatchingModel()|JemmyProperties.ROBOT_MODEL_MASK);
         JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
         log("----------------------- DISPATCHING MODEL = "+JemmyProperties.getCurrentDispatchingModel());
@@ -359,6 +357,117 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         
     }
     
+    
+    /**
+     * Test that measures memory consumption after each invocation of measured aciotn.
+     * Tet finds the lowest value of measured memory consumption and compute all deltas against this value.
+     * This method contains the same pattern as previously used method for measuring UI responsiveness
+     * {@link measureTime()} . Memory consumption is computed as difference between
+     * used and allocated memory (heap). Garbage Collection {@link runGC()} is called then to each measurement of action {@link open()}.
+     * <br>
+     * <br>If during measurement exception arise - test fails and no value is reported as Performance Data.
+     * <p>Each test should reset the state in {@link close()} method. Again there is a waiting
+     * for quiet period of time after this call.</p>
+     */
+    public void measureMemoryUsage() {
+        
+        boolean exceptionDuringMeasurement = false;
+        long wait_after_open_heuristic = WAIT_AFTER_OPEN;
+        
+        long memoryUsageMinimum = 0;
+        long[] memoryUsage = new long[repeat_memory+1];
+        
+        useTwoOrderTypes = false;
+        
+        // issue 56091 and applied workarround on the next line 
+        // JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.getCurrentDispatchingModel()|JemmyProperties.ROBOT_MODEL_MASK);
+        JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
+        log("----------------------- DISPATCHING MODEL = "+JemmyProperties.getCurrentDispatchingModel());
+        
+        checkScanFinished(); // just to be sure, that during measurement we will not wait for scanning dialog
+        
+        runGC(5);
+        
+        initialize();
+        
+        for(int i=1; i<=repeat_memory && !exceptionDuringMeasurement; i++){
+            try {
+                prepare();
+                
+                waitNoEvent(WAIT_AFTER_PREPARE);
+                
+                // Uncomment if you want to run with analyzer tool
+                // com.sun.forte.st.collector.CollectorAPI.resume ();
+                
+                // to be sure EventQueue is empty
+                new QueueTool().waitEmpty();
+                
+                testedComponentOperator = open();
+                
+                long wait_time = (wait_after_open_heuristic>WAIT_AFTER_OPEN)?WAIT_AFTER_OPEN:wait_after_open_heuristic;
+                waitNoEvent(wait_time);
+                    
+                new QueueTool().waitEmpty();
+                
+            }catch(Exception exc){ // catch for prepare(), open()
+                    exc.printStackTrace(getLog());
+                    exceptionDuringMeasurement = true;
+                    getScreenshot("exception_during_open");
+                    // throw new JemmyException("Exception arises during measurement:"+exc.getMessage());
+            }finally{
+                try{
+                    // Uncomment if you want to run with analyzer tool
+                    // com.sun.forte.st.collector.CollectorAPI.pause ();
+                    
+                    close();
+                    
+                    closeAllModal();
+                    waitNoEvent(WAIT_AFTER_CLOSE);
+                    
+                }catch(Exception e){
+                        e.printStackTrace(getLog());
+                        getScreenshot("measure");
+                        exceptionDuringMeasurement = true;
+                }finally{
+                }
+            }
+            
+            runGC(3);
+            
+            Runtime runtime = Runtime.getRuntime();
+            memoryUsage[i] = runtime.totalMemory() - runtime.freeMemory();
+            log("Used Memory ["+i+"] = " +memoryUsage[i]);
+            
+            if(memoryUsageMinimum == 0 || memoryUsageMinimum > memoryUsage[i])
+                memoryUsageMinimum = memoryUsage[i];
+            
+        }
+        
+        // report deltas against minimum of measured values
+        for(int i=1; i<=repeat_memory; i++){
+            //String performanceDataName = setPerformanceName(i);
+            String performanceDataName = setPerformanceName();
+            log("Used Memory ["+performanceDataName+" | "+i+"] = " +memoryUsage[i]);
+            
+            reportPerformance(performanceDataName, memoryUsage[i] - memoryUsageMinimum, "bytes", i);
+        }
+        
+        try {
+            shutdown();
+            closeAllDialogs();
+        }catch (Exception e) {
+            e.printStackTrace(getLog());
+            getScreenshot("shutdown");
+            exceptionDuringMeasurement = true;
+        }finally{
+        }
+        
+        if(exceptionDuringMeasurement)
+            throw new Error("Exception rises during measurement, look at appropriate log file for stack trace(s).");
+        
+    }
+    
     /**
      * Initialize callback that is called once before the repeated sequence of 
      * testet operation is perfromed.
@@ -443,14 +552,6 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     }
     
     /**
-     * Sets an area filter to the JDK hack. Paints out of this area will be ignored.
-     */
-    protected void setAreaToFilter(int x, int y, int w, int h) {
-        if(repeat_memory==-1)
-            throw new UnsupportedOperationException("setAreaToFilter");
-    }
-    
-    /**
      * Turn's off blinking of the caret in the Java editor.
      * A method generally useful for any UI Responsiveness tests which measure actions
      * in the Java editor. This method should be called from a test's initialize() method.
@@ -494,10 +595,6 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      */
     protected void setJSPEditorCaretFilteringOn() {
         setEditorCaretFilteringOn(org.netbeans.modules.web.core.syntax.JSPKit.class);
-    }
-    
-    protected void setPaintFilteringForEditor () {
-        fail ("Need to implement filtering for editor.");
     }
     
     protected void logMemoryUsage(){
