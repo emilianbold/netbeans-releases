@@ -67,7 +67,41 @@ public final class OpenProjects {
     public Project[] getOpenProjects() {
         return trampoline.getOpenProjectsAPI();
     }
-            
+
+    /**
+     * Opens given projects.
+     * Acquires {@link org.netbeans.api.project.ProjectManager#mutex()} in the write mode.
+     * @param projects to be opened. In the case when some of the projects are already opened
+     * these projects are not opened again. If the projects contain duplicates, the duplicated
+     * projects are opened just once.
+     * @param openSubprojects if true also subprojects are opened.
+     * @since org.netbeans.modules.projectuiapi/0 1.2
+     * <p class="nonnormative">
+     * This method is designed for use by logical view's Libraries Node to open one or more of dependent
+     * projects. This method can be used also by other project GUI components which need to open certain
+     * project(s), eg. code generation wizards.<br>
+     * The method should not be used for opening newly created project, insted the
+     * {@link org.openide.WizardDescriptor.InstantiatingIterator#instantiate()} used for creation of new project
+     * should return the project directory.<br>
+     * The method should not be also used  to provide a GUI to open subprojects.
+     * The {@link org.netbeans.spi.project.ui.support.CommonProjectActions#openSubprojectsAction()} should be used
+     * instead.
+     * </p>
+     */
+    public void open (Project[] projects, boolean openSubprojects) {
+        trampoline.openAPI (projects,openSubprojects);
+    }
+
+    /**
+     * Closes given projects.
+     * Acquires {@link org.netbeans.api.project.ProjectManager#mutex()} in the write mode.
+     * @param projects to be closed. The non opened project contained in the projects array are ignored.
+     * @since org.netbeans.modules.projectuiapi/0 1.2
+     */
+    public void close (Project[] projects) {
+        trampoline.closeAPI (projects);
+    }
+
     /**
      * Adds a listener to changes in the set of open projects.
      * As this class is a singleton and is not subject to garbage collection,

@@ -24,6 +24,10 @@ public interface OpenProjectsTrampoline {
     
     public Project[] getOpenProjectsAPI();
 
+    public void openAPI (Project[] projects, boolean openRequiredProjects);
+
+    public void closeAPI (Project[] projects);
+
     public void addPropertyChangeListenerAPI( PropertyChangeListener listener );
     
     public void removePropertyChangeListenerAPI( PropertyChangeListener listener );

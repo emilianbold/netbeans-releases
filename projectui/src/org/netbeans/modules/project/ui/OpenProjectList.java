@@ -126,22 +126,28 @@ public final class OpenProjectList {
     }
     
     public void open( Project p ) {
-        open( p, false );
+        open( new Project[] {p}, false );
     }
-    
-    public void open( Project p, boolean openSubprojects ) {
+
+    public void open (Project p, boolean openSubprojects ) {
+        open( new Project[] {p}, false );
+    }
+
+    public void open( Project[] projects, boolean openSubprojects ) {
         
         boolean recentProjectsChanged = false;
         
         synchronized ( this ) {
-            
-            if ( !openProjects.contains( p ) ) {
-                openProjects.add( p );        
-                recentProjectsChanged = recentProjects.remove( p );
-                notifyOpened(p);
-            }            
-            if ( openSubprojects ) {
-                recentProjectsChanged |= openSubprojects( p );
+            for (int i=0; i<projects.length; i++) {
+                assert projects[i] != null : "Projects can't be null";
+                if ( !openProjects.contains( projects[i] ) ) {
+                    openProjects.add( projects[i] );
+                    recentProjectsChanged = recentProjects.remove( projects[i] );
+                    notifyOpened(projects[i]);
+                }
+                if ( openSubprojects ) {
+                    recentProjectsChanged |= openSubprojects( projects[i] );
+                }
             }
             saveProjectList( openProjects );
             if ( recentProjectsChanged ) {

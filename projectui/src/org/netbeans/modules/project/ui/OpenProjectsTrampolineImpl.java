@@ -39,6 +39,14 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
         return OpenProjectList.getDefault().getOpenProjects();
     }
 
+    public void openAPI (Project[] projects, boolean openRequiredProjects) {
+        OpenProjectList.getDefault().open (projects, openRequiredProjects);
+    }
+
+    public void closeAPI(Project[] projects) {
+        OpenProjectList.getDefault().close(projects);
+    }
+
     public void addPropertyChangeListenerAPI( PropertyChangeListener listener ) {
         pchSupport.addPropertyChangeListener( listener );        
     }

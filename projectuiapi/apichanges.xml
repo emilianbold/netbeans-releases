@@ -75,9 +75,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-
-        <!-- Start here... -->
-
+        <change>
+            <api name="general"/>
+            <summary>Added open and close methods into OpenProjects class</summary>
+            <version major="1" minor="2"/>
+            <date day="14" month="12" year="2004"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                Added open and close methods into org.netbeans.api.project.ui.OpenProjects. The open method
+		opens given projects. The close method closes the specified projects.
+                </p>
+            </description>
+            <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
+        </change>
     </changes>
 
     <!-- Now the surrounding HTML text and document structure: -->
