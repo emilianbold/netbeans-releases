@@ -67,7 +67,19 @@ public class NbMultiTaskDef extends Task {
         this.classname = name;
     }
     
+    private static boolean isJDK14orHigher() {
+        String javaVersion = System.getProperty("java.specification.version","1.0");
+        if (javaVersion.compareTo("1.4") < 0 ) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
     public void execute () throws BuildException {
+        if (!isJDK14orHigher()) {
+            throw new BuildException("XTest requires JDK 1.4 or higher to run tests.");
+        }
         if (null != System.getProperty("test.ant.file")) {
             log("Using Netbeans classloader.", Project.MSG_DEBUG);
             loader = Thread.currentThread().getContextClassLoader();

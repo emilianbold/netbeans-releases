@@ -77,7 +77,7 @@ Microsystems, Inc. All Rights Reserved.
         <nbpath nbhome="${netbeans.home}" xthome="${xtest.home}" xtexhome="${xtest.home}"/>
 
 	<!-- XML, XSLT reporters -->
-        <nbtaskdef classpath="${xtest.path};${xalan.path}">
+        <nbtaskdef classpath="${xtest.path};${xerces.path}">
             <taskdef name="testruninfo" classname="org.netbeans.xtest.pe.TestRunInfoTask"/>
             <taskdef name="testbaginfo" classname="org.netbeans.xtest.pe.TestBagInfoTask"/>
             <taskdef name="regenerateXML" classname="org.netbeans.xtest.pe.RegenerateXMLTask"/>

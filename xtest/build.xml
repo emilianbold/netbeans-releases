@@ -62,9 +62,8 @@ Microsystems, Inc. All Rights Reserved.
         <!-- use junit with already compiled extensions -->        
 	<pathelement location="src"/>
         <fileset dir="external">
-          <include name="xml-apis*.jar"/>
+          <include name="xml-apis*.jar"/>          
           <include name="xerces*.jar"/>
-          <include name="xalan*.jar"/>
           <include name="ant-1.*.jar"/>
           <include name="junit*.jar"/>
         </fileset>
@@ -137,7 +136,6 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="external/junit-3.8.1.jar" tofile="lib/junit.jar"/>
     <copy file="external/xml-apis-1.0b2.jar" tofile="lib/xml-apis.jar"/>
     <copy file="external/xerces-2.0.1.jar" tofile="lib/xerces.jar"/>
-    <copy file="external/xalan-2.3.1.jar" tofile="lib/xalan.jar"/>
   </target>
   
   <target name="makedist" depends="compile-dependend-modules,jars">
@@ -171,7 +169,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="lib/junit.jar"/>
     <delete file="lib/xerces.jar"/>
     <delete file="lib/xml-apis.jar"/>
-    <delete file="lib/xalan.jar"/>
     <delete file="lib/xtest-junit-testrunner.jar"/>
     <delete file="xtest-distribution.zip"/>
     <delete file="xtest-pes-distribution.zip"/>
@@ -209,7 +206,6 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="external">
           <include name="xml-apis*.jar"/>
           <include name="xerces*.jar"/>
-          <include name="xalan*.jar"/>
           <include name="ant-1.*.jar"/>
         </fileset>
       </classpath>
@@ -228,7 +224,6 @@ Microsystems, Inc. All Rights Reserved.
             includes="org/netbeans/xtest/pe/**,org/netbeans/xtest/util/**,org/netbeans/xtest/xmlserializer/**,org/netbeans/xtest/NestedException.class"/>            
     <copy file="external/xml-apis-1.0b2.jar" tofile="lib/xml-apis.jar"/>
     <copy file="external/xerces-2.0.1.jar" tofile="lib/xerces.jar"/>
-    <copy file="external/xalan-2.3.1.jar" tofile="lib/xalan.jar"/>
   </target>
   
   <target name="makedist-pes" depends="jar-pes">
