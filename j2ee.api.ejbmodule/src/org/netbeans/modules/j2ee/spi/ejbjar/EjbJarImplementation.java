@@ -15,31 +15,22 @@ package org.netbeans.modules.j2ee.spi.ejbjar;
 import org.openide.filesystems.FileObject;
 
 /**
- * SPI interface for {@link org.netbeans.modules.web.api.webmodule.WebModule}.
- * @see WebModuleFactory
+ * SPI interface for {@link org.netbeans.modules.j2ee.api.ejbjar.EjbJar}.
+ * @see EjbJarFactory
  */
 public interface EjbJarImplementation {
     
     /** J2EE platform version - one of the constants 
-     * {@link org.netbeans.modules.web.api.webmodule.WebModule#J2EE_13_LEVEL}, 
-     * {@link org.netbeans.modules.web.api.webmodule.WebModule#J2EE_14_LEVEL}.
+     * defined in {@link org.netbeans.modules.j2ee.api.common.J2eeProjectConstants}.
      * @return J2EE platform version
      */
     String getJ2eePlatformVersion ();
     
-    /** WEB-INF folder for the web module.
-     * <div class="nonnormative">
-     * The WEB-INF folder would typically be a child of the folder returned 
-     * by {@link #getDocumentBase} but does not need to be.
-     * </div>
+    /** META-INF folder for the web module.
      */
     FileObject getMetaInf ();
 
-    /** Deployment descriptor (web.xml file) of the web module.
-     * <div class="nonnormative">
-     * The web.xml file would typically be a child of the folder returned 
-     * by {@link #getWebInf} but does not need to be.
-     * </div>
+    /** Deployment descriptor (ejb-jar.xml file) of the ejb module.
      */
     FileObject getDeploymentDescriptor ();
 }
