@@ -21,31 +21,31 @@ import org.openide.util.enum.*;
 /**
  * Loads classes in the following order:
  * 1. JRE
- * 2. NetBeans JARs - modules etc.
- * 3. Ant JARs - whatever is in the "main" class loader.
+ * 2. Ant JARs - whatever is in the "main" class loader.
+ * 3. NetBeans JARs - modules etc.
  * 4. Contents of $nbhome/ant/nblib/*.jar, incl. bridge.jar and special tasks.
  * Lightly inspired by ProxyClassLoader, but much less complex.
  * @author Jesse Glick
  */
 final class AuxClassLoader extends AntBridge.AllPermissionURLClassLoader {
     
-    private final ClassLoader antLoader;
+    private final ClassLoader nbLoader;
     
     public AuxClassLoader(ClassLoader nbLoader, ClassLoader antLoader, URL[] urls) {
-        super(urls, nbLoader);
-        this.antLoader = antLoader;
+        super(urls, antLoader);
+        this.nbLoader = nbLoader;
     }
     
     protected Class findClass(String name) throws ClassNotFoundException {
         try {
-            return antLoader.loadClass(name);
+            return nbLoader.loadClass(name);
         } catch (ClassNotFoundException cnfe) {
             return super.findClass(name);
         }
     }
     
     public URL findResource(String name) {
-        URL u = antLoader.getResource(name);
+        URL u = nbLoader.getResource(name);
         if (u != null) {
             return u;
         } else {
@@ -54,7 +54,7 @@ final class AuxClassLoader extends AntBridge.AllPermissionURLClassLoader {
     }
     
     public Enumeration findResources(String name) throws IOException {
-        return new RemoveDuplicatesEnumeration(new SequenceEnumeration(antLoader.getResources(name), super.findResources(name)));
+        return new RemoveDuplicatesEnumeration(new SequenceEnumeration(nbLoader.getResources(name), super.findResources(name)));
     }
     
     // XXX should maybe do something with packages... but oh well, it is rather hard.
