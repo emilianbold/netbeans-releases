@@ -38,6 +38,10 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
     private LayoutSupportDelegate layoutDelegate;
 
+    private Node.PropertySet[] propertySets;
+
+    private LayoutListener layoutListener;
+
     private RADVisualContainer metaContainer;
 
     private Container primaryContainer; // bean instance from metaContainer
@@ -141,6 +145,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                                   boolean fromCode)
     {
         LayoutConstraints[] oldConstraints;
+        LayoutSupportDelegate oldDelegate = layoutDelegate;
+
         if (layoutDelegate != null
                 && (layoutDelegate != newDelegate || !fromCode))
             oldConstraints = removeLayoutDelegate(true);
@@ -148,11 +154,22 @@ public final class LayoutSupportManager implements LayoutSupportContext {
             oldConstraints = null;
 
         layoutDelegate = newDelegate;
+        propertySets = null;
 
         if (layoutDelegate != null) {
             layoutDelegate.initialize(this, lmInstance, fromCode);
-            if (!fromCode)
-                fillLayout(oldConstraints);
+            if (!fromCode) {
+                try {
+                    fillLayout(oldConstraints);
+                }
+                catch (RuntimeException ex) {
+                    removeLayoutDelegate(false);
+                    layoutDelegate = oldDelegate;
+                    if (layoutDelegate != null)
+                        fillLayout(null);
+                    throw ex;
+                }
+            }
         }
     }
 
@@ -277,14 +294,19 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                                               newConstraints,
                                               designComps);
 
-        layoutDelegate.addComponents(compExps, newConstraints);
+        if (componentCount > 0) {
+            layoutDelegate.acceptNewComponents(compExps, newConstraints);
+            layoutDelegate.addComponents(compExps, newConstraints);
+        }
 
         // setup primary container
         Container cont = getPrimaryContainer();
         Container contDel = getPrimaryContainerDelegate();
 //        layoutDelegate.clearContainer(cont, contDel);
         layoutDelegate.setLayoutToContainer(cont, contDel);
-        layoutDelegate.addComponentsToContainer(cont, contDel, primaryComps, 0);
+        if (componentCount > 0)
+            layoutDelegate.addComponentsToContainer(cont, contDel,
+                                                    primaryComps, 0);
     }
 
     // ---------
@@ -309,7 +331,20 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
     // properties and customizer
     public Node.PropertySet[] getPropertySets() {
-        return layoutDelegate.getPropertySets();
+        if (propertySets == null) {
+            propertySets = layoutDelegate.getPropertySets();
+
+            for (int i=0; i < propertySets.length; i++) {
+                Node.Property[] props = propertySets[i].getProperties();
+                for (int j=0; j < props.length; j++)
+                    if (props[j] instanceof FormProperty) {
+                        FormProperty prop = (FormProperty) props[j];
+                        prop.addVetoableChangeListener(getLayoutListener());
+                        prop.addPropertyChangeListener(getLayoutListener());
+                    }
+            }
+        }
+        return propertySets;
     }
 
     public Node.Property[] getAllProperties() {
@@ -352,6 +387,17 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         return layoutDelegate.getComponentCount();
     }
 
+    // data validation
+    public void acceptNewComponents(RADVisualComponent[] components,
+                                    LayoutConstraints[] constraints)
+    {
+        CodeExpression[] compExps = new CodeExpression[components.length];
+        for (int i=0; i < components.length; i++)
+            compExps[i] = components[i].getCodeExpression();
+
+        layoutDelegate.acceptNewComponents(compExps, constraints);
+    }
+
     // components adding/removing
     public void addComponents(RADVisualComponent[] components,
                               LayoutConstraints[] constraints)
@@ -377,25 +423,25 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                                                 comps, oldCount);
     }
 
-    public void addComponent(RADVisualComponent metacomp,
-                             LayoutConstraints constraints)
-    {
-        metacomp.resetConstraintsProperties();
-
-        int oldCount = layoutDelegate.getComponentCount();
-
-        layoutDelegate.addComponents(
-                         new CodeExpression[] { metacomp.getCodeExpression() },
-                         new LayoutConstraints[] { constraints });
-
-        Component primaryComponent = metacomp.getComponent();
-        ensureFakePeerAttached(primaryComponent);
-        layoutDelegate.addComponentsToContainer(
-                           getPrimaryContainer(),
-                           getPrimaryContainerDelegate(),
-                           new Component[] { primaryComponent },
-                           oldCount);
-    }
+//    public void addComponent(RADVisualComponent metacomp,
+//                             LayoutConstraints constraints)
+//    {
+//        metacomp.resetConstraintsProperties();
+//
+//        int oldCount = layoutDelegate.getComponentCount();
+//
+//        layoutDelegate.addComponents(
+//                         new CodeExpression[] { metacomp.getCodeExpression() },
+//                         new LayoutConstraints[] { constraints });
+//
+//        Component primaryComponent = metacomp.getComponent();
+//        ensureFakePeerAttached(primaryComponent);
+//        layoutDelegate.addComponentsToContainer(
+//                           getPrimaryContainer(),
+//                           getPrimaryContainerDelegate(),
+//                           new Component[] { primaryComponent },
+//                           oldCount);
+//    }
 
     public void removeComponent(RADVisualComponent metacomp, int index) {
         // first store constraints in the meta component
@@ -685,43 +731,94 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         }
     }
 
-    public void containerLayoutChanged(PropertyChangeEvent evt) {
-        // [the firing method should be changed in FormModel...]
-        metaContainer.getFormModel().fireContainerLayoutChanged(metaContainer,
-                                                                null, null);
+    public void containerLayoutChanged(PropertyChangeEvent ev)
+        throws PropertyVetoException
+    {
+        if (ev != null && ev.getPropertyName() != null) {
+            layoutDelegate.acceptContainerLayoutChange(ev);
+
+            // [the firing method should be changed in FormModel...]
+            metaContainer.getFormModel().fireContainerLayoutChanged(
+                                           metaContainer, null, null);
+        }
+        else propertySets = null;
 
         LayoutNode node = metaContainer.getLayoutNodeReference();
-        if (node == null)
-            return;
-
-        // propagate the change to node
-        if (evt.getPropertyName() != null)
-            node.fireLayoutPropertiesChange();
-        else
-            node.fireLayoutPropertySetsChange();
+        if (node != null) {
+            // propagate the change to node
+            if (ev != null && ev.getPropertyName() != null)
+                node.fireLayoutPropertiesChange();
+            else
+                node.fireLayoutPropertySetsChange();
+        }
     }
 
-    public void componentLayoutChanged(int index, PropertyChangeEvent evt) {
+    public void componentLayoutChanged(int index, PropertyChangeEvent ev)
+        throws PropertyVetoException
+    {
         RADVisualComponent metacomp = metaContainer.getSubComponent(index);
 
-        if (evt.getPropertyName() != null) {
+        if (ev != null && ev.getPropertyName() != null) {
+            layoutDelegate.acceptComponentLayoutChange(index, ev);
+
             metaContainer.getFormModel().fireComponentLayoutChanged(
                                          metacomp,
-                                         evt.getPropertyName(),
-                                         evt.getOldValue(), evt.getNewValue());
+                                         ev.getPropertyName(),
+                                         ev.getOldValue(), ev.getNewValue());
 
             if (metacomp.getNodeReference() != null) // propagate the change to node
                 metacomp.getNodeReference().firePropertyChangeHelper(
-                                          evt.getPropertyName(),
-                                          evt.getOldValue(), evt.getNewValue());
+                                          ev.getPropertyName(),
+                                          ev.getOldValue(), ev.getNewValue());
         }
         else {
             if (metacomp.getNodeReference() != null) // propagate the change to node
                 metacomp.getNodeReference().fireComponentPropertySetsChange();
+            metacomp.resetConstraintsProperties();
         }
     }
 
     // ---------
+
+    private LayoutListener getLayoutListener() {
+        if (layoutListener == null)
+            layoutListener = new LayoutListener();
+        return layoutListener;
+    }
+
+    private class LayoutListener implements VetoableChangeListener,
+                                            PropertyChangeListener
+    {
+        public void vetoableChange(PropertyChangeEvent ev)
+            throws PropertyVetoException
+        {
+            Object source = ev.getSource();
+            if (source instanceof FormProperty
+                && FormProperty.PROP_VALUE.equals(ev.getPropertyName()))
+            {
+                ev = new PropertyChangeEvent(layoutDelegate,
+                                             ((FormProperty)source).getName(),
+                                             ev.getOldValue(),
+                                             ev.getNewValue());
+
+                containerLayoutChanged(ev);
+            }
+        }
+
+        public void propertyChange(PropertyChangeEvent ev) {
+            Object source = ev.getSource();
+            if (source instanceof FormProperty
+                && FormProperty.CURRENT_EDITOR.equals(ev.getPropertyName()))
+            {
+                ev = new PropertyChangeEvent(layoutDelegate,
+                                             null, null, null);
+                try {
+                    containerLayoutChanged(ev);
+                }
+                catch (PropertyVetoException ex) {} // should not happen
+            }
+        }
+    }
 
     private static void ensureFakePeerAttached(Component comp) {
         boolean attached = FakePeerSupport.attachFakePeer(comp);

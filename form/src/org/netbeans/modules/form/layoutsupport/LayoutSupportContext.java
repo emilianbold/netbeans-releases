@@ -16,6 +16,7 @@ package org.netbeans.modules.form.layoutsupport;
 import java.awt.Component;
 import java.awt.Container;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 
 import org.netbeans.modules.form.codestructure.*;
 
@@ -55,10 +56,16 @@ public interface LayoutSupportContext {
     public void updatePrimaryContainer();
 
     /** This method should be called by layout delegate to notify about
-     * changing a property of container layout. */
-    public void containerLayoutChanged(PropertyChangeEvent evt);
+     * changing a property of container layout. It calls back the delegate's
+     * method acceptContainerLayoutChange which may throw PropertyVetoException
+     * to require reverting the property. */
+    public void containerLayoutChanged(PropertyChangeEvent evt)
+        throws PropertyVetoException;
 
     /** This method should be called by layout delegate to notify about
-      * changing a property of component layout constraint. */
-    public void componentLayoutChanged(int index, PropertyChangeEvent evt);
+      * changing a property of component layout constraint. It calls back
+      * the delegate's method acceptComponentLayoutChange which may throw
+      * PropertyVetoException to require reverting the property. */
+    public void componentLayoutChanged(int index, PropertyChangeEvent evt)
+        throws PropertyVetoException;
 }

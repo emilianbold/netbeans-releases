@@ -241,12 +241,20 @@ public class FormModel
 
     public void addVisualComponent(RADVisualComponent comp,
                                    RADVisualContainer parentContainer,
-                                   LayoutConstraints constraints) {
+                                   LayoutConstraints constraints)
+    {
         initComponentWithModelRecursively(comp);
+
+        LayoutSupportManager layoutSupport = parentContainer.getLayoutSupport();
+        RADVisualComponent[] compArray = new RADVisualComponent[] { comp };
+        LayoutConstraints[] constrArray = new LayoutConstraints[] { constraints };
+
+        // this may throw a RuntimeException if the components are not accepted
+        layoutSupport.acceptNewComponents(compArray, constrArray);
 
         parentContainer.add(comp);
 
-        parentContainer.getLayoutSupport().addComponent(comp, constraints);
+        layoutSupport.addComponents(compArray, constrArray);
 
         fireComponentAdded(comp);
     }
@@ -257,7 +265,11 @@ public class FormModel
     {
         LayoutSupportDelegate current =
             metacont.getLayoutSupport().getLayoutDelegate();
+
+        // this may throw a RuntimeException if the new layout support does
+        // not accept current components in the container
         metacont.setLayoutSupportDelegate(layoutDelegate, lmInstance);
+
         fireContainerLayoutChanged(metacont, current, layoutDelegate);
     }
 
@@ -321,7 +333,7 @@ public class FormModel
     private void removeCodeExpressionsRecursively(RADComponent comp) {
         comp.resetCodeExpression();
         if (comp instanceof ComponentContainer) {
-            RADComponent comps[] =((ComponentContainer) comp).getSubBeans();
+            RADComponent[] comps =((ComponentContainer) comp).getSubBeans();
             for (int i=0, n=comps.length; i<n; i++) {
                 removeCodeExpressionsRecursively(comps[i]);
             }

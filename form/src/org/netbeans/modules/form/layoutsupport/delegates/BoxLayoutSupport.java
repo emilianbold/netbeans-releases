@@ -45,6 +45,13 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
         return BoxLayout.class;
     }
 
+    public void acceptContainerLayoutChange(PropertyChangeEvent ev)
+        throws PropertyVetoException
+    {
+        updateLayoutInstance();
+        super.acceptContainerLayoutChange(ev);
+    }
+
     public int getNewIndex(Container container,
                            Container containerDelegate,
                            Component component,
@@ -157,11 +164,6 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
 
         return codeStructure.createExpression(getBoxLayoutConstructor(),
                                               params);
-    }
-
-    protected void layoutChanged() {
-        updateLayoutInstance();
-        super.layoutChanged();
     }
 
     // we must override this because BoxLayout is not a bean

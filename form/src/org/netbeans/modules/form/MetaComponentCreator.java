@@ -145,7 +145,7 @@ public class MetaComponentCreator {
             }
             else constraints = null;
 
-            addVisualComponent(newVisual, targetComp, constraints);
+            return addVisualComponent(newVisual, targetComp, constraints);
         }
         else if (targetPlacement == TARGET_OTHER) {
             addOtherComponent(newMetaComp, targetComp);
@@ -506,14 +506,12 @@ public class MetaComponentCreator {
                 || java.applet.Applet.class.isAssignableFrom(beanClass))
             targetComp = null;
         
-        addVisualComponent(newMetaComp, targetComp, constraints);
-
-        return newMetaComp;
+        return addVisualComponent(newMetaComp, targetComp, constraints);
     }
 
-    private void addVisualComponent(RADVisualComponent newMetaComp,
-                                    RADComponent targetComp,
-                                    Object constraints)
+    private RADComponent addVisualComponent(RADVisualComponent newMetaComp,
+                                            RADComponent targetComp,
+                                            Object constraints)
     {
         // get parent container into which the new component will be added
         RADVisualContainer parentCont;
@@ -529,12 +527,22 @@ public class MetaComponentCreator {
             LayoutConstraints constr =
                 constraints instanceof LayoutConstraints ?
                     (LayoutConstraints) constraints : null;
-                
-            formModel.addVisualComponent(newMetaComp, parentCont, constr);
+
+            try {
+                formModel.addVisualComponent(newMetaComp, parentCont, constr);
+            }
+            catch (RuntimeException ex) {
+                // LayoutSupportDelegate may not accept the component
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace();
+                return null;
+            }
         }
         else formModel.addComponent(newMetaComp, null);
 
         getDesigner().setSelectedComponent(newMetaComp);
+
+        return newMetaComp;
     }
 
     private RADComponent addOtherComponent(
@@ -569,7 +577,9 @@ public class MetaComponentCreator {
     {
         Class layoutClass = source.getInstanceClass();
         LayoutManager layoutInstance;
-        if (source.getInstanceCookie() != null) {
+        if (LayoutManager.class.isAssignableFrom(layoutClass)
+            && source.getInstanceCookie() != null)
+        {
             try {
                 layoutInstance = (LayoutManager)
                                  source.getInstanceCookie().instanceCreate();
@@ -634,7 +644,17 @@ public class MetaComponentCreator {
             return null;
         }
 
-        formModel.setContainerLayout(metacont, layoutDelegate, layoutInstance);
+        try {
+            formModel.setContainerLayout(metacont,
+                                         layoutDelegate,
+                                         layoutInstance);
+        }
+        catch (RuntimeException ex) {
+            // LayoutSupportDelegate may refuse to work with current components
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+            return null;
+        }
 
         getDesigner().setSelectedComponent(metacont);
         return metacont;
@@ -784,8 +804,8 @@ public class MetaComponentCreator {
             if (type == RADMenuItemComponent.T_MENUBAR
                     || type == RADMenuItemComponent.T_JMENUBAR)
             { // create first menu for the new menu bar
-                org.openide.util.datatransfer.NewType[] newTypes
-                                                   = newMenuComp.getNewTypes();
+                org.openide.util.datatransfer.NewType[]
+                    newTypes = newMenuComp.getNewTypes();
                 if (newTypes.length > 0) {
                     try {
                         newTypes[0].create();

@@ -54,10 +54,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     private CodeGroup setLayoutCode;
 
     private MetaLayout metaLayout;
-    private Node.PropertySet[] propertySets;
     private FormProperty[] allProperties;
-
-    private PropertyChangeListener layoutListener;
 
     // -----------
     // LayoutSupportDelegate interface implementation
@@ -154,46 +151,42 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     }
 
     public Node.PropertySet[] getPropertySets() {
-        if (propertySets == null) {
-            FormProperty[] properties = getProperties();
-            if (properties == null) {
-                propertySets = metaLayout != null ?
-                                   metaLayout.getProperties() : null;
-            }
-            else { // a subclass provides special properties
-                propertySets = new Node.PropertySet[1];
-                propertySets[0] = new Node.PropertySet(
-                    "properties", // NOI18N
-                    FormEditor.getFormBundle().getString("CTL_PropertiesTab"), // NOI18N
-                    FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")) // NOI18N
-                {
-                    public Node.Property[] getProperties() {
-                        return AbstractLayoutSupport.this.getProperties();
-                    }
-                };
-            }
+        Node.PropertySet[] propertySets;
 
-            if (propertySets != null) {
-                ArrayList allPropsList = new ArrayList();
-                for (int i=0; i < propertySets.length; i++) {
-                    Node.Property[] props = propertySets[i].getProperties();
-                    for (int j=0; j < props.length; j++) {
-                        Node.Property prop = props[j];
-                        if (prop instanceof FormProperty) {
-                            allPropsList.add(prop);
-                            ((FormProperty)prop).addPropertyChangeListener(
-                                                   getLayoutPropertyListener());
-                        }
-                    }
-                }
-                allProperties = new FormProperty[allPropsList.size()];
-                allPropsList.toArray(allProperties);
-            }
-            else {
-                allProperties = new FormProperty[0];
-                propertySets = new Node.PropertySet[0];
-            }
+        FormProperty[] properties = getProperties();
+        if (properties == null) {
+            propertySets = metaLayout != null ?
+                               metaLayout.getProperties() : null;
         }
+        else { // a subclass provides special properties
+            propertySets = new Node.PropertySet[1];
+            propertySets[0] = new Node.PropertySet(
+                "properties", // NOI18N
+                FormEditor.getFormBundle().getString("CTL_PropertiesTab"), // NOI18N
+                FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")) // NOI18N
+            {
+                public Node.Property[] getProperties() {
+                    return AbstractLayoutSupport.this.getProperties();
+                }
+            };
+        }
+
+        if (propertySets != null) {
+            ArrayList allPropsList = new ArrayList();
+            for (int i=0; i < propertySets.length; i++) {
+                Node.Property[] props = propertySets[i].getProperties();
+                for (int j=0; j < props.length; j++)
+                    if (props[j] instanceof FormProperty)
+                        allPropsList.add(props[j]);
+            }
+            allProperties = new FormProperty[allPropsList.size()];
+            allPropsList.toArray(allProperties);
+        }
+        else {
+            allProperties = new FormProperty[0];
+            propertySets = new Node.PropertySet[0];
+        }
+
         return propertySets;
     }
 
@@ -215,6 +208,24 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 
     public int getComponentCount() {
         return componentCodeExpressions.size();
+    }
+
+    // data validation
+    public void acceptNewComponents(CodeExpression[] compExpressions,
+                                    LayoutConstraints[] constraints)
+    {
+    }
+
+    public void acceptContainerLayoutChange(PropertyChangeEvent ev)
+        throws PropertyVetoException
+    {
+        if (layoutBeanCode != null)
+            layoutBeanCode.updateCode();
+    }
+
+    public void acceptComponentLayoutChange(int index, PropertyChangeEvent ev)
+        throws PropertyVetoException
+    {
     }
 
     // components adding/removing
@@ -410,7 +421,14 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
                                  FormUtils.CHANGED_ONLY
                                    | FormUtils.DISABLE_CHANGE_FIRING);
 
-        clone.layoutChanged();
+        try {
+            clone.acceptContainerLayoutChange(
+                    new PropertyChangeEvent(this, null, null, null));
+        }
+        catch (PropertyVetoException ex) {
+            ex.printStackTrace();
+            return null;
+        }            
 
         int compCount = getComponentCount();
         LayoutConstraints[] constraints = new LayoutConstraints[compCount];
@@ -478,9 +496,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         layoutBeanCode = null;
         metaLayout = null;
 
-        propertySets = null;
         allProperties = null;
-        layoutListener = null;
     }
 
     // can be overriden
@@ -548,13 +564,6 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
             initLayoutCode);
 
         return layoutBeanCode.getCodeExpression();
-    }
-
-    // can be overriden
-    // called automatically when some property of layout has been changed
-    protected void layoutChanged() {
-        if (layoutBeanCode != null)
-            layoutBeanCode.updateCode();
     }
 
     // can be overriden
@@ -761,34 +770,5 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
             }
         }
         return setLayoutMethod;
-    }
-
-    // -------
-    // private methods
-
-    private PropertyChangeListener getLayoutPropertyListener() {
-        if (layoutListener == null)
-            layoutListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent ev) {
-                    Object source = ev.getSource();
-                    if (!(source instanceof FormProperty))
-                        return;
-
-                    layoutChanged();
-
-                    ev = FormProperty.PROP_VALUE.equals(ev.getPropertyName()) ?
-                         new PropertyChangeEvent(AbstractLayoutSupport.this,
-                                                 ((FormProperty)source).getName(),
-                                                 ev.getOldValue(),
-                                                 ev.getNewValue())
-                         :
-                         new PropertyChangeEvent(AbstractLayoutSupport.this,
-                                                 null, null, null);
-
-                    layoutContext.containerLayoutChanged(ev);
-                }
-            };
-
-        return layoutListener;
     }
 }

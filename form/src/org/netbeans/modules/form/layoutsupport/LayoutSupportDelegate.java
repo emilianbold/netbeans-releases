@@ -14,6 +14,7 @@
 package org.netbeans.modules.form.layoutsupport;
 
 import java.awt.*;
+import java.beans.*;
 import org.openide.nodes.*;
 import org.netbeans.modules.form.codestructure.*;
 
@@ -52,8 +53,18 @@ public interface LayoutSupportDelegate {
     CodeGroup getComponentCode(int index);
     CodeExpression getComponentCodeExpression(int index);
 
-    // components adding/removing
+    // number of components
     int getComponentCount();
+
+    // data validation
+    void acceptNewComponents(CodeExpression[] compExpressions,
+                             LayoutConstraints[] constraints);
+    void acceptContainerLayoutChange(PropertyChangeEvent ev)
+        throws PropertyVetoException;
+    void acceptComponentLayoutChange(int index, PropertyChangeEvent ev)
+        throws PropertyVetoException;
+
+    // components adding/removing
     void addComponents(CodeExpression[] compExpressions,
                        LayoutConstraints[] constraints);
     void removeComponent(int index);

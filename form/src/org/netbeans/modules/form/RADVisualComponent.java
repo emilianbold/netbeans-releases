@@ -36,7 +36,7 @@ public class RADVisualComponent extends RADComponent {
 //    transient private RADVisualContainer parent;
 
     private Node.Property[] constraintsProperties;
-    private PropertyChangeListener constraintsListener;
+    private ConstraintsListener constraintsListener;
 
     // -----------------------------------------------------------------------------
     // Initialization
@@ -215,6 +215,7 @@ public class RADVisualComponent extends RADComponent {
                 FormProperty prop = (FormProperty)constraintsProperties[i];
 
                 // we suppose the constraint property is not a RADProperty...
+                prop.addVetoableChangeListener(getConstraintsListener());
                 prop.addPropertyChangeListener(getConstraintsListener());
 
                 // Temporary hack - we allow multiple property editors for non
@@ -235,34 +236,53 @@ public class RADVisualComponent extends RADComponent {
         }
     }
 
-    private PropertyChangeListener getConstraintsListener() {
+    private ConstraintsListener getConstraintsListener() {
         if (constraintsListener == null)
             constraintsListener = new ConstraintsListener();
         return constraintsListener;
     }
 
-    class ConstraintsListener implements PropertyChangeListener {
+    private class ConstraintsListener implements VetoableChangeListener,
+                                                 PropertyChangeListener
+    {
+        public void vetoableChange(PropertyChangeEvent ev)
+            throws PropertyVetoException
+        {
+            Object source = ev.getSource();
+            if (source instanceof FormProperty
+                && FormProperty.PROP_VALUE.equals(ev.getPropertyName()))
+            {
+                LayoutSupportManager layoutSupport = getParentLayoutSupport();
+                int index = getComponentIndex();
+                LayoutConstraints constraints =
+                    layoutSupport.getConstraints(index);
+
+                ev = new PropertyChangeEvent(constraints,
+                                             ((FormProperty)source).getName(),
+                                             ev.getOldValue(),
+                                             ev.getNewValue());
+
+                layoutSupport.componentLayoutChanged(index, ev);
+            }
+        }
+
         public void propertyChange(PropertyChangeEvent ev) {
             Object source = ev.getSource();
-            if (!(source instanceof FormProperty))
-                return;
+            if (source instanceof FormProperty
+                && FormProperty.CURRENT_EDITOR.equals(ev.getPropertyName()))
+            {
+                LayoutSupportManager layoutSupport = getParentLayoutSupport();
+                int index = getComponentIndex();
+                LayoutConstraints constraints =
+                    layoutSupport.getConstraints(index);
 
-            int index = getComponentIndex();
-            LayoutSupportManager layoutSupport = getParentLayoutSupport();
-            LayoutConstraints constraints = layoutSupport.getConstraints(index);
+                ev = new PropertyChangeEvent(constraints, null, null, null);
 
-            ev = FormProperty.PROP_VALUE.equals(ev.getPropertyName()) ?
-                new PropertyChangeEvent(constraints,
-                                        ((FormProperty)source).getName(),
-                                        ev.getOldValue(), ev.getNewValue())
-                :
-                new PropertyChangeEvent(constraints, null, null, null);
-
-            layoutSupport.componentLayoutChanged(index, ev);
-//            getFormModel().fireComponentLayoutChanged(RADVisualComponent.this,
-//                                                      evt.getPropertyName(),
-//                                                      evt.getOldValue(),
-//                                                      evt.getNewValue());
+                try {
+                    layoutSupport.componentLayoutChanged(index, ev);
+                }
+                catch (PropertyVetoException ex) {} // should not happen
+            }
         }
     }
 

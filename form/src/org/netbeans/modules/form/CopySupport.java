@@ -17,6 +17,7 @@ import java.awt.datatransfer.*;
 import org.openide.nodes.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.datatransfer.ExTransferable;
 import org.netbeans.modules.form.layoutsupport.*;
 
 /** Support class for copy/cut/paste operations on form.
@@ -69,7 +70,7 @@ class CopySupport {
 
         public boolean isDataFlavorSupported(DataFlavor flavor) {
             for (int i = 0; i < flavors.length; i++) {
-                if (flavors[i] == flavor) { // comparison based on exact instances, as these are static in this node
+                if (flavors[i] == flavor) {
                     return true;
                 }
             }
@@ -151,49 +152,71 @@ class CopySupport {
             // pasting cut
             FormModel sourceForm = sourceComponent.getFormModel();
             if (sourceForm != targetForm) { // cut from another form
-                targetForm.getComponentCreator()
-                    .copyComponent(sourceComponent, targetComponent);
-
-                Node sourceNode = sourceComponent.getNodeReference();
-                // delete component in the source form
-                if (sourceNode != null)
-                    sourceNode.destroy();
-                else throw new IllegalStateException();
+                if (targetForm.getComponentCreator()
+                                .copyComponent(sourceComponent, targetComponent)
+                    != null)
+                {
+                    Node sourceNode = sourceComponent.getNodeReference();
+                    // delete component in the source form
+                    if (sourceNode != null)
+                        sourceNode.destroy();
+                    else throw new IllegalStateException();
+                }
+                else return null; // paste not performed
             }
             else { // moving component within the same form
                 if (!canPasteCut(sourceComponent, targetForm, targetComponent)
                     || !MetaComponentCreator.canAddComponent(
                                                sourceComponent.getBeanClass(),
                                                targetComponent))
-                    return transferable; // ignore paste
-
-                // remove source component from its parent
-                sourceForm.removeComponentFromContainer(sourceComponent);
+                    return null; // not allowed, ignore paste
 
                 if (sourceComponent instanceof RADVisualComponent
                     && targetComponent instanceof RADVisualContainer)
                 {
-                    RADVisualComponent visualComp = (RADVisualComponent)
-                                                    sourceComponent;
-                    RADVisualContainer visualCont = (RADVisualContainer)
-                                                    targetComponent;
-                    LayoutConstraints constr = visualCont.getLayoutSupport()
-                                             .getStoredConstraints(visualComp);
+                    RADVisualContainer visualCont =
+                        (RADVisualContainer) targetComponent;
+                    LayoutSupportManager layoutSupport =
+                        visualCont.getLayoutSupport();
 
-                    targetForm.addVisualComponent(visualComp, visualCont, constr);
+                    RADVisualComponent[] compArray = new RADVisualComponent[] {
+                        (RADVisualComponent) sourceComponent };
+                    LayoutConstraints[] constrArray = new LayoutConstraints[] {
+                        layoutSupport.getStoredConstraints(compArray[0]) };
+
+                    try {
+                        layoutSupport.acceptNewComponents(compArray,
+                                                          constrArray);
+                    }
+                    catch (RuntimeException ex) {
+                        // layout support does not accept the component
+                        if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                            ex.printStackTrace();
+                        return transferable;
+                    }
+
+                    // remove source component from its parent
+                    sourceForm.removeComponentFromContainer(sourceComponent);
+
+                    // add the component to the target container
+                    visualCont.add(sourceComponent);
+                    layoutSupport.addComponents(compArray, constrArray);
+                    targetForm.fireComponentAdded(sourceComponent);
                 }
                 else {
+                    // remove source component from its parent
+                    sourceForm.removeComponentFromContainer(sourceComponent);
+
                     ComponentContainer targetContainer =
                         targetComponent instanceof ComponentContainer ?
                             (ComponentContainer) targetComponent : null;
 
+                    // add the component to the target container
                     targetForm.addComponent(sourceComponent, targetContainer);
                 }
             }
 
-            // return new copy flavor, as the first one was used already
-            return new RADTransferable(getComponentCopyFlavor(),
-                                       sourceComponent);
+            return ExTransferable.EMPTY;
         }
     }
 

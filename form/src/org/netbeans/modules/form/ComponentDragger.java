@@ -69,13 +69,60 @@ class ComponentDragger
         if (!computeConstraints(point, constraints, indices))
             return;
 
+        // adjust indices considering that some of dragged components
+        // might be already in target container
+        adjustIndices(indices);
+
         LayoutSupportManager layoutSupport = targetMetaContainer.getLayoutSupport();
         RADVisualComponent[] currentComponents = targetMetaContainer.getSubComponents();
+
+        // collect components being dragged from other containers
+        List newlyAdded = new ArrayList(selectedComponents.length);
+
+        for (int i=0; i < selectedComponents.length; i++) {
+            RADVisualComponent metacomp = selectedComponents[i];
+            for (int ii=0; ii < currentComponents.length; ii++)
+                if (metacomp == currentComponents[ii]) {
+                    metacomp = null;
+                    break;
+                }
+            if (metacomp != null) // this component is not in target container
+                newlyAdded.add(new Integer(i));
+        }
+
+        // test whether target container accepts newly added components
+        if (newlyAdded.size() > 0) {
+            int count = newlyAdded.size();
+            RADVisualComponent[] newComps = new RADVisualComponent[count];
+            LayoutConstraints[] newConstr = new LayoutConstraints[count];
+
+            for (int i=0; i < count; i++) {
+                int index = ((Integer)newlyAdded.get(i)).intValue();
+                newComps[i] = selectedComponents[index];
+                newConstr[i] = (LayoutConstraints) constraints.get(index);
+            }
+
+            try {
+                layoutSupport.acceptNewComponents(newComps, newConstr);
+            }
+            catch (RuntimeException ex) {
+                // layout support does not accept components
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace();
+                return;
+            }
+
+            // layout support might adjust the constraints
+            for (int i=0; i < count; i++) {
+                int index = ((Integer)newlyAdded.get(i)).intValue();
+                constraints.set(index, newConstr[i]);
+            }
+        }
 
         Set changedContainers = new HashSet(5);
         changedContainers.add(targetMetaContainer);
 
-        // first create list of components and constraints for target container
+        // create list of components and constraints for target container
         int n = selectedComponents.length + currentComponents.length;
         List newComponents = new ArrayList(n);
         List newConstraints = new ArrayList(n);
@@ -86,30 +133,27 @@ class ComponentDragger
             newConstraints.add(null);
         }
 
-        // adjust indices considering that some of dragged components
-        // might be in target container
-        adjustIndices(indices);
-
-        // set components requiring exact position (index)
+        // add dragged components requiring exact position (index)
         for (int i=0; i < selectedComponents.length; i++) {
             int index = ((Integer)indices.get(i)).intValue();
-            if (index >= 0 && index < n) {
-                while (newComponents.get(index) != null) {
-                    if (++index == n) index = 0; // should not happen
-                }
+            if (index >= 0 && index < n && checkTarget(selectedComponents[i])) {
+                while (newComponents.get(index) != null) // ensure free index
+                    if (++index == n)
+                        index = 0;
+
                 newComponents.set(index, selectedComponents[i]);
-                newConstraints.set(index, constraints.get(i));
+//                newConstraints.set(index, constraints.get(i));
             }
         }
 
         int newI = 0;
 
-        // take over current components (already in target container)
+        // add all current components (already in target container)
         for (int i=0; i < currentComponents.length; i++) {
             RADVisualComponent metacomp = currentComponents[i];
-            int ii = newComponents.indexOf(metacomp);
-            if (ii < 0) {
-                while (newComponents.get(newI) != null)
+            int index = newComponents.indexOf(metacomp);
+            if (index < 0) { // not yet in newComponents
+                while (newComponents.get(newI) != null) // ensure free index
                     newI++;
 
                 newComponents.set(newI, metacomp);
@@ -117,27 +161,26 @@ class ComponentDragger
             }
         }
 
-        // add dragged components
+        // add the rest of dragged components
         for (int i=0; i < selectedComponents.length; i++) {
             RADVisualComponent metacomp = selectedComponents[i];
-            int ii = newComponents.indexOf(metacomp);
-            if (ii >= 0) { // component dragged within target container
-                newConstraints.set(ii, constraints.get(i));
+            int index = newComponents.indexOf(metacomp);
+            if (index >= 0) { // already in newComponents
+                newConstraints.set(index, constraints.get(i));
             }
-            else if (checkTarget(metacomp)) {
-                // component is dragged from another container
-                while (newComponents.get(newI) != null)
+            else if (checkTarget(metacomp)) { // not yet in newComponents
+                while (newComponents.get(newI) != null) // ensure free index
                     newI++;
 
                 newComponents.set(newI, metacomp);
                 newConstraints.set(newI, constraints.get(i));
             }
         }
-        // now we have lists of components and constraints in right order 
+        // now we have lists of components and constraints in right order
 
-        // remove components from source container(s)
         layoutSupport.removeAll();
 
+        // remove components from source container(s)
         for (int i=0; i < n; i++) {
             RADVisualComponent metacomp = (RADVisualComponent) newComponents.get(i);
             if (metacomp != null) {
