@@ -735,6 +735,7 @@ SystemFileSystem
                 <file name="output.wsmode" url="windowmanager/Visual/output.wsmode" />
                 <folder name="output">
                     <file name="output.wstcref" url="windowmanager/Visual/output/output.wstcref" />
+                    <file name="execution.wstcref" url="windowmanager/Visual/output/execution.wstcref" />
                 </folder>
                 <file name="Form.wsmode" url="windowmanager/Visual/Form.wsmode" />
                 <folder name="Form">
