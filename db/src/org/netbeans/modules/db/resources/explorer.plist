@@ -130,6 +130,11 @@
 				prefix = "jdbc:rmi://<HOST>:<PORT>/jdbc:cloudscape:<DB>";
 			},
 			{
+				name = "Firebird (JCA/JDBC driver)";
+				driver = "org.firebirdsql.jdbc.FBDriver";
+				prefix = "jdbc:firebirdsql:[//<HOST>[:<PORT>]/]<DB>";
+			},
+			{
 				name = "IDS Server";
 				driver = "ids.sql.IDSDriver";
 				prefix = "jdbc:ids://<HOST>:<PORT>/conn?dsn='<ODBC_DSN_NAME>'";
