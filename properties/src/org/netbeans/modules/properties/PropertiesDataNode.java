@@ -52,15 +52,12 @@ public class PropertiesDataNode extends DataNode {
     /** Icon base for the <code>PropertiesDataNode</code> node. */
     private static final String PROPERTIES_ICON_BASE = "org/netbeans/modules/properties/propertiesObject"; // NOI18N
     
-    /** Generated serialized version UID. */
-    static final long serialVersionUID = -7882925922830244768L;
-
     
     /** Create a data node for a given data object.
-    * The provided children object will be used to hold all child nodes.
-    * @param obj object to work with
-    * @param ch children container for the node
-    */
+     * The provided children object will be used to hold all child nodes.
+     * @param obj object to work with
+     * @param ch children container for the node
+     */
     public PropertiesDataNode (DataObject obj, Children ch) {
         super (obj, ch);
         initialize();
@@ -79,9 +76,9 @@ public class PropertiesDataNode extends DataNode {
         initialize();
     }
 
-    /* List new types that can be created in this node.
-    * @return new types
-    */
+    /** Gets new types that can be created in this node.
+     * @return new types
+     */
     public NewType[] getNewTypes () {
         return new NewType[] { 
             new NewType() {
@@ -101,7 +98,8 @@ public class PropertiesDataNode extends DataNode {
                     final MultiDataObject prop = (MultiDataObject)getCookie(DataObject.class);
 
                     final java.awt.Dialog[] dialog = new java.awt.Dialog[1];
-                    final NewLocalePanel panel = new NewLocalePanel(prop.getPrimaryFile().getName());
+                    final LocalePanel panel = new LocalePanel();
+                    
                     DialogDescriptor dd = new DialogDescriptor(
                         panel,
                         NbBundle.getBundle(PropertiesDataNode.class).getString("CTL_NewLocaleTitle"),
@@ -115,7 +113,7 @@ public class PropertiesDataNode extends DataNode {
                                     dialog[0].setVisible(false);
                                     dialog[0].dispose();
 
-                                    String locale = panel.getNewLocale();
+                                    String locale = panel.getLocale().toString();
                                     
                                     try {
                                         if (locale.length() == 0)
