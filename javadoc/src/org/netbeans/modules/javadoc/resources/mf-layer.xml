@@ -105,7 +105,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="JavadocType">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
-
+            <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.JavaDocType"/>
             <file name="org-netbeans-modules-javadoc-settings-ExternalJavadocSettingsService.settings" url="javadoc_external_executor.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
@@ -123,6 +123,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="StdDocletType">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoclet.gif"/>
+            <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.StdDocletType"/>
 
             <file name="org-netbeans-modules-javadoc-settings-StdDocletSettingsService.settings" url="javadoc_doclets.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
@@ -136,6 +137,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="hidden" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
+            <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.search.JavaDocSearchType"/>
 
             <file name="org-netbeans-modules-javadoc-search-Jdk12SearchType.settings" url="javadoc_search.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
@@ -203,6 +205,7 @@ SystemFileSystem
           <folder name="JavadocType">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
+            <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.JavaDocType"/>
 
             <file name="org-netbeans-modules-javadoc-settings-ExternalJavadocSettingsService.settings" url="javadoc_external_executor.settings">
               <attr name="template" boolvalue="true"/>
@@ -220,6 +223,7 @@ SystemFileSystem
           <folder name="StdDocletType">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoclet.gif"/>
+            <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.StdDocletType"/>
 
             <file name="org-netbeans-modules-javadoc-settings-StdDocletSettingsService.settings" url="javadoc_doclets.settings">
               <attr name="template" boolvalue="true"/>
@@ -231,6 +235,7 @@ SystemFileSystem
           <folder name="JavadocSearchType">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
+            <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.search.JavaDocSearchType"/>
 
             <file name="org-netbeans-modules-javadoc-search-Jdk12SearchType.settings" url="javadoc_search.settings">
               <attr name="template" boolvalue="true"/>
