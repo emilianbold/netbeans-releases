@@ -423,8 +423,8 @@
     <tocitem text="Setting VCS Group Properties" target="vcs.groupsproperties" />
   </tocitem>
   <tocitem text="VCS Support on Windows 95/98/ME" target="vcs.cygwin" />
-  <tocitem text="The Revision Explorer" target="vcs.revexplorer" />
-  <tocitem text="Comparing File Versions Visually" target="vcs.diffs" />
+  <tocitem text="The Versioning Explorer" target="vcs.revexplorer" />
+  <tocitem text="Comparing File Revisions Visually" target="vcs.diffs" />
   <tocitem text="Refreshing VCS File Statuses" target="vcs.refresh" />
   <tocitem text="Version Control Statuses" target="vcs.status" />
   <tocitem text="Searching for a File by VCS Status" target="search.status" />
