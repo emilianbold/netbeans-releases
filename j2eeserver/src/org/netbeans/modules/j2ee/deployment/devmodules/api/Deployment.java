@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.impl.projects.*;
@@ -327,6 +328,28 @@ public final class Deployment {
     
     public String getServerDisplayName (String id) {
         return ServerRegistry.getInstance ().getServer (id).getDisplayName();
+    }
+    
+    /**
+     * Register an instance listener that will listen to server instances changes.
+     *
+     * @l listener which should be added.
+     *
+     * @since 1.6
+     */
+    public final void addInstanceListener(InstanceListener l) {
+        ServerRegistry.getInstance ().addInstanceListener(l);
+    }
+
+    /**
+     * Remove an instance listener which has been registered previously.
+     *
+     * @l listener which should be removed.
+     *
+     * @since 1.6
+     */
+    public final void removeInstanceListener(InstanceListener l) {
+        ServerRegistry.getInstance ().removeInstanceListener(l);
     }
     
     public static interface Logger {
