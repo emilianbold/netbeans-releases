@@ -1212,6 +1212,10 @@
 //    DecimalTypes = (DECIMAL,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);
 
+    DropIndexCommand = {
+      Class = org.netbeans.lib.ddl.impl.DropIndex;
+      Format = "drop index {object.name} on {table.name}";
+    };
   };
 
 //  ********************************************************************************
