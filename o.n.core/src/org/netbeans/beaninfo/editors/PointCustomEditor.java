@@ -31,6 +31,7 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
   static ResourceBundle bundle = NbBundle.getBundle (
     PointCustomEditor.class);
 
+static final long serialVersionUID =-4067033871196801978L;
   /** Initializes the Form */
   public PointCustomEditor(PointEditor editor) {
     initComponents ();
@@ -155,6 +156,8 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
 
 /*
  * Log
+ *  8    Gandalf   1.7         8/17/99  Ian Formanek    Generated serial version
+ *       UID
  *  7    Gandalf   1.6         7/8/99   Jesse Glick     Context help.
  *  6    Gandalf   1.5         6/30/99  Ian Formanek    Reflecting changes in 
  *       editors packages and enhanced property editor interfaces

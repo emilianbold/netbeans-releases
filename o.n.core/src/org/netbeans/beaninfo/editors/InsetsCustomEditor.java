@@ -31,6 +31,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
   static ResourceBundle bundle = NbBundle.getBundle (
     InsetsCustomEditor.class);
 
+static final long serialVersionUID =-1472891501739636852L;
   /** Initializes the Form */
   public InsetsCustomEditor(InsetsEditor editor) {
     initComponents ();
@@ -210,6 +211,8 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
 
 /*
  * Log
+ *  8    Gandalf   1.7         8/17/99  Ian Formanek    Generated serial version
+ *       UID
  *  7    Gandalf   1.6         7/8/99   Jesse Glick     Context help.
  *  6    Gandalf   1.5         6/30/99  Ian Formanek    Reflecting changes in 
  *       editors packages and enhanced property editor interfaces

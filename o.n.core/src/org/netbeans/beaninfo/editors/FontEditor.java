@@ -162,6 +162,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     JTextField tfFont, tfStyle, tfSize;
     JList lFont, lStyle, lSize;
 
+static final long serialVersionUID =8377025140456676594L;
     FontPanel () {
       setLayout (new BorderLayout ());
 
@@ -358,6 +359,8 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
 /*
  * Log
+ *  7    Gandalf   1.6         8/17/99  Ian Formanek    Generated serial version
+ *       UID
  *  6    Gandalf   1.5         8/17/99  Petr Nejedly    fixed #3416
  *  5    Gandalf   1.4         7/13/99  Ian Formanek    Implements 
  *       XMLPropertyEditor
