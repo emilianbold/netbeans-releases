@@ -11,9 +11,9 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project name="jellytools" default="all" basedir=".">
+<project name="jellytools" default="jars" basedir=".">
 
-    <target name="all" depends="jars" description="Build everything.">
+    <target name="all" depends="jars,zipsrc,javadoc" description="Create jars, source zip and javadoc zip">
     </target>
 
     <target name="compile" depends="jemmy">
@@ -50,16 +50,17 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="zipsrc" description="Create zip containing only sources">
-        <zip zipfile="jelly-nb.zip" basedir="src" includes="**/*.java"/>
+        <zip zipfile="jelly-nb-src.zip" basedir="src" includes="**/*.java"/>
     </target>
   
     <target name="javadoc" description="Javadoc for jellytools">
-        <mkdir dir="apidoc"/>
-        <javadoc destdir="apidoc" packagenames="org.netbeans.test.oo.*" Windowtitle="Jellytools API">
+        <mkdir dir="javadoc"/>
+        <javadoc destdir="javadoc" packagenames="org.netbeans.test.oo.*" Windowtitle="Jellytools API">
             <sourcepath>
                 <pathelement location="src"/>
             </sourcepath>
         </javadoc>
+        <zip zipfile="jelly-nb-javadoc.zip" basedir="." includes="javadoc/**"/>
     </target>
 
     <target  name="clean" description="Clean all build products">
@@ -69,8 +70,9 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </delete>
         <delete file="jelly-nb.jar"/>
-        <delete file="jelly-nb.zip"/>
-        <delete dir="apidoc"/>
+        <delete file="jelly-nb-src.zip"/>
+        <delete file="jelly-nb-javadoc.zip"/>
+        <delete dir="javadoc"/>
     </target>
 
 </project>
