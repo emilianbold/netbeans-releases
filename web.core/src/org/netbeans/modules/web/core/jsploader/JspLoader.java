@@ -81,7 +81,7 @@ public class JspLoader extends UniFileLoader {
                         SystemAction.get (FileSystemAction.class),
                         null,
                         SystemAction.get (org.openide.actions.ExecuteAction.class),
-                        SystemAction.get (org.netbeans.modules.j2ee.impl.ExecuteForceReloadAction.class),
+                        SystemAction.get (org.netbeans.modules.web.execution.ExecuteForceReloadAction.class),
                         null,
                         SystemAction.get (CompileAction.class),
                         null,

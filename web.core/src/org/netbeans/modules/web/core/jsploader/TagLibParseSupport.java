@@ -150,7 +150,7 @@ public class TagLibParseSupport implements Node.Cookie {
 
         /** An imaginary property whose change is fired always when the tag library 
         *  information changes in such a way that recoloring of the document is required. */
-        public static final String PROP_COLORING_CHANGE = "coloringChange";
+        public static final String PROP_COLORING_CHANGE = "coloringChange"; // NOI18N
 
         private TreeMap libraryMap = new TreeMap();
         private JspInfo.BeanData[] beanData = new JspInfo.BeanData[0];

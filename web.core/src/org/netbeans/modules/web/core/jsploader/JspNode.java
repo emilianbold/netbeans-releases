@@ -243,37 +243,60 @@ public class JspNode extends DataNode {
             public Object getValue() {
                 String enc = JspDataObject.getFileEncoding0(getDataObject().getPrimaryFile());
                 if (enc == null)
-                    return "";
+                    return getDefaultEncodingDisplay();
                 else
                     return enc;
             }
             
             public void setValue(Object enc) throws InvocationTargetException {
                 String encoding = (String)enc;
-                if (encoding != null) {
-                    if (!"".equals(encoding)) {
-                        try {
-                            sun.io.CharToByteConverter.getConverter(encoding);
-                        } catch (IOException ex) {
-                            InvocationTargetException t =  new InvocationTargetException(ex);
-                            wrapThrowable(t, ex,
-                                java.text.MessageFormat.format(NbBundle.getBundle(JspNode.class).getString("FMT_UnsupportedEncoding"), // NOI18N
-                                    new Object[] {
-                                        encoding
-                                    }
-                                ));
-                            throw t;
-                        }
-                    } else
-                        encoding = null;
+                if (isDefaultEncoding(encoding)) {
+                    encoding = null;
+                }
+                else {
+                    try {
+                        sun.io.CharToByteConverter.getConverter(encoding);
+                    } catch (IOException ex) {
+                        InvocationTargetException t =  new InvocationTargetException(ex);
+                        wrapThrowable(t, ex,
+                            java.text.MessageFormat.format(NbBundle.getBundle(JspNode.class).getString("FMT_UnsupportedEncoding"), // NOI18N
+                                new Object[] {
+                                    encoding
+                                }
+                            ));
+                        throw t;
+                    }
                 }
                 try {
                     Util.setFileEncoding(getDataObject().getPrimaryFile(), encoding);
                     // clear the old attribute (backward compatibility)
-                    getDataObject().getPrimaryFile().setAttribute ("AttrEncoding", null);
+                    getDataObject().getPrimaryFile().setAttribute ("AttrEncoding", null);   // NOI18N
                 } catch (IOException ex) {
                     throw new InvocationTargetException(ex);
                 }
+            }
+            
+            /** Finds out whether encoding enc entered from the keyboard is 
+             * the same as the platform default encoging. */
+            private boolean isDefaultEncoding(String enc) {
+                if (enc == null)
+                    return true;
+                enc = enc.trim();
+                if (enc.equals(""))
+                    return true;
+                if (enc.equals(JspDataObject.getDefaultEncoding()))
+                    return true;
+                if (enc.equals(getDefaultEncodingDisplay()))
+                    return true;
+                return false;
+            }
+            
+            /** Returms the display value for the default encoding. */
+            private String getDefaultEncodingDisplay() {
+                String enc = JspDataObject.getDefaultEncoding();
+                return MessageFormat.format(
+                    NbBundle.getBundle(JspNode.class).getString("FMT_DefaultEncoding"),
+                    new Object[] {enc});
             }
         });
         sheet.put(ps);

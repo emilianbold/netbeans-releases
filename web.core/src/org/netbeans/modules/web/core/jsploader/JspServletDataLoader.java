@@ -36,7 +36,7 @@ public class JspServletDataLoader extends JavaDataLoader {
     /** serialVersionUID */
     private static final long serialVersionUID = -6033464827752236719L;
 
-    public static final String JSP_MARK = "_jsp";
+    public static final String JSP_MARK = "_jsp";   // NOI18N
 
     /** Creates a new JspServletDataLoader
      * 

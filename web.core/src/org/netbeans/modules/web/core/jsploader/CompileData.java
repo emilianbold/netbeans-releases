@@ -133,13 +133,13 @@ public class CompileData {
     
     private Vector computeAdditionalClassPath(String classpath) {
         if (debug)
-            System.out.println("---additional CP---");        
+            System.out.println("---additional CP---"); // NOI18N
         Vector v = new Vector();
-        StringTokenizer st = new StringTokenizer(classpath, "" + File.pathSeparatorChar);
+        StringTokenizer st = new StringTokenizer(classpath, "" + File.pathSeparatorChar); // NOI18N
         for (;st.hasMoreTokens();) {
             File f = new File(st.nextToken());
             if (debug)
-                System.out.println("plugin returned " + f);
+                System.out.println("plugin returned " + f); // NOI18N
             v.add(f);
         }
         return v;
@@ -172,7 +172,7 @@ public class CompileData {
             FileObject rootFO = JspCompileUtil.getAsRootOfFileSystem(new File(servName));
             // find the package name
 	    if(debug) {
-		System.err.println("servletClassName");
+		System.err.println("servletClassName"); // NOI18N
 		System.err.println(servletClassName);
 	    }
 	    
@@ -190,29 +190,29 @@ public class CompileData {
     
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        sb.append("--COMPILE DATA--");
-        sb.append("\n");
-        sb.append("server          : " + serverInstance);
-        sb.append("\n");
-        sb.append("JSP page        : " + jspPage.getPrimaryFile().getPackageNameExt('/','.'));
-        sb.append("\n");
-        sb.append("servletFile     : " + servletFileName + ", exists= " + 
-            ((servletFileName == null) ? "false" : "" + new File(servletFileName).exists()));
-        sb.append("\n");
-        sb.append("servletClass    : " + servletClassName);
-        sb.append("\n");
-        sb.append("realServletClass: " + realServletClassName);
-        sb.append("\n");
-        sb.append("encoding        : " + servletEncoding);
-        sb.append("\n");
-        sb.append("servletDir (FO) : " + 
-            ((servletDirectory == null) ? "null" : servletDirectory.getPackageName('/')));
-        sb.append("\n");
-        sb.append("servlet W/O Pkg : " + servletFileNameWithoutPackage);
-        sb.append("\n");
-        sb.append("outdated        : " + outDated);
-        sb.append("\n");
-        sb.append("--end COMPILE DATA--");
+        sb.append("--COMPILE DATA--"); // NOI18N
+        sb.append("\n"); // NOI18N
+        sb.append("server          : " + serverInstance); // NOI18N
+        sb.append("\n"); // NOI18N
+        sb.append("JSP page        : " + jspPage.getPrimaryFile().getPackageNameExt('/','.')); // NOI18N
+        sb.append("\n"); // NOI18N
+        sb.append("servletFile     : " + servletFileName + ", exists= " +  // NOI18N
+            ((servletFileName == null) ? "false" : "" + new File(servletFileName).exists())); // NOI18N
+        sb.append("\n"); // NOI18N
+        sb.append("servletClass    : " + servletClassName); // NOI18N
+        sb.append("\n"); // NOI18N
+        sb.append("realServletClass: " + realServletClassName); // NOI18N
+        sb.append("\n"); // NOI18N
+        sb.append("encoding        : " + servletEncoding); // NOI18N
+        sb.append("\n"); // NOI18N
+        sb.append("servletDir (FO) : " +  // NOI18N
+            ((servletDirectory == null) ? "null" : servletDirectory.getPackageName('/'))); // NOI18N
+        sb.append("\n"); // NOI18N
+        sb.append("servlet W/O Pkg : " + servletFileNameWithoutPackage); // NOI18N
+        sb.append("\n"); // NOI18N
+        sb.append("outdated        : " + outDated); // NOI18N
+        sb.append("\n"); // NOI18N
+        sb.append("--end COMPILE DATA--"); // NOI18N
         return sb.toString();
     }
     

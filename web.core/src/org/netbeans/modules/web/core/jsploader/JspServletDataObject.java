@@ -165,7 +165,7 @@ public class JspServletDataObject extends JavaDataObject {
         int markIndex = getPrimaryFile().getName().lastIndexOf(JspServletDataLoader.JSP_MARK);
         String fileIndex = (markIndex == -1) ? "" : getPrimaryFile().getName().substring(
                                markIndex + JspServletDataLoader.JSP_MARK.length());
-        if (fileIndex.startsWith("_"))
+        if (fileIndex.startsWith("_"))  // NOI18N
             fileIndex = fileIndex.substring(1);
         if ("".equals(fileIndex)) {
             return MessageFormat.format(NbBundle.getBundle(JspServletDataObject.class).

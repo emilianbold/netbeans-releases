@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
     <echo message="Build Server Integration API documentation..."/>
     <mkdir dir="serverdoc"/>
     <javadoc destdir="serverdoc"
-             packagenames="org.netbeans.modules.j2ee.server,org.netbeans.modules.j2ee.server.web,org.netbeans.modules.j2ee.server.ejb,org.netbeans.modules.j2ee.server.datamodel,org.netbeans.modules.j2ee.server.ejbmodule,org.netbeans.modules.j2ee.server.app,org.netbeans.modules.j2ee.server.appasm,org.netbeans.modules.j2ee.server.appclient,org.netbeans.modules.j2ee.deployment.api"
+             packagenames="org.netbeans.modules.j2ee.server,org.netbeans.modules.j2ee.server.web,org.netbeans.modules.j2ee.server.ejb,org.netbeans.modules.j2ee.server.datamodel,org.netbeans.modules.j2ee.server.ejbmodule,org.netbeans.modules.j2ee.server.app,org.netbeans.modules.j2ee.server.appasm,org.netbeans.modules.j2ee.server.appclient,org.netbeans.modules.j2ee.server.importear,org.netbeans.modules.j2ee.deployment.api"
              doctitle="Forte4j Server Integration APIs"
              windowtitle="Forte4j Server Integration APIs"
              overview="api/doc/overview.html"
@@ -121,6 +121,8 @@ Microsystems, Inc. All Rights Reserved.
              packages="org/netbeans/modules/j2ee/server/app"/>
       <group title="&lt;a href=&quot;@TOP@org/netbeans/modules/j2ee/server/appclient/doc-files/api.html&quot;&gt;Application Client server integration api&lt;/a&gt;"
              packages="org/netbeans/modules/j2ee/server/appclient"/>
+      <group title="&lt;a href=&quot;@TOP@org/netbeans/modules/j2ee/server/importear/doc-files/api.html&quot;&gt;Application import server integration api&lt;/a&gt;"
+             packages="org/netbeans/modules/j2ee/server/importear"/>
     </javadoc>
     <copy file="src/org/netbeans/modules/j2ee/deployment/api/netbeans-deployment.dtd"
   tofile="serverdoc/org/netbeans/modules/j2ee/deployment/api/netbeans-deployment.dtd"/>

@@ -83,6 +83,7 @@ import org.netbeans.modules.java.Util;
 import org.openidex.nodes.looks.Look;
 import org.openidex.nodes.looks.DefaultLook;
 import org.openidex.nodes.looks.LookNode;
+import org.openidex.nodes.looks.CompositeLook;
 
 /** Object that provides main functionality for internet data loader.
 *
@@ -90,9 +91,9 @@ import org.openidex.nodes.looks.LookNode;
 */
 public class JspDataObject extends MultiDataObject implements QueryStringCookie {
 
-    public static final String EA_CONTENT_LANGUAGE = "AttrJSPContentLanguage";
-    public static final String EA_SCRIPTING_LANGUAGE = "AttrJSPScriptingLanguage";
-//    public static final String EA_ENCODING = "AttrEncoding";
+    public static final String EA_CONTENT_LANGUAGE = "AttrJSPContentLanguage"; // NOI18N
+    public static final String EA_SCRIPTING_LANGUAGE = "AttrJSPScriptingLanguage"; // NOI18N
+//    public static final String EA_ENCODING = "AttrEncoding"; // NOI18N
     public static final String EA_JSP_ERRORPAGE = "jsp_errorpage"; // NOI18N
     // property for the servlet dataobject corresponding to this page
     public static final String PROP_SERVLET_DATAOBJECT = "servlet_do"; // NOI18N
@@ -138,9 +139,11 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
 
         for( Iterator it = cls.iterator(); it.hasNext();  ) {
             Look look = (Look)it.next();
-            // System.out.println ("Inspecting look " + look);
+            // System.out.println ("Inspecting look " + look); // NOI18N
 
-            if (look.isLookStandalone (o) == false) continue;
+            // ignore it now - CNFE when jspie is missing
+            // if (look.isLookStandalone (o) == false) continue;
+            
             // System.out.println ("\tpassed");
             
             // skip some well known looks
@@ -148,10 +151,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 if (wellKnown == null) {
                     wellKnown = look;
                 }
-            } else if (JspServletDefaultLook.class.equals(look.getClass())) {
+            // } else if (JspServletDefaultLook.class.equals(look.getClass())) {
+            } else if (CompositeLook.class.equals(look.getClass())
+                   &&  "Web-Look".equals (look.getName ())) {   // NOI18N
                 wellKnown = look;                    
             } else {
-                // System.out.println ("\tand using as default");
+                // System.out.println ("\tand using as default"); // NOI18N
                 defaultLook = look;
                 break;
             }
@@ -161,10 +166,10 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             defaultLook = wellKnown;
         }
 
-        // System.out.println ("Default look for " + this + " = " + defaultLook);
+        // System.out.println ("Default look for " + this + " = " + defaultLook); // NOI18N
 
-        LookNode ret = new LookNode (o, defaultLook);
-        // System.out.println ("Testing " + ret.getLook());
+        Node ret = new LookNode (o, defaultLook);
+        // System.out.println ("Testing " + ret.getLook()); // NOI18N
         return ret;
     }
 
@@ -254,7 +259,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 sc.save();
             
             // save WEB-INF/web.xml
-            FileObject webXml = getPrimaryFile().getFileSystem().findResource("WEB-INF/web.xml");
+            FileObject webXml = getPrimaryFile().getFileSystem().findResource("WEB-INF/web.xml"); // NOI18N
             if (webXml != null) {
                 try {
                     DataObject webXmlDo = DataObject.find(webXml);
@@ -498,10 +503,10 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                             pluginClassPath.elements());
                     NbClassPath newCp = Utilities.createClassPath(newEn);
                     if (debug)
-                        System.out.println("newCp: '" + newCp.getClassPath() + "'");
+                        System.out.println("newCp: '" + newCp.getClassPath() + "'"); // NOI18N
                     javaCompilerType.setClassPath(newCp);
                     if (debug)
-                        System.out.println("cp: '" + javaCompilerType.getClassPath().getClassPath() + "'");
+                        System.out.println("cp: '" + javaCompilerType.getClassPath().getClassPath() + "'"); // NOI18N
                 }
                 
                 // hack for projects imported from Boston - they don't have the "{classpath}" tag in classpath
@@ -510,20 +515,20 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                     JavaExternalCompilerType javaExt = (JavaExternalCompilerType)javaCompilerType;
                     NbProcessDescriptor process = javaExt.getExternalCompiler();
                     String args = process.getArguments();
-                    String searched0 = "{" + JExternalCompilerGroup.JFormat.TAG_CLASSPATH + "}";
+                    String searched0 = "{" + JExternalCompilerGroup.JFormat.TAG_CLASSPATH + "}"; // NOI18N
                     int cpIndex = args.indexOf(searched0);
                     if (cpIndex == -1) {
                         // does not contain the {classpath} tag
-                        String searched = "-classpath {" + ExternalCompilerGroup.Format.TAG_REPOSITORY + "}{" + ExternalCompilerGroup.Format.TAG_PATHSEPARATOR + "}";
+                        String searched = "-classpath {" + ExternalCompilerGroup.Format.TAG_REPOSITORY + "}{" + ExternalCompilerGroup.Format.TAG_PATHSEPARATOR + "}"; // NOI18N
                         int pos = args.indexOf(searched);
                         if (pos != -1) {
                             int after = pos + searched.length();
                             StringBuffer toInsert = new StringBuffer();
                             for (Enumeration en = pluginClassPath.elements(); en.hasMoreElements() ; ) {
                                 toInsert.append(((File)en.nextElement()).getAbsolutePath());
-                                toInsert.append("{");
+                                toInsert.append("{"); // NOI18N
                                 toInsert.append(ExternalCompilerGroup.Format.TAG_PATHSEPARATOR);
-                                toInsert.append("}");
+                                toInsert.append("}"); // NOI18N
                             }
                             StringBuffer sb = new StringBuffer(args);
                             sb.insert(after, toInsert.toString());
@@ -592,12 +597,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     
     private void printClonedCompilers() {
         if (debug)
-            System.out.println("--- cloned compilers ---");
+            System.out.println("--- cloned compilers ---"); // NOI18N
         Iterator it = clonedCompilers.keySet().iterator();
         for (;it.hasNext();) {
             ClonedCompilersKey key = (ClonedCompilersKey)it.next();
             if (debug)
-                System.out.println("key " + key + ", " + key.getCompilerType() + ", " + key.getServerInstance());
+                System.out.println("key " + key + ", " + key.getCompilerType() + ", " + key.getServerInstance()); // NOI18N
         }
     }
 
@@ -645,7 +650,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         } catch (Exception ex) {
             // null pointer or IOException
         }
-        return "text/html";
+        return "text/html"; // NOI18N
     }
 
     /** Sets the MIME type of the content language for this page. The language is stored 
@@ -668,7 +673,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         } catch (Exception ex) {
             // null pointer or IOException
         }
-        return "text/x-java";
+        return "text/x-java"; // NOI18N
     }
 
     /** Sets the MIME type of the scripting language for this page. The language is stored 
@@ -698,7 +703,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         String enc = Util.getFileEncoding0(someFile);
         // backward compatibility - read the old attribute
         if (enc == null) {
-            enc = (String)someFile.getAttribute ("AttrEncoding");
+            enc = (String)someFile.getAttribute ("AttrEncoding"); // NOI18N
         }
         return enc;
     }
@@ -714,16 +719,19 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     
     public static String getDefaultEncoding() {
         String language = System.getProperty("user.language");
-        if ("ja".equals(language)) {
+        if ("ja".equals(language)) { // NOI18N
             // we are Japanese
             if (org.openide.util.Utilities.isUnix())
-                return "EUC-JP";
+                return "EUC-JP"; // NOI18N
             else
-                return "Shift_JIS";
+                return "Shift_JIS"; // NOI18N
         }
         else
             // we are English
-            return "ISO-8859-1";
+            return "ISO-8859-1"; // NOI18N
+            // per JSP 1.2 specification, the default encoding is always ISO-8859-1,
+            // regardless of the setting of the file.encoding property
+            //return System.getProperty("file.encoding", "ISO-8859-1");
     }
 
 /*    public void setEncoding(String encoding) throws IOException {
@@ -732,7 +740,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     }   */
     
     private void printJob(CompilerJob job) {
-/*        System.out.println("-- compilers --");
+/*        System.out.println("-- compilers --"); // NOI18N
         java.util.Iterator compilers = job.compilers().iterator();
         for (; compilers.hasNext();) {
             org.openide.compiler.Compiler comp = (org.openide.compiler.Compiler)compilers.next();
@@ -740,7 +748,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             newJob.add(comp);
             System.out.println(comp.toString() + " upToDate=" + newJob.isUpToDate());
         }
-        System.out.println("-- x --");*/
+        System.out.println("-- x --");*/ // NOI18N
     }
 
     private void initialize() {
@@ -777,12 +785,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     private void checkRefreshServlet() {
 
         final DataObject oldServlet = servletDataObject;
-	if(debug) System.out.println("refreshing servlet, old = " + oldServlet);
+	if(debug) System.out.println("refreshing servlet, old = " + oldServlet); // NOI18N
 
         // dataobject
         try {
             FileObject servletFileObject = updateServletFileObject();
-            if(debug) System.out.println("refreshing servlet, new servletFile = " + servletFileObject);
+            if(debug) System.out.println("refreshing servlet, new servletFile = " + servletFileObject); // NOI18N
             if (servletFileObject != null) {
                 // if the file has not changed, just return
                 if ((oldServlet != null) && 
@@ -795,9 +803,9 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 // now the loader should recognize that this servlet was generated from a JSP
                 DataObject dObj= DataObject.find(servletFileObject);
                 if (debug) {
-                    System.out.println("checkRefr::servletDObj=" + 
-                        ((dObj == null) ? "null" : dObj.getClass().getName()) + 
-                        "/" + dObj);
+                    System.out.println("checkRefr::servletDObj=" +  // NOI18N
+                        ((dObj == null) ? "null" : dObj.getClass().getName()) + // NOI18N
+                        "/" + dObj); // NOI18N
                 }
                 if (!(dObj instanceof JspServletDataObject)) {
                     // need to re-recognize
@@ -906,21 +914,21 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     * Note that the file still doesn't need to exist, even if it's not null. */
     private FileObject updateServletFileObject() throws IOException {
         String servletFileName = compileData.getCurrentServletFileName();
-	if(debug) System.out.println("upd::servletFileName = " + servletFileName);        
+	if(debug) System.out.println("upd::servletFileName = " + servletFileName); // NOI18N
         if (servletFileName == null)
             return null;
         // now the physical servlet file should exist
         FileObject servletFo = null;
         int dotIndex = servletFileName.lastIndexOf('.');
 	if(debug) {
-	    System.out.println("upd::dotIndex = " + dotIndex);        
-	    System.out.println("upd::servletDir = " +
+	    System.out.println("upd::dotIndex = " + dotIndex); // NOI18N
+	    System.out.println("upd::servletDir = " + // NOI18N
 			       compileData.getServletDirectory());
 	}
 	
         for (int i=0; i<2; i++) {  // try this twice, with refresh between attempts in case of failure
             if (dotIndex == -1) {
-                servletFo = compileData.getServletDirectory().getFileObject(servletFileName, "java");
+                servletFo = compileData.getServletDirectory().getFileObject(servletFileName, "java"); // NOI18N
             }
             else {
                 servletFo = compileData.getServletDirectory().getFileObject(servletFileName.substring(0, dotIndex),
@@ -930,8 +938,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             // failure is if the servlet is either null or outdated
             if (needsRefresh(servletFo)) {
                 if (debug) {
-                    System.out.println("upd::looking for servlet FO: attempting the second time");
-                    System.out.println("upd::refreshing " + NbClassPath.toFile(compileData.getServletDirectory()));
+                    System.out.println("upd::looking for servlet FO: attempting the second time"); // NOI18N
+                    System.out.println("upd::refreshing " + NbClassPath.toFile(compileData.getServletDirectory())); // NOI18N
                 }
                 if (servletFo != null)
                     servletFo.refresh();
@@ -940,11 +948,11 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             }
             else {
                 if (debug)
-                    System.out.println("upd::looking for servlet FO: found on the first attempt");
+                    System.out.println("upd::looking for servlet FO: found on the first attempt"); // NOI18N
                 break; // exit the for loop
             }
         } // end of the for() cycle
-	if(debug) System.out.println("upd::servletFo = " + servletFo);
+	if(debug) System.out.println("upd::servletFo = " + servletFo); // NOI18N
         return servletFo;
     }
     
@@ -962,8 +970,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         if (servletFile == null)
             return true;
         if (debug) {
-            System.out.println("needsR::file modified       :" + servletFile.lastModified());
-            System.out.println("needsR::fileobject modified :" + servlet.lastModified().getTime());
+            System.out.println("needsR::file modified       :" + servletFile.lastModified()); // NOI18N
+            System.out.println("needsR::fileobject modified :" + servlet.lastModified().getTime()); // NOI18N
         }
         if (servlet.lastModified().getTime() != servletFile.lastModified())
             return true;
@@ -1013,7 +1021,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             if (DataObject.PROP_VALID.equals(evt.getPropertyName())) {
                 if (evt.getSource() instanceof DataObject) {
                     DataObject dobj = (DataObject)evt.getSource();
-                    if (dobj.getPrimaryFile().getPackageNameExt('/','.').equals("")) {
+                    if (dobj.getPrimaryFile().getPackageNameExt('/','.').equals("")) { // NOI18N
                         dobj.removePropertyChangeListener(this);
                         ServerRegistryImpl.getRegistry().removeServerRegistryListener(this);
                         JspDataObject.this.addWebContextListener();

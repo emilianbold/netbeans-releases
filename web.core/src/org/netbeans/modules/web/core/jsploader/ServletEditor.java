@@ -114,7 +114,7 @@ public class ServletEditor extends CloneableEditorSupport
             return dobj.getName();
         }
         else {
-            return "...";
+            return "...";   // NOI18N
         }
     }
     
@@ -143,7 +143,7 @@ public class ServletEditor extends CloneableEditorSupport
             }
         }
         else
-            return "...";
+            return "...";   // NOI18N
     }
 
     /** Message to display when an object is being opened.
@@ -348,7 +348,7 @@ public class ServletEditor extends CloneableEditorSupport
         * @return the mime type to use for the document
         */
         public String getMimeType () {
-            return "text/x-java";
+            return "text/x-java";   // NOI18N
         }
         /** Adds property listener.
         */

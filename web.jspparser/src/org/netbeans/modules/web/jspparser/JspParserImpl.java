@@ -16,6 +16,11 @@ package org.netbeans.modules.web.jspparser;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Iterator;
+import java.lang.reflect.*;
 
 import org.netbeans.modules.web.core.jsploader.JspInfo;
 import org.netbeans.modules.web.core.jsploader.JspDataObject;
@@ -30,6 +35,7 @@ import org.apache.jasper.compiler.Parser;
 import org.apache.jasper.compiler.ParseException;
 import org.apache.jasper.compiler.CompileException;
 import org.apache.jasper.compiler.ParseEventListener;
+import org.apache.jasper.compiler.TldLocationsCache;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.logging.Logger;
 import org.apache.jasper.logging.DefaultLogger;
@@ -57,8 +63,9 @@ public class JspParserImpl implements JspParserAPI {
     
     private static synchronized void initializeLogger() {
         if (!loggerInitialized) {
-            Logger l = new DefaultLogger(new ParserServletContext(null, null));
-            l.setName("JASPER_LOG");
+            Logger l = new DefaultLogger(null);
+            l.setDefaultSink(new NullWriter());
+            l.setName("JASPER_LOG"); // NOI18N
             //Logger.putLogger();
             loggerInitialized = true;
         }
@@ -199,7 +206,7 @@ public class JspParserImpl implements JspParserAPI {
         if (fileName.startsWith(wmFileName)) {
             String errorRes = fileName.substring(wmFileName.length());
             errorRes = errorRes.replace(File.separatorChar, '/');
-            if (errorRes.startsWith("/"))
+            if (errorRes.startsWith("/")) // NOI18N
                 errorRes = errorRes.substring(1);
             FileObject errorTemp = JspCompileUtil.findRelativeResource(wmRoot, errorRes);
             if (errorTemp != null)
@@ -210,7 +217,7 @@ public class JspParserImpl implements JspParserAPI {
         try {
             return new JspParserAPI.ErrorDescriptor(
                 errorFile, Integer.parseInt(line) + 1, Integer.parseInt(col),
-                m1.substring(rpar + 1).trim(), "");
+                m1.substring(rpar + 1).trim(), ""); // NOI18N
             // pending - should also include a line of code
         }
         catch (NumberFormatException e) {
@@ -222,6 +229,35 @@ public class JspParserImpl implements JspParserAPI {
      */
     public static JspParserImpl getParserImpl(FileObject fo, String str1) {
         return new JspParserImpl();
+    }
+    
+    /**  Returns the mapping of 'global' tag library URI to the location
+     * (resource path) of the TLD associated with that tag library.
+     * The location is returned as a String array:
+     *    [0] The location
+     *    [1] If the location is a jar file, this is the location
+     *        of the tld.
+     */
+    public Map getTagLibraryMappings(FileObject webModuleRoot) throws IOException {
+        OptionsImpl options = new OptionsImpl(webModuleRoot);
+        TldLocationsCache cache = options.getTldLocationsCache();
+        TreeMap result = new TreeMap();
+        try {
+            Field ff = TldLocationsCache.class.getDeclaredField("mappings");
+            ff.setAccessible(true);
+            Hashtable mappings = (Hashtable)ff.get(cache);
+            for (Iterator it = mappings.keySet().iterator(); it.hasNext(); ) {
+                Object elem = it.next();
+                result.put(elem, mappings.get(elem));
+            }
+        }
+        catch (NoSuchFieldException e) {
+            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+        }
+        catch (IllegalAccessException e) {
+            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+        }
+        return result;
     }
     
 }

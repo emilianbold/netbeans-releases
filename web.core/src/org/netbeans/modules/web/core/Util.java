@@ -58,7 +58,7 @@ public class Util {
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 input.append(inputLine);
-                input.append("\n");
+                input.append("\n"); // NOI18N
             }  
             return input.toString();
         }

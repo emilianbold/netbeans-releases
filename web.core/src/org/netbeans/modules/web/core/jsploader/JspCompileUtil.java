@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
 //import org.netbeans.modules.web.core.jsploader.jakarta.JakartaServerPlugin;
 import org.netbeans.modules.j2ee.server.web.FfjJspCompileContext;
 import org.netbeans.modules.j2ee.server.web.WebServerInstance;
-import org.netbeans.modules.j2ee.server.web.WebServerTestExecution;
 import org.netbeans.modules.j2ee.server.datamodel.WebStandardData;
 import org.netbeans.modules.j2ee.server.ServerInstance;
 import org.netbeans.modules.j2ee.server.Server;
@@ -74,10 +73,7 @@ public class JspCompileUtil {
         WebServerInstance inst = getCurrentServerInstance(jsp);
         if (inst == null)
             return null;
-        WebServerTestExecution exec = (WebServerTestExecution)inst.getTestRunSupport();
-        if (exec == null)
-            return null;
-        return exec.getJspCompiler();
+        return inst.getJspCompiler();
     }
 
     /** Returns the current ServerInstance for the given resource file. 
@@ -192,7 +188,7 @@ public class JspCompileUtil {
     }
 
     public static final String getContextPath(FileObject fo) {
-        return "/" + fo.getPackageNameExt('/','.');
+        return "/" + fo.getPackageNameExt('/','.'); // NOI18N
     }
 
     /** Suggests to the plugin the base directory into which 
@@ -352,7 +348,8 @@ public class JspCompileUtil {
                     TopManager.getDefault().getErrorManager().notify(ErrorManager.EXCEPTION, ex);
                 }
             } else {
-                TopManager.getDefault().getErrorManager().notify(ErrorManager.EXCEPTION, new Exception("file was not found"));
+                TopManager.getDefault().getErrorManager().notify(ErrorManager.EXCEPTION, 
+                    new Exception(NbBundle.getBundle(JspCompileUtil.class).getString("EXC_JspParserNotInstalled")));
             }
         }
         return (parserFactory == null) ? null : parserFactory.getJspParser();
@@ -365,9 +362,9 @@ public class JspCompileUtil {
         if (!rootFolder.isFolder())
             throw new IllegalArgumentException();
         String rootPath = rootFolder.getPackageName('/');
-        if (!(rootPath.endsWith("/")))
-            rootPath = rootPath + "/";
-        if (relativePath.startsWith("/"))
+        if (!(rootPath.endsWith("/"))) // NOI18N
+            rootPath = rootPath + "/"; // NOI18N
+        if (relativePath.startsWith("/")) // NOI18N
             relativePath = relativePath.substring(1);
         return rootFolder.getFileSystem().findResource(rootPath + relativePath);
     }

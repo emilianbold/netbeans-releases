@@ -96,25 +96,32 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Looks">
         <!-- JSPDefaultLook class defines Basic look -->
-        <file name="org.netbeans.modules.web.core.jsploader.JspServletDefaultLook$Servlet-Basic.xml">
+        <file name="org.openidex.nodes.looks.NodeProxyLook$Web-Basic.xml">
             <![CDATA[
                 <!DOCTYPE Look PUBLIC "-//NetBeans IDE//DTD Looks//EN" "http://www.netbeans.org/dtds/Looks-1_0.dtd" >
                 <Look name="JSP/Servlet Basic">
+                </Look>
+            ]]>
+        </file>
+        <!-- JSPDefaultLook class defines composite look for servlet, JSP and DD objects 
+             it merges available (sub)set of sublooks -->
+        <file name="org.openidex.nodes.looks.CompositeLook$Web-Look.xml">
+            <![CDATA[
+                <!DOCTYPE Look PUBLIC "-//NetBeans IDE//DTD Looks//EN" "http://www.netbeans.org/dtds/Looks-1_0.dtd" >
+                <Look name="Web Element">
+                    <Sublooks>
+                        <Sublook lookid="org.netbeans.modules.web.dd.editors.DDPropertiesLook$DD-Editors"/>
+                        <Sublook lookid="org.openidex.nodes.looks.NodeProxyLook$Web-Basic"/>
+                    </Sublooks>
                     <Standalone class="org.netbeans.modules.web.core.jsploader.JspNode"/>
                     <Standalone class="org.netbeans.modules.web.core.jsploader.ServletDataNode"/>
+                    <Standalone class="org.netbeans.modules.web.dd.DDDataObject"/>
                 </Look>
             ]]>
         </file>
     </folder> <!-- Looks -->
 
 
-    <!--
-    <file name="org-netbeans-modules-web-core-ServletSettingsNode.instance">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/servletSettings.gif" />
-    </file>
-    -->
-    
     <folder name="JSP_Servlet">
       <file name="org-netbeans-modules-web-core-ServletSettings.settings">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
@@ -199,6 +206,10 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="AnnotationTypes">
             <file name="XMLJ2eeAnnotation.xml" url="XMLJ2eeAnnotation.xml"/>
       </folder>
-    </folder>  
+    </folder>
+    
+  <folder name="Shortcuts">
+    <file name="C-Q[org-netbeans-modules-web-core-EditQueryStringAction].instance" />
+  </folder>      
 
 </filesystem>

@@ -25,9 +25,13 @@ import javax.servlet.jsp.tagext.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.filesystems.FileObject;
+import org.openide.ErrorManager;
+import org.openide.TopManager;
 
 import org.netbeans.modules.web.core.jsploader.JspDataObject;
 import org.netbeans.modules.web.core.jsploader.JspInfo;
+import org.netbeans.modules.web.core.jsploader.JspParserAPI;
+import org.netbeans.modules.web.core.jsploader.JspCompileUtil;
 import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
 import org.netbeans.modules.web.core.jsploader.WebXMLSupport;
 
@@ -384,28 +388,34 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return support.getTagLibEditorData().getBeanData();
     }
     
-    /** Returns a map of (taglib-uri; taglib-location) from web.xml 
-     * or null if WEB-INF/web.xml does not exist. 
+    
+    /**
+     * The mapping of the 'global' tag library URI to the location
+     * (resource path) of the TLD associated with that tag library.
+     * The location is returned as a String array:
+     *    [0] The location
+     *    [1] If the location is a jar file, this is the location
+     *        of the tld.
      */
-    public Map getTagLibraryMap() {
+    public Map getTagLibraryMappings() {
+        if (dobj == null)
+            return null;
         try {
-            if (dobj == null)
-                return null;
-            FileObject webXML = dobj.getPrimaryFile().getFileSystem().findResource("WEB-INF/web.xml");  // NOI18N
-            if (webXML == null)
-                return null;
-            DataObject webXMLdo = DataObject.find(webXML);
-            if (webXMLdo == null) // should never happen
-                return null;
-            WebXMLSupport sup = WebXMLSupport.getWebXMLSupport(webXMLdo);
-            if (sup == null) // should never happen
-                return null;
-            return sup.getTagLibraryMap();
+            JspParserAPI parser = JspCompileUtil.getJspParser();
+            if (parser == null) {
+                TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, 
+                new NullPointerException());
+            }
+            else {
+                return parser.getTagLibraryMappings(JspCompileUtil.getContextRoot(dobj.getPrimaryFile()));
+            }
         }
         catch (IOException e) {
-            return null;
+            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
         }
+        return null;
     }
+    
     
     private static void initCompletionData() {
         if (standardTagDatas == null) {
