@@ -17,8 +17,8 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="validation" name="Basic" executor="ide">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/test/projects/TestCreateProject.class"/>
-                <include name="org/netbeans/test/projects/TestFreeformProject.class"/>
+                <include name="projects/TestCreateProject.class"/>
+                <include name="projects/TestFreeformProject.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -26,7 +26,15 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="libraries,validation" name="Libraries" executor="ide">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/test/projects/TestLibraries.class"/>
+                <include name="projects/TestLibraries.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="platforms" name="Platforms" executor="ide">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="projects/TestCreatePlatforms.class"/>
             </patternset>
         </testset>
     </testbag>
