@@ -22,6 +22,7 @@ import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 
 public final class MutualExclusionSupport {
     private static final MutualExclusionSupport DEFAULT = new MutualExclusionSupport();
@@ -64,7 +65,11 @@ public final class MutualExclusionSupport {
         }
 
         if (isInUse) {
-            throw new IOException();
+            if (isShared) {
+                FSException.io("EXC_CannotGetSharedAccess", key.toString()); // NOI18N        
+            } else {
+                FSException.io("EXC_CannotGetExclusiveAccess", key.toString()); // NOI18N        
+            }
         }
 
 
