@@ -59,6 +59,8 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
     }
 
     public BiFeature( MethodElement me ) {
+        displayName = "\"\"";
+        name = me.getName().getName();
     }
 
     abstract String getCreationString();
@@ -566,8 +568,6 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
         super( me );
         element = me;
         this.me = me;
-        displayName = "\"\"";
-        name = me.getName().getName();
       }
       
       public String getToolTip() {
