@@ -27,7 +27,7 @@
       <TestLogAction Name="insert-break" Command="\0C" />
       <TestStringAction Name="string10" String="\0Cindex);" />
     </TestStep>
-    <TestCallAction Name="fooClass" Call="fooClassStep" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
+    <TestCallAction Name="FooClass" Call="fooClassStep" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -162,7 +162,7 @@
       <TestLogAction Name="insert-break" Command="\0C" />
       <TestStringAction Name="string33" String="\0C" />
     </TestStep>
-    <TestCallAction Name="objectMethods" Call="objectStep" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
+    <TestCallAction Name="ObjectMethods" Call="objectStep" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -222,7 +222,7 @@ o.wait(time, nanos);
       <TestLogAction Name="insert-break" Command="\0C" />
       <TestStringAction Name="string43" String="\0C" />
     </TestStep>
-    <TestCallAction Name="retypeClass" Call="retypeClassStep" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
+    <TestCallAction Name="RetypeClass" Call="retypeClassStep" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -302,7 +302,7 @@ v.add("Hi!");
       <TestLogAction Name="insert-break" Command="\0C" />
       <TestStringAction Name="string49" String="\0C" />
     </TestStep>
-    <TestCallAction Name="stayInvoked" Call="stayInvokedActions" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
+    <TestCallAction Name="StayInvoked" Call="stayInvokedActions" Set="javaSettings" Enable="true" Repeat="1" Delay="50">
       <Input>
         <![CDATA[""]]>
       </Input>

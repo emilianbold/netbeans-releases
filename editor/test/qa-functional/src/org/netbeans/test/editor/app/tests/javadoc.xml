@@ -112,7 +112,7 @@
       <TestSetKitAction Name="set196" Kit="JavaKit" />
       <TestSetJavaIEAction Name="setJavaIndentEngine208" IndentationEngine="Java Indentation Engine" LeadingStarInComment="false" AddNewLineBeforeParenthesis="false" AddSpaceBeforeBrackets="false" ExpandTabs="false" TabSize="4" />
     </TestStep>
-    <TestCallAction Name="inside" Call="insideStep" Set="CommonJavaSettings" Enable="true" Repeat="1" Delay="10">
+    <TestCallAction Name="Inside" Call="insideStep" Set="CommonJavaSettings" Enable="true" Repeat="1" Delay="10">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -144,7 +144,7 @@ public class Test {
         <![CDATA[""]]>
       </Comment>
     </TestCallAction>
-    <TestCallAction Name="start" Call="startStep" Set="CommonJavaSettings" Enable="true" Repeat="1" Delay="10">
+    <TestCallAction Name="Start" Call="startStep" Set="CommonJavaSettings" Enable="true" Repeat="1" Delay="10">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -164,7 +164,7 @@ public class Test {
         <![CDATA[""]]>
       </Comment>
     </TestCallAction>
-    <TestCallAction Name="end" Call="endStep" Set="CommonJavaSettings" Enable="true" Repeat="1" Delay="10">
+    <TestCallAction Name="End" Call="endStep" Set="CommonJavaSettings" Enable="true" Repeat="1" Delay="10">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -188,7 +188,7 @@ public class Test {
         <![CDATA[""]]>
       </Comment>
     </TestCallAction>
-    <TestCallAction Name="insideNoLeading" Call="insideStep" Set="NoLeadingStarSettings" Enable="true" Repeat="1" Delay="10">
+    <TestCallAction Name="InsideNoLeading" Call="insideStep" Set="NoLeadingStarSettings" Enable="true" Repeat="1" Delay="10">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -220,7 +220,7 @@ public class Test {
         <![CDATA[""]]>
       </Comment>
     </TestCallAction>
-    <TestCallAction Name="startNoLeading" Call="startStep" Set="NoLeadingStarSettings" Enable="true" Repeat="1" Delay="10">
+    <TestCallAction Name="StartNoLeading" Call="startStep" Set="NoLeadingStarSettings" Enable="true" Repeat="1" Delay="10">
       <Input>
         <![CDATA[""]]>
       </Input>
@@ -240,7 +240,7 @@ public class Test {
         <![CDATA[""]]>
       </Comment>
     </TestCallAction>
-    <TestCallAction Name="endNoLeading" Call="endStep" Set="NoLeadingStarSettings" Enable="true" Repeat="1" Delay="10">
+    <TestCallAction Name="EndNoLeading" Call="endStep" Set="NoLeadingStarSettings" Enable="true" Repeat="1" Delay="10">
       <Input>
         <![CDATA[""]]>
       </Input>
