@@ -13,10 +13,11 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.explorer.propertysheet.editors.*;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.*;
-import com.netbeans.developer.modules.loaders.form.forminfo.FormInfo;
+import com.netbeans.developer.modules.loaders.form.forminfo.*;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -275,6 +276,11 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   }
 
   public int getFormSizePolicy () {
+    if (formInfo instanceof JAppletFormInfo
+        || formInfo instanceof AppletFormInfo) {
+      return GEN_NOTHING;
+    }
+
     return formSizePolicy;
   }
 
@@ -413,29 +419,40 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
 
     };
-    
-    if ((formInfo instanceof JMenuBarContainer) || (formInfo instanceof MenuBarContainer)) {
-      Node.Property[] ret = new Node.Property [8];
 
-      ret[0] = createMenuProperty ();
-      ret[1] = sizeProperty;
-      ret[2] = positionProperty;
-      ret[3] = policyProperty;
-      ret[4] = genPositionProperty;
-      ret[5] = genSizeProperty;
-      ret[6] = genCenterProperty;
-      ret[7] = genEncodingProperty;
-      return ret;
-    } else {
-      Node.Property[] ret = new Node.Property [7];
-      ret[0] = sizeProperty;
-      ret[1] = positionProperty;
-      ret[2] = policyProperty;
-      ret[3] = genPositionProperty;
-      ret[4] = genSizeProperty;
-      ret[5] = genCenterProperty;
-      ret[6] = genEncodingProperty;
-      return ret;
+    // the order of if's is important, JAppletFormInfo implements
+    // JMenuBarContainer
+    
+    if (formInfo instanceof JAppletFormInfo) {
+      return new Node.Property[] { createMenuProperty(),
+                                   genEncodingProperty, };
+    }
+    else if (formInfo instanceof AppletFormInfo
+             || formInfo instanceof PanelFormInfo
+             || formInfo instanceof JPanelFormInfo) {
+      return new Node.Property[] { genEncodingProperty, };
+    }
+    else if (formInfo instanceof JMenuBarContainer
+        || formInfo instanceof MenuBarContainer) {
+      return new Node.Property[] { createMenuProperty(),
+                                   sizeProperty,
+                                   positionProperty,
+                                   policyProperty,
+                                   genPositionProperty,
+                                   genSizeProperty,
+                                   genCenterProperty,
+                                   genEncodingProperty,
+      };
+    }
+    else {
+      return new Node.Property[] { sizeProperty,
+                                   positionProperty,
+                                   policyProperty,
+                                   genPositionProperty,
+                                   genSizeProperty,
+                                   genCenterProperty,
+                                   genEncodingProperty,
+      };
     }
   }
 
@@ -564,12 +581,23 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       
       public void setAsText (String value) {
         String newValue = (String) encodingList.get (value);
-        if (newValue == null) newValue = value;
+        if (newValue == null)
+          newValue = value;
+
+        // XXX(-tdt) test if the encoding is supported by the JDK
+        
+        try {
+          String x = new String(new byte[0], 0, 0, newValue);
+        }
+        catch (java.io.UnsupportedEncodingException ex) {
+          throw new IllegalArgumentException(
+              FormEditor.getFormBundle().getString("ERR_UnsupportedEncoding"));
+        }
+        
         setValue (newValue);
         if (!getFormManager ().getFormObject ().isModified ()) {
           getFormManager ().getFormObject ().setModified (true);
         }
-        
       }
       public String getAsText () {
         return getValue ().toString ();
@@ -578,13 +606,21 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       public java.awt.Component getInPlaceCustomEditor () {
         final JComboBox eventBox = new JComboBox ();
         eventBox.setEditable(true);
-        for (java.util.Iterator iter = encodingList.keySet().iterator(); iter.hasNext(); ) {
+
+        java.util.Iterator iter = encodingList.keySet().iterator();
+        while (iter.hasNext())
           eventBox.addItem(iter.next());
-        }
-        eventBox.setSelectedItem(getAsText ());
+
+        eventBox.setSelectedItem(getAsText());
         eventBox.addActionListener (new java.awt.event.ActionListener () {
             public void actionPerformed (java.awt.event.ActionEvent e) {
-              setAsText ((String) eventBox.getEditor().getItem());
+              try {
+                setAsText((String) eventBox.getEditor().getItem());
+              }
+              catch (IllegalArgumentException ex) {
+                TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                    ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+              }
             }
           }
         );
@@ -604,6 +640,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  26   Gandalf-post-FCS1.24.1.0    3/20/00  Tran Duc Trung  FIX #6008: don't 
+ *       generate resize code for applet and panel
  *  25   Gandalf   1.24        1/13/00  Ian Formanek    NOI18N #2
  *  24   Gandalf   1.23        1/12/00  Pavel Buzek     I18N
  *  23   Gandalf   1.22        1/11/00  Pavel Buzek     
