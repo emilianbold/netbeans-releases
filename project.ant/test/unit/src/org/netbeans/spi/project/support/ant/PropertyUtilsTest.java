@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -542,6 +544,42 @@ public class PropertyUtilsTest extends NbTestCase {
         assertEquals("right main-1-b", "main-1-b-val+pre-b-val", defs.get("main-1-b"));
         assertSame("uncopied main-2-a", "main-2-a-val", defs.get("main-2-a"));
         assertEquals("right main-2-b", "main-2-b-val+main-1-b-val+pre-b-val", defs.get("main-2-b"));
+    }
+    
+    public void testDelegatingPropertyProvider() throws Exception {
+        // Used only by ProjectProperties, not publically, but still worth testing.
+        TestMutablePropertyProvider mpp = new TestMutablePropertyProvider(new HashMap());
+        DPP dpp = new DPP(mpp);
+        AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
+        dpp.addChangeListener(l);
+        assertEquals("initially empty", Collections.EMPTY_MAP, dpp.getProperties());
+        mpp.defs.put("foo", "bar");
+        mpp.mutated();
+        assertTrue("got a change", l.expect());
+        assertEquals("now right contents", Collections.singletonMap("foo", "bar"), dpp.getProperties());
+        TestMutablePropertyProvider mpp2 = new TestMutablePropertyProvider(new HashMap());
+        mpp2.defs.put("foo", "bar2");
+        dpp.setDelegate_(mpp2);
+        assertTrue("got a change from new delegate", l.expect());
+        assertEquals("right contents from new delegate", Collections.singletonMap("foo", "bar2"), dpp.getProperties());
+        mpp2.defs.put("foo", "bar3");
+        mpp2.mutated();
+        assertTrue("got a change in new delegate", l.expect());
+        assertEquals("right contents", Collections.singletonMap("foo", "bar3"), dpp.getProperties());
+        Reference r = new WeakReference(mpp);
+        mpp = null;
+        assertGC("old delegates can be collected", r);
+        r = new WeakReference(dpp);
+        dpp = null; // but not mpp2
+        assertGC("delegating PP can be collected when delegate is not", r); // #50572
+    }
+    private static final class DPP extends PropertyUtils.DelegatingPropertyProvider {
+        public DPP(PropertyProvider pp) {
+            super(pp);
+        }
+        public void setDelegate_(PropertyProvider pp) {
+            setDelegate(pp);
+        }
     }
     
     private static final class TestMutablePropertyProvider implements PropertyProvider {

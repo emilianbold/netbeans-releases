@@ -802,19 +802,24 @@ public class PropertyUtils {
         
         private PropertyProvider delegate;
         private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        private ChangeListener weakListener = null; // #50572: must be weak
         
         protected DelegatingPropertyProvider(PropertyProvider delegate) {
-            this.delegate = delegate;
-            delegate.addChangeListener(this);
+            assert delegate != null;
+            setDelegate(delegate);
         }
         
         protected final void setDelegate(PropertyProvider delegate) {
             if (delegate == this.delegate) {
                 return;
             }
-            this.delegate.removeChangeListener(this);
+            if (this.delegate != null) {
+                assert weakListener != null;
+                this.delegate.removeChangeListener(weakListener);
+            }
             this.delegate = delegate;
-            delegate.addChangeListener(this);
+            weakListener = WeakListeners.change(this, delegate);
+            delegate.addChangeListener(weakListener);
             fireChange();
         }
 
