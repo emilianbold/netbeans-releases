@@ -98,10 +98,18 @@ public class FormEditorModule extends ModuleInstall
     /** Module was uninstalled. */
 
     public void uninstalled() {
+        Repository rep = TopManager.getDefault().getRepository();
+
         if (repositoryListener != null) {
-            TopManager.getDefault().getRepository()
-                .removeRepositoryListener(repositoryListener);
+            rep.removeRepositoryListener(repositoryListener);
             repositoryListener = null;
+        }
+
+        java.util.Enumeration enum = rep.getFileSystems();
+        while (enum.hasMoreElements()) {
+            FileSystem fs = (FileSystem) enum.nextElement();
+            if (fs instanceof GlobalJarFileSystem)
+                rep.removeFileSystem(fs);
         }
     }
 }
