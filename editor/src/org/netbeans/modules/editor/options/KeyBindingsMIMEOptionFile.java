@@ -102,7 +102,8 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
         properties.clear();
         
         NodeList bind = rootElement.getElementsByTagName(TAG_BIND);
-        for (int i=0;i<bind.getLength();i++){
+        int len = bind.getLength();
+        for (int i=0; i<len; i++){
             Node node = bind.item(i);
             Element bindElement = (Element)node;
             

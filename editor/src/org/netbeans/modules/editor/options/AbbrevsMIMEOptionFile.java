@@ -73,7 +73,8 @@ public class AbbrevsMIMEOptionFile extends MIMEOptionFile{
         properties.clear();
         
         NodeList abbr = rootElement.getElementsByTagName(TAG_ABBREV);
-        for (int i=0;i<abbr.getLength();i++){
+        int len = abbr.getLength();
+        for (int i=0; i < len; i++){
             Node node = abbr.item(i);
             Element FCElement = (Element)node;
             

@@ -73,7 +73,8 @@ public class MacrosMIMEOptionFile extends MIMEOptionFile{
         properties.clear();
         
         NodeList mcr = rootElement.getElementsByTagName(TAG_MACRO);
-        for (int i=0;i<mcr.getLength();i++){
+        int len = mcr.getLength();
+        for (int i=0;i<len;i++){
             org.w3c.dom.Node node = mcr.item(i);
             Element FCElement = (Element)node;
             
