@@ -49,6 +49,9 @@ public final class Actions implements ActionProvider {
     public String[] getSupportedActions() {
         Element genldata = project.helper().getPrimaryConfigurationData(true);
         Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (actionsEl == null) {
+            return new String[0];
+        }
         List/*<Element>*/ actions = Util.findSubElements(actionsEl);
         List/*<String>*/ names = new ArrayList(actions.size());
         Iterator it = actions.iterator();
@@ -65,6 +68,9 @@ public final class Actions implements ActionProvider {
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         Element genldata = project.helper().getPrimaryConfigurationData(true);
         Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (actionsEl == null) {
+            throw new IllegalArgumentException("No commands supported"); // NOI18N
+        }
         List/*<Element>*/ actions = Util.findSubElements(actionsEl);
         Iterator it = actions.iterator();
         while (it.hasNext()) {
@@ -80,6 +86,9 @@ public final class Actions implements ActionProvider {
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         Element genldata = project.helper().getPrimaryConfigurationData(true);
         Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (actionsEl == null) {
+            throw new IllegalArgumentException("No commands supported"); // NOI18N
+        }
         List/*<Element>*/ actions = Util.findSubElements(actionsEl);
         Iterator it = actions.iterator();
         while (it.hasNext()) {
