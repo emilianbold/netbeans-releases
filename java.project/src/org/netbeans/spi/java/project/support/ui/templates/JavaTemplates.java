@@ -41,7 +41,7 @@ public class JavaTemplates {
         return new JavaTargetChooserPanel(project, folders);
     }
     
-    public static WizardDescriptor.InstantiatingIterator createJavaTemplatesIterator () {
+    public static WizardDescriptor.InstantiatingIterator createJavaTemplateIterator () {
         return new NewJavaFileWizardIterator ();
     }
     
