@@ -147,8 +147,8 @@ public class NbPath extends Task {
     }
     
     private void addPath(StringBuffer list, String path) {
-        if (0 != list.length() && ';' != list.charAt(list.length() - 1))
-            list.append(';');
+        if (0 != list.length() && File.pathSeparatorChar != list.charAt(list.length() - 1))
+            list.append(File.pathSeparatorChar);
         list.append(path.replace('\\', '/'));
     }
     
@@ -200,9 +200,9 @@ public class NbPath extends Task {
         if (-1 == iJar)
             return null;
         
-        iBegin = path.lastIndexOf(';', iJar);
+        iBegin = path.lastIndexOf(File.pathSeparatorChar, iJar);
         iBegin = -1 == iBegin ? 0 : iBegin + 1;
-        iEnd = path.indexOf(';', iJar);
+        iEnd = path.indexOf(File.pathSeparatorChar, iJar);
         iEnd = -1 == iEnd ? path.length() : iEnd;
         return path.substring(iBegin, iEnd);
     }
