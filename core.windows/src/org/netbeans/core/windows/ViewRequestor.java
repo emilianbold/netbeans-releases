@@ -81,15 +81,6 @@ class ViewRequestor {
     
     /** Schedules request into AWT. */
     public void scheduleRequest(ViewRequest request) {
-        if(SwingUtilities.isEventDispatchThread() && processingRequest) {
-            if(DEBUG) {
-                debugLog("Processing request, returning event"); // NOI18N
-                Debug.dumpStack(ViewRequestor.class);
-            }
-            // XXX Preventing loop caused by impl of TopComponent.requestFocus().
-            return;
-        }
-        
         if(request.type == View.CHANGE_VISIBILITY_CHANGED) {
             // Most important request, takes precedence to all others.
             postVisibilityRequest(request);

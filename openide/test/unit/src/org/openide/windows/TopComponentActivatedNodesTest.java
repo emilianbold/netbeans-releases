@@ -275,7 +275,7 @@ public class TopComponentActivatedNodesTest extends NbTestCase {
         L l = new L ();
         res.addLookupListener(l);
 
-        tc.requestFocus ();        
+        tc.requestActive ();        
         assertEquals ("Really activated", tc, TopComponent.getRegistry ().getActivated ());
         try {
             TopComponent.getRegistry ().addPropertyChangeListener (l);

@@ -39,7 +39,7 @@ public class EditContainerAction extends NodeAction {
                 FormDesigner designer = metacomp.getFormModel().getFormDesigner();
                 designer.setTopDesignComponent((RADVisualComponent)metacomp, true);
                 designer.open();
-                designer.requestFocus();
+                designer.requestActive();
 
                 editFormAction.setEnabled(
                     metacomp.getFormModel().getTopRADComponent() != metacomp);

@@ -519,7 +519,7 @@ public class PropertiesOpen extends CloneableOpenSupport
             // Instead of PropertiesOpen.super.open() so we get reference to TopComponent.
             // Note: It is strange for me that calling PropetiesOpen.this.openCloneableTopComponent throw s exception at run-time.
             final PropertiesCloneableTopComponent editor = (PropertiesCloneableTopComponent)PropertiesOpen.super.openCloneableTopComponent();
-            editor.requestFocus();
+            editor.requestActive();
             
             BundleStructure bs = propDataObject.getBundleStructure();
             // Find indexes.

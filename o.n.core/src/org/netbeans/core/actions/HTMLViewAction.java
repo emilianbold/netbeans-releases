@@ -45,7 +45,7 @@ public class HTMLViewAction extends CallableSystemAction {
                 TopComponent [] comps = mode.getTopComponents ();
                 if (comps.length > 0) {
                     comps[0].open ();
-                    comps[0].requestFocus ();
+                    comps[0].requestActive ();
                     notFound = false;
                 }
             }
@@ -59,7 +59,7 @@ public class HTMLViewAction extends CallableSystemAction {
                             TopComponent [] comps = mode.getTopComponents ();
                             if (comps.length > 0) {
                                 comps[0].open ();
-                                comps[0].requestFocus ();
+                                comps[0].requestActive ();
                                 notFound = false;
                                 break;
                             }

@@ -44,7 +44,7 @@ public class EditFormAction extends NodeAction {
                 FormDesigner designer = metacomp.getFormModel().getFormDesigner();
                 designer.resetTopDesignComponent(true);
                 designer.open();
-                designer.requestFocus();
+                designer.requestActive();
             }
         }
     }

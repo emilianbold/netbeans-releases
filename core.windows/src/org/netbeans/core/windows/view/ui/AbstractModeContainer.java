@@ -137,8 +137,8 @@ public abstract class AbstractModeContainer implements ModeContainer {
         TopComponent selectedTopComponent = tabbedHandler.getSelectedTopComponent();
         if(selectedTopComponent != null) {
             if(SwingUtilities.findFocusOwner(selectedTopComponent) == null) {
-                // XXX TopComponent is not focusable by default, request default focus.
-                selectedTopComponent.requestDefaultFocus();
+                //#39204: Call requestFocusInWindow to avoid changing active window
+                selectedTopComponent.requestFocusInWindow();
             }
         }
     }

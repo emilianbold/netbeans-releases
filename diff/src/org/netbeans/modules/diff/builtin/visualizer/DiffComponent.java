@@ -154,7 +154,6 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     public void open(Workspace workspace) {
         super.open(workspace);
         diffPanel.open();
-        requestFocus();
         if (currentDiffLine < 0) {
             currentDiffLine = 0;
             showCurrentLine();
@@ -167,6 +166,14 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     public void requestFocus() {
         super.requestFocus();
         diffPanel.requestFocus();
+    }
+    
+    /**
+     * Transfer the focus to the diff panel.
+     */
+    public boolean requestFocusInWindow() {
+        super.requestFocus();
+        return diffPanel.requestFocusInWindow();
     }
     
     public void addNotify() {

@@ -131,10 +131,11 @@ public class DiffAction extends NodeAction {
                 public void run() {
                     if (ftp instanceof TopComponent) {
                         ((TopComponent) ftp).open();
+                        ((TopComponent) ftp).requestActive();
                     } else {
                         ftp.setVisible(true);
+                        ftp.requestFocusInWindow();
                     }
-                    ftp.requestFocus();
                 }
             });
         }

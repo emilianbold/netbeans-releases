@@ -181,7 +181,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
             if (toBeActivated != null) {
                 Mode mode = workspace.findMode(toBeActivated);
                 if (mode != null) {
-                    toBeActivated.focusView();
+                    toBeActivated.requestActive();
                 }
             }
         } else {
@@ -192,7 +192,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
                     public void run () {
                         Mode mode = localWorkspace.findMode(localActivated);
                         if (mode != null) {
-                            localActivated.focusView();
+                            localActivated.requestActive();
                         }
                     }
                 });
@@ -516,6 +516,16 @@ public final class NbMainExplorer extends CloneableTopComponent {
             }
         }
         
+        /** Transfer focus to view. */
+        public boolean requestFocusInWindow () {
+            super.requestFocusInWindow();
+            if (view != null) {
+                return view.requestFocusInWindow();
+            } else {
+                return false;
+            }
+        }
+        
         /** Initializes gui of this component. Subclasses can override
         * this method to install their own gui.
         * @return Tree view that will serve as main view for this explorer.
@@ -574,12 +584,6 @@ public final class NbMainExplorer extends CloneableTopComponent {
             }
         }
         
-        void focusView() {
-            if (view != null) {
-                view.requestFocus();
-            }
-        }
-
         /** Ensures that component is valid before opening */
         public void open (Workspace workspace) {
             setValidRootContext();

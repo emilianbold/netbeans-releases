@@ -204,6 +204,13 @@ public final class NbSheet extends TopComponent {
         super.requestFocus();
         propertySheet.requestFocus();
     }
+    
+    /** Transfer the focus to the property sheet.
+     */
+    public boolean requestFocusInWindow () {
+        super.requestFocusInWindow();
+        return propertySheet.requestFocusInWindow();
+    }
 
     /** always open global property sheet in its special mode */
     public void open (Workspace workspace) {
