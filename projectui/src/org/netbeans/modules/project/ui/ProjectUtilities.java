@@ -13,14 +13,18 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.util.*;
 import java.io.File;
 
 import javax.swing.Action;
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -196,5 +200,44 @@ public class ProjectUtilities {
         
         return result;
     }        
+    
+    
+    public static class WaitCursor implements Runnable {
+        
+        private boolean show;
+        
+        private WaitCursor( boolean show ) {
+            this.show = show;
+        }
+       
+        public static void show() {            
+            invoke( new WaitCursor( true ) );
+        }
+        
+        public static void hide() {
+            invoke( new WaitCursor( false ) );            
+        }
+        
+        private static void invoke( WaitCursor wc ) {
+            if ( SwingUtilities.isEventDispatchThread() ) {
+                wc.run();
+            }
+            else {
+                SwingUtilities.invokeLater( wc );
+            }
+        }
+        
+        public void run() {
+            try {            
+                JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
+                Component c = f.getGlassPane ();
+                c.setVisible ( show );
+                c.setCursor (show ? Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR) : null);
+            } 
+            catch (NullPointerException npe) {
+                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
+            }
+        }
+    }
     
 }

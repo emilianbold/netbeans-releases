@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.NewProjectWizard;
@@ -30,9 +31,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
-public class NewProject extends BasicAction {
+public class NewProject extends BasicAction implements Runnable {
         
     private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newProject.gif" ) ); //NOI18N    
     private static final String NAME = NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Name" ); // NOI18N
@@ -40,10 +42,13 @@ public class NewProject extends BasicAction {
     private boolean isWelcome = false;
     
     private static NewProjectWizard wizard;
+    
+    private RequestProcessor.Task bodyTask;
 
     public NewProject() {
         super( NAME, ICON );
         putValue("iconBase","org/netbeans/modules/project/ui/resources/newProject.gif"); //NOI18N
+        bodyTask = new RequestProcessor( "NewProjectBody" ).create( this ); // NOI18N
     }
     
     public static NewProject newSample() {
@@ -54,7 +59,15 @@ public class NewProject extends BasicAction {
     }
 
     public void actionPerformed( ActionEvent evt ) {
-
+        bodyTask.schedule( 0 );
+        
+        if ( "waitFinished".equals( evt.getActionCommand() ) ) {
+            bodyTask.waitFinished();
+        }
+    }    
+        
+    public void run() {
+        
         if ( wizard == null ) {
             FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Project" ); //NOI18N                
             wizard = new NewProjectWizard(fo);
@@ -71,58 +84,77 @@ public class NewProject extends BasicAction {
             wizard.putProperty( "PRESELECT_CATEGORY", null ); 
         }
 
+        
         try {
-            Set newObjects = wizard.instantiate ();
+                        
+            final Set newObjects = wizard.instantiate ();            
             Object mainProperty = wizard.getProperty( /* XXX Define somewhere */ "setAsMain" ); // NOI18N
             boolean setFirstMain = true;
             if ( mainProperty instanceof Boolean ) {
                 setFirstMain = ((Boolean)mainProperty).booleanValue();
             }
+            final boolean setFirstMainFinal = setFirstMain; 
+            
+            SwingUtilities.invokeLater( new Runnable() {
+            
+                public void run() {
+                    ProjectUtilities.WaitCursor.show();
+                    
+                    if ( newObjects != null && !newObjects.isEmpty() ) { 
+                        // First. Open all returned projects in the GUI.
 
-            if ( newObjects != null && !newObjects.isEmpty() ) { 
-                // First. Open all returned projects in the GUI.
-                
-                LinkedList filesToOpen = new LinkedList();
-                
-                for( Iterator it = newObjects.iterator(); it.hasNext(); ) {
-                    Object obj = it.next ();
-                    FileObject newFo = null;
-                    if (obj instanceof DataObject) {
-                        // old style way with Set/*DataObject*/
-                        final DataObject newDo = (DataObject)obj;
-                        
-                        // check if it's project's directory
-                        if (newDo.getPrimaryFile ().isFolder ()) {
-                            Project p = ProjectManager.getDefault().findProject( newDo.getPrimaryFile () );                            
-                            if ( p != null ) {
-                                // It is a project open it
-                                OpenProjectList.getDefault().open( p, true );
-                                if ( setFirstMain ) {
-                                    OpenProjectList.getDefault().setMainProject( p );
-                                    setFirstMain = false;
+                        LinkedList filesToOpen = new LinkedList();
+
+                        for( Iterator it = newObjects.iterator(); it.hasNext(); ) {
+                            Object obj = it.next ();
+                            FileObject newFo = null;
+                            if (obj instanceof DataObject) {
+                                // old style way with Set/*DataObject*/
+                                final DataObject newDo = (DataObject)obj;
+                                boolean mainProjectSet = false;
+                                
+                                // check if it's project's directory
+                                if (newDo.getPrimaryFile ().isFolder ()) {
+                                    try {
+                                        Project p = ProjectManager.getDefault().findProject( newDo.getPrimaryFile () );                            
+                                        if ( p != null ) {
+                                            // It is a project open it
+                                            OpenProjectList.getDefault().open( p, true );
+                                            if ( setFirstMainFinal && !mainProjectSet ) {
+                                                OpenProjectList.getDefault().setMainProject( p );
+                                                mainProjectSet = true;
+                                            }
+                                        }
+                                        else {
+                                            // Just a folder to expand
+                                            filesToOpen.add( newDo );
+                                        }
+                                    }
+                                    catch ( IOException e ) {
+                                        continue;
+                                    }
+                                } else {                            
+                                    filesToOpen.add( newDo );                            
                                 }
+                            } else {
+                                assert false : obj;
                             }
-                            else {
-                                // Just a folder to expand
-                                filesToOpen.add( newDo );
-                            }
-                        } else {                            
-                            filesToOpen.add( newDo );                            
                         }
-                    } else {
-                        assert false : obj;
+                        // Second open the files                
+                        for( Iterator it = filesToOpen.iterator(); it.hasNext(); ) {
+                            ProjectUtilities.openAndSelectNewObject( (DataObject)it.next() );
+                        }
+
                     }
+                    ProjectUtilities.WaitCursor.hide();
                 }
-                // Second open the files                
-                for( Iterator it = filesToOpen.iterator(); it.hasNext(); ) {
-                    ProjectUtilities.openAndSelectNewObject( (DataObject)it.next() );
-                }
-                
-            }
+            } );
         }
         catch ( IOException e ) {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
         }
+        
+        
     }
     
 }
