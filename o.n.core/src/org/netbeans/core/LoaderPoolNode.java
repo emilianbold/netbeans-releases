@@ -90,8 +90,8 @@ public final class LoaderPoolNode extends AbstractNode {
         
         myChildren = (LoaderChildren)getChildren ();
         
-        setName(NbBundle.getBundle(LoaderPoolNode.class).
-                getString("CTL_LoaderPool"));
+        setName("LoaderPoolNode"); // NOI18N
+        setDisplayName(NbBundle.getMessage(LoaderPoolNode.class, "CTL_LoaderPool"));
         setIconBase(LOADER_POOL_ICON_BASE);
 
         getCookieSet ().add (new Index ());
@@ -224,6 +224,9 @@ public final class LoaderPoolNode extends AbstractNode {
                 throw new IllegalStateException("No such loader: " + loaderClassName); // NOI18N
             }
             String[] repClassNames = (String[])e.getValue();
+            if (repClassNames == null) {
+                throw new IllegalStateException("Null Install-" + (before ? "Before" : "After") + " for " + loaderClassName); // NOI18N
+            }
             for (int i = 0; i < repClassNames.length; i++) {
                 String repClassName = repClassNames[i];
                 DataLoader l2 = (DataLoader)repNames2Loaders.get(repClassName);
@@ -283,8 +286,9 @@ public final class LoaderPoolNode extends AbstractNode {
     private static synchronized void writePool (ObjectOutputStream oos)
     throws IOException {
         if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("writePool");
-        oos.writeObject (installBefores);
-        oos.writeObject (installAfters);
+        // No longer bother storing these (#29671):
+        oos.writeObject (new HashMap()/*installBefores*/);
+        oos.writeObject (new HashMap()/*installAfters*/);
         
         // Note which module each loader came from.
         Collection modules = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances(); // Collection<ModuleInfo>
@@ -381,21 +385,8 @@ public final class LoaderPoolNode extends AbstractNode {
     */
     private static synchronized void readPool (ObjectInputStream ois)
     throws IOException, ClassNotFoundException {
-        // #13880: keep any manifest-provided install before/after information,
-        // rather than overwriting the map with a (possibly incomplete or obsolete)
-        // deexternalized mapping.
-        Map oldInstallBefores = installBefores;
-        Map oldInstallAfters = installAfters;
-        installBefores = (Map) ois.readObject ();
-        installAfters = (Map) ois.readObject ();
-        boolean changedInstallBefores = !installBefores.equals(oldInstallBefores);
-        if (changedInstallBefores) {
-            installBefores.putAll(oldInstallBefores);
-        }
-        boolean changedInstallAfters = !installAfters.equals(oldInstallAfters);
-        if (changedInstallAfters) {
-            installAfters.putAll(oldInstallAfters);
-        }
+        /*installBefores = (Map)*/ois.readObject ();
+        /*installAfters = (Map)*/ois.readObject ();
 
         HashSet classes = new HashSet ();
         LinkedList l = new LinkedList ();
@@ -528,23 +519,19 @@ public final class LoaderPoolNode extends AbstractNode {
         // now (and the pool resorted just in case).
 
         Iterator it = loaders.iterator ();
-        // #28126: if the set of loaders has not changed, but the
-        // ordering attrs on a loader has, resort.
-        boolean resort = changedInstallBefores || changedInstallAfters;
         while (it.hasNext ()) {
             DataLoader loader = (DataLoader)it.next ();
             if (!classes.contains (loader.getClass ())) {
                 l.add (loader);
-                resort = true;
             }
         }
         if (l.size() > new HashSet(l).size()) throw new IllegalStateException("Duplicates in " + l); // NOI18N
 
         loaders = l;
-        if (resort)
-            resort ();
-        else
-            update ();
+        // Always "resort": if the existing order was in fact compatible with the
+        // current install-befores/afters, then this is no op (besides firing an
+        // update event). Cf. #29671.
+        resort ();
         
         if (deserExc != null) {
             throw new SafeException (deserExc);
@@ -683,11 +670,14 @@ public final class LoaderPoolNode extends AbstractNode {
         */
         public LoaderPoolItemNode(DataLoader loader) throws IntrospectionException {
             super(loader);
+            setSynchronizeName (false);
+            String displayName = getDisplayName();
+            setName(loader.getClass().getName());
             isSystem = ! loaders.contains (loader);
             if (isSystem) {
-                setSynchronizeName (false);
-                setDisplayName (MessageFormat.format (NbBundle.getBundle (LoaderPoolNode.class).getString ("LBL_system_data_loader"),
-                                                      new Object[] { getDisplayName () }));
+                setDisplayName(NbBundle.getMessage(LoaderPoolNode.class, "LBL_system_data_loader", displayName));
+            } else {
+                setDisplayName(displayName);
             }
         }
 
@@ -788,7 +778,7 @@ public final class LoaderPoolNode extends AbstractNode {
         implements PropertyChangeListener, Runnable {
         private static final long serialVersionUID =-8488524097175567566L;
 
-        private RequestProcessor.Task fireTask = RequestProcessor.createRequest (this);
+        private transient RequestProcessor.Task fireTask = RequestProcessor.getDefault().create(this);
 
         /** Enumerates all loaders. Loaders are taken from children
         * structure of LoaderPoolNode. */
