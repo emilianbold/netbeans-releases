@@ -16,6 +16,8 @@ package org.netbeans.modules.java.j2seproject.ui.wizards;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
@@ -29,6 +31,7 @@ import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -125,7 +128,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         }
         FileObject dir = FileUtil.toFileObject(dirF);
         if (type == TYPE_APP) {
-            FileObject manifest = dir.createData(MANIFEST_FILE);
+            createManifest(dir, MANIFEST_FILE);
         }
         Project p = ProjectManager.getDefault().findProject(dir);
         
@@ -231,6 +234,31 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
             }
         }
         return builder.toString();
+    }
+    
+    /**
+     * Create a new application manifest file with minimal initial contents.
+     * @param dir the directory to create it in
+     * @param path the relative path of the file
+     * @throws IOException in case of problems
+     */
+    private static void createManifest(FileObject dir, String path) throws IOException {
+        FileObject manifest = dir.createData(MANIFEST_FILE);
+        FileLock lock = manifest.lock();
+        try {
+            OutputStream os = manifest.getOutputStream(lock);
+            try {
+                PrintWriter pw = new PrintWriter(os);
+                pw.println("Manifest-Version: 1.0"); // NOI18N
+                pw.println("X-COMMENT: Main-Class will be added automatically by build"); // NOI18N
+                pw.println(); // safest to end in \n\n due to JRE parsing bug
+                pw.flush();
+            } finally {
+                os.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
     }
     
 }
