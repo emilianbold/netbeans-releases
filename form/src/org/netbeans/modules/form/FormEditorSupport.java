@@ -1310,23 +1310,10 @@ public class FormEditorSupport extends JavaEditor
         }
 
         if (designerSelected && !Boolean.TRUE.equals(groupVisible)) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    group.open();
-                }
-            });
+            group.open();
         }
         else if (!designerSelected && !Boolean.FALSE.equals(groupVisible)) {
-            // Workaround for issue 46694 (bug 5057174)
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            group.close();
-                        }
-                    });
-                }
-            });
+            group.close();
         }
 
         groupVisible = designerSelected ? Boolean.TRUE : Boolean.FALSE;
