@@ -122,7 +122,7 @@ public class TreeTableOperator extends JTableOperator {
             super(new Class[] {RenderedTreeOperator.class});
         }
         
-        /** Presses mouse on operator given by {@link RenderedTreeOperator#getRealOperator} method.
+        /** Presses mouse on operator given by {@link TreeTableOperator.RenderedTreeOperator#getRealOperator getRealOperator()} method.
          * @param oper operator which delegates events on an real operator
          * @param x x position of mouse operation
          * @param y y position of mouse operation
@@ -135,7 +135,7 @@ public class TreeTableOperator extends JTableOperator {
             DriverManager.getMouseDriver(realOper).pressMouse(realOper, x, y, mouseButton, modifiers);
         }
         
-        /** Releases mouse on operator given by {@link RenderedTreeOperator#getRealOperator} method.
+        /** Releases mouse on operator given by {@link TreeTableOperator.RenderedTreeOperator#getRealOperator getRealOperator()} method.
          * @param oper operator which delegates events on an real operator
          * @param x x position of mouse operation
          * @param y y position of mouse operation
@@ -148,7 +148,7 @@ public class TreeTableOperator extends JTableOperator {
             DriverManager.getMouseDriver(realOper).releaseMouse(realOper, x, y, mouseButton, modifiers);
         }
 
-        /** Clicks mouse on operator given by {@link RenderedTreeOperator#getRealOperator} method.
+        /** Clicks mouse on operator given by {@link TreeTableOperator.RenderedTreeOperator#getRealOperator getRealOperator()} method.
          * @param oper operator which delegates events on an real operator
          * @param x x position of mouse operation
          * @param y y position of mouse operation
@@ -164,7 +164,7 @@ public class TreeTableOperator extends JTableOperator {
             DriverManager.getMouseDriver(realOper).clickMouse(realOper, x, y, clickCount, mouseButton, modifiers, mouseClick);
         }
 
-        /** Moves mouse on operator given by {@link RenderedTreeOperator#getRealOperator} method.
+        /** Moves mouse on operator given by {@link TreeTableOperator.RenderedTreeOperator#getRealOperator getRealOperator()} method.
          * @param oper operator which delegates events on an real operator
          * @param x x position of mouse operation
          * @param y y position of mouse operation
@@ -175,7 +175,7 @@ public class TreeTableOperator extends JTableOperator {
             DriverManager.getMouseDriver(realOper).moveMouse(realOper, x, y);
         }
         
-        /** Drags mouse on operator given by {@link RenderedTreeOperator#getRealOperator} method.
+        /** Drags mouse on operator given by {@link TreeTableOperator.RenderedTreeOperator#getRealOperator getRealOperator()} method.
          * @param oper operator which delegates events on an real operator
          * @param x x position of mouse operation
          * @param y y position of mouse operation
@@ -189,7 +189,7 @@ public class TreeTableOperator extends JTableOperator {
         }
         
         /** Provides drag and drop operation on operator given by 
-         * {@link RenderedTreeOperator#getRealOperator} method.
+         * {@link TreeTableOperator.RenderedTreeOperator#getRealOperator getRealOperator()} method.
          * @param oper operator which delegates events on an real operator
          * @param start_x x position where to drag
          * @param start_y y position where to drag
@@ -208,7 +208,7 @@ public class TreeTableOperator extends JTableOperator {
                 mouseButton, modifiers, before, after);
         }
         
-        /** Enters mouse on operator given by {@link RenderedTreeOperator#getRealOperator} method.
+        /** Enters mouse on operator given by {@link TreeTableOperator.RenderedTreeOperator#getRealOperator getRealOperator()} method.
          * @param oper operator which delegates events on an real operator
          */        
         public void enterMouse(ComponentOperator oper){
@@ -217,7 +217,7 @@ public class TreeTableOperator extends JTableOperator {
             DriverManager.getMouseDriver(realOper).enterMouse(realOper);
         }
         
-        /** Exits mouse on operator given by {@link RenderedTreeOperator#getRealOperator} method.
+        /** Exits mouse on operator given by {@link TreeTableOperator.RenderedTreeOperator#getRealOperator getRealOperator()} method.
          * @param oper operator which delegates events on an real operator
          */        
         public void exitMouse(ComponentOperator oper) {
