@@ -89,6 +89,10 @@ public class EarProjectGenerator {
         AntProjectHelper h = setupProject (fo, name, j2eeLevel, serverInstanceId);
         fo = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
         FileObject webInfFO = fo.createFolder(DEFAULT_DOC_BASE_FOLDER); // NOI18N
+        
+        //create a default manifest
+        FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-j2ee-earproject/MANIFEST.MF"), webInfFO, "MANIFEST"); //NOI18N
+        
         //FileObject webInfFO = webFO.createFolder(META_INF); // NOI18N
         // create web.xml
         // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
