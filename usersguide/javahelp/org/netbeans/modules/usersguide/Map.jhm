@@ -1281,11 +1281,13 @@
    <mapID target="org.netbeans.editor.ext.JCView" url="pending.html" />
 
    <mapID target="org.openide.loaders.TemplateWizard1.Mount" url="filesystems/filesystems_mounting.html" />
+
+<!--removed in NB 3.6
    <mapID target="org.netbeans.modules.wizard.ClassProperties" url="java/newwizard_panel3.html" />
    <mapID target="org.netbeans.modules.java.wizard.FieldDefs" url="java/newwizard_panel4.html" />
    <mapID target="org.netbeans.modules.java.wizard.OverrideMethods" url="java/newwizard_panel5.html" />
    <mapID target="org.netbeans.modules.java.wizard.MethodDefs" url="java/newwizard_panel6.html" />
-   
+-->   
 
    <mapID target="org.openide.loaders.TemplateWizard1.Templates" url="objects/objects_new.html" />
    <mapID target="org.openide.loaders.TemplateWizard2" url="objects/objects_new.html" />
