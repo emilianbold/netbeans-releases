@@ -108,6 +108,9 @@ public class Util {
      * @return a string that may contain &lt;", "&gt;", "&apos;", "&quot;" and "&amp;"
      */
     public static String replaceCharsWithEntityStrings(String value) {
+    	if (value == null) {
+    		return null;
+    	}
         StringBuffer replBuf = new StringBuffer(value.length());
         for (int ind = 0; ind < value.length(); ind++) {
             boolean charReplaced = false;
