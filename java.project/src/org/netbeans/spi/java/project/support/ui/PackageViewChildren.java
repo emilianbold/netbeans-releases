@@ -472,7 +472,8 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     
         
         public String getName() {
-            return FileUtil.getRelativePath(root, dataFolder.getPrimaryFile()).replace('/', '.'); // NOI18N
+            String relativePath = FileUtil.getRelativePath(root, dataFolder.getPrimaryFile());
+            return relativePath == null ?  null : relativePath.replace('/', '.'); // NOI18N
         }
         
         public Action[] getActions( boolean context ) {
@@ -700,7 +701,10 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
          */
         private String computePackageName(boolean truncate) {
             String path = FileUtil.getRelativePath( root, dataFolder.getPrimaryFile());
-            if (path.length() == 0) {
+            if ( path == null ) {
+                return ""; // NOI18N
+            }
+            else if (path.length() == 0) {
                 return NbBundle.getMessage(PackageViewChildren.class, "LBL_DefaultPackage"); // NOI18N
             } else {
                 String pkg = path.replace('/', '.'); // NOI18N
