@@ -17,7 +17,7 @@
 <xsl:include href="library.xsl"/>
 
 <xsl:param name="truncated"/>
-<xsl:param name="includeExceptions"/>
+<xsl:param name="includeExceptions">true</xsl:param>
 
 <xsl:template match="/">
 	<xsl:call-template name="html-page">

@@ -101,6 +101,9 @@
 			 	<B>Testing Host(s)</B>
 			</TD>
 		</TR>
+		
+		
+		
 				
 		<xsl:variable name="uniqueBuildList" select="//ManagedReport[generate-id(.)=generate-id(key('build',./@build)[1])]"/>
 		
@@ -126,7 +129,13 @@
 								
 				<TR align="center">
 					<xsl:if test="position() = 1">
-						<TD bgcolor="#A6CAF0" rowspan="{$platformCount}"><B><xsl:value-of select="@build"/></B></TD>
+						<TD bgcolor="#A6CAF0" rowspan="{$platformCount}">
+							<B>
+								<xsl:variable name="singleBuildURL" select="concat(@build,'/',//ManagedReport/@testingGroup,'-',//ManagedReport/@testedType,'/index.html')"/>
+								<xsl:variable name="normalizedSingleBuildURL" select="java:org.netbeans.xtest.util.FileUtils.normalizeName($singleBuildURL)"/>	
+								<A HREF="{$normalizedSingleBuildURL}"><xsl:value-of select="@build"/></A>
+							</B>
+						</TD>
 						<xsl:variable name="buildPassed" select="sum(key('build',$currentBuild)/@testsPass)"/>
 						<xsl:variable name="buildTotal" select="sum(key('build',$currentBuild)/@testsTotal)"/>						
 						<TD class="pass" rowspan="{$platformCount}"><xsl:value-of select="format-number($buildPassed div $buildTotal,'0.00%')"/></TD>
