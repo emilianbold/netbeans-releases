@@ -71,18 +71,18 @@ public class JspMultiSyntaxTest extends NbTestCase {
                              "${requestScope['javax.servlet.forward.servlet_path']}\n</html>");
     }
     
-//    public void testBug53102() {
-//        dumpTokensForContent("<html>\n<head />\n<he");
-//    }
-//     
-//    public void testBug52942() {
-//        dumpTokensForContent("<a href=\"<%= 1 %>\"  >Destination</a>");
-//    }
-//    
-//    public void testBugWrongJsptagType() {
-//        dumpTokensForContent("\n<a >\n");
-//    }
-//    
+    public void testBug53102() {
+        dumpTokensForContent("<html>\n<head />\n<he");
+    }
+     
+    public void testBug52942() {
+        dumpTokensForContent("<a href=\"<%= 1 %>\"  >Destination</a>");
+    }
+    
+    public void testBugWrongJsptagType() {
+        dumpTokensForContent("\n<a >\n");
+    }
+    
     public void test50283_1() {
         dumpTokensForContent("< /jsp:element >"); //should be marked as an error
     }
