@@ -119,7 +119,7 @@ public class NbTopManager extends TopManager {
   /** Creates new dialog.
   */
   public Dialog createDialog (DialogDescriptor d) {
-    throw new com.netbeans.ide.util.NotImplementedException ();
+    return new NbDialog (d);
   }
 
   /** Interesting places.
