@@ -360,7 +360,7 @@ is divided into following sections:
                     <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
                 </copy>
                 <copy todir="${{build.web.dir}}">
-                  <fileset excludes="WEB-INF/classes/**,${{build.web.excludes}}" dir="${{web.docbase.dir}}"/>
+                  <fileset excludes="${{build.web.excludes}}" dir="${{web.docbase.dir}}"/>
                 </copy>
                 <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-libraries/web:library[web:path-in-war]">
                     <xsl:variable name="copyto" select=" web:path-in-war"/>
