@@ -65,7 +65,7 @@ public class FormDesigner extends TopComponent
     private VisualReplicator replicator = new VisualReplicator(
         null,
         new Class[] { Window.class, Applet.class,
-                      RootPaneContainer.class,
+//                      RootPaneContainer.class,
                       MenuComponent.class },
         VisualReplicator.ATTACH_FAKE_PEERS | VisualReplicator.DISABLE_FOCUSING);
 
@@ -824,8 +824,10 @@ public class FormDesigner extends TopComponent
                     componentLayer.removeAll();
                     replicator.setTopMetaComponent(topDesignComponent);
                     Component formClone = (Component) replicator.createClone();
-                    if (formClone != null)
+                    if (formClone != null) {
+                        formClone.setVisible(true);
                         componentLayer.add(formClone, BorderLayout.CENTER);
+                    }
                     updateName(formModel.getName());
                     break;
 
