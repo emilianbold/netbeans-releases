@@ -49,19 +49,13 @@ public class VariablesTableModel implements TableModel, Constants {
 
             if (row instanceof ObjectVariable)
                 try {
-                    return bold (
-                        row,
-                        ((ObjectVariable) row).getToStringValue ()
-                    );
+                    return ((ObjectVariable) row).getToStringValue ();
                 } catch (InvalidExpressionException ex) {
                     return getMessage (ex);
                 }
             else
             if (row instanceof Variable)
-                return bold (
-                    row, 
-                    ((Variable) row).getValue ()
-                );
+                return ((Variable) row).getValue ();
         } else
         if ( columnID.equals (LOCALS_TYPE_COLUMN_ID) ||
              columnID.equals (WATCH_TYPE_COLUMN_ID)
@@ -77,10 +71,10 @@ public class VariablesTableModel implements TableModel, Constants {
                 String e = w.getExceptionDescription ();
                 if (e != null)
                     return ">" + e + "<";
-                return bold (w, w.getValue ());
+                return w.getValue ();
             } else 
             if (row instanceof Variable)
-                return bold (row, ((Variable) row).getValue ());
+                return ((Variable) row).getValue ();
         }
         throw new UnknownTypeException (row);
     }
@@ -116,10 +110,11 @@ public class VariablesTableModel implements TableModel, Constants {
                 try {
                     ((LocalVariable) row).setValue ((String) value);
                 } catch (InvalidExpressionException e) {
-                    NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message (
-                        e.getLocalizedMessage (), 
-                        NotifyDescriptor.WARNING_MESSAGE
-                    );
+                    NotifyDescriptor.Message descriptor = 
+                        new NotifyDescriptor.Message (
+                            e.getLocalizedMessage (), 
+                            NotifyDescriptor.WARNING_MESSAGE
+                        );
                     DialogDisplayer.getDefault ().notify (descriptor);
                 }
                 return;
@@ -132,10 +127,11 @@ public class VariablesTableModel implements TableModel, Constants {
                 try {
                     ((Field) row).setValue ((String) value);
                 } catch (InvalidExpressionException e) {
-                    NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message (
-                        e.getLocalizedMessage (), 
-                        NotifyDescriptor.WARNING_MESSAGE
-                    );
+                    NotifyDescriptor.Message descriptor = 
+                        new NotifyDescriptor.Message (
+                            e.getLocalizedMessage (), 
+                            NotifyDescriptor.WARNING_MESSAGE
+                        );
                     DialogDisplayer.getDefault ().notify (descriptor);
                 }
                 return;
@@ -148,10 +144,11 @@ public class VariablesTableModel implements TableModel, Constants {
                 try {
                     ((JPDAWatch) row).setValue ((String) value);
                 } catch (InvalidExpressionException e) {
-                    NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message (
-                        e.getLocalizedMessage (), 
-                        NotifyDescriptor.WARNING_MESSAGE
-                    );
+                    NotifyDescriptor.Message descriptor = 
+                        new NotifyDescriptor.Message (
+                            e.getLocalizedMessage (), 
+                            NotifyDescriptor.WARNING_MESSAGE
+                        );
                     DialogDisplayer.getDefault ().notify (descriptor);
                 }
                 return;
@@ -176,7 +173,7 @@ public class VariablesTableModel implements TableModel, Constants {
     public void removeTreeModelListener (TreeModelListener l) {
     }
     
-    private static String getShort (String c) {
+    static String getShort (String c) {
         int i = c.lastIndexOf ('.');
         if (i < 0) return c;
         return c.substring (i + 1);
@@ -187,29 +184,5 @@ public class VariablesTableModel implements TableModel, Constants {
         if (m == null)
             m = e.getMessage ();
         return ">" + m + "<";
-    }
-    
-    private WeakHashMap variableToValue = new WeakHashMap ();
-    
-    private String bold (Object variable, String value) {
-        return value;
-//        if (variableToValue.containsKey (variable)) {
-//            String oldValue = (String) variableToValue.get (variable);
-//            System.out.println("bold " + value + " : contains " + oldValue);
-//            Thread.dumpStack();
-//            System.out.println("");
-//            if (oldValue == value) return value;
-//            if ( (oldValue != null) && 
-//                 oldValue.equals (value)
-//            )   return value;
-//            variableToValue.put (variable, value);
-//            return "<html><b>" + value + "</b></html>";
-//        } else {
-//            System.out.println("bold " + value + " : new ");
-//            Thread.dumpStack();
-//            System.out.println("");
-//            variableToValue.put (variable, value);
-//            return "<html><b>" + value + "</b></html>";
-//        }
     }
 }

@@ -95,21 +95,15 @@ Constants {
     private String bold (Object variable, String value, Map map) {
         if (map.containsKey (variable)) {
             String oldValue = (String) map.get (variable);
-//            S ystem.out.println("bold " + value + " : contains " + oldValue);
-//            T hread.dumpStack();
-//            S ystem.out.println("");
             if (oldValue == value) return value;
             if ( (oldValue != null) && 
                  oldValue.equals (value)
             )   return value;
             map.put (variable, value);
-            return "<html><b>" + value + "</b></html>";
+            return "<html><b><font color=ff0000>" + value + "</font></b></html>";
         } else {
-//            S ystem.out.println("bold " + value + " : new ");
-//            T hread.dumpStack();
-//            S ystem.out.println("");
             map.put (variable, value);
-            return "<html><b>" + value + "</b></html>";
+            return value;
         }
     }
 }
