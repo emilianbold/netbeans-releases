@@ -75,11 +75,9 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
     
     protected int createRepaintPolicy () {
         return TabState.REPAINT_SELECTION_ON_ACTIVATION_CHANGE
-//                | TabState.REPAINT_ON_SELECTION_CHANGE
-//                | TabState.REPAINT_ON_MOUSE_ENTER_TAB
-//                | TabState.REPAINT_ON_MOUSE_ENTER_CLOSE_BUTTON
-                
-//                | TabState.REPAINT_ALL_ON_MOUSE_ENTER_TABS_AREA
+                | TabState.REPAINT_ON_SELECTION_CHANGE
+                | TabState.REPAINT_ON_MOUSE_ENTER_CLOSE_BUTTON
+                | TabState.REPAINT_ALL_ON_MOUSE_ENTER_TABS_AREA
                 | TabState.REPAINT_ON_MOUSE_PRESSED;
     }
     

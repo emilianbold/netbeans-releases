@@ -452,16 +452,13 @@ public abstract class TabState {
      */
     protected void change(int lastTab, int currTab, int type, int changeType) {
         lastChange = type;
-//        log("Change-type: " + stateToString(type) + " - " + changeToString (changeType) + " from " + tabToString (lastTab) + " to " + tabToString (currTab));
-        if (changeType == CHANGE_TAB_TO_NONE && currTab != -1) {
-            Thread.dumpStack();
-        }
+//        System.err.println("Change-type: " + stateToString(type) + " - " + changeToString (changeType) + " from " + tabToString (lastTab) + " to " + tabToString (currTab));
         if (changeType == CHANGE_TAB_TO_TAB) {
             maybeRepaint(lastTab, type);
         } else if (changeType == CHANGE_TAB_TO_NONE) {
             maybeRepaint (lastTab, type);
             return;
-        } else if (changeType == ALL_TABS) {
+        } else if (changeType == ALL_TABS && (getRepaintPolicy(currTab) & REPAINT_ALL_ON_MOUSE_ENTER_TABS_AREA) != 0) {
             repaintAllTabs();
             return;
         }
@@ -484,7 +481,9 @@ public abstract class TabState {
                 }
                 break;
             case ARMED:
-                go = (rpol & REPAINT_ON_MOUSE_ENTER_TAB) != 0;
+                go = (rpol & REPAINT_ON_MOUSE_ENTER_TAB) != 0 || 
+                    tab == closeButtonContainsMouseIndex;
+                closeButtonContainsMouseIndex = -1;
                 break;
             case CLOSE_BUTTON_ARMED:
                 go = (rpol & REPAINT_ON_MOUSE_ENTER_CLOSE_BUTTON)
@@ -504,10 +503,8 @@ public abstract class TabState {
                 break;
             case SELECTED:
                 go = (rpol & REPAINT_ON_SELECTION_CHANGE) != 0;
-//                log("Case is selected change, go for " + tab + " is " + go);
                 if ((rpol & REPAINT_ALL_TABS_ON_SELECTION_CHANGE)
                         != 0) {
-//                            log("now using all tabs - policy is " + repaintPolicyToString(rpol));
                     type = ALL_TABS;
                     go = true;
                 }
@@ -516,9 +513,7 @@ public abstract class TabState {
             if (type == ALL_TABS) {
                 repaintAllTabs();
             } else {
-//                log("Really repainting tab " + tab);
-                //repaintTab(tab);
-                repaintAllTabs(); //XXX
+                repaintTab(tab);
             }
         }
     }

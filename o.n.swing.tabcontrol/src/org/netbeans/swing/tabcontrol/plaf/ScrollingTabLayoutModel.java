@@ -719,7 +719,13 @@ public final class ScrollingTabLayoutModel implements TabLayoutModel {
         if (changed) {
             change();
         }
-        return getWrapped().getH(index);
+        try {
+            return getWrapped().getH(index);
+        } catch (IndexOutOfBoundsException e) {
+            //The tab was just removed, and the selection model was notified,
+            //by the data model, but not everything else has been notified yet
+            return 0;
+        }
     }
 
     /**
@@ -729,8 +735,13 @@ public final class ScrollingTabLayoutModel implements TabLayoutModel {
     public int getW(int index) {
         //widths can be null on OS-X if component is instantiated with
         //0 size (some bug with reloading winsys) and has never been painted
-        if (changed || widths == null) {
+        if (changed || widths == null || index > widths.length) {
             change();
+        }
+        if (index >= widths.length) {
+            //If a tab has just been removed, there may be a request to 
+            //repaint it
+            return 0;
         }
         return widths[index];
     }
