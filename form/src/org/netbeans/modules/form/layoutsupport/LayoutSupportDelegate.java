@@ -172,10 +172,13 @@ public interface LayoutSupportDelegate {
      *        components to be accepted
      * @param constraints array of layout constraints of the components, may
      *        contain nulls
+     * @param index position at which the components are to be added (inserted);
+     *        -1 means that the components will be added at the end
      * @exception RunTimeException to refuse components
      */
     void acceptNewComponents(CodeExpression[] compExpressions,
-                             LayoutConstraints[] constraints);
+                             LayoutConstraints[] constraints,
+                             int index);
 
     /** This method is called after a property of the layout is changed by
      * the user. The delagate implementation may check whether the layout is
@@ -201,15 +204,17 @@ public interface LayoutSupportDelegate {
         throws PropertyVetoException;
 
     /** Adds new components to the layout. (This is intended just at the
-     * metadata level, no real components are added in fact.) The components
-     * should be placed at the end (after the last current component).
+     * metadata level, no real components are added in fact.)
      * @param compExpressions array of CodeExpression objects representing the
      *        components to be added
      * @param constraints array of layout constraints of the components, may
      *        contain nulls
+     * @param index position at which the components should be added (inserted);
+     *        if -1, the components should be added at the end
      */
     void addComponents(CodeExpression[] compExpressions,
-                       LayoutConstraints[] constraints);
+                       LayoutConstraints[] constraints,
+                       int index);
 
     /** Removes one component from the layout (at metadata level).
      * @param index index of the component in the layout

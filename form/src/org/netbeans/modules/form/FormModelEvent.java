@@ -384,6 +384,13 @@ public class FormModelEvent extends EventObject
             return ""; // NOI18N
         }
 
+        public void die() {
+            // it's very important to release undo changes from CodeStructure
+            if (codeUndoRedoStart != null && codeUndoRedoEnd != null)
+                getFormModel().getCodeStructure().releaseUndoableChanges(
+                                       codeUndoRedoStart, codeUndoRedoEnd);
+        }
+
         // -------------
 
         private void undoContainerLayoutExchange() {
@@ -477,8 +484,10 @@ public class FormModelEvent extends EventObject
         }
 
         private void undoComponentRemoval() {
-            if (codeUndoRedoStart != null)
-                getFormModel().getCodeStructure().undoToMark(codeUndoRedoStart);
+            if (codeUndoRedoStart != null // is null when called from redoComponentAddition()
+                    && !getFormModel().getCodeStructure().undoToMark(
+                                                   codeUndoRedoStart))
+                return;
 
             RADComponent[] currentSubComps = container.getSubBeans();
             RADComponent[] undoneSubComps =
@@ -497,46 +506,17 @@ public class FormModelEvent extends EventObject
                 undoneSubComps[j] = currentSubComps[i];
             }
 
+            container.initSubComponents(undoneSubComps);
+
             if (container instanceof RADVisualContainer
                 && component instanceof RADVisualComponent)
             {
                 LayoutSupportManager layoutSupport =
                     ((RADVisualContainer)container).getLayoutSupport();
-                layoutSupport.removeAll();
-
-                container.initSubComponents(undoneSubComps);
-
-                java.util.List visualList = new ArrayList(undoneSubComps.length);
-                java.util.List constrList = new ArrayList(undoneSubComps.length);
-
-                for (int i=0; i < undoneSubComps.length; i++)
-                    if (undoneSubComps[i] instanceof RADVisualComponent) {
-                        RADVisualComponent metacomp =
-                            (RADVisualComponent) undoneSubComps[i];
-                        LayoutConstraints constr = 
-                            i == componentIndex && constraints != null ?
-                                constraints :
-                                layoutSupport.getStoredConstraints(metacomp);
-
-                        visualList.add(metacomp);
-                        constrList.add(constr);
-                    }
-                    // there can be also a menu component in the visual container
-
-                if (visualList.size() > 0) {
-                    RADVisualComponent[] originalComponents =
-                        new RADVisualComponent[visualList.size()];
-                    LayoutConstraints[] originalConstraints =
-                        new LayoutConstraints[constrList.size()];
-                    visualList.toArray(originalComponents);
-                    constrList.toArray(originalConstraints);
-                    // [should not call acceptNewComponents?? - probably not]
-                    layoutSupport.addComponents(originalComponents,
-                                                originalConstraints);
-                }
-            }
-            else {
-                container.initSubComponents(undoneSubComps);
+                layoutSupport.addComponents(
+                    new RADVisualComponent[] { (RADVisualComponent) component },
+                    new LayoutConstraints[] { constraints },
+                    componentIndex);
             }
 
             if (createdDeleted)

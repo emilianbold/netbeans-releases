@@ -222,7 +222,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         subComponents.clear();
         subComponents.addAll(java.util.Arrays.asList(components));
 
-        layoutSupport.addComponents(components, constraints);
+        layoutSupport.addComponents(components, constraints, 0);
     }
 
     public void add(RADComponent comp) {

@@ -1194,5 +1194,12 @@ public class MetaComponentCreator {
         public String getRedoPresentationName() {
             return ""; // NOI18N
         }
+
+        public void die() {
+            // it's very important to release undo changes from CodeStructure
+            if (codeUndoRedoStart != null && codeUndoRedoEnd != null)
+                formModel.getCodeStructure().releaseUndoableChanges(
+                                  codeUndoRedoStart, codeUndoRedoEnd);
+        }
     }
 }

@@ -167,8 +167,13 @@ class ComponentDragger
                 newConstr[i] = (LayoutConstraints) constraints.get(index);
             }
 
+            // j - index to selectedComponents for the first new component
+            int j = ((Integer)movedFromOutside.get(0)).intValue();
+            // jj - insertion point of the first component in target container
+            int jj = ((Integer)indices.get(j)).intValue();
+
             try {
-                layoutSupport.acceptNewComponents(newComps, newConstr);
+                layoutSupport.acceptNewComponents(newComps, newConstr, jj);
             }
             catch (RuntimeException ex) {
                 // layout support does not accept components
@@ -291,7 +296,7 @@ class ComponentDragger
 
         // and finally - add all new components to target container
         targetMetaContainer.initSubComponents(newCompsArray);
-        layoutSupport.addComponents(newCompsArray, newConstrArray);
+        layoutSupport.addComponents(newCompsArray, newConstrArray, 0);
 
         // fire changes - adding new components
         RADVisualComponent[] compsMovedFromOutside;
@@ -576,7 +581,8 @@ class ComponentDragger
             layoutSupport.removeAll();
             targetContainer.initSubComponents(targetComponentsBeforeMove);
             layoutSupport.addComponents(targetComponentsBeforeMove,
-                                        targetConstraintsBeforeMove);
+                                        targetConstraintsBeforeMove,
+                                        0);
 
             for (int i=0; i < componentsMovedWithinTarget.length; i++)
                 formModel.fireComponentLayoutChanged(
@@ -601,7 +607,8 @@ class ComponentDragger
             layoutSupport.removeAll();
             targetContainer.initSubComponents(targetComponentsAfterMove);
             layoutSupport.addComponents(targetComponentsAfterMove,
-                                        targetConstraintsAfterMove);
+                                        targetConstraintsAfterMove,
+                                        0);
             
             for (int i=0; i < componentsMovedFromOutside.length; i++)
                 formModel.fireComponentAdded(componentsMovedFromOutside[i],

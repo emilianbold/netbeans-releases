@@ -310,8 +310,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                                               designComps);
 
         if (componentCount > 0) {
-            layoutDelegate.acceptNewComponents(compExps, newConstraints);
-            layoutDelegate.addComponents(compExps, newConstraints);
+            layoutDelegate.acceptNewComponents(compExps, newConstraints, 0);
+            layoutDelegate.addComponents(compExps, newConstraints, 0);
 
             for (int i=0; i < componentCount; i++)
                 metacomps[i].resetConstraintsProperties();
@@ -423,18 +423,20 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
     // data validation
     public void acceptNewComponents(RADVisualComponent[] components,
-                                    LayoutConstraints[] constraints)
+                                    LayoutConstraints[] constraints,
+                                    int index)
     {
         CodeExpression[] compExps = new CodeExpression[components.length];
         for (int i=0; i < components.length; i++)
             compExps[i] = components[i].getCodeExpression();
 
-        layoutDelegate.acceptNewComponents(compExps, constraints);
+        layoutDelegate.acceptNewComponents(compExps, constraints, index);
     }
 
     // components adding/removing
     public void addComponents(RADVisualComponent[] components,
-                              LayoutConstraints[] constraints)
+                              LayoutConstraints[] constraints,
+                              int index)
     {
         CodeExpression[] compExps = new CodeExpression[components.length];
         Component[] comps = new Component[components.length];
@@ -445,16 +447,17 @@ public final class LayoutSupportManager implements LayoutSupportContext {
             ensureFakePeerAttached(comps[i]);
         }
 
-        int oldCount = layoutDelegate.getComponentCount();
+        if (index < 0)
+            index = layoutDelegate.getComponentCount();
 
-        layoutDelegate.addComponents(compExps, constraints);
+        layoutDelegate.addComponents(compExps, constraints, index);
 
         for (int i=0; i < components.length; i++)
             components[i].resetConstraintsProperties();
 
         layoutDelegate.addComponentsToContainer(getPrimaryContainer(),
                                                 getPrimaryContainerDelegate(),
-                                                comps, oldCount);
+                                                comps, index);
     }
 
     public void removeComponent(RADVisualComponent metacomp, int index) {

@@ -263,11 +263,11 @@ public class FormModel
         LayoutConstraints[] constrArray = new LayoutConstraints[] { constraints };
 
         // this may throw a RuntimeException if the components are not accepted
-        layoutSupport.acceptNewComponents(compArray, constrArray);
+        layoutSupport.acceptNewComponents(compArray, constrArray, -1);
 
         parentContainer.add(metacomp);
 
-        layoutSupport.addComponents(compArray, constrArray);
+        layoutSupport.addComponents(compArray, constrArray, -1);
 
         boolean newlyAdded = !metacomp.isInModel();
         if (newlyAdded)

@@ -327,9 +327,12 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      *        components to be accepted
      * @param constraints array of layout constraints of the components, may
      *        contain nulls
+     * @param index position at which the components are to be added (inserted);
+     *        -1 means that the components will be added at the end
      */
     public void acceptNewComponents(CodeExpression[] compExpressions,
-                                    LayoutConstraints[] constraints)
+                                    LayoutConstraints[] constraints,
+                                    int index)
     {
     }
 
@@ -366,34 +369,41 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 
     /** Adds new components to the layout. This is done just at the metadata
      * level, no real components but their CodeExpression representations
-     * are added. The components are placed after the last current component.
+     * are added.
      * The code structures describing the layout is updated immediately.
      * @param compExpressions array of CodeExpression objects representing the
      *        components to be accepted
      * @param constraints array of layout constraints of the components, may
      *        contain nulls
+     * @param index position at which the components should be added (inserted);
+     *        if -1, the components should be added at the end
      */
     public void addComponents(CodeExpression[] newCompExps,
-                              LayoutConstraints[] newConstraints)
+                              LayoutConstraints[] newConstraints,
+                              int index)
     {
-        int oldCount = componentCodeExpressions.size();
+        if (index < 0 || index > componentCodeExpressions.size())
+            index = componentCodeExpressions.size();
+
         CodeStructure codeStructure = layoutContext.getCodeStructure();
 
         for (int i=0; i < newCompExps.length; i++) {
+            int ii = index + i;
+
             CodeExpression compExp = newCompExps[i];
-            componentCodeExpressions.add(compExp);
+            componentCodeExpressions.add(ii, compExp);
 
             LayoutConstraints constr = newConstraints != null ?
                                        newConstraints[i] : null;
             if (constr == null)
                 constr = createDefaultConstraints();
 
-            componentConstraints.add(constr);
+            componentConstraints.add(ii, constr);
 
             CodeGroup componentCode =
                 codeStructure.createCodeGroup();
-            createComponentCode(componentCode, compExp, i + oldCount);
-            componentCodeGroups.add(componentCode);
+            createComponentCode(componentCode, compExp, ii);
+            componentCodeGroups.add(ii, componentCode);
         }
     }
 
@@ -523,7 +533,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
                                          int index)
     {
         for (int i=0; i < components.length; i++) {
-            LayoutConstraints constr = getConstraints(i+index);
+            LayoutConstraints constr = getConstraints(i + index);
             if (constr != null)
                 containerDelegate.add(components[i],
                                       constr.getConstraintsObject(),
@@ -753,7 +763,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
             constraints[i] = constr != null ? constr.cloneConstraints() : null;
         }
 
-        clone.addComponents(targetComponents, constraints);
+        clone.addComponents(targetComponents, constraints, 0);
 
         return clone;
     }

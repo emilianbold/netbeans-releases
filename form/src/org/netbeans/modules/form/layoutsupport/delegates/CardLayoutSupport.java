@@ -48,17 +48,24 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
      * @param compExpressions array of CodeExpression objects representing the
      *        components to be accepted
      * @param constraints array of layout constraints of the components
+     * @param index position at which the components should be added (inserted);
+     *        if -1, the components should be added at the end
      */
     public void addComponents(CodeExpression[] newCompExpressions,
-                              LayoutConstraints[] newConstraints)
+                              LayoutConstraints[] newConstraints,
+                              int index)
     {
         // same functionality as in AbstractLayoutSupport...
-        super.addComponents(newCompExpressions, newConstraints);
+        super.addComponents(newCompExpressions, newConstraints, index);
 
-        // ...just set the last component as the active card
-        int count = getComponentCount();
-        if (currentCard == null && count > 0)
-            currentCard = (CardConstraints) getConstraints(count - 1);
+        // ...just set the last added component as the active card
+        if (index < 0)
+            index = getComponentCount() - 1;
+        else
+            index += newCompExpressions.length - 1;
+
+        if (currentCard == null && index >= 0 && index < getComponentCount())
+            currentCard = (CardConstraints) getConstraints(index);
     }
 
     /** This method is called when a component is selected in Component

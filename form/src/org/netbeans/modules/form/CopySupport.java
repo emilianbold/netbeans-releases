@@ -218,7 +218,8 @@ class CopySupport {
 
                     try {
                         layoutSupport.acceptNewComponents(compArray,
-                                                          constrArray);
+                                                          constrArray,
+                                                          -1);
                     }
                     catch (RuntimeException ex) {
                         // layout support does not accept the component
@@ -229,7 +230,7 @@ class CopySupport {
 
                     // add the component to the target container
                     visualCont.add(sourceComponent);
-                    layoutSupport.addComponents(compArray, constrArray);
+                    layoutSupport.addComponents(compArray, constrArray, -1);
                     targetForm.fireComponentAdded(sourceComponent, false);
                 }
                 else {
