@@ -78,16 +78,11 @@ public class MonitorAction extends CallableSystemAction {
     } 
 
     private static void openTransactionView() {
-	boolean debug = true; 
-	if(debug) log("::openTransactionView()"); 
+
 	TransactionView tv = TransactionView.getInstance(); 
         WindowManager wm = WindowManager.getDefault();
 	Mode mode = wm.findMode(tv);
         
-	if(debug) { 
-	    java.util.Iterator i = wm.getModes().iterator(); 
-	    while(i.hasNext()) 
-		log("Mode=" + mode.toString(); 
         if(mode == null) {
             mode = wm.findMode("output"); // NOI18N
             if(mode != null) {
