@@ -124,7 +124,12 @@ public class Server implements Node.Cookie {
     }
     
     public boolean handlesUri(String uri) {
-        return getFactory().handlesURI(uri);
+        try {
+            return getFactory().handlesURI(uri);
+        } catch (Exception e) {
+            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getLocalizedMessage());
+            return false;
+        }
     }
     
     public DeploymentManager getDeploymentManager(String uri, String username, String password) throws DeploymentManagerCreationException {

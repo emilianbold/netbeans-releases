@@ -92,11 +92,11 @@ public class InstanceTargetXNode extends FilterXNode {
     public javax.swing.Action[] getActions(boolean context) {
         List actions = new ArrayList();
         actions.addAll(Arrays.asList(getOriginal().getActions(context)));
-        //if (instance.isRunning()) {
-        //    actions.addAll(Arrays.asList(getDelegateTargetNode().getActions(context)));
-        //} else {
+        if (instance.isRunning()) {
+            actions.addAll(Arrays.asList(getDelegateTargetNode().getActions(context)));
+        } else {
             actions.add(SystemAction.get(SetAsDefaultServerAction.class));
-        //}
+        }
         
         return (javax.swing.Action[]) actions.toArray(new javax.swing.Action[actions.size()]);
     }

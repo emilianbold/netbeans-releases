@@ -130,7 +130,7 @@ public class ServerTarget implements Node.Cookie {
             if (value instanceof Boolean)
                 isEventProvider = (Boolean) value;
         } catch (Exception e) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, e.toString());
+            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.toString());
         }
         return isEventProvider.booleanValue();
     }
@@ -176,7 +176,15 @@ public class ServerTarget implements Node.Cookie {
     public Target getTarget() {
         return target;
     }
+    
+    public boolean isAlsoServerInstance() {
+        return instance.getStartServer().isAlsoTargetServer(target);
+    }
+    
     public boolean isRunning() {
+        if (isAlsoServerInstance())
+            return instance.isRunning();
+        
         if (! isStateManageable()) 
             return false;
         
@@ -198,7 +206,7 @@ public class ServerTarget implements Node.Cookie {
             if (STATE_RUNNING.equals(value))
                 return true;
         } catch (Exception e) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, e.toString());
+            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.toString());
         }
         return false;
     }

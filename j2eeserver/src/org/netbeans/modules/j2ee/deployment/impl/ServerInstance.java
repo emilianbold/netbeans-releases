@@ -225,7 +225,12 @@ public class ServerInstance implements Node.Cookie {
         if (System.currentTimeMillis() - lastCheck < 2000) 
             return isRunning;
         StartServer ss = getStartServer();
-        isRunning = ss != null && ss.isRunning();
+        try {
+            isRunning = ss != null && ss.isRunning();
+        } catch (Exception e) {
+            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getMessage());
+            isRunning = false;
+        }
         lastCheck = System.currentTimeMillis();
         return isRunning;
     }
@@ -238,7 +243,7 @@ public class ServerInstance implements Node.Cookie {
         StartServer ss = getStartServer();
         return ss != null && ss.isDebuggable(target);
     }
-    //PENDING: StopOnExit implementation, loosend for now
+    
     public boolean startedByIde() {
         return managerStartedByIde;
     }
@@ -419,12 +424,16 @@ public class ServerInstance implements Node.Cookie {
             
             // wait until done or cancelled
             boolean done = sleep();
-            if (! done)
-                showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", url));
-            
-            if (ui.checkCancelled() || ! done)
+            if (! done) {
+                ui.addMessage(NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", url));
                 return false;
-            
+            } else if (! isRunning()) {
+                ui.addMessage(NbBundle.getMessage(ServerInstance.class, "MSG_StartedServerFailedPing", url));
+                return false;
+            } else if (ui.checkCancelled()) {
+                ui.addMessage(NbBundle.getMessage(ServerInstance.class, "MSG_StartServerCanceled"));
+                return false;
+            }
             managerStartedByIde = true;
             refresh();
             return true;
@@ -452,8 +461,10 @@ public class ServerInstance implements Node.Cookie {
         
         // wait until done or cancelled
         boolean done = sleep();
-        if (! done) {
+        if (! done ) {
             showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", url));
+        } else if (! isRunning()) {
+            showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StartedServerFailedPing", url));
         } else {
             showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StartedServer", url));
             managerStartedByIde = true;
@@ -500,12 +511,17 @@ public class ServerInstance implements Node.Cookie {
             
             // wait until done or cancelled
              boolean done = sleep();
-            if (! done)
-                showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", url));
-            
+            if (! done) {
+                String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", url);
+                ErrorManager.getDefault().log(ErrorManager.EXCEPTION, msg);
+                showStatusText(msg);
+            }
             if (ui.checkCancelled() || ! done)
                 return false;
             
+            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_ServerStopped", url);
+            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, msg);
+            showStatusText(msg);
             managerStartedByIde = false;
             return true;
             
@@ -548,7 +564,8 @@ public class ServerInstance implements Node.Cookie {
     
     private boolean handleStartServerError(DeployProgressUI ui, String errorMessage) {
         // Precondition: ui needs to have cancel handler added
-        ui.addError(errorMessage);
+        if (ui != null)
+            ui.addError(errorMessage);
         
         //sleepTillCancel();
         return false;
@@ -629,8 +646,8 @@ public class ServerInstance implements Node.Cookie {
     }
     
     public ServerTarget getCoTarget() {
-        /*if (! isRunning() && getStartServer().needsStartForTargetList())
-            return null;*/
+        if (! isRunning() && getStartServer().needsStartForTargetList())
+            return null;
         
         ServerTarget[] childs = getTargets();
         for (int i=0; i<childs.length; i++) {
@@ -670,7 +687,7 @@ public class ServerInstance implements Node.Cookie {
         try {
             return getManagement().getListenerRegistry();
         } catch(Exception ex) {
-            ErrorManager.getDefault().log(ex.getMessage());
+            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ex.getMessage());
         }
         return null;
     }
