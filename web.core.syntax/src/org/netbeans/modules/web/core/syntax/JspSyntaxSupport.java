@@ -521,7 +521,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     public boolean isErrorPage() {
        JspParserAPI.ParseResult result = getParseResult();
        if (result != null) {
-           return result.getPageInfo().isErrorPage();
+           if (result.getPageInfo() != null)
+                return result.getPageInfo().isErrorPage();
        }
         /*TagLibParseSupport support = (dobj == null) ? 
             null : (TagLibParseSupport)dobj.getCookie(TagLibParseSupport.class);
