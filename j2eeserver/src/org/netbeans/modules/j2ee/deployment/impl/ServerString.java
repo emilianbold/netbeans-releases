@@ -21,7 +21,7 @@ public class ServerString implements java.io.Serializable {
     
     private final String plugin;
     private final String instance;
-    private String[] targets=null;
+    private final String[] targets;
     private final transient ServerInstance serverInstance;
     private transient String[] theTargets;
     private static final long serialVersionUID = 923457209372L;
@@ -45,8 +45,10 @@ public class ServerString implements java.io.Serializable {
         this.plugin = instance.getServer().getShortName();
         this.instance = instance.getUrl();
         this.serverInstance = instance;
-        if (! instance.isRunning())
+        if (! instance.isRunning()) {
+            this.targets = new String[0];
             return;
+        }
         
         ServerTarget[] serverTargets;
         try {
