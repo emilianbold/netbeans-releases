@@ -21,7 +21,6 @@ import java.awt.BorderLayout;
 import org.openide.TopManager;
 import org.openide.actions.*;
 import org.openide.awt.HtmlBrowser;
-import org.openide.cookies.ViewCookie;
 import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObject;
@@ -85,17 +84,7 @@ public class HtmlLoader extends UniFileLoader {
     
     protected MultiDataObject createMultiObject (final FileObject primaryFile)
     throws DataObjectExistsException, IOException {
-
-        final HtmlDataObject obj = new HtmlDataObject (primaryFile, this);
-        obj.getCookieSet ().add (new ViewCookie () {
-                                     public void view () {
-                                         try {
-                                             TopManager.getDefault ().showUrl (obj.getPrimaryEntry ().getFile ().getURL ());
-                                         } catch (FileStateInvalidException e) {
-                                         }
-                                     }
-                                 });
-        return obj;
+        return new HtmlDataObject (primaryFile, this);
     }
 }
 
@@ -138,3 +127,4 @@ public class HtmlLoader extends UniFileLoader {
 *  1    Gandalf   1.0         1/8/99   Jan Jancura     
 * $
 */
+

@@ -23,12 +23,13 @@ import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.actions.*;
+import org.openide.cookies.ViewCookie;
 
 /** Object that represents one html file.
 *
 * @author Ian Formanek
 */
-public class HtmlDataObject extends MultiDataObject {
+public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory {
 
     private static final String HTML_ICON_BASE =
         "/org/netbeans/modules/html/htmlObject"; // NOI18N
@@ -46,11 +47,9 @@ public class HtmlDataObject extends MultiDataObject {
     */
     public HtmlDataObject(FileObject pf, UniFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-                // use editor support
-        EditorSupport es = new EditorSupport(getPrimaryEntry());
-        es.setMIMEType ("text/html"); // NOI18N
-        getCookieSet().add(es);
-	
+        CookieSet set = getCookieSet();
+        set.add(EditorSupport.class, this);
+        set.add(ViewSupport.class, this);
     }
 
     protected org.openide.nodes.Node createNodeDelegate () {
@@ -62,7 +61,46 @@ public class HtmlDataObject extends MultiDataObject {
     public HelpCtx getHelpCtx () {
         return new HelpCtx (HtmlLoader.class.getName () + ".Obj"); // NOI18N
     }
+    
+    /** return a cookie for given Class */
+    public Node.Cookie getCookie(Class klass) {
+        if (org.openide.cookies.CompilerCookie.class.isAssignableFrom(klass)) {
+            return null;
+        }
+        
+        return super.getCookie(klass);
+    }
 
+    /** Creates new Cookie */
+    public Node.Cookie createCookie(Class klass) {
+        if (klass == EditorSupport.class) {
+            EditorSupport es = new EditorSupport(getPrimaryEntry());
+            es.setMIMEType ("text/html"); // NOI18N
+            return es;
+        } else if (klass == ViewSupport.class) {
+            return new ViewSupport(getPrimaryEntry());
+        } else {
+            return null;
+        }
+    }
+    
+    static final class ViewSupport implements ViewCookie {
+        /** entry */
+        private MultiDataObject.Entry primary;
+        
+        /** Constructs new ViewSupport */
+        public ViewSupport(MultiDataObject.Entry primary) {
+            this.primary = primary;
+        }
+        
+         public void view () {
+             try {
+                 TopManager.getDefault ().showUrl (primary.getFile ().getURL ());
+             } catch (FileStateInvalidException e) {
+             }
+         }
+    }
+    
     /*
     public boolean isForEdit () {
         Object o = getPrimaryFile ().getAttribute (PROP_FOR_EDIT);
