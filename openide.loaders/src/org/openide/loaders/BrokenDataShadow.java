@@ -18,6 +18,8 @@ import java.text.MessageFormat;
 import java.lang.reflect.*;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.Iterator;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
+import org.openide.ErrorManager;
 
 import org.openide.filesystems.*;
 import org.openide.nodes.Node;
@@ -41,11 +44,8 @@ import org.openide.actions.*;
 * @author Ales Kemr
 */
 final class BrokenDataShadow extends MultiDataObject {
-    /** Name of filesystem of original fileobject */
-    private String origFSName;    
-    
     /** Name of original fileobject */
-    private String origFOName;
+    private URL url;
         
     /** Constructs new broken data shadow for given primary file.
     *
@@ -58,11 +58,13 @@ final class BrokenDataShadow extends MultiDataObject {
         super (fo, loader);                                
         
         try {
-            BufferedReader ois = new BufferedReader (new InputStreamReader (fo.getInputStream ()));
-            origFOName = ois.readLine ();
-            origFSName = ois.readLine ();
-            ois.close();
-        } catch (IOException e) {
+            url = DataShadow.readURL(fo);
+        } catch (IOException ex) {
+            try {
+                url = new URL("file://UNKNOWN"); //NOI18N
+            } catch (MalformedURLException ex2) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex2);
+            }
         }
         enqueueBrokenDataShadow(this);
     }
@@ -109,7 +111,7 @@ final class BrokenDataShadow extends MultiDataObject {
         checkQueue();
         Map m = getDataShadowsSet ();
         
-        String prim = ds.origFOName;
+        String prim = ds.url.toExternalForm();
         Reference ref = DataShadow.createReference(ds, getRqueue());
         Set s = (Set)m.get (prim);
         if (s == null) {
@@ -156,12 +158,20 @@ final class BrokenDataShadow extends MultiDataObject {
             src = ((OperationEvent)ev).getObject();
         }
 
+        String key;
+        try {
+            key = src.getPrimaryFile().getURL().toExternalForm();
+        } catch (FileStateInvalidException ex) {
+            // OK, exit
+            return;
+        }
+        
         Set shadows = null;
         synchronized (BrokenDataShadow.class) {
             if (allDataShadows == null || allDataShadows.isEmpty ()) return;
             
             if (src != null) {
-                shadows = (Set)allDataShadows.get (src.getPrimaryFile ().getPath ());
+                shadows = (Set)allDataShadows.get(key);
                 if (shadows == null) {
                     // we know the source of the event and there are no
                     // shadows with such original
@@ -200,8 +210,7 @@ final class BrokenDataShadow extends MultiDataObject {
     /* Check if link to original file is still broken */    
     public void refresh() {
         try {
-            if (DataShadow.checkOriginal (origFOName, origFSName, 
-                getPrimaryFile().getFileSystem()) != null) {
+            if (URLMapper.findFileObject(url) != null) {
                 /* Link to original file was repaired */
                 this.setValid(false);
             }
@@ -332,9 +341,6 @@ final class BrokenDataShadow extends MultiDataObject {
 
                 p = new Name ();
                 ss.put (p);
-                
-                p = new FileSystemProperty ();
-                ss.put (p);
             }
         }
         
@@ -361,7 +367,7 @@ final class BrokenDataShadow extends MultiDataObject {
             /* Getter */
             public Object getValue () {
                 BrokenDataShadow bds = (BrokenDataShadow)getDataObject();
-                return bds.origFOName;
+                return bds.url.toExternalForm();
             }
             
             /* Does nothing, property is readonly */
@@ -370,8 +376,9 @@ final class BrokenDataShadow extends MultiDataObject {
 
                 BrokenDataShadow bds = (BrokenDataShadow)getDataObject();
                 try {
-                    DataShadow.writeOriginal (bds.getPrimaryFile (), newLink, bds.origFSName);
-                    bds.origFOName = newLink;
+                    URL u = new URL(newLink);
+                    DataShadow.writeOriginal(bds.getPrimaryFile(), u);
+                    bds.url = u;
                 } catch (IOException ex) {
                     IllegalArgumentException e = new IllegalArgumentException (ex.getMessage ());
                     org.openide.ErrorManager.getDefault ().annotate (e, ex);
@@ -380,128 +387,6 @@ final class BrokenDataShadow extends MultiDataObject {
                 bds.refresh ();
             }
         }                
-        
-        /** Class for original filesystem name property of broken link
-        */
-        private final class FileSystemProperty extends PropertySupport.ReadWrite {
-            
-            public FileSystemProperty () {
-                super (
-                    "BrokenLinkFileSystem", // NOI18N
-                    String.class,
-                    DataObject.getString ("PROP_brokenShadowFileSystem"),
-                    DataObject.getString ("HINT_brokenShadowFileSystem")
-                );
-            }
-
-            /* Getter */
-            public Object getValue () {
-                BrokenDataShadow bds = (BrokenDataShadow)getDataObject();
-                return bds.origFSName;
-            }                        
-            
-            public void setValue (Object val) throws IllegalArgumentException {
-                String newFSName = (String)val;
-                
-                BrokenDataShadow bds = (BrokenDataShadow)getDataObject();
-                try {
-                    DataShadow.writeOriginal (bds.getPrimaryFile (), bds.origFOName, newFSName);
-                    bds.origFSName = newFSName;
-                } catch (IOException ex) {
-                    IllegalArgumentException e = new IllegalArgumentException (ex.getMessage ());
-                    org.openide.ErrorManager.getDefault ().annotate (e, ex);
-                    throw e;
-                }
-                bds.refresh ();
-            }
-            
-            public java.beans.PropertyEditor getPropertyEditor () {
-                return new FileSystemPropertyEditor ();
-            }
-            
-        }
-        
-        
-        private static final class FileSystemPropertyEditor 
-        implements java.beans.PropertyEditor {
-            private java.beans.PropertyChangeSupport supp;
-            private String origFSName;
-            
-            public FileSystemPropertyEditor () {
-            }
-
-            /* Getter */
-            public Object getValue () {
-                return origFSName;
-            }                        
-            
-            public void setValue (Object val) throws IllegalArgumentException {
-                origFSName = (String)val;
-            }
-            
-            public synchronized void addPropertyChangeListener (java.beans.PropertyChangeListener listener) {
-                if (supp == null) {
-                    supp = new java.beans.PropertyChangeSupport (this);
-                }
-                supp.addPropertyChangeListener (listener);
-            }
-            
-            public synchronized void removePropertyChangeListener (java.beans.PropertyChangeListener listener) {
-                if (supp == null) {
-                    supp.removePropertyChangeListener (listener);
-                }
-            }
-            
-            public String getAsText () {
-                String v = (String)getValue ();
-                FileSystem[] arr = Repository.getDefault ().toArray ();
-                for (int i = 0; i < arr.length; i++) {
-                    if (arr[i].getSystemName ().equals (v)) {
-                        return arr[i].getDisplayName ();
-                    }
-                }
-                return v;
-            }
-            
-            public java.awt.Component getCustomEditor () {
-                return null;
-            }
-            
-            public String getJavaInitializationString () {
-                return null;
-            }
-            
-            public String[] getTags () {
-                FileSystem[] arr = Repository.getDefault ().toArray ();
-                String[] v = new String[arr.length];
-                for (int i = 0; i < arr.length; i++) {
-                    v[i] = arr[i].getDisplayName ();
-                }
-                return v;
-            }
-            
-            public boolean isPaintable () {
-                return false;
-            }
-            
-            public void paintValue (java.awt.Graphics gfx, java.awt.Rectangle box) {
-            }
-            
-            public void setAsText (String text) throws java.lang.IllegalArgumentException {
-                FileSystem[] arr = Repository.getDefault ().toArray ();
-                String[] v = new String[arr.length];
-                for (int i = 0; i < arr.length; i++) {
-                    if (text.equals (arr[i].getDisplayName ())) {
-                        setValue (arr[i].getSystemName ());
-                    }
-                }
-            }
-            
-            public boolean supportsCustomEditor () {
-                return false;
-            }
-            
-        }
         
     }
 }

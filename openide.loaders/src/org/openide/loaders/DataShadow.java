@@ -20,6 +20,7 @@ import java.io.*;
 import java.text.MessageFormat;
 import java.lang.reflect.*;
 import java.lang.ref.*;
+import java.net.URL;
 import java.util.*;
 
 import org.openide.filesystems.*;
@@ -57,9 +58,6 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     private static ReferenceQueue rqueue;
     
     private static Mutex MUTEX = new Mutex ();
-
-    private static final int IDX_FS = 0;
-    private static final int IDX_PATH = 1;
 
     /** Getter for the Set that contains all DataShadows. */
     private static synchronized Map getDataShadowsSet() {
@@ -344,16 +342,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                          }
                          fo = trg.createData (n, ext);
                     }
-
-                    FileLock lock = fo.lock ();
-                    Writer os = new OutputStreamWriter (fo.getOutputStream (lock), "UTF-8");
-                    try {
-                        FileObject pf = obj.getPrimaryFile ();
-                        os.write (pf.getPath()+"\n"+pf.getFileSystem ().getSystemName ()+"\n"); // NOI18N
-                    } finally {
-                        os.close ();
-                        lock.releaseLock ();
-                    }
+                    writeShadowFile(fo, obj.getPrimaryFile().getURL());
                     return fo;
                 }
             });
@@ -365,18 +354,11 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     /** Overwrites existing file object with new link and fs.
      * @exception IOException on I/O error
      */
-    static void writeOriginal (final FileObject shadow, final String link, final String fs) throws IOException {
+    static void writeOriginal (final FileObject shadow, final URL url) throws IOException {
         try {
             MUTEX.writeAccess (new Mutex.ExceptionAction () {
                 public Object run () throws IOException {
-                    FileLock lock = shadow.lock ();
-                    Writer os = new OutputStreamWriter (shadow.getOutputStream (lock), "UTF-8");
-                    try {
-                        os.write (link+"\n"+fs+"\n"); // NOI18N
-                    } finally {
-                        os.close ();
-                        lock.releaseLock ();
-                    }
+                    writeShadowFile(shadow, url);
                     return null;
                 }
             });
@@ -385,6 +367,22 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         }
     }
 
+    /**
+     * Writes content of shadow file.
+     * @param fo shadow file
+     * @param url URL to original
+     */
+    private static void writeShadowFile(FileObject fo, URL url) throws IOException {
+        FileLock lock = fo.lock();
+        Writer os = new OutputStreamWriter(fo.getOutputStream(lock), "UTF-8");
+        try {
+            os.write(url.toExternalForm()); // NOI18N
+        } finally {
+            os.close();
+            lock.releaseLock();
+        }
+    }
+    
     /** Loads proper dataShadow from the file fileObject.
     *
     * @param fileObject The file to deserialize shadow from.
@@ -392,33 +390,27 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     * @exception IOException error during load
     */
     protected static DataObject deserialize (FileObject fileObject) throws java.io.IOException {
-        String result [] = read (fileObject);
-        FileObject fo = checkOriginal (result [IDX_PATH], result [IDX_FS], fileObject.getFileSystem());
+        URL url = readURL(fileObject);
+        FileObject fo = URLMapper.findFileObject(url);
+        if (fo == null) {
+            throw new java.io.FileNotFoundException (url.toExternalForm());
+        }
         return DataObject.find (fo);
     }
     
-    private static String [] read (final FileObject f) throws IOException {
+    static URL readURL(final FileObject f) throws IOException {
         if ( f.getSize() == 0 ) {
             Object fileName = f.getAttribute ("originalFile"); // NOI18N
             if ( fileName instanceof String ) {
-                
-                Object fileSystemName = f.getAttribute( "originalFileSystem" ); // NOI18N
-                
-                if (!(fileSystemName instanceof String )) {
-                    /*
-                    fileSystemName = f.getFileSystem().getSystemName();
-                     */
-                    fileSystemName = null;
-                }
-                
-                return new String [] { (String)fileSystemName, (String)fileName };
-            }
-            else {
+                return recreateURL((String)fileName, (String)f.getAttribute("originalFileSystem"), f.getFileSystem());
+            } else if (fileName instanceof URL) {
+                return (URL)fileName;
+            } else {
                 throw new java.io.FileNotFoundException (f.getPath());
             }
         }
         try {
-            return (String []) MUTEX.readAccess (new Mutex.ExceptionAction () {
+            return (URL) MUTEX.readAccess (new Mutex.ExceptionAction () {
                 public Object run () throws IOException {
                     BufferedReader ois = new BufferedReader (new InputStreamReader (f.getInputStream (), "UTF-8"));
 
@@ -430,8 +422,10 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                             // not found
                             throw new java.io.FileNotFoundException (f.getPath());
                         }
-
-                        return new String [] { fs, s };
+                        if (fs == null) {
+                            return new URL(s);
+                        }
+                        return recreateURL(s, fs, f.getFileSystem());
                     } finally {
                         ois.close ();
                     }
@@ -442,52 +436,31 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         }
     }
 
+    // BACKWARD COMPATIBILITY:
+    private static URL recreateURL(String fileName, String fileSystem, FileSystem fs) throws IOException {
+        if (fileSystem == null) {
+            return createURL(fs, fileName);
+        } else if (fileSystem.equals("SystemFileSystem")) {
+            return createURL(Repository.getDefault().getDefaultFileSystem(), fileName);
+        } else {
+            // Does not work. No FS is mounted anymore.
+            throw new java.io.FileNotFoundException (fileName+" "+fileSystem); //NOI18N
+        }
+    }
+    private static URL createURL(FileSystem fs, String fileName) throws IOException {
+        String root = fs.getRoot().getURL().toExternalForm();
+        if (!root.endsWith("/")) {
+            root += "/";
+        }
+        root += fileName.replace('\\', '/');
+        return new URL(root);
+    }
+    
     private FileObject checkOriginal (DataObject orig) throws java.io.IOException {                
         if (orig == null)
             return null;
         return deserialize(getPrimaryFile()).getPrimaryFile();
     }
-        
-    /*
-    static FileObject checkOriginal (String strFile, String strFS) throws java.io.IOException {                
-        return checkOriginal(strFile, strFS, null);
-    }
-    */
-    
-    static FileObject checkOriginal (String strFile, String strFS, FileSystem origSystem) throws java.io.IOException {                
-
-        Repository rep = Repository.getDefault();
-        FileSystem fileSystem;
-        if (strFS != null) {
-            // try to locate the fs
-            fileSystem = rep.findFileSystem (strFS);
-        } else {
-            fileSystem = origSystem;
-        }
-
-        FileObject fo;
-
-        if (fileSystem != null) {
-            // first of all try to locate the shadow by filesystem
-            fo = fileSystem.findResource (strFile);
-        } else {
-            fo = null;
-        }
-
-        /*
-        if (fo == null) {
-            fo = rep.findResource (s);
-        }
-         */
-
-        if (fo == null) {
-            throw new java.io.FileNotFoundException (strFile);
-        }
-
-        return fo;
-
-    }
-
 
     /** Return the original shadowed object.
     * @return the data object
@@ -588,16 +561,9 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     }
     
     private void tryUpdate() throws IOException {
-        String result [] = read (getPrimaryFile ());
-        FileObject pf = original.getPrimaryFile ();
-        if (result [IDX_PATH].equals (pf.getPath())) {
-            if (result[IDX_FS] == null) {
-                if (getPrimaryFile().getFileSystem() == pf.getFileSystem ())
+        URL url = readURL(getPrimaryFile ());
+        if (url.equals(original.getPrimaryFile().getURL())) {
             return;
-            } else {
-                if (result [IDX_FS].equals (pf.getFileSystem ().getSystemName ()))
-                    return;
-            }
         }
         writeOriginal (null, null, getPrimaryFile (), original);
     }
@@ -1037,9 +1003,6 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
 
                 p = new Name ();
                 ss.put (p);
-                
-                p = new FileSystemProperty ();
-                ss.put (p);
             }
         }
 
@@ -1090,25 +1053,6 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             }
         }
         
-        /** Class for original filesystem name property of broken link
-        */
-        private final class FileSystemProperty extends PropertySupport.ReadOnly {
-            
-            public FileSystemProperty () {
-                super (
-                    "OriginalFileSystem", // NOI18N
-                    String.class,
-                    DataObject.getString ("PROP_ShadowOriginalFileSystem"),
-                    DataObject.getString ("HINT_ShadowOriginalFileSystem")
-                );
-            }
-
-            /* Getter */
-            public Object getValue () {                
-                return getOriginalFileSystemName();                                
-            }                        
-        }
-
         /** Property listener on data object that delegates all changes of
         * properties to this node.
         */

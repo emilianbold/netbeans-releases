@@ -23,16 +23,10 @@ import org.openide.filesystems.*;
 *
 * @author Ales Kemr
 */
-class ShadowChangeAdapter extends Object implements RepositoryListener, 
-        OperationListener{
+class ShadowChangeAdapter extends Object implements OperationListener {
     
     /** Creates new ShadowChangeAdapter */
     ShadowChangeAdapter() {
-        
-        /* listen on repository to refresh datashadows after 
-        * add/remove filesystem 
-        */
-        Repository.getDefault().addRepositoryListener(this);            
         
         /* listen on loader pool to refresh datashadows after 
         * create/delete dataobject
@@ -48,24 +42,6 @@ class ShadowChangeAdapter extends Object implements RepositoryListener,
     /** Checks for DataShadows */
     static void checkDataShadows(EventObject ev) {
         DataShadow.checkValidity(ev);
-    }
-    
-    /** Called when new file system is added to the pool.
-     * @param ev event describing the action
-    */
-    public void fileSystemAdded(RepositoryEvent ev) {
-        checkBrokenDataShadows(ev);
-    }
-    
-    /** Called when a file system is removed from the pool.
-     * @param ev event describing the action
-    */
-    public void fileSystemRemoved(RepositoryEvent ev) {
-        checkDataShadows(ev);
-    }
-    
-    /** Called when a file system pool is reordered.  */
-    public void fileSystemPoolReordered(RepositoryReorderedEvent ev) {
     }
     
     /** Object has been recognized by
