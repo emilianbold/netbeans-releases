@@ -1,6 +1,5 @@
 installer/asbundle/src/org/netbeans/installer/Bundle.properties
 installer/coreide/src/org/netbeans/installer/Bundle.properties
-installer/j2ee/src/org/netbeans/installer/cluster/Bundle.properties
 installer/jdkbundle/src/org/netbeans/installer/Bundle.properties
 installer/mobility/src/org/netbeans/installer/cluster/Bundle.properties
 installer/profiler/src/org/netbeans/installer/cluster/Bundle.properties
