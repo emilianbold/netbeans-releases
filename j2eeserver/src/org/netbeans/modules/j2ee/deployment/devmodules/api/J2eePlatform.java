@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,9 +27,11 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Utilities;
+import org.openide.ErrorManager;
 
 
 /**
@@ -139,9 +141,12 @@ public final class J2eePlatform {
                     if ("jar".equals(url.getProtocol())) { //NOI18N
                         url = FileUtil.getArchiveFile(url);
                     }
-                    File f = FileUtil.toFile(URLMapper.findFileObject(url));
-                    if (f != null) {
-                        classpath.add(f);
+                    FileObject fo = URLMapper.findFileObject(url);
+                    if (fo != null) {
+                        File f = FileUtil.toFile(fo);
+                        if (f != null) {
+                            classpath.add(f);
+                        }   
                     }
                 }
             }
@@ -259,10 +264,11 @@ public final class J2eePlatform {
     private String getClasspathAsString() {
         File[] classpathEntr = getClasspathEntries();
         StringBuffer classpath = new StringBuffer();
+        final String PATH_SEPARATOR = System.getProperty("path.separator"); // NOI18N
         for (int i = 0; i < classpathEntr.length; i++) {
             classpath.append(classpathEntr[i].getAbsolutePath());
             if (i + 1 < classpathEntr.length) {
-                classpath.append(":"); // NOI18N
+                classpath.append(PATH_SEPARATOR);
             }
         }
         return classpath.toString();
