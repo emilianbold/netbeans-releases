@@ -32,7 +32,7 @@ import java.util.List;
 
 /**
  * Xerces Native Interface ("XNI") based implementation. It sets
- * namespace aware and non-validating features.
+ * namespace non-aware and non-validating features.
  * <p>
  * Do instantiate it directly, prefer TreeBuilder interface loaded  by TreeStreamSource
  * (i.e. ParserLoader). It will do necessary implementation isolation.
@@ -111,7 +111,7 @@ public final class XNIBuilder implements TreeBuilder {
             final String SAX_FEATURE = "http://xml.org/sax/features/"; // NOI18N
             final String XERCES_FEATURE = "http://apache.org/xml/features/"; // NOI18N
             
-            builder.setFeature (SAX_FEATURE + "namespaces", true); // NOI18N
+            builder.setFeature (SAX_FEATURE + "namespaces", false); //!!! // NOI18N
             builder.setFeature (SAX_FEATURE + "validation", false);  //!!! // NOI18N
             builder.setFeature (SAX_FEATURE + "external-general-entities", true); // NOI18N
             builder.setFeature (SAX_FEATURE + "external-parameter-entities", true); // NOI18N
