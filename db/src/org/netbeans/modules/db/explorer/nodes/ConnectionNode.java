@@ -145,7 +145,7 @@ public class ConnectionNode extends DatabaseNode {
     
     private void update(Connection connection) {        
         final boolean connecting = (connection != null);
-        RequestProcessor.postRequest(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run () {
                 DatabaseNodeChildren children = (DatabaseNodeChildren)getChildren();
                 DatabaseNodeInfo info = getInfo();
@@ -179,7 +179,7 @@ public class ConnectionNode extends DatabaseNode {
                         Node.Property rememberprop = set.get(DatabaseNodeInfo.REMEMBER_PWD);
                         PropertySupport newrememberprop = createPropertySupport(rememberprop.getName(), rememberprop.getValueType(), rememberprop.getDisplayName(), rememberprop.getShortDescription(), info, connecting);
                         set.put(newrememberprop);
-                        firePropertyChange("rememberpassword",rememberprop,newrememberprop); //NOI18N
+                        firePropertyChange("rememberpwd",rememberprop,newrememberprop); //NOI18N
                         
                         setPropSupport(false);
                     } else {
@@ -197,7 +197,7 @@ public class ConnectionNode extends DatabaseNode {
                         firePropertyChange("user",null,usrprop); //NOI18N
 
                         Node.Property rememberprop = set.get(DatabaseNodeInfo.REMEMBER_PWD);
-                        firePropertyChange("rememberpassword",null,rememberprop); //NOI18N
+                        firePropertyChange("rememberpwd",null,rememberprop); //NOI18N
                     }
                     
                     if (!connecting)

@@ -44,7 +44,7 @@ public class DatabasePropertySupport extends PropertySupport {
     public boolean canWrite () {
         if (repository instanceof ConnectionNodeInfo) {
             String propName = getName();
-            if ("db".equals(propName) || "driver".equals(propName) || "schema".equals(propName) || "user".equals(propName) || "rememberpassword".equals(propName)) //NOI18N
+            if ("db".equals(propName) || "driver".equals(propName) || "schema".equals(propName) || "user".equals(propName) || "rememberpwd".equals(propName)) //NOI18N
                 return ((ConnectionNodeInfo) repository).getConnection() == null ? true : false;
             else
                 return super.canWrite();
