@@ -77,6 +77,9 @@ public class ServiceTypePanel extends ExplorerPanel {
                         firePropertyChange ();
                     }
                 });
+        if (name.length() > 0) {
+            label.setDisplayedMnemonic(name.charAt(0));
+        }
     }
 
     private void handleDividerLocation() {
@@ -248,7 +251,6 @@ public class ServiceTypePanel extends ExplorerPanel {
         add(jSplitPane1, java.awt.BorderLayout.CENTER);
 
         label.setLabelFor(listView1);
-        label.setText("jLabel1");
         add(label, java.awt.BorderLayout.NORTH);
 
     }//GEN-END:initComponents
