@@ -99,9 +99,9 @@ Microsystems, Inc. All Rights Reserved.
           <property name="javadoc.title" value="Debugger UI"/>
           <property name="javadoc.packages" value="org.netbeans.spi.debugger.ui"/>
           <property name="javadoc.classpath" refid="cp"/>
-          <property name="javadoc.src" value="../debuggercore"/>
+          <property name="javadoc.src" value="../../debuggercore"/>
           <property name="javadoc.files" value="debuggercore_ui_javadoc_files" />
-          <property name="javadoc.arch" location="../arch/arch-debugger-api-viewmodel.xml"/>
+          <property name="javadoc.arch" location="arch/arch-debugger-api-viewmodel.xml"/>
       </ant>
     </target>
 

@@ -104,9 +104,9 @@ ToDo:
           <property name="javadoc.title" value="JPDA Debugger Implementation"/>
           <property name="javadoc.packages" value="org.netbeans.modules.debugger.jpda"/>
           <property name="javadoc.classpath" refid="cp"/>
-          <property name="javadoc.src" value="../debuggerjpda"/>
+          <property name="javadoc.src" value="../../debuggerjpda"/>
           <property name="javadoc.files" value="debuggerjpda_impl_javadoc_files" />
-          <property name="javadoc.arch" location="../arch/arch-debugger-api-viewmodel.xml"/>
+          <property name="javadoc.arch" location="arch/arch-debuggerjpda.xml"/>
       </ant>
     </target>
 
