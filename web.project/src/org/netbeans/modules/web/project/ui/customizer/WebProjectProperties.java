@@ -75,7 +75,7 @@ public class WebProjectProperties {
     public static final String DEBUG_CLASSPATH = "debug.classpath";    
 
     public static final String WAR_NAME = "war.name";
-    public static final String WAR_COMPRESS = "war.compress";
+    public static final String WAR_COMPRESS = "jar.compress";
     public static final String WAR_CONTENT_EXCLUDES = "war.content.excludes";
     public static final String WAR_CONTENT_ADDITIONAL = "war.content.additional";
 
@@ -213,6 +213,9 @@ public class WebProjectProperties {
         if (JAVAC_CLASSPATH.equals (propertyName)) {
             assert value instanceof List : "Wrong format of property " + propertyName; //NOI18N
             writeJavacClasspath ((List) value, antProjectHelper, refHelper);
+        } else if (WAR_CONTENT_ADDITIONAL.equals (propertyName)) {
+            assert value instanceof List : "Wrong format of property " + propertyName; //NOI18N
+            writeWarIncludes ((List) value, antProjectHelper, refHelper);
         }
         PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
         pi.setValue( value );
@@ -225,7 +228,10 @@ public class WebProjectProperties {
         assert propertyName != null : "Unknown property " + propertyName; // NOI18N
         if (JAVAC_CLASSPATH.equals (propertyName)) {
             return readJavacClasspath (antProjectHelper, refHelper);
+        } else if (WAR_CONTENT_ADDITIONAL.equals (propertyName)) {
+            return readWarIncludes(antProjectHelper, refHelper);
         }
+
         PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
         return pi.getValue();
     }
@@ -788,6 +794,59 @@ public class WebProjectProperties {
         return cpItems;
     }
 
+    private static List readWarIncludes(AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        Element data = antProjectHelper.getPrimaryConfigurationData(true);
+        Element webModuleLibs = (Element) data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "web-module-additional-libraries").item (0); //NOI18N
+        
+        //prevent NPE thrown from older projects
+        if (webModuleLibs == null)
+            return null;
+        
+        NodeList ch = webModuleLibs.getChildNodes();
+        List warAddItems = new ArrayList(ch.getLength());
+        for (int i = 0; i < ch.getLength(); i++) {
+            if (ch.item(i).getNodeType() != Node.ELEMENT_NODE)
+                continue;
+            
+            Element library = (Element) ch.item(i);
+            Element webFile = (Element) library.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "file").item (0); //NOI18N
+            String file = findText(webFile);
+            NodeList pathInWarList = library.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "path-in-war"); //NOI18N
+            String pathInWar = VisualClassPathItem.PATH_IN_WAR_NONE;
+            if (pathInWarList.getLength() > 0)
+                pathInWar = findText((Element) pathInWarList.item(0));
+            
+            VisualClassPathItem cpItem;
+
+            if (file.startsWith(LIBRARY_PREFIX)) {
+                // Library from library manager
+                //String eval = antProjectHelper.evaluate( getAntPropertyName( file ) );
+                String eval = file.substring(LIBRARY_PREFIX.length(), file.lastIndexOf('.')); //NOI18N
+                Library lib = LibraryManager.getDefault().getLibrary(eval);
+                if (lib != null)
+                    cpItem = new VisualClassPathItem(lib, VisualClassPathItem.TYPE_LIBRARY, file, eval, pathInWar);
+                else
+                    //Invalid library. The lbirary was probably removed from system.
+                    cpItem = null;
+            } else {
+                AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact(file);                     
+                if (artifact != null) {
+                    // Sub project artifact
+                    String eval = antProjectHelper.getStandardPropertyEvaluator().evaluate(file);
+                    cpItem = new VisualClassPathItem(artifact, VisualClassPathItem.TYPE_ARTIFACT, file, eval, pathInWar);
+                } else {
+                    // Standalone jar or property
+                    String eval = antProjectHelper.getStandardPropertyEvaluator().evaluate(file);
+                    cpItem = new VisualClassPathItem(file, VisualClassPathItem.TYPE_JAR, file, eval, pathInWar);
+                }
+            }
+            if (cpItem != null)
+                warAddItems.add(cpItem);
+        }
+
+        return warAddItems;
+    }
+
     private static void writeJavacClasspath ( List value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
         Element data = antProjectHelper.getPrimaryConfigurationData (true);
         org.w3c.dom.Document doc = data.getOwnerDocument ();
@@ -851,4 +910,67 @@ public class WebProjectProperties {
         antProjectHelper.putPrimaryConfigurationData (data, true);
     }
     
+    private static void writeWarIncludes(List value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
+        Element data = antProjectHelper.getPrimaryConfigurationData(true);
+        org.w3c.dom.Document doc = data.getOwnerDocument();
+        Element webModuleLibs = (Element) data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "web-module-additional-libraries").item (0); //NOI18N
+        
+        //prevent NPE thrown from older projects
+        if (webModuleLibs == null) {
+            webModuleLibs = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "web-module-additional-libraries"); //NOI18N
+            data.appendChild(webModuleLibs);
+        }
+        
+        while (webModuleLibs.hasChildNodes())
+            webModuleLibs.removeChild(webModuleLibs.getChildNodes().item(0));
+
+        for (Iterator it = value.iterator(); it.hasNext();) {
+            VisualClassPathItem vcpi = (VisualClassPathItem) it.next();
+            String library_tag_value = "";
+
+            //TODO: prevent NPE from CustomizerCompile - need to investigate
+            if (vcpi == null)
+                return;
+
+            switch( vcpi.getType() ) {
+                case VisualClassPathItem.TYPE_JAR:
+                    String raw = vcpi.getRaw();
+
+                    if ( raw == null ) {
+                        // New file
+                        File file = (File)vcpi.getObject();
+                        // XXX Relativize using collocation query
+                        library_tag_value = file.getPath ();
+                    }
+                    else {
+                        // Existing property
+                        library_tag_value = raw;
+                    }
+
+                    break;
+                case VisualClassPathItem.TYPE_LIBRARY:
+                    library_tag_value = vcpi.getRaw();
+                    break;    
+                case VisualClassPathItem.TYPE_ARTIFACT:
+                    AntArtifact aa = (AntArtifact)vcpi.getObject();
+                    String reference = refHelper.createForeignFileReference( aa );
+                    library_tag_value = reference;
+                    break;
+            }
+
+            Element library = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "library"); //NOI18N
+            webModuleLibs.appendChild (library);
+            Element webFile = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "file"); //NOI18N
+            library.appendChild (webFile);
+            webFile.appendChild (doc.createTextNode (library_tag_value));
+
+            if (vcpi.getPathInWAR () != VisualClassPathItem.PATH_IN_WAR_NONE) {
+                Element pathInWar = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "path-in-war"); //NOI18N
+                pathInWar.appendChild (doc.createTextNode (vcpi.getPathInWAR ()));
+                library.appendChild (pathInWar);
+            }
+        }
+        antProjectHelper.putPrimaryConfigurationData (data, true);
+    }
+
 }

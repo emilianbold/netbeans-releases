@@ -118,6 +118,11 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:variable name="libfile" select="web:file"/>
             <copyfiles todir="${{build.web.dir}}/{$copyto}" files="{$libfile}"/>
         </xsl:for-each>
+        <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-additional-libraries/web:library[web:path-in-war]">
+            <xsl:variable name="copyto" select=" web:path-in-war"/>
+            <xsl:variable name="libfile" select="web:file"/>
+            <copyfiles todir="${{build.web.dir}}/{$copyto}" files="{$libfile}"/>
+        </xsl:for-each>
     </target>
 
     <target name="compile-jsps" depends="compile" if="do.compile.jsps"> 
