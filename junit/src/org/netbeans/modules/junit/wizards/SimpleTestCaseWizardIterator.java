@@ -26,6 +26,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.junit.CreateTestAction;
 import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitSettings;
+import org.netbeans.modules.junit.TestCreator;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
@@ -289,6 +290,7 @@ public class SimpleTestCaseWizardIterator
                 new FileObject[] {testRootFolder});
                 
         /* create test class(es) for the selected source class: */
+        TestCreator.initialize();
         try {
             return CreateTestAction.createSingleTest(
                 testClassPath, classToTest,
