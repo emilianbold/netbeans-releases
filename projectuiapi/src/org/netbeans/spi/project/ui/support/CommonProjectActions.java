@@ -82,6 +82,8 @@ public class CommonProjectActions {
      * You might include this in the context menu of a logical view.
      * </p>
      * @return an action
+     * @see org.netbeans.spi.project.ui.PrivilegedTemplates
+     * @see org.netbeans.spi.project.ui.RecommendedTemplates
      */
     public static Action newFileAction() {
         return Utilities.getActionsFactory().newFileAction();

@@ -21,6 +21,7 @@ package org.netbeans.spi.project.ui;
  * <p>
  * For more information about registering templates see overview of 
  * {@link org.netbeans.spi.project.ui.templates.support} package. 
+ * @see org.netbeans.spi.project.ui.support.CommonProjectActions
  * @author Petr Hrebejk
  */
 public interface PrivilegedTemplates {
