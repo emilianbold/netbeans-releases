@@ -70,6 +70,7 @@ public class QueueJMenuDriver extends LightSupportiveDriver implements MenuDrive
         queueTool = new QueueTool();
     }
     public Object pushMenu(final ComponentOperator oper, PathChooser chooser) {
+        queueTool.setOutput(oper.getOutput().createErrorOutput());
 	checkSupported(oper);
         JMenuItem result;
         OneReleaseAction action;
@@ -116,7 +117,13 @@ public class QueueJMenuDriver extends LightSupportiveDriver implements MenuDrive
                     }
                 };
 	}
+        //1.5 workaround
+        queueTool.waitEmpty(10);
+        queueTool.waitEmpty(10);
+        queueTool.waitEmpty(10);
+        //end of 1.5 workaround
         result = runAction(action, oper, oper.getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout"));
+        System.out.println("Intermediate menu: " + result);
         if(result instanceof JMenu) {
             for(int i = 1; i < chooser.getDepth(); i++) {
                 final JMenu menu = (JMenu)result;
@@ -132,6 +139,7 @@ public class QueueJMenuDriver extends LightSupportiveDriver implements MenuDrive
                         }
                     };
                 result = (JMenuItem)runAction(action, oper, oper.getTimeouts().getTimeout("JMenuOperator.WaitPopupTimeout"));
+                System.out.println("Intermediate menu: " + result);
             }
         }
         return(result);
@@ -151,6 +159,11 @@ public class QueueJMenuDriver extends LightSupportiveDriver implements MenuDrive
         waiter.getTimeouts().setTimeout("Waiter.WaitingTime", 
                                         waitingTime);
         waiter.getTimeouts().setTimeout("Waiter.TimeDelta", 100);
+        //1.5 workaround
+        queueTool.waitEmpty(10);
+        queueTool.waitEmpty(10);
+        queueTool.waitEmpty(10);
+        //end of 1.5 workaround
         try {
             return((JMenuItem)waiter.waitAction(null));
         } catch(InterruptedException e) {
@@ -191,7 +204,10 @@ public class QueueJMenuDriver extends LightSupportiveDriver implements MenuDrive
             DriverManager.getButtonDriver(subMenuOper).release(subMenuOper);
         }
         protected boolean inTheMiddle(JMenuOperator subMenuOper, boolean mousePressed) {
+            System.out.println("Submenu visible in the middle: " + subMenuOper.isPopupMenuVisible());
+            System.out.println("on: " + subMenuOper.getSource());
             if(!subMenuOper.isPopupMenuVisible()) {
+                System.out.println("Mouse pressed by that time: " + mousePressed);
                 if(!mousePressed) {
                     DriverManager.getMouseDriver(subMenuOper).enterMouse(subMenuOper);
                     DriverManager.getButtonDriver(subMenuOper).press(subMenuOper);

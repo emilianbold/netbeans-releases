@@ -57,10 +57,21 @@ public class APIJMenuDriver extends DefaultJMenuDriver implements MenuDriver {
             throw(new JemmyException("Interrupted!", e));
         }
 	if(depth > chooser.getDepth() - 1) {
+            if(oper instanceof JMenuOperator) {
+                if(((JMenuOperator)oper).isPopupMenuVisible()) {
+                    ((JMenuOperator)oper).setPopupMenuVisible(false);
+                }
+                ((JMenuOperator)oper).setPopupMenuVisible(true);
+                waitPopupMenu(oper);
+            }
             ((AbstractButtonOperator)oper).doClick();
 	    return(oper.getSource());
 	} else {
+            if(((JMenuOperator)oper).isPopupMenuVisible()) {
+                ((JMenuOperator)oper).setPopupMenuVisible(false);
+            }
             ((JMenuOperator)oper).setPopupMenuVisible(true);
+            waitPopupMenu(oper);
         }
 	oper.getTimeouts().sleep("JMenuOperator.WaitBeforePopupTimeout");
 	JMenuItem item = waitItem(oper, waitPopupMenu(oper), chooser, depth);
@@ -68,7 +79,16 @@ public class APIJMenuDriver extends DefaultJMenuDriver implements MenuDriver {
 	    JMenuOperator mo = new JMenuOperator((JMenu)item);
 	    mo.copyEnvironment(oper);
 	    Object result = push(mo, null, chooser, depth + 1, false);
-            ((JMenuOperator)oper).setPopupMenuVisible(false);
+            if(result instanceof JMenu) {
+                org.netbeans.jemmy.JemmyProperties.getCurrentOutput().printLine("IN HERE" + ((JMenu)result).getText());
+                org.netbeans.jemmy.JemmyProperties.getCurrentOutput().printLine("IN HERE" + Boolean.toString(((JMenu)result).isPopupMenuVisible()));
+                if(!((JMenu)result).isPopupMenuVisible()) {
+                    ((JMenuOperator)oper).setPopupMenuVisible(false);
+                }
+            } else {
+                ((JMenuOperator)oper).setPopupMenuVisible(false);
+                waitNoPopupMenu(oper);
+            }
             return(result);
 	} else {
 	    JMenuItemOperator mio = new JMenuItemOperator(item);
@@ -80,7 +100,20 @@ public class APIJMenuDriver extends DefaultJMenuDriver implements MenuDriver {
             }
             ((AbstractButtonOperator)mio).doClick();
             ((JMenuOperator)oper).setPopupMenuVisible(false);
+            waitNoPopupMenu(oper);
 	    return(item);
 	}
     }
+
+    protected void waitNoPopupMenu(final ComponentOperator oper) {
+        oper.waitState(new ComponentChooser() {
+                public boolean checkComponent(Component comp) {
+                    return(!((JMenuOperator)oper).isPopupMenuVisible());
+                }
+                public String getDescription() {
+                    return(((JMenuOperator)oper).getText() + "'s popup");
+                }
+            });
+    }
+
 }
