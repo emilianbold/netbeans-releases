@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,7 +18,7 @@ package org.openidex.search;
 import java.awt.Image;
 import java.beans.*;
 
-import org.openide.TopManager;
+import org.openide.ErrorManager;
 
 /** Bean info for <code>SearchType</code> class.
  *
@@ -47,7 +47,7 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
             properties[1].setHidden ( true );
     	    return properties;
         } catch( IntrospectionException e) {
-	    TopManager.getDefault().getErrorManager().notify(e);
+	    ErrorManager.getDefault().notify(e);
 	    return null;
         }
     }
@@ -65,7 +65,7 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
         	new EventSetDescriptor ( SearchType.class, "propertyChangeListener", PropertyChangeListener.class, new String[0], "addPropertyChangeListener", "removePropertyChangeListener" ) // NOI18N
 	    };
         } catch( IntrospectionException e) {
-	    TopManager.getDefault().getErrorManager().notify(e);
+	    ErrorManager.getDefault().notify(e);
 	    return null;
         }
     }
@@ -110,7 +110,7 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (org.openide.ServiceType.class) };
         } catch (IntrospectionException ie) {
-	    TopManager.getDefault().getErrorManager().notify(ie);
+	    ErrorManager.getDefault().notify(ie);
             return null;
         }
     }

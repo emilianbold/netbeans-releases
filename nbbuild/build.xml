@@ -427,7 +427,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module objectbrowser..."/>
     <ant dir="../objectbrowser" target="netbeans"/>
   </target>
-  <target name="all-openidex" depends="all-openide,all-openide/deprecated">
+  <target name="all-openidex" depends="all-openide">
     <echo message="Building module openidex..."/>
     <ant dir="../openidex" target="netbeans"/>
   </target>

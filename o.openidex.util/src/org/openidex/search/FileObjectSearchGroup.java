@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,7 +31,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.TopManager;
 
 
 /**
@@ -93,7 +92,7 @@ public class FileObjectSearchGroup extends SearchGroup {
 
             try {
                 if (ic != null && Repository.class.isAssignableFrom(ic.instanceClass())) {
-                    Repository rep = TopManager.getDefault().getRepository();
+                    Repository rep = Repository.getDefault();
                     Enumeration fss = rep.getFileSystems();
 
                     while (fss.hasMoreElements()) {

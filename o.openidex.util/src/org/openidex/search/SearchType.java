@@ -7,19 +7,19 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 
 package org.openidex.search;
 
-
+import java.util.Collections;
 import java.util.Enumeration;
 
-import org.openide.nodes.Node;
 import org.openide.ServiceType;
-import org.openide.TopManager;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 
 /**
@@ -180,10 +180,10 @@ public abstract class SearchType extends ServiceType implements Cloneable {
      * Enumeration of all SearchTypes in the system.
      *
      * @return enumeration of SearchType instances
-     * @deprecated Please use {@link org.openide.util.Lookup} instead.
+     * @deprecated Please use {@link Lookup} instead.
      */
     public static Enumeration enumerateSearchTypes () {
-        return TopManager.getDefault().getServices().services(SearchType.class);
+        return Collections.enumeration(Lookup.getDefault().lookup(new Lookup.Template(SearchType.class)).allInstances());
     }
     
 }
