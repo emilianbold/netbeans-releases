@@ -63,6 +63,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="java/project" testtypes="qa-functional" attributes="validation"/>
         <module name="editor" testtypes="qa-functional" attributes="validation"/>
         <module name="properties" testtypes="qa-functional" attributes="validation"/>
+        <module name="jellytools" testtypes="unit" attributes="stable"/>
   </config>
 
   <!-- PERFORMANCE -->
