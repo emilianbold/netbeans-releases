@@ -62,11 +62,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         createdFolderLabel = new javax.swing.JLabel();
         createdFolderTextField = new javax.swing.JTextField();
 
+        FormListener formListener = new FormListener();
+
         setLayout(new java.awt.GridBagLayout());
 
-        projectNameLabel.setDisplayedMnemonic(getBundleResource("LBL_NWP1_ProjectName_LabelMnemonic").charAt(0));
+        setPreferredSize(new java.awt.Dimension(186, 78));
+        projectNameLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectName_LabelMnemonic").charAt(0));
         projectNameLabel.setLabelFor(projectNameTextField);
-        projectNameLabel.setText(getBundleResource("LBL_NWP1_ProjectName_Label"));
+        projectNameLabel.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectName_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
@@ -78,11 +81,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(projectNameTextField, gridBagConstraints);
-        projectNameTextField.getAccessibleContext().setAccessibleDescription(getBundleResource("ACS_LBL_NWP1_ProjectName_A11YDesc"));
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_ProjectName_A11YDesc"));
 
-        projectLocationLabel.setDisplayedMnemonic(getBundleResource("LBL_NWP1_ProjectLocation_LabelMnemonic").charAt(0));
+        projectLocationLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectLocation_LabelMnemonic").charAt(0));
         projectLocationLabel.setLabelFor(projectLocationTextField);
-        projectLocationLabel.setText(getBundleResource("LBL_NWP1_ProjectLocation_Label"));
+        projectLocationLabel.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectLocation_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -96,26 +99,22 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(projectLocationTextField, gridBagConstraints);
-        projectLocationTextField.getAccessibleContext().setAccessibleDescription(getBundleResource("ACS_LBL_NPW1_ProjectLocation_A11YDesc"));
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc"));
 
-        Button.setText(getBundleResource("LBL_NWP1_BrowseLocation_Button"));
+        Button.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
         Button.setActionCommand("BROWSE");
-        Button.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseLocationAction(evt);
-            }
-        });
+        Button.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
         add(Button, gridBagConstraints);
-        Button.getAccessibleContext().setAccessibleDescription(getBundleResource("ACS_LBL_NWP1_BrowseLocation_A11YDesc"));
+        Button.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_BrowseLocation_A11YDesc"));
 
-        createdFolderLabel.setDisplayedMnemonic(getBundleResource("LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
+        createdFolderLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
         createdFolderLabel.setLabelFor(createdFolderTextField);
-        createdFolderLabel.setText(getBundleResource("LBL_NWP1_CreatedProjectFolder_Lablel"));
+        createdFolderLabel.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -131,9 +130,18 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(createdFolderTextField, gridBagConstraints);
-        createdFolderTextField.getAccessibleContext().setAccessibleDescription(
-                getBundleResource("ACS_LBL_NWP1_CreatedProjectFolder_A11YDesc"));
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_CreatedProjectFolder_A11YDesc"));
 
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == Button) {
+                PanelProjectLocationVisual.this.browseLocationAction(evt);
+            }
+        }
     }//GEN-END:initComponents
 
     private static String getBundleResource(final String resourceName) {
@@ -264,7 +272,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         
     void read (WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty(WizardProperties.PROJECT_DIR);
-        if (projectLocation == null)
+        if (projectLocation == null || projectLocation.getParentFile() == null)
             projectLocation = ProjectChooser.getProjectsFolder();
         else
             projectLocation = projectLocation.getParentFile();

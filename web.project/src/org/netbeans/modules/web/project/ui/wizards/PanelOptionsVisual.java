@@ -49,8 +49,11 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         j2eeSpecDescTextPane = new javax.swing.JTextPane();
 
+        FormListener formListener = new FormListener();
+
         setLayout(new java.awt.GridBagLayout());
 
+        setPreferredSize(new java.awt.Dimension(232, 142));
         setAsMainCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
         setAsMainCheckBox.setSelected(true);
         setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBox"));
@@ -74,11 +77,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabelContextPath, gridBagConstraints);
 
-        jTextFieldContextPath.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                jTextFieldContextPathKeyReleased(evt);
-            }
-        });
+        jTextFieldContextPath.addKeyListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -101,11 +100,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
         j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
         j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
-        j2eeSpecComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                j2eeSpecComboBoxActionPerformed(evt);
-            }
-        });
+        j2eeSpecComboBox.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -142,6 +137,28 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener, java.awt.event.KeyListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == j2eeSpecComboBox) {
+                PanelOptionsVisual.this.j2eeSpecComboBoxActionPerformed(evt);
+            }
+        }
+
+        public void keyPressed(java.awt.event.KeyEvent evt) {
+        }
+
+        public void keyReleased(java.awt.event.KeyEvent evt) {
+            if (evt.getSource() == jTextFieldContextPath) {
+                PanelOptionsVisual.this.jTextFieldContextPathKeyReleased(evt);
+            }
+        }
+
+        public void keyTyped(java.awt.event.KeyEvent evt) {
+        }
     }//GEN-END:initComponents
 
     private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased

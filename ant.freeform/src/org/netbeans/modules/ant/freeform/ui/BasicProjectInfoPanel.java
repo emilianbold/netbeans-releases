@@ -40,185 +40,187 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
     /** Is choosen Ant script a valid one? */
     private boolean antScriptValidityChecked;
     
-    public BasicProjectInfoPanel(String projectLocation, String antScript, String projectName, String projectFolder, ChangeListener listener) {
+    public BasicProjectInfoPanel(String projectLocation, String antScript, String projectName, String projectFolder,
+            ChangeListener listener) {
         initComponents();
         this.projectLocation.setText(projectLocation);
         this.antScript.setText(antScript);
         this.projectName.setText(projectName);
         this.projectFolder.setText(projectFolder);
         this.listener = listener;
-        documentListener = new DocumentListener() {
-                public void insertUpdate(DocumentEvent e) {
-                    update(e);
-                }
+        documentListener = new DocumentListener() {           
+            public void insertUpdate(DocumentEvent e) {
+                update(e);
+            }
 
-                public void removeUpdate(DocumentEvent e) {
-                    update(e);
-                }
+            public void removeUpdate(DocumentEvent e) {
+                update(e);
+            }
 
-                public void changedUpdate(DocumentEvent e) {
-                    update(e);
-                }
-            };
-            this.projectLocation.getDocument().addDocumentListener(documentListener);
-            this.antScript.getDocument().addDocumentListener(documentListener);
-            this.projectName.getDocument().addDocumentListener(documentListener);
-            this.projectFolder.getDocument().addDocumentListener(documentListener);
-        }
-        
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx( BasicProjectInfoPanel.class );
-        }
-    
-        public File getProjectLocation() {
-            return getAsFile(projectLocation.getText());
-        }
-        
-        public File getAntScript() {
-            return getAsFile(antScript.getText());
-        }
-        
-        public String getProjectName() {
-            return projectName.getText();
-        }
-        
-        public File getProjectFolder() {
-            return getAsFile(projectFolder.getText());
-        }
-        
-        public Boolean getMainProject() {
-            return Boolean.valueOf(mainProject.isSelected());
-        }
-        
-        public String getError() {
-            if (projectLocation.getText().length() == 0) {
-                return "Location of your existing project must be specified";
+            public void changedUpdate(DocumentEvent e) {
+                update(e);
             }
-            if (!getProjectLocation().exists()) {
-                return "Project location does not exist";
-            }
-            if (antScript.getText().length() == 0) {
-                return "Your existing build script must be specified";
-            }
-            if (!getAntScript().exists()) {
-                return "The specified build script doesn't exist.";
-            }
-            if (!antScriptValidityChecked) {
-                FileObject fo = FileUtil.toFileObject(getAntScript());
-                if (fo != null && Util.getAntScriptTargetNames(fo) != null) {
-                    antScriptValidityChecked = true;
-                } else {
-                    return "The selected file is not a valid Ant script";
-                }
-            }
-            if (getProjectName().length() == 0) {
-                return "Project name must be set";
-            }
-            if (projectFolder.getText().length() == 0) {
-                return "Project folder must be set";
-            }
-            if (getAsFile(projectFolder.getText()+File.separatorChar+"nbproject").exists()) {
-                return "Project folder already contains NetBeans project data";
-            }
-            return null;
+        };
+        this.projectLocation.getDocument().addDocumentListener(documentListener);
+        this.antScript.getDocument().addDocumentListener(documentListener);
+        this.projectName.getDocument().addDocumentListener(documentListener);
+        this.projectFolder.getDocument().addDocumentListener(documentListener);
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(BasicProjectInfoPanel.class);
+    }
+
+    public File getProjectLocation() {
+        return getAsFile(projectLocation.getText());
+    }
+
+    public File getAntScript() {
+        return getAsFile(antScript.getText());
+    }
+
+    public String getProjectName() {
+        return projectName.getText();
+    }
+
+    public File getProjectFolder() {
+        return getAsFile(projectFolder.getText());
+    }
+
+    public Boolean getMainProject() {
+        return Boolean.valueOf(mainProject.isSelected());
+    }
+
+    public String getError() {
+        if (projectLocation.getText().length() == 0) {
+            return "Location of your existing project must be specified";
         }
-        
-        private File getAsFile(String filename) {
-            return FileUtil.normalizeFile(new File(filename));
+        if (!getProjectLocation().exists()) {
+            return "Project location does not exist";
         }
-        
-        private boolean ignoreEvent = false;
-        
-        private void update(DocumentEvent e) {
-            if (ignoreEvent) {
-                // side-effect of changes done in this handler
+        if (antScript.getText().length() == 0) {
+            return "Your existing build script must be specified";
+        }
+        if (!getAntScript().exists()) {
+            return "The specified build script doesn't exist.";
+        }
+        if (!antScriptValidityChecked) {
+            FileObject fo = FileUtil.toFileObject(getAntScript());
+            if (fo != null && Util.getAntScriptTargetNames(fo) != null) {
+                antScriptValidityChecked = true;
+            } else {
+                return "The selected file is not a valid Ant script";
+            }
+        }
+        if (getProjectName().length() == 0) {
+            return "Project name must be set";
+        }
+        if (projectFolder.getText().length() == 0) {
+            return "Project folder must be set";
+        }
+        if (getAsFile(projectFolder.getText() + File.separatorChar + "nbproject").exists()) {
+            return "Project folder already contains NetBeans project data";
+        }
+        return null;
+    }
+
+    private File getAsFile(String filename) {
+        return FileUtil.normalizeFile(new File(filename));
+    }
+
+    private boolean ignoreEvent = false;
+
+    private void update(DocumentEvent e) {
+        if (ignoreEvent) {
+            // side-effect of changes done in this handler
+            return;
+        }
+
+        // start ignoring events
+        ignoreEvent = true;
+
+        if (projectLocation.getDocument() == e.getDocument()) {
+            antScriptValidityChecked = false;
+            updateAntScriptLocation();
+            updateProjectName();
+            updateProjectFolder();
+        }
+        if (antScript.getDocument() == e.getDocument()) {
+            antScriptValidityChecked = false;
+            updateProjectName();
+        }
+
+        // stop ignoring events
+        ignoreEvent = false;
+
+        if (projectFolder.getDocument() == e.getDocument()) {
+            projectFolderTouched = !"".equals(projectFolder.getText());
+        }
+        if (antScript.getDocument() == e.getDocument()) {
+            antScriptTouched = !"".equals(antScript.getText());
+        }
+        if (projectName.getDocument() == e.getDocument()) {
+            projectNameTouched = !"".equals(projectName.getText());
+        }
+
+        listener.stateChanged(null);
+    }
+
+    private boolean isValidProjectLocation() {
+        return (getProjectLocation().exists() && getProjectLocation().isDirectory() &&
+                projectLocation.getText().length() > 0 && (!projectLocation.getText().endsWith(":")));
+    }
+
+    private void updateAntScriptLocation() {
+        if (antScriptTouched) {
+            return;
+        }
+        if (isValidProjectLocation()) {
+            File as = new File(getProjectLocation().getAbsolutePath() + File.separatorChar + "build.xml");
+            if (as.exists()) {
+                antScript.setText(as.getAbsolutePath());
                 return;
             }
-            
-            // start ignoring events
-            ignoreEvent = true;
-            
-            if (projectLocation.getDocument() == e.getDocument()) {
-                antScriptValidityChecked = false;
-                updateAntScriptLocation();
-                updateProjectName();
-                updateProjectFolder();
-            }
-            if (antScript.getDocument() == e.getDocument()) {
-                antScriptValidityChecked = false;
-                updateProjectName();
-            }
-            
-            // stop ignoring events
-            ignoreEvent = false;
-            
-            if (projectFolder.getDocument() == e.getDocument()) {
-                projectFolderTouched = true;
-            }
-            if (antScript.getDocument() == e.getDocument()) {
-                antScriptTouched = true;
-            }
-            if (projectName.getDocument() == e.getDocument()) {
-                projectNameTouched = true;
-            }
-            
-            listener.stateChanged(null);
         }
+        antScript.setText(""); //NOI18N
+    }
 
-        private boolean isValidProjectLocation() {
-            return (getProjectLocation().exists() && getProjectLocation().isDirectory() &&
-            projectLocation.getText().length() > 0 && (!projectLocation.getText().endsWith(":")));
+    private void updateProjectName() {
+        if (projectNameTouched) {
+            return;
         }
-        
-        private void updateAntScriptLocation() {
-            if (antScriptTouched) {
-                return;
-            }
-            if (isValidProjectLocation()) {
-                File as = new File(getProjectLocation().getAbsolutePath()+File.separatorChar+"build.xml");
-                if (as.exists()) {
-                    antScript.setText(as.getAbsolutePath());
+        if (getAntScript().exists()) {
+            File as = new File(getAntScript().getAbsolutePath());
+            if (as.exists()) {
+                FileObject fo = FileUtil.toFileObject(as);
+                assert fo != null : as;
+                String name = Util.getAntScriptName(fo);
+                if (name != null) {
+                    projectName.setText(name);
                     return;
                 }
             }
-            antScript.setText(""); //NOI18N
         }
-        
-        private void updateProjectName() {
-            if (projectNameTouched) {
-                return;
-            }
-            if (getAntScript().exists()) {
-                File as = new File(getAntScript().getAbsolutePath());
-                if (as.exists()) {
-                    FileObject fo = FileUtil.toFileObject(as);
-                    assert fo != null : as;
-                    String name = Util.getAntScriptName(fo);
-                    if (name != null) {
-                        projectName.setText(name);
-                        return;
-                    }
-                }
-            }
-            projectName.setText(""); //NOI18N
-        }
-        
-        private void updateProjectFolder() {
-            if (projectFolderTouched) {
-                return;
-            }
-            if (isValidProjectLocation()) {
-                projectFolder.setText(getProjectLocation().getAbsolutePath());
-            } else {
-                projectFolder.setText(""); //NOI18N
-            }
-        }
+        projectName.setText(""); //NOI18N
+    }
 
-        /** This method is called from within the constructor to
-         * initialize the form.
-         * WARNING: Do NOT modify this code. The content of this method is
-         * always regenerated by the Form Editor.
-         */
+    private void updateProjectFolder() {
+        if (projectFolderTouched) {
+            return;                                                                
+        }
+        if (isValidProjectLocation()) {
+            projectFolder.setText(getProjectLocation().getAbsolutePath());
+        } else {
+            projectFolder.setText(""); //NOI18N
+        }
+    }
+
+    /**
+     * This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -238,8 +240,11 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         jSeparator1 = new javax.swing.JSeparator();
         mainProject = new javax.swing.JCheckBox();
 
+        FormListener formListener = new FormListener();
+
         setLayout(new java.awt.GridBagLayout());
 
+        setPreferredSize(new java.awt.Dimension(323, 223));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_jLabel1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
@@ -313,11 +318,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         add(projectFolder, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseAntScript, org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "BTN_BasicProjectInfoPanel_browseAntScript"));
-        browseAntScript.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseAntScriptActionPerformed(evt);
-            }
-        });
+        browseAntScript.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -327,11 +328,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         browseAntScript.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "ACSD_BasicProjectInfoPanel_browseAntScript"));
 
         org.openide.awt.Mnemonics.setLocalizedText(browseProjectFolder, org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "BTN_BasicProjectInfoPanel_browseProjectFolder"));
-        browseProjectFolder.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseProjectFolderActionPerformed(evt);
-            }
-        });
+        browseProjectFolder.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -359,11 +356,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         jLabel6.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "ACSD_BasicProjectInfoPanel_jLabel6"));
 
         org.openide.awt.Mnemonics.setLocalizedText(browseProjectLocation, org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "BTN_BasicProjectInfoPanel_browseProjectLocation"));
-        browseProjectLocation.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseProjectLocationActionPerformed(evt);
-            }
-        });
+        browseProjectLocation.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -390,6 +383,22 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         add(mainProject, gridBagConstraints);
         mainProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "ACSD_BasicProjectInfoPanel_mainProject"));
 
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == browseAntScript) {
+                BasicProjectInfoPanel.this.browseAntScriptActionPerformed(evt);
+            }
+            else if (evt.getSource() == browseProjectFolder) {
+                BasicProjectInfoPanel.this.browseProjectFolderActionPerformed(evt);
+            }
+            else if (evt.getSource() == browseProjectLocation) {
+                BasicProjectInfoPanel.this.browseProjectLocationActionPerformed(evt);
+            }
+        }
     }//GEN-END:initComponents
 
     private void browseProjectLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseProjectLocationActionPerformed

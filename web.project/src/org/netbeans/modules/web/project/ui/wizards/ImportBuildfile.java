@@ -61,6 +61,7 @@ public class ImportBuildfile extends javax.swing.JPanel implements DocumentListe
 
         setLayout(new java.awt.GridBagLayout());
 
+        setPreferredSize(new java.awt.Dimension(112, 83));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
