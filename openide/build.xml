@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
       <include name="${nb.lib.dir}/openide.jar"/>
       <include name="${nb.system.dir}/ModuleAutoDeps/org-openide.xml"/>
     </patternset>
-    <ant dir="../core/external" target="unscramble"/>
     <path id="openide-cp">
       <!-- nothing -->
     </path>
@@ -527,9 +526,6 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <taskdef name="arch" classname="org.netbeans.nbbuild.Arch">
       <classpath>
         <pathelement location="../nbbuild/nbantext.jar"/>
-        <fileset dir="../libs/external">
-          <include name="xerces*.jar"/>
-        </fileset>
       </classpath>
     </taskdef>
     <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4.2/docs/api"/>
@@ -594,6 +590,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
         <include name="*.css"/>
       </fileset>
     </copy>
+    <!-- To make sure the XHTML DTDs are available for validation: -->
     <ant dir="../libs/external" target="unscramble"/>
     <xmlvalidate file="api/doc/changes/apichanges.xml" failonerror="true"/>
     <style in="api/doc/changes/apichanges.xml" out="javadoc/OpenAPIs/apichanges.html" style="../nbbuild/javadoctools/apichanges.xsl"/>
@@ -664,9 +661,6 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <taskdef name="arch" classname="org.netbeans.nbbuild.Arch">
       <classpath>
         <pathelement location="../nbbuild/nbantext.jar"/>
-        <fileset dir="../libs/external">
-          <include name="xerces*.jar"/>
-        </fileset>
       </classpath>
     </taskdef>
     

@@ -254,9 +254,6 @@ cause it to fail.
         <taskdef name="arch" classname="org.netbeans.nbbuild.Arch">
             <classpath>
                 <pathelement location="../nbantext.jar"/>
-                <fileset dir="../../libs/external">
-                    <include name="xerces*.jar"/>
-                </fileset>
             </classpath>
         </taskdef>
         <!-- Warn about incorrect question version, but do not make build fail: -->
@@ -283,9 +280,6 @@ cause it to fail.
         <taskdef name="arch" classname="org.netbeans.nbbuild.Arch">
             <classpath>
                 <pathelement location="../nbantext.jar"/>
-                <fileset dir="../../libs/external">
-                    <include name="xerces*.jar"/>
-                </fileset>
             </classpath>
         </taskdef>
         <!-- Warn about incorrect question version, but do not make build fail: -->
