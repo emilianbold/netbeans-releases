@@ -576,6 +576,7 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Mount">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
+        <attr name="global-layer" boolvalue="false" />
 
         <file name="SystemFileSystem.instance">
             <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
