@@ -30,5 +30,3 @@ if [ -r ${LOG_DIR}/test.running ]; then
 fi
 
 rm -f ${LOG_DIR}/timeout.pid
-
-echo Timeout end.
