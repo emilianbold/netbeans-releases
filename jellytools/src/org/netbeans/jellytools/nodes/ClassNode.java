@@ -58,6 +58,20 @@ public class ClassNode extends Node {
     static final SaveAsTemplateAction saveAsTemplateAction = new SaveAsTemplateAction();
     static final PropertiesAction propertiesAction = new PropertiesAction();
     
+   
+    /** tests popup menu items for presence */    
+    public void verifyPopup() {
+        verifyPopup(new Action[]{
+            customizeBeanAction,
+            cutAction,
+            copyAction,
+            pasteAction,
+            deleteAction,
+            saveAsTemplateAction,
+            propertiesAction
+        });
+    }
+
 /*   protected static final Action[] javaActions = new Action[] {
         cutAction,
         copyAction,
@@ -110,5 +124,4 @@ public class ClassNode extends Node {
     public void properties() {
         propertiesAction.perform(this);
     }
-   
 }

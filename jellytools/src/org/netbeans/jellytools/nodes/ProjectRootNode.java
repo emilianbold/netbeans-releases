@@ -32,6 +32,24 @@ public class ProjectRootNode extends Node {
     static final PasteAction pasteAction = new PasteAction();
     static final RenameAction renameAction = new RenameAction();
     static final PropertiesAction propertiesAction = new PropertiesAction();
+   
+    /** tests popup menu items for presence */    
+    public void verifyPopup() {
+        verifyPopup(new Action[]{
+            addExistingAction,
+            addNewAction,
+            refreshFolderAction,
+            findAction,
+            changeOrderAction,
+            compileProjectAction,
+            buildProjectAction,
+            executeProjectAction,
+            debugProjectAction,
+            pasteAction,
+            renameAction,
+            propertiesAction
+        });
+    }
     
 //    protected static final Action[] rootActions = new Action[] {
         //  addNewAction,

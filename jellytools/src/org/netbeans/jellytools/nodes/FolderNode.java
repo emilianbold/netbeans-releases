@@ -42,7 +42,7 @@ public class FolderNode extends Node {
 /*   protected static final Action[] folderActions = new Action[] {
         copyAction
     };*/
-
+    
     /** creates new FolderNode
      * @param treePath String tree path inside Filesystems Repository */    
     public FolderNode(String treePath) {
@@ -68,6 +68,26 @@ public class FolderNode extends Node {
      * @param treePath String tree path from parent Node */    
     public FolderNode(Node parent, String treePath) {
         super(parent, treePath);
+    }
+   
+    /** tests popup menu items for presence */    
+    public void verifyPopup() {
+        verifyPopup(new Action[]{
+            exploreFromHereAction,
+            findAction,
+            refreshFolderAction,
+            compileAction,
+            compileAllAction,
+            buildAction,
+            buildAllAction,
+            cleanAction,
+            cleanAllAction,
+            copyAction,
+            cutAction,
+            deleteAction,
+            renameAction,
+            propertiesAction
+        });
     }
     
 /*    Action[] getActions() {

@@ -64,6 +64,27 @@ public class JavaNode extends Node {
     static final RenameAction renameAction = new RenameAction();
     static final SaveAsTemplateAction saveAsTemplateAction = new SaveAsTemplateAction();
     static final PropertiesAction propertiesAction = new PropertiesAction();
+   
+    /** tests popup menu items for presence */    
+    public void verifyPopup() {
+        verifyPopup(new Action[]{
+            openAction,
+            customizeBeanAction,
+            compileAction,
+            buildAction,
+            executeAction,
+            cleanAction,
+            cutAction,
+            copyAction,
+            pasteAction,
+            addClassAction,
+            addInterfaceAction,
+            deleteAction,
+            renameAction,
+            saveAsTemplateAction,
+            propertiesAction
+        });
+    }
     
 /*   protected static final Action[] javaActions = new Action[] {
         cutAction,

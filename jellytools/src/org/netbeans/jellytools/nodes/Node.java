@@ -15,6 +15,7 @@ package org.netbeans.jellytools.nodes;
 
 import java.awt.Component;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.tree.TreePath;
@@ -373,5 +374,18 @@ public class Node {
                 return true;
         return false;
     }*/
+ 
+    /** verifies node's popup paths (of all actions) for presence (without invocation) */    
+    public void verifyPopup(Action actions[]) {
+        ArrayList popupPaths=new ArrayList();
+        String path;
+        for (int i=0; i<actions.length; i++) {
+            path=actions[i].getPopupPath();
+            if (path!=null) {
+                popupPaths.add(path);
+            }
+        }
+        verifyPopup((String[])popupPaths.toArray(new String[0]));
+    }
     
 }

@@ -60,6 +60,23 @@ public class PropertiesNode extends Node {
     static final SaveAsTemplateAction saveAsTemplateAction = new SaveAsTemplateAction();
     static final CustomizeAction customizeAction = new CustomizeAction();
     static final PropertiesAction propertiesAction = new PropertiesAction();
+   
+    /** tests popup menu items for presence */    
+    public void verifyPopup() {
+        verifyPopup(new Action[]{
+            openAction,
+            editAction,
+            cutAction,
+            copyAction,
+            pasteAction,
+            deleteAction,
+            renameAction,
+            addLocaleAction,
+            saveAsTemplateAction,
+            customizeAction,
+            propertiesAction
+        });
+    }
     
 /*   protected static final Action[] javaActions = new Action[] {
         cutAction,

@@ -56,6 +56,19 @@ public class UnrecognizedNode extends Node {
     static final DeleteAction deleteAction = new DeleteAction();
     static final RenameAction renameAction = new RenameAction();
     static final PropertiesAction propertiesAction = new PropertiesAction();
+   
+    /** tests popup menu items for presence */    
+    public void verifyPopup() {
+        verifyPopup(new Action[]{
+            convertToTextAction,
+            cutAction,
+            copyAction,
+            pasteAction,
+            deleteAction,
+            renameAction,
+            propertiesAction
+        });
+    }
     
 /*   protected static final Action[] javaActions = new Action[] {
         cutAction,

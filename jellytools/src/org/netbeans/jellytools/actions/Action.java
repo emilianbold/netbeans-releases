@@ -548,6 +548,34 @@ public class Action {
         return comparator;
     }
     
+    /** getter for popup menu path
+     * @return String popup menu path (or null if not suported)
+     */    
+    public String getPopupPath() {
+        return popupPath;
+    }
+    
+    /** getter for main menu path
+     * @return String main menu path (or null if not suported)
+     */    
+    public String getMenuPath() {
+        return menuPath;
+    }
+    
+    /** getter for system action class
+     * @return Class of system action (or null if not suported)
+     */    
+    public Class getSystemActionClass() {
+        return systemActionClass;
+    }
+    
+    /** getter for array of shortcuts
+     * @return Shortcut[] (or null if not suported)
+     */    
+    public Shortcut[] getShortcuts() {
+        return shortcuts;
+    }
+    
     /** This class defines keyboard shortcut for action execution */    
     public static class Shortcut extends Object {
         /** key code of shortcut (see KeyEvent) */        
