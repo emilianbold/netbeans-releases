@@ -35,6 +35,7 @@ public class Utilities {
     public static String runInDebuggerItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_DebugMainProjectAction_Name");
     public static String stepIntoItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_into_action_name");
     public static String continueItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Continue_action_name");
+    public static String pauseItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Pause_action_name");
     public static String killSessionsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_KillAction_name");
     public static String runToCursorItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Run_to_cursor_action_name");
     
@@ -60,6 +61,7 @@ public class Utilities {
     public static String newWatchTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchDialog_Title");
     
     public static String runningStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_running");
+    public static String stoppedStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_stopped");
     public static String finishedStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_finished");
     public static String buildCompleteStatusBarText = "Finished building";
     
@@ -67,7 +69,7 @@ public class Utilities {
     public static String setMainProjectAction = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
     public static String projectPropertiesAction = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_CustomizeProjectAction_Popup_Name");
     public static String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_Customizer_Title");
-    public static String runningProjectTreeItem = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Config_Run");
+//    public static String runningProjectTreeItem = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Config_Run");
     
     public static String testProjectName = "debugTestProject";
     
@@ -77,6 +79,8 @@ public class Utilities {
     public static Action.Shortcut debugProjectShortcut = new Action.Shortcut(KeyEvent.VK_F5);
     public static Action.Shortcut runToCursorShortcut = new Action.Shortcut(KeyEvent.VK_F4);
     public static Action.Shortcut stepIntoShortcut = new Action.Shortcut(KeyEvent.VK_F7);
+    public static Action.Shortcut stepOutShortcut = new Action.Shortcut(KeyEvent.VK_F7, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK);
+    public static Action.Shortcut stepOverShortcut = new Action.Shortcut(KeyEvent.VK_F8);
     public static Action.Shortcut continueShortcut = new Action.Shortcut(KeyEvent.VK_F5, KeyEvent.CTRL_MASK);
     public static Action.Shortcut killSessionShortcut = new Action.Shortcut(KeyEvent.VK_F5, KeyEvent.SHIFT_MASK);
     public static Action.Shortcut buildProjectShortcut = new Action.Shortcut(KeyEvent.VK_F11);
