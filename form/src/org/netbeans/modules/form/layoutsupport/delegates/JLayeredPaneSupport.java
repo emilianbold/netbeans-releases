@@ -256,6 +256,10 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
                     public PropertyEditor getExpliciteEditor() {
                         return new LayerEditor();
                     }
+                    public void setPropertyContext(
+                        org.netbeans.modules.form.FormPropertyContext ctx)
+                    { // disabling this method due to limited persistence
+                    } // capabilities (compatibility with previous versions)
                 };
 
             for (int i=0; i < props.length; i++)

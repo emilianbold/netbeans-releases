@@ -110,12 +110,15 @@ public abstract class FormProperty extends Node.Property {
         setDisplayName(displayName);
         setShortDescription(shortDescription);
 
+        this.propertyContext = FormPropertyContext.EmptyImpl.getInstance();
         setPropertyContext(propertyContext);
     }
 
     protected FormProperty(FormPropertyContext propertyContext, Class type) {
         super(type);
         setValue("changeImmediate", Boolean.FALSE); // NOI18N
+
+        this.propertyContext = FormPropertyContext.EmptyImpl.getInstance();
         setPropertyContext(propertyContext);
     }
 
@@ -138,6 +141,7 @@ public abstract class FormProperty extends Node.Property {
     protected FormProperty(Class type) {
         super(type);
         setValue("changeImmediate", Boolean.FALSE); // NOI18N
+
         this.propertyContext = FormPropertyContext.EmptyImpl.getInstance();
     }
 

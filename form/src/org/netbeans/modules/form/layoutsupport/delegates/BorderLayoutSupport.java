@@ -360,6 +360,10 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
                         public PropertyEditor getExpliciteEditor() {
                             return new BorderDirectionEditor();
                         }
+                        public void setPropertyContext(
+                            org.netbeans.modules.form.FormPropertyContext ctx)
+                        { // disabling this method due to limited persistence
+                        } // capabilities (compatibility with previous versions)
                     }
                 };
 

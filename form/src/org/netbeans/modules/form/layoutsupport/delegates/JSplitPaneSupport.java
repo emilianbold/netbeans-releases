@@ -403,6 +403,10 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
                                 updateCode();
                             super.propertyValueChanged(old, current);
                         }
+                        public void setPropertyContext(
+                            org.netbeans.modules.form.FormPropertyContext ctx)
+                        { // disabling this method due to limited persistence
+                        } // capabilities (compatibility with previous versions)
                     }
                 };
 

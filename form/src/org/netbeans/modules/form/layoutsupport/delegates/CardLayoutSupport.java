@@ -238,6 +238,10 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
                         public void setTargetValue(Object value) {
                             card = (String)value;
                         }
+                        public void setPropertyContext(
+                            org.netbeans.modules.form.FormPropertyContext ctx)
+                        { // disabling this method due to limited persistence
+                        } // capabilities (compatibility with previous versions)
                     }
                 };
 

@@ -606,6 +606,11 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                     updateCodeExpression();
                 super.propertyValueChanged(old, current);
             }
+
+            public void setPropertyContext(
+                org.netbeans.modules.form.FormPropertyContext ctx)
+            { // disabling this method due to limited persistence
+            } // capabilities (compatibility with previous versions)
         }
     }
 

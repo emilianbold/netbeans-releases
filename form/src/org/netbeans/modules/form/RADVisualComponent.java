@@ -222,15 +222,8 @@ public class RADVisualComponent extends RADComponent {
                 prop.addVetoableChangeListener(getConstraintsListener());
                 prop.addPropertyChangeListener(getConstraintsListener());
 
-                // Temporary hack - we allow multiple property editors for non
-                // primitive constraint properties - from the standard supports
-                // this is only the case of JTabbedPane for which there is a
-                // special persistence (but not for others).
-                // [But custom (non-standard) layout supports should not be
-                // restricted this way...]
-                if (!prop.getValueType().isPrimitive())
-                    prop.setPropertyContext(
-                        new RADProperty.RADPropertyContext(this));
+                prop.setPropertyContext(
+                    new RADProperty.RADPropertyContext(this));
 
                 if (isReadOnly()) {
                     int type = prop.getAccessType() | FormProperty.NO_WRITE;

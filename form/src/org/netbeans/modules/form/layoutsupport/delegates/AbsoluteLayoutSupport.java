@@ -456,6 +456,10 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                     public void setTargetValue(Object value) {
                         x = ((Integer)value).intValue();
                     }
+                    public void setPropertyContext(
+                        org.netbeans.modules.form.FormPropertyContext ctx)
+                    { // disabling this method due to limited persistence
+                    } // capabilities (compatibility with previous versions)
                 },
 
                 new FormProperty("AbsoluteLayoutConstraints posy", // NOI18N
@@ -469,6 +473,10 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                     public void setTargetValue(Object value) {
                         y = ((Integer)value).intValue();
                     }
+                    public void setPropertyContext(
+                        org.netbeans.modules.form.FormPropertyContext ctx)
+                    { // disabling this method due to limited persistence
+                    } // capabilities (compatibility with previous versions)
                 },
 
                 new FormProperty("AbsoluteLayoutConstraints width", // NOI18N
@@ -497,6 +505,10 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                                      refComponent.getPreferredSize().width);
                         return super.getJavaInitializationString();
                     }
+                    public void setPropertyContext(
+                        org.netbeans.modules.form.FormPropertyContext ctx)
+                    { // disabling this method due to limited persistence
+                    } // capabilities (compatibility with previous versions)
                 },
 
                 new FormProperty("AbsoluteLayoutConstraints height", // NOI18N
@@ -525,6 +537,10 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                                      refComponent.getPreferredSize().height);
                         return super.getJavaInitializationString();
                     }
+                    public void setPropertyContext(
+                        org.netbeans.modules.form.FormPropertyContext ctx)
+                    { // disabling this method due to limited persistence
+                    } // capabilities (compatibility with previous versions)
                 }
             };
         }
