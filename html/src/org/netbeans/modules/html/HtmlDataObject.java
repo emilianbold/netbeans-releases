@@ -32,7 +32,7 @@ import org.openide.cookies.ViewCookie;
 public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory {
 
     private static final String HTML_ICON_BASE =
-        "/org/netbeans/modules/html/htmlObject"; // NOI18N
+        "org/netbeans/modules/html/htmlObject"; // NOI18N
 
     static final long serialVersionUID =8354927561693097159L;
     
