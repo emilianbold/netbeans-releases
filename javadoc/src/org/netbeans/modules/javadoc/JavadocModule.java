@@ -17,6 +17,7 @@ import java.io.*;
 
 // IDE imports ------------------
 
+import com.netbeans.ide.actions.CutAction;
 import com.netbeans.ide.util.actions.SystemAction;
 import com.netbeans.ide.modules.ModuleInstall;
 import com.netbeans.ide.loaders.DataFolder;
@@ -56,20 +57,20 @@ public class JavadocModule implements ModuleInstall {
     
     // Install DataFolder action
     installActions( TopManager.getDefault().getLoaderPool().firstProducerOf( DataFolder.class ),
-      2, new SystemAction[] { null, SystemAction.get( GenerateDocAction.class ) } );
+      new SystemAction[] { SystemAction.get( GenerateDocAction.class ), null } );
 
     // Install JavaDataObject action
     
     DataLoader javaLoader = TopManager.getDefault().getLoaderPool().firstProducerOf( JavaDataObject.class );
     if (javaLoader != null) {
-      installActions(javaLoader, 2, new SystemAction[] { null, SystemAction.get( GenerateDocAction.class ) } );
+      installActions(javaLoader, new SystemAction[] { SystemAction.get( GenerateDocAction.class ), null } );
     }
     else {
       TopManager.getDefault().getLoaderPool().addChangeListener(new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
           DataLoader javaL = TopManager.getDefault().getLoaderPool().firstProducerOf( JavaDataObject.class );
           if (javaL != null) {
-            installActions(javaL, 2, new SystemAction[] { null, SystemAction.get( GenerateDocAction.class ) } );
+            installActions(javaL, new SystemAction[] { SystemAction.get( GenerateDocAction.class ), null } );
             TopManager.getDefault().getLoaderPool().removeChangeListener(this);
           }
         }
@@ -87,9 +88,35 @@ public class JavadocModule implements ModuleInstall {
   }
 
  
+  private void installActions ( DataLoader dl, SystemAction sa[] ) {
+    SystemAction old_sa[], new_sa[]; 
+    int i;
+    int j = 0;
+
+    old_sa = dl.getActions();
+
+    new_sa = new SystemAction[ old_sa.length + sa.length ];
+     
+    for (i = 0; i < old_sa.length; i++) {
+      if (old_sa[i] instanceof CutAction) {
+        for (j = 0; j < sa.length ; j++ )
+          new_sa[i + j] = sa[j];
+        }
+      new_sa[i+j] = old_sa[i];
+    } 
+
+    if (j == 0) {
+      for (j = 0; i < sa.length ; j++ )
+          new_sa[i + j] = sa[j];
+    }
+
+  dl.setActions( new_sa );
+  }
+
 
   /** Installs sa[] actions on position <code>index</code> bottom of menu 
   */
+  
   private void installActions ( DataLoader dl, int index, SystemAction sa[] ) {
     int          i, j; 
     SystemAction old_sa[], new_sa[]; 
@@ -117,13 +144,14 @@ public class JavadocModule implements ModuleInstall {
 
     dl.setActions( new_sa );
   }
-
+  
 
 
 }
 
 /* 
  * Log
+ *  2    Gandalf   1.1         4/23/99  Petr Hrebejk    
  *  1    Gandalf   1.0         4/23/99  Petr Hrebejk    
  * $ 
  */ 
