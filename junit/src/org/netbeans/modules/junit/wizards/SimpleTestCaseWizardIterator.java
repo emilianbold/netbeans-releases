@@ -301,7 +301,7 @@ public class SimpleTestCaseWizardIterator
         try {
             return CreateTestAction.createSingleTest(
                 testClassPath, classToTest,
-                templateDataObj, null,
+                templateDataObj,
                 null, null, false).getCreated();
         } catch (CreateTestAction.CreationError ex) {
             throw new IOException();

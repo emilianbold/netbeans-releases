@@ -100,8 +100,6 @@ public class CreateTestAction extends TestAction {
         }
         
         protected void performAction(Node[] nodes) {
-            DataObject doTestTempl = null;
-            DataObject doSuiteTempl = null;
             
             // show configuration dialog
             // when dialog is canceled, escape the action
@@ -109,38 +107,25 @@ public class CreateTestAction extends TestAction {
             if (!cfg.configure()) {
                 return;
             }
+            final boolean singleClass = (nodes.length == 1)
+                                        && cfg.isSingleClass();
+            
             final FileObject targetFolder = cfg.getTargetFolder();
             final ClassPath testClassPath = ClassPathSupport.createClassPath(
                                                new FileObject[] {targetFolder});
             
-            String temp = null;
-            try {
-                // get the Suite class template
-                temp = NbBundle.getMessage(CreateTestAction.class,
-                                           "PROP_testSuiteTemplate");   //NOI18N
-                FileObject fo = Repository.getDefault().getDefaultFileSystem()
-                                .findResource(temp);
-                if (fo == null) {
-                    noTemplateMessage(temp);
-                    return;
-                }
-                doSuiteTempl = DataObject.find(fo);
-                
-                // get the Test class template
-                temp = NbBundle.getMessage(CreateTestAction.class,
-                                           "PROP_testClassTemplate");   //NOI18N
-                fo = Repository.getDefault().getDefaultFileSystem()
-                     .findResource(temp);
-                
-                if (fo == null) {
-                    noTemplateMessage(temp);
-                    return;
-                }
-                doTestTempl = DataObject.find(fo);
-            }
-            catch (DataObjectNotFoundException e) {
-                noTemplateMessage(temp);
+            DataObject doTestTempl;
+            if ((doTestTempl = loadTestTemplate("PROP_testClassTemplate"))
+                    == null) {
                 return;
+            }
+            
+            DataObject doSuiteTempl = null;
+            if (!singleClass) {
+                if ((doSuiteTempl = loadTestTemplate("PROP_testSuiteTemplate"))
+                        == null) {
+                    return;
+                }
             }
             
             TestCreator.initialize();
@@ -154,45 +139,51 @@ public class CreateTestAction extends TestAction {
             progress.displayStatusText(msg);
             
             // results will be accumulated here
-            CreationResults results = new CreationResults();
+            CreationResults results;
             
             try {
-                HashSet reportedMissingURLs = new HashSet(nodes.length);
-                // go through all nodes
-                for(int nodeIdx = 0; nodeIdx < nodes.length; nodeIdx++) {
-                    if (hasParentAmongNodes(nodes, nodeIdx)) {
-                        continue;
+                if (singleClass) {
+                    FileObject fo = getTestFileObject(nodes[0]);
+                    if (fo != null) {
+                        try {
+                            results = createSingleTest(
+                                    testClassPath,
+                                    fo,
+                                    doTestTempl,
+                                    null,              //parent suite
+                                    progress,
+                                    false);            //do not skip any classes
+                        } catch (CreationError ex) {
+                            ErrorManager.getDefault().notify(ex);
+                            results = new CreationResults();
+                        }
+                    } else {
+                        results = new CreationResults();
                     }
-                    FileObject fo = TestUtil
-                                    .getFileObjectFromNode(nodes[nodeIdx]);
-                    if (fo == null) {
-                        TestUtil.notifyUser(NbBundle.getMessage(
-                                CreateTestAction.class,
-                                "MSG_file_from_node_failed"));          //NOI18N
-                        continue;
-                    }
-                    ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                    if (cp == null) {
-                        TestUtil.notifyUser(NbBundle.getMessage(
-                                CreateTestAction.class,
-                                "MSG_no_project",                       //NOI18N
-                                fo));
-                        continue;
-                    }
+                } else {
+                    results = new CreationResults();
                     
-                    try {
-                        results.combine(createTests(nodes[nodeIdx],
-                                                    testClassPath,
-                                                    doTestTempl,
-                                                    doSuiteTempl,
-                                                    null,
-                                                    progress));
-                    } catch (CreationError e) {
-                        ErrorManager.getDefault().notify(e);
+                    // go through all nodes
+                    for(int nodeIdx = 0; nodeIdx < nodes.length; nodeIdx++) {
+                        if (hasParentAmongNodes(nodes, nodeIdx)) {
+                            continue;
+                        }
+                        FileObject fo = getTestFileObject(nodes[nodeIdx]);
+                        if (fo == null) {
+                            continue;
+                        }
+                        try {
+                            results.combine(createTests(nodes[nodeIdx],
+                                                        testClassPath,
+                                                        doTestTempl,
+                                                        doSuiteTempl,
+                                                        null,
+                                                        progress));
+                        } catch (CreationError e) {
+                            ErrorManager.getDefault().notify(e);
+                        }
                     }
-                    
                 }
-                
             } finally {
                 progress.hide();
             }
@@ -228,6 +219,61 @@ public class CreateTestAction extends TestAction {
                     ec.open();
                 }
             }
+        }
+        
+        /**
+         * Loads a test template.
+         * If the template loading fails, displays an error message.
+         *
+         * @param  templateID  bundle key identifying the template type
+         * @return  loaded template, or <code>null</code> if the template
+         *          could not be loaded
+         */
+        private static DataObject loadTestTemplate(String templateID) {
+            // get the Test class template
+            String path = NbBundle.getMessage(CreateTestAction.class,
+                                              templateID);
+            try {
+                FileObject fo = Repository.getDefault().getDefaultFileSystem()
+                                .findResource(path);
+                if (fo == null) {
+                    noTemplateMessage(path);
+                    return null;
+                }
+                return DataObject.find(fo);
+            }
+            catch (DataObjectNotFoundException e) {
+                noTemplateMessage(path);
+                return null;
+            }
+        }
+        
+        /**
+         * Grabs and checks a <code>FileObject</code> from the given node.
+         * If either the file could not be grabbed or the file does not pertain
+         * to any project, a message is displayed.
+         *
+         * @param  node  node to get a <code>FileObject</code> from.
+         * @return  the grabbed <code>FileObject</code>,
+         *          or <code>null</code> in case of failure
+         */
+        private static FileObject getTestFileObject(final Node node) {
+            final FileObject fo = TestUtil.getFileObjectFromNode(node);
+            if (fo == null) {
+                TestUtil.notifyUser(NbBundle.getMessage(
+                        CreateTestAction.class,
+                        "MSG_file_from_node_failed"));                  //NOI18N
+                return null;
+            }
+            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+            if (cp == null) {
+                TestUtil.notifyUser(NbBundle.getMessage(
+                        CreateTestAction.class,
+                        "MSG_no_project",                               //NOI18N
+                        fo));
+                return null;
+            }
+            return fo;
         }
         
         private static void ensureFolder(URL url) throws java.io.IOException {
@@ -368,7 +414,6 @@ public class CreateTestAction extends TestAction {
                     return createSingleTest(testClassPath,
                                             foSource,
                                             doTestT,
-                                            doSuiteT,
                                             parentSuite,
                                             progress,
                                             true);
@@ -380,7 +425,6 @@ public class CreateTestAction extends TestAction {
                 ClassPath testClassPath,
                 FileObject foSource,
                 DataObject doTestT,
-                DataObject doSuiteT,
                 LinkedList parentSuite,
                 ProgressIndicator progress,
                 boolean skipNonTestable) throws CreationError {

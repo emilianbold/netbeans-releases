@@ -278,6 +278,16 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         return false;
     }
     
+    /**
+     * Returns whether a test for a single class is to be created.
+     *
+     * @return  true if there is only one node selected and the node
+     *          represents a class
+     */
+    boolean isSingleClass() {
+        return singleClass;
+    }
+    
     /** resource bundle used during initialization of this panel */
     public ResourceBundle bundle;
     
