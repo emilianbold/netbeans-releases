@@ -1,0 +1,33 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+-//NetBeans//DTD PDF Document Menu Link 1.0//EN
+XML file representing the desire to have a link to a PDF document.
+May be given as an absolute file, localized path within IDE home, or as a URL.
+See: org.netbeans.modules.pdf.LinkProcessor
+-->
+
+<!ELEMENT pdfLink (file | idefile | url) >
+<!ELEMENT file EMPTY>
+<!ATTLIST file
+          path CDATA #REQUIRED
+>
+<!ELEMENT idefile EMPTY>
+<!ATTLIST idefile
+          base CDATA #REQUIRED
+>
+<!ELEMENT url EMPTY>
+<!ATTLIST url
+          name CDATA #REQUIRED
+>

@@ -33,6 +33,8 @@ import org.netbeans.modules.openfile.*;
 
 import org.netbeans.modules.group.CreateGroupAction;
 
+import org.netbeans.modules.pdf.LinkProcessor;
+
 /** ModuleInstall class for Utilities module
 *
 * @author Jesse Glick, Petr Kuzel, Martin Ryzl
@@ -71,6 +73,9 @@ public class Installer extends ModuleInstall {
                                               Settings.DEFAULT.isRunning ();
                                           }
                                       }, 60000);
+        
+        LinkProcessor.init ();
+
     }
 
     public void uninstalled () {
@@ -101,6 +106,9 @@ public class Installer extends ModuleInstall {
                                               Settings.DEFAULT.isRunning ();
                                           }
                                       }, 60000);
+
+        LinkProcessor.init ();
+                                      
     }
 
     // -----------------------------------------------------------------------------
