@@ -53,4 +53,12 @@ class DefaultLayoutSupport extends AbstractLayoutSupport {
             ex.printStackTrace();
         }
     }
+
+    /** Cloning method - creates a new instance of this layout support, just
+     * not initialized yet.
+     * @return new instance of this layout support
+     */
+    protected AbstractLayoutSupport createLayoutSupportInstance() {
+        return new DefaultLayoutSupport(layoutClass);
+    }
 }

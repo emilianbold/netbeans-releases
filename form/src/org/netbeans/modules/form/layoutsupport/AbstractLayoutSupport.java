@@ -18,6 +18,7 @@ import java.beans.*;
 import java.util.*;
 import java.lang.reflect.Method;
 
+import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
@@ -40,13 +41,17 @@ import org.netbeans.modules.form.codestructure.*;
  *     adding with layout constraints).
  *
  * To create basic support for such a layout manager, it's enough to implement
- * getSupportedClass method only. Note that the default implementation does not
- * (and even cannot) provide any working general support for layout constraints
- * of components - this must be implemented in the sublasses individually.
- * See BorderLayoutSupport for an example of using simple value constraints,
- * AbsoluteLayoutSupport for complex object constraints (created by
- * constructor), GridBagLayoutSupport for complex constraints with special
- * initialization code.
+ * getSupportedClass method only.
+ *
+ * Note that the subclass should have public constructor without parameters,
+ * otherwise it should override cloneSupportInstance method.
+ *
+ * Note that the default implementation does not (and even cannot) provide any
+ * working support for layout constraints of components in general - this must
+ * be implemented in the sublasses individually. See BorderLayoutSupport for an
+ * example of using simple value constraints, AbsoluteLayoutSupport for complex
+ * object constraints (created by constructor), GridBagLayoutSupport for complex
+ * constraints with special initialization code.
  * 
  * @author Tomas Pavek
  */
@@ -748,16 +753,14 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
                                      LayoutSupportContext targetContext,
                                      CodeExpression[] targetComponents)
     {
-        AbstractLayoutSupport clone;
+        AbstractLayoutSupport clone = createLayoutSupportInstance();
         try {
-            clone = (AbstractLayoutSupport) getClass().newInstance();
             clone.initialize(targetContext, null, false);
         }
-        catch (Exception ex) {
-            ex.printStackTrace();
+        catch (Exception ex) { // should not fail (not reading from code)
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return null;
         }
-
 
         FormProperty[] sourceProperties = getAllProperties();
         FormProperty[] targetProperties = clone.getAllProperties();
@@ -810,6 +813,19 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     {
         return metaLayout == null ? null :
                (LayoutManager) metaLayout.cloneBeanInstance(null);
+    }
+
+    /** Cloning method - creates a new instance of this layout support, just
+     * not initialized yet.
+     * @return new instance of this layout support
+     */
+    protected AbstractLayoutSupport createLayoutSupportInstance() {
+        try {
+            return (AbstractLayoutSupport) getClass().newInstance();
+        }
+        catch (Exception ex) { // should not happen for AbstractLayoutSupport subclasses
+            return null;
+        }
     }
 
     /** This methods returns the code expression to be used for container on
