@@ -47,6 +47,9 @@ public class UserPropertyWriter extends Task {
         if (prefix == null) 
             log("No propertyPrefix set. All properties will be written to file.");
         
+        if (!file.getParentFile().exists())
+            file.getParentFile().mkdirs();
+        
         Hashtable table = project.getProperties();
         Enumeration enum = table.keys();
         while (enum.hasMoreElements()) {
