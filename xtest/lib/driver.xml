@@ -27,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
    
    <property name="xtest.home" location=".."/>
    <property name="xtest.driver.backup" location="backup"/>
+   <property name="xtest.ide.exit" value="true"/>
    
    <property name="driver.classpath" location="${xtest.home}/lib/xtest.jar"/>
    <property name="xerces.classpath" location="${xtest.home}/lib/xerces.jar"/>
