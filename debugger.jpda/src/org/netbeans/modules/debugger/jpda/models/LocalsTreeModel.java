@@ -86,30 +86,78 @@ public class LocalsTreeModel implements TreeModel {
     throws NoInformationException, UnknownTypeException {
         try {
             if (o.equals (ROOT)) {
-                Object[] os = getLocalVariables (true);
+                Object[] os = getLocalVariables (true, from, to);
                 return os;
             } else
             if (o instanceof SuperVariable) {
                 SuperVariable mv = (SuperVariable) o;
-                return getSuperFields (mv, true);
+                return getSuperFields (mv, true, from, to);
             } else
             if (o instanceof AbstractVariable) { // ThisVariable & FieldVariable
                 AbstractVariable mv = (AbstractVariable) o;
-                if ( (mv.getInnerValue () instanceof ArrayReference) &&
-                     (mv.getFieldsCount () > 50)
-                ) {
-                    AbstractVariable[] vs = getFields (mv, true, 0, 50);
-                    Object[] vs1 = new Object [51];
-                    System.arraycopy (vs, 0, vs1, 0, 50);
-                    vs1 [50] = "More"; // NOI18N
-                    return vs1; 
-                }
-                return getFields (mv, true, 0, 0);
+//                if ( (mv.getInnerValue () instanceof ArrayReference) &&
+//                     (mv.getFieldsCount () > 50)
+//                ) {
+//                    AbstractVariable[] vs = getFields (mv, true, 0, 50);
+//                    Object[] vs1 = new Object [51];
+//                    System.arraycopy (vs, 0, vs1, from, 50);
+//                    vs1 [50] = "More"; // NOI18N
+//                    return vs1; 
+//                }
+                return getFields (mv, true, from, to);
             } else
             throw new UnknownTypeException (o);
         } catch (VMDisconnectedException ex) {
             return new Object [0];
         }
+    }
+    
+    /**
+     * Returns number of children for given node.
+     * 
+     * @param   node the parent node
+     * @throws  UnknownTypeException if this TreeModel implementation is not
+     *          able to resolve children for given node type
+     *
+     * @return  true if node is leaf
+     */
+    public int getChildrenCount (Object node) throws UnknownTypeException,
+    NoInformationException {
+        try {
+            if (node.equals (ROOT)) {
+                CallStackFrameImpl frame = (CallStackFrameImpl) debugger.
+                    getCurrentCallStackFrame ();
+                if (frame == null) 
+                    throw new NoInformationException ("No current thread");
+                StackFrame sf = frame.getStackFrame ();
+                if (sf == null) 
+                    throw new NoInformationException ("No current thread");
+                try {
+                    int i = sf.visibleVariables ().size ();
+                    if (sf.thisObject () != null) i++;
+                    return i;
+                } catch (AbsentInformationException ex) {
+                    throw new NoInformationException ("compiled without -g");
+                } catch (NativeMethodException ex) {
+                    throw new NoInformationException ("native method");
+                } catch (InvalidStackFrameException ex) {
+                    throw new NoInformationException ("thread is running");
+                } catch (VMDisconnectedException ex) {
+                }
+                return 0;
+            } else
+            if (node instanceof SuperVariable) {
+                SuperVariable mv = (SuperVariable) node;
+                return getSuperFields (mv, true, 0, 0).length;
+            } else
+            if (node instanceof AbstractVariable) { // ThisVariable & FieldVariable
+                AbstractVariable mv = (AbstractVariable) node;
+                return getFields (mv, true, 0, 0).length;
+            } else
+            throw new UnknownTypeException (node);
+        } catch (VMDisconnectedException ex) {
+        }
+        return 0;
     }
     
     public boolean isLeaf (Object o) throws UnknownTypeException {
@@ -153,36 +201,45 @@ public class LocalsTreeModel implements TreeModel {
     
     // private methods .........................................................
     
-    AbstractVariable[] getLocalVariables (boolean includeThis)
+    AbstractVariable[] getLocalVariables (boolean includeThis, int from, int to)
     throws NoInformationException {
         synchronized (debugger.LOCK) {
             CallStackFrameImpl frame = (CallStackFrameImpl) debugger.
                 getCurrentCallStackFrame ();
-            if (frame == null) return new AbstractVariable [0];
             return getLocalVariables (
                 frame,
-                includeThis
+                includeThis,
+                from,
+                to
             );
         }
     }
     
     AbstractVariable[] getLocalVariables (
         CallStackFrameImpl frame, 
-        boolean includeThis
+        boolean includeThis, 
+        int from, int to
     ) throws NoInformationException {
-        if (frame == null) throw new NoInformationException ("No current thread");
+        if (frame == null) 
+            throw new NoInformationException ("No current thread");
         StackFrame sf = frame.getStackFrame ();
-        if (sf == null) throw new NoInformationException ("No current thread");
+        if (sf == null) 
+            throw new NoInformationException ("No current thread");
         try {
             ObjectReference thisR = sf.thisObject ();
             String className = sf.location ().declaringType ().name ();
             List l = sf.visibleVariables ();
-            int k = l.size (), j = 0, i = 0;
-            if ((thisR != null) && includeThis) k++;
-            
+            int k = to - from, // length of result
+                j = from,      // current position in l
+                i = 0;         // current position in result
+            if (to == 0) to = l.size () + 
+                (((thisR != null) && includeThis) ? 1 : 0);
             AbstractVariable[] locals = new AbstractVariable [k];
-            if ((thisR != null) && includeThis)
-                locals [i++] = getThis (thisR, "");
+            if ((thisR != null) && includeThis) {
+                if (from == 0)
+                    locals [i++] = getThis (thisR, "");
+                j--;
+            }
             for (; i < k; i++) {
                 LocalVariable lv = (LocalVariable) l.get (j++);
                 locals [i] = getLocal (lv, frame, className);
@@ -201,7 +258,8 @@ public class LocalsTreeModel implements TreeModel {
     
     AbstractVariable[] getSuperFields (
         SuperVariable mv,
-        boolean includeSuper
+        boolean includeSuper,
+        int from, int to
     ) {
         ObjectReference or = (ObjectReference) mv.getInnerValue ();
         ReferenceType rt = mv.getSuperClass ();
@@ -209,7 +267,9 @@ public class LocalsTreeModel implements TreeModel {
             or, 
             rt, 
             true,
-            ((AbstractVariable) mv).getID ()
+            ((AbstractVariable) mv).getID (),
+            from,
+            to
         );
     }
     
@@ -230,27 +290,19 @@ public class LocalsTreeModel implements TreeModel {
                 from, to
             );
         else 
-            return getFields (or, rt, includeSuper, mv.getID ());
+            return getFields (or, rt, includeSuper, mv.getID (), from, to);
     }
     
     private AbstractVariable[] getFields (
         ObjectReference or, 
         ReferenceType rt,
         boolean includeSuper,
-        String parentID
+        String parentID,
+        int from, int to
     ) {
-    // ThisVariable & FieldVariable & SuperVariable
         List l = rt.fields ();
-        ArrayList ch = new ArrayList ();
+        List ch = new ArrayList ();
         ClassType superRt = null;
-       // String className = rt.name ();
-//        if ( includeSuper &&
-//             (rt instanceof ClassType)
-//        ) {
-//            superRt = ((ClassType) rt).superclass ();
-//            if (superRt != null)
-//                ch.add (getSuper (superRt, or, parentID));
-//        }
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             Field f = (Field) l.get (i);
@@ -258,11 +310,15 @@ public class LocalsTreeModel implements TreeModel {
                 continue;
             ch.add (getField (f, or, parentID));
         }
+        if (to != 0)
+            ch = ch.subList (from, to);
         return (AbstractVariable[]) ch.toArray (new AbstractVariable [ch.size ()]);
     }
     
     FieldVariable[] getAllStaticFields (
-        AbstractVariable av
+        AbstractVariable av,
+        int from,
+        int to
     ) {
         Value v = av.getInnerValue ();
         if ( (v == null) || !(v instanceof ObjectReference)) return new FieldVariable [0];
@@ -270,7 +326,7 @@ public class LocalsTreeModel implements TreeModel {
         ReferenceType rt = or.referenceType ();
         if (rt instanceof ArrayType) return new FieldVariable [0];
         List l = rt.allFields ();
-        ArrayList ch = new ArrayList ();
+        List ch = new ArrayList ();
         //String className = rt.name ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
@@ -278,11 +334,15 @@ public class LocalsTreeModel implements TreeModel {
             if (f.isStatic ())
                 ch.add (getField (f, or, av.getID ()));
         }
+        if (to != 0) 
+            ch = ch.subList (from, to);
         return (FieldVariable[]) ch.toArray (new FieldVariable [ch.size ()]);
     }
     
     FieldVariable[] getInheritedFields (
-        AbstractVariable av
+        AbstractVariable av,
+        int from, 
+        int to
     ) {
         Value v = av.getInnerValue ();
         if ( (v == null) || !(v instanceof ObjectReference)) return new FieldVariable [0];
@@ -290,7 +350,7 @@ public class LocalsTreeModel implements TreeModel {
         ReferenceType rt = or.referenceType ();
         List l = rt.allFields ();
         Set s = new HashSet (rt.fields ());
-        ArrayList ch = new ArrayList ();
+        List ch = new ArrayList ();
        // String className = rt.name ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
@@ -301,6 +361,8 @@ public class LocalsTreeModel implements TreeModel {
                 continue;
             ch.add (getField (f, or, av.getID ()));
         }
+        if (to != 0) 
+            ch = ch.subList (from, to);
         return (FieldVariable[]) ch.toArray (new FieldVariable [ch.size ()]);
     }
     
@@ -313,10 +375,11 @@ public class LocalsTreeModel implements TreeModel {
     ) {
     // ThisVariable & FieldVariable & SuperVariable
         List l = null;
-        if (to == from) 
-            l = ar.getValues ();
+        int s = Math.min (50, ar.length ());
+        if (to == 0) 
+            l = ar.getValues (0, s);
         else
-            l = ar.getValues (from, to);
+            l = ar.getValues (from, to - from); // length!!!
         int i, k = l.size ();
         AbstractVariable[] ch = new AbstractVariable [k];
         String className = ar.referenceType ().name ();

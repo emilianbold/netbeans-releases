@@ -61,18 +61,42 @@ NodeActionsProvider {
             JPDAThread t = (JPDAThread) o;
             ObjectVariable contended = t.getContendedMonitor ();
             ObjectVariable[] owned = t.getOwnedMonitors ();
-            int i = 0, k = 0;
-            if (contended != null) k++;
-            if (owned.length > 0) k++;
-            Object[] os = new Object [k];
-            if (contended != null) os [i++] = new ContendedMonitor (contended);
-            if (owned.length > 0) os [i++] = new OwnedMonitors (owned);
+            int i = 0;
+            Object[] os = new Object [to - from];
+            if ( (contended != null) &&
+                 (from < 1) && (to > 0)
+            ) os [i++] = new ContendedMonitor (contended);
+            if ( (owned.length > 0) &&
+                 (from < 2) && (to > 1)
+            ) os [i++] = new OwnedMonitors (owned);
             return os;
         }
         if (o instanceof OwnedMonitors) {
-            return ((OwnedMonitors) o).variables;
+            OwnedMonitors om = (OwnedMonitors) o;
+            Object[] fo = new Object [to - from];
+            System.arraycopy (om.variables, from, fo, 0, to - from);
+            return fo;
         }
         return model.getChildren (o, from, to);
+    }
+    
+    public int getChildrenCount (
+        TreeModel model, 
+        Object o
+    ) throws NoInformationException, ComputingException, UnknownTypeException {
+        if (o instanceof JPDAThread) {
+            JPDAThread t = (JPDAThread) o;
+            ObjectVariable contended = t.getContendedMonitor ();
+            ObjectVariable[] owned = t.getOwnedMonitors ();
+            int i = 0;
+            if (contended != null) i++;
+            if (owned.length > 0) i++;
+            return i;
+        }
+        if (o instanceof OwnedMonitors) {
+            return ((OwnedMonitors) o).variables.length;
+        }
+        return model.getChildrenCount (o);
     }
     
     public boolean isLeaf (TreeModel model, Object o) 

@@ -532,6 +532,24 @@ public final class Models {
 
             return filter.getChildren (model, parent, from, to);
         }
+    
+        /**
+         * Returns number of children for given node.
+         * 
+         * @param   node the parent node
+         * @throws  NoInformationException if the set of children can not be 
+         *          resolved
+         * @throws  ComputingException if the children resolving process 
+         *          is time consuming, and will be performed off-line 
+         * @throws  UnknownTypeException if this TreeModel implementation is not
+         *          able to resolve children for given node type
+         *
+         * @return  true if node is leaf
+         */
+        public int getChildrenCount (Object node) throws 
+        NoInformationException, ComputingException, UnknownTypeException {
+            return filter.getChildrenCount (model, node);
+        }
 
         /**
          * Returns true if node is leaf.
@@ -1259,6 +1277,23 @@ public final class Models {
          */
         public Object[] getChildren (Object parent, int from, int to) {
             return new Object [0];
+        }
+    
+        /**
+         * Returns number of children for given node.
+         * 
+         * @param   node the parent node
+         * @throws  NoInformationException if the set of children can not be 
+         *          resolved
+         * @throws  ComputingException if the children resolving process 
+         *          is time consuming, and will be performed off-line 
+         * @throws  UnknownTypeException if this TreeModel implementation is not
+         *          able to resolve children for given node type
+         *
+         * @return  true if node is leaf
+         */
+        public int getChildrenCount (Object node) {
+            return 0;
         }
 
         /**

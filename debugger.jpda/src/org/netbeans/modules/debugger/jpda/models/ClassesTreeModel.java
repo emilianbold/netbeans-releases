@@ -91,20 +91,57 @@ public class ClassesTreeModel implements TreeModel {
     public Object[] getChildren (Object o, int from, int to) 
     throws NoInformationException, UnknownTypeException {
         try {
-            if (o.equals (ROOT))
-                return getLoaders ();
-            if (o instanceof Object[])
-                return getChildren ((Object[]) o);
-            if (o instanceof ClassLoaderReference)
-                return getPackages ((ClassLoaderReference) o);
-            if (o == NULL_CLASS_LOADER)
-                return getPackages (null);
+            Object[] r = null;
+            if (o.equals (ROOT)) {
+                r = getLoaders ();
+            } else
+            if (o instanceof Object[]) {
+                r = getChildren ((Object[]) o);
+            } else
+            if (o instanceof ClassLoaderReference) {
+                r = getPackages ((ClassLoaderReference) o);
+            } else
+            if (o == NULL_CLASS_LOADER) {
+                r = getPackages (null);
+            } else
             if (o instanceof ReferenceType) {
-                return ((ReferenceType) o).nestedTypes ().toArray ();
-            }
+                r = ((ReferenceType) o).nestedTypes ().toArray ();
+            } else
             throw new UnknownTypeException (o);
+            Object[] rr = new Object [to - from];
+            System.arraycopy (r, from, rr, 0, to - from);
+            return rr;
         } catch (VMDisconnectedException ex) {
             return new Object [0];
+        }
+    }
+    
+    /**
+     * Returns number of children for given node.
+     * 
+     * @param   node the parent node
+     * @throws  UnknownTypeException if this TreeModel implementation is not
+     *          able to resolve children for given node type
+     *
+     * @return  true if node is leaf
+     */
+    public int getChildrenCount (Object node) throws NoInformationException, 
+    UnknownTypeException {
+        try {
+            if (node.equals (ROOT))
+                return getLoaders ().length;
+            if (node instanceof Object[])
+                return getChildren ((Object[]) node).length;
+            if (node instanceof ClassLoaderReference)
+                return getPackages ((ClassLoaderReference) node).length;
+            if (node == NULL_CLASS_LOADER)
+                return getPackages (null).length;
+            if (node instanceof ReferenceType) {
+                return ((ReferenceType) node).nestedTypes ().size ();
+            }
+            throw new UnknownTypeException (node);
+        } catch (VMDisconnectedException ex) {
+            return 0;
         }
     }
     

@@ -87,6 +87,30 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
     }
     
     /**
+     * Returns number of filterred children for given node.
+     * 
+     * @param   original the original tree model
+     * @param   node the parent node
+     * @throws  NoInformationException if the set of children can not be 
+     *          resolved
+     * @throws  ComputingException if the children resolving process 
+     *          is time consuming, and will be performed off-line 
+     * @throws  UnknownTypeException if this TreeModel implementation is not
+     *          able to resolve children for given node type
+     *
+     * @return  true if node is leaf
+     */
+    public int getChildrenCount (
+        TreeModel   original, 
+        Object      parent
+    ) throws NoInformationException, ComputingException, UnknownTypeException {
+        VariablesFilter vf = getFilter (parent);
+        if (vf == null) 
+            return original.getChildrenCount (parent);
+        return vf.getChildrenCount (original, (Variable) parent);
+    }
+    
+    /**
      * Returns true if node is leaf.
      * 
      * @param   original the original tree model

@@ -79,20 +79,28 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             breakpoint.getURL (),
             '.', false
         );
-        if (className == null) 
+        if (className == null) {
+            //HACK: for JSPs.
+            //PENDING
             className = breakpoint.getURL ();
-        setClassRequests (
-            new String[] {
-                className,
-                className + ".*", // innerclasses
-                className + "$*", // innerclasses
-            }, 
-            new String [0],
-            ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
-        );
-        if (className.endsWith (".")) {
+            setClassRequests (
+                new String[] {
+                    className
+                }, 
+                new String [0],
+                ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
+            );
             checkLoadedClasses (className, true);
         } else {
+            setClassRequests (
+                new String[] {
+                    className,
+                    className + ".*", // innerclasses
+                    className + "$*", // innerclasses
+                }, 
+                new String [0],
+                ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
+            );
             checkLoadedClasses (className, false);
         }
     }

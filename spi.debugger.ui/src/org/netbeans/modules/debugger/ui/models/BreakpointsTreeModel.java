@@ -17,8 +17,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import org.netbeans.api.debugger.Breakpoint;
@@ -33,6 +35,9 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  * @author   Jan Jancura
  */
 public class BreakpointsTreeModel implements TreeModel {
+    
+    private static final Comparator BREAKPOINTS_COMPARATOR = 
+        new BreakpointsComarator ();
     
     private Listener listener;
     private Vector listeners = new Vector ();
@@ -55,7 +60,7 @@ public class BreakpointsTreeModel implements TreeModel {
         if (parent == ROOT) {
             Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
                 getBreakpoints ();
-            Set l = new HashSet ();
+            Set l = new TreeSet (BREAKPOINTS_COMPARATOR);
             int i, k = bs.length;
             for (i = 0; i < k; i++)
                 if (bs [i].getGroupName ().equals (""))
@@ -64,22 +69,45 @@ public class BreakpointsTreeModel implements TreeModel {
                     l.add (bs [i].getGroupName ());
             if (listener == null)
                 listener = new Listener (this);
-            return l.toArray ();
+            if (to == 0)
+                return new ArrayList (l).toArray ();
+            return new ArrayList (l).subList (from, to).toArray ();
         } else
         if (parent instanceof String) {
             String groupName = (String) parent;
             Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
                 getBreakpoints ();
-            Set l = new HashSet ();
+            Set l = new TreeSet (BREAKPOINTS_COMPARATOR);
             int i, k = bs.length;
             for (i = 0; i < k; i++)
                 if (bs [i].getGroupName ().equals (groupName))
                     l.add (bs [i]);
             if (listener == null)
                 listener = new Listener (this);
-            return l.toArray ();
+            if (to == 0)
+                return new ArrayList (l).toArray ();
+            return new ArrayList (l).subList (from, to).toArray ();
         } else
         throw new UnknownTypeException (parent);
+    }
+    
+    /**
+     * Returns number of children for given node.
+     * 
+     * @param   node the parent node
+     * @throws  UnknownTypeException if this TreeModel implementation is not
+     *          able to resolve children for given node type
+     *
+     * @return  true if node is leaf
+     */
+    public int getChildrenCount (Object node) throws UnknownTypeException {
+        if (node == ROOT) {
+            return getChildren (node, 0, 0).length;
+        } else
+        if (node instanceof String) {
+            return getChildren (node, 0, 0).length;
+        } else
+        throw new UnknownTypeException (node);
     }
     
     public boolean isLeaf (Object node) throws UnknownTypeException {
@@ -175,6 +203,23 @@ public class BreakpointsTreeModel implements TreeModel {
             }
             Breakpoint b = (Breakpoint) evt.getSource ();
             m.fireNodeChanged (b);
+        }
+    }
+    
+    private static class BreakpointsComarator implements Comparator {
+        public int compare (Object o1, Object o2) {
+            if (o1 instanceof String) {
+                if (o2 instanceof String)
+                    return ((String) o1).compareTo ((String) o2);
+                else
+                    return -1;
+            } else
+            if (o2 instanceof String)
+                return 1;
+            else
+                return ((Breakpoint) o1).toString ().compareTo (
+                    ((Breakpoint) o2).toString ()
+                );
         }
     }
 }

@@ -58,6 +58,25 @@ public interface TreeModelFilter {
     ) throws NoInformationException, ComputingException, UnknownTypeException;
     
     /**
+     * Returns number of filterred children for given node.
+     * 
+     * @param   original the original tree model
+     * @param   node the parent node
+     * @throws  NoInformationException if the set of children can not be 
+     *          resolved
+     * @throws  ComputingException if the children resolving process 
+     *          is time consuming, and will be performed off-line 
+     * @throws  UnknownTypeException if this TreeModel implementation is not
+     *          able to resolve children for given node type
+     *
+     * @return  true if node is leaf
+     */
+    public abstract int getChildrenCount (
+        TreeModel original,
+        Object node
+    ) throws NoInformationException, ComputingException, UnknownTypeException;
+    
+    /**
      * Returns true if node is leaf. You should not throw UnknownTypeException
      * directly from this method!
      * 

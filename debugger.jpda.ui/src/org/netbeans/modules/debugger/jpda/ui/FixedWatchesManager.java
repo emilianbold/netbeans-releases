@@ -146,27 +146,58 @@ NodeActionsProvider, NodeActionsProviderFilter {
         fireModelChanged();
     }
 
-    public Object getRoot(TreeModel original) {
-        return original.getRoot();
+    public Object getRoot (TreeModel original) {
+        return original.getRoot ();
     }
 
-    public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws NoInformationException,
-            ComputingException, UnknownTypeException {
-
+    public Object[] getChildren (
+        TreeModel original, 
+        Object parent, 
+        int from, 
+        int to
+    ) throws NoInformationException,ComputingException, UnknownTypeException {
         if (parent == TreeModel.ROOT) {
-            Object [] children = original.getChildren(parent, from, to);
+            Object[] children = original.getChildren (parent, from, to);
             if (fixedWatches == null) return children;
 
-            Object [] allChildren = new Object[children.length + fixedWatches.size()];
-            fixedWatches.toArray(allChildren);
-            System.arraycopy(children, 0, allChildren, fixedWatches.size(), children.length);
-            return allChildren;
+            Object [] allChildren = new Object [
+                children.length + fixedWatches.size ()
+            ];
+            fixedWatches.toArray (allChildren);
+            System.arraycopy (
+                children, 
+                0, 
+                allChildren, 
+                fixedWatches.size (), 
+                children.length
+            );
+            Object[] fallChildren = new Object [to - from];
+            System.arraycopy (allChildren, from, fallChildren, 0, to - from);
+            return fallChildren;
         }
         if (parent instanceof FixedWatch) {
-            FixedWatch fw = (FixedWatch) parent;
-            return fw.getVariable() != null ? original.getChildren(fw.getVariable(), from, to) : new Object[0];
+            Variable v = ((FixedWatch) parent).getVariable ();
+            return (v != null) ? 
+                original.getChildren (v, from, to) : 
+                new Object [0];
         }
-        return original.getChildren(parent, from, to);
+        return original.getChildren (parent, from, to);
+    }
+
+    public int getChildrenCount (
+        TreeModel original, 
+        Object parent
+    ) throws NoInformationException,ComputingException, UnknownTypeException {
+        if (parent == TreeModel.ROOT) {
+            int chc = original.getChildrenCount (parent);
+            if (fixedWatches == null) return chc;
+            return chc + fixedWatches.size ();
+        }
+        if (parent instanceof FixedWatch) {
+            Variable v = ((FixedWatch) parent).getVariable ();
+            return (v != null) ? original.getChildrenCount (v) : 0;
+        }
+        return original.getChildrenCount (parent);
     }
 
     public boolean isLeaf(TreeModel original, Object node) throws UnknownTypeException {

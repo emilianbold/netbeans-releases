@@ -84,30 +84,46 @@ public class WatchesModel implements TreeModel {
     public Object[] getChildren (Object parent, int from, int to) 
     throws UnknownTypeException, NoInformationException {
         if (parent == ROOT) {
+            
+            // 1) ger Watches
             Watch[] ws = DebuggerManager.getDebuggerManager ().
                 getWatches ();
-            int i, k = ws.length;
+            Watch[] fws = new Watch [to - from];
+            System.arraycopy (ws, from, fws, 0, to - from);
+            
+            // 2) create JPDAWatches for Watches
+            int i, k = fws.length;
             JPDAWatch[] jws = new JPDAWatch [k];
             for (i = 0; i < k; i++) {
-                Object expression = watchToExpression.get (ws[i].getExpression ());
-                // expression contains Expression or Exception 
+                
+                // 2.1) get Expression
+                Object expression = watchToExpression.get (
+                    fws [i].getExpression ()
+                );
+                    // expression contains Expression or Exception 
                 if (expression == null) {
                     try {
                         expression = Expression.parse (
-                            ws[i].getExpression (), 
+                            fws [i].getExpression (), 
                             Expression.LANGUAGE_JAVA_1_5
                         );
                     } catch (ParseException e) {
                         expression = e;
                     }
-                    watchToExpression.put (ws [i].getExpression (), expression);
+                    watchToExpression.put (
+                        fws [i].getExpression (), 
+                        expression
+                    );
                 }
+                
+                // 2.2) create a new JPDAWatch
                 if (expression instanceof Exception)
                     jws [i] = new JPDAWatchImpl 
-                        (this, ws [i], (Exception) expression);
+                        (this, fws [i], (Exception) expression);
                 else
-                    jws [i] = evaluate (ws[i], (Expression) expression);
+                    jws [i] = evaluate (fws [i], (Expression) expression);
             }
+            
             if (listener == null)
                 listener = new Listener (this, debugger);
             return jws;
@@ -116,6 +132,28 @@ public class WatchesModel implements TreeModel {
             return getLocalsTreeModel ().getChildren (parent, from, to);
         }
         return getLocalsTreeModel ().getChildren (parent, from, to);
+    }
+    
+    /**
+     * Returns number of children for given node.
+     * 
+     * @param   node the parent node
+     * @throws  UnknownTypeException if this TreeModel implementation is not
+     *          able to resolve children for given node type
+     *
+     * @return  true if node is leaf
+     */
+    public int getChildrenCount (Object node) throws UnknownTypeException, 
+    NoInformationException {
+        if (node == ROOT) {
+            if (listener == null)
+                listener = new Listener (this, debugger);
+            return DebuggerManager.getDebuggerManager ().getWatches ().length;
+        }
+        if (node instanceof JPDAWatchImpl) {
+            return getLocalsTreeModel ().getChildrenCount (node);
+        }
+        return getLocalsTreeModel ().getChildrenCount (node);
     }
     
     public boolean isLeaf (Object node) throws UnknownTypeException {

@@ -129,17 +129,16 @@ NodeModel, TableModel, NodeActionsProvider {
             ObjectVariable variable = (ObjectVariable) parent;
             if (ignore.contains (variable.getType ()))
                 return original.getChildren (parent, from, to);
+            int tto = Math.min (to, original.getChildrenCount (parent));
             List l = new ArrayList (Arrays.asList (
-                original.getChildren (parent, from, to)
+                original.getChildren (parent, from, tto)
             ));
-            boolean staticFields = variable.getAllStaticFields (from, to).
-                length > 0;
-            boolean inheritedFields = variable.getInheritedFields (from, to).
-                length > 0;
-            if (staticFields)
-                l.add (new Object[] {"static", parent});
-            if (inheritedFields)
-                l.add (new Object[] {"inherited", parent});
+            if ( (l.size () < to) && 
+                 (variable.getAllStaticFields (0, 0).length > 0)
+            ) l.add (new Object[] {"static", parent});
+            if ( (l.size () < to) && 
+                 (variable.getInheritedFields (0, 0).length > 0)
+            ) l.add (new Object[] {"inherited", parent});
             return l.toArray ();
         } else
         if (parent instanceof Object[]) {
@@ -147,11 +146,53 @@ NodeModel, TableModel, NodeActionsProvider {
             if (os1.length != 2) return original.getChildren (parent, from, to);
             
             if ("static".equals (os1 [0])) 
-                return ((ObjectVariable) os1 [1]).getAllStaticFields (from, to);
+                return ((ObjectVariable) os1 [1]).getAllStaticFields (0, 0);
             if ("inherited".equals (os1 [0])) 
-                return ((ObjectVariable) os1 [1]).getInheritedFields (from, to);
+                return ((ObjectVariable) os1 [1]).getInheritedFields (0, 0);
         }
         return original.getChildren (parent, from, to);
+    }
+    
+    /** 
+     * Returns number of filtered children for given variable.
+     *
+     * @param   original the original tree model
+     * @param   variable a variable of returned fields
+     *
+     * @throws  NoInformationException if the set of children can not be 
+     *          resolved
+     * @throws  ComputingException if the children resolving process 
+     *          is time consuming, and will be performed off-line 
+     * @throws  UnknownTypeException if this TreeModelFilter implementation is not
+     *          able to resolve dchildren for given node type
+     *
+     * @return  number of filtered children for given variable
+     */
+    public int getChildrenCount (
+        TreeModel   original, 
+        Object      parent
+    ) throws NoInformationException, ComputingException, UnknownTypeException {
+        if (parent instanceof ObjectVariable) {
+            ObjectVariable variable = (ObjectVariable) parent;
+            if (ignore.contains (variable.getType ()))
+                return original.getChildrenCount (parent);
+            int i = original.getChildrenCount (parent);
+            if (variable.getAllStaticFields (0, 0).length > 0) i++;
+            if (variable.getInheritedFields (0, 0).length > 0) i++;
+            return i;
+        } else
+        if (parent instanceof Object[]) {
+            Object[] os1 = (Object[]) parent;
+            if (os1.length != 2) return original.getChildrenCount (parent);
+            
+            if ("static".equals (os1 [0])) 
+                return ((ObjectVariable) os1 [1]).getAllStaticFields (0, 0).
+                    length;
+            if ("inherited".equals (os1 [0])) 
+                return ((ObjectVariable) os1 [1]).getInheritedFields (0, 0).
+                    length;
+        }
+        return original.getChildrenCount (parent);
     }
     
     /**

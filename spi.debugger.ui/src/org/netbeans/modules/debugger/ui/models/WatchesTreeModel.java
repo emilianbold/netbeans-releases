@@ -54,9 +54,29 @@ public class WatchesTreeModel implements TreeModel {
                 getWatches ();
             if (listener == null)
                 listener = new Listener (this);
-            return ws;
+            Watch[] fws = new Watch [to - from];
+            System.arraycopy (ws, from, fws, 0, to - from);
+            return fws;
         } else
         throw new UnknownTypeException (parent);
+    }
+    
+    /**
+     * Returns number of children for given node.
+     * 
+     * @param   node the parent node
+     * @throws  UnknownTypeException if this TreeModel implementation is not
+     *          able to resolve children for given node type
+     *
+     * @return  true if node is leaf
+     */
+    public int getChildrenCount (Object node) throws UnknownTypeException {
+        if (node == ROOT) {
+            if (listener == null)
+                listener = new Listener (this);
+            return DebuggerManager.getDebuggerManager ().getWatches ().length;
+        } else
+        throw new UnknownTypeException (node);
     }
     
     public boolean isLeaf (Object node) throws UnknownTypeException {

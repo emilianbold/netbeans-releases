@@ -235,7 +235,7 @@ public class AbstractVariable implements Variable {
      * @return all static fields
      */
     public Field[] getAllStaticFields (int from, int to) {
-        return getModel ().getAllStaticFields (this);
+        return getModel ().getAllStaticFields (this, from, to);
     }
 
     /**
@@ -244,7 +244,7 @@ public class AbstractVariable implements Variable {
      * @return all inherited fields
      */
     public Field[] getInheritedFields (int from, int to) {
-        return getModel ().getInheritedFields (this);
+        return getModel ().getInheritedFields (this, from, to);
     }
     
     public Super getSuper () {

@@ -40,12 +40,15 @@ public interface TreeModel {
      * Returns children for given parent on given indexes.
      *
      * @param   parent a parent of returned nodes
+     * @param   from a start index
+     * @param   to a end index
+     *
      * @throws  NoInformationException if the set of children can not be 
      *          resolved
      * @throws  ComputingException if the children resolving process 
      *          is time consuming, and will be performed off-line 
      * @throws  UnknownTypeException if this TreeModel implementation is not
-     *          able to resolve dchildren for given node type
+     *          able to resolve children for given node type
      *
      * @return  children for given parent on given indexes
      */
@@ -60,6 +63,22 @@ public interface TreeModel {
      * @return  true if node is leaf
      */
     public abstract boolean isLeaf (Object node) throws UnknownTypeException;
+    
+    /**
+     * Returns number of children for given node.
+     * 
+     * @param   node the parent node
+     * @throws  NoInformationException if the set of children can not be 
+     *          resolved
+     * @throws  ComputingException if the children resolving process 
+     *          is time consuming, and will be performed off-line 
+     * @throws  UnknownTypeException if this TreeModel implementation is not
+     *          able to resolve children for given node type
+     *
+     * @return  true if node is leaf
+     */
+    public abstract int getChildrenCount (Object node) throws 
+    NoInformationException, ComputingException, UnknownTypeException;
 
     /** 
      * Registers given listener.

@@ -96,11 +96,32 @@ NodeActionsProvider {
             Object[] os = new Object [sr.length + ep.length];
             System.arraycopy (sr, 0, os, 0, sr.length);
             System.arraycopy (ep, 0, os, sr.length, ep.length);
+            Object[] fos = new Object [to - from];
+            System.arraycopy (os, from, fos, 0, to - from);
             if (listener == null)
                 listener = new Listener (this);
-            return os;
+            return fos;
         } else
         throw new UnknownTypeException (parent);
+    }
+    
+    /**
+     * Returns number of children for given node.
+     * 
+     * @param   node the parent node
+     * @throws  UnknownTypeException if this TreeModel implementation is not
+     *          able to resolve children for given node type
+     *
+     * @return  true if node is leaf
+     */
+    public int getChildrenCount (Object node) throws UnknownTypeException {
+        if (node == ROOT) {
+            if (listener == null)
+                listener = new Listener (this);
+            return context.getOriginalSourceRoots ().length + 
+                filters.size ();
+        } else
+        throw new UnknownTypeException (node);
     }
     
     public boolean isLeaf (Object node) throws UnknownTypeException {

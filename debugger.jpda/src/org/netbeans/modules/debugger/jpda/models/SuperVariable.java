@@ -51,11 +51,7 @@ public class SuperVariable extends AbstractVariable implements Super {
     public Field[] getFields (int from, int to) {
         AbstractVariable[] vs = getModel ().getSuperFields (
             this,
-            false
-//            (ObjectReference) getInnerValue (),
-//            superClass,
-//            false,
-//            getID ()
+            false, from, to
         );
         Field[] fs = new Field [vs.length];
         System.arraycopy (vs, 0, fs, 0, vs.length);

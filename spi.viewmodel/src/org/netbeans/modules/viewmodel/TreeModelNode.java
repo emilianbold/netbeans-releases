@@ -244,7 +244,11 @@ public class TreeModelNode extends AbstractNode {
         void refreshChildren () {
             if (!initialezed) return;
             try {
-                Object[] ch = model.getChildren (object, 0, 0);
+                Object[] ch = model.getChildren (
+                    object, 
+                    0, 
+                    model.getChildrenCount (object)
+                );
                 int i, k = ch.length; 
                 HashMap newObjectToNode = new HashMap ();
                 for (i = 0; i < k; i++) {

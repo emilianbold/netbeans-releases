@@ -14,7 +14,9 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.NoInformationException;
@@ -66,7 +68,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
         int         to
     ) throws NoInformationException, ComputingException, UnknownTypeException {
         Object[] ch = original.getChildren (parent, from, to);
-        ArrayList l = new ArrayList ();
+        List l = new ArrayList ();
         int i, k = ch.length;
         for (i = 0; i < k; i++) {
             if ( (!verbose) &&
@@ -75,8 +77,40 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
             ) continue;
             l.add (ch [i]); 
         }
+        l = l.subList (from, to);
         Object[] bs = new Object [l.size ()];
         return l.toArray (bs);
+    }
+    
+    /**
+     * Returns number of filterred children for given node.
+     * 
+     * @param   original the original tree model
+     * @param   node the parent node
+     * @throws  NoInformationException if the set of children can not be 
+     *          resolved
+     * @throws  ComputingException if the children resolving process 
+     *          is time consuming, and will be performed off-line 
+     * @throws  UnknownTypeException if this TreeModel implementation is not
+     *          able to resolve children for given node type
+     *
+     * @return  true if node is leaf
+     */
+    public int getChildrenCount (
+        TreeModel original,
+        Object node
+    ) throws NoInformationException, ComputingException, UnknownTypeException {
+        int j = original.getChildrenCount (node);
+        Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
+            getBreakpoints ();
+        int i, k = bs.length;
+        for (i = 0; i < k; i++) {
+            if ( (!verbose) &&
+                 (bs [i] instanceof JPDABreakpoint) &&
+                 ((JPDABreakpoint) bs [i]).isHidden ()
+            ) j--;
+        }
+        return j;
     }
     
     /**

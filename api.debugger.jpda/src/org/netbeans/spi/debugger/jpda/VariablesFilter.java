@@ -75,6 +75,26 @@ public abstract class VariablesFilter {
         int            to
     ) throws NoInformationException, ComputingException, UnknownTypeException;
     
+    /** 
+     * Returns number of filtered children for given variable.
+     *
+     * @param   original the original tree model
+     * @param   variable a variable of returned fields
+     *
+     * @throws  NoInformationException if the set of children can not be 
+     *          resolved
+     * @throws  ComputingException if the children resolving process 
+     *          is time consuming, and will be performed off-line 
+     * @throws  UnknownTypeException if this TreeModelFilter implementation is not
+     *          able to resolve dchildren for given node type
+     *
+     * @return  number of filtered children for given variable
+     */
+    public abstract int getChildrenCount (
+        TreeModel      original,
+        Variable       variable
+    ) throws NoInformationException, ComputingException, UnknownTypeException;
+    
     /**
      * Returns true if variable is leaf.
      * 

@@ -48,13 +48,34 @@ public class SessionsTreeModel implements TreeModel {
     public Object[] getChildren (Object parent, int from, int to) 
     throws UnknownTypeException {
         if (parent == ROOT) {
-            Session[] bs = DebuggerManager.getDebuggerManager ().
+            Session[] ss = DebuggerManager.getDebuggerManager ().
                 getSessions ();
             if (listener == null)
                 listener = new Listener (this);
-            return bs;
+            Session[] fss = new Session [to - from];
+            System.arraycopy (ss, from, fss, 0, to - from);
+            return fss;
         } else
         throw new UnknownTypeException (parent);
+    }
+    
+    /**
+     * Returns number of children for given node.
+     * 
+     * @param   node the parent node
+     * @throws  UnknownTypeException if this TreeModel implementation is not
+     *          able to resolve children for given node type
+     *
+     * @return  true if node is leaf
+     */
+    public int getChildrenCount (Object node) throws UnknownTypeException {
+        if (node == ROOT) {
+            if (listener == null)
+                listener = new Listener (this);
+            return DebuggerManager.getDebuggerManager ().
+                getSessions ().length;
+        } else
+        throw new UnknownTypeException (node);
     }
     
     public boolean isLeaf (Object node)
