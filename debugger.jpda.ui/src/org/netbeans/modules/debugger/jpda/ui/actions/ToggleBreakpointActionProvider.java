@@ -43,7 +43,7 @@ implements PropertyChangeListener {
         setEnabled (
             DebuggerManager.ACTION_TOGGLE_BREAKPOINT,
             (Context.getCurrentLineNumber () >= 0) &&
-            (Context.getCurrentClassName () != null)
+            (Context.getCurrentClassName ().length () > 0)
         );
     }
     
@@ -54,6 +54,9 @@ implements PropertyChangeListener {
     public void doAction (Object action) {
         DebuggerManager d = DebuggerManager.getDebuggerManager ();
         
+        // 0) check if its java!
+        if (Context.getCurrentClassName ().length () == 0)
+            throw new InternalError ();
         // 1) get source name & line number
         int ln = Context.getCurrentLineNumber ();
         String url = Context.getCurrentURL ();
