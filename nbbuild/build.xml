@@ -25,7 +25,7 @@ workspaceswitcher
 <!--  <property name="build.sysclasspath" value="ignore"/>-->
 
   <!-- To make people happy who want to do `ant clean all': -->
-  <target name="all" depends="depucelee"/>
+  <target name="all" depends="build,sanity-check" description="Build the IDE and run a sanity check."/>
 
   <target name="bootstrap-init">
     <property name="binroot" location="../../nbextra"/>
@@ -50,10 +50,6 @@ workspaceswitcher
     </jar>
   </target>
 
-  <target name="firststart-params" if="nogui">
-    <property name="firststart.args.additional" value="-nogui -nosplash"/>
-  </target>
-
   <target name="setup-jdkhome-1">
     <!-- Note: user-configured -Djavahome=... will always override this: -->
     <property name="javahome" location="${java.home}"/>
@@ -71,7 +67,7 @@ workspaceswitcher
     <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
   </target>
 
-  <target name="init" depends="bootstrap,setup-jdkhome-4, firststart-params">
+  <target name="init" depends="bootstrap,setup-jdkhome-4">
     <tstamp>
     	<format property="buildnumber" pattern="yyyyMMddHHmm"/>
     </tstamp>
@@ -82,12 +78,14 @@ workspaceswitcher
     <!-- Overridable. Note: need not necessarily be a number at all): -->
     <property name="buildnum" value="dev-${buildnumber}"/>
     <property name="netbeans.dest" value="netbeans"/>
-    <property name="firststart.args.additional" value=""/>
+    <property name="test.user.dir" location="testuserdir"/>
+    <!-- For example, "-nogui -nosplash" is useful on headless machines: -->
+    <property name="sanitystart.args.additional" value=""/>
     <property name="tryme.args.additional" value=""/>
     <!-- Best to leave this alone, though, unless you know what you are doing: -->
-    <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true -single ${firststart.args.additional}"/>
+    <property name="sanitystart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true ${sanitystart.args.additional}"/>
     <!-- But this it is OK to change: -->
-    <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true -single ${tryme.args.additional}"/>
+    <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true ${tryme.args.additional}"/>
     <!-- Only useful to override in conjunction with merge target during development: -->
     <property name="fixedmodules" value="core,openide"/>
     <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
@@ -340,7 +338,7 @@ workspaceswitcher
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
-  <target name="virgin-nozip" depends="firststart-merge">
+  <target name="build-nozip" depends="delete-and-merge" description="Build the IDE but do not create a final ZIP file.">
     <taskdef name="createmodulexml" classname="org.netbeans.nbbuild.CreateModuleXML" classpath="nbantext.jar"/>
     <mkdir dir="${netbeans.dest}/system/Modules"/>
     <mkdir dir="${netbeans.dest}/modules/autoload"/>
@@ -349,9 +347,6 @@ workspaceswitcher
         <include name="*.jar"/>
         <!-- Just to test that we can in fact preconfigure some disabled modules: -->
         <exclude name="icebrowser.jar"/>
-        <!-- It really needs to be installed() currently or exceptions -->
-        <!-- (so let it be autoscanned and loaded that way): -->
-        <exclude name="javadoc.jar"/>
       </enabled>
       <disabled dir="${netbeans.dest}/modules">
         <include name="icebrowser.jar"/>
@@ -360,24 +355,37 @@ workspaceswitcher
         <include name="*.jar"/>
       </autoload>
     </createmodulexml>
-  </target>
-  <target name="virgin" depends="virgin-nozip"
-          description="Create a virgin build that has never been started.">
-    <!-- zip task not well suited to making final build, as it does not set +x bits -->
-    <!-- so on Unix try to use native ZIP first -->
-    <delete file="NetBeans-${buildnum}-virgin.zip"/>
-    <exec executable="zip" dir="." os="Linux SunOS Solaris" failonerror="false">
-      <arg value="-r"/>
-      <arg value="NetBeans-${buildnum}-virgin.zip"/>
-      <arg value="${netbeans.dest}"/>
-    </exec>
-    <zip zipfile="NetBeans-${buildnum}-virgin.zip" basedir=".">
-      <include name="${netbeans.dest}/"/>
-    </zip>
-    <echo message="Virgin build created; see NetBeans-${buildnum}-virgin.zip."/>
+    <echo file="${netbeans.dest}/build_info">NetBeans dev build
+------------------
+Number:   ${buildnumber}
+Date:     ${TODAY}
+Branding:
+Branch:   trunk
+Tag:
+</echo>
   </target>
 
-  <target name="firststart-merge" depends="merge-delete,merge" />   
+  <target name="build" depends="build-nozip"
+          description="Create a complete build (but do not try it).">
+    <!-- zip task not well suited to making final build, as it does not set +x bits -->
+    <!-- so on Unix try to use native ZIP first -->
+    <delete file="NetBeans-${buildnum}.zip"/>
+    <exec executable="zip" dir="." os="Linux SunOS Solaris" failonerror="false">
+      <arg value="-r"/>
+      <arg value="NetBeans-${buildnum}.zip"/>
+      <arg value="${netbeans.dest}"/>
+    </exec>
+    <zip zipfile="NetBeans-${buildnum}.zip" basedir=".">
+      <include name="${netbeans.dest}/"/>
+    </zip>
+    <echo>Build created; see NetBeans-${buildnum}.zip (in nbbuild/).
+If you like, you may run the IDE straight from
+the ${netbeans.dest}/bin/ directory.
+(For example, type: ant tryme)
+</echo>
+  </target>
+
+  <target name="delete-and-merge" depends="merge-delete,merge" />   
 
   <target name="merge-delete" depends="init">
     <delete dir="${netbeans.dest}" />
@@ -397,88 +405,61 @@ workspaceswitcher
       </fileset>
     </chmod>
   </target>
-  <target name="firststart" depends="firststart-merge"
-          description="Build the IDE and start it, but do not create a build archive.">
-    <echo>Starting the IDE...
-(This both acts as a test, and primes some files
-to make the first user start faster and better.)
-</echo>
-    <!-- XXX better would be to scan first start log for stacktraces and just show those; -->
+
+  <target name="sanity-check" depends="testuserdir-delete,sanity-start" description="Test whether the build can start up without problems."/>
+  <target name="testuserdir-delete" depends="init">
+    <delete dir="${test.user.dir}"/>
+  </target>
+  <target name="sanity-start" depends="init,maybe-build-nozip">
+    <mkdir dir="${test.user.dir}"/>
+    <echo>Starting the IDE as a sanity check...</echo>
+    <!-- XXX better would be to scan start log for stacktraces and just show those; -->
     <!-- possibly after filtering for duplicates or something like this. -->
-    <!-- Timeout is ten minutes; should be enough for valid first start, while preventing -->
+    <!-- Timeout is ten minutes; should be enough for valid start, while preventing -->
     <!-- a deadlock from hanging an automated build: -->
     <exec os="Windows NT Windows 95 Windows 98 Windows 2000" executable="${netbeans.dest}/bin/runide.exe" failonerror="yes" timeout="600000">
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
-      <arg line="${firststart.args}"/>
+      <arg value="-userdir"/>
+      <arg file="${test.user.dir}"/>
+      <arg line="${sanitystart.args}"/>
     </exec>
     <exec os="Linux SunOS Solaris" dir="." executable="sh" failonerror="yes" timeout="600000">
       <arg value="${netbeans.dest}/bin/runide.sh"/>
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
-      <arg line="${firststart.args}"/>
+      <arg value="-userdir"/>
+      <arg file="${test.user.dir}"/>
+      <arg line="${sanitystart.args}"/>
     </exec>
-    <echo message="Successfully started, cleaning up detritus..."/>
-    <!-- XXX W2k users have reported problems with the following line. -->
-    <!-- Would it be better to do a copy and then a delete? -->
-    <move file="${netbeans.dest}/system/ide.log" tofile="NetBeans-${buildnum}.log"/>
-    <delete file="${netbeans.dest}/system/project.basic"/>
-    <delete file="${netbeans.dest}/system/project.last"/>
-    <delete file="${netbeans.dest}/beans/libs.properties"/>
-    <delete file="${netbeans.dest}/beans/installed.properties"/>
-    <delete dir="${netbeans.dest}/system/Palette/Beans"/>
-    <delete dir="${netbeans.dest}/system/Mount"/>
-    <echo file="${netbeans.dest}/build_info">NetBeans dev build
-------------------
-Number:   ${buildnumber}
-Date:     ${TODAY}
-Branding:
-Branch:   trunk
-Tag:
-</echo>
+    <echo>Finished starting the IDE, pay attention to any reported errors.</echo>
   </target>
 
-  <target name="depucelee" depends="firststart"
-          description="Create a complete build, including first start and final ZIP file.">
-    <delete file="NetBeans-${buildnum}.zip"/>
-    <exec executable="zip" dir="." os="Linux SunOS Solaris" failonerror="false">
-      <arg value="-r"/>
-      <arg value="NetBeans-${buildnum}.zip"/>
-      <arg value="${netbeans.dest}"/>
-    </exec>
-    <zip zipfile="NetBeans-${buildnum}.zip" basedir=".">
-      <include name="${netbeans.dest}/"/>
-    </zip>
-    <echo>Build created; see NetBeans-${buildnum}.zip (in nbbuild/).
-If you like, you may run the IDE straight from
-the ${netbeans.dest}/bin/ directory.
-(For example, type: ant tryme)
-</echo>
+  <target name="check-for-build">
+    <available property="have-build" file="${netbeans.dest}/lib/openide.jar"/>
+  </target>
+  <target name="maybe-build-nozip" depends="check-for-build" unless="have-build">
+    <ant dir="." target="build-nozip"/>
   </target>
 
-  <target name="check-for-firststart">
-    <available property="have-firststart" file="${netbeans.dest}/lib/openide.jar"/>
-  </target>
-  <target name="maybe-firststart" depends="check-for-firststart" unless="have-firststart">
-    <ant dir="." target="firststart"/>
-  </target>
-  <target name="tryme" depends="init,maybe-firststart"
+  <target name="tryme" depends="init,maybe-build-nozip"
           description="Try running the IDE interactively (build it first if needed).">
     <exec os="Windows NT Windows 95 Windows 98 Windows 2000" executable="${netbeans.dest}/bin/runide.exe" failonerror="yes">
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
+      <arg value="-userdir"/>
+      <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
     </exec>
     <exec os="Linux SunOS Solaris" dir="." executable="sh" failonerror="yes">
       <arg value="${netbeans.dest}/bin/runide.sh"/>
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
+      <arg value="-userdir"/>
+      <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
     </exec>
   </target>
-
-  <target name="trybuild" depends="firststart-merge,tryme"
-          description="Build the IDE and try it immediately (no first start)."/>
 
   <target name="update-info" depends="init,all-openide,all-core"
           description="Build Auto Update NBM files and XML descriptions.">
@@ -711,6 +692,7 @@ the ${netbeans.dest}/bin/ directory.
 
   <target name="localclean" depends="init">
     <delete dir="${netbeans.dest}"/>
+    <delete dir="${test.user.dir}"/>
   </target>
 
   <target name="clean" depends="init,localclean"
