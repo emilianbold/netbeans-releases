@@ -68,7 +68,7 @@ public class SystemExit extends CallableSystemAction {
   * @return URL to the action's icon
   */
   protected String iconResource () {
-    return "/com.netbeans.developer.impl.resources/actions/exit.gif";
+    return "/com/netbeans/developer/impl/resources/actions/exit.gif";
   }
 
   public void performAction() {
@@ -267,6 +267,7 @@ public class SystemExit extends CallableSystemAction {
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
  *  3    Gandalf   1.2         1/6/99   Ian Formanek    Reflecting change in 
  *       datasystem package
  *  2    Gandalf   1.1         1/6/99   Ian Formanek    Reflecting changes in 

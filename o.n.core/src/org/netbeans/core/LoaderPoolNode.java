@@ -43,7 +43,7 @@ import com.netbeans.developer.impl.actions.ReorderAction;
 public final class LoaderPoolNode extends IndexedNode {
   /** Default icon base for loader pool node.*/
   private static final String LOADER_POOL_ICON_BASE =
-    "/com.netbeans.developer.impl.resources/loaderPool";
+    "/com/netbeans/developer/impl/resources/loaderPool";
   /** Programmatic name of this node */
   private static final String LOADER_POOL_NAME = "Loader Pool";
   /** The only instance of the LoaderPoolNode class in the system.
@@ -522,6 +522,7 @@ public final class LoaderPoolNode extends IndexedNode {
 
 /*
 * Log
+*  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
 *  3    Gandalf   1.2         1/6/99   Ian Formanek    Reflecting change in 
 *       datasystem package
 *  2    Gandalf   1.1         1/6/99   Ian Formanek    Fixed outerclass 

@@ -46,7 +46,7 @@ public final class EnvironmentNode extends AbstractNode {
   static final long serialVersionUID = 4782447107972624693L;
   /** icon base for icons of this node */
   private static final String EN_ICON_BASE =
-    "/com.netbeans.developer.impl.resources/environment";
+    "/com/netbeans/developer/impl/resources/environment";
   /** Array of actions in popup menu of this node */
   private static SystemAction[] staticActions;
 
@@ -169,6 +169,7 @@ public final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
  *  3    Gandalf   1.2         1/6/99   Ian Formanek    Fixed outerclass 
  *       specifiers uncompilable under JDK 1.2
  *  2    Gandalf   1.1         1/6/99   Jaroslav Tulach ide.* extended to 

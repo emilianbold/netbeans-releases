@@ -33,7 +33,7 @@ public class AboutAction extends CallbackSystemAction {
   */
   public java.net.URL getDefaultIcon() {
     if (urlIcon == null)
-      urlIcon = getClass().getResource("/com.netbeans.developer.impl.resources/actions/about.gif");
+      urlIcon = getClass().getResource("/com/netbeans/developer/impl/resources/actions/about.gif");
     return urlIcon;
   }
 
@@ -49,6 +49,7 @@ public class AboutAction extends CallbackSystemAction {
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/7/99   Ian Formanek    fixed resource names
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  * Beta Change History:

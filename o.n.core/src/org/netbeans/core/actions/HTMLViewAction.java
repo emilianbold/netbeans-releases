@@ -34,7 +34,7 @@ public class HTMLViewAction extends CallableSystemAction {
   */
   public java.net.URL getDefaultIcon() {
     if (urlIcon == null)
-      urlIcon = getClass().getResource("/com.netbeans.developer.impl.resources/actions/htmlView.gif");
+      urlIcon = getClass().getResource("/com/netbeans/developer/impl/resources/actions/htmlView.gif");
     return urlIcon;
   }
 
@@ -57,6 +57,7 @@ public class HTMLViewAction extends CallableSystemAction {
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/7/99   Ian Formanek    fixed resource names
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  */

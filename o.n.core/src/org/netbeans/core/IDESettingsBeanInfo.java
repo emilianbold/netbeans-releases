@@ -88,8 +88,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
   /** Creates a new IDESettingsBeanInfo */
   public IDESettingsBeanInfo () {
-    icon = loadImage("/com.netbeans.developer.impl.resources/ideSettings.gif");
-    icon32 = loadImage ("/com.netbeans.developer.impl.resources/ideSettings32.gif");
+    icon = loadImage("/com/netbeans/developer/impl/resources/ideSettings.gif");
+    icon32 = loadImage ("/com/netbeans/developer/impl/resources/ideSettings32.gif");
   }
 
   /** Provides an explicit property info. */
@@ -204,6 +204,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/7/99   Ian Formanek    fixed resource names
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  * Beta Change History:

@@ -73,7 +73,7 @@ final class DataSystem extends AbstractNode {
     fileSystemPool = fsp;
     preinitialize (filter);
     initialize();
-    setIconBase ("/com.netbeans.developer.impl.resources/repository");
+    setIconBase ("/com/netbeans/developer/impl/resources/repository");
     RequestProcessor.postRequest (new Runnable () {
       public void run () {
         setDisplayName (
@@ -420,6 +420,7 @@ final class DataSystem extends AbstractNode {
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
  *  3    Gandalf   1.2         1/6/99   Ian Formanek    Reflecting change in 
  *       datasystem package
  *  2    Gandalf   1.1         1/6/99   Ian Formanek    Fixed outerclass 
