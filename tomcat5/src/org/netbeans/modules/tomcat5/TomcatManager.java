@@ -100,7 +100,12 @@ public class TomcatManager implements DeploymentManager {
     public static final Integer DEFAULT_ADMIN_PORT = new Integer(8005);
 
     /** default value for property debugging type*/
-    public static final String DEFAULT_DEBUG_TYPE = NbBundle.getMessage (DebuggingTypeEditor.class, "SEL_debuggingType_socket");
+    public static final String DEFAULT_DEBUG_TYPE_UNIX = 
+        NbBundle.getMessage (DebuggingTypeEditor.class, "SEL_debuggingType_socket");
+
+    /** default value for property debugging type*/
+    public static final String DEFAULT_DEBUG_TYPE_WINDOWS = 
+        NbBundle.getMessage (DebuggingTypeEditor.class, "SEL_debuggingType_shared");
 
     /** default value for property shared memory*/
     public static final String DEFAULT_SHARED_MEMORY = NbBundle.getMessage (TomcatManager.class, "LBL_Tomcat_shared_memory_id");
@@ -567,7 +572,10 @@ public class TomcatManager implements DeploymentManager {
                 return prop;
             }
         }
-        return DEFAULT_DEBUG_TYPE;
+        if (org.openide.util.Utilities.isWindows()) {
+            return DEFAULT_DEBUG_TYPE_WINDOWS;
+        }
+        return DEFAULT_DEBUG_TYPE_UNIX;
     }
 
     public String getSharedMemory() {
@@ -600,6 +608,13 @@ public class TomcatManager implements DeploymentManager {
         InstanceProperties ip = getInstanceProperties();
         if (ip != null) {
             ip.setProperty(CLASSIC, classic.toString());
+        }
+    }
+
+    public void setDebugType(String str) {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            ip.setProperty(DEBUG_TYPE, str);
         }
     }
 

@@ -160,6 +160,13 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         };
     }
 
+    private void setDebugType (String str) {
+        DeploymentManager m = getDeploymentManager();
+        if (m instanceof TomcatManager){
+            ((TomcatManager)m).setDebugType(str);
+        };
+    }
+
     private void setDebugPort (Integer port) {
         TomcatManager m = getTomcatManager();
         if (m != null){
@@ -434,7 +441,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                        }
 
                        public void setValue (Object val){
-                            // TODO we need store 
+                            setDebugType((String)val);
                        }
 
                        public PropertyEditor getPropertyEditor(){
