@@ -25,10 +25,14 @@ XMLBINDIR=`pwd -P`
 XML_ROOT=$XMLBINDIR/..
 NBROOT=${XML_ROOT}/..
 BINROOT=${NBROOT}/../nbextra
+LIBS_ROOT=${NBROOT}/libs
 
 XML_APIS=${BINROOT}/core/release/lib/ext/xml-apis.jar
 XERCES=${BINROOT}/core/release/lib/ext/xerces.jar
-XALAN=${BINROOT}/libs/xalan/release/modules/autoload/ext/xalan-2.3.1.jar
+
+grep libs.xalan.jar.path public.properties | awk -F= '{ print $2 }'
+XALAN_JAR_PATH=`grep "libs.xalan.jar.path" ${LIBS_ROOT}/public.properties | awk -F= '{ print $2 }'`
+XALAN=${BINROOT}/${XALAN_JAR_PATH}
 
 ##<debug>
 #ls -la ${XML_APIS}
