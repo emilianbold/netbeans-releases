@@ -60,7 +60,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
-        <include name="**/*.jar"/>
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
