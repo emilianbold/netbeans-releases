@@ -71,7 +71,7 @@ public final class Util extends Object {
      * @param <code>FileObject</code> of primary entry
      */
     private static FileObject getPrimaryFileObject(MultiDataObject.Entry fe) {
-        return fe.getDataObject().getPrimaryEntry().getFile();
+        return fe.getDataObject().getPrimaryFile();
     }
 
     /** Assembles a file name for a properties file from its base name and language.
@@ -95,6 +95,7 @@ public final class Util extends Object {
     public static String getLocalePartOfFileName(MultiDataObject.Entry fe) {
         String myName   = fe.getFile().getName();
         String baseName = getPrimaryFileObject(fe).getName();
+        
         if (!myName.startsWith(baseName))
             throw new InternalError("Never happens - error in Properties loader"); // NOI18N
         return myName.substring(baseName.length());

@@ -49,20 +49,26 @@ class PropertiesParser {
 
     /** Properties file reader. Input stream. */
     PropertiesReader input;
+    
+    /** Flag if parsing should be stopped. */
+    private boolean stop = false;
 
     
     /** 
-     * Constructor.
+     * Creates parser. Has to be {@link init} afterwards.
      * @param pfe FileEntry where the properties file is stored.
-     * @exception IOException if any i/o problem occured during reading
      */
-    public PropertiesParser(PropertiesFileEntry pfe) throws IOException {
+    public PropertiesParser(PropertiesFileEntry pfe) {
         this.pfe   = pfe;
-
-        editor = pfe.getPropertiesEditor();        
-        input = createReader();        
     }
 
+    
+    /** Inits parser.
+     * @exception IOException if any i/o problem occured during reading */
+    void initParser() throws IOException {
+        editor = pfe.getPropertiesEditor();
+        input = createReader();
+    }
     
     /** Creates new input stream from the file object.
      * Finds the properties data object, checks if the document is loaded
@@ -102,27 +108,54 @@ class PropertiesParser {
      */
     public PropertiesStructure parseFile() {
         try {
-            PropertiesStructure propStructure = parseFileMain(input);
+            PropertiesStructure propStructure = parseFileMain();
             
             return propStructure;
         } catch(IOException e) {
             // Parsing failed, return null.
             return null;
-        } finally {
+        }
+    }
+    
+    /** Stops parsing. */
+    public void stop() {
+        stop = true;
+        clean();
+    }
+    
+    /** Provides clean up after finish parsing. */
+    public void clean() {
+        if(input != null) {
             try {
                 input.close();
+                input = null;
             } catch(IOException ioe) {
+                if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ioe.printStackTrace();
             }
         }
     }
 
     /** Parses .properties file and creates <code>PropertiesStruture</code>. */
-    private PropertiesStructure parseFileMain(PropertiesReader in) throws IOException {
+    private PropertiesStructure parseFileMain() throws IOException {
 
         Map items = new HashMap();
+
+        PropertiesReader reader = null;
         
         while(true) {
-            Element.ItemElem element = readNextElem(in);
+            if(stop) {
+                // Parsing stopped -> return immediatelly.
+                return null;
+            }
+            
+            reader = input;
+            if(reader == null)
+                // Parsing was stopped.
+                return null;
+            
+            Element.ItemElem element = readNextElem(reader);
+            
             if(element == null)
                 break;
             else {
@@ -131,7 +164,7 @@ class PropertiesParser {
             }
         }
         
-        return new PropertiesStructure(createBiasBounds(0, in.position), items);
+        return new PropertiesStructure(createBiasBounds(0, reader.position), items);
     }
 
     /**

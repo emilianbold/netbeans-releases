@@ -856,7 +856,8 @@ implements EditCookie, PrintCookie, Serializable {
         }
     } // End of nested class PropertiesEditor.
     
-    
+
+    // PENDING Will be changed soon. This stream wrapping is cumbersome.
     /** This stream is able to filter various new line delimiters and replace them by \n. */
     static class NewLineInputStream extends InputStream {
         
@@ -923,6 +924,11 @@ implements EditCookie, PrintCookie, Serializable {
             } else {
                 return (newLineTypes[1] > newLineTypes[2]) ? NEW_LINE_R : NEW_LINE_RN;
             }
+        }
+        
+        /** Closes stream. */
+        public void close() throws IOException {
+            bufis.close();
         }
     } // End of nested class NewLineInputStream.
     

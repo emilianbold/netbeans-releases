@@ -91,6 +91,18 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
         
         return fileObject.copy(folder, newName, fileObject.getExt());
     }
+    
+    /** Deletes file. Overrides superclass method. */
+    public void delete() throws IOException {
+        getHandler().stopParsing();
+
+        try {
+            super.delete();
+        } finally {
+            // Sets back parsing flag.
+            getHandler().allowParsing();
+        }
+    }
    
     /** Moves entry to folder. Overrides superclass method. 
      * @param folder folder where copy
@@ -98,18 +110,17 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
      * @exception IOException when error happens */
     public FileObject move(FileObject folder, String suffix) throws IOException {
         String pasteSuffix = ((PropertiesDataObject)getDataObject()).getPasteSuffix();
-        
+
         if(pasteSuffix == null)
             return super.move(folder, suffix);
 
-        
         FileObject fileObject = getFile();
         FileLock lock = takeLock ();
-        
+
         try {
             String basicName = getDataObject().getPrimaryFile().getName();
             String newName = basicName + pasteSuffix + Util.getLocalePartOfFileName(this);
-            
+
             return fileObject.move (lock, folder, newName, fileObject.getExt());
         } finally {
             lock.releaseLock ();

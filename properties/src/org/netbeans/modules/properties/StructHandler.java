@@ -39,6 +39,12 @@ public class StructHandler extends Object {
     /** Soft reference to the underlying properties structure. */
     private SoftReference propStructureSRef = new SoftReference(null);
 
+    /** Parser performing actual parsing task. */
+    private WeakReference parserWRef = new WeakReference(null);
+    
+    /** Flag indicating if parsing isAllowed. */
+    private boolean parsingAllowed = true;
+
     /** Generated serialized version UID. */
     static final long serialVersionUID =-3367087822606643886L;
 
@@ -56,19 +62,45 @@ public class StructHandler extends Object {
     
     /** Reparses file. 
      * @param fire true if should fire changes */
-    private PropertiesStructure reparseNowBlocking(boolean fire) {
-        try {
-            PropertiesParser parser = new PropertiesParser(propFileEntry);
+    private synchronized PropertiesStructure reparseNowBlocking(boolean fire) {
+        if(!parsingAllowed) {
+            return null;
+        }
+        
+        PropertiesParser parser = new PropertiesParser(propFileEntry);
 
+        try {
+            parserWRef = new WeakReference(parser);
+
+            parser.initParser();
             PropertiesStructure propStructure = parser.parseFile();
+            
             updatePropertiesStructure(propStructure, fire);
             
             return propStructure;
-        } catch (IOException e) {
+        } catch (IOException ioe) {
             updatePropertiesStructure(null, fire);
             
             return null;
+        } finally {
+            parser.clean();
         }
+    }
+    
+    /** Stops parsing and prevent any other sheduled ones. File object is going to be
+     * deleted. Due actual delete or move operation. */
+    synchronized void stopParsing() {
+        parsingAllowed = false;
+        
+        PropertiesParser parser = (PropertiesParser)parserWRef.get();
+        
+        if(parser != null)
+            parser.stop();
+    }
+    
+    /** Allows parsing when error during deleting or moving occured and the operation didn't succed. */
+    synchronized void allowParsing() {
+        parsingAllowed = true;
     }
 
     /** Getter for <code>propFileEntry</code> property. */
@@ -107,7 +139,7 @@ public class StructHandler extends Object {
      * @param newPropStructure new properties structure
      * @param fire if should fire change when structure created anew
      */
-    private synchronized void updatePropertiesStructure(PropertiesStructure newPropStructure, boolean fire) {
+    private void updatePropertiesStructure(PropertiesStructure newPropStructure, boolean fire) {
         if(newPropStructure == null) {
             propStructureSRef = new SoftReference(null);
             return;
