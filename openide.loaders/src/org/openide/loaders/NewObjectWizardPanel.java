@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,7 +26,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jiri Rechtacek
  */
-final class NewObjectWizardPanel implements WizardDescriptor.FinishPanel {
+final class NewObjectWizardPanel implements WizardDescriptor.FinishablePanel {
     private NewObjectPanel newObjectPanelUI;
     /** listener to changes in the wizard */
     private ChangeListener listener;
@@ -97,7 +97,7 @@ final class NewObjectWizardPanel implements WizardDescriptor.FinishPanel {
         String errorMsg = null;
         boolean isOK = true;
         // target filesystem should be writable
-        if (targetFolder.getPrimaryFile ().isReadOnly ()) {
+        if (!targetFolder.getPrimaryFile ().canWrite ()) {
             errorMsg = NbBundle.getMessage(TemplateWizard2.class, "MSG_fs_is_readonly");
             isOK = false;
         }
@@ -133,7 +133,6 @@ final class NewObjectWizardPanel implements WizardDescriptor.FinishPanel {
      */
     public void readSettings(Object settings) {
         this.wizard = (TemplateWizard)settings;
-        
         DataObject template = wizard.getTemplate ();
         if (template != null) {
             extension = template.getPrimaryFile().getExt();
@@ -161,9 +160,15 @@ final class NewObjectWizardPanel implements WizardDescriptor.FinishPanel {
         if (name.equals (NewObjectPanel.defaultNewObjectName ())) {
             name = null;
         }
-        wizard.setTargetName (name);
+        if (wizard != null) {
+            wizard.setTargetName (name);
+            wizard = null;
+        }
         
-        this.wizard = null;
+    }
+    
+    public boolean isFinishPanel () {
+        return true;
     }
     
 }
