@@ -313,6 +313,7 @@ public class NodeGenerator {
             StringBuffer sb = new StringBuffer();
             if (menuPath!=null && menuPath.length()>0) {
                 sb.append(i18n.translatePath(menuPath));
+                sb.append(", ");
             } else {
                 sb.append("null, "); // NOI18N
             }
