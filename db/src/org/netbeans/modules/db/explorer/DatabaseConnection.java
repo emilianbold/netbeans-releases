@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,6 @@ package org.netbeans.modules.db.explorer;
 
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
-import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -290,7 +289,7 @@ public class DatabaseConnection implements DBConnection {
                 Class.forName(drv);
                 connection = DriverManager.getConnection(db, dbprops);
             } else {
-                URLClassLoader l = new URLClassLoader(drvs[0].getURLs());
+                DbURLClassLoader l = new DbURLClassLoader(drvs[0].getURLs());
                 Class c = Class.forName(drv, true, l);
                 Driver d = (Driver) c.newInstance();
                 connection = d.connect(db, dbprops);
@@ -333,7 +332,7 @@ public class DatabaseConnection implements DBConnection {
                         Class.forName(drv);
                         connection = DriverManager.getConnection(db, dbprops);
                     } else {
-                        URLClassLoader l = new URLClassLoader(drvs[0].getURLs());
+                        DbURLClassLoader l = new DbURLClassLoader(drvs[0].getURLs());
                         Class c = Class.forName(drv, true, l);
                         Driver d = (Driver) c.newInstance();
                         connection = d.connect(db, dbprops);

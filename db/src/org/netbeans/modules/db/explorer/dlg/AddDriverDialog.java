@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +31,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
+import org.netbeans.modules.db.explorer.DbURLClassLoader;
 import org.netbeans.modules.db.util.DriverListUtil;
 
 public class AddDriverDialog extends javax.swing.JPanel {
@@ -250,7 +250,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
                 String className;
                 Class c;
                 Class[] cls;
-                URLClassLoader loader = new URLClassLoader((URL[]) drvs.toArray(new URL[drvs.size()]));
+                DbURLClassLoader loader = new DbURLClassLoader((URL[]) drvs.toArray(new URL[drvs.size()]));
                 
                 for (int i = 0; i < drvs.size(); i++) {
                     try {
