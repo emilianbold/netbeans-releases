@@ -187,14 +187,6 @@ public final class Startup {
         
         curCustoms = findCustoms();
         if (curCustoms != null) {
-            installLFCustoms (curCustoms);
-            if (isLFChange) {
-                //make sure UIBootstrapValue.Lazy instances really get a chance
-                //to replace their values
-                loadAllLazyValues (curCustoms);
-            }
-            curCustoms.disposeValues();
-
             Integer in = (Integer) UIManager.get(LFCustoms.CUSTOM_FONT_SIZE); //NOI18N
             if (in == null && UIManager.getLookAndFeel().getClass() == MetalLookAndFeel.class) {
                 in = new Integer (11);
@@ -203,6 +195,13 @@ public final class Startup {
             if (in != null) {
                 AllLFCustoms.initCustomFontSize (in.intValue());
             }
+            installLFCustoms (curCustoms);
+            if (isLFChange) {
+                //make sure UIBootstrapValue.Lazy instances really get a chance
+                //to replace their values
+                loadAllLazyValues (curCustoms);
+            }
+            curCustoms.disposeValues();
         }
     }
     
