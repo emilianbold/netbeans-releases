@@ -98,7 +98,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
      */
 
     public void open() {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+        java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 // set status text "Opening Form..."
                 TopManager.getDefault().setStatusText(
@@ -119,57 +119,24 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     /** Main loading method - loads form data from file.
      */
     public synchronized boolean loadForm() {
-        if (formLoaded)
-            return true; // form already loaded
-
-        // first find PersistenceManager for loading the form
-        PersistenceManager[] pms = recognizeForm(formDataObject);
-        if (pms == null)
-            return false;
-        PersistenceManager loadManager = pms[0];
-        saveManager = pms[1];
-
-        // create and register new FormModel instance
-        formModel = new FormModel();
-        formModel.setName(formDataObject.getName());
-        formModel.setReadOnly(formDataObject.isReadOnly());
-        openForms.put(formModel, this);
-
-        // load the form data (FormModel) and report errors
-        try {
-            loadManager.loadForm(formDataObject, formModel);
-
-            reportErrors(false, null); // non fatal errors
-        }
-        catch (Throwable t) {
-            if (t instanceof ThreadDeath)
-                throw (ThreadDeath)t;
-
-            saveManager = null;
-            openForms.remove(formModel);
-            formModel = null;
-
-            reportErrors(true, t); // fatal errors
-
-            return false;
+        if (!formLoaded) {
+            if (java.awt.EventQueue.isDispatchThread())
+                loadFormImpl();
+            else { // loading must be done in AWT event queue
+                try {
+                    java.awt.EventQueue.invokeAndWait(new Runnable() {
+                        public void run() {
+                            loadFormImpl();
+                        }
+                    });
+                }
+                catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
 
-        // form is successfully loaded...
-        formLoaded = true;
-//        getCodeGenerator().initialize(formModel);
-        formModel.fireFormLoaded();
-
-        // create form nodes hierarchy and add it to SourceChildren
-        formRootNode = new FormRootNode(formModel);
-        formRootNode.getChildren().getNodes();
-        formDataObject.getNodeDelegate().getChildren()
-                                          .add(new Node[] { formRootNode });
-
-        attachFormListener();
-        attachSettingsListener();
-        attachTopComponentsListener();
-
-        return true;
+        return formLoaded;
     }
 
     /** EditCookie implementation - opens only java source file.
@@ -332,16 +299,67 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     // loading
 
     private void openForm(final boolean openGui) {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+        java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                boolean loaded = loadForm();
-                if (loaded) {
+                if (loadForm()) {
                     if (openGui)
                         openGUI();
                     FormEditorSupport.this.superOpen();
                 }
             }
         });
+    }
+
+    private void loadFormImpl() {
+        if (formLoaded)
+            return; // form already loaded
+
+        // first find PersistenceManager for loading the form
+        PersistenceManager[] pms = recognizeForm(formDataObject);
+        if (pms == null)
+            return;
+        PersistenceManager loadManager = pms[0];
+        saveManager = pms[1];
+
+        // create and register new FormModel instance
+        formModel = new FormModel();
+        formModel.setName(formDataObject.getName());
+        formModel.setReadOnly(formDataObject.isReadOnly());
+        openForms.put(formModel, this);
+
+        // load the form data (FormModel) and report errors
+        try {
+            loadManager.loadForm(formDataObject, formModel);
+
+            reportErrors(false, null); // non fatal errors
+        }
+        catch (Throwable t) {
+            if (t instanceof ThreadDeath)
+                throw (ThreadDeath)t;
+
+            saveManager = null;
+            openForms.remove(formModel);
+            formModel = null;
+
+            reportErrors(true, t); // fatal errors
+
+            return;
+        }
+
+        // form is successfully loaded...
+        formLoaded = true;
+//        getCodeGenerator().initialize(formModel);
+        formModel.fireFormLoaded();
+
+        // create form nodes hierarchy and add it to SourceChildren
+        formRootNode = new FormRootNode(formModel);
+        formRootNode.getChildren().getNodes();
+        formDataObject.getNodeDelegate().getChildren()
+                                          .add(new Node[] { formRootNode });
+
+        attachFormListener();
+        attachSettingsListener();
+        attachTopComponentsListener();
     }
 
     /** Finds PersistenceManager that can load and save the form.
@@ -701,7 +719,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     }
 
     public void gotoForm() {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+        java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
 
                 if (!formLoaded)
