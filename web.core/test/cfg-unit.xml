@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
+<mconfig name="unit Test Type Config">
+
+    <!-- testbag with all tests running in code mode (i.e. in standard JVM)
+         use ant runtests -Dxtest.attribs=stable,code to run this testbag  -->
+	<testbag compiler="default-compiler" executor="ide" name="all unit tests" testattribs="all and ide">
+ 		<testset dir="unit/src">
+			<patternset>
+				<include name="**/*.class"/>
+				<exclude name="**/data/**"/>
+ 			</patternset>
+ 		</testset>
+	</testbag>
+
+    <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
+                        Similarly as with code executor, you can create your own to 
+                        prepare some neccessary stuff before running tests. -->
+	<executor antfile="build-unit.xml" name="ide" target="runidetest"/> 
+
+	<compiler antfile="build-unit.xml" default="true" name="default-compiler" target="default-compiler"/>
+
+    <!-- standard results processor - currently there is only one results processor in XTest -->    
+	<resultsprocessor antfile="build.xml" default="true" name="default-results-processor" target="test_report"/> 
+
+</mconfig>
