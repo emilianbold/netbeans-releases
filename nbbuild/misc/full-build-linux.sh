@@ -24,18 +24,18 @@
 # sources=/space/src/nb_all
 # a full NB source checkout (cvs co standard ide xtest jemmy jellytools)
 #
-# nbjdk=/opt/java/j2se/1.4
-# JDK 1.4 installation directory. (Full JDK, not just JRE.)
+# nbjdk=/opt/java/j2se/1.4.2
+# JDK 1.4.2 installation directory. (Full JDK, not just JRE.)
 #
 # nbtestjdk=/opt/java/j2se/1.4
 # JDK installation directory for use when running (but not building!) test suites.
 # By default, same as nbjdk. However you may wish to run tests with a
 # different VM.
 #
-# ant=/opt/ant-1.5.3/bin/ant
-# Ant 1.5.3 installation directory.
+# ant=/opt/ant-1.6.1/bin/ant
+# Ant 1.6.1 installation directory.
 #
-# testant=/opt/ant-1.5.3/bin/ant
+# testant=/opt/ant-1.6.1/bin/ant
 # By default, same as ant.
 #
 # doclean=no
@@ -104,12 +104,12 @@ if [ "$override" != yes ]
 then
     if $nbjdk/bin/java -version 2>&1 | fgrep -q -v 1.4
     then
-        echo "You need to set the variable 'nbjdk' to a JDK 1.4 installation" 1>&2
+        echo "You need to set the variable 'nbjdk' to a JDK 1.4.2 installation" 1>&2
         exit 2
     fi
-    if $ant -version 2>&1 | fgrep -q -v 1.5.3
+    if $ant -version 2>&1 | fgrep -q -v 1.6.1
     then
-        echo "You need to set the variable 'ant' to an Ant 1.5.3 binary" 1>&2
+        echo "You need to set the variable 'ant' to an Ant 1.6.1 binary" 1>&2
         exit 2
     fi
 fi
