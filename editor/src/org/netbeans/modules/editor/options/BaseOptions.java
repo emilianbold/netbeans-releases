@@ -205,10 +205,10 @@ public class BaseOptions extends OptionSupport {
             public Object getValue(Class kitClass2, String settingName) {
                 IndentEngine eng = getIndentEngine();
                 return (eng != null)
-                ? ((eng instanceof FormatterIndentEngine)
-                ? ((FormatterIndentEngine)eng).getFormatter()
-                : ((Formatter)new IndentEngineFormatter(getKitClass(), eng)))
-                : null;
+                    ? ((eng instanceof FormatterIndentEngine)
+                        ? ((FormatterIndentEngine)eng).getFormatter()
+                        : ((Formatter)new IndentEngineFormatter(getKitClass(), eng)))
+                    : null;
             }
         },
         null
@@ -889,19 +889,10 @@ public class BaseOptions extends OptionSupport {
         
         }
         
-        ServiceType.Handle h = (ServiceType.Handle)getProperty(INDENT_ENGINE_PROP);
-        IndentEngine eng;
-        if (h != null) { // handle already set
-            eng = (IndentEngine)h.getServiceType();
-            
-        } else { // handle not yet set
-            
-            // Try to find the default indent engine in Services registry
-            eng = findDefaultIndentEngine();
-            
-            if (eng != null) { // found
-                setIndentEngine(eng);
-            }
+        // Try to find the default indent engine in Services registry
+        IndentEngine eng = findDefaultIndentEngine();
+        if (eng != null) { // found
+            setIndentEngine(eng);
         }
         
         return eng;
@@ -912,11 +903,7 @@ public class BaseOptions extends OptionSupport {
          * during project deserialization to avoid doubled
          * indent engine as described in #9687
          */
-        if (!isReadExternal()) {
-            // To force serialization of the handle instead of service type
-            putProperty(INDENT_ENGINE_PROP, new ServiceType.Handle(eng), false);
-            refreshIndentEngineSettings();
-            
+        if (!inReadExternal) {
             String id = null;
             if (eng != null) {
                 Lookup.Template tmp = new Lookup.Template(null, null, eng);
@@ -930,6 +917,8 @@ public class BaseOptions extends OptionSupport {
                 map.put(INDENT_ENGINE_PROP, id);
                 updateSettings(PropertiesMIMEProcessor.class, map);
             }
+
+            refreshIndentEngineSettings();
         }
     }
     
@@ -985,23 +974,26 @@ public class BaseOptions extends OptionSupport {
          */
         optionsVersion = 0;
         
-        // Read the serialized options
-        super.readExternal(in);
-        
-        // Make sure the indent engine settings are propagated
-        // (SharedClassObject.putProperty() is final)
-        refreshIndentEngineSettings();
-        
-        // Possibly upgrade the options
-        if (optionsVersion < LATEST_OPTIONS_VERSION) {
-            upgradeOptions(optionsVersion, LATEST_OPTIONS_VERSION);
+        try {
+            // Read the serialized options
+            super.readExternal(in);
+        } finally {
+
+            // Make sure the indent engine settings are propagated
+            // (SharedClassObject.putProperty() is final)
+            refreshIndentEngineSettings();
+
+            // Possibly upgrade the options
+            if (optionsVersion < LATEST_OPTIONS_VERSION) {
+                upgradeOptions(optionsVersion, LATEST_OPTIONS_VERSION);
+            }
+
+            optionsVersion = LATEST_OPTIONS_VERSION;
+
+            /** Release temp indent engine -  #11212 */
+            inReadExternal = false;
+            readExternalIndentEngine = null;
         }
-        
-        optionsVersion = LATEST_OPTIONS_VERSION;
-        
-        /** Release temp indent engine -  #11212 */
-        inReadExternal = false;
-        readExternalIndentEngine = null;
     }
     
     /** Upgrade the deserialized options.
@@ -1054,7 +1046,7 @@ public class BaseOptions extends OptionSupport {
             });
             
         } else {
-            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!"+processor.toString()+" type file haven't been founded in folder:"+mimeFolder.getDataFolder()); //TEMP
+            System.err.println("!!!!!!!!!!!!!!!!!!!!!!!!"+processor.toString()+" type file haven't been found in folder:"+mimeFolder.getDataFolder()); //TEMP
         }
     }
     

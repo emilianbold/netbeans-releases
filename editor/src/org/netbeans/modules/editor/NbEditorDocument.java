@@ -89,9 +89,6 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
     public void settingsChange(SettingsChangeEvent evt) {
         super.settingsChange(evt);
 
-        // Refresh formatter
-        formatter = null;
-
         // Check whether the mimeType is set
         Object o = getProperty(MIME_TYPE_PROP);
         if (!(o instanceof String)) {
@@ -114,6 +111,9 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
                 }
             }
         );
+
+        // Refresh formatter
+        formatter = null;
 
     }
 
@@ -146,20 +146,8 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
     public Formatter getFormatter() {
         Formatter f = formatter;
         if (f == null) {
-            String mimeType = (String)getProperty(MIME_TYPE_PROP);
-            if (mimeType != null) {
-                IndentEngine eng = IndentEngine.find(this);
-                if (eng != null) {
-                    if (eng instanceof FormatterIndentEngine) {
-                        f = ((FormatterIndentEngine)eng).getFormatter();
-
-                    } else { // generic indent engine
-                        f = new IndentEngineFormatter(getKitClass(), eng);
-                    }
-                    
-                    formatter = f;
-                }
-            }
+            formatter = (Formatter)Settings.getValue(getKitClass(), FORMATTER);
+            f = formatter;
         }
 
         return (f != null) ? f : super.getFormatter();
