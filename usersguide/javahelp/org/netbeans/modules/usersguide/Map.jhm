@@ -270,6 +270,7 @@
 <mapID target="debug.threads" url="debug/debug_threads.html" />
 <mapID target="debug.source" url="debug/debug_source.html" />
 <mapID target="debug.step" url="debug/debug_step.html" />
+<mapID target="debug.remote" url="debug/debug_remote.html" />
 
 <!-- Javadoc IDs -->
 

@@ -245,8 +245,7 @@
     </tocitem>
     <tocitem text="Debugging Sessions">
       <tocitem text="Starting a Local Debugging Session" target="debug.local"/>
-      <tocitem text="Attaching to a Java VM" target="tbd" />
-      <tocitem text="Debugging on a 64-Bit Java VM" target="tbd" />
+      <tocitem text="Starting a Remote Debugging Session" target="debug.remote" />
       <tocitem text="Stepping Through Your Program" target="debug.step" />
       <tocitem text="Fixing and Continuing" target="debug.fix"></tocitem>
       <tocitem text="Finishing a Session" target="debug.finish" />
