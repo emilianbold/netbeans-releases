@@ -406,7 +406,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../openide/execution/deprecated" target="netbeans"/>
   </target>
-  <target name="all-core/compiler" depends="all-openide/compiler">
+  <target name="all-core/compiler" depends="all-openide/compiler,all-core/output">
     <echo message="Building module core/compiler..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
