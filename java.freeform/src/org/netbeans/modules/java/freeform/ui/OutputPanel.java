@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.java.freeform.ui;
 
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.io.File;
 import java.util.ArrayList;
@@ -25,7 +27,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.JavaProjectGenerator;
@@ -45,7 +46,6 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private List compUnitsKeys;
     private boolean ignoreEvent;
     private ProjectModel model;
-    private DocumentListener documentListener;
     
     public OutputPanel() {
         initComponents();
@@ -54,28 +54,20 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         output.setModel(listModel);
         // XXX: for now only single selection
         output.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        documentListener = new DocumentListener() {           
-            public void insertUpdate(DocumentEvent e) {
-                update(e);
+        javadoc.addFocusListener(new FocusAdapter () {
+            public void focusLost(FocusEvent e) {
+                update ();
             }
-
-            public void removeUpdate(DocumentEvent e) {
-                update(e);
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-                update(e);
-            }
-        };
-        this.javadoc.getDocument().addDocumentListener(documentListener);
-    }
+        });
+    }    
     
-    private void update(DocumentEvent e) {
+    private void update() {
         int index = sourceFolder.getSelectedIndex();
         ProjectModel.CompilationUnitKey key = (ProjectModel.CompilationUnitKey)compUnitsKeys.get(index);
         JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
         updateCompilationUnitJavadoc(cu);
     }
+
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx( OutputPanel.class );
@@ -375,7 +367,10 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
                 value = getListAsString(jd);
                 enabled = false;
             } else if (jd.size() == 1) {
-                value = (String)jd.get(0);
+                File f = Util.resolveFile(model.getEvaluator(), model.getNBProjectFolder(), (String)jd.get(0));
+                if (f != null) {
+                    value = f.getAbsolutePath();
+                }
             }
         }
         javadoc.setEnabled(enabled);
@@ -383,15 +378,18 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         javadoc.setText(value);
     }
     
-    private static String getListAsString(List list) {
+    private String getListAsString(List list) {
         assert list != null;
         StringBuffer sb = new StringBuffer();
         Iterator it = list.iterator();
-        while (it.hasNext()) {
-            sb.append((String)it.next());
-            if (it.hasNext()) {
-                sb.append(", "); // NOI18N
-            }
+        while (it.hasNext()) {            
+            File f = Util.resolveFile(model.getEvaluator(), model.getNBProjectFolder(), (String)it.next());
+            if (f != null) {
+                if (sb.length()>0) {
+                    sb.append(", "); // NOI18N
+                }
+                sb.append(f.getAbsolutePath());
+            }            
         }
         return sb.toString();
     }
@@ -400,7 +398,12 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         if (javadoc.isEnabled()) {
             if (javadoc.getText().length() > 0) {
                 cu.javadoc = new ArrayList();
-                cu.javadoc.add(javadoc.getText());
+                String[] parts = javadoc.getText().split(",");
+                for (int i=0; i<parts.length; i++) {
+                    File f = FileUtil.normalizeFile(new File (parts[i].trim()));
+                    String path = Util.relativizeLocation(model.getBaseFolder(), model.getNBProjectFolder(), f);
+                    cu.javadoc.add (path);
+                }                
             } else {
                 cu.javadoc = null;
             }
