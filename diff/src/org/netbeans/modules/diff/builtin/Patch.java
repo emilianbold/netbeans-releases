@@ -313,6 +313,8 @@ public class Patch extends Reader {
                 changeText.append('\n');
                 do {
                     line = br.readLine();
+                    if (line == null)
+                        break;
                     if (line.startsWith(LINE_PREP_ADD)) {
                         changeText.append(line.substring(LINE_PREP_ADD.length()));
                         changeText.append('\n');
@@ -333,6 +335,8 @@ public class Patch extends Reader {
                 changeText.append('\n');
                 do {
                     line = br.readLine();
+                    if (line == null)
+                        break;
                     if (line.startsWith(LINE_PREP_REMOVE)) {
                         changeText.append(line.substring(LINE_PREP_REMOVE.length()));
                         changeText.append('\n');
@@ -353,6 +357,8 @@ public class Patch extends Reader {
                 changeText.append('\n');
                 do {
                     line = br.readLine();
+                    if (line == null)
+                        break;
                     if (line.startsWith(LINE_PREP_CHANGE)) {
                         changeText.append(line.substring(LINE_PREP_CHANGE.length()));
                         changeText.append('\n');

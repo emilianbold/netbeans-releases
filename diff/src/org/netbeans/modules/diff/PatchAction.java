@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+import java.text.MessageFormat;
 import javax.swing.JDialog;
 
 import javax.swing.JFileChooser;
@@ -52,6 +53,7 @@ import org.netbeans.api.diff.Difference;
 
 import org.netbeans.modules.diff.builtin.Patch;
 import org.openide.DialogDisplayer;
+import org.openide.DialogDescriptor;
 
 /**
  * Patch Action. It asks for a patch file and applies it to the selected file.
@@ -59,15 +61,15 @@ import org.openide.DialogDisplayer;
  * @author  Martin Entlicher
  */
 public class PatchAction extends NodeAction {
-    
+
     /** Creates a new instance of PatchAction */
     public PatchAction() {
     }
-    
+
     public String getName() {
         return NbBundle.getMessage(PatchAction.class, "CTL_PatchActionName");
     }
-    
+
     public boolean enable(Node[] nodes) {
         if (nodes.length == 1) {
             DataObject do1 = (DataObject) nodes[0].getCookie(DataObject.class);
@@ -92,7 +94,7 @@ public class PatchAction extends NodeAction {
         }
         return false;
     }
-    
+
     public void performAction(Node[] nodes) {
         DataObject do1 = (DataObject) nodes[0].getCookie(DataObject.class);
         if (do1 != null) {
@@ -132,7 +134,7 @@ public class PatchAction extends NodeAction {
             //applyDiffsTo(diffs, fo);
         }
     }
-    
+
     private File getPatchFor(FileObject fo) {
         JFileChooser chooser = new JFileChooser(System.getProperty("user.home"));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -145,20 +147,20 @@ public class PatchAction extends NodeAction {
         chooser.setApproveButtonToolTipText(NbBundle.getMessage(PatchAction.class, "BTN_Patch_tooltip"));
         JFrame parent = new JFrame();
         final JDialog dialog = new JDialog(parent, title, true);
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PatchAction.class, "ACSD_PatchDialog")); 
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PatchAction.class, "ACSD_PatchDialog"));
         Container contentPane = dialog.getContentPane();
         contentPane.setLayout(new BorderLayout());
-        contentPane.add(chooser, BorderLayout.CENTER); 
-        dialog.pack();        
-        dialog.setLocationRelativeTo(parent);         
-    
+        contentPane.add(chooser, BorderLayout.CENTER);
+        dialog.pack();
+        dialog.setLocationRelativeTo(parent);
+
         ChooserListener listener = new PatchAction.ChooserListener(dialog,chooser);
 	chooser.addActionListener(listener);
         dialog.show();
-        
+
         return listener.getFile();
     }
-    
+
     private void applyFileDiffs(Patch.FileDifferences[] fileDiffs, FileObject fo) {
         ArrayList notFoundFileNames = new ArrayList();
         ArrayList appliedFiles = new ArrayList();
@@ -201,7 +203,7 @@ public class PatchAction extends NodeAction {
             }
         }
     }
-    
+
     private static FileObject findChild(FileObject folder, String child) {
         child = child.replace(File.separatorChar, '/');
         StringTokenizer tokenizer = new StringTokenizer(child, "/");
@@ -216,7 +218,7 @@ public class PatchAction extends NodeAction {
         }
         return ch;
     }
-    
+
     private FileObject createFileBackup(FileObject fo) {
         FileObject parent = fo.getParent();
         FileLock lock = null;
@@ -239,7 +241,7 @@ public class PatchAction extends NodeAction {
             } catch (IOException ioex) {}
         }
     }
-    
+
     private boolean applyDiffsTo(Difference[] diffs, FileObject fo) {
         //System.out.println("applyDiffsTo("+fo.getPackageNameExt('/', '.')+")");
         File tmp;
@@ -256,8 +258,12 @@ public class PatchAction extends NodeAction {
             Reader patched = Patch.apply(diffs, new InputStreamReader(fo.getInputStream()));
             FileUtil.copy(in = new ReaderInputStream(patched), out = new FileOutputStream(tmp));
         } catch (IOException ioex) {
-            ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
-                NbBundle.getMessage(PatchAction.class, "EXC_PatchApplicationFailed", ioex.getLocalizedMessage(), fo.getNameExt())));
+//            ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
+//                NbBundle.getMessage(PatchAction.class, "EXC_PatchApplicationFailed", ioex.getLocalizedMessage(), fo.getNameExt())));
+            String msg = MessageFormat.format (NbBundle.getMessage(PatchAction.class, "EXC_PatchApplicationFailed"), new Object[] {ioex.getLocalizedMessage(), fo.getNameExt()});
+            NotifyDescriptor dd = new NotifyDescriptor.Message(msg);
+            DialogDisplayer.getDefault().notify (dd);
+            ErrorManager.getDefault().log (msg);
             tmp.delete();
             return false;
         } finally {
@@ -288,7 +294,7 @@ public class PatchAction extends NodeAction {
         //TopManager.getDefault().notify(new NotifyDescriptor.Message(
         //    NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedSuccessfully")));
     }
-    
+
     private void showDiffs(ArrayList files, HashMap backups) {
         for (int i = 0; i < files.size(); i++) {
             FileObject file = (FileObject) files.get(i);
@@ -300,34 +306,34 @@ public class PatchAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(PatchAction.class);
     }
-    
+
     class ChooserListener implements ActionListener{
         private JDialog dialog;
         private JFileChooser chooser;
         private File file = null;
-        
+
         public ChooserListener(JDialog dialog,JFileChooser chooser){
             super();
             this.dialog = dialog;
             this.chooser = chooser;
         }
-        
+
         public void actionPerformed(ActionEvent e){
             String command  = e.getActionCommand();
-            if(command == JFileChooser.APPROVE_SELECTION){                
+            if(command == JFileChooser.APPROVE_SELECTION){
                 if(dialog != null) {
                     file = chooser.getSelectedFile();
                     dialog.setVisible(false);
-                    
+
                 }
             }else{
                 if(dialog != null){
                     file = null;
-                    dialog.setVisible(false);                    
+                    dialog.setVisible(false);
                 }
             }
         }
-        public File getFile(){            
+        public File getFile(){
             return file;
         }
     }
