@@ -22,6 +22,7 @@ package org.netbeans.xtest.pe;
 import org.apache.tools.ant.*;
 import java.io.*;
 import org.netbeans.xtest.pe.xmlbeans.*;
+import org.netbeans.xtest.util.FileUtils;
 import java.util.*;
 import org.w3c.dom.*;
 
@@ -230,7 +231,7 @@ public class RegenerateXMLTask extends Task{
         // adding workdir into crashed suites
         if (!produceBigReportOnly) { 
             boolean failure = false;
-            File[] suiteFiles = suitesDir.listFiles();
+            File[] suiteFiles = FileUtils.listFiles(suitesDir,null,".xml");
             for (int i=0; i< suiteFiles.length; i++) {
                 boolean modified = false;
                 UnitTestSuite testSuite = ResultsUtils.getUnitTestSuite(suiteFiles[i]);

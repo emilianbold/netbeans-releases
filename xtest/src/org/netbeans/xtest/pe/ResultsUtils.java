@@ -291,7 +291,7 @@ public class ResultsUtils {
         } catch (Exception e) {
             // move the old testbag file to *.broken file
             File brokenTestBagFile = new File(testBag.getAbsolutePath()+".broken");
-            FileUtils.moveFile(testBag, brokenTestBagFile);
+            FileUtils.copyFile(testBag, brokenTestBagFile);
             // install a new testbag ...
             TestBag aTestBag = new TestBag();
             String testBagID = testBag.getParentFile().getParentFile().getName();
@@ -317,7 +317,7 @@ public class ResultsUtils {
             UnitTestSuite aSuite = new UnitTestSuite();
             // move the old suite file to *.broken file
             File brokenSuiteFile = new File(suiteFile.getAbsolutePath()+".broken");
-            FileUtils.moveFile(suiteFile, brokenSuiteFile);
+            FileUtils.copyFile(suiteFile, brokenSuiteFile);
             // get the name of the suite (from the filename)
             // assume the suite is always named as TEST-{suitename}.xml
             int beginIndex = "TEST-".length();
@@ -338,7 +338,7 @@ public class ResultsUtils {
     public static UnitTestSuite[] getUnitTestSuites(File suiteDir) throws Exception {       
         //File suiteDir = inputDir;
         // scan directory
-        File[] suiteFiles = suiteDir.listFiles();
+        File[] suiteFiles = FileUtils.listFiles(suiteDir,null,".xml");
         debugInfo("getUnitTestSuites(File):"+suiteFiles);
         ArrayList suiteList = new ArrayList();
         for (int i=0; i< suiteFiles.length; i++) {

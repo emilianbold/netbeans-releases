@@ -106,7 +106,8 @@ public class XMLWriter {
         NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             Attr attr = (Attr) attrs.item(i);
-            printer.print(" "+attr.getName()+"=\""+xmlEscape(attr.getValue())+"\"");
+            String attribute = " "+attr.getName()+"=\""+xmlEscape(attr.getValue())+"\"";
+            printer.print(attribute);
         }
                 
         
@@ -231,13 +232,16 @@ public class XMLWriter {
             while ((newIndex = string.indexOf('\n',oldIndex)) >= 0) {
                 String subString = string.substring(oldIndex,newIndex);
                 print(subString);
-                newLine();
+                if (subString.length() < maxColumns) {
+                    newLine();
+                }
                 oldIndex = newIndex + 1;
             }
             
             if (oldIndex > 0) {
-                // there is nothing more to be done
-                // the string is already printed
+                // printout the rest of the string;
+                String subString = string.substring(oldIndex);                              
+                print(subString);
                 return;
             }
                         
