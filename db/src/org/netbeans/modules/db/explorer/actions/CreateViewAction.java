@@ -14,30 +14,43 @@
 package org.netbeans.modules.db.explorer.actions;
 
 import java.sql.*;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
+
 import org.netbeans.lib.ddl.impl.*;
 import org.openide.*;
+import org.openide.util.NbBundle;
 import org.openide.nodes.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.dlg.*;
 import org.netbeans.modules.db.explorer.infos.*;
 
-public class CreateViewAction extends DatabaseAction
-{
+public class CreateViewAction extends DatabaseAction {
     static final long serialVersionUID =-1640355770860785644L;
-    public void performAction (Node[] activatedNodes)
-    {
+    
+    public void performAction(Node[] activatedNodes) {
+        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
+        
         Node node;
-        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-        else return;
+        if (activatedNodes != null && activatedNodes.length>0)
+            node = activatedNodes[0];
+        else
+            return;
 
         try {
-
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            
+            DatabaseMetaData dmd = info.getConnection().getMetaData();
+            if (! info.getDriverSpecification().areViewsSupported(dmd)) {
+                String message = MessageFormat.format(bundle.getString("MSG_ViewsAreNotSupported"), new String[] {dmd.getDatabaseProductName().trim()}); // NOI18N
+                TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
+                return;
+            }
+            
             ViewListNodeInfo nfo = (ViewListNodeInfo)info.getParent(nodename);
             Specification spec = (Specification)nfo.getSpecification();
 
             // Create and execute command
-
             AddViewDialog dlg = new AddViewDialog();
             if (dlg.run()) {
                 CreateView cmd = spec.createCommandCreateView(dlg.getViewName());
@@ -45,23 +58,9 @@ public class CreateViewAction extends DatabaseAction
                 cmd.execute();
                 nfo.addView(dlg.getViewName());
             }
-
-        } catch(Exception e) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to perform operation "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        } catch(Exception exc) {
+            String message = MessageFormat.format(bundle.getString("ERR_UnableToPerformOperation"), new String[] {node.getName(), exc.getMessage()}); // NOI18N
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }
-/*
- * <<Log>>
- *  7    Gandalf   1.6         11/27/99 Patrik Knakal   
- *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  4    Gandalf   1.3         5/21/99  Slavek Psenicka new version
- *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
- *  2    Gandalf   1.1         4/23/99  Slavek Psenicka oprava activatedNode[0] 
- *       check
- *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
- * $
- */
