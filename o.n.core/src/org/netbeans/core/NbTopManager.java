@@ -331,6 +331,12 @@ public class NbTopManager extends TopManager {
     return LoaderPoolNode.getNbLoaderPool ();
   }
 
+  /** Obtains current up-to system classloader
+  */
+  public ClassLoader systemClassLoader () {
+    return ModuleClassLoader.systemClassLoader ();
+  }
+
   /** Obtains current up-to data te classloader
   */
   public ClassLoader currentClassLoader () {
