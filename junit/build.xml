@@ -116,6 +116,13 @@ Microsystems, Inc. All Rights Reserved.
     </jar>
     
   </target>
+  
+  <target name="parserdb">
+  	<mkdir dir="netbeans/system/ParserDB"/>
+  	<copy toDir="netbeans/system/ParserDB">
+  		<fileset dir="parserdb"/>
+  	</copy>
+  </target>
 
   <target name="release">
     <copy todir="netbeans">
@@ -123,7 +130,7 @@ Microsystems, Inc. All Rights Reserved.
     </copy>
   </target>
 
-  <target name="netbeans" depends="jar-junit-extensions,jars,javadoc-junit-extensions,javahelp,release"/>
+  <target name="netbeans" depends="jar-junit-extensions,jars,javadoc-junit-extensions,javahelp,parserdb,release"/>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="junit.nbm"
