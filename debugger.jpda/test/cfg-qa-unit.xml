@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="jpdadebugger unit test config">
 
-    <testbag testattribs="full,presence" executor="ide" name="Presence" resultsprocessor="qa-unit">
+    <testbag testattribs="validation,full,presence" executor="ide" name="Presence" resultsprocessor="qa-unit">
        <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/test/debugger/basic/ActionsPresenceTestCase.class"/>
@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="full,breakpoints" executor="ide" name="Breakpoints" resultsprocessor="qa-unit">
+    <testbag testattribs="validation,full,breakpoints" executor="ide" name="Breakpoints" resultsprocessor="qa-unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/test/debugger/breakpoints/clazz/HotspotClassBreakpointTestCase.class"/>
@@ -58,7 +58,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="full,bugs" executor="ide" name="Bugs" resultsprocessor="qa-unit">
+    <testbag testattribs="validation,full,bugs" executor="ide" name="Bugs" resultsprocessor="qa-unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/test/debugger/bugs/HotspotBugsTestCase.class"/>
@@ -81,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="full,watches" executor="ide" name="Watches" resultsprocessor="qa-unit">
+    <testbag testattribs="validation,full,watches" executor="ide" name="Watches" resultsprocessor="qa-unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/test/debugger/watches/HotspotBasicWatchesTestCase.class"/>
