@@ -219,7 +219,7 @@ public class OptionsAction extends CallableSystemAction {
             split.setLeftComponent(view);
             split.setRightComponent(propertyView);
             // install proper border for split pane
-            split.setBorder((Border)UIManager.get("Netbeans.ScrollPane.border")); // NOI18N
+            split.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
 
             setLayout (new java.awt.GridBagLayout ());
 

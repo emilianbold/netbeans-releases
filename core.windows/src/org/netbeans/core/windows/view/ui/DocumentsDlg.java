@@ -331,7 +331,7 @@ implements HelpCtx.Provider, PropertyChangeListener {
         panel.setLayout(new BorderLayout());
         ListView view = new ListView();
         // proper border for the view
-        view.setBorder((Border)UIManager.get("Netbeans.ScrollPane.border")); // NOI18N
+        view.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
         view.setPopupAllowed(false);
         //view.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         explorer = new ExplorerPanel();

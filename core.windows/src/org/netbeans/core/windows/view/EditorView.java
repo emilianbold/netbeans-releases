@@ -106,7 +106,7 @@ public class EditorView extends ViewElement {
             panel.setBorder(null);
         } else {
             // special border installed into UI manager by netbeans
-            panel.setBorder((Border)UIManager.get("Netbeans.ScrollPane.border"));
+            panel.setBorder((Border)UIManager.get("Nb.ScrollPane.border"));
         }
     }
     
