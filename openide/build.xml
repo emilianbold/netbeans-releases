@@ -144,7 +144,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   <target name="vers-prep" depends="vers-prep-2">
     <property file="openide-spec-vers.properties"/>
-    <filter token="SPEC_VERS_SUBST" value="${org.openide.specification.version}"/>
+    <filter token="SPEC_VERS_SUBST" value="${openide.specification.version}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
   </target>
   
