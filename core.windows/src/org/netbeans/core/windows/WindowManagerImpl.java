@@ -654,14 +654,14 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     // Notifications>>
     public void notifyTopComponentOpened(TopComponent tc) {
         // Inform component instance.
-        WindowManagerImpl.getInstance().componentOpenNotify(tc);
+        componentOpenNotify(tc);
         // then let others know that top component was opened...
         notifyRegistryTopComponentOpened(tc);
     }
     
     public void notifyTopComponentClosed(TopComponent tc) {
         // Inform component instance.
-        WindowManagerImpl.getInstance().componentCloseNotify(tc);
+        componentCloseNotify(tc);
         // let others know that top component was closed...
         notifyRegistryTopComponentClosed(tc);
     }
@@ -738,42 +738,42 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             return;
         }
 
-        ModeImpl mode = getMode(tc);
+        ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
             mode.close(tc);
         }
     }
     
     protected void topComponentRequestActive(TopComponent tc) {
-        ModeImpl mode = getMode(tc);
+        ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
             activateTopComponent(tc);
         }
     }
     
     protected void topComponentRequestVisible(TopComponent tc) {
-        ModeImpl mode = getMode(tc);
+        ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
-            WindowManagerImpl.getInstance().selectTopComponentImpl(tc);
+            selectTopComponentImpl(tc);
         }
     }
 
     protected void topComponentDisplayNameChanged(TopComponent tc, String displayName) {
-        ModeImpl mode = getMode(tc);
+        ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
             central.topComponentDisplayNameChanged(mode, tc);
         }
     }
     
     protected void topComponentToolTipChanged(TopComponent tc, String toolTip) {
-        ModeImpl mode = getMode(tc);
+        ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
             central.topComponentToolTipChanged(mode, tc);
         }
     }
     
     protected void topComponentIconChanged(TopComponent tc, Image icon) {
-        ModeImpl mode = getMode(tc);
+        ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
             central.topComponentIconChanged(mode, tc);
         }
@@ -784,12 +784,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     protected boolean topComponentIsOpened(TopComponent tc) {
-        ModeImpl mode = getMode(tc);
-        if(mode != null && mode.getOpenedTopComponents().contains(tc)) {
-            return true;
-        }
-
-        return false;
+        return getModeForOpenedTopComponent(tc) != null;
     }
     
     protected Action[] topComponentDefaultActions(TopComponent tc) {
@@ -801,10 +796,28 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     // Manipulating methods (overriding the superclass dummy ones) <<
 
-    // ** Helper only. */
+    /** Helper only. */
     private ModeImpl getMode(TopComponent tc) {
         return (ModeImpl)findMode(tc);
     }
 
+    // #37561
+    /** Helper only */
+    private ModeImpl getModeForOpenedTopComponent(TopComponent tc) {
+        if(tc == null) {
+            // Log something?
+            return null;
+        }
+        
+        for(Iterator it = getModes().iterator(); it.hasNext(); ) {
+            ModeImpl mode = (ModeImpl)it.next();
+            
+            if(mode.getOpenedTopComponents().contains(tc)) {
+                return mode;
+            }
+        }
+        
+        return null;
+    }
 }
 
