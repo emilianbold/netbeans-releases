@@ -494,6 +494,22 @@ Microsystems, Inc. All Rights Reserved.
              </fileset>
         </jar>
   </target>        
+  
+  <target  name="lookup-src" description="Creates zip file with lookup sources.">
+    <zip compress="true" zipfile="standalone/lookup-src.zip">
+        <fileset dir="src">
+            <include name="org/openide/ErrorManager.java"/>
+            <include name="org/openide/util/lookup/*"/>
+            <include name="org/openide/util/*Lookup*"/>
+            <include name="org/openide/util/WeakSet.java"/>
+            
+            <exclude name="org/openide/**/*_*" />
+            <exclude name="org/openide/util/*_*" />
+            <exclude name="**/*.class"/>
+            <exclude name="**/.nbattrs"/>
+        </fileset>
+    </zip>
+  </target>
 
   <!-- Open API documentation. -->
   <target name="open-apis-check-existence-1" unless="open-apis-force-rebuild">
