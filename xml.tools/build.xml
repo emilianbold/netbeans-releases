@@ -25,7 +25,6 @@ Microsystems, Inc. All Rights Reserved.
         <patternset id="xml/tools.files">
           <include name="${nb.modules.dir}/xml-tools.jar"/>
           <include name="${nb.docs.dir}/xml-apis.zip"/>
-          <include name="${nb.system.dir}/ParserDB/xml-apis.jc*"/>
         </patternset>
         <path id="cp">
           <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
@@ -64,9 +63,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="release">
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}" includeEmptyDirs="false">
             <fileset dir="release/docs" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
-        </copy>
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}" includeEmptyDirs="false">
-            <fileset dir="release/system" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
         </copy>
     </target>
 
