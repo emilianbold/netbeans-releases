@@ -151,7 +151,6 @@ public class XmlMultiViewEditorTest extends NbTestCase {
     }
     
     public void testExternalChange() throws IOException {
-        System.out.println("testExternalChange()");
         assertNotNull("Book DataObject not found",bookDO);
         String golden = "ChangedChapterTitle.pass";
         FileObject fo = bookDO.getPrimaryFile();
