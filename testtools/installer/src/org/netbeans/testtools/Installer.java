@@ -1,11 +1,23 @@
 /*
- * Installer.java
- *
- * Created on February 7, 2003, 9:46 AM
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.testtools;
 
+/*
+ * Installer.java
+ *
+ * Created on February 7, 2003, 9:46 AM
+ */
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -15,15 +27,28 @@ import java.util.Hashtable;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-/**
- *
- * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
+/** Test Tools Installer performs extraction of Jemmy, JellyTools libraries and
+ * XTest distribution from zip of NBMs into defined places for automated testing.
+ * It is designed to be included in zipped bundle of test tools NBMs and declared
+ * as a Main-Class in Manifest.
+ * <p>
+ * Destination NetBeans root directory ("nb_all") is taken from first command-line
+ * argument or else from "nbroot" property otherwise current working directory is used.
+ * <p>
+ * Installer checks if destination is a part of CVS repository to avoid later
+ * conflicts and may asks for confirmation. Property "ignoreCVS" set to true
+ * ensures automatic confiramtion.
+ * <p>
+ * Usage can be: java -jar last_TTNBMs.zip /space/myrepository/nb_all
+ * -DignoreCVS=true
+ * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
+ * @version 1.0
  */
 public class Installer {
     
-    private static boolean ignoreCVS=Boolean.getBoolean("ignoreCVS");
+    private static boolean ignoreCVS = Boolean.getBoolean("ignoreCVS");
 
-    private static String targetFolder=System.getProperty("nbroot", ".");
+    private static String targetFolder = System.getProperty("nbroot", ".");
     
     private static final String jemmyJAR = "netbeans/modules/ext/jemmy.jar";
     private static final String jellyJAR = "netbeans/modules/ext/jelly-nb.jar";
@@ -35,9 +60,9 @@ public class Installer {
     private static final String jelly2Target = "../nbextra/jellytools/jelly2-nb.jar";
     private static final String xtestTarget = "xtest/";
     
-    private static final ZipInputStream jemmyNBM=getStream("jemmy.nbm");
-    private static final ZipInputStream jellyNBM=getStream("jellytools.nbm");
-    private static final ZipInputStream xtestNBM=getStream("xtest.nbm");
+    private static final ZipInputStream jemmyNBM = getStream("jemmy.nbm");
+    private static final ZipInputStream jellyNBM = getStream("jellytools.nbm");
+    private static final ZipInputStream xtestNBM = getStream("xtest.nbm");
     
     private static final byte buff[] = new byte[65536];
     
@@ -104,8 +129,8 @@ public class Installer {
         } else if (!dir.isDirectory()) err(dir.getAbsolutePath()+" is not a directory !");
     }
     
-    /**
-     * @param args the command line arguments
+    /** performs installation
+     * @param args NetBeans root directory (nb_all) - optional
      */
     public static void main(String[] args) {
         if (args.length>0) {
@@ -122,7 +147,6 @@ public class Installer {
             while (entry!=null && !entry.getName().equals(jemmyJAR)) entry=jemmyNBM.getNextEntry();
             if (entry==null) err("Missing "+jemmyJAR+" in jemmy.nbm !");
             unzipFile(jemmyNBM, jemmyTarget);
-            
             entry=jellyNBM.getNextEntry();
             while (entry!=null && !entry.getName().equals(jellyJAR) && !entry.getName().equals(jelly2JAR)) entry=jellyNBM.getNextEntry();
             if (entry==null) err("Missing "+jellyJAR+" and "+jelly2JAR+" in jellytools.nbm !");
@@ -141,7 +165,6 @@ public class Installer {
             } else {
                 unzipFile(jellyNBM, jelly2Target);
             }
-
             boolean found=false;
             while ((entry=xtestNBM.getNextEntry())!=null) {
                 if (entry.getName().startsWith(xtestFolder)) {
@@ -154,7 +177,6 @@ public class Installer {
                 }
             }
             if (!found) err("Missing "+xtestFolder+" in xtest.nbm !");
-            
             jemmyNBM.close();
             jellyNBM.close();
             xtestNBM.close();
