@@ -18,7 +18,6 @@ import java.awt.event.*;
 import java.awt.geom.*;
 import javax.swing.*;
 import java.util.*;
-import java.util.List;
 import javax.swing.border.Border;
 import java.text.MessageFormat;
 
@@ -51,6 +50,9 @@ class HandleLayer extends JPanel
     static final int COMP_UNDER_SELECTED = 3; // get the component under the deepest selected component
 
     private static final int DESIGNER_RESIZING = 256; // flag for resizeType
+    private final static MessageFormat resizingHintFormat =
+        new MessageFormat(
+            FormUtils.getBundleString("FMT_HINT_DesignerResizing")); // NOI18N
 
     private FormDesigner formDesigner;
     private boolean viewOnly;
@@ -568,12 +570,12 @@ class HandleLayer extends JPanel
     private ComponentDragger createComponentDragger(Point hotspot,
                                                     int modifiers)
     {
-        List selectedComponents = formDesigner.getSelectedComponents();
+        java.util.List selectedComponents = formDesigner.getSelectedComponents();
         if (selectedComponents.size() == 0)
             return null;
 
         // all selected components must be visible in the designer
-        List selComps = new ArrayList(selectedComponents.size());
+        java.util.List selComps = new ArrayList(selectedComponents.size());
         Iterator iter = selectedComponents.iterator();
         while (iter.hasNext()) {
             RADComponent metacomp = (RADComponent) iter.next();
@@ -685,8 +687,7 @@ class HandleLayer extends JPanel
         else {
             if (getToolTipText() == null) {
                 Dimension size = formDesigner.getComponentLayer().getDesignerSize();
-                String hint = FormUtils.getFormattedBundleString(
-                                "FMT_HINT_DesignerResizing", // NOI18N
+                String hint = resizingHintFormat.format(
                                 new Object[] { new Integer(size.width),
                                                new Integer(size.height) });
                 setToolTipText(hint);
@@ -978,9 +979,7 @@ class HandleLayer extends JPanel
 
     private static void setStatusText(String formatId, Object[] args) {
         TopManager.getDefault().setStatusText(
-            MessageFormat.format(
-                FormEditor.getFormBundle().getString(formatId),
-                args));
+            FormUtils.getFormattedBundleString(formatId, args));
     }
     
     boolean mouseOnVisual(Point p) {

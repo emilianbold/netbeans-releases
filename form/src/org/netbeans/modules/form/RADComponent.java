@@ -372,7 +372,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                 new IllegalArgumentException("Invalid component name"); // NOI18N
             TopManager.getDefault ().getErrorManager().annotate(
                 iae, ErrorManager.USER, null, 
-                FormEditor.getFormBundle().getString("ERR_INVALID_COMPONENT_NAME"),
+                FormUtils.getBundleString("ERR_INVALID_COMPONENT_NAME"), // NOI18N
                 null, null);
             throw iae;
         }
@@ -382,7 +382,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                 new IllegalArgumentException("Component name already in use: "+name); // NOI18N
             TopManager.getDefault ().getErrorManager().annotate(
                 iae, ErrorManager.USER, null,
-                FormEditor.getFormBundle().getString("ERR_COMPONENT_NAME_ALREADY_IN_USE"),
+                FormUtils.getBundleString("ERR_COMPONENT_NAME_ALREADY_IN_USE"), // NOI18N
                 null, null);
             throw iae;
         }
@@ -561,11 +561,13 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         if (beanProperties == null)
             createBeanProperties();
 
+        ResourceBundle bundle = FormUtils.getBundle();
+
         propSets.add(new Node.PropertySet(
                 "properties", // NOI18N
-                FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
-                FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")
-                ) {
+                bundle.getString("CTL_PropertiesTab"), // NOI18N
+                bundle.getString("CTL_PropertiesTabHint")) // NOI18N
+        {
             public Node.Property[] getProperties() {
                 return getComponentProperties();
             }
@@ -574,9 +576,9 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         if (beanProperties2.length > 0)
             propSets.add(new Node.PropertySet(
                     "properties2", // NOI18N
-                    FormEditor.getFormBundle().getString("CTL_Properties2Tab"),
-                    FormEditor.getFormBundle().getString("CTL_Properties2TabHint")
-                    ) {
+                    bundle.getString("CTL_Properties2Tab"), // NOI18N
+                    bundle.getString("CTL_Properties2TabHint")) // NOI18N
+            {
                 public Node.Property[] getProperties() {
                     return getComponentProperties2();
                 }
@@ -584,9 +586,9 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
         propSets.add(new Node.PropertySet(
                 "events", // NOI18N
-                FormEditor.getFormBundle().getString("CTL_EventsTab"),
-                FormEditor.getFormBundle().getString("CTL_EventsTabHint")
-                ) {
+                bundle.getString("CTL_EventsTab"), // NOI18N
+                bundle.getString("CTL_EventsTabHint")) // NOI18N
+        {
             public Node.Property[] getProperties() {
                 return getComponentEvents();
             }
@@ -594,9 +596,9 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
         propSets.add(new Node.PropertySet(
                 "synthetic", // NOI18N
-                FormEditor.getFormBundle().getString("CTL_SyntheticTab"),
-                FormEditor.getFormBundle().getString("CTL_SyntheticTabHint")
-                ) {
+                bundle.getString("CTL_SyntheticTab"), // NOI18N
+                bundle.getString("CTL_SyntheticTabHint")) // NOI18N
+        {
             public Node.Property[] getProperties() {
                 return getSyntheticProperties();
             }

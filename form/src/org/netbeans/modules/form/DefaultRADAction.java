@@ -11,11 +11,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
 import org.openide.nodes.*;
-import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
 
@@ -23,17 +21,15 @@ import org.openide.util.actions.CookieAction;
  *
  * @author Ian Formanek
  */
+
 public class DefaultRADAction extends CookieAction {
-    static final long serialVersionUID =-1822120439841761193L;
-    /** generated Serialized Version UID */
-    //  static final long serialVersionUID = 7755319389083740521L;
 
     /** Human presentable name of the action. This should be
      * presented as an item in a menu.
      * @return the name of the action
      */
     public String getName() {
-        return FormEditor.getFormBundle().getString("MSG_DefaultRADAction");
+        return "DefaultRADAction"; // NOI18N
     }
 
     /** Get a help context for the action.

@@ -103,9 +103,8 @@ public class RADProperty extends FormProperty {
         }
         catch (InvocationTargetException ex) {
             // annotate exception
-            String message = java.text.MessageFormat.format(
-                FormEditor.getFormBundle()
-                                .getString("MSG_ERR_WRITING_TO_PROPERTY"), // NOI18N
+            String message = FormUtils.getFormattedBundleString(
+                "MSG_ERR_WRITING_TO_PROPERTY", // NOI18N
                 new Object[] { getDisplayName() });
 
             TopManager.getDefault ().getErrorManager().annotate(

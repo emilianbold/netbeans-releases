@@ -453,7 +453,7 @@ public class FormDesigner extends TopComponent
                 && topDesignComponent != formModel.getTopRADComponent())
             name += " / " + topDesignComponent.getName(); // NOI18N
         if (formModel.isReadOnly())
-            name += " " + FormEditor.getFormBundle().getString("CTL_FormTitle_RO"); // NOI18N
+            name += " " + FormUtils.getBundleString("CTL_FormTitle_RO"); // NOI18N
         setName(name);
         setToolTipText(name);
     }
@@ -677,7 +677,7 @@ public class FormDesigner extends TopComponent
     private void notifyCannotEditInPlace() {
         TopManager.getDefault().notify(
             new NotifyDescriptor.Message(
-                FormEditor.getFormBundle().getString("MSG_ComponentNotShown"), // NOI18N
+                FormUtils.getBundleString("MSG_ComponentNotShown"), // NOI18N
                 NotifyDescriptor.WARNING_MESSAGE));
     }
 

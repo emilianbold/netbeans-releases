@@ -42,8 +42,6 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
      */
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
-            java.util.ResourceBundle formBundle = FormEditor.getFormBundle();
-            
             PropertyDescriptor[] desc = new PropertyDescriptor[] {
 //                new PropertyDescriptor(FormLoaderSettings.PROP_INDENT_AWT_HIERARCHY, FormLoaderSettings.class,
 //                                       "getIndentAWTHierarchy", "setIndentAWTHierarchy"), // NOI18N
@@ -103,66 +101,67 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        "getDisplayWritableOnly", "setDisplayWritableOnly") // NOI18N
             };
 
+            ResourceBundle bundle = FormUtils.getBundle();
 //            desc[0].setDisplayName(formBundle.getString("PROP_INDENT_AWT_HIERARCHY"));
 //            desc[0].setShortDescription(formBundle.getString("HINT_INDENT_AWT_HIERARCHY"));
 //            desc[0].setExpert(true);
-            desc[0].setDisplayName(formBundle.getString("PROP_USE_INDENT_ENGINE"));
-            desc[0].setShortDescription(formBundle.getString("HINT_USE_INDENT_ENGINE"));
+            desc[0].setDisplayName(bundle.getString("PROP_USE_INDENT_ENGINE")); // NOI18N
+            desc[0].setShortDescription(bundle.getString("HINT_USE_INDENT_ENGINE")); // NOI18N
 
-            desc[1].setDisplayName(formBundle.getString("PROP_GENERATE_ON_SAVE"));
-            desc[1].setShortDescription(formBundle.getString("HINT_GENERATE_ON_SAVE"));
+            desc[1].setDisplayName(bundle.getString("PROP_GENERATE_ON_SAVE")); // NOI18N
+            desc[1].setShortDescription(bundle.getString("HINT_GENERATE_ON_SAVE")); // NOI18N
 
-            desc[2].setDisplayName(formBundle.getString("PROP_EVENT_VARIABLE_NAME"));
-            desc[2].setShortDescription(formBundle.getString("HINT_EVENT_VARIABLE_NAME"));
+            desc[2].setDisplayName(bundle.getString("PROP_EVENT_VARIABLE_NAME")); // NOI18N
+            desc[2].setShortDescription(bundle.getString("HINT_EVENT_VARIABLE_NAME")); // NOI18N
             desc[2].setExpert(true);
 
-            desc[3].setDisplayName(formBundle.getString("PROP_SELECTION_BORDER_SIZE"));
-            desc[3].setShortDescription(formBundle.getString("HINT_SELECTION_BORDER_SIZE"));
+            desc[3].setDisplayName(bundle.getString("PROP_SELECTION_BORDER_SIZE")); // NOI18N
+            desc[3].setShortDescription(bundle.getString("HINT_SELECTION_BORDER_SIZE")); // NOI18N
 //            desc[3].setExpert(true);
 
-            desc[4].setDisplayName(formBundle.getString("PROP_SELECTION_BORDER_COLOR"));
-            desc[4].setShortDescription(formBundle.getString("HINT_SELECTION_BORDER_COLOR"));
+            desc[4].setDisplayName(bundle.getString("PROP_SELECTION_BORDER_COLOR")); // NOI18N
+            desc[4].setShortDescription(bundle.getString("HINT_SELECTION_BORDER_COLOR")); // NOI18N
 //            desc[4].setExpert(true);
             
-            desc[5].setDisplayName(formBundle.getString("PROP_CONNECTION_BORDER_COLOR"));
-            desc[5].setShortDescription(formBundle.getString("HINT_CONNECTION_BORDER_COLOR"));
+            desc[5].setDisplayName(bundle.getString("PROP_CONNECTION_BORDER_COLOR")); // NOI18N
+            desc[5].setShortDescription(bundle.getString("HINT_CONNECTION_BORDER_COLOR")); // NOI18N
 //            desc[5].setExpert(true);
             
-            desc[6].setDisplayName(formBundle.getString("PROP_DRAG_BORDER_COLOR"));
-            desc[6].setShortDescription(formBundle.getString("HINT_DRAG_BORDER_COLOR"));
+            desc[6].setDisplayName(bundle.getString("PROP_DRAG_BORDER_COLOR")); // NOI18N
+            desc[6].setShortDescription(bundle.getString("HINT_DRAG_BORDER_COLOR")); // NOI18N
 //            desc[6].setExpert(true);
             
 //            desc[6].setDisplayName(formBundle.getString("PROP_SHOW_GRID"));
 //            desc[6].setShortDescription(formBundle.getString("HINT_SHOW_GRID"));
 //            desc[6].setExpert(true);
             
-            desc[7].setDisplayName(formBundle.getString("PROP_GRID_X"));
-            desc[7].setShortDescription(formBundle.getString("HINT_GRID_X"));
+            desc[7].setDisplayName(bundle.getString("PROP_GRID_X")); // NOI18N
+            desc[7].setShortDescription(bundle.getString("HINT_GRID_X")); // NOI18N
             desc[7].setExpert(true);
             
-            desc[8].setDisplayName(formBundle.getString("PROP_GRID_Y"));
-            desc[8].setShortDescription(formBundle.getString("HINT_GRID_Y"));
+            desc[8].setDisplayName(bundle.getString("PROP_GRID_Y")); // NOI18N
+            desc[8].setShortDescription(bundle.getString("HINT_GRID_Y")); // NOI18N
             desc[8].setExpert(true);
             
-            desc[9].setDisplayName(formBundle.getString("PROP_APPLY_GRID_TO_POSITION"));
-            desc[9].setShortDescription(formBundle.getString("HINT_APPLY_GRID_TO_POSITION"));
+            desc[9].setDisplayName(bundle.getString("PROP_APPLY_GRID_TO_POSITION")); // NOI18N
+            desc[9].setShortDescription(bundle.getString("HINT_APPLY_GRID_TO_POSITION")); // NOI18N
             desc[9].setExpert(true);
             
-            desc[10].setDisplayName(formBundle.getString("PROP_APPLY_GRID_TO_SIZE"));
-            desc[10].setShortDescription(formBundle.getString("HINT_APPLY_GRID_TO_SIZE"));
+            desc[10].setDisplayName(bundle.getString("PROP_APPLY_GRID_TO_SIZE")); // NOI18N
+            desc[10].setShortDescription(bundle.getString("HINT_APPLY_GRID_TO_SIZE")); // NOI18N
             desc[10].setExpert(true);
             
-            desc[11].setDisplayName(formBundle.getString("PROP_VARIABLES_MODIFIER"));
-            desc[11].setShortDescription(formBundle.getString("HINT_VARIABLES_MODIFIER"));
+            desc[11].setDisplayName(bundle.getString("PROP_VARIABLES_MODIFIER")); // NOI18N
+            desc[11].setShortDescription(bundle.getString("HINT_VARIABLES_MODIFIER")); // NOI18N
             desc[11].setPropertyEditorClass(FieldModifierPropertyEditor.class);
             desc[11].setExpert(true);
             
-            desc[12].setDisplayName(formBundle.getString("PROP_EDITOR_SEARCH_PATH"));
-            desc[12].setShortDescription(formBundle.getString("HINT_EDITOR_SEARCH_PATH"));
+            desc[12].setDisplayName(bundle.getString("PROP_EDITOR_SEARCH_PATH")); // NOI18N
+            desc[12].setShortDescription(bundle.getString("HINT_EDITOR_SEARCH_PATH")); // NOI18N
             desc[12].setExpert(true);
             
-            desc[13].setDisplayName(formBundle.getString("PROP_REGISTERED_EDITORS"));
-            desc[13].setShortDescription(formBundle.getString("HINT_REGISTERED_EDITORS"));
+            desc[13].setDisplayName(bundle.getString("PROP_REGISTERED_EDITORS")); // NOI18N
+            desc[13].setShortDescription(bundle.getString("HINT_REGISTERED_EDITORS")); // NOI18N
             desc[13].setExpert(true);
             
 //            desc[14].setDisplayName(formBundle.getString("PROP_OUTPUT_LEVEL"));
@@ -173,13 +172,13 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 //            desc[15].setDisplayName(formBundle.getString("PROP_NULL_LAYOUT"));
 //            desc[15].setShortDescription(formBundle.getString("HINT_NULL_LAYOUT"));
             
-            desc[14].setDisplayName(formBundle.getString("PROP_WORKSPACE"));
-            desc[14].setShortDescription(formBundle.getString("HINT_WORKSPACE"));
+            desc[14].setDisplayName(bundle.getString("PROP_WORKSPACE")); // NOI18N
+            desc[14].setShortDescription(bundle.getString("HINT_WORKSPACE")); // NOI18N
             desc[14].setPropertyEditorClass(WorkspaceEditor.class);
             desc[14].setExpert(true);
 
-            desc[15].setDisplayName(formBundle.getString("PROP_SELECTED_PALETTE"));
-            desc[15].setShortDescription(formBundle.getString("HINT_SELECTED_PALETTE"));
+            desc[15].setDisplayName(bundle.getString("PROP_SELECTED_PALETTE")); // NOI18N
+            desc[15].setShortDescription(bundle.getString("HINT_SELECTED_PALETTE")); // NOI18N
             desc[15].setPropertyEditorClass(PalettesEditor.class);
 
             desc[16].setHidden(true);
@@ -188,18 +187,18 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 //            desc[17].setShortDescription(formBundle.getString("HINT_OPEN_FORMS_IN_ONE_WINDOW"));
 //            desc[17].setHidden(true);
             
-            desc[17].setDisplayName(formBundle.getString("PROP_FORMDESIGNER_BACKGROUND_COLOR"));
-            desc[17].setShortDescription(formBundle.getString("HINT_FORMDESIGNER_BACKGROUND_COLOR"));
+            desc[17].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BACKGROUND_COLOR")); // NOI18N
+            desc[17].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BACKGROUND_COLOR")); // NOI18N
             
-            desc[18].setDisplayName(formBundle.getString("PROP_FORMDESIGNER_BORDER_COLOR"));
-            desc[18].setShortDescription(formBundle.getString("HINT_FORMDESIGNER_BORDER_COLOR"));
+            desc[18].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BORDER_COLOR")); // NOI18N
+            desc[18].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BORDER_COLOR")); // NOI18N
             
-            desc[19].setDisplayName(formBundle.getString("PROP_SHOW_COMPONENT_NAMES"));
-            desc[19].setShortDescription(formBundle.getString("HINT_SHOW_COMPONENT_NAMES"));
+            desc[19].setDisplayName(bundle.getString("PROP_SHOW_COMPONENT_NAMES")); // NOI18N
+            desc[19].setShortDescription(bundle.getString("HINT_SHOW_COMPONENT_NAMES")); // NOI18N
 //            desc[19].setHidden(true);
 
-            desc[20].setDisplayName(formBundle.getString("PROP_VARIABLES_LOCAL"));
-            desc[20].setShortDescription(formBundle.getString("HINT_VARIABLES_LOCAL"));
+            desc[20].setDisplayName(bundle.getString("PROP_VARIABLES_LOCAL")); // NOI18N
+            desc[20].setShortDescription(bundle.getString("HINT_VARIABLES_LOCAL")); // NOI18N
             desc[20].setExpert(true);
 
             desc[21].setHidden(true);
@@ -240,11 +239,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
         /** @return names of the possible directions */
         public String[] getTags() {
             if (names == null) {
-                java.util.ResourceBundle formBundle = FormEditor.getFormBundle();
+                ResourceBundle bundle = FormUtils.getBundle();
                 names = new String[] {
-                    formBundle.getString("VALUE_OutputLevel_Minimum"),
-                    formBundle.getString("VALUE_OutputLevel_Normal"),
-                    formBundle.getString("VALUE_OutputLevel_Maximum"),
+                    bundle.getString("VALUE_OutputLevel_Minimum"), // NOI18N
+                    bundle.getString("VALUE_OutputLevel_Normal"), // NOI18N
+                    bundle.getString("VALUE_OutputLevel_Maximum") // NOI18N
                 };
             }
             return names;
@@ -331,7 +330,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                     tagList.add(name);
                 }
             }
-            tagList.add(FormEditor.getFormBundle().getString("VALUE_WORKSPACE_NONE")); // NOI18N
+            tagList.add(FormUtils.getBundleString("VALUE_WORKSPACE_NONE")); // NOI18N
 
             String[] names = new String [tagList.size()]; // + 1];
             for (int i=0, n = tagList.size(); i < n; i++)
@@ -360,7 +359,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                 namesMap.put(wss[i].getName(), new String(part1 + part2));;
             }
             namesMap.put(FormEditorSupport.NO_WORKSPACE,
-                         FormEditor.getFormBundle().getString("VALUE_WORKSPACE_NONE")); // NOI18N
+                         FormUtils.getBundleString("VALUE_WORKSPACE_NONE")); // NOI18N
         }
 
         /** @return Returns programmatic name of the workspace for given
@@ -396,9 +395,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                 initialized = true;
             }
             
-            if (registeredPalettes.length < 1) {
-                return FormEditor.getFormBundle().getString("VALUE_SELECTED_PALETTE_NONE"); // NOI18N
-            }
+            if (registeredPalettes.length < 1)
+                return FormUtils.getBundleString("VALUE_SELECTED_PALETTE_NONE"); // NOI18N
             
             Object value = getValue();
             int index = 0;
@@ -453,7 +451,9 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                 for (int i=0; i<registeredPalettes.length; i++) {
                     names[i] = registeredPalettes[i].getPaletteName();
                 }
-            } else names = new String[] {FormEditor.getFormBundle().getString("VALUE_SELECTED_PALETTE_NONE")}; // NOI18N
+            }
+            else names = new String[] {
+                FormUtils.getBundleString("VALUE_SELECTED_PALETTE_NONE") }; // NOI18N
             
             return names;
         }

@@ -123,10 +123,9 @@ public abstract class PersistenceManager {
     }
 
     private static void notifyError(Throwable th, String pmClassName) {
-        String msg = java.text.MessageFormat.format(
-            FormUtils.getBundleString(
-                "FMT_ERR_PersistenceManagerInstantiation"), // NOI18N
-            new Object[] { pmClassName} );
+        String msg = FormUtils.getFormattedBundleString(
+            "FMT_ERR_PersistenceManagerInstantiation", // NOI18N
+            new Object[] { pmClassName });
 
         ErrorManager errorManager = TopManager.getDefault().getErrorManager();
         errorManager.annotate(th, msg);

@@ -607,7 +607,7 @@ public class FormLoaderSettings extends SystemOption {
     /** This method must be overriden. It returns display name of this options.
      */
     public String displayName() {
-        return org.openide.util.NbBundle.getBundle(FormLoaderSettings.class).getString("CTL_FormSettings");
+        return FormUtils.getBundleString("CTL_FormSettings"); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {

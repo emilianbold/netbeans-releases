@@ -16,7 +16,6 @@ package org.netbeans.modules.form.actions;
 import org.openide.nodes.Node;
 import org.openide.util.actions.*;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.form.*;
 
@@ -24,6 +23,8 @@ import org.netbeans.modules.form.*;
 /** Action that sets form top container to be edited in FormDesigner.
  */
 public class EditFormAction extends NodeAction {
+
+    private static String name;
 
     /**
     * Perform the action based on the currently activated nodes.
@@ -76,7 +77,10 @@ public class EditFormAction extends NodeAction {
      * @return the name of the action
      */
     public String getName() {
-        return NbBundle.getBundle(EditFormAction.class).getString("ACT_EditForm"); // NOI18N
+        if (name == null)
+            name = org.openide.util.NbBundle.getBundle(EditFormAction.class)
+                     .getString("ACT_EditForm"); // NOI18N
+        return name;
     }
 
     /**

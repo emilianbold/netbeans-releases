@@ -57,21 +57,26 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         }
 
         // localize components
-        paramLabel.setText(FormEditor.getFormBundle().getString("CTL_CW_GetParametersFrom")); // "Get Parameter From:"
+        paramLabel.setText(FormUtils.getBundleString("CTL_CW_GetParametersFrom")); // NOI18N
         paramLabel.setLabelFor(this);
-        valueButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Value")); // "Value:"
-        beanButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Bean")); // "Bean:"
-        propertyButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Property")); // "Property:"
-        propertyLabel.setText(FormEditor.getFormBundle().getString("CTL_CW_NoProperty")); // "<No Property Selected>"
-        methodButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Method")); // "Method Call:"
-        methodLabel.setText(FormEditor.getFormBundle().getString("CTL_CW_NoMethod")); // "<No Method Selected>"
-        codeButton.setText(FormEditor.getFormBundle().getString("CTL_CW_UserCode")); // "User Code:"
+        valueButton.setText(FormUtils.getBundleString("CTL_CW_Value")); // NOI18N
+        beanButton.setText(FormUtils.getBundleString("CTL_CW_Bean")); // NOI18N
+        propertyButton.setText(FormUtils.getBundleString("CTL_CW_Property")); // NOI18N
+        propertyLabel.setText(FormUtils.getBundleString("CTL_CW_NoProperty")); // NOI18N
+        methodButton.setText(FormUtils.getBundleString("CTL_CW_Method")); // NOI18N
+        methodLabel.setText(FormUtils.getBundleString("CTL_CW_NoMethod")); // NOI18N
+        codeButton.setText(FormUtils.getBundleString("CTL_CW_UserCode")); // NOI18N
 
-        valueButton.setMnemonic(FormEditor.getFormBundle().getString("CTL_CW_Value_Mnemonic").charAt(0));
-        beanButton.setMnemonic(FormEditor.getFormBundle().getString("CTL_CW_Bean_Mnemonic").charAt(0));
-        propertyButton.setMnemonic(FormEditor.getFormBundle().getString("CTL_CW_Property_Mnemonic").charAt(0));
-        methodButton.setMnemonic(FormEditor.getFormBundle().getString("CTL_CW_Method_Mnemonic").charAt(0));
-        codeButton.setMnemonic(FormEditor.getFormBundle().getString("CTL_CW_UserCode_Mnemonic").charAt(0));
+        valueButton.setMnemonic(
+            FormUtils.getBundleString("CTL_CW_Value_Mnemonic").charAt(0)); // NOI18N
+        beanButton.setMnemonic(
+            FormUtils.getBundleString("CTL_CW_Bean_Mnemonic").charAt(0)); // NOI18N
+        propertyButton.setMnemonic(
+            FormUtils.getBundleString("CTL_CW_Property_Mnemonic").charAt(0)); // NOI18N
+        methodButton.setMnemonic(
+            FormUtils.getBundleString("CTL_CW_Method_Mnemonic").charAt(0)); // NOI18N
+        codeButton.setMnemonic(
+            FormUtils.getBundleString("CTL_CW_UserCode_Mnemonic").charAt(0)); // NOI18N
 
         beansList = new ArrayList();
         for (Iterator it = formModel.getMetaComponents().iterator(); it.hasNext(); ) {
@@ -114,26 +119,39 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
         HelpCtx.setHelpIDString(this, "gui.source.modifying.property"); // NOI18N
         
-        valueButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_Value"));
-        beanButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_Bean"));
-        propertyButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_Property"));
-        methodButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_Method"));
-        codeButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_UserCode"));
+        valueButton.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_CTL_CW_Value")); // NOI18N
+        beanButton.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_CTL_CW_Bean")); // NOI18N
+        propertyButton.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_CTL_CW_Property")); // NOI18N
+        methodButton.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_CTL_CW_Method")); // NOI18N
+        codeButton.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_CTL_CW_UserCode")); // NOI18N
 
         valueField.getAccessibleContext().setAccessibleName(valueButton.getText());
-        valueField.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_ValueField"));
+        valueField.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_CTL_CW_ValueField")); // NOI18N
         beanCombo.getAccessibleContext().setAccessibleName(beanButton.getText());
-        beanCombo.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_BeanCombo"));
+        beanCombo.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_CTL_CW_BeanCombo")); // NOI18N
         propertyLabel.getAccessibleContext().setAccessibleName(propertyButton.getText());
-        propertyLabel.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_PropertyLabel"));
+        propertyLabel.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_CTL_CW_PropertyLabel")); // NOI18N
         methodLabel.getAccessibleContext().setAccessibleName(methodButton.getText());
-        methodLabel.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_MethodLabel"));
+        methodLabel.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_CTL_CW_MethodLabel")); // NOI18N
         codeArea.getAccessibleContext().setAccessibleName(codeButton.getText());
-        codeArea.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_UserCodeArea"));
+        codeArea.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_CTL_CW_UserCodeArea")); // NOI18N
 
-        propertyDetailsButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_PropertyButton"));
-        methodDetailsButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_MethodButton"));
-        getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_ParametersPicker"));
+        propertyDetailsButton.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_CTL_CW_PropertyButton")); // NOI18N
+        methodDetailsButton.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_CTL_CW_MethodButton")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_ParametersPicker")); // NOI18N
     }
 
     public void setPropertyValue(RADConnectionPropertyEditor.RADConnectionDesignValue value) {
@@ -157,7 +175,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
                 selectedProperty = value.getProperty();
                 if (selectedComponent.getCodeExpression() == null) {
                     propertyLabel.setText(
-                        FormEditor.getFormBundle().getString("CTL_CONNECTION_INVALID")); // NOI18N
+                        FormUtils.getBundleString("CTL_CONNECTION_INVALID")); // NOI18N
                 }
                 else if (selectedComponent == formModel.getTopRADComponent()) {
                     propertyLabel.setText(selectedProperty.getName());
@@ -173,7 +191,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
                 selectedMethod = value.getMethod();
                 if (selectedComponent.getCodeExpression() == null) {
                     methodLabel.setText(
-                        FormEditor.getFormBundle().getString("CTL_CONNECTION_INVALID")); // NOI18N
+                        FormUtils.getBundleString("CTL_CONNECTION_INVALID")); // NOI18N
                 }
                 else if (selectedComponent == formModel.getTopRADComponent()) {
                     methodLabel.setText(selectedMethod.getName());
@@ -207,7 +225,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
             IllegalStateException exc = new IllegalStateException();
             TopManager.getDefault().getErrorManager().annotate(
                 exc, ErrorManager.USER, null, 
-                FormEditor.getFormBundle().getString("ERR_NothingEntered"), // NOI18N
+                FormUtils.getBundleString("ERR_NothingEntered"), // NOI18N
                 null, null);
             throw exc;
         }
@@ -230,16 +248,16 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
     public String getPreviewText() {
         if (!isFilled())
-            return FormEditor.getFormBundle().getString("CTL_CW_NotSet"); // "<not set>"
+            return FormUtils.getBundleString("CTL_CW_NotSet"); // NOI18N
         if (codeButton.isSelected()) {
-            return FormEditor.getFormBundle().getString("CTL_CW_Code"); // "<code>";
+            return FormUtils.getBundleString("CTL_CW_Code"); // NOI18N
         }
         return getText();
     }
 
     public String getText() {
         if (!isFilled())
-            return FormEditor.getFormBundle().getString("CTL_CW_NotSet"); // "<not set>"
+            return FormUtils.getBundleString("CTL_CW_NotSet"); // NOI18N
         if (valueButton.isSelected()) {
             if (requiredType.equals(String.class)) {
                 String s = valueField.getText();
@@ -325,6 +343,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
      * always regenerated by the FormEditor.
      */
     private void initComponents() {//GEN-BEGIN:initComponents
+        java.awt.GridBagConstraints gridBagConstraints;
+
         valueButton = new javax.swing.JRadioButton();
         valueField = new javax.swing.JTextField();
         beanButton = new javax.swing.JRadioButton();
@@ -339,175 +359,174 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         codeScrollPane = new javax.swing.JScrollPane();
         codeArea = new javax.swing.JEditorPane();
         paramLabel = new javax.swing.JLabel();
-        
+
         setLayout(new java.awt.GridBagLayout());
-        java.awt.GridBagConstraints gridBagConstraints1;
-        
+
         valueButton.setSelected(true);
-        valueButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Value"));
+        valueButton.setText(FormUtils.getBundleString("CTL_CW_Value"));
         valueButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 typeButtonPressed(evt);
             }
         });
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 5, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(valueButton, gridBagConstraints1);
-        
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        add(valueButton, gridBagConstraints);
+
         valueField.addCaretListener(new javax.swing.event.CaretListener() {
             public void caretUpdate(javax.swing.event.CaretEvent evt) {
                 updateState(evt);
             }
         });
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(valueField, gridBagConstraints1);
-        
-        beanButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Bean"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        add(valueField, gridBagConstraints);
+
+        beanButton.setText(FormUtils.getBundleString("CTL_CW_Bean"));
         beanButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 typeButtonPressed(evt);
             }
         });
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 2;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 5, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(beanButton, gridBagConstraints1);
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 2;
-        gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(beanCombo, gridBagConstraints1);
-        
-        propertyButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Property"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        add(beanButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        add(beanCombo, gridBagConstraints);
+
+        propertyButton.setText(FormUtils.getBundleString("CTL_CW_Property"));
         propertyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 typeButtonPressed(evt);
             }
         });
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 3;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 5, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(propertyButton, gridBagConstraints1);
-        
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        add(propertyButton, gridBagConstraints);
+
         propertyLabel.setEditable(false);
-        propertyLabel.setText(FormEditor.getFormBundle().getString("CTL_CW_NoProperty"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 3;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 5);
-        gridBagConstraints1.weightx = 1.0;
-        add(propertyLabel, gridBagConstraints1);
-        
+        propertyLabel.setText(FormUtils.getBundleString("CTL_CW_NoProperty"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
+        add(propertyLabel, gridBagConstraints);
+
         propertyDetailsButton.setText("...");
         propertyDetailsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 propertyDetailsButtonActionPerformed(evt);
             }
         });
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 3;
-        gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(propertyDetailsButton, gridBagConstraints1);
-        
-        methodButton.setText(FormEditor.getFormBundle().getString("CTL_CW_MethodCall"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        add(propertyDetailsButton, gridBagConstraints);
+
+        methodButton.setText(FormUtils.getBundleString("CTL_CW_MethodCall"));
         methodButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 typeButtonPressed(evt);
             }
         });
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 4;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 5, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(methodButton, gridBagConstraints1);
-        
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        add(methodButton, gridBagConstraints);
+
         methodLabel.setEditable(false);
-        methodLabel.setText(FormEditor.getFormBundle().getString("CTL_CW_NoMethod"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 4;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 5);
-        add(methodLabel, gridBagConstraints1);
-        
+        methodLabel.setText(FormUtils.getBundleString("CTL_CW_NoMethod"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
+        add(methodLabel, gridBagConstraints);
+
         methodDetailsButton.setText("...");
         methodDetailsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 methodDetailsButtonActionPerformed(evt);
             }
         });
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 4;
-        gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(methodDetailsButton, gridBagConstraints1);
-        
-        codeButton.setText(FormEditor.getFormBundle().getString("CTL_CW_UserCode"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        add(methodDetailsButton, gridBagConstraints);
+
+        codeButton.setText(FormUtils.getBundleString("CTL_CW_UserCode"));
         codeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 typeButtonPressed(evt);
             }
         });
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 5;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(codeButton, gridBagConstraints1);
-        
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        add(codeButton, gridBagConstraints);
+
         codeArea.addCaretListener(new javax.swing.event.CaretListener() {
             public void caretUpdate(javax.swing.event.CaretEvent evt) {
                 updateState(evt);
             }
         });
-        
+
         codeScrollPane.setViewportView(codeArea);
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 5;
-        gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.weightx = 1.0;
-        gridBagConstraints1.weighty = 1.0;
-        add(codeScrollPane, gridBagConstraints1);
-        
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(codeScrollPane, gridBagConstraints);
+
         paramLabel.setText("label1");
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 6, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(paramLabel, gridBagConstraints1);
-        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        add(paramLabel, gridBagConstraints);
+
     }//GEN-END:initComponents
 
     private void methodDetailsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_methodDetailsButtonActionPerformed
@@ -515,10 +534,9 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         picker.setSelectedComponent(selectedComponent);
         picker.setSelectedMethod(selectedMethod);
 
-        String title = java.text.MessageFormat.format(
-            FormEditor.getFormBundle().getString("CTL_FMT_CW_SelectMethod"),
-            new Object[] { Utilities.getShortClassName(requiredType) }
-        );
+        String title = FormUtils.getFormattedBundleString(
+            "CTL_FMT_CW_SelectMethod", // NOI18N
+            new Object[] { Utilities.getShortClassName(requiredType) });
 
         final DialogDescriptor dd = new DialogDescriptor(picker, title);
         dd.setValid(picker.isPickerValid());
@@ -556,10 +574,9 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         propertyPicker.setSelectedComponent(selectedComponent);
         propertyPicker.setSelectedProperty(selectedProperty);
         
-        String title = java.text.MessageFormat.format(
-            FormEditor.getFormBundle().getString("CTL_FMT_CW_SelectProperty"),
-            new Object[] { Utilities.getShortClassName(requiredType) }
-        );
+        String title = FormUtils.getFormattedBundleString(
+            "CTL_FMT_CW_SelectProperty", // NOI18N
+            new Object[] { Utilities.getShortClassName(requiredType) });
         
         final DialogDescriptor dd = new DialogDescriptor(propertyPicker, title);
         dd.setValid(propertyPicker.isPickerValid());
@@ -603,16 +620,14 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     private void updateParameterTypes() {
         valueField.setEnabled(valueButton.isSelected());
         beanCombo.setEnabled(beanButton.isSelected());
-        if (!propertyButton.isSelected()) {
-            propertyLabel.setText(FormEditor.getFormBundle().getString("CTL_CW_NoProperty")); // "<No Property Selected>"
-        }
+        if (!propertyButton.isSelected())
+            propertyLabel.setText(FormUtils.getBundleString("CTL_CW_NoProperty")); // NOI18N
         propertyLabel.setEnabled(propertyButton.isSelected());
         propertyLabel.repaint();
         propertyDetailsButton.setEnabled(propertyButton.isSelected());
 
-        if (!methodButton.isSelected()) {
-            methodLabel.setText(FormEditor.getFormBundle().getString("CTL_CW_NoMethod")); // "<No Method Selected>"
-        }
+        if (!methodButton.isSelected())
+            methodLabel.setText(FormUtils.getBundleString("CTL_CW_NoMethod")); // NOI18N
         methodLabel.setEnabled(methodButton.isSelected());
         methodLabel.repaint();
         methodDetailsButton.setEnabled(methodButton.isSelected());
@@ -623,20 +638,20 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JRadioButton valueButton;
-    private javax.swing.JTextField valueField;
-    private javax.swing.JRadioButton beanButton;
-    private javax.swing.JComboBox beanCombo;
-    private javax.swing.JRadioButton propertyButton;
     private javax.swing.JTextField propertyLabel;
-    private javax.swing.JButton propertyDetailsButton;
-    private javax.swing.JRadioButton methodButton;
     private javax.swing.JTextField methodLabel;
-    private javax.swing.JButton methodDetailsButton;
     private javax.swing.JRadioButton codeButton;
-    private javax.swing.JScrollPane codeScrollPane;
+    private javax.swing.JRadioButton methodButton;
+    private javax.swing.JTextField valueField;
     private javax.swing.JEditorPane codeArea;
+    private javax.swing.JRadioButton beanButton;
+    private javax.swing.JButton propertyDetailsButton;
+    private javax.swing.JComboBox beanCombo;
+    private javax.swing.JScrollPane codeScrollPane;
     private javax.swing.JLabel paramLabel;
+    private javax.swing.JRadioButton valueButton;
+    private javax.swing.JButton methodDetailsButton;
+    private javax.swing.JRadioButton propertyButton;
     // End of variables declaration//GEN-END:variables
 
     private FormModel formModel;

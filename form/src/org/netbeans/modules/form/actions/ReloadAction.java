@@ -14,7 +14,6 @@
 package org.netbeans.modules.form.actions;
 
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.*;
 import org.netbeans.modules.form.FormEditorSupport;
 
@@ -24,6 +23,8 @@ import org.netbeans.modules.form.FormEditorSupport;
 
 public class ReloadAction extends CallableSystemAction implements Runnable {
 
+    private static String name;
+
     private FormEditorSupport formEditorSupport;
 
     public ReloadAction() {
@@ -31,7 +32,10 @@ public class ReloadAction extends CallableSystemAction implements Runnable {
     }
 
     public String getName() {
-        return NbBundle.getBundle(TestAction.class).getString("ACT_ReloadForm"); // NOI18N
+        if (name == null)
+            name = org.openide.util.NbBundle.getBundle(TestAction.class)
+                     .getString("ACT_ReloadForm"); // NOI18N
+        return name;
     }
 
     public HelpCtx getHelpCtx() {

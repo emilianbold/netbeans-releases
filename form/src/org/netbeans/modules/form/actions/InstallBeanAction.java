@@ -11,10 +11,8 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form.actions;
 
-import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 import org.netbeans.modules.form.palette.BeanInstaller;
@@ -23,16 +21,20 @@ import org.netbeans.modules.form.palette.BeanInstaller;
  *
  * @author Petr Hamernik
  */
+
 public class InstallBeanAction extends CallableSystemAction {
-    /** generated Serialized Version UID */
-    static final long serialVersionUID = 7755319389083740521L;
+
+    private static String name;
 
     /** Human presentable name of the action. This should be
      * presented as an item in a menu.
      * @return the name of the action
      */
     public String getName() {
-        return NbBundle.getBundle(InstallBeanAction.class).getString("ACT_InstallBean");
+        if (name == null)
+            name = org.openide.util.NbBundle.getBundle(InstallBeanAction.class)
+                     .getString("ACT_InstallBean"); // NOI18N
+        return name;
     }
 
     /** Help context where to find more about the action.
@@ -55,5 +57,4 @@ public class InstallBeanAction extends CallableSystemAction {
     public void performAction() {
         BeanInstaller.installBean();
     }
-
 }

@@ -17,7 +17,6 @@ import javax.swing.*;
 import java.awt.*;
 
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.nodes.*;
 import org.openide.util.actions.*;
 import org.netbeans.modules.form.*;
@@ -28,6 +27,8 @@ import org.netbeans.modules.form.*;
 
 public class TestAction extends CallableSystemAction implements Runnable {
 
+    private static String name;
+
     public TestAction() {
         setEnabled(false);
     }
@@ -37,7 +38,10 @@ public class TestAction extends CallableSystemAction implements Runnable {
      * @return the name of the action
      */
     public String getName() {
-        return NbBundle.getBundle(TestAction.class).getString("ACT_TestMode"); // NOI18N
+        if (name == null)
+            name = org.openide.util.NbBundle.getBundle(TestAction.class)
+                     .getString("ACT_TestMode"); // NOI18N
+        return name;
     }
 
     /** Help context where to find more about the action.
@@ -91,7 +95,8 @@ public class TestAction extends CallableSystemAction implements Runnable {
             String title = frame.getTitle();
             if (title == null || "".equals(title))
                 frame.setTitle(java.text.MessageFormat.format(
-                    NbBundle.getBundle(TestAction.class).getString("FMT_TestingForm"), // NOI18N
+                    org.openide.util.NbBundle.getBundle(TestAction.class)
+                                               .getString("FMT_TestingForm"), // NOI18N
                     new Object[] { formModel.getName() }
                 ));
 

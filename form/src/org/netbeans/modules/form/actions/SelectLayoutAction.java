@@ -33,16 +33,19 @@ import org.netbeans.modules.form.layoutsupport.*;
  * Action for setting layout on selected container(s).
  */
 
-public class SelectLayoutAction extends NodeAction
-{
-    static final long serialVersionUID = 4760011790717781801L;
+public class SelectLayoutAction extends NodeAction {
+
+    private static String name;
 
      /** Human presentable name of the action. This should be
      * presented as an item in a menu.
      * @return the name of the action
      */
     public String getName() {
-        return org.openide.util.NbBundle.getBundle(SelectLayoutAction.class).getString("ACT_SelectLayout");
+        if (name == null)
+            name = org.openide.util.NbBundle.getBundle(SelectLayoutAction.class)
+                     .getString("ACT_SelectLayout"); // NOI18N
+        return name;
     }
 
     /** Help context where to find more about the action.

@@ -99,8 +99,8 @@ public class FormEditorSupport extends JavaEditor
     public void openForm() {
         // set status text "Opening Form..."
         TopManager.getDefault().setStatusText(
-            java.text.MessageFormat.format(
-                FormUtils.getBundleString("FMT_OpeningForm"), // NOI18N
+            FormUtils.getFormattedBundleString(
+                "FMT_OpeningForm", // NOI18N
                 new Object[] { formDataObject.getName() }));
 
         java.awt.EventQueue.invokeLater(new Runnable() {

@@ -78,9 +78,9 @@ class JavaCodeGenerator extends CodeGenerator {
         "private void initComponents() {\n"; // NOI18N
     private static final String INIT_COMPONENTS_FOOTER = "}\n"; // NOI18N
     private static final String VARIABLES_HEADER =
-        FormEditor.getFormBundle().getString("MSG_VariablesBegin"); // NOI18N
+        FormUtils.getBundleString("MSG_VariablesBegin"); // NOI18N
     private static final String VARIABLES_FOOTER =
-        FormEditor.getFormBundle().getString("MSG_VariablesEnd"); // NOI18N
+        FormUtils.getBundleString("MSG_VariablesEnd"); // NOI18N
 
     /** The prefix for event handler sections */
     private static final String EVT_SECTION_PREFIX = "event_"; // NOI18N
@@ -145,13 +145,14 @@ class JavaCodeGenerator extends CodeGenerator {
      */
 
     public Node.Property[] getSyntheticProperties(final RADComponent component) {
+        ResourceBundle bundle = FormUtils.getBundle();
         java.util.List propList = new ArrayList();
         if (component != formModel.getTopRADComponent()) {
             propList.add(new PropertySupport.ReadWrite(
                 "variableName", // NOI18N
                 String.class,
-                FormEditor.getFormBundle().getString("MSG_JC_VariableName"), // NOI18N
-                FormEditor.getFormBundle().getString("MSG_JC_VariableDesc")) // NOI18N
+                bundle.getString("MSG_JC_VariableName"), // NOI18N
+                bundle.getString("MSG_JC_VariableDesc")) // NOI18N
             {
                 public void setValue(Object value) {
                     if (!(value instanceof String)) {
@@ -174,8 +175,8 @@ class JavaCodeGenerator extends CodeGenerator {
             propList.add(new PropertySupport.ReadWrite(
                 "modifiers", // NOI18N
                 Integer.class,
-                FormEditor.getFormBundle().getString("MSG_JC_VariableModifiers"), // NOI18N
-                FormEditor.getFormBundle().getString("MSG_JC_VariableModifiersDesc")) // NOI18N
+                bundle.getString("MSG_JC_VariableModifiers"), // NOI18N
+                bundle.getString("MSG_JC_VariableModifiersDesc")) // NOI18N
             {
                 public void setValue(Object value) {
                     if (!(value instanceof Integer))
@@ -252,8 +253,8 @@ class JavaCodeGenerator extends CodeGenerator {
             propList.add(new PropertySupport.ReadWrite(
                 "useLocalVariable", // NOI18N
                 Boolean.TYPE,
-                FormEditor.getFormBundle().getString("MSG_JC_UseLocalVar"), // NOI18N
-                FormEditor.getFormBundle().getString("MSG_JC_UseLocalVarDesc")) // NOI18N
+                bundle.getString("MSG_JC_UseLocalVar"), // NOI18N
+                bundle.getString("MSG_JC_UseLocalVarDesc")) // NOI18N
             {
                 public void setValue(Object value) {
                     if (!(value instanceof Boolean))
@@ -323,8 +324,8 @@ class JavaCodeGenerator extends CodeGenerator {
             propList.add(new PropertySupport.ReadWrite(
                 "codeGeneration", // NOI18N
                 Integer.TYPE,
-                FormEditor.getFormBundle().getString("MSG_JC_CodeGeneration"), // NOI18N
-                FormEditor.getFormBundle().getString("MSG_JC_CodeGenerationDesc")) // NOI18N
+                bundle.getString("MSG_JC_CodeGeneration"), // NOI18N
+                bundle.getString("MSG_JC_CodeGenerationDesc")) // NOI18N
             {
                 public void setValue(Object value) {
                     if (!(value instanceof Integer)) {
@@ -366,8 +367,8 @@ class JavaCodeGenerator extends CodeGenerator {
             propList.add(new CodePropertySupportRW(
                 "creationCodePre", // NOI18N
                 String.class,
-                FormEditor.getFormBundle().getString("MSG_JC_PreCreationCode"), // NOI18N
-                FormEditor.getFormBundle().getString("MSG_JC_PreCreationCodeDesc")) // NOI18N
+                bundle.getString("MSG_JC_PreCreationCode"), // NOI18N
+                bundle.getString("MSG_JC_PreCreationCodeDesc")) // NOI18N
             {
                 public void setValue(Object value) {
                     if (!(value instanceof String)) {
@@ -391,8 +392,8 @@ class JavaCodeGenerator extends CodeGenerator {
             propList.add(new CodePropertySupportRW(
                 "creationCodePost", // NOI18N
                 String.class,
-                FormEditor.getFormBundle().getString("MSG_JC_PostCreationCode"), // NOI18N
-                FormEditor.getFormBundle().getString("MSG_JC_PostCreationCodeDesc")) // NOI18N
+                bundle.getString("MSG_JC_PostCreationCode"), // NOI18N
+                bundle.getString("MSG_JC_PostCreationCodeDesc")) // NOI18N
             {
                 public void setValue(Object value) {
                     if (!(value instanceof String)) {
@@ -416,8 +417,8 @@ class JavaCodeGenerator extends CodeGenerator {
             propList.add(new CodePropertySupportRW(
                 "initCodePre", // NOI18N
                 String.class,
-                FormEditor.getFormBundle().getString("MSG_JC_PreInitCode"), // NOI18N
-                FormEditor.getFormBundle().getString("MSG_JC_PreInitCodeDesc")) // NOI18N
+                bundle.getString("MSG_JC_PreInitCode"), // NOI18N
+                bundle.getString("MSG_JC_PreInitCodeDesc")) // NOI18N
             {
                 public void setValue(Object value) {
                     if (!(value instanceof String)) {
@@ -441,8 +442,8 @@ class JavaCodeGenerator extends CodeGenerator {
             propList.add(new CodePropertySupportRW(
                 "initCodePost", // NOI18N
                 String.class,
-                FormEditor.getFormBundle().getString("MSG_JC_PostInitCode"), // NOI18N
-                FormEditor.getFormBundle().getString("MSG_JC_PostInitCodeDesc")) // NOI18N
+                bundle.getString("MSG_JC_PostInitCode"), // NOI18N
+                bundle.getString("MSG_JC_PostInitCodeDesc")) // NOI18N
             {
                 public void setValue(Object value) {
                     if (!(value instanceof String)) {
@@ -466,8 +467,8 @@ class JavaCodeGenerator extends CodeGenerator {
             propList.add(new PropertySupport.ReadWrite(
                 "serializeTo", // NOI18N
                 String.class,
-                FormEditor.getFormBundle().getString("MSG_JC_SerializeTo"), // NOI18N
-                FormEditor.getFormBundle().getString("MSG_JC_SerializeToDesc")) // NOI18N
+                bundle.getString("MSG_JC_SerializeTo"), // NOI18N
+                bundle.getString("MSG_JC_SerializeToDesc")) // NOI18N
             {
                 public void setValue(Object value) {
                     if (!(value instanceof String)) {
@@ -498,8 +499,8 @@ class JavaCodeGenerator extends CodeGenerator {
                 propList.add(new CodePropertySupportRW(
                     "creationCodeCustom", // NOI18N
                     String.class,
-                    FormEditor.getFormBundle().getString("MSG_JC_CustomCreationCode"), // NOI18N
-                    FormEditor.getFormBundle().getString("MSG_JC_CustomCreationCodeDesc")) // NOI18N
+                    bundle.getString("MSG_JC_CustomCreationCode"), // NOI18N
+                    bundle.getString("MSG_JC_CustomCreationCodeDesc")) // NOI18N
                 {
                     public void setValue(Object value) {
                         if (!(value instanceof String)) {
@@ -534,8 +535,8 @@ class JavaCodeGenerator extends CodeGenerator {
             propList.add(new PropertySupport.ReadOnly(
                 FormDesigner.PROP_DESIGNER_SIZE,
                 Dimension.class,
-                FormEditor.getFormBundle().getString("MSG_DesignerSize"), // NOI18N
-                FormEditor.getFormBundle().getString("HINT_DesignerSize")) // NOI18N
+                bundle.getString("MSG_DesignerSize"), // NOI18N
+                bundle.getString("HINT_DesignerSize")) // NOI18N
             {
                 public Object getValue()
                     throws IllegalAccessException, IllegalArgumentException,
@@ -1646,7 +1647,7 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     private String getDefaultEventBody() {
-        return FormEditor.getFormBundle().getString("MSG_EventHandlerBody"); // NOI18N
+        return FormUtils.getBundleString("MSG_EventHandlerBody"); // NOI18N
     }
 
     /** Renames the specified event handler to the given new name.
@@ -2116,8 +2117,10 @@ class JavaCodeGenerator extends CodeGenerator {
         private RADComponent component;
 
         /** Display Names for alignment. */
-        private static final String generateName = FormEditor.getFormBundle().getString("VALUE_codeGen_generate"); // NOI18N
-        private static final String serializeName = FormEditor.getFormBundle().getString("VALUE_codeGen_serialize"); // NOI18N
+        private static final String generateName =
+            FormUtils.getBundleString("VALUE_codeGen_generate"); // NOI18N
+        private static final String serializeName =
+            FormUtils.getBundleString("VALUE_codeGen_serialize"); // NOI18N
 
         public CodeGenerateEditor(RADComponent component) {
             this.component = component;

@@ -16,7 +16,6 @@ package org.netbeans.modules.form.actions;
 import org.openide.nodes.Node;
 import org.openide.util.actions.*;
 import org.openide.util.*;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.form.*;
 
@@ -27,6 +26,9 @@ public class EditContainerAction extends NodeAction {
 
     private static EditFormAction editFormAction = (EditFormAction)
                        SharedClassObject.findObject(EditFormAction.class, true);
+
+    private static String name;
+
     /**
     * Perform the action based on the currently activated nodes.
     * Note that if the source of the event triggering this action was itself
@@ -77,7 +79,10 @@ public class EditContainerAction extends NodeAction {
      * @return the name of the action
      */
     public String getName() {
-        return NbBundle.getBundle(EditContainerAction.class).getString("ACT_EditContainer");
+        if (name == null)
+            name = org.openide.util.NbBundle.getBundle(EditContainerAction.class)
+                     .getString("ACT_EditContainer"); // NOI18N
+        return name;
     }
 
     /**

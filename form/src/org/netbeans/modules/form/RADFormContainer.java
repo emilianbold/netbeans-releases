@@ -37,7 +37,7 @@ public class RADFormContainer extends RADContainer implements FormContainer {
      * @return current value of the Name property
      */
     public String getName() {
-        return FormEditor.getFormBundle().getString("CTL_FormTopContainerName");
+        return FormUtils.getBundleString("CTL_FormTopContainerName"); // NOI18N
     }
 
     /** Setter for the Name property of the component - usually maps to variable declaration for holding the

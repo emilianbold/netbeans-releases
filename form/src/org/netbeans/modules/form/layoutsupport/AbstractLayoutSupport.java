@@ -60,9 +60,6 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     private static String icon32URL =
         "org/netbeans/modules/form/layoutsupport/resources/AbstractLayout32.gif"; // NOI18N
 
-    /** ResourceBundle for all support classes in form module. */
-    private static ResourceBundle bundle = null;
-
     private static Method simpleAddMethod = null;
     private static Method addWithConstraintsMethod = null;
     private static Method setLayoutMethod = null;
@@ -234,8 +231,8 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
             propertySets = new Node.PropertySet[1];
             propertySets[0] = new Node.PropertySet(
                 "properties", // NOI18N
-                FormEditor.getFormBundle().getString("CTL_PropertiesTab"), // NOI18N
-                FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")) // NOI18N
+                FormUtils.getBundleString("CTL_PropertiesTab"), // NOI18N
+                FormUtils.getBundleString("CTL_PropertiesTabHint")) // NOI18N
             {
                 public Node.Property[] getProperties() {
                     return AbstractLayoutSupport.this.getProperties();
@@ -1134,9 +1131,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     /** Used only internally.
      */
     protected static ResourceBundle getBundle() {
-        if (bundle == null)
-            bundle = org.openide.util.NbBundle.getBundle(AbstractLayoutSupport.class);
-        return bundle;
+        return org.openide.util.NbBundle.getBundle(AbstractLayoutSupport.class);
     }
 
     /** Gets java.lang.reflect.Method object representing the simple

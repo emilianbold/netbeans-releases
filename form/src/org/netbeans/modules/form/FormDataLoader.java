@@ -19,7 +19,6 @@ import org.openide.actions.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.NbBundle;
 import org.netbeans.modules.java.JavaDataLoader;
 
 /** Loader for Forms. Recognizes file with extension .form and .java and with extension class if
@@ -40,7 +39,8 @@ public class FormDataLoader extends JavaDataLoader {
     
     /** Gets default display name. Overides superclass method. */
     protected String defaultDisplayName() {
-        return NbBundle.getBundle(FormDataLoader.class).getString("PROP_FormLoader_Name");
+        return org.openide.util.NbBundle.getBundle(FormDataLoader.class)
+                 .getString("PROP_FormLoader_Name"); // NOI18N
     }
 
     /** Gets default actions. Overrides superclass method. */

@@ -30,7 +30,6 @@ import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.explorer.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.*;
@@ -54,12 +53,6 @@ public final class BorderEditor extends PropertyEditorSupport
     /** Icon base for no border node. */
     private static final String NO_BORDER_BASE =
         "org/netbeans/modules/form/editors2/nullBorder"; // NOI18N
-
-    private static final ResourceBundle bundle = NbBundle.getBundle(BorderEditor.class);
-
-    private static final String NO_BORDER = bundle.getString("LAB_NoBorder"); // NOI18N
-    private static final java.text.MessageFormat UNKNOWN_BORDER =
-        new java.text.MessageFormat(bundle.getString("LAB_FMT_UnknownBorder")); // NOI18N
 
     // --------------
     // variables
@@ -122,7 +115,7 @@ public final class BorderEditor extends PropertyEditorSupport
         Object value = getValue();
 
         if (value == null)
-            valueText = NO_BORDER;
+            valueText = getBundle().getString("LAB_NoBorder"); // NOI18N
         else if (borderSupport != null)
             valueText = "[" + borderSupport.getDisplayName() + "]"; // NOI18N
         else
@@ -144,7 +137,7 @@ public final class BorderEditor extends PropertyEditorSupport
         Object value = getValue();
 
         if (value == null)
-            valueText = NO_BORDER;
+            valueText = getBundle().getString("LAB_NoBorder"); // NOI18N
         else if (borderSupport != null)
             valueText = "[" + borderSupport.getDisplayName() + "]"; // NOI18N
         else
@@ -185,7 +178,7 @@ public final class BorderEditor extends PropertyEditorSupport
 
     /** @return display name of the property editor */
     public String getDisplayName() {
-        return bundle.getString("CTL_BorderEditor_DisplayName"); // NOI18N
+        return getBundle().getString("CTL_BorderEditor_DisplayName"); // NOI18N
     }
 
     // ----------------
@@ -208,6 +201,12 @@ public final class BorderEditor extends PropertyEditorSupport
         }
     }
 
+    // ---------
+
+    private static ResourceBundle getBundle() {
+        return org.openide.util.NbBundle.getBundle(BorderEditor.class);
+    }
+
     // --------------------------
     // innerclasses
 
@@ -227,11 +226,16 @@ public final class BorderEditor extends PropertyEditorSupport
             split.setSplitAbsolute(false);
             split.setSplitPosition(45);
 
+            ResourceBundle bundle = getBundle();
+
             ListView listView = new ListView();
-            listView.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AvailableBorders"));
+            listView.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACSD_AvailableBorders")); // NOI18N
             
-            JLabel label = new JLabel(bundle.getString("LAB_AvailableBorders"));
-            label.setDisplayedMnemonic(bundle.getString("LAB_AvailableBorders_Mnemonic").charAt(0));
+            JLabel label = new JLabel(
+                bundle.getString("LAB_AvailableBorders")); // NOI18N
+            label.setDisplayedMnemonic(
+                bundle.getString("LAB_AvailableBorders_Mnemonic").charAt(0)); // NOI18N
             label.setLabelFor(listView);
 
             JPanel panel = new JPanel();
@@ -245,7 +249,8 @@ public final class BorderEditor extends PropertyEditorSupport
 
             add(BorderLayout.CENTER, split);
             
-            getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_BorderCustomEditor"));
+            getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACSD_BorderCustomEditor")); // NOI18N
         }
 
         void setValue(Object border) {
@@ -415,7 +420,7 @@ public final class BorderEditor extends PropertyEditorSupport
     static final class NoBorderNode extends AbstractNode {
         NoBorderNode() {
             super(Children.LEAF);
-            setDisplayName(NO_BORDER);
+            setDisplayName(getBundle().getString("LAB_NoBorder")); // NOI18N
             setIconBase(NO_BORDER_BASE);
         }
     }
@@ -434,7 +439,9 @@ public final class BorderEditor extends PropertyEditorSupport
             String longName = border.getClass().getName();
             int dot = longName.lastIndexOf('.');
             String shortName =(dot < 0) ? longName : longName.substring(dot + 1);
-            setDisplayName(UNKNOWN_BORDER.format(new Object[] { longName, shortName }));
+            setDisplayName(new MessageFormat(
+                               getBundle().getString("LAB_FMT_UnknownBorder")) // NOI18N
+                    .format(new Object[] { longName, shortName }));
         }
 
         Object getBorder() {
@@ -509,7 +516,7 @@ public final class BorderEditor extends PropertyEditorSupport
         if (!XML_BORDER.equals(element.getNodeName())) {
             IOException ex = new IOException("Missing \"Border\" XML element"); // NOI18N
             ErrorManager.getDefault().annotate(
-                ex, bundle.getString("MSG_ERR_MissingMainElement")); // NOI18N
+                ex, getBundle().getString("MSG_ERR_MissingMainElement")); // NOI18N
             throw ex;
         }
 
@@ -528,7 +535,7 @@ public final class BorderEditor extends PropertyEditorSupport
         if (readNode == null) {
             IOException ex = new IOException("Missing border data"); // NOI18N
             ErrorManager.getDefault().annotate(
-                ex, bundle.getString("MSG_ERR_MissingBorderData")); // NOI18N
+                ex, getBundle().getString("MSG_ERR_MissingBorderData")); // NOI18N
             throw ex;
         }
 
@@ -635,7 +642,7 @@ public final class BorderEditor extends PropertyEditorSupport
                 ErrorManager.getDefault().annotate(
                     ex,
                     MessageFormat.format(
-                        bundle.getString("FMT_ERR_UnknownProperty"), // NOI18N
+                        getBundle().getString("FMT_ERR_UnknownProperty"), // NOI18N
                         new Object[] { borderPropName,
                                        bSupport.getBorderClass().getName() }));
                 throw ex;
@@ -669,7 +676,7 @@ public final class BorderEditor extends PropertyEditorSupport
                 ErrorManager.getDefault().annotate(
                     lastEx,
                     MessageFormat.format(
-                        bundle.getString("FMT_ERR_CannotReadBorderProperty"), // NOI18N
+                        getBundle().getString("FMT_ERR_CannotReadBorderProperty"), // NOI18N
                         new Object[] { xmlPropName }));
                 throw lastEx;
             }
@@ -693,7 +700,7 @@ public final class BorderEditor extends PropertyEditorSupport
                         ErrorManager.getDefault().annotate(
                             ex,
                             MessageFormat.format(
-                                bundle.getString(
+                                getBundle().getString(
                                     "FMT_ERR_CannotReadBorderProperty"), // NOI18N
                                 new Object[] { xmlPropName }));
                         throw ex;
@@ -705,7 +712,7 @@ public final class BorderEditor extends PropertyEditorSupport
                             ErrorManager.EXCEPTION,
                             null,
                             MessageFormat.format(
-                                bundle.getString(
+                                getBundle().getString(
                                     "FMT_ERR_CannotReadAndSetBorderProperty"), // NOI18N
                                 new Object[] { xmlPropName }),
                             ex,
@@ -754,15 +761,15 @@ public final class BorderEditor extends PropertyEditorSupport
             org.w3c.dom.Element el = doc.createElement(XML_TITLED_BORDER);
             FormProperty prop;
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("border");
+            prop = (FormProperty)borderSupport.getPropertyOfName("border"); // NOI18N
             if (prop != null && prop.isChanged())
                 writeProperty(ATTR_BORDER, prop, el, doc);
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("title");
+            prop = (FormProperty)borderSupport.getPropertyOfName("title"); // NOI18N
             if (prop != null && prop.isChanged()) {
                 Object realValue = prop.getRealValue();
                 el.setAttribute(ATTR_TITLE, realValue instanceof String ?
-                                            (String)realValue : "");
+                                            (String)realValue : ""); // NOI18N
 
                 Object value = prop.getValue();
                 if (value instanceof FormDesignValue)
@@ -770,19 +777,19 @@ public final class BorderEditor extends PropertyEditorSupport
                     writeProperty(ATTR_TITLE_X, prop, el, doc);
             }
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("titleJustification");
+            prop = (FormProperty)borderSupport.getPropertyOfName("titleJustification"); // NOI18N
             if (prop != null && prop.isChanged())
                 el.setAttribute(ATTR_JUSTIFICATION, prop.getRealValue().toString());
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("titlePosition");
+            prop = (FormProperty)borderSupport.getPropertyOfName("titlePosition"); // NOI18N
             if (prop != null && prop.isChanged())
                 el.setAttribute(ATTR_POSITION, prop.getRealValue().toString());
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("titleFont");
+            prop = (FormProperty)borderSupport.getPropertyOfName("titleFont"); // NOI18N
             if (prop != null && prop.isChanged())
                 writeProperty(ATTR_FONT, prop, el, doc);
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("titleColor");
+            prop = (FormProperty)borderSupport.getPropertyOfName("titleColor"); // NOI18N
             if (prop != null && prop.isChanged())
                 writeProperty(ATTR_TITLE_COLOR, prop, el, doc);
 
@@ -811,7 +818,7 @@ public final class BorderEditor extends PropertyEditorSupport
             readProperty(ATTR_BORDER, "border", borderSupport, element); // NOI18N
 
             // for title, first try to read FormDesignValue
-            Object title = readProperty(ATTR_TITLE_X, "title", borderSupport, element);
+            Object title = readProperty(ATTR_TITLE_X, "title", borderSupport, element); // NOI18N
             if (title == null // no design value, get simple String attribute
                   && (node = attributes.getNamedItem(ATTR_TITLE)) != null
                   && (prop = (FormProperty)borderSupport
@@ -858,15 +865,15 @@ public final class BorderEditor extends PropertyEditorSupport
             org.w3c.dom.Element el = doc.createElement(XML_ETCHED_BORDER);
             FormProperty prop;
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("etchType");
+            prop = (FormProperty)borderSupport.getPropertyOfName("etchType"); // NOI18N
             if (prop != null && prop.isChanged())
                 el.setAttribute(ATTR_ETCH_TYPE, prop.getRealValue().toString());
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("highlightColor");
+            prop = (FormProperty)borderSupport.getPropertyOfName("highlightColor"); // NOI18N
             if (prop != null && prop.isChanged())
                 writeProperty(ATTR_HIGHLIGHT, prop, el, doc);
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("shadowColor");
+            prop = (FormProperty)borderSupport.getPropertyOfName("shadowColor"); // NOI18N
             if (prop != null && prop.isChanged())
                 writeProperty(ATTR_SHADOW, prop, el, doc);
 
@@ -927,15 +934,15 @@ public final class BorderEditor extends PropertyEditorSupport
             org.w3c.dom.Element el = doc.createElement(XML_LINE_BORDER);
             FormProperty prop;
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("lineColor");
+            prop = (FormProperty)borderSupport.getPropertyOfName("lineColor"); // NOI18N
             if (prop != null && prop.isChanged())
                 writeProperty(ATTR_LINE_COLOR, prop, el, doc);
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("thickness");
+            prop = (FormProperty)borderSupport.getPropertyOfName("thickness"); // NOI18N
             if (prop != null && prop.isChanged())
                 el.setAttribute(ATTR_THICKNESS, prop.getRealValue().toString());
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("roundedCorners");
+            prop = (FormProperty)borderSupport.getPropertyOfName("roundedCorners"); // NOI18N
             if (prop != null && prop.isChanged())
                 el.setAttribute(ATTR_CORNERS, prop.getRealValue().toString());
 
@@ -999,7 +1006,7 @@ public final class BorderEditor extends PropertyEditorSupport
         try {
             org.w3c.dom.Element el = doc.createElement(XML_EMPTY_BORDER);
             FormProperty prop = (FormProperty)borderSupport.getPropertyOfName(
-                                                               "borderInsets");
+                                                               "borderInsets"); // NOI18N
             Object value;
             if (prop != null && prop.isChanged()
                   && (value = prop.getRealValue()) instanceof Insets) {
@@ -1070,11 +1077,11 @@ public final class BorderEditor extends PropertyEditorSupport
             org.w3c.dom.Element el = doc.createElement(XML_COMPOUND_BORDER);
             FormProperty prop;
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("outsideBorder");
+            prop = (FormProperty)borderSupport.getPropertyOfName("outsideBorder"); // NOI18N
             if (prop != null && prop.isChanged())
                 writeProperty(ATTR_OUTSIDE, prop, el, doc);
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("insideBorder");
+            prop = (FormProperty)borderSupport.getPropertyOfName("insideBorder"); // NOI18N
             if (prop != null && prop.isChanged())
                 writeProperty(ATTR_INSIDE, prop, el, doc);
 
@@ -1132,23 +1139,23 @@ public final class BorderEditor extends PropertyEditorSupport
             org.w3c.dom.Element el = doc.createElement(XML_BEVEL_BORDER);
             FormProperty prop;
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("bevelType");
+            prop = (FormProperty)borderSupport.getPropertyOfName("bevelType"); // NOI18N
             if (prop != null && prop.isChanged())
                 el.setAttribute(ATTR_BEVEL_TYPE, prop.getRealValue().toString());
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("highlightOuterColor");
+            prop = (FormProperty)borderSupport.getPropertyOfName("highlightOuterColor"); // NOI18N
             if (prop != null && prop.isChanged())
                 writeProperty(ATTR_HIGHLIGHT_OUTER, prop, el, doc);
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("highlightInnerColor");
+            prop = (FormProperty)borderSupport.getPropertyOfName("highlightInnerColor"); // NOI18N
             if (prop != null && prop.isChanged())
                 writeProperty(ATTR_HIGHLIGHT_INNER, prop, el, doc);
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("shadowOuterColor");
+            prop = (FormProperty)borderSupport.getPropertyOfName("shadowOuterColor"); // NOI18N
             if (prop != null && prop.isChanged())
                 writeProperty(ATTR_SHADOW_OUTER, prop, el, doc);
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("shadowInnerColor");
+            prop = (FormProperty)borderSupport.getPropertyOfName("shadowInnerColor"); // NOI18N
             if (prop != null && prop.isChanged())
                 writeProperty(ATTR_SHADOW_INNER, prop, el, doc);
 
@@ -1215,7 +1222,7 @@ public final class BorderEditor extends PropertyEditorSupport
             String infoId;
             FormProperty prop;
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("tileIcon");
+            prop = (FormProperty)borderSupport.getPropertyOfName("tileIcon"); // NOI18N
             if (prop.isChanged()) {
                 el = doc.createElement(XML_MATTE_ICON_BORDER);
                 infoId = ID_BI_MATTEICON;
@@ -1226,11 +1233,11 @@ public final class BorderEditor extends PropertyEditorSupport
                 infoId = ID_BI_MATTECOLOR;
             }
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("matteColor");
+            prop = (FormProperty)borderSupport.getPropertyOfName("matteColor"); // NOI18N
             if (prop != null && prop.isChanged())
                 writeProperty(ATTR_MATTE_COLOR, prop, el, doc);
 
-            prop = (FormProperty)borderSupport.getPropertyOfName("borderInsets");
+            prop = (FormProperty)borderSupport.getPropertyOfName("borderInsets"); // NOI18N
             Object value;
             if (prop != null && prop.isChanged()
                   && (value = prop.getRealValue()) instanceof Insets) {

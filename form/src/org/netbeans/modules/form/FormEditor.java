@@ -62,7 +62,7 @@ final public class FormEditor extends Object
     public static final String LAYOUT_PREFIX = "__LAYOUT__"; // NOI18N
 
     /** The resource bundle for the form editor */
-    private static ResourceBundle formBundle = NbBundle.getBundle(FormEditor.class);
+//    private static ResourceBundle formBundle = NbBundle.getBundle(FormEditor.class);
 
     /** The default width of the form window */
     public static final int DEFAULT_FORM_WIDTH = 300;
@@ -76,9 +76,9 @@ final public class FormEditor extends Object
     // Static methods
 
     /** Provides the resource bundle for FormEditor */
-    public static ResourceBundle getFormBundle() {
-        return formBundle;
-    }
+//    public static ResourceBundle getFormBundle() {
+//        return formBundle;
+//    }
 
     /** Provides the settings for the FormEditor */
     public static FormLoaderSettings getFormSettings() {

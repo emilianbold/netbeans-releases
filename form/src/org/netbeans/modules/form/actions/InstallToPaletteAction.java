@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form.actions;
 
 import org.openide.cookies.InstanceCookie;
@@ -25,10 +24,10 @@ import org.netbeans.modules.form.palette.BeanInstaller;
  *
  * @author   Ian Formanek
  */
+
 public class InstallToPaletteAction extends CookieAction {
-    static final long serialVersionUID =-7793615112675198529L;
-    /** generated Serialized Version UID */
-    //  static final long serialVersionUID = -5280204757097896304L;
+
+    private static String name;
 
     /** @return the mode of action. Possible values are disjunctions of MODE_XXX
      * constants. */
@@ -77,7 +76,10 @@ public class InstallToPaletteAction extends CookieAction {
      * @return the name of the action
      */
     public String getName() {
-        return org.openide.util.NbBundle.getBundle(InstallToPaletteAction.class).getString("ACT_InstallToPalette");
+        if (name == null)
+            name = org.openide.util.NbBundle.getBundle(InstallToPaletteAction.class)
+                     .getString("ACT_InstallToPalette"); // NOI18N
+        return name;
     }
 
     /** Help context where to find more about the action.

@@ -35,13 +35,15 @@ public class FormPropertyEditor implements PropertyEditor,
                                            EnhancedPropertyEditor,
                                            ExPropertyEditor
 {
+    private static String NO_VALUE_TEXT;
+
     private Object value = BeanSupport.NO_VALUE;
+
     private FormProperty property;
     private WeakReference propertyEnv;
 
     private PropertyEditor[] allEditors;
     private ArrayList listeners;
-
 
     /** Crates a new FormPropertyEditor */
     FormPropertyEditor(FormProperty property) {
@@ -179,8 +181,11 @@ public class FormPropertyEditor implements PropertyEditor,
      *	     be prepared to parse that string back in setAsText().
      */
     public String getAsText() {
-        if (value == BeanSupport.NO_VALUE)
-            return FormEditor.getFormBundle().getString("CTL_ValueNotSet"); // NOI18N
+        if (value == BeanSupport.NO_VALUE) {
+            if (NO_VALUE_TEXT == null)
+                NO_VALUE_TEXT = FormUtils.getBundleString("CTL_ValueNotSet"); // NOI18N
+            return NO_VALUE_TEXT;
+        }
 
         PropertyEditor prEd = property.getCurrentEditor();
         return prEd != null ? prEd.getAsText() : null;

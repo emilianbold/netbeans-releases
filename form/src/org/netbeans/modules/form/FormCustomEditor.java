@@ -55,18 +55,18 @@ public class FormCustomEditor extends JPanel
     {
         initComponents();
 
-        advancedButton.setText(FormEditor.getFormBundle().getString("CTL_Advanced")); // NOI18N
-        advancedButton.setMnemonic(FormEditor.getFormBundle().getString(
-                                        "CTL_Advanced_mnemonic").charAt(0)); // NOI18N
+        advancedButton.setText(FormUtils.getBundleString("CTL_Advanced")); // NOI18N
+        advancedButton.setMnemonic(FormUtils.getBundleString(
+                                      "CTL_Advanced_mnemonic").charAt(0)); // NOI18N
         advancedButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showAdvancedSettings();
             }
         });
         
-        jLabel1.setText(FormEditor.getFormBundle().getString("LAB_SelectMode")); //NOI18N
-        jLabel1.setDisplayedMnemonic((FormEditor.getFormBundle().getString(
-                                        "LAB_SelectMode.mnemonic").charAt(0))); //NOI18N
+        jLabel1.setText(FormUtils.getBundleString("LAB_SelectMode")); //NOI18N
+        jLabel1.setDisplayedMnemonic((FormUtils.getBundleString(
+                                       "LAB_SelectMode.mnemonic").charAt(0))); //NOI18N
         jLabel1.setLabelFor(editorsCombo);
         
         this.editor = editor;
@@ -163,8 +163,8 @@ public class FormCustomEditor extends JPanel
 
             if (custEd == null || custEd instanceof Window) {
                 JPanel p = new JPanel(new GridBagLayout());
-                JLabel label = new JLabel(FormEditor.getFormBundle()
-                                    .getString("CTL_PropertyEditorDoesNot")); // NOI18N
+                JLabel label = new JLabel(
+                    FormUtils.getBundleString("CTL_PropertyEditorDoesNot")); // NOI18N
                 p.add(label);
                 p.getAccessibleContext().setAccessibleDescription(label.getText());
                 custEd = p;
@@ -195,8 +195,10 @@ public class FormCustomEditor extends JPanel
         });
 
         updateAccessibleDescription(cardPanel.getComponent(currentIndex));
-        advancedButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_Advanced"));
-        editorsCombo.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_BTN_SelectMode"));
+        advancedButton.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_CTL_Advanced")); // NOI18N
+        editorsCombo.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_BTN_SelectMode")); // NOI18N
     }
     
     private void updateAccessibleDescription(Component comp) {
@@ -204,8 +206,8 @@ public class FormCustomEditor extends JPanel
             && comp.getAccessibleContext().getAccessibleDescription() != null) {
 
             getAccessibleContext().setAccessibleDescription(
-                java.text.MessageFormat.format(
-                    FormEditor.getFormBundle().getString("ACSD_FormCustomEditor"),
+                FormUtils.getFormattedBundleString(
+                    "ACSD_FormCustomEditor", // NOI18N
                     new Object[] {
                         comp.getAccessibleContext().getAccessibleDescription()
                     }
@@ -300,8 +302,8 @@ public class FormCustomEditor extends JPanel
         FormCustomEditorAdvanced fcea = new FormCustomEditorAdvanced(preCode, postCode);
         DialogDescriptor dd = new DialogDescriptor(
             fcea,
-            FormEditor.getFormBundle().getString("CTL_AdvancedInitializationCode")      // NOI18N
-            );
+            FormUtils.getBundleString("CTL_AdvancedInitializationCode")); // NOI18N
+
         dd.setHelpCtx(new HelpCtx("gui.source.modifying.property")); // NOI18N
         TopManager.getDefault().createDialog(dd).show();
 

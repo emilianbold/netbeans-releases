@@ -239,8 +239,7 @@ public class MetaComponentCreator {
                 {
                     TopManager.getDefault().notify(
                         new NotifyDescriptor.Message(
-                            FormEditor.getFormBundle().getString(
-                                          "MSG_ERR_CannotAddForm"), // NOI8N
+                            FormUtils.getBundleString("MSG_ERR_CannotAddForm"), // NOI18N
                             NotifyDescriptor.WARNING_MESSAGE));
                     return null;
                 }
@@ -444,8 +443,7 @@ public class MetaComponentCreator {
         catch (Exception ex) { // this is rather unlikely to fail
             ErrorManager em = ErrorManager.getDefault();
             em.annotate(ex,
-                        FormEditor.getFormBundle().getString(
-                                 "MSG_ERR_CannotCopyInstance")); // NOI18N
+                        FormUtils.getBundleString("MSG_ERR_CannotCopyInstance")); // NOI18N
             em.notify(ex);
             return null;
         }
@@ -719,8 +717,8 @@ public class MetaComponentCreator {
             t = ex;
         }
         if (t != null) {
-            String msg = MessageFormat.format(
-                FormEditor.getFormBundle().getString("FMT_ERR_LayoutInit"), // NOI8N
+            String msg = FormUtils.getFormattedBundleString(
+                "FMT_ERR_LayoutInit", // NOI18N
                 new Object[] { layoutClass.getName() });
 
             ErrorManager em = ErrorManager.getDefault();
@@ -732,8 +730,8 @@ public class MetaComponentCreator {
         if (layoutDelegate == null) {
             TopManager.getDefault().notify(
                 new NotifyDescriptor.Message(
-                    MessageFormat.format(
-                        FormEditor.getFormBundle().getString("FMT_ERR_LayoutNotFound"), // NOI8N
+                    FormUtils.getFormattedBundleString(
+                        "FMT_ERR_LayoutNotFound", // NOI18N
                         new Object[] { layoutClass.getName() }),
                     NotifyDescriptor.WARNING_MESSAGE));
 
@@ -752,8 +750,8 @@ public class MetaComponentCreator {
             t = ex;
         }
         if (t != null) {
-            String msg = MessageFormat.format(
-                FormEditor.getFormBundle().getString("FMT_ERR_LayoutInit"), // NOI8N
+            String msg = FormUtils.getFormattedBundleString(
+                "FMT_ERR_LayoutInit", // NOI18N
                 new Object[] { layoutClass.getName() });
 
             ErrorManager em = ErrorManager.getDefault();
@@ -883,7 +881,7 @@ public class MetaComponentCreator {
             return prop;
 
         TopManager.getDefault().notify(new NotifyDescriptor.Message(
-            FormEditor.getFormBundle().getString("MSG_BorderNotApplicable"), // NOI8N
+            FormUtils.getBundleString("MSG_BorderNotApplicable"), // NOI18N
             NotifyDescriptor.INFORMATION_MESSAGE));
 
         return null;
@@ -995,8 +993,7 @@ public class MetaComponentCreator {
     private static void showInstErrorMessage(Throwable ex) {
         ErrorManager em = ErrorManager.getDefault();
         em.annotate(ex,
-                    FormEditor.getFormBundle().getString(
-                              "MSG_ERR_CannotInstantiate")); // NOI18N
+                    FormUtils.getBundleString("MSG_ERR_CannotInstantiate")); // NOI18N
         em.notify(ex);
     }
 
@@ -1112,18 +1109,14 @@ public class MetaComponentCreator {
             if ("".equals(((JMenuItem)comp).getText())) { // NOI18N
                 String value = "{0}"; // NOI18N
                 propName = "text"; // NOI18N
-                if (comp instanceof JCheckBoxMenuItem) {
-                    value = FormEditor.getFormBundle().getString("FMT_LAB_JCheckBoxMenuItem");
-                }
-                else if (comp instanceof JMenu) {
-                    value = FormEditor.getFormBundle().getString("FMT_LAB_JMenu");
-                }
-                else if (comp instanceof JRadioButtonMenuItem) {
-                    value = FormEditor.getFormBundle().getString("FMT_LAB_JRadioButtonMenuItem");
-                }
-                else {
-                    value = FormEditor.getFormBundle().getString("FMT_LAB_JMenuItem");
-                }
+                if (comp instanceof JCheckBoxMenuItem)
+                    value = FormUtils.getBundleString("FMT_LAB_JCheckBoxMenuItem"); // NOI18N
+                else if (comp instanceof JMenu)
+                    value = FormUtils.getBundleString("FMT_LAB_JMenu"); // NOI18N
+                else if (comp instanceof JRadioButtonMenuItem)
+                    value = FormUtils.getBundleString("FMT_LAB_JRadioButtonMenuItem"); // NOI18N
+                else
+                    value = FormUtils.getBundleString("FMT_LAB_JMenuItem"); // NOI18N
 
                 propValue = MessageFormat.format(value, new Object[] { varName });
             }
@@ -1132,18 +1125,14 @@ public class MetaComponentCreator {
             if ("".equals(((MenuItem)comp).getLabel())) { // NOI18N
                 String value = "{0}"; // NOI18N
                 propName = "label"; // NOI18N
-                if (comp instanceof PopupMenu) {
-                    value = FormEditor.getFormBundle().getString("FMT_LAB_PopupMenu");
-                }
-                else if (comp instanceof Menu) {
-                    value = FormEditor.getFormBundle().getString("FMT_LAB_Menu");
-                }
-                else if (comp instanceof CheckboxMenuItem) {
-                    value = FormEditor.getFormBundle().getString("FMT_LAB_CheckboxMenuItem");
-                }
-                else {
-                    value = FormEditor.getFormBundle().getString("FMT_LAB_MenuItem");
-                }
+                if (comp instanceof PopupMenu)
+                    value = FormUtils.getBundleString("FMT_LAB_PopupMenu"); // NOI18N
+                else if (comp instanceof Menu)
+                    value = FormUtils.getBundleString("FMT_LAB_Menu"); // NOI18N
+                else if (comp instanceof CheckboxMenuItem)
+                    value = FormUtils.getBundleString("FMT_LAB_CheckboxMenuItem"); // NOI18N
+                else
+                    value = FormUtils.getBundleString("FMT_LAB_MenuItem"); // NOI18N
 
                 propValue = MessageFormat.format(value, new Object[] { varName });
             }

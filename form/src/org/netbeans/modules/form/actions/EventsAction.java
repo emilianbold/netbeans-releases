@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form.actions;
 
 import java.awt.*;
@@ -47,10 +46,6 @@ import org.netbeans.modules.form.RADComponentCookie;
  */
 
 public class EventsAction extends CookieAction {
-    /** generated Serialized Version UID */
-    static final long serialVersionUID = 4498451658201207121L;
-
-    private static ResourceBundle bundle = NbBundle.getBundle(EventsAction.class);
     
     /**
      * @return the mode of action. Possible values are disjunctions of MODE_XXX
@@ -74,7 +69,7 @@ public class EventsAction extends CookieAction {
      * @return the name of the action
      */
     public String getName() {
-        return bundle.getString("ACT_Events");
+        return NbBundle.getBundle(EventsAction.class).getString("ACT_Events"); // NOI18N
     }
 
     /**
@@ -116,7 +111,8 @@ public class EventsAction extends CookieAction {
      * @return the JMenuItem representation for the Action
      */
     public JMenuItem getPopupPresenter() {
-        JMenu popupMenu = new JMenuPlus(bundle.getString("ACT_Events"));
+        JMenu popupMenu = new JMenuPlus(
+            NbBundle.getBundle(EventsAction.class).getString("ACT_Events")); // NOI18N
         
         popupMenu.setEnabled(isEnabled());
         HelpCtx.setHelpIDString(popupMenu, EventsAction.class.getName());
@@ -156,6 +152,7 @@ public class EventsAction extends CookieAction {
         boolean readOnly = metacomp.isReadOnly();
         ComponentEventHandlers em = metacomp.getEventHandlers();
         EventSet[] handlerSets = em.getEventSets();
+        ResourceBundle bundle = NbBundle.getBundle(EventsAction.class);
 
         for (int i = 0; i < handlerSets.length; i++) {
             JMenu m = null;            
@@ -170,7 +167,7 @@ public class EventsAction extends CookieAction {
                     if (!readOnly)
                         jmi = new EventMenuItem(
                             MessageFormat.format(
-                                bundle.getString("FMT_CTL_EventNoHandlers"),
+                                bundle.getString("FMT_CTL_EventNoHandlers"), // NOI18N
                                 new Object[] { events[j].getName() }),
                             events[j],
                             null);
@@ -178,7 +175,7 @@ public class EventsAction extends CookieAction {
                 else if (handlersCount == 1) {
                     jmi = new EventMenuItem(
                         MessageFormat.format(
-                            bundle.getString("FMT_CTL_EventOneHandler"),
+                            bundle.getString("FMT_CTL_EventOneHandler"), // NOI18N
                             new Object[] { events[j].getName(),
                                            ((EventHandler) events[j].getHandlers().get(0)).getName() }),
                         events[j],
@@ -186,7 +183,7 @@ public class EventsAction extends CookieAction {
                 }
                 else if (handlersCount > 1) {
                     jmi = new JMenuPlus(MessageFormat.format(
-                        bundle.getString("FMT_CTL_EventMultipleHandlers"),
+                        bundle.getString("FMT_CTL_EventMultipleHandlers"), // NOI18N
                         new Object[] { events[j].getName() }));
 
                     Iterator iter = events[j].getHandlers().iterator();
@@ -195,7 +192,7 @@ public class EventsAction extends CookieAction {
                         
                         JMenuItem handlerItem = new EventMenuItem(
                             MessageFormat.format(
-                                bundle.getString("FMT_CTL_HandlerFromMultiple"),
+                                bundle.getString("FMT_CTL_HandlerFromMultiple"), // NOI18N
                                 new Object[] { handler.getName() }),
                             events[j],
                             handler.getName());

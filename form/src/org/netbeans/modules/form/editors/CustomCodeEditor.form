@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
-  <SyntheticProperties>
-  </SyntheticProperties>
-
   <Events>
     <EventHandler event="componentShown" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="formComponentShown"/>
     <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="formFocusGained"/>
@@ -14,22 +11,21 @@
     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints anchor="18" fill="1" gridHeight="0" gridWidth="0" gridX="0" gridY="1" insetsBottom="0" insetsLeft="12" insetsRight="11" insetsTop="5" ipadX="0" ipadY="0" weightX="1.0" weightY="1.0"/>
+          <GridBagConstraints gridX="0" gridY="1" gridWidth="0" gridHeight="0" fill="1" ipadX="0" ipadY="0" insetsTop="5" insetsLeft="12" insetsBottom="0" insetsRight="11" anchor="18" weightX="1.0" weightY="1.0"/>
         </Constraint>
       </Constraints>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JEditorPane" name="codeEditorPane">
-
           <Events>
             <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="codeEditorPaneFocusGained"/>
             <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="codeEditorPaneFocusLost"/>
           </Events>
-
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value=""/>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="codeEditorPane.setContentType(&quot;text/x-java&quot;);  // NOI18N&#xa;try {&#xa;     codeEditorPane.setText((String) property.getValue()); &#xa;    }&#xa;catch (java.lang.reflect.InvocationTargetException e1){&#xa;            e1.printStackTrace();&#xa;    }&#xa;catch (IllegalAccessException e2) {&#xa;            e2.printStackTrace();&#xa;        }"/>
+            <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value=""/>
+            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value=""/>
             <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value=""/>
           </AuxValues>
         </Component>
@@ -39,13 +35,12 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="jLabel1"/>
       </Properties>
-
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value=""/>
       </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints anchor="18" fill="0" gridHeight="1" gridWidth="0" gridX="0" gridY="0" insetsBottom="0" insetsLeft="12" insetsRight="11" insetsTop="12" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+          <GridBagConstraints gridX="0" gridY="0" gridWidth="0" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="12" insetsLeft="12" insetsBottom="0" insetsRight="11" anchor="18" weightX="0.0" weightY="0.0"/>
         </Constraint>
       </Constraints>
     </Component>

@@ -91,8 +91,11 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         "org/netbeans/modules/form/resources/emptyInspector"; // NOI18N
 
     /** The icon for ComponentInspector */
-    private static String iconURL =
+    private static final String iconURL =
         "org/netbeans/modules/form/resources/inspector.gif"; // NOI18N
+
+    /** The name "Component Inspector" */
+    private static String INSPECTOR_TITLE;
 
     static final long serialVersionUID =4248268998485315927L;
 
@@ -117,7 +120,9 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         createSplit();
 
         setIcon(Utilities.loadImage(iconURL));
-        setName(FormUtils.getBundleString("CTL_InspectorTitle")); // NOI18N
+        if (INSPECTOR_TITLE == null)
+            INSPECTOR_TITLE = FormUtils.getBundleString("CTL_InspectorTitle"); // NOI18N
+        setName(INSPECTOR_TITLE);
 
         // force window system to not show tab when this comp is alone
         putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
@@ -259,7 +264,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
                 dontSynchronizeSelectedNodes = false;
             }
         }
-        updateTitle();
+        setName(INSPECTOR_TITLE);
 
         if (visibility > 0) {
             open();
@@ -271,8 +276,9 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         }
     }
 
+    // from ExplorerPanel
     protected void updateTitle() {
-        setName(FormUtils.getBundleString("CTL_InspectorTitle")); // NOI18N
+        setName(INSPECTOR_TITLE);
     }
 
     FormEditorSupport getFocusedForm() {

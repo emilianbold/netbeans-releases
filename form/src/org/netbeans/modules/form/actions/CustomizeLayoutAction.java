@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form.actions;
 
 import org.openide.util.HelpCtx;
@@ -23,10 +22,10 @@ import org.netbeans.modules.form.*;
  *
  * @author   Ian Formanek
  */
+
 public class CustomizeLayoutAction extends CookieAction {
-    static final long serialVersionUID =-9123795816864877128L;
-    /** generated Serialized Version UID */
-    //  static final long serialVersionUID = -5280204757097896304L;
+
+    private static String name;
 
     /** @return the mode of action. Possible values are disjunctions of MODE_XXX
      * constants. */
@@ -47,7 +46,10 @@ public class CustomizeLayoutAction extends CookieAction {
      * @return the name of the action
      */
     public String getName() {
-        return org.openide.util.NbBundle.getBundle(CustomizeLayoutAction.class).getString("ACT_CustomizeLayout");
+        if (name == null)
+            name = org.openide.util.NbBundle.getBundle(CustomizeLayoutAction.class)
+                     .getString("ACT_CustomizeLayout"); // NOI18N
+        return name;
     }
 
     /** Help context where to find more about the action.
@@ -101,5 +103,4 @@ public class CustomizeLayoutAction extends CookieAction {
         }
         return false;
     }
-
 }

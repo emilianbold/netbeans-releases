@@ -39,10 +39,10 @@ public class RADComponentNode extends FormNode
 {
    private final static MessageFormat nodeNameFormat =
         new MessageFormat(
-            FormEditor.getFormBundle().getString("FMT_ComponentNodeName")); // NOI18N
+            FormUtils.getBundleString("FMT_ComponentNodeName")); // NOI18N
     private final static MessageFormat nodeNoNameFormat =
         new MessageFormat(
-            FormEditor.getFormBundle().getString("FMT_UnnamedComponentNodeName")); // NOI18N
+            FormUtils.getBundleString("FMT_UnnamedComponentNodeName")); // NOI18N
 
     private RADComponent component;
     private RADComponentInstance radComponentInstance;

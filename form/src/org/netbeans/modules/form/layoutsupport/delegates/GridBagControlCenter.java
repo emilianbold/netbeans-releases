@@ -18,7 +18,6 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**

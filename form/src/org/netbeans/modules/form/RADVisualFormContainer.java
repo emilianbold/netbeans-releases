@@ -54,7 +54,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
      * @return current value of the Name property
      */
     public String getName() {
-        return FormEditor.getFormBundle().getString("CTL_FormTopContainerName"); // NOI18N
+        return FormUtils.getBundleString("CTL_FormTopContainerName"); // NOI18N
     }
 
     /**
@@ -168,11 +168,13 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     // End of form synthetic properties
 
     protected Node.Property[] createSyntheticProperties() {
+        java.util.ResourceBundle bundle = FormUtils.getBundle();
+
         Node.Property policyProperty = new PropertySupport.ReadWrite(
             PROP_FORM_SIZE_POLICY,
             Integer.TYPE,
-            FormEditor.getFormBundle().getString("MSG_FormSizePolicy"), // NOI18N
-            FormEditor.getFormBundle().getString("HINT_FormSizePolicy")) // NOI18N
+            bundle.getString("MSG_FormSizePolicy"), // NOI18N
+            bundle.getString("HINT_FormSizePolicy")) // NOI18N
         {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
@@ -201,8 +203,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         Node.Property sizeProperty = new PropertySupport.ReadWrite(
             PROP_FORM_SIZE,
             Dimension.class,
-            FormEditor.getFormBundle().getString("MSG_FormSize"), // NOI18N
-            FormEditor.getFormBundle().getString("HINT_FormSize")) // NOI18N
+            bundle.getString("MSG_FormSize"), // NOI18N
+            bundle.getString("HINT_FormSize")) // NOI18N
         {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
@@ -225,8 +227,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         Node.Property positionProperty = new PropertySupport.ReadWrite(
             PROP_FORM_POSITION,
             Point.class,
-            FormEditor.getFormBundle().getString("MSG_FormPosition"), // NOI18N
-            FormEditor.getFormBundle().getString("HINT_FormPosition")) // NOI18N
+            bundle.getString("MSG_FormPosition"), // NOI18N
+            bundle.getString("HINT_FormPosition")) // NOI18N
         {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
@@ -250,8 +252,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         Node.Property genPositionProperty = new PropertySupport.ReadWrite(
             PROP_GENERATE_POSITION,
             Boolean.TYPE,
-            FormEditor.getFormBundle().getString("MSG_GeneratePosition"), // NOI18N
-            FormEditor.getFormBundle().getString("HINT_GeneratePosition")) // NOI18N
+            bundle.getString("MSG_GeneratePosition"), // NOI18N
+            bundle.getString("HINT_GeneratePosition")) // NOI18N
         {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
@@ -276,8 +278,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         Node.Property genSizeProperty = new PropertySupport.ReadWrite(
             PROP_GENERATE_SIZE,
             Boolean.TYPE,
-            FormEditor.getFormBundle().getString("MSG_GenerateSize"), // NOI18N
-            FormEditor.getFormBundle().getString("HINT_GenerateSize")) // NOI18N
+            bundle.getString("MSG_GenerateSize"), // NOI18N
+            bundle.getString("HINT_GenerateSize")) // NOI18N
         {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
@@ -300,8 +302,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         Node.Property genCenterProperty = new PropertySupport.ReadWrite(
             PROP_GENERATE_CENTER,
             Boolean.TYPE,
-            FormEditor.getFormBundle().getString("MSG_GenerateCenter"), // NOI18N
-            FormEditor.getFormBundle().getString("HINT_GenerateCenter")) // NOI18N
+            bundle.getString("MSG_GenerateCenter"), // NOI18N
+            bundle.getString("HINT_GenerateCenter")) // NOI18N
         {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
@@ -324,8 +326,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         Node.Property designerSizeProperty = new PropertySupport.ReadOnly(
             FormDesigner.PROP_DESIGNER_SIZE,
             Dimension.class,
-            FormEditor.getFormBundle().getString("MSG_DesignerSize"), // NOI18N
-            FormEditor.getFormBundle().getString("HINT_DesignerSize")) // NOI18N
+            bundle.getString("MSG_DesignerSize"), // NOI18N
+            bundle.getString("HINT_DesignerSize")) // NOI18N
         {
             public Object getValue()
                 throws IllegalAccessException, IllegalArgumentException,
@@ -370,9 +372,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     final public static class SizePolicyEditor extends java.beans.PropertyEditorSupport {
         /** Display Names for alignment. */
         private static final String[] names = {
-            FormEditor.getFormBundle().getString("VALUE_sizepolicy_full"),
-            FormEditor.getFormBundle().getString("VALUE_sizepolicy_pack"),
-            FormEditor.getFormBundle().getString("VALUE_sizepolicy_none"),
+            FormUtils.getBundleString("VALUE_sizepolicy_full"),
+            FormUtils.getBundleString("VALUE_sizepolicy_pack"),
+            FormUtils.getBundleString("VALUE_sizepolicy_none"),
         };
 
         /** @return names of the possible directions */

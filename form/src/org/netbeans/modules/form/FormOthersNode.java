@@ -37,7 +37,7 @@ class FormOthersNode extends FormNode {
         getCookieSet().add(new OthersIndex((OthersChildren)getChildren()));
         setIconBase("org/netbeans/modules/form/resources/formNonVisual"); // NOI18N
         setName("Others Node"); // NOI18N
-        setName(FormEditor.getFormBundle().getString("CTL_NonVisualComponents")); // NOI18N
+        setName(FormUtils.getBundleString("CTL_NonVisualComponents")); // NOI18N
     }
 
     protected SystemAction[] createActions() {

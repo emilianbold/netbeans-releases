@@ -29,6 +29,8 @@ import org.openide.util.Utilities;
 
 public class EventProperty extends PropertySupport.ReadWrite {
 
+    private static String NO_EVENT;
+
     /** Event object holding info about one component's event and
      * event handlers attached to it.
      */
@@ -150,7 +152,11 @@ public class EventProperty extends PropertySupport.ReadWrite {
             for (Iterator iter = change.getAdded().iterator(); iter.hasNext();) {
                 String handlerName = (String) iter.next();
                 if (!Utilities.isJavaIdentifier(handlerName)) { // invalid name
-                    TopManager.getDefault().notify(new NotifyDescriptor.Message(java.text.MessageFormat.format(FormEditor.getFormBundle().getString("FMT_MSG_InvalidJavaIdentifier"), new Object [] {handlerName}), NotifyDescriptor.ERROR_MESSAGE));
+                    TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                        FormUtils.getFormattedBundleString(
+                            "FMT_MSG_InvalidJavaIdentifier", // NOI18N
+                            new Object [] {handlerName} ),
+                        NotifyDescriptor.ERROR_MESSAGE));
                     continue;
                 }
 
@@ -229,10 +235,12 @@ public class EventProperty extends PropertySupport.ReadWrite {
         }
 
         public String getAsText() {
-            if (this.getValue() == null)
-                return FormEditor.getFormBundle().getString("CTL_NoEvent");
-            else
-                return this.getValue().toString();
+            if (this.getValue() == null) {
+                if (NO_EVENT == null)
+                    NO_EVENT = FormUtils.getBundleString("CTL_NoEvent"); // NOI18N
+                return NO_EVENT;
+            }
+            else return this.getValue().toString();
         }
 
         public void setAsText(String selected) {
@@ -368,16 +376,18 @@ public class EventProperty extends PropertySupport.ReadWrite {
                 return null;
 
             final EventCustomEditor ed = new EventCustomEditor(EventProperty.this);
-            DialogDescriptor dd = new DialogDescriptor(ed,
-                    java.text.MessageFormat.format(FormEditor.getFormBundle().getString("FMT_MSG_HandlersFor"), new Object [] {event.getName()}),
-                    true,
-                    new java.awt.event.ActionListener() {
-                        public void actionPerformed(java.awt.event.ActionEvent evt) {
-                            if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                                ed.doChanges();
-                            }
+            DialogDescriptor dd = new DialogDescriptor(
+                ed,
+                FormUtils.getFormattedBundleString("FMT_MSG_HandlersFor", // NOI18N
+                                                   new Object [] {event.getName()}),
+                true,
+                new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
+                            ed.doChanges();
                         }
-                    });
+                    }
+                });
 
             return TopManager.getDefault().createDialog(dd);
         }

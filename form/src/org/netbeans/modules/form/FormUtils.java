@@ -22,9 +22,7 @@ import java.lang.reflect.Method;
 import javax.swing.JComponent;
 import java.text.MessageFormat;
 
-import org.openide.util.Utilities;
-import org.openide.util.SharedClassObject;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.TopManager;
@@ -38,9 +36,6 @@ import org.netbeans.modules.form.editors2.BorderDesignSupport;
 
 public class FormUtils
 {
-    // Static variables
-    private static ResourceBundle formBundle;
-
     // constants for CopyProperties method
     public static final int CHANGED_ONLY = 1;
     public static final int DISABLE_CHANGE_FIRING = 2;
@@ -245,20 +240,19 @@ public class FormUtils
     // -----------------------------------------------------------------------------
     // Utility methods
 
-    public static String getBundleString(String key) {
-        if (formBundle == null)
-            formBundle = NbBundle.getBundle(FormUtils.class);
+    public static ResourceBundle getBundle() {
+        return NbBundle.getBundle(FormUtils.class);
+    }
 
-        return formBundle.getString(key);
+    public static String getBundleString(String key) {
+        return NbBundle.getBundle(FormUtils.class).getString(key);
     }
 
     public static String getFormattedBundleString(String key,
                                                   Object[] arguments)
     {
-        if (formBundle == null)
-            formBundle = NbBundle.getBundle(FormUtils.class);
-
-        return MessageFormat.format(formBundle.getString(key), arguments);
+        ResourceBundle bundle = NbBundle.getBundle(FormUtils.class);
+        return MessageFormat.format(bundle.getString(key), arguments);
     }
 
     /** Utility method that tries to clone an object. Objects of explicitly

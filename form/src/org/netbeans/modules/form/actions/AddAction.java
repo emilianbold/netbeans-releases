@@ -16,7 +16,6 @@ package org.netbeans.modules.form.actions;
 import javax.swing.*;
 
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
 import org.openide.cookies.InstanceCookie;
@@ -30,8 +29,14 @@ import org.netbeans.modules.form.*;
 
 public class AddAction extends NodeAction {
 
+    private static String name;
+    private static String menuText;
+
     public String getName() {
-        return NbBundle.getBundle(AddAction.class).getString("ACT_Add"); // NOI18N
+        if (name == null)
+            name = org.openide.util.NbBundle.getBundle(AddAction.class)
+                     .getString("ACT_Add"); // NOI18N
+        return name;
     }
 
     public HelpCtx getHelpCtx() {
@@ -113,7 +118,10 @@ public class AddAction extends NodeAction {
             }
         );
 
-        menu.setText(NbBundle.getBundle(AddAction.class).getString("ACT_Add")); // NOI18N
+        if (menuText == null)
+            menuText = org.openide.util.NbBundle.getBundle(AddAction.class)
+                         .getString("ACT_Add"); // NOI18N
+        menu.setText(menuText);
         menu.setIcon(null);
 
         return menu;

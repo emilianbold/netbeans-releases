@@ -177,7 +177,7 @@ public class RADConnectionPropertyEditor
 
     /** @return display name of the property editor */
     public String getDisplayName() {
-        return FormEditor.getFormBundle().getString("CTL_RADConn_DisplayName");
+        return FormUtils.getBundleString("CTL_RADConn_DisplayName"); // NOI18N
     }
 
     // ------------------------------------------
@@ -194,13 +194,12 @@ public class RADConnectionPropertyEditor
                 str = realValue.toString();
             else
                 str = realValue.getClass().isArray() ?
-                        "[" + FormEditor.getFormBundle().getString("CTL_ArrayOf") + " " 
-                            + realValue.getClass().getComponentType().getName() + "]"
+                        "[" + FormUtils.getBundleString("CTL_ArrayOf") + " "  // NOI18N
+                            + realValue.getClass().getComponentType().getName() + "]" // NOI18N
                         :
                         "["+org.openide.util.Utilities.getShortClassName(realValue.getClass())+"]";
         }
-        else
-            str = "null"; //FormEditor.getFormBundle().getString("CTL_CONNECTION_NOT_SET"); // NOI18N
+        else str = "null"; // NOI18N
 
         return str;
     }
@@ -295,22 +294,29 @@ public class RADConnectionPropertyEditor
                 initialize();
 
             if (type == TYPE_VALUE)
-                return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_VALUE_CONN"), new Object[] { value });
+                return FormUtils.getFormattedBundleString("FMT_VALUE_CONN", // NOI18N
+                                                          new Object[] { value });
             else if (type == TYPE_CODE)
-                return FormEditor.getFormBundle().getString("CTL_CODE_CONN");
+                return FormUtils.getBundleString("CTL_CODE_CONN"); // NOI18N
             else {
                 if (radComponent == null || radComponent.getCodeExpression() == null)
-                    return FormEditor.getFormBundle().getString("CTL_CONNECTION_INVALID"); // NOI18N
+                    return FormUtils.getBundleString("CTL_CONNECTION_INVALID"); // NOI18N
 
                 if (radComponent == null)
                     return null;
 
                 if (type == TYPE_PROPERTY)
-                    return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_PROPERTY_CONN"), new Object[] { radComponent.getName(), propertyName });
+                    return FormUtils.getFormattedBundleString(
+                        "FMT_PROPERTY_CONN", // NOI18N
+                        new Object[] { radComponent.getName(), propertyName });
                 else if (type == TYPE_METHOD)
-                    return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_METHOD_CONN"), new Object[] { radComponent.getName(), methodName });
+                    return FormUtils.getFormattedBundleString(
+                        "FMT_METHOD_CONN", // NOI18N
+                        new Object[] { radComponent.getName(), methodName });
                 else if (type == TYPE_BEAN)
-                     return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_BEAN_CONN"), new Object[] { radComponent.getName() });
+                     return FormUtils.getFormattedBundleString(
+                         "FMT_BEAN_CONN", // NOI18N
+                         new Object[] { radComponent.getName() });
             }
 
             throw new IllegalStateException();

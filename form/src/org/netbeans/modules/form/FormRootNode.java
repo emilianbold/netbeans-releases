@@ -58,9 +58,8 @@ class FormRootNode extends FormNode {
     }
 
     void updateName(String name) {
-        setDisplayName(MessageFormat.format(
-                FormEditor.getFormBundle().getString("FMT_FormNodeName"), // NOI18N
-                new Object[] { name }));
+        setDisplayName(FormUtils.getFormattedBundleString("FMT_FormNodeName", // NOI18N
+                                                          new Object[] { name }));
     }
 
     FormOthersNode getOthersNode() {
