@@ -21,12 +21,13 @@ import org.openide.cookies.*;
 import org.netbeans.modules.java.*;
 
 import junit.framework.*;
+import org.netbeans.junit.*;
 
 import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
-public class TestCreatorTest extends TestCase {
+public class TestCreatorTest extends NbTestCase {
 
     public TestCreatorTest(java.lang.String testName) {
         super(testName);
@@ -91,62 +92,62 @@ public class TestCreatorTest extends TestCase {
         setGenerateFlags(js, false);
         
         new File(appendSlash(fsData.getRootDirectory().getPath()) + "trg/TestPublic.java").delete();
-        js.setMembersPublic(true); assert(true == js.isMembersPublic());
+        js.setMembersPublic(true); assertTrue(true == js.isMembersPublic());
         TestCreator.initialize();
         doTrgEntry = doTempl.createFromTemplate(doTrg, "TestPublic");
         ceTrg = getClassElementFromDO(doTrgEntry);
         TestCreator.createTestClass(ceSrc, ceTrg);
         ((SaveCookie) doTrgEntry.getCookie(SaveCookie.class)).save();
-        js.setMembersPublic(false); assert(false == js.isMembersPublic());
+        js.setMembersPublic(false); assertTrue(false == js.isMembersPublic());
         assertFile(getFile(doTrgEntry.getPrimaryFile()), new File(getFile(foPass), "TestPublic.java"), new File(System.getProperty("xresults")));
 
         new File(appendSlash(fsData.getRootDirectory().getPath()) + "trg/TestProtected.java").delete();
-        js.setMembersProtected(true); assert(true == js.isMembersProtected());
+        js.setMembersProtected(true); assertTrue(true == js.isMembersProtected());
         TestCreator.initialize();
         doTrgEntry = doTempl.createFromTemplate(doTrg, "TestProtected");
         ceTrg = getClassElementFromDO(doTrgEntry);
         TestCreator.createTestClass(ceSrc, ceTrg);
         ((SaveCookie) doTrgEntry.getCookie(SaveCookie.class)).save();
-        js.setMembersProtected(false); assert(false == js.isMembersProtected());
+        js.setMembersProtected(false); assertTrue(false == js.isMembersProtected());
         assertFile(getFile(doTrgEntry.getPrimaryFile()), new File(getFile(foPass), "TestProtected.java"), new File(System.getProperty("xresults")));
         
         new File(appendSlash(fsData.getRootDirectory().getPath()) + "trg/TestPackage.java").delete();
-        js.setMembersPackage(true); assert(true == js.isMembersPackage());
+        js.setMembersPackage(true); assertTrue(true == js.isMembersPackage());
         TestCreator.initialize();
         doTrgEntry = doTempl.createFromTemplate(doTrg, "TestPackage");
         ceTrg = getClassElementFromDO(doTrgEntry);
         TestCreator.createTestClass(ceSrc, ceTrg);
         ((SaveCookie) doTrgEntry.getCookie(SaveCookie.class)).save();
-        js.setMembersPackage(false); assert(false == js.isMembersPackage());
+        js.setMembersPackage(false); assertTrue(false == js.isMembersPackage());
         assertFile(getFile(doTrgEntry.getPrimaryFile()), new File(getFile(foPass), "TestPackage.java"), new File(System.getProperty("xresults")));
         
         new File(appendSlash(fsData.getRootDirectory().getPath()) + "trg/TestBodyComments.java").delete();
-        js.setMembersPublic(true); assert(true == js.isMembersPublic());
+        js.setMembersPublic(true); assertTrue(true == js.isMembersPublic());
         TestCreator.initialize();
-        js.setBodyComments(true); assert(true == js.isBodyComments());
+        js.setBodyComments(true); assertTrue(true == js.isBodyComments());
         doTrgEntry = doTempl.createFromTemplate(doTrg, "TestBodyComments");
         ceTrg = getClassElementFromDO(doTrgEntry);
         TestCreator.createTestClass(ceSrc, ceTrg);
         ((SaveCookie) doTrgEntry.getCookie(SaveCookie.class)).save();
-        js.setBodyComments(false); assert(false == js.isBodyComments());
+        js.setBodyComments(false); assertTrue(false == js.isBodyComments());
         assertFile(getFile(doTrgEntry.getPrimaryFile()), new File(getFile(foPass), "TestBodyComments.java"), new File(System.getProperty("xresults")));
 
         new File(appendSlash(fsData.getRootDirectory().getPath()) + "trg/TestBodyContent.java").delete();
-        js.setBodyContent(true); assert(true == js.isBodyContent());
+        js.setBodyContent(true); assertTrue(true == js.isBodyContent());
         doTrgEntry = doTempl.createFromTemplate(doTrg, "TestBodyContent");
         ceTrg = getClassElementFromDO(doTrgEntry);
         TestCreator.createTestClass(ceSrc, ceTrg);
         ((SaveCookie) doTrgEntry.getCookie(SaveCookie.class)).save();
-        js.setBodyContent(false); assert(false == js.isBodyContent());
+        js.setBodyContent(false); assertTrue(false == js.isBodyContent());
         assertFile(getFile(doTrgEntry.getPrimaryFile()), new File(getFile(foPass), "TestBodyContent.java"), new File(System.getProperty("xresults")));
 
         new File(appendSlash(fsData.getRootDirectory().getPath()) + "trg/TestJavaDoc.java").delete();
-        js.setJavaDoc(true); assert(true == js.isJavaDoc());
+        js.setJavaDoc(true); assertTrue(true == js.isJavaDoc());
         doTrgEntry = doTempl.createFromTemplate(doTrg, "TestJavaDoc");
         ceTrg = getClassElementFromDO(doTrgEntry);
         TestCreator.createTestClass(ceSrc, ceTrg);
         ((SaveCookie) doTrgEntry.getCookie(SaveCookie.class)).save();
-        js.setJavaDoc(false); assert(false == js.isJavaDoc());
+        js.setJavaDoc(false); assertTrue(false == js.isJavaDoc());
         assertFile(getFile(doTrgEntry.getPrimaryFile()), new File(getFile(foPass), "TestJavaDoc.java"), new File(System.getProperty("xresults")));
     }
     
@@ -201,33 +202,33 @@ public class TestCreatorTest extends TestCase {
         foClass = fsData.findResource("SimpleClass.java");
         doClass = new JavaDataObject(foClass, jdl);
         clazz = getClassElementFromDO(doClass);
-        assert(true == TestCreator.isClassTestable(clazz));
+        assertTrue(true == TestCreator.isClassTestable(clazz));
 
         foClass = fsData.findResource("NonPublicClass.java");
         doClass = new JavaDataObject(foClass, jdl);
         clazz = getClassElementFromDO(doClass);
-        assert(false == TestCreator.isClassTestable(clazz));
+        assertTrue(false == TestCreator.isClassTestable(clazz));
         
         foClass = fsData.findResource("AbstractClass.java");
         doClass = new JavaDataObject(foClass, jdl);
         clazz = getClassElementFromDO(doClass);
-        assert(true == TestCreator.isClassTestable(clazz));
+        assertTrue(true == TestCreator.isClassTestable(clazz));
         
         foClass = fsData.findResource("SimpleInterface.java");
         doClass = new JavaDataObject(foClass, jdl);
         clazz = getClassElementFromDO(doClass);
-        assert(false == TestCreator.isClassTestable(clazz));
+        assertTrue(false == TestCreator.isClassTestable(clazz));
 
         js.setGenerateExceptionClasses(false);
-        assert(false == js.isGenerateExceptionClasses());
+        assertTrue(false == js.isGenerateExceptionClasses());
         foClass = fsData.findResource("ExceptionClass.java");
         doClass = new JavaDataObject(foClass, jdl);
         clazz = getClassElementFromDO(doClass);
-        assert(false == TestCreator.isClassTestable(clazz));
+        assertTrue(false == TestCreator.isClassTestable(clazz));
         
         js.setGenerateExceptionClasses(true);
-        assert(true == js.isGenerateExceptionClasses());
-        assert(true == TestCreator.isClassTestable(clazz));
+        assertTrue(true == js.isGenerateExceptionClasses());
+        assertTrue(true == TestCreator.isClassTestable(clazz));
     }
 
     // protected members
@@ -297,11 +298,11 @@ public class TestCreatorTest extends TestCase {
     }
     
     private void setGenerateFlags(JUnitSettings js, boolean flag) {
-        js.setMembersPublic(flag); assert(flag == js.isMembersPublic());
-        js.setMembersProtected(flag); assert(flag == js.isMembersProtected());
-        js.setMembersPackage(flag); assert(flag == js.isMembersPackage());
-        js.setBodyComments(flag); assert(flag == js.isBodyComments());
-        js.setBodyContent(flag); assert(flag == js.isBodyContent());
-        js.setJavaDoc(flag); assert(flag == js.isJavaDoc());
+        js.setMembersPublic(flag); assertTrue(flag == js.isMembersPublic());
+        js.setMembersProtected(flag); assertTrue(flag == js.isMembersProtected());
+        js.setMembersPackage(flag); assertTrue(flag == js.isMembersPackage());
+        js.setBodyComments(flag); assertTrue(flag == js.isBodyComments());
+        js.setBodyContent(flag); assertTrue(flag == js.isBodyContent());
+        js.setJavaDoc(flag); assertTrue(flag == js.isJavaDoc());
     }
 }

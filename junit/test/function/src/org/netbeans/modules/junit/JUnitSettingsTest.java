@@ -28,8 +28,9 @@ import org.openide.filesystems.FileSystem;
 import java.io.*;
 import java.util.Enumeration;
 import junit.framework.*;
+import org.netbeans.junit.*;
 
-public class JUnitSettingsTest extends TestCase {
+public class JUnitSettingsTest extends NbTestCase {
 
     public JUnitSettingsTest(java.lang.String testName) {
         super(testName);
@@ -91,19 +92,19 @@ public class JUnitSettingsTest extends TestCase {
         ois = new ObjectInputStream(fis);
         
         JUnitSettings.getDefault().readExternal(ois);
-        assert(def1.getFileSystem().equals(TST_FILE_SYSTEM_1));
-        assert(def1.getSuiteTemplate().equals(TST_SUITE_TEMPLATE_1));
-        assert(def1.getClassTemplate().equals(TST_CLASS_TEMPLATE_1));
-        assert(false == def1.isMembersPublic());
-        assert(def1.isMembersProtected());
-        assert(false == def1.isMembersPackage());
-        assert(def1.isBodyComments());
-        assert(false == def1.isBodyContent());
-        assert(def1.isJavaDoc());
-        assert(false == def1.isCfgCreateEnabled());
-        assert(def1.isCfgExecEnabled());
-        assert(JUnitSettings.EXECUTOR_DEBUGGER == def1.getExecutorType());
-        assert(false == def1.isGenerateExceptionClasses());
+        assertTrue(def1.getFileSystem().equals(TST_FILE_SYSTEM_1));
+        assertTrue(def1.getSuiteTemplate().equals(TST_SUITE_TEMPLATE_1));
+        assertTrue(def1.getClassTemplate().equals(TST_CLASS_TEMPLATE_1));
+        assertTrue(false == def1.isMembersPublic());
+        assertTrue(def1.isMembersProtected());
+        assertTrue(false == def1.isMembersPackage());
+        assertTrue(def1.isBodyComments());
+        assertTrue(false == def1.isBodyContent());
+        assertTrue(def1.isJavaDoc());
+        assertTrue(false == def1.isCfgCreateEnabled());
+        assertTrue(def1.isCfgExecEnabled());
+        assertTrue(JUnitSettings.EXECUTOR_DEBUGGER == def1.getExecutorType());
+        assertTrue(false == def1.isGenerateExceptionClasses());
         assertEquals(def1.getTestRunner(), TST_TEST_RUNNER_1);
         assertEquals(def1.getProperties(), TST_PROPERTIES_1);
 
@@ -137,19 +138,19 @@ public class JUnitSettingsTest extends TestCase {
         ois = new ObjectInputStream(fis);
 
         JUnitSettings.getDefault().readExternal(ois);
-        assert(def1.getFileSystem().equals(TST_FILE_SYSTEM_2));
-        assert(def1.getSuiteTemplate().equals(TST_SUITE_TEMPLATE_2));
-        assert(def1.getClassTemplate().equals(TST_CLASS_TEMPLATE_2));
-        assert(def1.isMembersPublic());
-        assert(false == def1.isMembersProtected());
-        assert(def1.isMembersPackage());
-        assert(false == def1.isBodyComments());
-        assert(def1.isBodyContent());
-        assert(false == def1.isJavaDoc());
-        assert(def1.isCfgCreateEnabled());
-        assert(false == def1.isCfgExecEnabled());
-        assert(JUnitSettings.EXECUTOR_INTERNAL == def1.getExecutorType());
-        assert(def1.isGenerateExceptionClasses());
+        assertTrue(def1.getFileSystem().equals(TST_FILE_SYSTEM_2));
+        assertTrue(def1.getSuiteTemplate().equals(TST_SUITE_TEMPLATE_2));
+        assertTrue(def1.getClassTemplate().equals(TST_CLASS_TEMPLATE_2));
+        assertTrue(def1.isMembersPublic());
+        assertTrue(false == def1.isMembersProtected());
+        assertTrue(def1.isMembersPackage());
+        assertTrue(false == def1.isBodyComments());
+        assertTrue(def1.isBodyContent());
+        assertTrue(false == def1.isJavaDoc());
+        assertTrue(def1.isCfgCreateEnabled());
+        assertTrue(false == def1.isCfgExecEnabled());
+        assertTrue(JUnitSettings.EXECUTOR_INTERNAL == def1.getExecutorType());
+        assertTrue(def1.isGenerateExceptionClasses());
         assertEquals(def1.getTestRunner(), TST_TEST_RUNNER_2);
         assertEquals(def1.getProperties(), TST_PROPERTIES_2);
         
@@ -160,7 +161,7 @@ public class JUnitSettingsTest extends TestCase {
     /** Test of displayName method, of class org.netbeans.modules.junit.JUnitSettings. */
     public void testDisplayName() {
         System.out.println("testDisplayName");
-        assert(null != JUnitSettings.getDefault().displayName());
+        assertTrue(null != JUnitSettings.getDefault().displayName());
     }
     
     /** Test of getHelpCtx method, of class org.netbeans.modules.junit.JUnitSettings. */
@@ -175,33 +176,33 @@ public class JUnitSettingsTest extends TestCase {
         JUnitSettings def1 = JUnitSettings.getDefault();
         JUnitSettings def2 = JUnitSettings.getDefault();
         
-        assert(null != def1);   // is it creatable
-        assert(def1 == def2);   // as a singelton class
+        assertTrue(null != def1);   // is it creatable
+        assertTrue(def1 == def2);   // as a singelton class
         
         def1.initialize();  // force default values to be set
         
         // test default values
-        assert(def1.getFileSystem().equals(""));
-        assert(def1.getSuiteTemplate().equals("Templates/JUnit/SimpleTest.java"));
-        assert(def1.getClassTemplate().equals("Templates/JUnit/SimpleTest.java"));
-        assert(def1.isMembersPublic());
-        assert(def1.isMembersProtected());
-        assert(def1.isMembersPackage());
-        assert(def1.isBodyComments());
-        assert(def1.isBodyContent());
-        assert(def1.isJavaDoc());
-        assert(def1.isCfgCreateEnabled());
-        assert(def1.isCfgExecEnabled());
-        assert(JUnitSettings.EXECUTOR_EXTERNAL == def1.getExecutorType());
+        assertTrue(def1.getFileSystem().equals(""));
+        assertTrue(def1.getSuiteTemplate().equals("Templates/JUnit/SimpleTest.java"));
+        assertTrue(def1.getClassTemplate().equals("Templates/JUnit/SimpleTest.java"));
+        assertTrue(def1.isMembersPublic());
+        assertTrue(def1.isMembersProtected());
+        assertTrue(def1.isMembersPackage());
+        assertTrue(def1.isBodyComments());
+        assertTrue(def1.isBodyContent());
+        assertTrue(def1.isJavaDoc());
+        assertTrue(def1.isCfgCreateEnabled());
+        assertTrue(def1.isCfgExecEnabled());
+        assertTrue(JUnitSettings.EXECUTOR_EXTERNAL == def1.getExecutorType());
     }
     
     /** Test of getFileSystem method, of class org.netbeans.modules.junit.JUnitSettings. */
     public void testGetFileSystem() {
         System.out.println("testGetFileSystem");
         JUnitSettings.getDefault().setFileSystem(TST_FILE_SYSTEM_1);
-        assert(JUnitSettings.getDefault().getFileSystem().equals(TST_FILE_SYSTEM_1));
+        assertTrue(JUnitSettings.getDefault().getFileSystem().equals(TST_FILE_SYSTEM_1));
         JUnitSettings.getDefault().setFileSystem(TST_FILE_SYSTEM_2);
-        assert(JUnitSettings.getDefault().getFileSystem().equals(TST_FILE_SYSTEM_2));
+        assertTrue(JUnitSettings.getDefault().getFileSystem().equals(TST_FILE_SYSTEM_2));
     }
 
     /** Test of setFileSystem method, of class org.netbeans.modules.junit.JUnitSettings. */
@@ -214,9 +215,9 @@ public class JUnitSettingsTest extends TestCase {
     public void testGetSuiteTemplate() {
         System.out.println("testGetSuiteTemplate");
         JUnitSettings.getDefault().setSuiteTemplate(TST_SUITE_TEMPLATE_1);
-        assert(JUnitSettings.getDefault().getSuiteTemplate().equals(TST_SUITE_TEMPLATE_1));
+        assertTrue(JUnitSettings.getDefault().getSuiteTemplate().equals(TST_SUITE_TEMPLATE_1));
         JUnitSettings.getDefault().setSuiteTemplate(TST_SUITE_TEMPLATE_2);
-        assert(JUnitSettings.getDefault().getSuiteTemplate().equals(TST_SUITE_TEMPLATE_2));
+        assertTrue(JUnitSettings.getDefault().getSuiteTemplate().equals(TST_SUITE_TEMPLATE_2));
     }
 
     /** Test of setSuiteTemplate method, of class org.netbeans.modules.junit.JUnitSettings. */
@@ -229,9 +230,9 @@ public class JUnitSettingsTest extends TestCase {
     public void testGetClassTemplate() {
         System.out.println("testGetClassTemplate");
         JUnitSettings.getDefault().setClassTemplate(TST_CLASS_TEMPLATE_1);
-        assert(JUnitSettings.getDefault().getClassTemplate().equals(TST_CLASS_TEMPLATE_1));
+        assertTrue(JUnitSettings.getDefault().getClassTemplate().equals(TST_CLASS_TEMPLATE_1));
         JUnitSettings.getDefault().setClassTemplate(TST_CLASS_TEMPLATE_2);
-        assert(JUnitSettings.getDefault().getClassTemplate().equals(TST_CLASS_TEMPLATE_2));
+        assertTrue(JUnitSettings.getDefault().getClassTemplate().equals(TST_CLASS_TEMPLATE_2));
     }
 
     /** Test of setClassTemplate method, of class org.netbeans.modules.junit.JUnitSettings. */
@@ -244,9 +245,9 @@ public class JUnitSettingsTest extends TestCase {
     public void testIsMembersPublic() {
         System.out.println("testIsMembersPublic");
         JUnitSettings.getDefault().setMembersPublic(true);
-        assert(JUnitSettings.getDefault().isMembersPublic());
+        assertTrue(JUnitSettings.getDefault().isMembersPublic());
         JUnitSettings.getDefault().setMembersPublic(false);
-        assert(false == JUnitSettings.getDefault().isMembersPublic());
+        assertTrue(false == JUnitSettings.getDefault().isMembersPublic());
     }
 
     /** Test of setMembersPublic method, of class org.netbeans.modules.junit.JUnitSettings. */
@@ -259,9 +260,9 @@ public class JUnitSettingsTest extends TestCase {
     public void testIsMembersProtected() {
         System.out.println("testIsMembersProtected");
         JUnitSettings.getDefault().setMembersProtected(true);
-        assert(JUnitSettings.getDefault().isMembersProtected());
+        assertTrue(JUnitSettings.getDefault().isMembersProtected());
         JUnitSettings.getDefault().setMembersProtected(false);
-        assert(false == JUnitSettings.getDefault().isMembersProtected());
+        assertTrue(false == JUnitSettings.getDefault().isMembersProtected());
     }
 
     /** Test of setMembersProtected method, of class org.netbeans.modules.junit.JUnitSettings. */
@@ -274,9 +275,9 @@ public class JUnitSettingsTest extends TestCase {
     public void testIsMembersPackage() {
         System.out.println("testIsMembersPackage");
         JUnitSettings.getDefault().setMembersPackage(true);
-        assert(JUnitSettings.getDefault().isMembersPackage());
+        assertTrue(JUnitSettings.getDefault().isMembersPackage());
         JUnitSettings.getDefault().setMembersPackage(false);
-        assert(false == JUnitSettings.getDefault().isMembersPackage());
+        assertTrue(false == JUnitSettings.getDefault().isMembersPackage());
     }
 
     /** Test of setMembersPackage method, of class org.netbeans.modules.junit.JUnitSettings. */
@@ -289,9 +290,9 @@ public class JUnitSettingsTest extends TestCase {
     public void testIsBodyComments() {
         System.out.println("testIsBodyComments");
         JUnitSettings.getDefault().setBodyComments(true);
-        assert(JUnitSettings.getDefault().isBodyComments());
+        assertTrue(JUnitSettings.getDefault().isBodyComments());
         JUnitSettings.getDefault().setBodyComments(false);
-        assert(false == JUnitSettings.getDefault().isBodyComments());
+        assertTrue(false == JUnitSettings.getDefault().isBodyComments());
     }
 
     /** Test of setBodyComments method, of class org.netbeans.modules.junit.JUnitSettings. */
@@ -304,9 +305,9 @@ public class JUnitSettingsTest extends TestCase {
     public void testIsBodyContent() {
         System.out.println("testIsBodyContent");
         JUnitSettings.getDefault().setBodyContent(true);
-        assert(JUnitSettings.getDefault().isBodyContent());
+        assertTrue(JUnitSettings.getDefault().isBodyContent());
         JUnitSettings.getDefault().setBodyContent(false);
-        assert(false == JUnitSettings.getDefault().isBodyContent());
+        assertTrue(false == JUnitSettings.getDefault().isBodyContent());
     }
     
     /** Test of setBodyContent method, of class org.netbeans.modules.junit.JUnitSettings. */
@@ -319,9 +320,9 @@ public class JUnitSettingsTest extends TestCase {
     public void testIsJavaDoc() {
         System.out.println("testIsJavaDoc");
         JUnitSettings.getDefault().setJavaDoc(true);
-        assert(JUnitSettings.getDefault().isJavaDoc());
+        assertTrue(JUnitSettings.getDefault().isJavaDoc());
         JUnitSettings.getDefault().setJavaDoc(false);
-        assert(false == JUnitSettings.getDefault().isJavaDoc());
+        assertTrue(false == JUnitSettings.getDefault().isJavaDoc());
     }
     
     /** Test of setJavaDoc method, of class org.netbeans.modules.junit.JUnitSettings. */
@@ -334,9 +335,9 @@ public class JUnitSettingsTest extends TestCase {
     public void testIsCfgCreateEnabled() {
         System.out.println("testIsCfgCreateEnabled");
         JUnitSettings.getDefault().setCfgCreateEnabled(true);
-        assert(JUnitSettings.getDefault().isCfgCreateEnabled());
+        assertTrue(JUnitSettings.getDefault().isCfgCreateEnabled());
         JUnitSettings.getDefault().setCfgCreateEnabled(false);
-        assert(false == JUnitSettings.getDefault().isCfgCreateEnabled());
+        assertTrue(false == JUnitSettings.getDefault().isCfgCreateEnabled());
     }
     
     /** Test of setCfgCreateEnabled method, of class org.netbeans.modules.junit.JUnitSettings. */
@@ -349,9 +350,9 @@ public class JUnitSettingsTest extends TestCase {
     public void testIsCfgExecEnabled() {
         System.out.println("testIsCfgExecEnabled");
         JUnitSettings.getDefault().setCfgExecEnabled(true);
-        assert(JUnitSettings.getDefault().isCfgExecEnabled());
+        assertTrue(JUnitSettings.getDefault().isCfgExecEnabled());
         JUnitSettings.getDefault().setCfgExecEnabled(false);
-        assert(false == JUnitSettings.getDefault().isCfgExecEnabled());
+        assertTrue(false == JUnitSettings.getDefault().isCfgExecEnabled());
     }
     
     /** Test of setCfgExecEnabled method, of class org.netbeans.modules.junit.JUnitSettings. */
@@ -364,9 +365,9 @@ public class JUnitSettingsTest extends TestCase {
     public void testGetExecutorType() {
         System.out.println("testGetExecutorType");
         JUnitSettings.getDefault().setExecutorType(JUnitSettings.EXECUTOR_INTERNAL);
-        assert(JUnitSettings.EXECUTOR_INTERNAL == JUnitSettings.getDefault().getExecutorType());
+        assertTrue(JUnitSettings.EXECUTOR_INTERNAL == JUnitSettings.getDefault().getExecutorType());
         JUnitSettings.getDefault().setExecutorType(JUnitSettings.EXECUTOR_DEBUGGER);
-        assert(JUnitSettings.EXECUTOR_DEBUGGER == JUnitSettings.getDefault().getExecutorType());
+        assertTrue(JUnitSettings.EXECUTOR_DEBUGGER == JUnitSettings.getDefault().getExecutorType());
     }
     
     /** Test of setExecutorType method, of class org.netbeans.modules.junit.JUnitSettings. */
@@ -379,9 +380,9 @@ public class JUnitSettingsTest extends TestCase {
     public void testIsGenerateExceptionClasses() {
         System.out.println("testIsGenerateExceptionClasses");
         JUnitSettings.getDefault().setGenerateExceptionClasses(true);
-        assert(JUnitSettings.getDefault().isGenerateExceptionClasses());
+        assertTrue(JUnitSettings.getDefault().isGenerateExceptionClasses());
         JUnitSettings.getDefault().setGenerateExceptionClasses(false);
-        assert(false == JUnitSettings.getDefault().isGenerateExceptionClasses());
+        assertTrue(false == JUnitSettings.getDefault().isGenerateExceptionClasses());
     }
     
     /** Test of setGenerateExceptionClasses method, of class org.netbeans.modules.junit.JUnitSettings. */
@@ -423,7 +424,7 @@ public class JUnitSettingsTest extends TestCase {
     /** Test of isGlobal method, of class org.netbeans.modules.junit.JUnitSettings. */
     public void testIsGlobal() {
         System.out.println("testIsGlobal");
-        assert(false == JUnitSettings.getDefault().isGlobal());
+        assertTrue(false == JUnitSettings.getDefault().isGlobal());
     }
     
     /** Test of initialize method, of class org.netbeans.modules.junit.JUnitSettings. */

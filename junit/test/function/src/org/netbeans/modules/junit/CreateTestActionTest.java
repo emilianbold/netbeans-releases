@@ -26,8 +26,9 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.io.*;
 import junit.framework.*;
+import org.netbeans.junit.*;
 
-public class CreateTestActionTest extends TestCase {
+public class CreateTestActionTest extends NbTestCase {
     
     public CreateTestActionTest(java.lang.String testName) {
         super(testName);
@@ -47,28 +48,28 @@ public class CreateTestActionTest extends TestCase {
     public void testGetName() {
         System.out.println("testGetName");
         String name = TO.getName();
-        assert(null != name);
+        assertTrue(null != name);
     }
     
     /** Test of getHelpCtx method, of class org.netbeans.modules.junit.CreateTestAction. */
     public void testGetHelpCtx() {
         System.out.println("testGetHelpCtx");
         HelpCtx hc = TO.getHelpCtx();
-        assert(null != hc);
+        assertTrue(null != hc);
     }
     
     /** Test of cookieClasses method, of class org.netbeans.modules.junit.CreateTestAction. */
     public void testCookieClasses() {
         System.out.println("testCookieClasses");
         Class[] c = TO.cookieClasses();
-        assert(null != c);
+        assertTrue(null != c);
     }
     
     /** Test of iconResource method, of class org.netbeans.modules.junit.CreateTestAction. */
     public void testIconResource() {
         System.out.println("testIconResource");
         String icon = TO.iconResource();
-        assert(null != icon);
+        assertTrue(null != icon);
     }
     
     /** Test of mode method, of class org.netbeans.modules.junit.CreateTestAction. */
@@ -100,7 +101,7 @@ public class CreateTestActionTest extends TestCase {
         setGenerateFlags(js, true);
         js.setFileSystem(fsTest.getSystemName());
         
-        assert("Can't clean up the test directory.", delete(fsTest.getRoot(), false));
+        assertTrue("Can't clean up the test directory.", delete(fsTest.getRoot(), false));
         TO.performAction(new Node[] { DataObject.find(fsTest.getRoot()).getNodeDelegate() });
         
         assertDirectories(fsTest.getRootDirectory(), fsPass.getRootDirectory());
@@ -183,11 +184,11 @@ public class CreateTestActionTest extends TestCase {
     }
     
     private void setGenerateFlags(JUnitSettings js, boolean flag) {
-        js.setMembersPublic(flag); assert(flag == js.isMembersPublic());
-        js.setMembersProtected(flag); assert(flag == js.isMembersProtected());
-        js.setMembersPackage(flag); assert(flag == js.isMembersPackage());
-        js.setBodyComments(flag); assert(flag == js.isBodyComments());
-        js.setBodyContent(flag); assert(flag == js.isBodyContent());
-        js.setJavaDoc(flag); assert(flag == js.isJavaDoc());
+        js.setMembersPublic(flag); assertTrue(flag == js.isMembersPublic());
+        js.setMembersProtected(flag); assertTrue(flag == js.isMembersProtected());
+        js.setMembersPackage(flag); assertTrue(flag == js.isMembersPackage());
+        js.setBodyComments(flag); assertTrue(flag == js.isBodyComments());
+        js.setBodyContent(flag); assertTrue(flag == js.isBodyContent());
+        js.setJavaDoc(flag); assertTrue(flag == js.isJavaDoc());
     }
 }

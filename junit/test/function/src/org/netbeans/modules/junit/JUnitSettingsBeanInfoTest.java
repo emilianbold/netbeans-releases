@@ -50,14 +50,14 @@ public class JUnitSettingsBeanInfoTest extends TestCase {
     public void testGetPropertyDescriptors() {
         System.out.println("testGetPropertyDescriptors");
         PropertyDescriptor d[] = jbi.getPropertyDescriptors();
-        assert(null != d);
+        assertTrue(null != d);
     }
     
     /** Test of getIcon method, of class org.netbeans.modules.junit.JUnitSettingsBeanInfo. */
     public void testGetIcon() {
         System.out.println("testGetIcon");
         Image i = jbi.getIcon(BeanInfo.ICON_COLOR_16x16);
-        assert(null != i);
+        assertTrue(null != i);
     }
     
     public static class BoolPropEdTest extends TestCase {
@@ -80,15 +80,15 @@ public class JUnitSettingsBeanInfoTest extends TestCase {
         public void testGetTags() {
             System.out.println("testGetTags");
             String tags[] = bped.getTags();
-            assert(null != tags);
-            assert(2 == tags.length);
+            assertTrue(null != tags);
+            assertTrue(2 == tags.length);
         }
         
         /** Test of getAsText method, of class org.netbeans.modules.junit.JUnitSettingsBeanInfo.BoolPropEd. */
         public void testGetAsText() {
             System.out.println("testGetAsText");
             String s = bped.getAsText();
-            assert(null != s);
+            assertTrue(null != s);
         }
         
         /** Test of setAsText method, of class org.netbeans.modules.junit.JUnitSettingsBeanInfo.BoolPropEd. */
@@ -136,15 +136,15 @@ public class JUnitSettingsBeanInfoTest extends TestCase {
         public void testGetTags() {
             System.out.println("testGetTags");
             String tags[] = ped.getTags();
-            assert(null != tags);
-            assert(2 == tags.length);
+            assertTrue(null != tags);
+            assertTrue(2 == tags.length);
         }
         
         /** Test of getAsText method, of class org.netbeans.modules.junit.JUnitSettingsBeanInfo.SortedListPropEd. */
         public void testGetAsText() {
             System.out.println("testGetAsText");
             String s = ped.getAsText();
-            assert(null != s);
+            assertTrue(null != s);
         }
         
         /** Test of setAsText method, of class org.netbeans.modules.junit.JUnitSettingsBeanInfo.SortedListPropEd. */
@@ -203,15 +203,15 @@ public class JUnitSettingsBeanInfoTest extends TestCase {
         public void testGetTags() {
             System.out.println("testGetTags");
             String tags[] = ped.getTags();
-            assert(null != tags);
-            assert(3 == tags.length);
+            assertTrue(null != tags);
+            assertTrue(3 == tags.length);
         }
         
         /** Test of getAsText method, of class org.netbeans.modules.junit.JUnitSettingsBeanInfo.ExecutorPropEd. */
         public void testGetAsText() {
             System.out.println("testGetAsText");
             String s = ped.getAsText();
-            assert(null != s);
+            assertTrue(null != s);
         }
         
         /** Test of setAsText method, of class org.netbeans.modules.junit.JUnitSettingsBeanInfo.ExecutorPropEd. */

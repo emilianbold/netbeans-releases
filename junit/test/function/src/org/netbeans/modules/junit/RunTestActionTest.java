@@ -51,28 +51,28 @@ public class RunTestActionTest extends TestCase {
     public void testGetName() {
         System.out.println("testGetName");
         String name = TO.getName();
-        assert(null != name);
+        assertTrue(null != name);
     }
     
     /** Test of getHelpCtx method, of class org.netbeans.modules.junit.RunTestAction. */
     public void testGetHelpCtx() {
         System.out.println("testGetHelpCtx");
         HelpCtx hc = TO.getHelpCtx();
-        assert(null != hc);
+        assertTrue(null != hc);
     }
     
     /** Test of cookieClasses method, of class org.netbeans.modules.junit.RunTestAction. */
     public void testCookieClasses() {
         System.out.println("testCookieClasses");
         Class[] c = TO.cookieClasses();
-        assert(null != c);
+        assertTrue(null != c);
     }
     
     /** Test of iconResource method, of class org.netbeans.modules.junit.RunTestAction. */
     public void testIconResource() {
         System.out.println("testIconResource");
         String icon = TO.iconResource();
-        assert(null != icon);
+        assertTrue(null != icon);
     }
     
     /** Test of mode method, of class org.netbeans.modules.junit.RunTestAction. */
