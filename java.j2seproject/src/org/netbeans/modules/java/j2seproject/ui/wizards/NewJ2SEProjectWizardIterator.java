@@ -212,26 +212,18 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
 
     static String getPackageName (String displayName) {
         StringBuffer builder = new StringBuffer ();
-        boolean changeCase = false;
+        boolean firstLetter = true;
         for (int i=0; i< displayName.length(); i++) {
             char c = displayName.charAt(i);            
-            if ((i != 0 && Character.isJavaIdentifierPart (c)) || (i == 0 && Character.isJavaIdentifierStart(c))) {
-                if (changeCase) {
-                    if (Character.isLetter(c)) {
-                        c = Character.toUpperCase(c);
-                    }
-                    changeCase = false;
-                }
-                else if (Character.isUpperCase(c)) {
+            if ((!firstLetter && Character.isJavaIdentifierPart (c)) || (firstLetter && Character.isJavaIdentifierStart(c))) {
+                firstLetter = false;
+                if (Character.isUpperCase(c)) {
                     c = Character.toLowerCase(c);
                 }                    
                 builder.append(c);
-            }
-            else {
-                changeCase = true;
-            }
+            }            
         }
-        return builder.toString();
+        return builder.length() == 0 ? NbBundle.getMessage(NewJ2SEProjectWizardIterator.class,"TXT_DefaultPackageName") : builder.toString();
     }
     
     /**
