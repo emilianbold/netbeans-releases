@@ -50,9 +50,6 @@ import org.openide.NotifyDescriptor;
 
 public abstract class PatternNode extends AbstractNode implements IconBases, PatternProperties, PropertyChangeListener {
 
-    /** Source of the localized human presentable strings. */
-    private static ResourceBundle bundle;
-
     /** Options for the display name format. */
     protected static SourceOptions sourceOptions = null;
 
@@ -343,9 +340,6 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     }
     
     static String getString(String key) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle("org.netbeans.modules.beans.Bundle");
-        }
-        return bundle.getString(key);
+        return NbBundle.getBundle("org.netbeans.modules.beans.Bundle").getString(key);
     }
 }

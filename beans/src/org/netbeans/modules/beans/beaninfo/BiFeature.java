@@ -121,6 +121,8 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         this.shortDescription = shortDescription;
     }
 
+    abstract String getBracketedName();
+
     String getBrackets(){
         return brackets;
     }
@@ -183,13 +185,14 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         setIncluded( false );
         
         Iterator it = code.iterator();
+        String n = getBracketedName();
 
-        String stNew = new String( getName() + getBrackets() + "=new" ); // NOI18N
-        String stExpert = new String( getName() + getBrackets() + "." + TEXT_EXPERT ); // NOI18N
-        String stHidden = new String( getName() + getBrackets() + "." + TEXT_HIDDEN ); // NOI18N
-        String stPreferred = new String( getName() + getBrackets() + "." + TEXT_PREFERRED ); // NOI18N
-        String stDisplayName = new String( getName() + getBrackets() + "." + TEXT_DISPLAY_NAME ); // NOI18N
-        String stShortDescription = new String( getName() + getBrackets() + "." + TEXT_SHORT_DESCRIPTION ); // NOI18N
+        String stNew = new String( n + "=new" ); // NOI18N
+        String stExpert = new String( n + "." + TEXT_EXPERT ); // NOI18N
+        String stHidden = new String( n + "." + TEXT_HIDDEN ); // NOI18N
+        String stPreferred = new String( n + "." + TEXT_PREFERRED ); // NOI18N
+        String stDisplayName = new String( n + "." + TEXT_DISPLAY_NAME ); // NOI18N
+        String stShortDescription = new String( n + "." + TEXT_SHORT_DESCRIPTION ); // NOI18N
         while( it.hasNext() ) {
             String statement = ( String ) it.next();
 
@@ -257,7 +260,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             return sb.toString();
         }
 
-        String getIconBase( boolean defaultIcon ) {                
+        String getIconBase( boolean defaultIcon ) {
             //now there be no icon !!!
             //if( defaultIcon )
             //    return null;
@@ -285,6 +288,10 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
                 setCustomizer( statement.substring( beg, end ) );
             else
                 setCustomizer( null );
+        }
+
+        String getBracketedName() {
+            return getName();
         }
 
         String getBrackets(){
@@ -330,6 +337,10 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
 
         public boolean isBound() {
             return bound;
+        }
+
+        String getBracketedName() {
+            return "[PROPERTY_" + getName() + "]";
         }
 
         public void setBound(boolean bound) {
@@ -424,10 +435,10 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         }
 
         void analyzeCustomizationString( String statement ) {
-
-            String stBound = new String( this.getName() + "]." + TEXT_BOUND ); // NOI18N
-            String stConstrained = new String( this.getName() + "]." + TEXT_CONSTRAINED ); // NOI18N
-            String stPropertyEditor = new String( this.getName() + "]." + TEXT_PROPERTY_EDITOR ); // NOI18N
+            String n = getBracketedName();
+            String stBound = new String( n + "." + TEXT_BOUND ); // NOI18N
+            String stConstrained = new String( n + "." + TEXT_CONSTRAINED ); // NOI18N
+            String stPropertyEditor = new String( n + "." + TEXT_PROPERTY_EDITOR ); // NOI18N
             int peIndex;
             
             if ( statement.indexOf( stBound ) != -1 ) {
@@ -597,6 +608,14 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             this.isInDefaultEventSet = isInDefaultEventSet;
         }
 
+        /**
+         * MUST be consistent w/ generator in BiAnalyser.
+         * @return
+         */
+        String getBracketedName() {
+            return "[EVENT_" + getName() + "]";
+        }
+
         public int compare(Object o1, Object o2) {
             if (!(o1 instanceof MethodElement) || !(o2 instanceof MethodElement))
                 throw new IllegalArgumentException();
@@ -679,9 +698,9 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         }
 
         void analyzeCustomizationString( String statement ) {
-
-            String stUnicast = new String( this.getName() + "]." + TEXT_UNICAST ); // NOI18N
-            String stInDefault = new String( this.getName() + "]." + TEXT_IN_DEFAULT ); // NOI18N
+            String n = getBracketedName();
+            String stUnicast = new String( n + "."  + TEXT_UNICAST ); // NOI18N
+            String stInDefault = new String( n + "." + TEXT_IN_DEFAULT ); // NOI18N
             /*
             if ( statement.indexOf( stUnicast ) != -1 ) {
               setUnicast( true );
@@ -709,7 +728,11 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         element = me;
         this.me = me;
       }
-      
+
+        String getBracketedName() {
+            return "[METHOD_" + getName() + "]";
+        }
+
         private static String getSignature(org.openide.src.ClassElement cls) {
             org.openide.src.Identifier n = cls.getName();
             if (!cls.isInner()) {

@@ -36,10 +36,6 @@ import org.openide.DialogDisplayer;
 */
 public class GenerateBeanInfoAction extends NodeAction implements java.awt.event.ActionListener {
 
-    /** Resource bundle */
-    private static ResourceBundle bundle;
-
-
     /** generated Serialized Version UID */
     //static final long serialVersionUID = 1391479985940417455L;
 
@@ -163,10 +159,7 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
     }    
     
     static String getString(String key) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle("org.netbeans.modules.beans.beaninfo.Bundle");
-        }
-        return bundle.getString(key);
+        return NbBundle.getBundle("org.netbeans.modules.beans.beaninfo.Bundle").getString(key);
     }
 
     private static class BiAnalyserReference {

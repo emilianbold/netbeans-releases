@@ -527,6 +527,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
             if ( bif.isIncluded() ) {
                 sb.append( TAB + "private static final int " ); // NOI18N
+                // This prefix MUST be consistent w/ BiFeature.IdxProperty analyser
                 sb.append( "PROPERTY_" + bif.getName() ); // NOI18N
                 sb.append( " = " + (propertyCount++) + ";" ); // NOI18N
                 sb.append( "\n" ); // NOI18N
@@ -729,6 +730,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         for ( int i = 0; it.hasNext(); i++ ) {
             BiFeature bif = ( BiFeature )it.next();
             if ( bif.isIncluded() ) {
+                // the index prefix MUST be consistent w/ BiFeature.EventSet analyser.
                 sb.append( TABx3 + "eventSets[EVENT_" ).append( bif.getName() ).append("] = "); // NOI18N
                 sb.append( bif.getCreationString() ).append(";\n"); // NOI18N
 
