@@ -197,11 +197,12 @@ public class NbToolTip extends FileChangeAdapter {
             this.annos = annos;
             this.tts = tts;
             
+            tts.addPropertyChangeListener(this);
+
             for (int i = 0; i < annos.length; i++) {
                 annos[i].attach(lp);
             }
             
-            tts.addPropertyChangeListener(this);
         }
         
         public void run() {
@@ -216,6 +217,7 @@ public class NbToolTip extends FileChangeAdapter {
         
         private void dismiss() {
             tts.removePropertyChangeListener(this);
+            tts = null; // signal that support no longer valid
 
             for (int i = 0; i < annos.length; i++) {
                 annos[i].removePropertyChangeListener(this);
@@ -226,9 +228,17 @@ public class NbToolTip extends FileChangeAdapter {
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             if (Annotation.PROP_SHORT_DESCRIPTION.equals(propName)) {
-                String tipText = (String)evt.getNewValue();
-                if (tipText != null) {
-                    tts.setToolTipText(tipText);
+                if (evt.getNewValue() != null) {
+                    final String tipText = (String)evt.getNewValue();
+                    Utilities.runInEventDispatchThread( // ensure to run in AWT thread
+                        new Runnable() {
+                            public void run() {
+                                if (tts != null) {
+                                    tts.setToolTipText(tipText);
+                                }
+                            }
+                        }
+                    );
                 }
                 
             } else if (ToolTipSupport.PROP_STATUS.equals(propName)) {
