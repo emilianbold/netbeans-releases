@@ -1,0 +1,4 @@
+monitor/src/org/netbeans/modules/web/monitor/Bundle.properties
+monitor/src/org/netbeans/modules/web/monitor/client/Bundle.properties
+monitor/src/org/netbeans/modules/web/monitor/data/Bundle.properties
+monitor/src/org/netbeans/modules/web/monitor/server/Bundle.properties
