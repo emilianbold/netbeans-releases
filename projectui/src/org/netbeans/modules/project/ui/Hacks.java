@@ -39,7 +39,7 @@ public class Hacks {
     /** @author Petr Hrebejk */
     static void hackFolderActions() {
   /*      
-        DataLoaderPool dataLoaderPool = (DataLoaderPool) Lookup.getDefault().lookup(DataLoaderPool.class);
+        DataLoaderPool dataLoaderPool = DataLoaderPool.getDefault ();
         DataLoader folderLoader = dataLoaderPool.firstProducerOf(DataFolder.class);
 
         ArrayList actions = new ArrayList(Arrays.asList(folderLoader.getActions()));

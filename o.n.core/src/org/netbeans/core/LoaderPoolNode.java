@@ -665,7 +665,7 @@ public final class LoaderPoolNode extends AbstractNode {
     */
     public static synchronized NbLoaderPool getNbLoaderPool () {
         if (nbLoaderPool == null) {
-            nbLoaderPool = (NbLoaderPool)Lookup.getDefault ().lookup (DataLoaderPool.class);
+            nbLoaderPool = (NbLoaderPool)DataLoaderPool.getDefault ();
         }
         return nbLoaderPool;
     }

@@ -57,7 +57,15 @@ implements java.io.Serializable {
     private static MultiFileLoader[] defaultLoaders;
     
     private static DataLoaderPool DEFAULT;
-    static synchronized DataLoaderPool getDefault() {
+    
+    /** Getter for the default pool of loaders used in the system.
+     * By default it looks it up using Lookup, if not found it provides 
+     * default one that does lookup individual loaders using Lookup.
+     *
+     * @return instance of system DataLoaderPool
+     * @since 5.1
+     */
+    public static synchronized DataLoaderPool getDefault() {
         if (DEFAULT == null) {
             DEFAULT = (DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class);
             if (DEFAULT == null) {

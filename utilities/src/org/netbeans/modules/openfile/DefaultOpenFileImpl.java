@@ -458,8 +458,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
      */
     private final DataLoader getDefaultLoader() {
         DataLoader defaultLoader = null;
-        DataLoaderPool loaderPool
-            = (DataLoaderPool) Lookup.getDefault().lookup(DataLoaderPool.class);
+        DataLoaderPool loaderPool = DataLoaderPool.getDefault ();
         
         /* default loader is the last loader in the enumeration of loaders: */
         for (Enumeration loaders = loaderPool.allLoaders();
