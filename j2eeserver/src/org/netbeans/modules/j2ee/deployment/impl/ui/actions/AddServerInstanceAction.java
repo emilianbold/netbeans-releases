@@ -30,11 +30,7 @@ public class AddServerInstanceAction extends NodeAction {
     public void performAction(Node[] nodes) {
         AddServerInstanceWizard wizard = new AddServerInstanceWizard();
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(wizard);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                dialog.setVisible(true);
-            }
-        });
+        dialog.setVisible(true);
     }
     
     public String getName() {
