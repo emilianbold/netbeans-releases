@@ -34,6 +34,9 @@ public class SimpleSearchInfo implements SearchInfo {
 
     public static final SearchInfo EMPTY_SEARCH_INFO
         = new SearchInfo() {
+            public boolean canSearch() {
+                return true;
+            }
             public Iterator objectsToSearch() {
                 return Collections.EMPTY_LIST.iterator();
             }
@@ -90,6 +93,9 @@ public class SimpleSearchInfo implements SearchInfo {
     public void remove(DataObject dataObject) {
         if (extraContents != null) {
             extraContents.remove(dataObject);
+            if (extraContents.isEmpty()) {
+                extraContents = null;
+            }
         }
     }
 
@@ -98,7 +104,16 @@ public class SimpleSearchInfo implements SearchInfo {
     public void remove(SearchInfo nestedInfo) {
         if (extraContents != null) {
             extraContents.remove(nestedInfo);
+            if (extraContents.isEmpty()) {
+                extraContents = null;
+            }
         }
+    }
+
+    /**
+     */
+    public boolean canSearch() {
+        return (contentsBase != null) || (extraContents != null);
     }
 
     /**

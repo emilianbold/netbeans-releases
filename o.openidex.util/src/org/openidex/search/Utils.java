@@ -25,45 +25,22 @@ import org.openide.util.Lookup;
  */
 public class Utils {
     
-    /** */
-    private static Lookup.Result searchInfoProviders;
-
     /** Creates a new instance of Utils */
     public Utils() {
     }
     
     /**
      */
-    public static boolean hasSearchInfo(Node node) {
+    public static boolean canSearch(Node node) {
         
         /* 1st try - is the SearchInfo object in the node's lookup? */
-        if (node.getLookup().lookup(SearchInfo.class) != null) {
-            return true;
+        SearchInfo searchInfo = (SearchInfo)
+                                node.getLookup().lookup(SearchInfo.class);
+        if (searchInfo != null) {
+            return searchInfo.canSearch();
         }
     
-        /* 2nd try - is the SearchInfo object defined externally? */
-        if (searchInfoProviders == null) {
-            searchInfoProviders = Lookup.getDefault().lookup(
-                new Lookup.Template(SearchInfoProvider.class));
-        }
-        Collection providers = searchInfoProviders.allInstances();
-        if (!providers.isEmpty()) {
-            for (Iterator i = providers.iterator(); i.hasNext(); ) {
-                SearchInfoProvider infoProvider = (SearchInfoProvider) i.next();
-
-                String[] supportedNodeTypes = infoProvider.getSupportedNodeTypes();
-                if (supportedNodeTypes != null
-                        && !isListedString(node.getClass().getName(),
-                                           supportedNodeTypes)) {
-                    continue;
-                }
-                if (infoProvider.hasSearchInfo(node)) {
-                    return true;
-                }
-            }
-        }
-
-        /* 3rd try - does the node represent a DataObject.Container? */
+        /* 2nd try - does the node represent a DataObject.Container? */
         return node.getLookup().lookup(DataObject.Container.class) != null;
 }
     
@@ -78,30 +55,7 @@ public class Utils {
             return info;
         }
 
-        /* 2nd try - is the SearchInfo object defined externally? */
-        if (searchInfoProviders == null) {
-            searchInfoProviders = Lookup.getDefault().lookup(
-                new Lookup.Template(SearchInfo.class));
-        }
-        Collection providers = searchInfoProviders.allInstances();
-        if (!providers.isEmpty()) {
-            for (Iterator i = providers.iterator(); i.hasNext(); ) {
-                SearchInfoProvider infoProvider = (SearchInfoProvider) i.next();
-
-                String[] supportedNodeTypes = infoProvider.getSupportedNodeTypes();
-                if (supportedNodeTypes != null
-                        && !isListedString(node.getClass().getName(),
-                                           supportedNodeTypes)) {
-                    continue;
-                }
-                info = infoProvider.getSearchInfo(node);
-                if (info != null) {
-                    return info;
-                }
-            }
-        }
-
-        /* 3rd try - does the node represent a DataObject.Container? */
+        /* 2nd try - does the node represent a DataObject.Container? */
         Object container = node.getLookup().lookup(DataObject.Container.class);
         return (container != null)
                ? new SimpleSearchInfo((DataObject.Container) container, true)

@@ -27,9 +27,30 @@ import java.util.Iterator;
 public interface SearchInfo {
 
     /**
+     * Determines whether the object which provided this <code>SearchInfo</code>
+     * can be searched.
+     * This method determines whether the <em>Find</em> action should be enabled
+     * for the object or not.
+     * <p>
+     * This method must be very quick as it may be called frequently and its
+     * speed may influence responsiveness of the whole application. If the exact
+     * algorithm for determination of the result value should be slow, it is
+     * better to return <code>true</code> than make the method slow.
+     *
+     * @return  <code>true</code> if the object can be (potentially) searched;
+     *          <code>false</code> otherwise
+     */
+    public boolean canSearch();
+
+    /**
      * Specifies which <code>DataObject</code>s should be searched.
+     * The returned <code>Iterator</code> needn't implement method
+     * {@link java.util.Iterator#remove remove()} (i.e. it may throw
+     * <code>UnsupportedOperationException</code> instead of actual
+     * implementation).
      *
      * @return  iterator which iterates over <code>DataObject</code>s
+     *          to be searched
      */
     public Iterator objectsToSearch();
     
