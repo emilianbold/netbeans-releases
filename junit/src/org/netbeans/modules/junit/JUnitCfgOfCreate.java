@@ -355,14 +355,11 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      * This method is called from within the constructor to initialize the form.
      */
     private void initComponents() {
-        JComponent settingsPanel = createSettingsPanel();
-        settingsPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 5));
+        setLayout(new BorderLayout(0, 12));
         
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(settingsPanel);
-        
-        /* tune the layout: */
-        settingsPanel.setAlignmentX(0.0f);
+        add(createNameAndLocationPanel(), BorderLayout.NORTH);
+        add(createMessagePanel(), BorderLayout.CENTER);
+        add(createCodeGenPanel(), BorderLayout.SOUTH);
     }
     
     /**
@@ -409,19 +406,6 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
             checkAcceptability();
         }
         
-    }
-    
-    /**
-     * Creates the component to be displayed on the Test Settings tab.
-     */
-    private JComponent createSettingsPanel() {
-        JPanel settingsPanel = new JPanel(new BorderLayout(0, 12));
-        
-        settingsPanel.add(createNameAndLocationPanel(), BorderLayout.NORTH);
-        settingsPanel.add(createMessagePanel(), BorderLayout.CENTER);
-        settingsPanel.add(createCodeGenPanel(), BorderLayout.SOUTH);
-        
-        return settingsPanel;
     }
     
     /**
