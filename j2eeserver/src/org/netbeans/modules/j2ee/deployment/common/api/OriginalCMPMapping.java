@@ -33,6 +33,11 @@ public interface OriginalCMPMapping {
     FileObject getSchema();
     
     /**
+     * @return ejb name. 
+     */
+    String getEjbName();
+    
+    /**
      * @return table name containing all column references.
      */
     String getTableName();

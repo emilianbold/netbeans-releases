@@ -148,7 +148,7 @@ is the proper place.
                     See Javadoc for details.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2eeserver.devmodules.spi" name="J2eeModuleProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
         </change>
         <change id="CMP-Mapping-and-Auto-Resources.common">
             <api name="common"/>
@@ -168,7 +168,7 @@ is the proper place.
                     See Javadoc for details.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2eeserver.common.api" name="SourceFileMap"/>
+            <class package="org.netbeans.modules.j2eeserver.deployment.common.api" name="SourceFileMap"/>
         </change>
         <change id="CMP-Mapping-and-Auto-Resources.plugins">
             <api name="plugins"/>
@@ -190,7 +190,7 @@ is the proper place.
                     See Javadoc for details.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2eeserver.plugins.api" name="ConfigurationSupport"/>
+            <class package="org.netbeans.modules.j2eeserver.deployment.plugins.api" name="ConfigurationSupport"/>
         </change>
         <change id="Deprecating-DeploymentPlanSplitter.getDeploymentPlanFileNames">
             <api name="plugins"/>
@@ -213,8 +213,33 @@ is the proper place.
                     See Javadoc for details.
                 </p>
             </description>
-            <class package="org.netbeans.modules.j2eeserver.plugins.api" name="DeploymentPlanSplitter"/>
+            <class package="org.netbeans.modules.j2eeserver.deployment.plugins.api" name="DeploymentPlanSplitter"/>
         </change>
+        <change id="Batched-CMPMappingInfo">
+            <api name="j2eeserver"/>
+            <summary>Wizard should push CMP mappings in one single call</summary>
+            <version major="1" minor="5"/>
+            <date day="23" month="12" year="2004"/>
+            <author login="nnguyen"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Related CMP Beans Wizard need to push mapping info to plugin
+		    in one single call.  This would improve performance and make it
+                    easier for plugin code to process the relationship mappings.
+                    Part of this batching change, OriginalCMPMapping now includes ejbName.
+                    J2eeModuleProvider.ConfigSupport now has new method saveConfiguration()
+                    to allow development module wizard to commit changes it caused to 
+                    component deployment configuration.
+                    OriginalMappingProvider, not used in the CMP mapping push module, 
+                    is removed.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
+            <class package="org.netbeans.modules.j2ee.deployment.common.api" name="OriginalCMPMapping"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="OriginalMappingProvider"/>
+         </change>
     </changes>
 
     <!-- Now the surrounding HTML text and document structure: -->

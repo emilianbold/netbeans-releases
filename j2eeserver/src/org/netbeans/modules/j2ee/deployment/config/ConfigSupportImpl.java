@@ -518,13 +518,13 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         return null;
     }
     
-    public void setCMPMappingInfo(String ejbName, OriginalCMPMapping mappings) {
+    public void setCMPMappingInfo(OriginalCMPMapping[] mappings) {
         ConfigurationStorage cs = getStorage();
         if (cs == null)
             return;
         DeploymentConfiguration config = cs.getDeploymentConfiguration();
         ConfigurationSupport serverConfig = this.getServer().geConfigurationSupport();
-        //serverConfig.setMappingInfo(config, mappings);
+        serverConfig.setMappingInfo(config, mappings);
         saveConfiguration();
     }
     

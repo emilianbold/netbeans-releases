@@ -138,8 +138,7 @@ public abstract class J2eeModuleProvider {
          * Push the CMP and CMR mapping info to the server configuraion.
          * This call is typically used by CMP mapping wizard.
          */
-        public void setCMPMappingInfo(String ejbname, OriginalCMPMapping mapping);
-        //public void setCMPMappingInfo(OriginalCMPMapping[] mappings);
+        public void setCMPMappingInfo(OriginalCMPMapping[] mappings);
         /**
          * Ensure needed resources are automatically defined for the entity
          * represented by given DDBean.
