@@ -209,8 +209,9 @@ public class TargetServer {
             List maybeRedistributeWhenSharedDetected = new ArrayList();
             List maybeRemoveFromRedeployWhenSharedDetected = new ArrayList();
             TargetModuleID[] haveSameReferences = TargetModule.EMPTY_TMID_ARRAY;
-            if (targs.length > 1) 
+            if (targs.length > 0) {
                 haveSameReferences = tmidResolver.lookupTargetModuleID(queryInfo, targs);
+            }
             for (int i=0; i<haveSameReferences.length; i++) {
                 TargetModule hasSameReferences = new TargetModule(keyOf(haveSameReferences[i]), haveSameReferences[i]); 
                 if (! toRedeploy.contains(hasSameReferences)) {
