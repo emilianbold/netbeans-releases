@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
-  <target name="netbeans" depends="jars">
+  <target name="netbeans" depends="jars"/>
   <target name="nbm" depends="netbeans">
     <makenbm file="debuggercore.nbm"
              topdir="."
