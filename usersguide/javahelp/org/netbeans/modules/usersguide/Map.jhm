@@ -652,6 +652,11 @@
 
 <!--CSH-->
 
+
+<mapID target="setupwizard.idesettings" url="configure/setup.html" />
+<mapID target="setupwizard.moduleselection" url="configure/setup.html" />
+<mapID target="setupwizard.autoupdate" url="configure/setup.html" />
+
 <mapID target="org.netbeans.core.windows.MainWindow" url="pending.html" />
 
 <mapID target="org.netbeans.modules.i18n.I18nOptions" url="internationalize/custominter.html" />
