@@ -64,6 +64,7 @@ public class ExportHtmlAction extends CookieAction {
 
     protected final void performAction(Node[] activatedNodes) {
         EditorCookie ec = (EditorCookie) activatedNodes[0].getCookie (EditorCookie.class);
+        if (ec==null) return;
         StyledDocument doc = null;
         try {
             doc = ec.openDocument();
