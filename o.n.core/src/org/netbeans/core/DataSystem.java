@@ -117,14 +117,6 @@ implements RepositoryListener, NewTemplateAction.Cookie {
     }
 
 
-    /** Creates data folder that will represent the file system.
-    * @param fs the file system
-    * @return the DataFolder that will represent it
-    */
-    static DataFolder createRoot (FileSystem fs) {
-        return DataFolder.findFolder (fs.getRoot());
-    }
-
     /** Getter for set of actions that should be present in the
     * popup menu of this node. This set is used in construction of
     * menu returned from getContextMenu and specially when a menu for
@@ -233,11 +225,15 @@ implements RepositoryListener, NewTemplateAction.Cookie {
         }
 
         protected Node[] createNodes (Object key) {
-            FileSystem fs = (FileSystem)key;
-            DataFolder df = createRoot (fs);
+            DataFolder df = (DataFolder)key;
             Node n = new RootFolderNode (df, df.createNodeChildren (getDS ().filter));
-            n = org.netbeans.core.ui.MountNode.customize (n, fs);
-            return new Node[] { n };
+            try {
+                n = org.netbeans.core.ui.MountNode.customize (n, df.getPrimaryFile ().getFileSystem ());
+            } catch (FileStateInvalidException fsi) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, fsi);
+            }
+            Node[] retVal = (n != null) ? new Node[] { n } : new Node[] {};
+            return retVal;
         }
 
         /** Refreshes the pool.
@@ -259,8 +255,8 @@ implements RepositoryListener, NewTemplateAction.Cookie {
                         // root will remain null and will be accepted
                         // (as that seems safer than not accepting it)
                     }
-                    if ((root == null) || getDS().filter.acceptDataObject(root)) {
-                        list.add(o);
+                    if ((root instanceof DataFolder) && getDS().filter.acceptDataObject(root))  {
+                        list.add(root);
                     }
                 }
             }
