@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,16 +17,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.Arrays;
-import java.util.List;
 
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-//import org.openide.cookies.FilterCookie;
-import org.openide.src.ElementProperties;
-import org.openide.src.SourceElement;
-import org.openide.src.ClassElement;
-import org.openide.src.Identifier;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
