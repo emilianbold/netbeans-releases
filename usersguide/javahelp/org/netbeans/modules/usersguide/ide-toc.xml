@@ -499,7 +499,7 @@
 </tocitem>
 
 
-<tocitem text="Distributed Tools">
+<tocitem text="Distributed Application Support">
   <tocitem text="Generating Java Files for RMI Programs" target="rmi_intro">
     <tocitem text="RMI Concepts" target="rmi_concepts_intro">
       <tocitem text="RMI Technology" target="rmi_concepts_basics" />
@@ -507,10 +507,12 @@
       <tocitem text="Steps for Creating an RMI Program" target="rmi_concepts_procs" />
     </tocitem>
     <tocitem text="Generating, Programming, and Compiling RMI Files" target="rmi_generating_intro">
+      <tocitem text="RMI Templates" target="rmi_templates" />
       <tocitem text="Generating a Client-side File" target="rmi_generating_client" />
       <tocitem text="Adding Code to a Client-side File" target="rmi_completing_client" />
       <tocitem text="Compiling and Running a Client-side File" target="rmi_compiling_client" />
-      <tocitem text="Generating a Server-side File" target="rmi_generating_server" />
+      <tocitem text="Generating a Server-side File (Remote Interface)" target="rmi_generating_server" />
+      <tocitem text="Generating a Server-side File (Implementation)" target="rmi_generating_impl" />
       <tocitem text="Adding Code to a Server-side File" target="rmi_completing_server" />
       <tocitem text="Compiling a Server File" target="rmi_compiling_server" />
     </tocitem>
@@ -531,9 +533,9 @@
       <tocitem text="Starting the RMI Activation Browser" target="rmi_activate_starting" />
       <tocitem text="Adding an Activation Browser" target="rmi_activ_instance" />
       <tocitem text="Adding an Activation Group" target="rmi_activ_group" />
-      <tocitem text="Displaying the Activation System Node" target="rmi_activate_usingsystem" />
-      <tocitem text="Displaying the Activation Group Node" target="rmi_activate_usinggroup" />
-      <tocitem text="Displaying the Activatable Objects Node" target="rmi_activate_usingobject" />	
+      <tocitem text="Activation System Node Commands" target="rmi_activate_usingsystem" />
+      <tocitem text="Activation Group Node Commands" target="rmi_activate_usinggroup" />
+      <tocitem text="Activatable Objects Node Commands" target="rmi_activate_usingobject" />	
     </tocitem>
   </tocitem>
   <tocitem text="Generating Code With JNDI" target="jndi_intro">
