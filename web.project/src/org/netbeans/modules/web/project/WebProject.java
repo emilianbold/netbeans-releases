@@ -481,7 +481,8 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             "Templates/JSP_Servlet/JSP.jsp",
             "Templates/JSP_Servlet/Html.html",
             "Templates/JSP_Servlet/Servlet.java",
-            "Templates/Classes/Class.java"
+            "Templates/Classes/Class.java",
+            "Templates/Other/Folder"
         };
         
         public String[] getRecommendedTypes() {
