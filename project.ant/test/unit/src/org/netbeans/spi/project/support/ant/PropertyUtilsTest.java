@@ -416,7 +416,7 @@ public class PropertyUtilsTest extends NbTestCase {
             good.append("_");
             good.append("x");
         }
-        assertEquals("Corrected property name does match", good.toString(), PropertyUtils.getUsablePropertyName(bad));
+        assertEquals("Corrected property name does match", good.toString(), PropertyUtils.getUsablePropertyName(bad.toString()));
     }
     
     private static final class TestMutablePropertyProvider implements PropertyProvider {

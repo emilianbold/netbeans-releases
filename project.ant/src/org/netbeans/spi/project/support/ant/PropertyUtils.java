@@ -561,7 +561,7 @@ public class PropertyUtils {
      * @param name name to check for usability as Ant property
      * @return true if name is usable otherwise false
      */
-    public static boolean isUsablePropertyName(CharSequence name) {
+    public static boolean isUsablePropertyName(String name) {
         return VALID_PROPERTY_NAME.matcher(name).matches();
     }
 
@@ -572,13 +572,13 @@ public class PropertyUtils {
      * @param name name to use as base for Ant property name
      * @return name usable as Ant property name
      */
-    public static String getUsablePropertyName(CharSequence name) {
+    public static String getUsablePropertyName(String name) {
         if (isUsablePropertyName(name)) {
-            return name.toString();
+            return name;
         }
-        StringBuffer sb = new StringBuffer(name.toString());
+        StringBuffer sb = new StringBuffer(name);
         for (int i=0; i<sb.length(); i++) {
-            if (!isUsablePropertyName(sb.subSequence(i,i+1))) {
+            if (!isUsablePropertyName(sb.substring(i,i+1))) {
                 sb.replace(i,i+1,"_");
             }
         }
