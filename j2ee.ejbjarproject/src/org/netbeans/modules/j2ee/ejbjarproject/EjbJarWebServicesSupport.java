@@ -143,7 +143,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         try {
             s.setServiceEndpoint(serviceEndpointInterface);
         }
-        catch(org.netbeans.api.web.dd.common.VersionNotSupportedException e) {
+        catch(org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException e) {
             //FIX-ME: handle this
             throw new RuntimeException(e.getMessage());
         }

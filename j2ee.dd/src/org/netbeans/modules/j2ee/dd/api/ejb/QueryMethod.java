@@ -17,7 +17,7 @@ package org.netbeans.modules.j2ee.dd.api.ejb;
 // This interface has all of the bean info accessor methods.
 // 
 
-public interface QueryMethod extends org.netbeans.api.web.dd.common.CommonDDBean {
+public interface QueryMethod extends org.netbeans.modules.j2ee.dd.api.common.CommonDDBean {
     
     public static final String METHOD_NAME = "MethodName";	// NOI18N
     public static final String METHOD_PARAMS = "MethodParams";	// NOI18N

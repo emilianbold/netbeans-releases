@@ -174,7 +174,7 @@ public final class DDProvider {
     /**  Convenient method for getting the BaseBean object from CommonDDBean object
      * 
      */
-    public org.netbeans.modules.schema2beans.BaseBean getBaseBean(org.netbeans.api.web.dd.common.CommonDDBean bean) {
+    public org.netbeans.modules.schema2beans.BaseBean getBaseBean(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean bean) {
         if (bean instanceof org.netbeans.modules.schema2beans.BaseBean) return (org.netbeans.modules.schema2beans.BaseBean)bean;
         else if (bean instanceof ApplicationProxy) return (org.netbeans.modules.schema2beans.BaseBean) ((ApplicationProxy)bean).getOriginal();
         return null;

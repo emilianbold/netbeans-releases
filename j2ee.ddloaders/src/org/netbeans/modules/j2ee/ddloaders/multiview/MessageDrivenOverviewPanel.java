@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.api.web.dd.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfigProperty;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;

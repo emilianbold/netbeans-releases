@@ -308,7 +308,7 @@ public final class ProjectEar extends J2eeAppProvider
 //    }
 //
 //    public void propertyChange(PropertyChangeEvent evt) {
-//        if (evt.getPropertyName().equals(org.netbeans.api.web.dd.WebApp.PROPERTY_VERSION)) {
+//        if (evt.getPropertyName().equals(org.netbeans.modules.j2ee.dd.api.web.WebApp.PROPERTY_VERSION)) {
 //            for (Iterator i=versionListeners.iterator(); i.hasNext();) {
 //                J2eeModule.VersionListener vl = (J2eeModule.VersionListener) i.next();
 //                String oldVersion = (String) evt.getOldValue();

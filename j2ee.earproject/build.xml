@@ -31,7 +31,6 @@ Microsystems, Inc. All Rights Reserved.
  org.netbeans.api.debugger/1,
  org.netbeans.api.debugger.jpda/1,
  org.netbeans.modules.j2eeserver/3,
- org.netbeans.api.web.dd/1 > 1.2,
  org.netbeans.modules.j2ee.common/1 = 1.0.1,
  org.netbeans.modules.j2ee.ejbjarproject = 1.1.1,
  org.netbeans.modules.web.project = 1.1.1.1,

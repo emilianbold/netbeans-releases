@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+﻿<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -1533,7 +1533,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../testtools" target="netbeans"/>
   </target>
-  <target name="all-tomcatint/tomcat5" depends="init,all-j2eeserver,all-web/ddapi">
+  <target name="all-tomcatint/tomcat5" depends="init,all-j2eeserver,all-j2ee/ddapi">
     <echo message="Building module tomcatint/tomcat5..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1772,7 +1772,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../web/freeform" target="netbeans"/>
   </target>
-  <target name="all-web/core" depends="init,all-web/ddapi,all-web/webapi,all-j2eeserver,all-web/jspsyntax,all-xml/multiview">
+  <target name="all-web/core" depends="init,all-j2ee/ddapi,all-web/webapi,all-j2eeserver,all-web/jspsyntax,all-xml/multiview">
     <echo message="Building module web/core..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -2428,7 +2428,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </antcall>
   <ant dir="../j2ee/debug" target="netbeans"/>
 </target>
-  <target name="all-j2ee/utilities" depends="init">
+  <target name="all-j2ee/utilities" depends="init,all-j2eeserver, all-web/webapi">
     <echo message="Building module j2ee/utilities.."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">

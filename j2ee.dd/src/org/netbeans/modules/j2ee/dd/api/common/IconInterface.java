@@ -66,7 +66,7 @@ public interface IconInterface {
      *
      * @param icon value for icon element
      */ 
-    public void setIcon(org.netbeans.modules.j2ee.dd.api.ejb.Icon icon);
+    public void setIcon(org.netbeans.modules.j2ee.dd.api.common.Icon icon);
     
     /**
      * Returns the small-icon element value for particular locale.<br>
@@ -101,7 +101,7 @@ public interface IconInterface {
      *
      * @return icon element value or null if not specified for default locale
      */
-    public org.netbeans.modules.j2ee.dd.api.ejb.Icon getDefaultIcon();
+    public org.netbeans.modules.j2ee.dd.api.common.Icon getDefaultIcon();
     /**
      * Returns all icon elements in the form of <@link java.util.Map>. 
      *

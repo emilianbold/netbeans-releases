@@ -40,10 +40,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.netbeans.api.web.dd.Servlet;
-import org.netbeans.api.web.dd.ServletMapping;
-import org.netbeans.api.web.dd.WebApp;
-import org.netbeans.api.web.dd.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
@@ -185,7 +185,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
      */
     public String getImplementationBean(String linkName) {
         WebApp webApp = getWebApp();
-        org.netbeans.api.web.dd.Servlet[] servlets = webApp.getServlet();
+        org.netbeans.modules.j2ee.dd.api.web.Servlet[] servlets = webApp.getServlet();
         for(int i = 0; i < servlets.length; i++) {
             if(servlets[i].getServletName().equals(linkName)) {
                 return servlets[i].getServletClass();

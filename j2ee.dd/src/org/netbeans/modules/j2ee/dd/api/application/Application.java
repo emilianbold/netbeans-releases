@@ -19,9 +19,9 @@
 
 package org.netbeans.modules.j2ee.dd.api.application;
 
-import org.netbeans.api.web.dd.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
-public interface Application extends org.netbeans.api.web.dd.common.RootInterface {
+public interface Application extends org.netbeans.modules.j2ee.dd.api.common.RootInterface {
 	
         public static final String MODULE = "Module";	// NOI18N
 	public static final String SECURITY_ROLE = "SecurityRole";	// NOI18N
@@ -65,39 +65,39 @@ public interface Application extends org.netbeans.api.web.dd.common.RootInterfac
 
 	public Module newModule();
 
-	public void setSecurityRole(int index, org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole value);
+	public void setSecurityRole(int index, org.netbeans.modules.j2ee.dd.api.common.SecurityRole value);
 
-	public org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole getSecurityRole(int index);
+	public org.netbeans.modules.j2ee.dd.api.common.SecurityRole getSecurityRole(int index);
 
 	public int sizeSecurityRole();
 
-	public void setSecurityRole(org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole[] value);
+	public void setSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole[] value);
 
-	public org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole[] getSecurityRole();
+	public org.netbeans.modules.j2ee.dd.api.common.SecurityRole[] getSecurityRole();
 
-	public int addSecurityRole(org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole value);
+	public int addSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole value);
 
-	public int removeSecurityRole(org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole value);
+	public int removeSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole value);
 
-	public org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole newSecurityRole();
+	public org.netbeans.modules.j2ee.dd.api.common.SecurityRole newSecurityRole();
 
         
         //1.4
-        public void setIcon(int index, org.netbeans.api.web.dd.Icon value) throws VersionNotSupportedException;
+        public void setIcon(int index, org.netbeans.modules.j2ee.dd.api.common.Icon value) throws VersionNotSupportedException;
 
-	public org.netbeans.api.web.dd.Icon getIcon(int index) throws VersionNotSupportedException;
+	public org.netbeans.modules.j2ee.dd.api.common.Icon getIcon(int index) throws VersionNotSupportedException;
 
 	public int sizeIcon() throws VersionNotSupportedException;
 
-	public void setIcon(org.netbeans.api.web.dd.Icon[] value) throws VersionNotSupportedException;
+	public void setIcon(org.netbeans.modules.j2ee.dd.api.common.Icon[] value) throws VersionNotSupportedException;
 
-	//public org.netbeans.api.web.dd.Icon[] getIcon() throws VersionNotSupportedException;
+	//public org.netbeans.modules.j2ee.dd.api.common.Icon[] getIcon() throws VersionNotSupportedException;
 
-	public int addIcon(org.netbeans.api.web.dd.Icon value)  throws VersionNotSupportedException;
+	public int addIcon(org.netbeans.modules.j2ee.dd.api.common.Icon value)  throws VersionNotSupportedException;
 
-	public int removeIcon(org.netbeans.api.web.dd.Icon value) throws VersionNotSupportedException;
+	public int removeIcon(org.netbeans.modules.j2ee.dd.api.common.Icon value) throws VersionNotSupportedException;
 
-	public org.netbeans.api.web.dd.Icon newIcon(); 
+	public org.netbeans.modules.j2ee.dd.api.common.Icon newIcon(); 
 
 }
 

@@ -18,7 +18,7 @@
 
 package org.netbeans.modules.j2ee.dd.api.webservices;
 
-public interface ServiceImplBean extends org.netbeans.api.web.dd.common.CommonDDBean {
+public interface ServiceImplBean extends org.netbeans.modules.j2ee.dd.api.common.CommonDDBean {
     
         public static final String EJB_LINK = "EjbLink";	// NOI18N
 	public static final String SERVLET_LINK = "ServletLink";

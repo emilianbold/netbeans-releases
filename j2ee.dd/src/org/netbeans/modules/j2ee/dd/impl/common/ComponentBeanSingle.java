@@ -21,9 +21,9 @@ package org.netbeans.modules.j2ee.dd.impl.common;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Version;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.api.web.dd.common.IconInterface;
-import org.netbeans.api.web.dd.common.VersionNotSupportedException;
-import org.netbeans.api.web.dd.common.DisplayNameInterface;
+import org.netbeans.modules.j2ee.dd.api.common.IconInterface;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.common.DisplayNameInterface;
 
 public abstract class ComponentBeanSingle extends DescriptionBeanSingle implements DisplayNameInterface, IconInterface {
     
@@ -32,8 +32,8 @@ public abstract class ComponentBeanSingle extends DescriptionBeanSingle implemen
     }
     
     // methods implemented in specific BaseBeans e.g. Servlet
-    public org.netbeans.api.web.dd.Icon getIcon(){return null;}
-    public void setIcon(org.netbeans.api.web.dd.Icon icon){}
+    public org.netbeans.modules.j2ee.dd.api.common.Icon getIcon(){return null;}
+    public void setIcon(org.netbeans.modules.j2ee.dd.api.common.Icon icon){}
     public abstract String getDisplayName();
     public abstract void setDisplayName(String displayName);
     
@@ -95,7 +95,7 @@ public abstract class ComponentBeanSingle extends DescriptionBeanSingle implemen
         else throw new VersionNotSupportedException("2.0"); // NOI18N
     }
     public String getSmallIcon() {
-        org.netbeans.api.web.dd.Icon icon = getIcon();
+        org.netbeans.modules.j2ee.dd.api.common.Icon icon = getIcon();
         if (icon==null) return null;
         else return icon.getSmallIcon();
     }
@@ -104,16 +104,16 @@ public abstract class ComponentBeanSingle extends DescriptionBeanSingle implemen
         else throw new VersionNotSupportedException("2.0"); // NOI18N
     }
     public String getLargeIcon() {
-        org.netbeans.api.web.dd.Icon icon = getIcon();
+        org.netbeans.modules.j2ee.dd.api.common.Icon icon = getIcon();
         if (icon==null) return null;
         else return icon.getLargeIcon();
     }
-    public org.netbeans.api.web.dd.Icon getDefaultIcon() {
+    public org.netbeans.modules.j2ee.dd.api.common.Icon getDefaultIcon() {
         return getIcon();
     }
     public java.util.Map getAllIcons() {
         java.util.Map map = new java.util.HashMap();
-        org.netbeans.api.web.dd.Icon icon = getIcon();
+        org.netbeans.modules.j2ee.dd.api.common.Icon icon = getIcon();
         if (icon!=null) {
             String[] icons = new String[]{icon.getSmallIcon(),icon.getLargeIcon()};
             map.put(null, icons);
@@ -134,14 +134,14 @@ public abstract class ComponentBeanSingle extends DescriptionBeanSingle implemen
         else throw new VersionNotSupportedException("2.0"); // NOI18N
     }
     public void removeSmallIcon() {
-        org.netbeans.api.web.dd.Icon icon = getIcon();
+        org.netbeans.modules.j2ee.dd.api.common.Icon icon = getIcon();
         if (icon!=null) {
             icon.setSmallIcon(null);
             if (icon.getLargeIcon()==null) setIcon(null);
         }
     }
     public void removeLargeIcon() {
-        org.netbeans.api.web.dd.Icon icon = getIcon();
+        org.netbeans.modules.j2ee.dd.api.common.Icon icon = getIcon();
         if (icon!=null) {
             icon.setLargeIcon(null);
             if (icon.getSmallIcon()==null) setIcon(null);
@@ -155,11 +155,11 @@ public abstract class ComponentBeanSingle extends DescriptionBeanSingle implemen
     }
     // universal method for setting icon
     private void setIcon(String icon, boolean isSmall) {
-        org.netbeans.api.web.dd.Icon oldIcon = getIcon();
+        org.netbeans.modules.j2ee.dd.api.common.Icon oldIcon = getIcon();
         if (oldIcon==null) {
             if (icon!=null) {
                 try {
-                    org.netbeans.api.web.dd.Icon newIcon = (org.netbeans.api.web.dd.Icon) createBean("Icon");
+                    org.netbeans.modules.j2ee.dd.api.common.Icon newIcon = (org.netbeans.modules.j2ee.dd.api.common.Icon) createBean("Icon");
                     if (isSmall) newIcon.setSmallIcon(icon);
                     else newIcon.setLargeIcon(icon);
                     setIcon(newIcon);

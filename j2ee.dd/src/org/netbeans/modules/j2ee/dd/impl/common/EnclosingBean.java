@@ -23,12 +23,13 @@ package org.netbeans.modules.j2ee.dd.impl.common;
 import org.netbeans.modules.schema2beans.Version;
 import org.netbeans.modules.schema2beans.BaseBean;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.api.web.dd.common.NameAlreadyUsedException;
-import org.netbeans.api.web.dd.common.CreateCapability;
-import org.netbeans.api.web.dd.common.RootInterface;
-import org.netbeans.api.web.dd.common.FindCapability;
-import org.netbeans.api.web.dd.common.CommonDDBean;
+//import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+//import org.netbeans.modules.j2ee.dd.impl.common.CommonDDAccess;
+import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
+import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
+import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
+import org.netbeans.modules.j2ee.dd.api.common.FindCapability;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 
 public abstract class EnclosingBean extends BaseBean implements CommonDDBean, CreateCapability, FindCapability {
     
@@ -61,6 +62,8 @@ public abstract class EnclosingBean extends BaseBean implements CommonDDBean, Cr
     
     private String getPackagePostfix () {
         String pack = getClass().getPackage().getName();
+//        if (pack.endsWith(CommonDDAccess.SERVLET_2_4)) return CommonDDAccess.SERVLET_2_4;
+//        else if (pack.endsWith(CommonDDAccess.SERVLET_2_3)) return CommonDDAccess.SERVLET_2_3;
         return pack;
     }
     

@@ -22,8 +22,8 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.web.dd.DDProvider;
-import org.netbeans.api.web.dd.WebApp;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -336,7 +336,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     private Set versionListeners() {
         if (versionListeners == null) {
             versionListeners = new HashSet();
-            org.netbeans.api.web.dd.WebApp webApp = getWebApp();
+            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = getWebApp();
             if (webApp != null) {
                 PropertyChangeListener l = (PropertyChangeListener) org.openide.util.WeakListeners.create(PropertyChangeListener.class, this, webApp);
                 webApp.addPropertyChangeListener(l);
@@ -355,7 +355,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(org.netbeans.api.web.dd.WebApp.PROPERTY_VERSION)) {
+        if (evt.getPropertyName().equals(org.netbeans.modules.j2ee.dd.api.web.WebApp.PROPERTY_VERSION)) {
             for (Iterator i=versionListeners.iterator(); i.hasNext();) {
                 J2eeModule.VersionListener vl = (J2eeModule.VersionListener) i.next();
                 String oldVersion = (String) evt.getOldValue();
@@ -443,7 +443,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
 //    }
 //
 //    public void propertyChange(PropertyChangeEvent evt) {
-//        if (evt.getPropertyName().equals(org.netbeans.api.web.dd.WebApp.PROPERTY_VERSION)) {
+//        if (evt.getPropertyName().equals(org.netbeans.modules.j2ee.dd.api.web.WebApp.PROPERTY_VERSION)) {
 //            for (Iterator i=versionListeners.iterator(); i.hasNext();) {
 //                J2eeModule.VersionListener vl = (J2eeModule.VersionListener) i.next();
 //                String oldVersion = (String) evt.getOldValue();

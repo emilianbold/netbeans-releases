@@ -15,6 +15,7 @@ package org.netbeans.modules.j2ee.dd.impl.common;
 
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.BaseProperty;
+import org.netbeans.modules.j2ee.dd.api.web.*;
 
 /**
  * Customized comparator for web.xml
@@ -42,7 +43,33 @@ public class Comparator extends org.netbeans.modules.schema2beans.BeanComparator
                         }
                     }
                 }
-            } 
+            } else {
+                if (beanName.equals("SessionConfig")) { //NOI18N
+                    return curBean;
+                } else if (beanName.equals("WelcomeFileList")) { //NOI18N
+                    return curBean;
+                } else if (beanName.equals("LoginConfig")) { //NOI18N
+                    return curBean;
+                } else if (beanName.equals("FormLoginConfig")) { //NOI18N
+                    return curBean;
+                } else if (beanName.equals("FilterMapping")) { //NOI18N
+                    return curBean;
+                } else if (beanName.equals("Listener")) { //NOI18N
+                    return curBean;
+                } else if (beanName.equals("RunAs")) { //NOI18N
+                    return curBean;
+                } else if (beanName.equals("AuthConstraint")) { //NOI18N
+                    return curBean;
+                } else if (beanName.equals("UserDataConstraint")) { //NOI18N
+                    return curBean;
+                } else if (beanName.equals("JspConfig")) { //NOI18N
+                    return curBean;
+                } else if (beanName.equals("JspPropertyGroup")) { //NOI18N
+                    return curBean;
+                } else if (beanName.equals("LocaleEncodingMappingList")) { //NOI18N
+                    return curBean;
+                }   
+            }   
         }
         return super.compareBean(beanName, curBean, newBean);
     }

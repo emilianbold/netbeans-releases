@@ -51,9 +51,9 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.web.project.parser.ParserWebModule;
 import org.netbeans.modules.web.project.parser.JspNameUtil;
 
-import org.netbeans.api.web.dd.DDProvider;
-import org.netbeans.api.web.dd.WebApp;
-import org.netbeans.api.web.dd.Servlet;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.api.java.classpath.ClassPath;
 
 import org.openide.DialogDescriptor;

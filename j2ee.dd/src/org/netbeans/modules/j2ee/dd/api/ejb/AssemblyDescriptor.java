@@ -16,9 +16,10 @@ package org.netbeans.modules.j2ee.dd.api.ejb;
 // 
 // This interface has all of the bean info accessor methods.
 // 
-import org.netbeans.api.web.dd.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
-public interface AssemblyDescriptor extends org.netbeans.api.web.dd.common.CommonDDBean {
+public interface AssemblyDescriptor extends org.netbeans.modules.j2ee.dd.api.common.CommonDDBean {
         
         public static final String SECURITY_ROLE = "SecurityRole";	// NOI18N
 	public static final String METHOD_PERMISSION = "MethodPermission";	// NOI18N
@@ -68,9 +69,9 @@ public interface AssemblyDescriptor extends org.netbeans.api.web.dd.common.Commo
      
 	public int sizeSecurityRole();
 
-	public int removeSecurityRole(org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole value);
+	public int removeSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole value);
 
-	public int addSecurityRole(org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole value);
+	public int addSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole value);
         
         public SecurityRole newSecurityRole();
 

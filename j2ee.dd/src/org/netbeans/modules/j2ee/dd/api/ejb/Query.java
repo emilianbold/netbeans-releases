@@ -16,8 +16,8 @@ package org.netbeans.modules.j2ee.dd.api.ejb;
 // 
 // This interface has all of the bean info accessor methods.
 // 
-import org.netbeans.api.web.dd.common.CommonDDBean;
-import org.netbeans.api.web.dd.common.DescriptionInterface;
+import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
+import org.netbeans.modules.j2ee.dd.api.common.DescriptionInterface;
 
 public interface Query extends CommonDDBean, DescriptionInterface {
     

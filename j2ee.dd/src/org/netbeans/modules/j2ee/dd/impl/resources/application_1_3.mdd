@@ -17,72 +17,72 @@
                     public int getStatus() {
                         return STATE_VALID;
                     }
-                    public int removeIcon(org.netbeans.api.web.dd.Icon value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public int removeIcon(org.netbeans.modules.j2ee.dd.api.common.Icon value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public int addIcon(org.netbeans.api.web.dd.Icon value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public int addIcon(org.netbeans.modules.j2ee.dd.api.common.Icon value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public void setIcon(org.netbeans.api.web.dd.Icon[] value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public void setIcon(org.netbeans.modules.j2ee.dd.api.common.Icon[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public int sizeIcon() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public int sizeIcon() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public org.netbeans.api.web.dd.Icon getIcon(int index) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public org.netbeans.modules.j2ee.dd.api.common.Icon getIcon(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public void setIcon(int index, org.netbeans.api.web.dd.Icon value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public void setIcon(int index, org.netbeans.modules.j2ee.dd.api.common.Icon value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public String getDisplayName(String value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public String getDisplayName(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public void setDisplayName(String locale, String displayName) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public void setDisplayName(String locale, String displayName) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public void setAllDisplayNames(java.util.Map displayNames) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public void setAllDisplayNames(java.util.Map displayNames) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public void removeDisplayNameForLocale(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public void removeDisplayNameForLocale(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public void setSmallIcon(String locale, String icon) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public void setSmallIcon(String locale, String icon) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public void setLargeIcon(String locale, String icon) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public void setLargeIcon(String locale, String icon) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public void setAllIcons(String[] locales, String[] smallIcons, String[] largeIcons) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public void setAllIcons(String[] locales, String[] smallIcons, String[] largeIcons) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public String getSmallIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public String getSmallIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public String getLargeIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public String getLargeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public void removeSmallIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public void removeSmallIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public void removeLargeIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public void removeLargeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public void removeIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public void removeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
                 </user-code>
 	</meta-element>
 	<meta-element>
 		<dtd-name>icon</dtd-name>
 		<bean-name>Icon</bean-name>
-                <implements>org.netbeans.api.web.dd.Icon</implements>
+                <implements>org.netbeans.modules.j2ee.dd.api.common.Icon</implements>
                 <user-code>
-                    public void setXmlLang(String value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public void setXmlLang(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
-                    public String getXmlLang() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
+                    public String getXmlLang() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_3);
                     }
                 </user-code>
 	</meta-element>
@@ -104,7 +104,7 @@
 	<meta-element>
 		<dtd-name>security-role</dtd-name>
 		<bean-name>SecurityRole</bean-name>
-		<implements>org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.SecurityRole</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanSingle</extends>
 	</meta-element>
 	<meta-element>

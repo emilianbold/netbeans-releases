@@ -21,10 +21,10 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.api.web.dd.DDProvider;
-import org.netbeans.api.web.dd.WebApp;
-import org.netbeans.api.web.dd.Servlet;
-import org.netbeans.api.web.dd.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.api.java.classpath.ClassPath;
 
 import org.openide.DialogDescriptor;

@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
   org.netbeans.api.web.webmodule > 1.0,
   org.netbeans.api.java/1,
   org.netbeans.modules.java.project/1,
-  org.netbeans.api.web.dd/1 = ${ddapi.impl.version},
+  org.netbeans.modules.j2ee.dd/1 = 1.0,
   org.netbeans.modules.projectapi/1,
   org.netbeans.modules.projectuiapi/1,
   org.apache.tools.ant.module/3,

@@ -1,8 +1,8 @@
 package org.netbeans.modules.j2ee.api.ejbjar;
 
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.web.dd.EjbLocalRef;
-import org.netbeans.api.web.dd.EjbRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.openide.src.MethodElement;
 
 

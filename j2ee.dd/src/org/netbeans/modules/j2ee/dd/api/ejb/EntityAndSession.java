@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.j2ee.dd.api.ejb;
 
+import org.netbeans.modules.j2ee.dd.api.common.SecurityRoleRef;
+
 /**
  *
  * @author  Nitya Doraisamy
@@ -52,9 +54,9 @@ public interface EntityAndSession extends Ejb {
     
     public int sizeSecurityRoleRef();
     
-    public int removeSecurityRoleRef(org.netbeans.modules.j2ee.dd.api.ejb.SecurityRoleRef value);
+    public int removeSecurityRoleRef(org.netbeans.modules.j2ee.dd.api.common.SecurityRoleRef value);
     
-    public int addSecurityRoleRef(org.netbeans.modules.j2ee.dd.api.ejb.SecurityRoleRef value);
+    public int addSecurityRoleRef(org.netbeans.modules.j2ee.dd.api.common.SecurityRoleRef value);
     
     public SecurityRoleRef newSecurityRoleRef();
         

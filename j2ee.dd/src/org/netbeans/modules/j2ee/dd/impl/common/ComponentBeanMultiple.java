@@ -21,9 +21,9 @@ package org.netbeans.modules.j2ee.dd.impl.common;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Version;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.api.web.dd.common.IconInterface;
-import org.netbeans.api.web.dd.common.VersionNotSupportedException;
-import org.netbeans.api.web.dd.common.DisplayNameInterface;
+import org.netbeans.modules.j2ee.dd.api.common.IconInterface;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.common.DisplayNameInterface;
 
 public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple implements DisplayNameInterface, IconInterface {
     
@@ -31,13 +31,13 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
 	super(comps, version);
     }
     // methods implemented by specific BaseBeans e.g. Servlet
-    public void setIcon(int index, org.netbeans.api.web.dd.Icon icon){}
-    public void  setIcon(org.netbeans.api.web.dd.Icon[] icons){}
-    public org.netbeans.api.web.dd.Icon getIcon(int i){return null;}
-    public org.netbeans.api.web.dd.Icon[] getIcon(){return null;}
+    public void setIcon(int index, org.netbeans.modules.j2ee.dd.api.common.Icon icon){}
+    public void  setIcon(org.netbeans.modules.j2ee.dd.api.common.Icon[] icons){}
+    public org.netbeans.modules.j2ee.dd.api.common.Icon getIcon(int i){return null;}
+    public org.netbeans.modules.j2ee.dd.api.common.Icon[] getIcon(){return null;}
     public int sizeIcon(){return 0;}
-    public int addIcon(org.netbeans.api.web.dd.Icon icon){return 0;}
-    public int removeIcon(org.netbeans.api.web.dd.Icon icon){return 0;}
+    public int addIcon(org.netbeans.modules.j2ee.dd.api.common.Icon icon){return 0;}
+    public int removeIcon(org.netbeans.modules.j2ee.dd.api.common.Icon icon){return 0;}
     
     public abstract void setDisplayName(int index, java.lang.String value);
     public abstract String getDisplayName(int index);
@@ -151,10 +151,10 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
         } catch (VersionNotSupportedException ex){}
     }
     public void setAllIcons(String[] locales, String[] smallIcons, String[] largeIcons) throws VersionNotSupportedException {
-        org.netbeans.api.web.dd.Icon[] newIcons = new org.netbeans.api.web.dd.Icon[locales.length];
+        org.netbeans.modules.j2ee.dd.api.common.Icon[] newIcons = new org.netbeans.modules.j2ee.dd.api.common.Icon[locales.length];
         for (int i=0;i<locales.length;i++) {
             try {
-                newIcons[i] = (org.netbeans.api.web.dd.Icon)createBean("Icon"); //NOI18N
+                newIcons[i] = (org.netbeans.modules.j2ee.dd.api.common.Icon)createBean("Icon"); //NOI18N
                 if (smallIcons[i]!=null) newIcons[i].setSmallIcon(smallIcons[i]);
                 if (largeIcons[i]!=null) newIcons[i].setLargeIcon(largeIcons[i]);
                 if (locales[i]!=null) newIcons[i].setXmlLang(locales[i]);
@@ -163,10 +163,10 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
         setIcon(newIcons);
     }
     
-    public void setIcon(org.netbeans.api.web.dd.Icon icon) {
+    public void setIcon(org.netbeans.modules.j2ee.dd.api.common.Icon icon) {
         if (icon==null) removeIcon();
         else {
-            org.netbeans.api.web.dd.Icon[] oldIcons = getIcon();
+            org.netbeans.modules.j2ee.dd.api.common.Icon[] oldIcons = getIcon();
             boolean found=false;
             try {
                 String locale = icon.getXmlLang();
@@ -200,8 +200,8 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
             return getLargeIcon(null);
         } catch (VersionNotSupportedException ex){return null;}
     }
-    public org.netbeans.api.web.dd.Icon getDefaultIcon() {
-        org.netbeans.api.web.dd.Icon[] icons = getIcon();
+    public org.netbeans.modules.j2ee.dd.api.common.Icon getDefaultIcon() {
+        org.netbeans.modules.j2ee.dd.api.common.Icon[] icons = getIcon();
         for (int i=0;i<icons.length;i++) {
             try {
                 String loc=icons[i].getXmlLang();
@@ -212,7 +212,7 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
     }
     public java.util.Map getAllIcons() {
         java.util.Map map =new java.util.HashMap();
-        org.netbeans.api.web.dd.Icon[] icons = getIcon();
+        org.netbeans.modules.j2ee.dd.api.common.Icon[] icons = getIcon();
         for (int i=0;i<icons.length;i++) {
             String[] iconPair = new String[] {icons[i].getSmallIcon(),icons[i].getLargeIcon()};
             String loc=null;
@@ -231,7 +231,7 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
         removeIcon(locale, false);
     }
     public void removeIcon(String locale) throws VersionNotSupportedException {
-        org.netbeans.api.web.dd.Icon[] icons = getIcon();
+        org.netbeans.modules.j2ee.dd.api.common.Icon[] icons = getIcon();
         for (int i=0;i<icons.length;i++) {
             String loc=icons[i].getXmlLang();
             if ((locale==null && loc==null) || (locale!=null && locale.equalsIgnoreCase(loc))) {
@@ -250,7 +250,7 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
         } catch (VersionNotSupportedException ex){}
     }
     public void removeIcon() {
-        org.netbeans.api.web.dd.Icon[] icons = getIcon();
+        org.netbeans.modules.j2ee.dd.api.common.Icon[] icons = getIcon();
         for (int i=0;i<icons.length;i++) {
             try {
                 String loc=icons[i].getXmlLang();
@@ -259,7 +259,7 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
         }
     }
     public void removeAllIcons() {
-        setIcon(new org.netbeans.api.web.dd.Icon[]{});
+        setIcon(new org.netbeans.modules.j2ee.dd.api.common.Icon[]{});
     }
     private void setIcon(String locale, String icon, boolean isSmall) throws VersionNotSupportedException {
         if (icon==null) {
@@ -267,7 +267,7 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
             else removeLargeIcon(locale);
         }
         else {
-            org.netbeans.api.web.dd.Icon[] oldIcons = getIcon();
+            org.netbeans.modules.j2ee.dd.api.common.Icon[] oldIcons = getIcon();
             boolean found=false;
             for (int i=0;i<oldIcons.length;i++) {
                 String loc=oldIcons[i].getXmlLang();
@@ -280,7 +280,7 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
             }
             if (!found) {
                 try {
-                    org.netbeans.api.web.dd.Icon newIcon = (org.netbeans.api.web.dd.Icon)createBean("Icon"); //NOI18N
+                    org.netbeans.modules.j2ee.dd.api.common.Icon newIcon = (org.netbeans.modules.j2ee.dd.api.common.Icon)createBean("Icon"); //NOI18N
                     if (locale!=null) newIcon.setXmlLang(locale.toLowerCase());
                     if (isSmall) newIcon.setSmallIcon(icon);
                     else newIcon.setLargeIcon(icon);
@@ -291,7 +291,7 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
     }
     private String getIcon(String locale, boolean isSmall) throws VersionNotSupportedException {
         for (int i=0;i<sizeIcon();i++) {
-            org.netbeans.api.web.dd.Icon icon = getIcon(i);
+            org.netbeans.modules.j2ee.dd.api.common.Icon icon = getIcon(i);
             String loc=icon.getXmlLang();
             if ((locale==null && loc==null) || (locale!=null && locale.equalsIgnoreCase(loc))) {
                 if (isSmall) return icon.getSmallIcon();
@@ -302,7 +302,7 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
     }
     
     public void removeIcon(String locale, boolean isSmall) throws VersionNotSupportedException  {
-        org.netbeans.api.web.dd.Icon[] icons = getIcon();
+        org.netbeans.modules.j2ee.dd.api.common.Icon[] icons = getIcon();
         java.util.List iconList = new java.util.ArrayList();
         for (int i=0;i<icons.length;i++) {
             String loc=icons[i].getXmlLang();
@@ -317,6 +317,6 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
             }
         }
         java.util.Iterator it = iconList.iterator();
-        while(it.hasNext()) removeIcon((org.netbeans.api.web.dd.Icon)it.next());
+        while(it.hasNext()) removeIcon((org.netbeans.modules.j2ee.dd.api.common.Icon)it.next());
     }
 }

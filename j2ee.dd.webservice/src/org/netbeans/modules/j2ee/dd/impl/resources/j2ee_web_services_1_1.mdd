@@ -37,7 +37,7 @@
 		<dtd-name>iconType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>IconType</bean-name>
-		<implements>org.netbeans.api.web.dd.Icon</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.Icon</implements>
 	</meta-element>
 	<meta-element>
 		<dtd-name>string</dtd-name>
@@ -85,12 +85,12 @@
                 <implements>org.netbeans.modules.j2ee.dd.api.webservices.PortComponentHandler</implements>
                 <extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanMultiple</extends>
 	</meta-element>
-	<meta-element>org.netbeans.api.web.dd
+	<meta-element>org.netbeans.modules.j2ee.dd.api.web
 		<dtd-name>param-valueType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>ParamValueType</bean-name>
                 <implements>
-                org.netbeans.api.web.dd.InitParam, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
+                org.netbeans.modules.j2ee.dd.api.web.InitParam, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
                 </implements>
                 <extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
 		<user-code>

@@ -176,7 +176,7 @@ public class WebServicesProxy implements Webservices {
         return webSvc==null?new java.util.HashMap():webSvc.getAllDescriptions();
     }
     
-    public String getDescription(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public String getDescription(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return webSvc==null?null:webSvc.getDescription(locale);
     }
      
@@ -192,11 +192,11 @@ public class WebServicesProxy implements Webservices {
         return webSvc==null?null:webSvc.getDefaultDisplayName();
     }
     
-    public String getDisplayName(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public String getDisplayName(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return webSvc==null?null:webSvc.getDisplayName(locale);
     }
     
-    public org.netbeans.api.web.dd.Icon getDefaultIcon() {
+    public org.netbeans.modules.j2ee.dd.api.common.Icon getDefaultIcon() {
         return webSvc==null?null:webSvc.getDefaultIcon();
     }
     
@@ -208,7 +208,7 @@ public class WebServicesProxy implements Webservices {
         return webSvc==null?null:webSvc.getLargeIcon();
     }
     
-    public String getLargeIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public String getLargeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return webSvc==null?null:webSvc.getLargeIcon(locale);
     }
     
@@ -216,7 +216,7 @@ public class WebServicesProxy implements Webservices {
         return webSvc==null?null:webSvc.getSmallIcon();
     }
     
-    public String getSmallIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public String getSmallIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return webSvc==null?null:webSvc.getSmallIcon(locale);
     }
     
@@ -228,7 +228,7 @@ public class WebServicesProxy implements Webservices {
         if (webSvc!=null) webSvc.removeDescription();
     }
     
-    public void removeDescriptionForLocale(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeDescriptionForLocale(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webSvc!=null) webSvc.removeDescriptionForLocale(locale);
     }
     
@@ -240,7 +240,7 @@ public class WebServicesProxy implements Webservices {
         if (webSvc!=null) webSvc.removeDisplayName();
     }
     
-    public void removeDisplayNameForLocale(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeDisplayNameForLocale(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webSvc!=null) webSvc.removeDisplayNameForLocale(locale);
     }
     
@@ -252,7 +252,7 @@ public class WebServicesProxy implements Webservices {
         if (webSvc!=null) webSvc.removeIcon();
     }
     
-    public void removeIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webSvc!=null) webSvc.removeIcon(locale);
     }
     
@@ -260,7 +260,7 @@ public class WebServicesProxy implements Webservices {
         if (webSvc!=null) webSvc.removeLargeIcon();
     }
     
-    public void removeLargeIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeLargeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webSvc!=null) webSvc.removeLargeIcon(locale);
     }
     
@@ -268,11 +268,11 @@ public class WebServicesProxy implements Webservices {
         if (webSvc!=null) webSvc.removeSmallIcon();
     }
     
-    public void removeSmallIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeSmallIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webSvc!=null) webSvc.removeSmallIcon(locale);
     }
     
-    public void setAllDescriptions(java.util.Map descriptions) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setAllDescriptions(java.util.Map descriptions) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webSvc!=null) webSvc.setAllDescriptions(descriptions);
     }
     
@@ -280,11 +280,11 @@ public class WebServicesProxy implements Webservices {
         if (webSvc!=null) webSvc.setDescription(description);
     }
     
-    public void setDescription(String locale, String description) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setDescription(String locale, String description) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webSvc!=null) webSvc.setDescription(locale, description);
     }
     
-    public void setAllDisplayNames(java.util.Map displayNames) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setAllDisplayNames(java.util.Map displayNames) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webSvc!=null) webSvc.setAllDisplayNames(displayNames);
     }
     
@@ -292,11 +292,11 @@ public class WebServicesProxy implements Webservices {
         if (webSvc!=null) webSvc.setDisplayName(displayName);
     }
     
-    public void setDisplayName(String locale, String displayName) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setDisplayName(String locale, String displayName) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webSvc!=null) webSvc.setDisplayName(locale, displayName);
     }
     
-    public void setAllIcons(String[] locales, String[] smallIcons, String[] largeIcons) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setAllIcons(String[] locales, String[] smallIcons, String[] largeIcons) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webSvc!=null) webSvc.setAllIcons(locales, smallIcons, largeIcons);
     }
     
@@ -304,7 +304,7 @@ public class WebServicesProxy implements Webservices {
         if (webSvc!=null) webSvc.setLargeIcon(icon);
     }
     
-    public void setLargeIcon(String locale, String icon) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setLargeIcon(String locale, String icon) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webSvc!=null) webSvc.setLargeIcon(locale, icon);
     }
     
@@ -312,27 +312,27 @@ public class WebServicesProxy implements Webservices {
         if (webSvc!=null) webSvc.setSmallIcon(icon);
     }
     
-    public void setSmallIcon(String locale, String icon) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setSmallIcon(String locale, String icon) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webSvc!=null) webSvc.setSmallIcon(locale, icon);
     }
     
-    public void setIcon(org.netbeans.api.web.dd.Icon icon) {
+    public void setIcon(org.netbeans.modules.j2ee.dd.api.common.Icon icon) {
         if (webSvc!=null) webSvc.setIcon(icon);
     }
     
-    public org.netbeans.api.web.dd.common.CommonDDBean addBean(String beanName, String[] propertyNames, Object[] propertyValues, String keyProperty) throws ClassNotFoundException, org.netbeans.api.web.dd.common.NameAlreadyUsedException {
+    public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean addBean(String beanName, String[] propertyNames, Object[] propertyValues, String keyProperty) throws ClassNotFoundException, org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException {
         return webSvc==null?null:webSvc.addBean(beanName, propertyNames, propertyValues, keyProperty);
     }
     
-    public org.netbeans.api.web.dd.common.CommonDDBean addBean(String beanName) throws ClassNotFoundException {
+    public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean addBean(String beanName) throws ClassNotFoundException {
         return webSvc==null?null:webSvc.addBean(beanName);
     }
     
-    public org.netbeans.api.web.dd.common.CommonDDBean createBean(String beanName) throws ClassNotFoundException {
+    public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean createBean(String beanName) throws ClassNotFoundException {
         return webSvc==null?null:webSvc.createBean(beanName);
     }
     
-    public org.netbeans.api.web.dd.common.CommonDDBean findBeanByName(String beanName, String propertyName, String value) {
+    public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean findBeanByName(String beanName, String propertyName, String value) {
         return webSvc==null?null:webSvc.findBeanByName(beanName, propertyName, value);
     }
         
@@ -350,7 +350,7 @@ public class WebServicesProxy implements Webservices {
         listeners.remove(pcl);
     }
     
-    public void merge(org.netbeans.api.web.dd.common.RootInterface bean, int mode) {
+    public void merge(org.netbeans.modules.j2ee.dd.api.common.RootInterface bean, int mode) {
         if (webSvc != null) {
             if (bean instanceof WebServicesProxy)
                 webSvc.merge(((WebServicesProxy)bean).getOriginal(), mode);

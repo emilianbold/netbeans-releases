@@ -19,8 +19,8 @@
 
 package org.netbeans.modules.j2ee.dd.api.application;
 
-import org.netbeans.api.web.dd.common.CommonDDBean;
-import org.netbeans.api.web.dd.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
 public interface Module extends CommonDDBean {
 	public static final String CONNECTOR = "Connector";	// NOI18N

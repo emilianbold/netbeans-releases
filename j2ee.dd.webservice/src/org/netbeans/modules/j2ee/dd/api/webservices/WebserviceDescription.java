@@ -17,9 +17,9 @@
  */
 
 package org.netbeans.modules.j2ee.dd.api.webservices;
-import org.netbeans.api.web.dd.Icon;
+import org.netbeans.modules.j2ee.dd.api.common.Icon;
 
-public interface WebserviceDescription extends org.netbeans.api.web.dd.common.CommonDDBean{
+public interface WebserviceDescription extends org.netbeans.modules.j2ee.dd.api.common.CommonDDBean{
 	
         public static final String WEBSERVICE_DESCRIPTION_NAME = "WebserviceDescriptionName";	// NOI18N
 	public static final String WEBSERVICEDESCRIPTIONNAMEID = "WebserviceDescriptionNameId";	// NOI18N

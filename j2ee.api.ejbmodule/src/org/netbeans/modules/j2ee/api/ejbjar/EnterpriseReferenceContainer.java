@@ -15,10 +15,10 @@ package org.netbeans.modules.j2ee.api.ejbjar;
 
 import java.io.IOException;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.web.dd.EjbLocalRef;
-import org.netbeans.api.web.dd.EjbRef;
-import org.netbeans.api.web.dd.MessageDestinationRef;
-import org.netbeans.api.web.dd.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
+import org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef;
+import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 
 /**
  * Instances of this class should be supplied by projects to indicate that 

@@ -25,11 +25,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.*;
-import org.netbeans.api.web.dd.DDProvider;
-import org.netbeans.api.web.dd.Filter;
-import org.netbeans.api.web.dd.FilterMapping;
-import org.netbeans.api.web.dd.InitParam;
-import org.netbeans.api.web.dd.WebApp;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.Filter;
+import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
+import org.netbeans.modules.j2ee.dd.api.web.InitParam;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
@@ -197,7 +197,7 @@ public class MonitorSupport {
                     String[] dispatcher = new String[] {"REQUEST","FORWARD","INCLUDE","ERROR"}; //NOI18N
                     try {
                         filterMapping.setDispatcher(dispatcher);
-                    } catch (org.netbeans.api.web.dd.common.VersionNotSupportedException ex) {
+                    } catch (org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException ex) {
                         ((BaseBean)filterMapping).createProperty("dispatcher", // NOI18N
                             "Dispatcher", // NOI18N
                             Common.TYPE_0_N | Common.TYPE_STRING | Common.TYPE_KEY, 

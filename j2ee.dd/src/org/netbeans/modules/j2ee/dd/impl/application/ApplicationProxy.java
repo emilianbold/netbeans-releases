@@ -67,15 +67,15 @@ public class ApplicationProxy implements Application {
     }
     
     
-    public org.netbeans.api.web.dd.common.CommonDDBean addBean(String beanName) throws ClassNotFoundException {
+    public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean addBean(String beanName) throws ClassNotFoundException {
         return app==null?null:app.addBean(beanName);
     }
 
-    public org.netbeans.api.web.dd.common.CommonDDBean addBean(String beanName, String[] propertyNames, Object[] propertyValues, String keyProperty) throws ClassNotFoundException, org.netbeans.api.web.dd.common.NameAlreadyUsedException {
+    public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean addBean(String beanName, String[] propertyNames, Object[] propertyValues, String keyProperty) throws ClassNotFoundException, org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException {
         return app==null?null:app.addBean(beanName, propertyNames, propertyValues, keyProperty);
     }
 
-    public int addIcon(org.netbeans.api.web.dd.Icon value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public int addIcon(org.netbeans.modules.j2ee.dd.api.common.Icon value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return app==null?-1:app.addIcon(value);
     }
 
@@ -88,15 +88,15 @@ public class ApplicationProxy implements Application {
         listeners.add(pcl); 
     }
 
-    public int addSecurityRole(org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole value) {
+    public int addSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole value) {
         return app==null?-1:app.addSecurityRole(value);
     }
 
-    public org.netbeans.api.web.dd.common.CommonDDBean createBean(String beanName) throws ClassNotFoundException {
+    public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean createBean(String beanName) throws ClassNotFoundException {
         return app==null?null:app.createBean(beanName);
     }
 
-    public org.netbeans.api.web.dd.common.CommonDDBean findBeanByName(String beanName, String propertyName, String value) {
+    public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean findBeanByName(String beanName, String propertyName, String value) {
         return app==null?null:app.findBeanByName(beanName, propertyName, value);
     }
 
@@ -120,15 +120,15 @@ public class ApplicationProxy implements Application {
         return app==null?null:app.getDefaultDisplayName();
     }
 
-    public org.netbeans.api.web.dd.Icon getDefaultIcon() {
+    public org.netbeans.modules.j2ee.dd.api.common.Icon getDefaultIcon() {
         return app==null?null:app.getDefaultIcon();
     }
 
-    public String getDescription(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public String getDescription(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return app==null?null:app.getDescription(locale);
     }
 
-    public String getDisplayName(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public String getDisplayName(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return app==null?null:app.getDisplayName(locale);
     }
 
@@ -140,7 +140,7 @@ public class ApplicationProxy implements Application {
         this.error=error;
     }
     
-    public org.netbeans.api.web.dd.Icon getIcon(int index) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public org.netbeans.modules.j2ee.dd.api.common.Icon getIcon(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return app==null?null:app.getIcon(index);
     }
 
@@ -152,7 +152,7 @@ public class ApplicationProxy implements Application {
         return app==null?null:app.getLargeIcon();
     }
 
-    public String getLargeIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public String getLargeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return app==null?null:app.getLargeIcon(locale);
     }
 
@@ -164,11 +164,11 @@ public class ApplicationProxy implements Application {
         return app==null?null:app.getModule(index);
     }
 
-    public org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole[] getSecurityRole() {
+    public org.netbeans.modules.j2ee.dd.api.common.SecurityRole[] getSecurityRole() {
         return app==null?null:app.getSecurityRole();
     }
 
-    public org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole getSecurityRole(int index) {
+    public org.netbeans.modules.j2ee.dd.api.common.SecurityRole getSecurityRole(int index) {
         return app==null?null:app.getSecurityRole(index);
     }
 
@@ -176,7 +176,7 @@ public class ApplicationProxy implements Application {
         return app==null?null:app.getSmallIcon();
     }
 
-    public String getSmallIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public String getSmallIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
          return app==null?null:app.getSmallIcon(locale);
     }
 
@@ -203,7 +203,7 @@ public class ApplicationProxy implements Application {
         return new java.math.BigDecimal(version);
     }
 
-    public void merge(org.netbeans.api.web.dd.common.RootInterface root, int mode) {
+    public void merge(org.netbeans.modules.j2ee.dd.api.common.RootInterface root, int mode) {
         if (app!=null) {
             if (root instanceof ApplicationProxy)
                 app.merge(((ApplicationProxy)root).getOriginal(), mode);
@@ -211,7 +211,7 @@ public class ApplicationProxy implements Application {
         }
     }
 
-    public org.netbeans.api.web.dd.Icon newIcon() {
+    public org.netbeans.modules.j2ee.dd.api.common.Icon newIcon() {
         return app==null?null:app.newIcon();
     }
 
@@ -219,7 +219,7 @@ public class ApplicationProxy implements Application {
         return app==null?null:app.newModule();
     }
 
-    public org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole newSecurityRole() {
+    public org.netbeans.modules.j2ee.dd.api.common.SecurityRole newSecurityRole() {
         return app==null?null:app.newSecurityRole();
     }
 
@@ -239,7 +239,7 @@ public class ApplicationProxy implements Application {
         if (app!=null) app.removeDescription();
     }
 
-    public void removeDescriptionForLocale(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeDescriptionForLocale(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (app!=null) app.removeDescriptionForLocale(locale);
     }
 
@@ -247,7 +247,7 @@ public class ApplicationProxy implements Application {
         if (app!=null) app.removeDisplayName();
     }
 
-    public void removeDisplayNameForLocale(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeDisplayNameForLocale(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (app!=null) app.removeDisplayNameForLocale(locale);
     }
 
@@ -255,11 +255,11 @@ public class ApplicationProxy implements Application {
          if (app!=null) app.removeIcon();
     }
 
-    public int removeIcon(org.netbeans.api.web.dd.Icon value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public int removeIcon(org.netbeans.modules.j2ee.dd.api.common.Icon value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return app==null?-1:app.removeIcon(value);
     }
 
-    public void removeIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (app!=null) app.removeIcon(locale);
     }
 
@@ -267,7 +267,7 @@ public class ApplicationProxy implements Application {
         if (app!=null) app.removeLargeIcon();
     }
 
-    public void removeLargeIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeLargeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (app!=null) app.removeLargeIcon(locale);
     }
 
@@ -280,7 +280,7 @@ public class ApplicationProxy implements Application {
         listeners.remove(pcl);
     }
 
-    public int removeSecurityRole(org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole value) {
+    public int removeSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole value) {
         return app==null?-1:app.removeSecurityRole(value);
     }
 
@@ -288,19 +288,19 @@ public class ApplicationProxy implements Application {
         if (app != null) app.removeSmallIcon();
     }
 
-    public void removeSmallIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeSmallIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (app != null) app.removeSmallIcon(locale);
     }
 
-    public void setAllDescriptions(java.util.Map descriptions) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setAllDescriptions(java.util.Map descriptions) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (app != null) app.setAllDescriptions(descriptions);
     }
 
-    public void setAllDisplayNames(java.util.Map displayNames) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setAllDisplayNames(java.util.Map displayNames) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (app != null) app.setAllDisplayNames(displayNames);
     }
 
-    public void setAllIcons(String[] locales, String[] smallIcons, String[] largeIcons) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setAllIcons(String[] locales, String[] smallIcons, String[] largeIcons) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (app != null) app.setAllIcons(locales, smallIcons, largeIcons);
     }
 
@@ -308,7 +308,7 @@ public class ApplicationProxy implements Application {
         if (app != null) app.setDescription(description);
     }
 
-    public void setDescription(String locale, String description) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setDescription(String locale, String description) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (app != null) app.setDescription(locale, description);
     }
 
@@ -316,19 +316,19 @@ public class ApplicationProxy implements Application {
         if (app != null) app.setDisplayName(displayName);
     }
 
-    public void setDisplayName(String locale, String displayName) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setDisplayName(String locale, String displayName) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (app != null) app.setDisplayName(locale, displayName);
     }
 
-    public void setIcon(org.netbeans.api.web.dd.Icon[] value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setIcon(org.netbeans.modules.j2ee.dd.api.common.Icon[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (app != null) app.setIcon(value);
     }
 
-    public void setIcon(org.netbeans.api.web.dd.Icon icon) {
+    public void setIcon(org.netbeans.modules.j2ee.dd.api.common.Icon icon) {
         if (app != null) app.setIcon(icon);
     }
 
-    public void setIcon(int index, org.netbeans.api.web.dd.Icon value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setIcon(int index, org.netbeans.modules.j2ee.dd.api.common.Icon value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (app != null) app.setIcon(index, value);
     }
 
@@ -340,7 +340,7 @@ public class ApplicationProxy implements Application {
         if (app != null) app.setLargeIcon(icon);
     }
 
-    public void setLargeIcon(String locale, String icon) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setLargeIcon(String locale, String icon) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (app != null) app.setLargeIcon(locale, icon);
     }
 
@@ -352,11 +352,11 @@ public class ApplicationProxy implements Application {
         if (app != null) app.setModule(index, value);
     }
 
-    public void setSecurityRole(org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole[] value) {
+    public void setSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole[] value) {
         if (app != null) app.setSecurityRole(value);
     }
 
-    public void setSecurityRole(int index, org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole value) {
+    public void setSecurityRole(int index, org.netbeans.modules.j2ee.dd.api.common.SecurityRole value) {
         if (app != null) app.setSecurityRole(index, value);
     }
 
@@ -364,11 +364,11 @@ public class ApplicationProxy implements Application {
          if (app != null) app.setSmallIcon(icon);
     }
 
-    public void setSmallIcon(String locale, String icon) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setSmallIcon(String locale, String icon) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (app != null) app.setSmallIcon(locale, icon);
     }
 
-    public int sizeIcon() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public int sizeIcon() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return app==null?0:app.sizeIcon();
     }
 

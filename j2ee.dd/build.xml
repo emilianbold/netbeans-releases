@@ -15,6 +15,8 @@ Microsystems, Inc. All Rights Reserved.
 <project name="j2ee/ddapi" default="netbeans" basedir=".">
   <import file="../../nbbuild/templates/projectized.xml"/>
 
+  <property name="s2b_root_2_3" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_3"/>
+  <property name="s2b_root_2_4" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_4"/>
   <property name="s2b_root_1_1" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_1_1"/>
   <property name="s2b_root_2_0" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_2_0"/>
   <property name="s2b_root_2_1" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_2_1"/>
@@ -37,6 +39,22 @@ Microsystems, Inc. All Rights Reserved.
    <target name="dd2beansgen" depends="s2binit">
      <echo message="generating code generation input file information" />
 
+	<schema2beans schema="${s2b_res_root}/web-app_2_3.dtd"
+	  mddFile="${s2b_res_root}/web-app_2_3.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.web.model_2_3"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  rootDir="src"/>
+	<schema2beans schema="${s2b_res_root}/web-app_2_4.xsd"
+	  mddFile="${s2b_res_root}/web-app_2_4.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.web.model_2_4"
+	  schemaType="xmlschema"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>
 	<schema2beans schema="${s2b_res_root}/ejb-jar_1_1.dtd"
  	  mddFile="${s2b_res_root}/ejb-jar_1_1.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_1_1"
@@ -92,11 +110,25 @@ Microsystems, Inc. All Rights Reserved.
   <target name="clean" depends="projectized.build-init, clean-ddgen-src, clean-javadoc, projectized.clean"/>
 
   <target name="clean-ddgen-src">
+        <mkdir dir="${s2b_root_2_3}"/>
+        <mkdir dir="${s2b_root_2_4}"/>
         <mkdir dir="${s2b_root_1_1}"/>
         <mkdir dir="${s2b_root_2_0}"/>
         <mkdir dir="${s2b_root_2_1}"/>
         <mkdir dir="${s2b_root_app_1_3}"/>
         <mkdir dir="${s2b_root_app_1_4}"/>
+        <delete>
+            <fileset dir="${s2b_root_2_3}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_2_3}"/>
+        <delete>
+            <fileset dir="${s2b_root_2_4}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_2_4}"/>
         <delete>
             <fileset dir="${s2b_root_1_1}">
                 <include name="*.java"/>
@@ -129,27 +161,22 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${s2b_root_app_1_4}"/>
   </target>
   
-  <target name="javadoc" depends="build-init" description="Build Javadoc."> 
-      <property name="_cp" refid="cp"/> 
-      <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc"> 
-       <property name="javadoc.base" location="."/> 
-       <property name="javadoc.name" value="DD-API"/> 
-       <property name="javadoc.title" value="Deployment Descriptor API"/> 
-       <property name="javadoc.packages" value="org.netbeans.j2ee.dd.api.*"/> 
-       <property name="javadoc.classpath" value="${_cp}"/> 
-       <property name="javadoc.arch" location="../arch/arch-DD-API.xml"/>
-       <property name="javadoc.overview" location="doc/overview.html"/>
-       <property name="javadoc.docfiles" location="doc"/>
-      </ant>
-      <mkdir dir="javadoc/DD-API/arch"/>
-      <copy file="doc/ddapi_architecture.html" todir="javadoc/DD-API/arch"/>
-      <copy file="doc/dd_api_schema.jpg" todir="javadoc/DD-API/arch"/>
-      <copy file="doc/usage.html" todir="javadoc/DD-API/arch"/>
-  </target>
-  
-  <target name="clean-javadoc">
-  	<delete dir="javadoc"/>
-  </target>
-
+  <target name="jar-with-module-deps" if="module.dependencies">
+      <property file="spec-ver.properties"/>
+      <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
+          <manifest>
+              <attribute name="OpenIDE-Module-Implementation-Version" value="${ddapi.impl.version}"/>
+              <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
+              <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+              <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
+              <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
+          </manifest>
+            <fileset dir="${build.classes.dir}"/>
+        </jar>
+    </target>
+    
+    <target name="clean-javadoc">
+      <delete dir="javadoc"/>
+    </target>
 </project>
 

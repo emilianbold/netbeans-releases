@@ -16,9 +16,9 @@ package org.netbeans.modules.j2ee.dd.api.ejb;
 // 
 // This interface has all of the bean info accessor methods.
 // 
-import org.netbeans.api.web.dd.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
-public interface MethodPermission extends org.netbeans.api.web.dd.common.CommonDDBean {
+public interface MethodPermission extends org.netbeans.modules.j2ee.dd.api.common.CommonDDBean {
     
         public static final String ROLE_NAME = "RoleName";	// NOI18N
 	public static final String UNCHECKED = "Unchecked";	// NOI18N

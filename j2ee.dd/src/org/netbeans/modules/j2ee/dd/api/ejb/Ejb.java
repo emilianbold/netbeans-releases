@@ -17,9 +17,12 @@ package org.netbeans.modules.j2ee.dd.api.ejb;
 // This interface has all of the bean info accessor methods.
 // 
 
-import org.netbeans.api.web.dd.common.CommonDDBean;
-import org.netbeans.api.web.dd.common.ComponentInterface;
-import org.netbeans.api.web.dd.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
+import org.netbeans.modules.j2ee.dd.api.common.ComponentInterface;
+import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
+import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
 public interface Ejb extends CommonDDBean, ComponentInterface {
     
@@ -67,9 +70,9 @@ public interface Ejb extends CommonDDBean, ComponentInterface {
         
         public EjbRef[] getEjbRef();
         
-        public int removeEjbRef(org.netbeans.modules.j2ee.dd.api.ejb.EjbRef value);
+        public int removeEjbRef(org.netbeans.modules.j2ee.dd.api.common.EjbRef value);
         
-        public int addEjbRef(org.netbeans.modules.j2ee.dd.api.ejb.EjbRef value);
+        public int addEjbRef(org.netbeans.modules.j2ee.dd.api.common.EjbRef value);
         
         public int sizeEjbRef();
         
@@ -83,9 +86,9 @@ public interface Ejb extends CommonDDBean, ComponentInterface {
         
         public EjbLocalRef[] getEjbLocalRef();
         
-        public int addEjbLocalRef(org.netbeans.modules.j2ee.dd.api.ejb.EjbLocalRef value);
+        public int addEjbLocalRef(org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef value);
         
-        public int removeEjbLocalRef(org.netbeans.modules.j2ee.dd.api.ejb.EjbLocalRef value);
+        public int removeEjbLocalRef(org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef value);
         
         public int sizeEjbLocalRef();
                 
@@ -105,11 +108,11 @@ public interface Ejb extends CommonDDBean, ComponentInterface {
         
         public ResourceRef[] getResourceRef();
         
-        public int removeResourceRef(org.netbeans.modules.j2ee.dd.api.ejb.ResourceRef value);
+        public int removeResourceRef(org.netbeans.modules.j2ee.dd.api.common.ResourceRef value);
 
 	public int sizeResourceRef();
         
-        public int addResourceRef(org.netbeans.modules.j2ee.dd.api.ejb.ResourceRef value);
+        public int addResourceRef(org.netbeans.modules.j2ee.dd.api.common.ResourceRef value);
         
         public ResourceRef newResourceRef();
         

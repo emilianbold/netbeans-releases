@@ -67,29 +67,29 @@
 		<implements>org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor</implements>
                 <user-code>
                     // needed for with 2.1
-                    public int addMessageDestination(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int addMessageDestination(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int removeMessageDestination(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int removeMessageDestination(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int sizeMessageDestination() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int sizeMessageDestination() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setMessageDestination(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination[] value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setMessageDestination(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setMessageDestination(int index, org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setMessageDestination(int index, org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination[] getMessageDestination() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination[] getMessageDestination() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination getMessageDestination(int index) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination getMessageDestination(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination newMessageDestination() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination newMessageDestination() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
                 </user-code>
 	</meta-element>
@@ -106,7 +106,7 @@
 	<meta-element>
 		<dtd-name>security-role</dtd-name>
 		<bean-name>SecurityRole</bean-name>
-		<implements>org.netbeans.modules.j2ee.dd.api.ejb.SecurityRole</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.SecurityRole</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanSingle</extends>
 	</meta-element>
 	<meta-element>
@@ -239,59 +239,59 @@
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanSingle</extends>
                 <user-code>
                     // needed for with 2.1
-                    public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef getMessageDestinationRef(int index) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef getMessageDestinationRef(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef[] value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int removeMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int removeMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int sizeMessageDestinationRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int sizeMessageDestinationRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int addMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int addMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setServiceRef(int index, org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setServiceRef(int index, org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef getServiceRef(int index) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef getServiceRef(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef[] value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef[] getServiceRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef[] getServiceRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int removeServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int removeServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int sizeServiceRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int sizeServiceRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int addServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int addServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setServiceEndpoint(String value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setServiceEndpoint(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public java.lang.String getServiceEndpoint() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public java.lang.String getServiceEndpoint() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef newServiceRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef newServiceRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef newMessageDestinationRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef newMessageDestinationRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
                     public String getKeyProperty() { 
                        return "EjbName"; 
@@ -305,53 +305,53 @@
 		<extends>org.netbeans.modules.j2ee.dd.api.ejb.j2ee1_3.EntityBean</extends>
                 <user-code>
                     // needed for with 2.1
-                    public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef getMessageDestinationRef(int index) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef getMessageDestinationRef(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef[] value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int removeMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int removeMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int sizeMessageDestinationRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int sizeMessageDestinationRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int addMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int addMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setServiceRef(int index, org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setServiceRef(int index, org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef getServiceRef(int index) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef getServiceRef(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef[] value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef[] getServiceRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef[] getServiceRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int removeServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int removeServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int sizeServiceRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int sizeServiceRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int addServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int addServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef newServiceRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef newServiceRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef newMessageDestinationRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef newMessageDestinationRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
                     public String getKeyProperty() { 
                        return "EjbName"; 
@@ -365,80 +365,80 @@
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanSingle</extends>
                 <user-code>
                     // needed for with 2.1
-                    public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef getMessageDestinationRef(int index) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef getMessageDestinationRef(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef[] value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int removeMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int removeMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int sizeMessageDestinationRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int sizeMessageDestinationRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int addMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int addMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setServiceRef(int index, org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setServiceRef(int index, org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef getServiceRef(int index) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef getServiceRef(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef[] value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef[] getServiceRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef[] getServiceRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int removeServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int removeServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int sizeServiceRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int sizeServiceRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public int addServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public int addServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef newServiceRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef newServiceRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef newMessageDestinationRef() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef newMessageDestinationRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setActivationConfig(org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setActivationConfig(org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig getActivationConfig() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig getActivationConfig() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig newActivationConfig() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig newActivationConfig() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setMessageDestinationLink(String value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setMessageDestinationLink(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public String getMessageDestinationLink() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public String getMessageDestinationLink() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setMessageDestinationType(String value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setMessageDestinationType(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public String getMessageDestinationType() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public String getMessageDestinationType() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public void setMessagingType(String value) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public void setMessagingType(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
-                    public String getMessagingType() throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
-                        throw new org.netbeans.api.web.dd.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
+                    public String getMessagingType() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(EjbJar.VERSION_2_0);
                     }
                     public String getKeyProperty() { 
                         return "EjbName"; 
@@ -479,13 +479,13 @@
 	<meta-element>
 		<dtd-name>ejb-ref</dtd-name>
 		<bean-name>EjbRef</bean-name>
-		<implements>org.netbeans.modules.j2ee.dd.api.ejb.EjbRef</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.EjbRef</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanSingle</extends>
 	</meta-element>
 	<meta-element>
 		<dtd-name>ejb-local-ref</dtd-name>
 		<bean-name>EjbLocalRef</bean-name>
-		<implements>org.netbeans.modules.j2ee.dd.api.ejb.EjbLocalRef</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanSingle</extends>
 	</meta-element>
 	<meta-element>
@@ -497,7 +497,7 @@
 	<meta-element>
 		<dtd-name>resource-ref</dtd-name>
 		<bean-name>ResourceRef</bean-name>
-		<implements>org.netbeans.modules.j2ee.dd.api.ejb.ResourceRef</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.ResourceRef</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanSingle</extends>
 	</meta-element>
 	<meta-element>
@@ -649,7 +649,7 @@
 	<meta-element>
 		<dtd-name>security-role-ref</dtd-name>
 		<bean-name>SecurityRoleRef</bean-name>
-		<implements>org.netbeans.modules.j2ee.dd.api.ejb.SecurityRoleRef</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.SecurityRoleRef</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanSingle</extends>
 	</meta-element>
 	<meta-element>

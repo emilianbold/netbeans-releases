@@ -17,7 +17,7 @@ package org.netbeans.modules.j2ee.dd.api.ejb;
 // This interface has all of the bean info accessor methods.
 // 
 
-public interface MessageDrivenDestination extends org.netbeans.api.web.dd.common.CommonDDBean {
+public interface MessageDrivenDestination extends org.netbeans.modules.j2ee.dd.api.common.CommonDDBean {
     
     public static final String DESTINATION_TYPE = "DestinationType";	// NOI18N
     public static final String DESTINATIONTYPEID = "DestinationTypeId";	// NOI18N

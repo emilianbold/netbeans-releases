@@ -17,7 +17,7 @@ package org.netbeans.modules.j2ee.dd.api.ejb;
 // This interface has all of the bean info accessor methods.
 // 
 
-public interface MethodParams extends org.netbeans.api.web.dd.common.CommonDDBean {
+public interface MethodParams extends org.netbeans.modules.j2ee.dd.api.common.CommonDDBean {
     
         public static final String METHOD_PARAM = "MethodParam";	// NOI18N
     

@@ -24,9 +24,9 @@ package org.netbeans.modules.j2ee.dd.api.ejb;
 // 
 // This interface has all of the bean info accessor methods.
 // 
-import org.netbeans.api.web.dd.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
-public interface EjbJar extends org.netbeans.api.web.dd.common.RootInterface {
+public interface EjbJar extends org.netbeans.modules.j2ee.dd.api.common.RootInterface {
     public static final String PROPERTY_VERSION="dd_version"; //NOI18N
     public static final String VERSION_1_1="1.1"; //NOI18N
     public static final String VERSION_2_0="2.0"; //NOI18N

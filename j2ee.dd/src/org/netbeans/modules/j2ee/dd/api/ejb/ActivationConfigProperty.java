@@ -16,9 +16,9 @@ package org.netbeans.modules.j2ee.dd.api.ejb;
 // 
 // This interface has all of the bean info accessor methods.
 // 
-import org.netbeans.api.web.dd.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
-public interface ActivationConfigProperty extends org.netbeans.api.web.dd.common.CommonDDBean {
+public interface ActivationConfigProperty extends org.netbeans.modules.j2ee.dd.api.common.CommonDDBean {
     
     public static final String ACTIVATION_CONFIG_PROPERTY_NAME = "ActivationConfigPropertyName";	// NOI18N
     public static final String ACTIVATIONCONFIGPROPERTYNAMEID = "ActivationConfigPropertyNameId";	// NOI18N

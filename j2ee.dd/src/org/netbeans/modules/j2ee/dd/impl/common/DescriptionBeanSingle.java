@@ -21,8 +21,8 @@ package org.netbeans.modules.j2ee.dd.impl.common;
 
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Version;
-import org.netbeans.api.web.dd.common.VersionNotSupportedException;
-import org.netbeans.api.web.dd.common.DescriptionInterface;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.common.DescriptionInterface;
 
 public abstract class DescriptionBeanSingle extends EnclosingBean implements DescriptionInterface {
     

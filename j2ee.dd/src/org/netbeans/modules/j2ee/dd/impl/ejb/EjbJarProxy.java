@@ -97,19 +97,19 @@ public class EjbJarProxy implements EjbJar {
         listeners.remove(pcl);
     }
     
-    public org.netbeans.api.web.dd.common.CommonDDBean createBean(String beanName) throws ClassNotFoundException {
+    public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean createBean(String beanName) throws ClassNotFoundException {
         return ejbJar==null?null:ejbJar.createBean(beanName);
     }
     
-    public org.netbeans.api.web.dd.common.CommonDDBean addBean(String beanName, String[] propertyNames, Object[] propertyValues, String keyProperty) throws ClassNotFoundException, org.netbeans.api.web.dd.common.NameAlreadyUsedException {
+    public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean addBean(String beanName, String[] propertyNames, Object[] propertyValues, String keyProperty) throws ClassNotFoundException, org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException {
         return ejbJar==null?null:ejbJar.addBean(beanName, propertyNames, propertyValues, keyProperty);
     }
     
-    public org.netbeans.api.web.dd.common.CommonDDBean addBean(String beanName) throws ClassNotFoundException {
+    public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean addBean(String beanName) throws ClassNotFoundException {
         return ejbJar==null?null:ejbJar.addBean(beanName);
     }
     
-    public org.netbeans.api.web.dd.common.CommonDDBean findBeanByName(String beanName, String propertyName, String value) {
+    public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean findBeanByName(String beanName, String propertyName, String value) {
         return ejbJar==null?null:ejbJar.findBeanByName(beanName, propertyName, value);
     }
     
@@ -133,15 +133,15 @@ public class EjbJarProxy implements EjbJar {
         return ejbJar==null?null:ejbJar.getDefaultDisplayName();
     }
     
-    public org.netbeans.api.web.dd.Icon getDefaultIcon() {
+    public org.netbeans.modules.j2ee.dd.api.common.Icon getDefaultIcon() {
         return ejbJar==null?null:ejbJar.getDefaultIcon();
     }
     
-    public String getDescription(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public String getDescription(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return ejbJar==null?null:ejbJar.getDescription(locale);
     }
     
-    public String getDisplayName(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public String getDisplayName(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return ejbJar==null?null:ejbJar.getDisplayName(locale);
     }
     
@@ -153,7 +153,7 @@ public class EjbJarProxy implements EjbJar {
         return ejbJar==null?null:ejbJar.getLargeIcon();
     }
     
-    public String getLargeIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public String getLargeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return ejbJar==null?null:ejbJar.getLargeIcon(locale);
     }
 
@@ -161,7 +161,7 @@ public class EjbJarProxy implements EjbJar {
         return ejbJar==null?null:ejbJar.getSmallIcon();
     }
     
-    public String getSmallIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public String getSmallIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return ejbJar==null?null:ejbJar.getSmallIcon(locale);
     }
 
@@ -169,7 +169,7 @@ public class EjbJarProxy implements EjbJar {
         return ejbJar==null?null:ejbJar.getValue(name);
     }
   
-    public void merge(org.netbeans.api.web.dd.common.RootInterface bean, int mode) {
+    public void merge(org.netbeans.modules.j2ee.dd.api.common.RootInterface bean, int mode) {
         if (ejbJar!=null) {
             if (bean instanceof EjbJarProxy)
                 ejbJar.merge(((EjbJarProxy)bean).getOriginal(), mode);
@@ -194,7 +194,7 @@ public class EjbJarProxy implements EjbJar {
         if (ejbJar!=null) ejbJar.removeDescription();
     }
     
-    public void removeDescriptionForLocale(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeDescriptionForLocale(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.removeDescriptionForLocale(locale);
     }
     
@@ -202,7 +202,7 @@ public class EjbJarProxy implements EjbJar {
         if (ejbJar!=null) ejbJar.removeDisplayName();
     }
     
-    public void removeDisplayNameForLocale(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeDisplayNameForLocale(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.removeDisplayNameForLocale(locale);
     }
 
@@ -210,7 +210,7 @@ public class EjbJarProxy implements EjbJar {
         if (ejbJar!=null) ejbJar.removeIcon();
     }
     
-    public void removeIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.removeIcon(locale);
     }
     
@@ -218,7 +218,7 @@ public class EjbJarProxy implements EjbJar {
         if (ejbJar!=null) ejbJar.removeLargeIcon();
     }
     
-    public void removeLargeIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeLargeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.removeLargeIcon(locale);
     }
     
@@ -226,19 +226,19 @@ public class EjbJarProxy implements EjbJar {
         if (ejbJar!=null) ejbJar.removeSmallIcon();
     }
     
-    public void removeSmallIcon(String locale) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void removeSmallIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.removeSmallIcon(locale);
     }
     
-    public void setAllDescriptions(java.util.Map descriptions) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setAllDescriptions(java.util.Map descriptions) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.setAllDescriptions(descriptions);
     }
     
-    public void setAllDisplayNames(java.util.Map displayNames) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setAllDisplayNames(java.util.Map displayNames) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.setAllDisplayNames(displayNames);
     }
     
-    public void setAllIcons(String[] locales, String[] smallIcons, String[] largeIcons) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setAllIcons(String[] locales, String[] smallIcons, String[] largeIcons) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.setAllIcons(locales, smallIcons, largeIcons);
     }
   
@@ -246,7 +246,7 @@ public class EjbJarProxy implements EjbJar {
         if (ejbJar!=null) ejbJar.setDescription(description);
     }
     
-    public void setDescription(String locale, String description) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setDescription(String locale, String description) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.setDescription(locale, description);
     }
     
@@ -254,11 +254,11 @@ public class EjbJarProxy implements EjbJar {
         if (ejbJar!=null) ejbJar.setDisplayName(displayName);
     }
     
-    public void setDisplayName(String locale, String displayName) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setDisplayName(String locale, String displayName) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.setDisplayName(locale, displayName);
     }
 
-    public void setIcon(org.netbeans.api.web.dd.Icon icon) {
+    public void setIcon(org.netbeans.modules.j2ee.dd.api.common.Icon icon) {
         if (ejbJar!=null) ejbJar.setIcon(icon);
     }
     
@@ -270,7 +270,7 @@ public class EjbJarProxy implements EjbJar {
         if (ejbJar!=null) ejbJar.setLargeIcon(icon);
     }
     
-    public void setLargeIcon(String locale, String icon) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setLargeIcon(String locale, String icon) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.setLargeIcon(locale, icon);
     }
 
@@ -278,7 +278,7 @@ public class EjbJarProxy implements EjbJar {
         if (ejbJar!=null) ejbJar.setSmallIcon(icon);
     }
     
-    public void setSmallIcon(String locale, String icon) throws org.netbeans.api.web.dd.common.VersionNotSupportedException {
+    public void setSmallIcon(String locale, String icon) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.setSmallIcon(locale, icon);
     }
 

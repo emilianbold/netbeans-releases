@@ -49,21 +49,14 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-		    <dependency>
-                    <code-name-base>org.netbeans.api.web.dd</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-			<specification-version>1.2</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.j2ee.dd.api.application</package>
                 <package>org.netbeans.modules.j2ee.dd.api.ejb</package>
                 <package>org.netbeans.modules.j2ee.dd.api.common</package>
+                <package>org.netbeans.modules.j2ee.dd.api.web</package>
             </public-packages>
+            <javadoc/>
         </data>
     </configuration>
 </project>
