@@ -2707,6 +2707,10 @@ the ${netbeans.dest}/bin/ directory.
   <target name="build-platform" depends="init">
     <run-depend-build clusters-to-build="nb.cluster.platform"/>
   </target>
+  
+  <target name="build-cluster" depends="init">
+    <run-depend-build clusters-to-build="${cluster-name}"/>
+  </target>
 
   <macrodef name="resolve">
     <attribute name="name"/>
