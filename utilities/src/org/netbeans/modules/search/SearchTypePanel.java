@@ -47,6 +47,7 @@ import javax.swing.JTextField;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -115,22 +116,19 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         this.searchType.addPropertyChangeListener(this);
         
         ResourceBundle bundle = NbBundle.getBundle(SearchTypePanel.class);
-        applyCheckBox.setText(
+        Mnemonics.setLocalizedText(
+                applyCheckBox,
                 bundle.getString("TEXT_BUTTON_APPLY"));                 //NOI18N
-        applyCheckBox.setMnemonic(
-                bundle.getString("TEXT_BUTTON_APPLY_MNEM").charAt(0));  //NOI18N
         
-        saveButton.setText(
+        Mnemonics.setLocalizedText(
+                saveButton,
                 bundle.getString("TEXT_BUTTON_SAVE_AS"));               //NOI18N
-        saveButton.setMnemonic(
-                bundle.getString("TEXT_BUTTON_SAVE_AS_MNEM").charAt(0));//NOI18N
         
         saveButton.setEnabled(false);
         
-        restoreButton.setText(
+        Mnemonics.setLocalizedText(
+                restoreButton,
                 bundle.getString("TEXT_BUTTON_RESTORE"));               //NOI18N
-        restoreButton.setMnemonic(
-                bundle.getString("TEXT_BUTTON_RESTORE_MNEM").charAt(0));//NOI18N
 
         /* The button is disabled until saved criteria are available. */
         restoreButton.setEnabled(false);
@@ -342,10 +340,10 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         pane.setLayout(new BorderLayout(12,0));
         
         ResourceBundle bundle = NbBundle.getBundle(SearchTypePanel.class);
-        JLabel nameLab = new JLabel(
+        JLabel nameLab = new JLabel();
+        Mnemonics.setLocalizedText(
+                nameLab,
                 bundle.getString("TEXT_LABEL_NAME"));                   //NOI18N
-        nameLab.setDisplayedMnemonic(
-                bundle.getString("TEXT_LABEL_NAME_MNEM").charAt(0));    //NOI18N
         
         pane.add(nameLab, BorderLayout.WEST); 
         pane.getAccessibleContext().setAccessibleDescription(
@@ -430,10 +428,10 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         pane.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACS_RestorePanel"));                  //NOI18N
         
-        JLabel resLabel = new JLabel(
+        JLabel resLabel = new JLabel();
+        Mnemonics.setLocalizedText(
+                resLabel,
                 bundle.getString("TEXT_LABEL_SELECT"));                 //NOI18N
-        resLabel.setDisplayedMnemonic(
-                bundle.getString("TEXT_LABEL_SELECT_MNEM").charAt(0));  //NOI18N        
         
         pane.add(resLabel, BorderLayout.WEST); 
         
