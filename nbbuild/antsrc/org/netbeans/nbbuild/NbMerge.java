@@ -152,8 +152,7 @@ public class NbMerge extends Task {
             }
             log ("Suppressing locale: " + s.locale);
             suppressedlocales.add (s.locale);
-        }
-        
+        }        
         for (int j = 0; j < topdirs.size (); j++) {
             File topdir = (File) topdirs.get (j);
             for (int i = 0; i < modules.size (); i++) {
@@ -181,5 +180,13 @@ public class NbMerge extends Task {
                 copy.execute ();
             }
         }
+        it = suppressedlocales.iterator ();
+        UpdateTracking tr = new UpdateTracking( dest.getAbsolutePath() );
+        log ( dest.getAbsolutePath() );
+        while (it.hasNext ()) {
+          String locale = (String) it.next ();
+          tr.removeLocalized(locale);
+        }
+        tr.write();
     }
 }

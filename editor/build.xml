@@ -20,6 +20,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
+  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
 
   <target name="compile">
     <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
@@ -69,7 +70,10 @@ Microsystems, Inc. All Rights Reserved.
     </copy>
   </target>
 
-  <target name="netbeans" depends="jars,release"/>
+  <target name="netbeans" depends="jars,release">
+    <genlist targetname="nbm" outputfiledir="../openide/netbeans"/>
+  </target>
+
 
   <target name="nbm" depends="netbeans">
     <makenbm file="editor.nbm"

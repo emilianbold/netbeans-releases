@@ -25,6 +25,8 @@ ToDo:
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
+  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
+
   <target name="check">
     <available property="jpda" classname="com.sun.jdi.ObjectReference">
       <classpath>
@@ -63,7 +65,10 @@ ToDo:
     </locjar>
   </target>
   <!-- Build only if JPDA is available now. -->
-  <target name="netbeans" depends="check,jars" if="jpda"/>
+  <target name="netbeans" depends="check,jars" if="jpda">
+    <genlist targetname="nbm" outputfiledir="../openide/netbeans"/>
+  </target>
+
   <target name="nbm" depends="check,netbeans" if="jpda">
     <makenbm file="debuggerjpda.nbm"
              topdir="."

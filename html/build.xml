@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
+  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
 
   <target name="compile">
@@ -47,7 +48,9 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
   </target>
 
-  <target name="netbeans" depends="jars"/>
+  <target name="netbeans" depends="jars">
+    <genlist targetname="nbm" outputfiledir="../openide/netbeans"/>
+  </target>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="html.nbm"
