@@ -142,7 +142,6 @@ public class J2SEProjectUtil {
         if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
             return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
         }
-        FileObject[] roots = JavaMetamodel.getManager ().getClassPath ().getRoots ();
         JavaClass clazz = ClassIndex.getClassByFqn (className, JavaMetamodel.getManager ().getClassPath ());
         if (clazz != null) {
             return hasMainMethod (clazz.getResource ());
