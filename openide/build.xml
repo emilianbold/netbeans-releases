@@ -232,6 +232,7 @@ Microsystems, Inc. All Rights Reserved.
          <filename name="**/openide/cookies/*" />
          <filename name="**/openide/util/actions/NodeAction*" />
          <filename name="**/openide/util/actions/CookieAction*" />
+         <filename name="**/openide/resources/defaultNode*"/>
        </or>
        <not>
          <selector refid="openide.text" />
@@ -253,6 +254,7 @@ Microsystems, Inc. All Rights Reserved.
             <filename name="**/openide/util/io/*" />
             <filename name="**/openide/util/actions/*" />
             <filename name="**/openide/xml/*" />         
+            <filename name="**/openide/resources/progress-cursor*"/>
         </or>
         
         <none>
