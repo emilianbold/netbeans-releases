@@ -235,8 +235,8 @@ final class HardStringWizardPanel extends JPanel {
     }
     
     private void initAccessibility() {        
-        sourceCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACS_CTL_sourceCombo"));
-        hardStringTable.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACS_hardStringTable"));
+        sourceCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACSD_sourceCombo"));
+        hardStringTable.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACSD_hardStringTable"));
     }
     
     /** This method is called from within the constructor to
@@ -312,10 +312,10 @@ final class HardStringWizardPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel hardStringLabel;
+    private javax.swing.JTable hardStringTable;
+    private javax.swing.JScrollPane scrollPane;
     private javax.swing.JComboBox sourceCombo;
     private javax.swing.JLabel sourceLabel;
-    private javax.swing.JScrollPane scrollPane;
-    private javax.swing.JTable hardStringTable;
     // End of variables declaration//GEN-END:variables
 
     /** Table model for this class. */
