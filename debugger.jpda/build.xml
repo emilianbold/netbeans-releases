@@ -84,7 +84,7 @@ ToDo:
   </target>
   <!-- Build only if JPDA is available now. -->
   <target name="netbeans" depends="check,jars" if="jpda">
-    <genlist targetname="nbm" outputfiledir="../nbbuild/netbeans"/>
+    <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
   <target name="nbm" depends="check,netbeans" if="jpda">

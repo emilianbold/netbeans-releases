@@ -81,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <target name="netbeans" depends="jars,release">
-        <genlist targetname="nbm" outputfiledir="${nbext_root}/netbeans"/>
+        <genlist targetname="nbm" outputfiledir="netbeans"/>
     </target>
    
     <target name="javahelp" description="Please use xml/core javahelp target instead." />

@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars,release" description="Builds the module">
-    <genlist targetname="nbm" outputfiledir="${nb_root}/nbbuild/netbeans"/>
+    <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
   <target name="nbm" depends="netbeans" description="Prepare the module for distribution via Auto Update.">

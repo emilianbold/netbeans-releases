@@ -88,7 +88,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="jars,release,javahelp">
-        <genlist targetname="nbm" outputfiledir="${nbext_root}/netbeans"/>
+        <genlist targetname="nbm" outputfiledir="netbeans"/>
     </target>
 
     <target name="reload" depends="init,compile" description="Test module inside running IDE (API Support with Ant required).">

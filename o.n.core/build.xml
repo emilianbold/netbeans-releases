@@ -102,7 +102,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="netbeans" depends="jars,release" description="Build everything.">
     <mkdir dir="netbeans/lib/patches"/>
     <mkdir dir="netbeans/modules"/>
-    <genlist targetname="nbm" outputfiledir="../nbbuild/netbeans"/>
+    <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
   <target name="nbm" depends="netbeans" description="Build an NBM.">

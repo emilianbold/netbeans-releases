@@ -357,7 +357,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars" description="Build everything needed for inclusion in the IDE.">
-    <genlist targetname="nbm" outputfiledir="../nbbuild/netbeans"/>
+    <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
   <target name="nbm" depends="netbeans">
@@ -615,7 +615,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
              author="false"
              version="false"
              maxmemory="64m"
-             stylesheetfile="api/doc/javadoc.css"
+             stylesheetfile="api/doc/open-apis.css" 
     >
       <sourcepath>
         <pathelement location="api/doc"/>
