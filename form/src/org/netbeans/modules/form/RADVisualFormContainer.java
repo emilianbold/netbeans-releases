@@ -57,7 +57,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
      * @return current value of the Name property
      */
     public String getName() {
-        return FormEditor.getFormBundle().getString("CTL_FormTopContainerName");
+        return FormEditor.getFormBundle().getString("CTL_FormTopContainerName"); // NOI18N
     }
 
     /**
@@ -178,21 +178,12 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     // End of form synthetic properties
 
     protected Node.Property[] createSyntheticProperties() {
-/*        if (!getFormModel().getFormEditorSupport().supportsAdvancedFeatures()) {
-            return getFormMenuType() > 0 ?
-                     new Node.Property[] { createMenuProperty() } :
-                     new Node.Property[] { };
-//            if ((formInfo instanceof JMenuBarContainer) ||(formInfo instanceof MenuBarContainer)) {
-//                return new Node.Property[] { createMenuProperty() } ;
-//            } else {
-//                return new Node.Property[0];
-//            }
-        } */
-        
-
-        Node.Property policyProperty = new PropertySupport.ReadWrite(PROP_FORM_SIZE_POLICY, Integer.TYPE,
-                                                                     FormEditor.getFormBundle().getString("MSG_FormSizePolicy"),
-                                                                     FormEditor.getFormBundle().getString("MSG_FormSizePolicy")) {
+        Node.Property policyProperty = new PropertySupport.ReadWrite(
+            PROP_FORM_SIZE_POLICY,
+            Integer.TYPE,
+            FormEditor.getFormBundle().getString("MSG_FormSizePolicy"), // NOI18N
+            FormEditor.getFormBundle().getString("HINT_FormSizePolicy")) // NOI18N
+        {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 return new Integer(getFormSizePolicy());
@@ -217,10 +208,12 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
         };
 
-
-        Node.Property sizeProperty = new PropertySupport.ReadWrite(PROP_FORM_SIZE, Dimension.class,
-                                                                   FormEditor.getFormBundle().getString("MSG_FormSize"),
-                                                                   FormEditor.getFormBundle().getString("MSG_FormSize")) {
+        Node.Property sizeProperty = new PropertySupport.ReadWrite(
+            PROP_FORM_SIZE,
+            Dimension.class,
+            FormEditor.getFormBundle().getString("MSG_FormSize"), // NOI18N
+            FormEditor.getFormBundle().getString("HINT_FormSize")) // NOI18N
+        {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 return getFormSize();
@@ -239,9 +232,12 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
         };
 
-        Node.Property positionProperty = new PropertySupport.ReadWrite(PROP_FORM_POSITION, Point.class,
-                                                                       FormEditor.getFormBundle().getString("MSG_FormPosition"),
-                                                                       FormEditor.getFormBundle().getString("MSG_FormPosition")) {
+        Node.Property positionProperty = new PropertySupport.ReadWrite(
+            PROP_FORM_POSITION,
+            Point.class,
+            FormEditor.getFormBundle().getString("MSG_FormPosition"), // NOI18N
+            FormEditor.getFormBundle().getString("HINT_FormPosition")) // NOI18N
+        {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 return getFormPosition();
@@ -261,9 +257,12 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
         };
 
-        Node.Property genPositionProperty = new PropertySupport.ReadWrite(PROP_GENERATE_POSITION, Boolean.TYPE,
-                                                                          FormEditor.getFormBundle().getString("MSG_GeneratePosition"),
-                                                                          FormEditor.getFormBundle().getString("MSG_GeneratePosition")) {
+        Node.Property genPositionProperty = new PropertySupport.ReadWrite(
+            PROP_GENERATE_POSITION,
+            Boolean.TYPE,
+            FormEditor.getFormBundle().getString("MSG_GeneratePosition"), // NOI18N
+            FormEditor.getFormBundle().getString("HINT_GeneratePosition")) // NOI18N
+        {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 return new Boolean(getGeneratePosition());
@@ -284,9 +283,12 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
         };
 
-        Node.Property genSizeProperty = new PropertySupport.ReadWrite(PROP_GENERATE_SIZE, Boolean.TYPE,
-                                                                      FormEditor.getFormBundle().getString("MSG_GenerateSize"),
-                                                                      FormEditor.getFormBundle().getString("MSG_GenerateSize")) {
+        Node.Property genSizeProperty = new PropertySupport.ReadWrite(
+            PROP_GENERATE_SIZE,
+            Boolean.TYPE,
+            FormEditor.getFormBundle().getString("MSG_GenerateSize"), // NOI18N
+            FormEditor.getFormBundle().getString("HINT_GenerateSize")) // NOI18N
+        {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 return new Boolean(getGenerateSize());
@@ -305,9 +307,12 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
         };
 
-        Node.Property genCenterProperty = new PropertySupport.ReadWrite(PROP_GENERATE_CENTER, Boolean.TYPE,
-                                                                        FormEditor.getFormBundle().getString("MSG_GenerateCenter"),
-                                                                        FormEditor.getFormBundle().getString("MSG_GenerateCenter")) {
+        Node.Property genCenterProperty = new PropertySupport.ReadWrite(
+            PROP_GENERATE_CENTER,
+            Boolean.TYPE,
+            FormEditor.getFormBundle().getString("MSG_GenerateCenter"), // NOI18N
+            FormEditor.getFormBundle().getString("HINT_GenerateCenter")) // NOI18N
+        {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 return new Boolean(getGenerateCenter());
@@ -326,9 +331,12 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
         };
 
-        Node.Property designerSizeProperty = new PropertySupport.ReadWrite(PROP_DESIGNER_SIZE, Dimension.class,
-                                                                   FormEditor.getFormBundle().getString("MSG_DesignerSize"),
-                                                                   FormEditor.getFormBundle().getString("MSG_DesignerSize")) {
+        Node.Property designerSizeProperty = new PropertySupport.ReadWrite(
+            PROP_DESIGNER_SIZE,
+            Dimension.class,
+            FormEditor.getFormBundle().getString("MSG_DesignerSize"), // NOI18N
+            FormEditor.getFormBundle().getString("HINT_DesignerSize")) // NOI18N
+        {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 return getDesignerSize();
