@@ -20,7 +20,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 
 
@@ -56,14 +55,9 @@ public class I18nAction extends CookieAction {
             editorCookie.open(); 
 //        }
         
-        final DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
-        
-        // Run in separate thread.
-        RequestProcessor.postRequest(new Runnable() {
-            public void run() {
-                I18nManager.getDefault().internationalize(dataObject);
-            }
-        });
+        DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+	
+        I18nManager.getDefault().internationalize(dataObject);
     }
 
     /** Implements superclass abstract method.
