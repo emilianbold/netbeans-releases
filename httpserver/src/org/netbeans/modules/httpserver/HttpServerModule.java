@@ -67,7 +67,7 @@ public class HttpServerModule implements ModuleInstall {
     if ((serverThread != null) && (!HttpServerSettings.OPTIONS.running)) {
       // another thread is trying to start the server, wait for a while and then stop it if it's still bad
       try {
-        Thread.currentThread().sleep(3000);
+        Thread.currentThread().sleep(2000);
       }
       catch (InterruptedException e) {}
       if ((serverThread != null) && (!HttpServerSettings.OPTIONS.running)) {
@@ -84,6 +84,7 @@ public class HttpServerModule implements ModuleInstall {
             HttpServerSettings.OPTIONS.runSuccess();
           } catch (Exception ex) {
             // couldn't start
+            ex.printStackTrace();
             HttpServerSettings.OPTIONS.runFailure();
             TopManager.getDefault().notify(new NotifyDescriptor.Message(
               NbBundle.getBundle(HttpServerModule.class).getString("MSG_HTTP_SERVER_START_FAIL"), 
@@ -115,6 +116,7 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  9    Gandalf   1.8         6/1/99   Petr Jiricka    
  *  8    Gandalf   1.7         5/31/99  Petr Jiricka    
  *  7    Gandalf   1.6         5/28/99  Petr Jiricka    
  *  6    Gandalf   1.5         5/25/99  Petr Jiricka    
