@@ -1504,12 +1504,15 @@
 
  <!--Options | Source Creation and Management | Templates-->  
  <!--TODO: future; create topic on meaning of node + notes on the fact that some templates aren't meant to be manipulated-->
+   <!--Node: Options | Source Creation and Management | Templates <-> help-->
+  <mapID target="org.netbeans.core.actions.OptionsAction$Templates" url="pending.html" />
+  
   <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
-  <!--for all subnodes of Templates category-->
+  <!--folder subnodes of Templates category-->
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnode" url="pending.html" />
-  <!--for Filesystems node in Templates folder-->
+  <!--for Services node and its subnodes in Templates folder-->
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeServices" url="pending.html" />
-  <!--for Services node in Templates folder-->
+    <!--for Filesystems node in Templates folder-->
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeFilesystems" url="pending.html" />  
 
   <mapID target="org.netbeans.core.actions.MemoryMeterAction" url="pending.html" />
