@@ -27,14 +27,20 @@ import org.openide.util.actions.SystemAction;
 class ModuleActions extends Object implements ToolsAction.Model {
   /** array of all actions added by modules */
   private static SystemAction[] array;
-  /** map of (ManifestSection.ActionSection, List (SystemAction)) */
-  private static HashMap map = new HashMap (3);
+  /** of (ModuleItem, List (SystemAction)) */
+  private static HashMap map = new HashMap (7);
+  /** current module */
+  private static Object module;
   
   /** listeners */
   private static EventListenerList listeners = new EventListenerList ();
 
   /** instance */
   private static ModuleActions INSTANCE = new ModuleActions ();  
+  
+  static {
+    module = INSTANCE;
+  }
   
   /** Initializes the model.
   */
@@ -84,14 +90,24 @@ class ModuleActions extends Object implements ToolsAction.Model {
       l.stateChanged (ev);
     }
   }
+  
+  /** Attaches to processing of a module
+  */
+  public static synchronized void attachTo (ModuleItem mi) {
+    module = mi;
+    if (module == null) {
+      // well known value
+      module = INSTANCE;
+    }
+  }
 
   /** Adds new action to the list.
   */
   public synchronized static void add (ManifestSection.ActionSection as) throws InstantiationException {
-    List list = (List)map.get (as);
+    List list = (List)map.get (module);
     if (list == null) {
       list = new LinkedList ();
-      map.put (as, list);
+      map.put (module, list);
     }
     list.add (as.getAction ());
     
@@ -99,7 +115,7 @@ class ModuleActions extends Object implements ToolsAction.Model {
     fireChange (); // PENDING this is too often
   }
   
-  /** Removes new action to the list.
+  /** Removes new action from the list.
   */
   public synchronized static void remove (ManifestSection.ActionSection as) throws InstantiationException {
     List list = (List)map.get (as);
@@ -109,7 +125,7 @@ class ModuleActions extends Object implements ToolsAction.Model {
     list.remove (as.getAction ());
     
     if (list.isEmpty ()) {
-      map.remove (as);
+      map.remove (module);
     }
     
     array = null;
@@ -141,6 +157,8 @@ class ModuleActions extends Object implements ToolsAction.Model {
 
 /*
 * Log
+*  4    Gandalf   1.3         7/28/99  Jaroslav Tulach Additional manifest & 
+*       separation of actions by modules
 *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
 *  2    Gandalf   1.1         5/13/99  Jaroslav Tulach Services changed to 
