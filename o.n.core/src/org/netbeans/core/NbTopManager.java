@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -134,7 +134,11 @@ public abstract class NbTopManager /*extends TopManager*/ {
         }
 
         // read environment properties from external file, if any
-        readEnvMap ();
+        try {
+            readEnvMap ();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // initialize the URL factory
         URLStreamHandlerFactory fact = new NbURLStreamHandlerFactory();
@@ -242,10 +246,6 @@ public abstract class NbTopManager /*extends TopManager*/ {
     */
     public abstract boolean isInteractive (int il);
     
-    /** Creates error logger.
-     */
-    protected abstract PrintWriter createErrorLogger (int minLogSeverity);
-
     /** Allows subclasses to override this method and return different default set of nodes
     * the should be "selected". If no top component is active then this method is called to
     * allow the top manager to decide which nodes should be pointed as selected.
@@ -569,6 +569,9 @@ public abstract class NbTopManager /*extends TopManager*/ {
                         // system is down; the IDE cannot be used further.
                         ErrorManager.getDefault().notify(t);
                     }
+                    PrintStream ps = TopLogging.getLogOutputStream();
+                    ps.flush(); // #31519
+                    ps.close();
                     TopSecurityManager.exit(0);
                 }
             }
@@ -602,11 +605,10 @@ public abstract class NbTopManager /*extends TopManager*/ {
     /** Reads system properties from a file on a disk and stores them 
      * in System.getPropeties ().
      */
-    private static void readEnvMap () {
+    private static void readEnvMap () throws IOException {
         java.util.Properties env = System.getProperties ();
         String envfile = System.getProperty("netbeans.osenv"); // NOI18N
         if (envfile != null) {
-            try {
                 // XXX is any non-ASCII encoding even defined? unclear...
                 BufferedReader in = new BufferedReader(new InputStreamReader(
                     new FileInputStream(envfile)));
@@ -644,12 +646,6 @@ public abstract class NbTopManager /*extends TopManager*/ {
                         }
                     }
                 }
-            }
-            catch (IOException ignore) {
-                ErrorManager.getDefault ().notify (
-                    ErrorManager.INFORMATIONAL, ignore
-                );
-            }
         }
     }
 

@@ -24,13 +24,12 @@ import org.xml.sax.SAXParseException;
 
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /** This is the implementation of the famous exception manager.
 *
 * @author Jaroslav Tulach, Jesse Glick
 */
-public final class NbErrorManager extends ErrorManager implements Runnable {
+public final class NbErrorManager extends ErrorManager {
 
     public NbErrorManager() {
         this(null, defaultSeverity(), null);
@@ -40,7 +39,7 @@ public final class NbErrorManager extends ErrorManager implements Runnable {
      * Construct for testing.
      * @see "#18141"
      */
-    NbErrorManager(PrintWriter pw) {
+    NbErrorManager(PrintStream pw) {
         this(null, defaultSeverity(), pw);
     }
     
@@ -58,7 +57,7 @@ public final class NbErrorManager extends ErrorManager implements Runnable {
         return ErrorManager.INFORMATIONAL + 1;
     }
     
-    private NbErrorManager(String pfx, int sev, PrintWriter pw) {
+    private NbErrorManager(String pfx, int sev, PrintStream pw) {
         prefix = pfx;
         minLogSeverity = sev;
         logWriter = pw;
@@ -78,19 +77,7 @@ public final class NbErrorManager extends ErrorManager implements Runnable {
     private static final Map map = new WeakHashMap (11);
 
     /** The writer to the log file*/
-    private PrintWriter logWriter;
-    
-    /** task to flush the log file, or null */
-    private RequestProcessor.Task logFlushTask;
-    
-    /** processor in which to flush them */
-    private static final RequestProcessor RP = new RequestProcessor("Flush ErrorManager logs"); // NOI18N
-    
-    /** a lock for flushing */
-    private static final Object FLUSH_LOCK = new String("org.netbeans.core.NbErrorManager.FLUSH_LOCK"); // NOI18N
-    
-    /** delay for flushing */
-    private static final int FLUSH_DELAY = Integer.getInteger("ErrorManager.flush.delay", 15000).intValue(); // NOI18N
+    private PrintStream logWriter;
     
    /** assciates each thread with the lastly notified throwable
     * (Thread, Reference (Throwable))
@@ -113,12 +100,12 @@ public final class NbErrorManager extends ErrorManager implements Runnable {
     
     /** Initializes the log stream.
      */
-    private PrintWriter getLogWriter () {
+    private PrintStream getLogWriter () {
         synchronized (this) {
             if (logWriter != null) return logWriter;
         }
         
-        PrintWriter pw = NbTopManager.getUninitialized().createErrorLogger (minLogSeverity);
+        PrintStream pw = TopLogging.getLogOutputStream();
         
         synchronized (this) {
             if (logWriter == null) {
@@ -198,14 +185,13 @@ public final class NbErrorManager extends ErrorManager implements Runnable {
 
         Exc ex = createExc(t, severity);
 
-        PrintWriter log = getLogWriter ();
+        PrintStream log = getLogWriter ();
         
         if (prefix != null)
             log.print ("[" + prefix + "] "); // NOI18N        
         String level = ex.getSeverity() == INFORMATIONAL ? "INFORMATIONAL " : "";// NOI18N
         log.println (level + "*********** Exception occurred ************ at " + ex.getDate()); // NOI18N
         ex.printStackTrace(log);
-        log.flush();
 
         if (ex.getSeverity () > INFORMATIONAL) {
             NotifyException.notify (ex);
@@ -239,7 +225,7 @@ public final class NbErrorManager extends ErrorManager implements Runnable {
     public void log(int severity, String s) {
         if (isLoggable (severity)) {
             //System.err.println(toString() + " logging '" + s + "' at " + severity);
-            PrintWriter log = getLogWriter ();
+            PrintStream log = getLogWriter ();
             
             if (prefix != null) {
                 boolean showUniquifier;
@@ -262,35 +248,6 @@ public final class NbErrorManager extends ErrorManager implements Runnable {
                 }
             }
             log.println(s);
-            flushLog();
-        }
-    }
-    
-    /**
-     * Flush the log file asynch.
-     * Waits for 5 seconds after the first write.
-     * Note that this is only a delay to force a flush; if there is a lot
-     * of content, the buffer will fill up and it may have been written out
-     * long before. This just catches any trailing content.
-     * @see "BT #4820983"
-     */
-    private void flushLog() {
-        synchronized (FLUSH_LOCK) {
-            if (logFlushTask == null) {
-                logFlushTask = RP.create(this);
-                logFlushTask.schedule(FLUSH_DELAY);
-            }
-        }
-    }
-    
-    /**
-     * Flush log messages periodically.
-     * Exceptions are always flushed immediately.
-     */
-    public void run() {
-        synchronized (FLUSH_LOCK) {
-            getLogWriter().flush();
-            logFlushTask = null;
         }
     }
     

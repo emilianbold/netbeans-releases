@@ -38,10 +38,10 @@ public class NbErrorManagerTest extends NbTestCase {
     }
     
     private NbErrorManager err;
-    private StringWriter w;
+    private ByteArrayOutputStream w;
     protected void setUp() throws Exception {
-        w = new StringWriter();
-        err = new NbErrorManager(new PrintWriter(w));
+        w = new ByteArrayOutputStream();
+        err = new NbErrorManager(new PrintStream(w));
     }
     
     public void testEMFound() throws Exception {

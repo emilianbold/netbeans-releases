@@ -177,16 +177,6 @@ public class NonGui extends NbTopManager implements Runnable {
         return true;
     }
 
-    /** Creates error logger.
-     */
-    protected PrintWriter createErrorLogger (int minLogSeverity) {
-       if (minLogSeverity < -1) {
-            return new PrintWriter (System.err);
-        } else {
-            return new PrintWriter (TopLogging.getLogOutputStream ());
-        }
-    }
-    
     protected static void showHelp() {
         System.out.println(getString("TEXT_help"));
     }

@@ -56,12 +56,6 @@ public class Plain extends NbTopManager implements Runnable, ChangeListener {
         return (IL_WINDOWS & il) == IL_WINDOWS;
     }
 
-    /** Creates error logger, just plain that prints to System.err
-     */
-    protected java.io.PrintWriter createErrorLogger (int minLogSeverity) {
-        return new java.io.PrintWriter (System.err);
-    }
-    
     /** Prints the stack trace of an exception.
     */
     public void notifyException (Throwable t) {
