@@ -292,6 +292,8 @@
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerJavadoc" url="ejb/csh/stand-ejb-properties-javadoc.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerRun" url="ejb/csh/stand-ejb-properties-run.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerSources" url="ejb/csh/stand-ejb-properties-sources.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSServiceHost" url="ejb/csh/stand-ejb-properties-webservices.html" />
+    
     
     <!-- EJB Module with Existing Ant Script Project Wizard dialog box csh: -->
     <mapID target="org.netbeans.modules.j2ee.ejbfreeform.ui.EJBLocationsWizardPanel" url="ejb/csh/freeform_ejb_wizard.html" />
