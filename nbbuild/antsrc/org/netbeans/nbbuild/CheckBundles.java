@@ -203,7 +203,7 @@ public class CheckBundles extends Task {
     private Map parseManifest(File dir) {
         HashMap files = new HashMap(10);
         try {
-            File mf = new File(srcdir, "manifest-subst.mf");
+            File mf = new File(srcdir, "manifest.mf");
             if (!mf.exists()) {
                 log("Manifest file not found", Project.MSG_VERBOSE);
                 return files;
