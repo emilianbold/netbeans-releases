@@ -103,6 +103,8 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
         if (!(antScript.getParentFile().equals(projDir) && antScript.getName().equals("build.xml"))) { // NOI18N
             // NON-DEFAULT location of build file
             component.setScript("${"+FreeformProjectGenerator.PROP_ANT_SCRIPT+"}"); // NOI18N
+        } else {
+            component.setScript(null);
         }
     }
     

@@ -134,6 +134,11 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
 
     public void setScript(String script) {
         this.antScript = script;
+        Iterator it = targetMappings.iterator();
+        while (it.hasNext()) {
+            FreeformProjectGenerator.TargetMapping tm = (FreeformProjectGenerator.TargetMapping)it.next();
+            tm.script = script;
+        }
     }
 
     private void updateCombos(boolean selectDefaults) {
@@ -186,6 +191,8 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         if (add) {
             combo.addItem(item);
             model.setSelectedItem(item);
+        } else {
+            model.setSelectedItem(""); // NOI18N
         }
     }
 

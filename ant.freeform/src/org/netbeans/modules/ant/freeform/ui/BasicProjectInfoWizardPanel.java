@@ -104,7 +104,9 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
             Collections.singletonMap(FreeformProjectGenerator.PROP_PROJECT_LOCATION, component.getProjectLocation().getAbsolutePath()))});
 
         ProjectModel pm = (ProjectModel) wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_MODEL);
-        if (pm == null) {
+        if (pm == null ||
+                !pm.getBaseFolder().equals(component.getProjectLocation()) ||
+                !pm.getNBProjectFolder().equals(component.getProjectFolder())) {
             pm = ProjectModel.createEmptyModel(component.getProjectLocation(), component.getProjectFolder(), evaluator);
             wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_MODEL, pm);
         }
