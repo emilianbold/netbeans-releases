@@ -46,7 +46,6 @@ import javax.swing.SwingUtilities;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import java.text.MessageFormat;
-import org.netbeans.modules.editor.NbEditorSettingsInitializer;
 import org.openide.options.SystemOption;
 
 
@@ -220,7 +219,6 @@ public class AllOptionsFolder{
     public static synchronized AllOptionsFolder getDefault(){
         // try to find the itutor XML settings
         if (settingsFolder!=null) return settingsFolder;
-        NbEditorSettingsInitializer.init();
         org.openide.filesystems.FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().
         findResource(FOLDER);
         if (f==null) return null;
