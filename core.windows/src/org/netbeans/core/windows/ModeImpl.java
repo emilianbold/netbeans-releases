@@ -1042,12 +1042,10 @@ public final class ModeImpl implements Comparable, Mode, FrameTypeListener, Comp
     
     /** Requests visibility for given TopComponent. */
     private void doRequestVisible (TopComponent comp) {
-        if (showing) {
-            // due to possibility of 'too much' delayed requests
-            // we must perform additional check 
-            if ((tcc != null) && tcc.containsTopComponent(comp)) {
-                tcc.requestVisible(comp);
-            }
+        // due to possibility of 'too much' delayed requests
+        // we must perform additional check 
+        if ((tcc != null) && tcc.containsTopComponent(comp)) {
+            tcc.requestVisible(comp);
         }
     }
 
