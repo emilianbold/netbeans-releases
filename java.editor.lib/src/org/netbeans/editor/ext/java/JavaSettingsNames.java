@@ -86,7 +86,7 @@ public class JavaSettingsNames extends ExtSettingsNames {
      * on the next line.
      */
     public static final String JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT
-        = "java-format-statement-continuation-indent";
+        = "java-format-statement-continuation-indent"; // NOI18N
 
     /** Completion of { } [ ] " " ' '  */
     public static final String PAIR_CHARACTERS_COMPLETION 

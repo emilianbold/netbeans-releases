@@ -90,7 +90,7 @@ public class EditorBookmarksModule extends ModuleInstall {
 
     private static final class BookmarksSettingsInitializer extends Settings.AbstractInitializer {
         
-        static final String NAME = "bookmarks-settings-initializer";
+        static final String NAME = "bookmarks-settings-initializer"; // NOI18N
         
         BookmarksSettingsInitializer() {
             super(NAME);

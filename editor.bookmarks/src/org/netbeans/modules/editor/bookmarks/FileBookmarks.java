@@ -49,11 +49,11 @@ public class FileBookmarks {
         StringBuffer sb = new StringBuffer();
         sb.append("url="); // NOI18N
         sb.append(url);
-        sb.append(" { ");
+        sb.append(" { "); // NOI18N
         for (int i = 0; i < bookmarkLineIndexes.length; i++) {
             sb.append(bookmarkLineIndexes[i]);
         }
-        sb.append("}");
+        sb.append("}"); // NOI18N
         return sb.toString();
     }
 

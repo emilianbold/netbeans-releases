@@ -257,11 +257,11 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         TokenItem ti = tagTokenItem;
         while(ti != null) {
             if(ti.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL) {
-                if("/>".equals(ti.getImage())) {
+                if("/>".equals(ti.getImage())) { // NOI18N
                     //it is a singleton tag => do not match
                     return true;
                 }
-                if(">".equals(ti.getImage())) break;
+                if(">".equals(ti.getImage())) break; // NOI18N
             }
             //break the loop on TEXT or on another open tag symbol
             //(just to prevent long loop in case the tag is not closed)
@@ -542,9 +542,9 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         }
         
         for( ; elem != null; elem = elem.getPrevious() ) {
-            if( elem.getType() == SyntaxElement.TYPE_ENDTAG && elem.getText().endsWith(">") ) {
+            if( elem.getType() == SyntaxElement.TYPE_ENDTAG && elem.getText().endsWith(">") ) { // NOI18N
                 stack.push( ((SyntaxElement.Named)elem).getName().toUpperCase() );
-            } else if( (elem.getType() == SyntaxElement.TYPE_TAG) && (elem.getText().indexOf("<") == -1)) { //now </ and > are returned as SyntaxElement.TAG so I need to filter them
+            } else if( (elem.getType() == SyntaxElement.TYPE_TAG) && (elem.getText().indexOf("<") == -1)) { //now </ and > are returned as SyntaxElement.TAG so I need to filter them  NOI18N
                 DTD.Element tag = dtd.getElement( ((SyntaxElement.Tag)elem).getName().toUpperCase() );
 
                 if( tag == null ) continue; // Unknown tag - ignore

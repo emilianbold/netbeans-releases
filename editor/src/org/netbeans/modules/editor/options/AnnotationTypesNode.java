@@ -54,8 +54,8 @@ public class AnnotationTypesNode extends AbstractNode {
     public AnnotationTypesNode() {
         super(new AnnotationTypesSubnodes ());
         setName("annotationtypes"); // NOI18N
-        setDisplayName(getBundleString("ATN_AnnotationTypesNode_Name"));
-        setShortDescription (getBundleString("ATN_AnnotationTypesNode_Description"));
+        setDisplayName(getBundleString("ATN_AnnotationTypesNode_Name")); // NOI18N
+        setShortDescription (getBundleString("ATN_AnnotationTypesNode_Description")); // NOI18N
         setIconBase (ICON_BASE);
     }
     

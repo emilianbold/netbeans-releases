@@ -31,7 +31,7 @@ import org.openide.util.NbBundle;
 
 public final class ToggleBookmarkAction extends BaseAction {
     
-    public static final String NAME = "bookmark-toggle";
+    public static final String NAME = "bookmark-toggle"; // NOI18N
     
     static final long serialVersionUID = -8438899482709646741L;
 

@@ -104,7 +104,7 @@ public class ScrollInsetsEditor extends java.beans.PropertyEditorSupport {
     
     /** Always throws the new exception */
     private void badFormat() throws IllegalArgumentException {
-        throw new IllegalArgumentException( getBundleString("SIE_EXC_BadFormatValue" ) );
+        throw new IllegalArgumentException( getBundleString("SIE_EXC_BadFormatValue" ) ); // NOI18N
     }
 
     private String int2percent( int i ) {

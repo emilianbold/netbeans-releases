@@ -222,7 +222,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
                     // also for offset-1...
                     // + bugfix of #52909 - the > is recognized as SyntaxElement.TAG so we need to 
                     // get a syntax element before, when cc is called before > in a tag e.g. <table w|>
-                    if (elem == null || (elem.getType() == SyntaxElement.TYPE_TAG && ">".equals(elem.getText())) ) {
+                    if (elem == null || (elem.getType() == SyntaxElement.TYPE_TAG && ">".equals(elem.getText())) ) { // NOI18N
                         elem = sup.getElementChain( offset - 1 );
                     }
                     
@@ -314,8 +314,8 @@ else System.err.println( "Inside token " + item.getTokenID() );
                         
                         String quotationChar = null;
                         if(preText != null && preText.length() > 0) {
-                            if(preText.substring(0,1).equals("'")) quotationChar = "'";
-                            if(preText.substring(0,1).equals("\"")) quotationChar = "\"";
+                            if(preText.substring(0,1).equals("'")) quotationChar = "'"; // NOI18N
+                            if(preText.substring(0,1).equals("\"")) quotationChar = "\""; // NOI18N
                         }
                         
                         l = translateValues( offset-len, len, arg.getValueList( quotationChar == null ? preText : preText.substring(1)) , quotationChar );
@@ -356,7 +356,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
     
     List translateAttribs( int offset, int length, List attribs, DTD.Element tag ) {
         List result = new ArrayList( attribs.size() );
-        String tagName = tag.getName() + "#";
+        String tagName = tag.getName() + "#"; // NOI18N
         for( Iterator i = attribs.iterator(); i.hasNext(); ) {
             DTD.Attribute attrib = (DTD.Attribute)i.next();
             String name = attrib.getName();

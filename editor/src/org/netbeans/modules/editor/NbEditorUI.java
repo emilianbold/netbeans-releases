@@ -170,7 +170,7 @@ public class NbEditorUI extends ExtEditorUI {
                     if (position.getPosition() == SideBarPosition.NORTH) {
                         scroller.setColumnHeaderView(sideBar);
                     } else {
-                        throw new IllegalArgumentException("Unsupported side bar position, scrollable = true, position=" + position.getBorderLayoutPosition());
+                        throw new IllegalArgumentException("Unsupported side bar position, scrollable = true, position=" + position.getBorderLayoutPosition()); // NOI18N
                     }
                 }
             } else {

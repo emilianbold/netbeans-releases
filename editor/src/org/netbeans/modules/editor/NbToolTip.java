@@ -65,7 +65,7 @@ public class NbToolTip extends FileChangeAdapter {
     
     private Annotation[] tipAnnotations;
     
-    private RequestProcessor toolTipRP = new RequestProcessor("ToolTip-Evaluator", 1);
+    private RequestProcessor toolTipRP = new RequestProcessor("ToolTip-Evaluator", 1); // NOI18N
     
     static synchronized void buildToolTip(JTextComponent target) {
         String mimeType = NbEditorUtilities.getMimeType(target.getDocument());

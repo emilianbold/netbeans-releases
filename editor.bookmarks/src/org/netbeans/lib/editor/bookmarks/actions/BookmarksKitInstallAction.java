@@ -42,7 +42,7 @@ public class BookmarksKitInstallAction extends BaseAction {
     public static final BookmarksKitInstallAction INSTANCE = new BookmarksKitInstallAction();
     
     BookmarksKitInstallAction() {
-        super("bookmarks-kit-install");
+        super("bookmarks-kit-install"); // NOI18N
         putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);        
     }
 

@@ -33,9 +33,9 @@ import org.openide.util.NbBundle;
 
 public final class GotoBookmarkAction extends BaseAction {
     
-    public static final String GOTO_NEXT_NAME = "bookmark-next";
+    public static final String GOTO_NEXT_NAME = "bookmark-next"; // NOI18N
     
-    public static final String GOTO_PREVIOUS_NAME = "bookmark-previous";
+    public static final String GOTO_PREVIOUS_NAME = "bookmark-previous"; // NOI18N
     
     static final long serialVersionUID = -5169554640178645108L;
     

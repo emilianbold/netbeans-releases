@@ -41,11 +41,11 @@ import org.w3c.dom.NodeList;
 class BookmarksXMLHandler {
     
     // Element names
-    static final String EDITOR_BOOKMARKS_NAMESPACE_URI = "http://www.netbeans.org/ns/editor-bookmarks/1";
-    static final String EDITOR_BOOKMARKS_ELEM = "editor-bookmarks";
-    private static final String FILE_ELEM = "file";
-    private static final String URL_ELEM = "url";
-    private static final String LINE_ELEM = "line";
+    static final String EDITOR_BOOKMARKS_NAMESPACE_URI = "http://www.netbeans.org/ns/editor-bookmarks/1"; // NOI18N
+    static final String EDITOR_BOOKMARKS_ELEM = "editor-bookmarks"; // NOI18N
+    private static final String FILE_ELEM = "file"; // NOI18N
+    private static final String URL_ELEM = "url"; // NOI18N
+    private static final String LINE_ELEM = "line"; // NOI18N
     
     private BookmarksXMLHandler() {
     }

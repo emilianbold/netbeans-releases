@@ -158,8 +158,8 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             
             String content = kit.getContentType();
             BaseDocument document = (BaseDocument) pane.getDocument();
-            FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors/text/base/Services");
-            FileObject contentFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors/" + content + "/Services");
+            FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors/text/base/Services"); // NOI18N
+            FileObject contentFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors/" + content + "/Services"); // NOI18N
             
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log(ErrorManager.INFORMATIONAL, "baseFolder = " + baseFolder );
@@ -309,7 +309,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         int x = (THICKNESS - STATUS_BOX_SIZE) / 2;
         int y = (HEIGHT_OFFSET - STATUS_BOX_SIZE) / 2;
         
-        g.drawString("*", x + 1, y + STATUS_BOX_SIZE * 3 / 2 - 1);
+        g.drawString("*", x + 1, y + STATUS_BOX_SIZE * 3 / 2 - 1); // NOI18N
     }
     
     private void drawGlobalStatus(Graphics g) {
@@ -790,8 +790,8 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         return null;
     }
     
-    private static String[] c = new String[] {"&", "<", ">", "\n", "\""};
-    private static String[] tags = new String[] {"&amp;", "&lt;", "&gt;", "<br>", "&quot;"};
+    private static String[] c = new String[] {"&", "<", ">", "\n", "\""}; // NOI18N
+    private static String[] tags = new String[] {"&amp;", "&lt;", "&gt;", "<br>", "&quot;"}; // NOI18N
     
     private String translate(String input) {
         for (int cntr = 0; cntr < c.length; cntr++) {
