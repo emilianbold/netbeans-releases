@@ -167,6 +167,9 @@ public final class Deployment {
     }
     
     public String [] getInstancesOfServer (String id) {
+        if (id == null  || ServerRegistry.getInstance ().getServer (id) == null) 
+            return getServerInstanceIDs();
+        
         ServerInstance sis [] = ServerRegistry.getInstance ().getServer (id).getInstances ();
         String ids [] = new String [sis.length];
         for (int i = 0; i < sis.length; i++) {
