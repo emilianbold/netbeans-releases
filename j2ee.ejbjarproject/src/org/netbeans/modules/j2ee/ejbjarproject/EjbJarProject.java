@@ -666,9 +666,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             return new AntArtifact[] {
                 helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", helper.getStandardPropertyEvaluator(), "dist", "clean"), // NOI18N
                 helper.createSimpleAntArtifact(EjbProjectConstants.ARTIFACT_TYPE_EJBJAR, "dist.jar", helper.getStandardPropertyEvaluator(), "dist", "clean"), // NOI18N
+                helper.createSimpleAntArtifact(EjbProjectConstants.ARTIFACT_TYPE_EJBJAR_EAR_ARCHIVE, "dist.ear.jar", helper.getStandardPropertyEvaluator(), "dist-ear", "clean-ear") // NOI18N
             };
         }
-        
     }
     
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {

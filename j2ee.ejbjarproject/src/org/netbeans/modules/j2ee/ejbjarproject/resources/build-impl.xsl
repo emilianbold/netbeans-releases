@@ -412,8 +412,9 @@ is divided into following sections:
             <target name="pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
+                <mkdir dir="${{build.ear.classes.dir}}"/>
             </target>
-
+            
             <target name="pre-compile">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
@@ -424,12 +425,12 @@ is divided into following sections:
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
-                    <unjar dest="${{build.classes.dir}}">
-                        <xsl:attribute name="src">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
-                    </unjar>
+                    <copy todir="${{build.classes.dir}}">
+                        <xsl:attribute name="file">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
+                     </copy>
                 </xsl:for-each>   
             </target> 
-            
+
             <target name="library-inclusion-in-manifest" depends="compile">
                 <xsl:for-each select="//ejbjarproject2:included-library">
                     <xsl:variable name="included.prop.name">
@@ -442,11 +443,11 @@ is divided into following sections:
                         <xsl:attribute name="property"><xsl:value-of select="$base.prop.name"/></xsl:attribute>
                         <xsl:attribute name="file">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
                      </basename>
-                     <copy todir="${{build.classes.dir}}">
+                     <copy todir="${{dist.ear.dir}}">
                         <xsl:attribute name="file">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
                      </copy>
                 </xsl:for-each>   
-                <manifest file="${{build.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
+                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
                     <attribute>
                         <xsl:attribute name="name">Class-Path</xsl:attribute>
                         <xsl:attribute name="value">
@@ -464,27 +465,31 @@ is divided into following sections:
             
             <target name="do-compile">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
+                <condition property="classes.dir" value="${{build.ear.classes.dir}}">
+                    <isset property="dist.ear.dir"/>
+                </condition>
+                <property name="classes.dir" value="${{build.classes.dir}}"/>
                 <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service">
                     <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
                     <delete> 
-                      <fileset dir="${{build.classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
+                      <fileset dir="${{classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
                     </delete>
                 </xsl:if>
                 <ejbjarproject2:javac/>
-                <copy todir="${{build.classes.dir}}">
+                <copy todir="${{classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
                         <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
-                    <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
+                    <fileset dir="${{src.dir}}" excludes="${{classes.excludes}}"/>
                     <fileset dir="${{meta.inf}}" includes="**/*.dbschema"/>
                 </copy>
-                <copy todir="${{build.classes.dir}}/META-INF">
+                <copy todir="${{classes.dir}}/META-INF">
                   <fileset dir="${{meta.inf}}" excludes="**/*.dbschema"/> 
                 </copy>
                 <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service">
                     <xsl:comment>For web services, refresh ejb-jar.xml and sun-ejb-jar.xml</xsl:comment>  
-                    <copy todir="${{build.dir}}" overwrite="true"> 
+                    <copy todir="${{classes.dir}}" overwrite="true"> 
                       <fileset includes="META-INF/ejb-jar.xml META-INF/sun-ejb-jar.xml" dir="${{meta.inf}}"/>
                     </copy>
                  </xsl:if>
@@ -549,7 +554,7 @@ is divided into following sections:
             </target>
 
             <target name="do-dist">
-                <xsl:attribute name="depends">init,compile,pre-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,pre-dist,library-inclusion-in-archive</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
@@ -557,16 +562,30 @@ is divided into following sections:
                 </jar>
             </target>
 
+            <target name="do-ear-dist">
+                <xsl:attribute name="depends">init,compile,pre-dist,library-inclusion-in-manifest</xsl:attribute>
+                <dirname property="dist.jar.dir" file="${{dist.ear.jar}}"/>
+                <mkdir dir="${{dist.jar.dir}}"/>
+                <jar jarfile="${{dist.ear.jar}}" compress="${{jar.compress}}" manifest="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF">
+                    <fileset dir="${{build.ear.classes.dir}}"/>
+                </jar>
+            </target>
+            
             <target name="post-dist">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
             <target name="dist">
-                <xsl:attribute name="depends">init,compile,pre-dist,do-dist,post-dist,library-inclusion-in-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,pre-dist,do-dist,post-dist</xsl:attribute>
                 <xsl:attribute name="description">Build distribution (JAR).</xsl:attribute>
             </target>
 
+            <target name="dist-ear">
+                <xsl:attribute name="depends">init,compile,pre-dist,do-ear-dist,post-dist</xsl:attribute>
+                <xsl:attribute name="description">Build distribution (JAR) to be packaged into an EAR.</xsl:attribute>
+            </target>
+            
             <xsl:comment>
     =================
     EXECUTION SECTION
@@ -972,6 +991,13 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,deps-clean,do-clean,post-clean</xsl:attribute>
                 <xsl:attribute name="description">Clean build products.</xsl:attribute>
             </target>
+            
+            <target name="clean-ear">
+                <!-- shouldn't we also clean the libraries copied to ear project's build directory??? -->
+                <xsl:attribute name="depends">clean</xsl:attribute>
+            </target>
+            
+            
         </project>
 
 <!-- TBD items:

@@ -27,6 +27,11 @@ public class EjbProjectConstants {
      * Constant representing the ejb jar artifact
      */
     public static final String ARTIFACT_TYPE_EJBJAR = J2eeProjectConstants.ARTIFACT_TYPE_J2EE_ARCHIVE; //NOI18N
+
+    /**
+     * Constant representing an ejb jar artifact to be packaged as a part of an ear archive.
+     */
+    public static final String ARTIFACT_TYPE_EJBJAR_EAR_ARCHIVE = J2eeProjectConstants.ARTIFACT_TYPE_J2EE_EAR_ARCHIVE;
     
     /**
      * Standard command for redeploying an ejb module project.

@@ -86,6 +86,7 @@ public class EjbJarProjectProperties {
     public static final String LIBRARIES_DIR = "lib.dir"; //NOI18N
     public static final String DIST_DIR = "dist.dir";
     public static final String DIST_JAR = "dist.jar";
+    public static final String DIST_EAR_JAR = "dist.ear.jar"; //NOI18N
     public static final String JAVAC_CLASSPATH = "javac.classpath";
     public static final String DEBUG_CLASSPATH = "debug.classpath";    
 
@@ -107,6 +108,7 @@ public class EjbJarProjectProperties {
     public static final String BUILD_DIR = "build.dir";
     public static final String BUILD_GENERATED_DIR = "build.generated.dir";
     public static final String BUILD_CLASSES_DIR = "build.classes.dir";
+    public static final String BUILD_EAR_CLASSES_DIR = "build.ear.classes.dir";
     public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
     public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes";
     
@@ -151,6 +153,7 @@ public class EjbJarProjectProperties {
         new PropertyDescriptor( BUILD_FILE, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_JAR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( DIST_EAR_JAR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( DEBUG_CLASSPATH, PROJECT, PATH_PARSER ),
 
@@ -168,6 +171,7 @@ public class EjbJarProjectProperties {
         new PropertyDescriptor( RESOURCE_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_DIR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( BUILD_EAR_CLASSES_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_JAVADOC_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVA_PLATFORM, PROJECT, PLATFORM_PARSER ),

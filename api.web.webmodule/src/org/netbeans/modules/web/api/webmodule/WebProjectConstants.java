@@ -45,9 +45,16 @@ public class WebProjectConstants {
     public static final String COMMAND_REDEPLOY = "redeploy" ; //NOI18N
     
     /**
-     * Standard artifact type representing a WAR file, presumably
-     * used for adding wWeb module into a J2EE Application.
+     * Standard artifact type representing a WAR file.
      * @see org.netbeans.api.project.ant.AntArtifact
      */
-    public static final String ARTIFACT_TYPE_WAR = "war"; // NOI18N
+    public static final String ARTIFACT_TYPE_WAR = "war"; // NOI18N 
+    
+    /**
+     * Standard artifact type representing a WAR file used for adding 
+     * Web module into a J2EE Application (ear project).
+     * @see org.netbeans.api.project.ant.AntArtifact
+     */
+    public static final String ARTIFACT_TYPE_WAR_EAR_ARCHIVE = "j2ee_ear_archive"; //NOI18N
+    
 }

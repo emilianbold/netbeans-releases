@@ -82,11 +82,13 @@ public class WebProjectProperties {
     public static final String LIBRARIES_DIR = "lib.dir"; //NOI18N
     public static final String DIST_DIR = "dist.dir"; //NOI18N
     public static final String DIST_WAR = "dist.war"; //NOI18N
+    public static final String DIST_WAR_EAR = "dist.ear.war"; //NOI18N
     public static final String JAVAC_CLASSPATH = "javac.classpath"; //NOI18N
     public static final String DEBUG_CLASSPATH = "debug.classpath";     //NOI18N
     public static final String JSPCOMPILATION_CLASSPATH = "jspcompilation.classpath";     //NOI18N
 
     public static final String WAR_NAME = "war.name"; //NOI18N
+    public static final String WAR_EAR_NAME = "war.ear.name"; //NOI18N
     public static final String WAR_COMPRESS = "jar.compress"; //NOI18N
     public static final String WAR_CONTENT_ADDITIONAL = "war.content.additional"; //NOI18N
 
@@ -108,8 +110,10 @@ public class WebProjectProperties {
     public static final String RESOURCE_DIR = "resource.dir"; //NOI18N
     public static final String BUILD_DIR = "build.dir"; //NOI18N
     public static final String BUILD_WEB_DIR = "build.web.dir"; //NOI18N
+    public static final String BUILD_EAR_WEB_DIR = "build.ear.web.dir"; //NOI18N
     public static final String BUILD_GENERATED_DIR = "build.generated.dir"; //NOI18N
     public static final String BUILD_CLASSES_DIR = "build.classes.dir"; //NOI18N
+    public static final String BUILD_EAR_CLASSES_DIR = "build.ear.classes.dir"; //NOI18N
     public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; //NOI18N
     public static final String BUILD_WEB_EXCLUDES = "build.web.excludes"; //NOI18N
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; //NOI18N
@@ -170,6 +174,7 @@ public class WebProjectProperties {
         new PropertyDescriptor( LIBRARIES_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_WAR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( DIST_WAR_EAR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_CLASSPATH, PROJECT, JAVAC_CLASSPATH_PARSER ),
         new PropertyDescriptor( COMPILE_JSPS, PROJECT, BOOLEAN_PARSER ),
         //new PropertyDescriptor( JSP_COMPILER_CLASSPATH, PRIVATE, PATH_PARSER ),
@@ -177,6 +182,7 @@ public class WebProjectProperties {
         new PropertyDescriptor( JSPCOMPILATION_CLASSPATH, PROJECT, PATH_PARSER ),
 
         new PropertyDescriptor( WAR_NAME, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( WAR_EAR_NAME, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( WAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( WAR_CONTENT_ADDITIONAL, PROJECT, WAR_CONTENT_ADDITIONAL_PARSER ),
         
@@ -192,7 +198,10 @@ public class WebProjectProperties {
         new PropertyDescriptor( SRC_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( TEST_SRC_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_DIR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( BUILD_WEB_DIR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( BUILD_EAR_WEB_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_DIR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( BUILD_EAR_CLASSES_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_JAVADOC_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( WEB_DOCBASE_DIR, PROJECT, STRING_PARSER ),

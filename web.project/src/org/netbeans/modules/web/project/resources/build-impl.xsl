@@ -512,6 +512,7 @@ is divided into following sections:
             <target name="-pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
+                <mkdir dir="${{build.ear.classes.dir}}"/>
             </target>
 
             <target name="-pre-compile">
@@ -532,6 +533,7 @@ is divided into following sections:
 
             <target name="-do-compile">
                 <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile</xsl:attribute>
+                <xsl:attribute name="unless">dist.ear.dir</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
                     <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
                     <delete> 
@@ -574,6 +576,41 @@ is divided into following sections:
                 </xsl:for-each>
             </target>
 
+            <target name="-do-ear-compile">
+                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile</xsl:attribute>
+                <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
+                
+                <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
+                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
+                    <delete> 
+                      <fileset dir="${{build.ear.classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
+                    </delete>
+                </xsl:if>
+
+                <webproject2:javac destdir="${{build.ear.classes.dir}}"/>
+               
+                <copy todir="${{build.ear.classes.dir}}">
+                    <xsl:call-template name="createFilesets">
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:source-roots"/>
+                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
+                    </xsl:call-template>
+                </copy>
+                <copy todir="${{build.ear.web.dir}}">
+                  <fileset excludes="${{build.web.excludes}}" dir="${{web.docbase.dir}}">
+                   <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
+                     <xsl:attribute name="excludes">WEB-INF/classes/** WEB-INF/web.xml WEB/sun-web.xml</xsl:attribute>
+                   </xsl:if>
+                  </fileset>
+                </copy>
+
+                <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
+                    <xsl:comment>For web services, refresh web.xml and sun-web.xml</xsl:comment>  
+                    <copy todir="${{build.web.dir}}" overwrite="true"> 
+                      <fileset includes="WEB-INF/web.xml WEB-INF/sun-web.xml" dir="${{web.docbase.dir}}"/>
+                    </copy>
+                 </xsl:if>
+            </target>
+            
             <target name="-post-compile">
 				<xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
 					<xsl:attribute name="depends">
@@ -593,7 +630,7 @@ is divided into following sections:
             </target>
 
             <target name="compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-post-compile</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-do-ear-compile,-post-compile</xsl:attribute>
                 <xsl:attribute name="description">Compile project.</xsl:attribute>
             </target>
 
@@ -709,6 +746,48 @@ is divided into following sections:
                 </jar>
             </target>
 
+            <target name="library-inclusion-in-manifest" depends="compile">
+                <xsl:for-each select="//webproject2:library/webproject2:file">
+                    <xsl:variable name="included.prop.name">
+                        <xsl:value-of select="."/>
+                    </xsl:variable>
+                    <xsl:variable name="base.prop.name">
+                        <xsl:value-of select="concat('included.lib.', substring-before(substring-after(.,'{'),'}'), '')"/>
+                    </xsl:variable>
+                    <basename>
+                        <xsl:attribute name="property"><xsl:value-of select="$base.prop.name"/></xsl:attribute>
+                        <xsl:attribute name="file"><xsl:value-of select="$included.prop.name"/></xsl:attribute>
+                     </basename>
+                     <copy todir="${{dist.ear.dir}}">
+                        <xsl:attribute name="file"><xsl:value-of select="$included.prop.name"/></xsl:attribute>
+                     </copy>
+                </xsl:for-each>
+                <mkdir dir="${{build.ear.web.dir}}/META-INF"/>
+                <manifest file="${{build.ear.web.dir}}/META-INF/MANIFEST.MF" mode="update">
+                    <attribute>
+                        <xsl:attribute name="name">Class-Path</xsl:attribute>
+                        <xsl:attribute name="value">
+                            <xsl:for-each select="//webproject2:library/webproject2:file">
+                                <xsl:variable name="base.prop.name">
+                                    <xsl:value-of select="concat('${included.lib.', substring-before(substring-after(.,'{'),'}'), '}')"/>
+                                </xsl:variable>
+                                <xsl:if test="position()>1">,</xsl:if>
+                                <xsl:value-of select="$base.prop.name"/>
+                            </xsl:for-each>  
+                        </xsl:attribute>
+                     </attribute>
+                </manifest>
+            </target>
+            
+            <target name="do-ear-dist">
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest</xsl:attribute>
+                <dirname property="dist.jar.dir" file="${{dist.ear.war}}"/>
+                <mkdir dir="${{dist.jar.dir}}"/>
+                <jar jarfile="${{dist.ear.war}}" compress="${{jar.compress}}" manifest="${{build.ear.web.dir}}/META-INF/MANIFEST.MF">
+                    <fileset dir="${{build.ear.web.dir}}"/>
+                </jar>
+            </target>
+            
             <target name="-post-dist">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
@@ -719,6 +798,11 @@ is divided into following sections:
                 <xsl:attribute name="description">Build distribution (WAR).</xsl:attribute>
             </target>
 
+            <target name="dist-ear">
+                <xsl:attribute name="depends">init,compile,-pre-dist,do-ear-dist,-post-dist</xsl:attribute>
+                <xsl:attribute name="description">Build distribution (WAR) to be packaged into an EAR.</xsl:attribute>
+            </target>
+            
             <xsl:comment>
     ======================
     EXECUTION SECTION
@@ -1150,16 +1234,22 @@ is divided into following sections:
 
             <target name="do-clean">
                 <xsl:attribute name="depends">init</xsl:attribute>
+                
+                <condition value="${{build.ear.web.dir}}" property="build.dir.to.clean">
+                    <isset property="dist.ear.dir"/>
+                </condition>
+                <property value="${{build.web.dir}}" name="build.dir.to.clean"/>
+                
                 <delete includeEmptyDirs="true" quiet="true">
-                    <fileset dir="${{build.web.dir}}/WEB-INF/lib"/>
+                    <fileset dir="${{build.dir.to.clean}}/WEB-INF/lib"/>
                 </delete>
                 <delete includeEmptyDirs="true">
                     <fileset dir=".">
                         <include name="${{build.dir}}/**"/>
-                        <exclude name="${{build.web.dir}}/WEB-INF/lib/**"/>
+                        <exclude name="${{build.dir.to.clean}}/WEB-INF/lib/**"/>
                     </fileset>
                 </delete>
-                <available file="${{build.web.dir}}/WEB-INF/lib" type="dir" property="status.clean-failed"/>
+                <available file="${{build.dir.to.clean}}/WEB-INF/lib" type="dir" property="status.clean-failed"/>
                 <delete dir="${{dist.dir}}"/>
                 <!-- XXX explicitly delete all build.* and dist.* dirs in case they are not subdirs -->
                 <!--
@@ -1194,6 +1284,12 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,deps-clean,do-clean,check-clean,-post-clean</xsl:attribute>
                 <xsl:attribute name="description">Clean build products.</xsl:attribute>
             </target>
+            
+            <target name="clean-ear">
+                <xsl:attribute name="depends">clean</xsl:attribute>
+                <xsl:attribute name="description">Clean build products.</xsl:attribute>
+            </target>
+            
         </project>
 
 <!-- TBD items:

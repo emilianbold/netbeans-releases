@@ -99,7 +99,7 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
      * Utility field used by bound properties.
      */
     private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport (this);
-//    public static final String CLIENT_MODULE_URI = "client.module.uri"; //NOI18N
+    public static final String CLIENT_MODULE_URI = "client.module.uri"; //NOI18N
     
 //    // Special properties of the project
 //    public static final String WEB_PROJECT_NAME = "j2ee.ejbjarproject.name";
@@ -1399,14 +1399,16 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
             for (int i = 0; i < moduleProjects.length; i++) {
                 AntArtifact artifacts[] = AntArtifactQuery.findArtifactsByType( 
                     moduleProjects[i], 
-                    J2eeProjectConstants.ARTIFACT_TYPE_J2EE_ARCHIVE );
+                    J2eeProjectConstants.ARTIFACT_TYPE_J2EE_EAR_ARCHIVE ); //the artifact type is the some for both ejb and war projects
                 if (null != artifacts)
                     artifactList.addAll(Arrays.asList(artifacts));
-                artifacts = AntArtifactQuery.findArtifactsByType( 
-                    moduleProjects[i], 
-                    WebProjectConstants.ARTIFACT_TYPE_WAR );
-                if (null != artifacts)
-                    artifactList.addAll(Arrays.asList(artifacts));
+                
+//                artifacts = AntArtifactQuery.findArtifactsByType( 
+//                    moduleProjects[i], 
+//                    WebProjectConstants.ARTIFACT_TYPE_WAR_EAR_ARCHIVE );
+//                if (null != artifacts)
+//                    artifactList.addAll(Arrays.asList(artifacts));
+                
             }
             // create the vcpis
             List newVCPIs = new ArrayList();

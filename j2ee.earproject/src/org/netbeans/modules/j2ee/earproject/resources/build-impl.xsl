@@ -285,18 +285,18 @@ is divided into following sections:
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
 
-            <xsl:call-template name="deps.target">
+            <!--<xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'deps-war'"/>
-                <xsl:with-param name="type" select="'war'"/>
-            </xsl:call-template>
+                <xsl:with-param name="type" select="'j2ee_ear_archive'"/>
+            </xsl:call-template>-->
 
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'deps-j2ee-archive'"/>
-                <xsl:with-param name="type" select="'j2ee_archive'"/>
+                <xsl:with-param name="type" select="'j2ee_ear_archive'"/>
             </xsl:call-template>
 
             <target name="pre-pre-compile">
-                <xsl:attribute name="depends">init,deps-jar,deps-war,deps-j2ee-archive</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,deps-j2ee-archive</xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
             </target>
 
@@ -589,7 +589,9 @@ to simulate
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="script" select="projdeps:script"/>
-                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
+                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
+                    <property name="dist.ear.dir" location="${{build.dir}}"/>
+                </ant>
             </xsl:for-each>
         </target>
     </xsl:template>
