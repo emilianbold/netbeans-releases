@@ -16,6 +16,7 @@ package org.netbeans.modules.search;
 import java.awt.*;
 import java.util.*;
 import java.text.*;
+import java.beans.*;
 
 import javax.swing.event.*;
 
@@ -25,6 +26,7 @@ import org.openide.util.*;
 import org.openidex.search.*;
 
 import org.netbeans.modules.search.res.*;
+import org.netbeans.modules.search.types.DetailHandler;
 
 /**
  * Holds search result data.
@@ -32,46 +34,62 @@ import org.netbeans.modules.search.res.*;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class ResultModel implements NodeAcceptor, TaskListener {
-
-    /** */
+public class ResultModel implements NodeAcceptor, TaskListener
+{
+    /** ChangeEvent object being used to notify about the search task finish. */
     private final ChangeEvent EVENT;
 
+    public final String PROP_SORTED = "sorted";
+
     /** Node representing root of found nodes.
-    * As children holds all found nodes.
+    * Its children hold all found nodes.
     */
-    private final Node root;
+    private ResultRootNode root;
+
+    /** Whether the nodes are sorted. */
+    private boolean sorted;
+
+    /** Unsorted list of found nodes. */
+    private ArrayList unsortedNodes;
+    /** Sorted list of found nodes. */
+    private ArrayList sortedNodes;
 
     private SearchTask task = null;
 
     /** Search state field. */
     private boolean done = false;
 
-    /** search statistics field. */
-    private int found = 0;
-
     private HashSet listeners = new HashSet();
 
-    /** Which criteria produced this result. */
+    /** Which criteria have produced this result. */
     private CriteriaModel criteria;
 
     private boolean useDisp = false;
     private SearchDisplayer disp = null;
 
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+
     /** Creates new ResultModel */
     public ResultModel(CriteriaModel model) {
-
         EVENT = new ChangeEvent(this);
+
+        sorted = false;
+        unsortedNodes = new ArrayList(100);
+        sortedNodes = new ArrayList(100);
         root = new ResultRootNode();
         criteria = model;
     }
 
-    /** Some nodes was found by engine.
+    /** Some nodes were found by engine.
     */
     public synchronized boolean acceptNodes(Node[] nodes) {
 
         root.getChildren().add(nodes);
-        found += nodes.length;
+        for (int i=0; i < nodes.length; i++) {
+            unsortedNodes.add(nodes[i]);
+            sortedNodes.add(nodes[i]);
+        }
 
         if (useDisp && disp != null) {
             disp.acceptNodes(nodes);
@@ -80,22 +98,21 @@ public class ResultModel implements NodeAcceptor, TaskListener {
         return true;
     }
 
-    /** Whether mirror search sesults in output window.
-    * @return new state
-    */
-    synchronized boolean fillOutput (boolean fill) {
-        if (useDisp) return true;
+    /** Send search details to output window. */
+    public void fillOutput () {
+        if (useDisp) {
+            disp.resetOutput();
+        }
+        else {
+            disp = new SearchDisplayer();
+            useDisp = true;
+        }
 
-        useDisp = true;
-
-        disp = new SearchDisplayer();
         disp.acceptNodes(root.getChildren().getNodes());
-
-        return true;
     }
 
     /** Does used criteria allow filling output window?
-    * Currently it check for presence of StructuredDetail.
+    * Currently it checks for presence of DetailHandler.
     * @return true it it can be used.
     */
     synchronized boolean canFillOutput() {
@@ -105,14 +122,13 @@ public class ResultModel implements NodeAcceptor, TaskListener {
         for (int i=0; i < crs.length; i++) {
 
             Class[] detCls = crs[i].getDetailClasses();
-            //we support just AND critera relation
-            //so if one of them support a detail then
-            //all search results (matched nodes) will do.
+            // We support just AND critera relation
+            // so if one of them support a detail then
+            // all search results (matched nodes) do.
             if (detCls == null) continue;
-            for (int x=0; x < detCls.length; x++) {
-                if (StructuredDetail.class == detCls[x])
+            for (int j=0; j < detCls.length; j++)
+                if (DetailHandler.class.isAssignableFrom(detCls[j]))
                     return true;
-            }
         }
         return false;
     }
@@ -142,37 +158,85 @@ public class ResultModel implements NodeAcceptor, TaskListener {
         return criteria;
     }
 
+    public int getFound() {
+        return unsortedNodes.size();
+    }
+
+    /** Whether found nodes are sorted. */
+    public boolean isSorted() {
+        return sorted;
+    }
+
+    /** Sort or unsort found nodes. (Display name is used for sorting.)
+      * A new root node is created. Should not be called until search is finished.
+      * @return the new root node with (un)sorted subnodes.
+      */
+    public Node sortNodes(boolean sort) {
+        if (sort == sorted) return root;
+
+        Children ch = new Children.Array();
+        Node oldRoot = root;
+        root = new ResultRootNode(ch, getRootDisplayName());
+
+        // copy one array of nodes to another array of nodes which is
+        // of type Node[] ...
+        Object[] objects;
+        Node[] sortedN;
+        Node[] unsortedN;
+
+        objects = sortedNodes.toArray();
+        sortedN = new Node[objects.length];
+        for (int i=0; i < objects.length; i++)
+            sortedN[i] = (Node)objects[i];
+
+        objects = unsortedNodes.toArray();
+        unsortedN = new Node[objects.length];
+        for (int i=0; i < objects.length; i++)
+            unsortedN[i] = (Node)objects[i];
+
+        if (sort) {
+            oldRoot.getChildren().remove(unsortedN);
+            ch.add(sortedN);
+        }
+        else {
+            oldRoot.getChildren().remove(sortedN);
+            ch.add(unsortedN);
+        }
+
+        sorted = sort;
+        propertyChangeSupport.firePropertyChange(PROP_SORTED, !sorted, sorted);
+
+        return root;
+    }
+
 
     /** Search task finished. Notify all listeners.
     */
     public void taskFinished(final org.openide.util.Task task) {
+        done = true;
+        root.setDisplayName(getRootDisplayName());
+        Collections.sort(sortedNodes, NodeNameComparator.getComparator());
+        fireChange();
+    }
 
-        // set proper label of search results root node
-
-        if (found==1) {
-            root.setDisplayName (
-                MessageFormat.format(
-                    Res.text("MSG_FOUND_A_NODE"), // NOI18N
-                    new Object[] {new Integer(found)}
-                )
-            );
-
-        } else if (found>1) {
-            root.setDisplayName (
-                MessageFormat.format(
-                    Res.text("MSG_FOUND_X_NODES"), // NOI18N
-                    new Object[] {new Integer(found)}
-                )
-            );
-
-        } else { // <1
-            root.setDisplayName(Res.text("MSG_NO_NODE_FOUND")); // NOI18N
+    private String getRootDisplayName() {
+        if (!isDone()) {
+            return Res.text("SEARCHING___"); // NOI18N
         }
 
-        done = true;
+        int found = getFound();
 
-        fireChange();
-
+        if (found == 1) {
+            return MessageFormat.format(Res.text("MSG_FOUND_A_NODE"), // NOI18N
+                                        new Object[] { new Integer(found) } );
+        } 
+        else if (found > 1) {
+            return MessageFormat.format(Res.text("MSG_FOUND_X_NODES"), // NOI18N
+                                        new Object[] { new Integer(found) } );
+        } 
+        else { // <1
+            return Res.text("MSG_NO_NODE_FOUND"); // NOI18N
+        }
     }
 
     public void stop() {
@@ -198,16 +262,36 @@ public class ResultModel implements NodeAcceptor, TaskListener {
         }
     }
 
+    /** Adds a <code>PropertyChangeListener</code> to the listener list.
+     * @param l The listener to add.
+     */
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener(l);
+    }
+
+    /** Removes a <code>PropertyChangeListener</code> from the listener list.
+     * @param l The listener to remove.
+     */
+    public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(l);
+    }
+
     /** Search Result root node. May contain some statistic properties.
     */
-    private class ResultRootNode extends AbstractNode {
-
-
-        /** create new */
-        public ResultRootNode () {
+    private static class ResultRootNode extends AbstractNode //implements Comparable
+    {
+        /** Create a new node with no content. */
+        public ResultRootNode() {
             super(new Children.Array());
 
+            // displayed name indicates search in progress
             setDisplayName(Res.text("SEARCHING___")); // NOI18N
+        }
+
+        /** Create a new node with subnodes. */
+        public ResultRootNode(Children ch, String dispName) {
+            super(ch);
+            setDisplayName(dispName);
         }
 
         /** @return universal search icon.
@@ -219,25 +303,31 @@ public class ResultModel implements NodeAcceptor, TaskListener {
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
+
+//        public int compareTo(Object o) {
+//            Node node = (Node) o;
+//            return getDisplayName().compareTo(node.getDisplayName());
+//        }
+    }
+
+    private static class NodeNameComparator implements Comparator
+    {
+        private static Comparator comparator = null;
+
+        /** Compare two nodes according to their display names. */
+        public int compare(Object o1,Object o2) {
+            return ((Node)o1).getDisplayName().compareTo(((Node)o2).getDisplayName());
+        }
+
+        public boolean equals(Object obj) {
+            return obj instanceof NodeNameComparator;
+        }
+
+        /** @return the instance of <code>NodeNameComparator</code> */
+        public static Comparator getComparator() {
+            if (comparator == null)
+                comparator = new NodeNameComparator();
+            return comparator;
+        }
     }
 }
-
-
-/*
-* Log
-*  11   Gandalf-post-FCS1.8.2.1     4/4/00   Petr Kuzel      Comments + output window 
-*       fix
-*  10   Gandalf-post-FCS1.8.2.0     2/24/00  Ian Formanek    Post FCS changes
-*  9    Gandalf   1.8         1/13/00  Radko Najman    I18N
-*  8    Gandalf   1.7         1/5/00   Petr Kuzel      Margins used. Help 
-*       contexts.
-*  7    Gandalf   1.6         1/4/00   Petr Kuzel      Bug hunting.
-*  6    Gandalf   1.5         12/23/99 Petr Kuzel      Architecture improved.
-*  5    Gandalf   1.4         12/17/99 Petr Kuzel      Bundling.
-*  4    Gandalf   1.3         12/16/99 Petr Kuzel      
-*  3    Gandalf   1.2         12/15/99 Petr Kuzel      
-*  2    Gandalf   1.1         12/14/99 Petr Kuzel      Minor enhancements
-*  1    Gandalf   1.0         12/14/99 Petr Kuzel      
-* $ 
-*/ 
-
