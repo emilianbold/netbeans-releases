@@ -18,18 +18,7 @@ public interface EjbReference {
     
     public void populateReference(EjbRef ref);
     public void populateReference(EjbLocalRef ref);
-    
-    /**
-     * 
-     *@deprecated use generateJNDILookup(EjbRef, boolean) instead
-     */
-    public MethodElement generateJNDILookup(EjbRef ref);
-    /**
-     * 
-     *@deprecated use generateJNDILookup(EjbLocalRef, boolean) instead
-     */
-    public MethodElement generateJNDILookup(EjbLocalRef ref);
-    
+       
     /**
      * Create JNDI Lookup method and do no throw any checked exceptions in the
      * generated method.
