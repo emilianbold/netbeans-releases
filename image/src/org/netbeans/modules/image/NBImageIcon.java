@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.loaders.image;
 
 import java.io.IOException;
+import java.io.Serializable;
 import javax.swing.*;
 
 import com.netbeans.ide.util.io.*;
@@ -23,7 +24,7 @@ import com.netbeans.ide.util.io.*;
 * @author Petr Hamernik
 * @version 0.18, Jun 3, 1998
 */
-class NBImageIcon extends ImageIcon implements Replaceable {
+class NBImageIcon extends ImageIcon implements Serializable {
   /** generated Serialized Version UID */
   static final long serialVersionUID = -1730253055388017036L;
   /** Appropriate image data object */
@@ -41,7 +42,7 @@ class NBImageIcon extends ImageIcon implements Replaceable {
   }
 
   /** Helper class for serialization */
-  static class ResolvableHelper implements Resolvable {
+  static class ResolvableHelper implements Serializable {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -1120520132882774882L;
     /** DataObject for this image */
@@ -63,6 +64,7 @@ class NBImageIcon extends ImageIcon implements Replaceable {
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/20/99  Petr Hamernik   
  *  2    Gandalf   1.1         1/7/99   Jaroslav Tulach Uses OpenSupport
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
