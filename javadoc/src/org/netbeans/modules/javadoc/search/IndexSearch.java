@@ -244,6 +244,10 @@ public class IndexSearch
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
+    
+    protected String preferredID() {
+        return "JavaDocIndexSearch"; // NOI18N
+    }
 
     public HelpCtx getHelpCtx () {
         return new HelpCtx (INDEX_SEARCH_HELP_CTX_KEY);
