@@ -28,6 +28,7 @@ import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationProvider;
+import org.netbeans.modules.j2ee.deployment.impl.projects.J2eeDeploymentLookup;
 import java.net.URL;
 
 /**
@@ -97,7 +98,8 @@ public class ServerFileDistributor extends ServerProgress {
             module = (J2eeModule) childModuleMap.get(moduleUrl);
         List descriptorRelativePaths = getDescriptorPath(module);
         
-        List serverDescriptorRelativePaths = Arrays.asList(fileLayout.getDeploymentPlanFilenames(target));
+        ModuleType moduleType = (ModuleType) J2eeDeploymentLookup.translateModule.get (module.getModuleType ());
+        List serverDescriptorRelativePaths = Arrays.asList(fileLayout.getDeploymentPlanFilenames(moduleType));
         return new AppChanges(descriptorRelativePaths, serverDescriptorRelativePaths);
     }
     
@@ -190,7 +192,8 @@ public class ServerFileDistributor extends ServerProgress {
                 FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
             }
             
-            String[] rPaths = fileLayout.getDeploymentPlanFilenames(target);
+            ModuleType moduleType = (ModuleType) J2eeDeploymentLookup.translateModule.get (dtarget.getModule ().getModuleType ());
+            String[] rPaths = fileLayout.getDeploymentPlanFilenames(moduleType);
             /*for (int n=0; n < rPaths.length; n++) {
                 FileObject removedFO = (FileObject)destMap.remove(rPaths[n]);
                 System.out.println("Sparing plan file: "+rPaths[n]+" removedFO="+removedFO);

@@ -40,11 +40,10 @@ public abstract class J2eeModuleProvider implements Node.Cookie {
 //    public abstract Context getContext ();
     public abstract ModuleChangeReporter getModuleChangeReporter ();
     
-    /** A folder that can be used for storig confugration data , etc.
-     * Should be part of VCSed files tree but adding files/folders must not 
-     * clutter the module sources.
+    /** A folder where confugration data (deployment descriptor, server specific 
+     * configuration, etc.) are stored.
      */
-    public abstract FileObject getModuleFolder ();
+    public abstract FileObject getConfigFolder ();
     
     /** This cookie must be added by modules */
     public static final Node.Cookie cookieToAdd (DataObject obj) {

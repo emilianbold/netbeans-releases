@@ -120,6 +120,8 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     private boolean isDebugMode = false;
     private boolean startDebugMode = false;
     
+    private static final String DEPLOYMENT_PLAN_FNAME = "tomcat_configuration.xml";
+    
     /** Default constructor. */
     public StartTomcat () {
         pes = new ProgressEventSupport (this);
@@ -595,8 +597,12 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
         }
     }
     
-    public String[] getDeploymentPlanFilenames (TargetModuleID module) {
-        return new String [] {};
+    public String[] getDeploymentPlanFilenames (ModuleType type) {
+        if (type.equals (ModuleType.WAR)) {
+            return new String [] {DEPLOYMENT_PLAN_FNAME};
+        } else {
+            return new String [] {};
+        }
     }
     
     public File getDirectoryForModule (TargetModuleID module) {

@@ -119,7 +119,7 @@ public class InitialServerFileDistributor extends ServerProgress {
             //Pending use childModuleUri for getDeploymentPlanFileNames
             DeployableObject deployable = dcp.getDeployableObject(childModuleUri);
             //String[] rPaths = fileLayout.getDeploymentPlanFilenames(deployable.getModuleType());
-            String[] rPaths = fileLayout.getDeploymentPlanFilenames(null);
+            String[] rPaths = fileLayout.getDeploymentPlanFilenames(deployable.getType ());
             File configFile = dtarget.getConfigurationFile();
             if (rPaths == null || rPaths.length == 0)
                 return;

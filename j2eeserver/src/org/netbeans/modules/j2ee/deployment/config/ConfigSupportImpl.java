@@ -39,6 +39,10 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
     /** Creates a new instance of ConfigSupportImpl */
     public ConfigSupportImpl(J2eeDeploymentLookup deployment) {
         this.deployment = deployment;
+    }
+
+    //the values are not chached, catch can be cached by client or add listening to server change
+    private void refresh () {
         server = deployment.getJ2eeProfileSettings().getServerString();
         WebContextRoot webContextRoot = server.getServer().getWebContextRoot();
         webContextRootXpath = webContextRoot.getXpath();
@@ -80,6 +84,7 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
      * @return string value, null if not set or could not find
      */
     public String getWebContextRoot() {
+        refresh ();
         DConfigBean configBean = getWebContextDConfigBean();
         if (configBean == null) {
             ErrorManager.getDefault ().log ("Configuration not found");
@@ -87,10 +92,12 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
         }
         return (String) ConfigUtils.getBeanPropertyValue(configBean, webContextRootPropName);
     }
+    
     /**
      * Set context root
      */
     public void setWebContextRoot(String contextRoot) {
+        refresh ();
         DConfigBean configBean = getWebContextDConfigBean();
         if (configBean == null) {
             ErrorManager.getDefault ().log ("Configuration not found");

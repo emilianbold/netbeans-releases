@@ -178,7 +178,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     }
     
     public File getConfigurationFile() {
-        return settings.getConfigurationFile();
+        return deployment.getConfigurationFile ();
     }
     
     public ServerString getServer() {
