@@ -58,6 +58,7 @@ class HandleLayer extends JPanel
     private FormDesigner.Resizer fdResizer;
     private int designerResizeType;
     private boolean wasDragged = false;
+    private int sharedMode = 0;
 
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
@@ -292,14 +293,16 @@ class HandleLayer extends JPanel
     private void selectOtherComponentsNode() {
         FormEditorSupport fes = FormEditorSupport.getSupport(formDesigner.getModel());
         ComponentInspector ci = ComponentInspector.getInstance();
+        Node[] selectedNode = new Node[] { ((FormRootNode)fes.getFormRootNode()).getOthersNode() };
         
         try {
-            ci.setSelectedNodes(new Node[] { 
-                ((FormRootNode)fes.getFormRootNode()).getOthersNode() }, fes);
+            ci.setSelectedNodes(selectedNode, fes);
         }
         catch (java.beans.PropertyVetoException ex) {
             ex.printStackTrace();
-        }        
+        }
+        
+        formDesigner.setActivatedNodes(selectedNode);
     }
 
     private void processDoubleClick(MouseEvent e) {
@@ -741,6 +744,7 @@ class HandleLayer extends JPanel
         }
         
         public void mousePressed(MouseEvent e) {
+            formDesigner.componentActivated();
             if (!HandleLayer.this.isVisible())
                 return;
 
@@ -764,8 +768,9 @@ class HandleLayer extends JPanel
                     lastLeftMousePoint = e.getPoint();
 
                 CPManager palette = CPManager.getDefault();
+                sharedMode = palette.getMode();
 
-                if (palette.getMode() == PaletteAction.MODE_SELECTION) {
+                if (sharedMode == PaletteAction.MODE_SELECTION) {
                     if (!modifier)
                         checkResizing(e.getPoint());
                     
@@ -795,11 +800,11 @@ class HandleLayer extends JPanel
                             e.isControlDown() || e.isAltDown() ?
                             COMP_SELECTED : COMP_DEEPEST);
 
-                    if (palette.getMode() == PaletteAction.MODE_CONNECTION) {
+                    if (sharedMode == PaletteAction.MODE_CONNECTION) {
                         if (hitMetaComp != null)
                             formDesigner.connectBean(hitMetaComp);
                     }
-                    else if (palette.getMode() == PaletteAction.MODE_ADD) {
+                    else if (sharedMode == PaletteAction.MODE_ADD) {
                         PaletteItem item = palette.getSelectedItem();
                         Object constraints;
 
@@ -843,8 +848,10 @@ class HandleLayer extends JPanel
             } else if (componentDragger == null
                 && lastLeftMousePoint != null
                 && (resizeType != 0 || lastLeftMousePoint.distance(p) > 6))
-            { // start dragging
-                componentDragger = createComponentDragger(lastLeftMousePoint);
+            { // start dragging (allow dragging only in NON add mode)
+                if (sharedMode != PaletteAction.MODE_ADD) {
+                    componentDragger = createComponentDragger(lastLeftMousePoint);
+                }
 //                lastLeftMousePoint = null;
             }
 
