@@ -167,7 +167,7 @@ public class MTestExecutor extends Task {
                     stb.append( "/" );
                     String testsetDir = testbag.getTestsets()[j].getDir();
                     stb.append( testsetDir );
-                    stb.append( ";" );
+                    stb.append(File.pathSeparatorChar);
                      */
                     
                     // add compiled tests to classpath (work/sys/test/${xtest.testtype}/classes)
@@ -181,7 +181,7 @@ public class MTestExecutor extends Task {
                     stb.append(MTestConfigTask.getMTestConfig().getTesttype());
                     stb.append( "/" );
                     stb.append("classes");
-                    stb.append( ";" );
+                    stb.append(File.pathSeparatorChar);
 
                     // check if this testset contains setup dir
                     String testsetDir = testbag.getTestsets()[j].getDir();
@@ -194,7 +194,7 @@ public class MTestExecutor extends Task {
                 // add setup/teardown dir if available
                 if ( ! testsetContainsSetupDir ) {
                     stb.append(testbag.getSetupDir());
-                    stb.append( ";" );
+                    stb.append(File.pathSeparatorChar);
                 }
                
                 if ( stb.length() > 1 ) {
