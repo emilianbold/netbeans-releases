@@ -462,7 +462,9 @@ public final class MultiViewPeer  {
         return lookup;
     }
     
-    
+    public String toString() {
+        return "[model=" + model + "]"; // NOI18N
+    }
     /**
      * notification from the model that the selection changed.
      */

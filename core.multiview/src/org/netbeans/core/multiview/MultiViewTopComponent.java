@@ -199,7 +199,11 @@ public final class MultiViewTopComponent
     public HelpCtx getHelpCtx() {
         return peer.getHelpCtx();
     }
-    
+
+    public String toString() {
+        return "MultiViewTopComponent[name=" + getDisplayName() + ", peer=" + peer + "]";   // NOI18N
+    }
+
     /**
      * Get the undo/redo support for this component.
      * The default implementation returns a dummy support that cannot
@@ -215,7 +219,7 @@ public final class MultiViewTopComponent
         }
         return retValue;
     }    
-    
+
     /**
      * This method is called when this <code>TopComponent</code> is about to close.
      * Delegates to CloseOperationHandler.

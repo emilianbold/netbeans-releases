@@ -238,7 +238,11 @@ class MultiViewModel {
             }
         }
     }
-    
+
+    public String toString() {
+        return "current=" + currentEditor; // NOI18N
+    }
+
     /**
      * listener for changes in model's selected element.
      */
