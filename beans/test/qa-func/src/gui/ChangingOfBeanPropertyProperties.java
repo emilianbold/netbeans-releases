@@ -384,11 +384,9 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
     
     public void testChangeSourceCode() {
         
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
-        Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
+        Node repositoryRootNode = RepositoryTabOperator.invoke().getRootNode();
         
-        FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
+        FolderNode examplesFolderNode = new FolderNode(repositoryRootNode, sampleDir); // NOI18N
         examplesFolderNode.select();
         DefaultStringComparator comparator = new DefaultStringComparator(true, true);
         new NewTemplateAction().perform();
@@ -432,6 +430,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         eo.insert("\n", 47, 1);
         new EventTool().waitNoEvent(500);
         
+        ExplorerOperator explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"myProperty");
         patternsNode.select();
@@ -595,11 +594,9 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
     }
     
     public void testDeleteAnyPropertiesAndEvents() {
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
-        Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
-        
-        FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
+        Node repositoryRootNode = RepositoryTabOperator.invoke().getRootNode();
+
+        FolderNode examplesFolderNode = new FolderNode(repositoryRootNode, sampleDir); // NOI18N
         examplesFolderNode.select();
         DefaultStringComparator comparator = new DefaultStringComparator(true, true);
         new NewTemplateAction().perform();
@@ -622,8 +619,8 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         eo.select(3,6);
         
         new DeleteAction().performAPI(eo);
-        //        ref(eo.getText());
-        //        compareReferenceFiles();
+        new EventTool().waitNoEvent(1500);
+
         try {
             File workDir = getWorkDir();
             (new File(workDir,"testDeleteAnyPropertiesAndEventsInitial.ref")).createNewFile();
@@ -688,6 +685,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         nbDialogOperator.yes();
 
         patternsNode4.waitNotPresent();
+        new EventTool().waitNoEvent(1500);
         try {
             File workDir = getWorkDir();
             (new File(workDir,"testDeleteAnyPropertiesAndEventsModified.ref")).createNewFile();
