@@ -56,7 +56,9 @@ public class NbModuleProjectTest extends TestBase {
         assertEquals("right manifest.mf", "manifest.mf", eval.getProperty("manifest.mf"));
         // Keep the following in synch with java/project/nbproject/project.xml etc.:
         String[] cp = {
+            "ide4/modules/org-apache-tools-ant-module.jar",
             "platform4/core/openide.jar",
+            "platform4/modules/org-openide-io.jar",
             "platform4/core/openide-loaders.jar",
             "ide4/modules/org-netbeans-modules-java-platform.jar",
             "ide4/modules/org-netbeans-modules-project-ant.jar",
