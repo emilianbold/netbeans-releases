@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+ 
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+  <title></title>
+</head>
+  <body bgcolor="white">
+  Provides a set of classes to manipulate nodes in JTree components. 
+<p>Nodes should help to easier testing of nodes in JTree components. The
+most frequent usage in IDE is in the Explorer Window but nodes can be used
+in any component which includes a JTree instance. Nodes are also used as
+parameters for action's performing. <br>
+In this package are predefined specialized nodes for common objects in IDE.
+You can use them with combination of generic node instances as you like.
+Simple example looks like this: </p>
+<p><i><tt>&nbsp; // gets tree from Filesystems tab of the Explorer Window</tt></i> 
+<br>
+<tt>&nbsp; JTreeOperator treeOperator = RepositoryTabOperator.invoke().tree();</tt> 
+<br>
+<i><tt>&nbsp; // finds folder "jellytools" under filesystem "jellytools/src"</tt></i> 
+<br>
+<tt>&nbsp; FolderNode folderNode = new FolderNode(treeOperator, "jellytools/src|org|netbeans|jellytools");</tt> 
+<br>
+<i><tt>&nbsp; // selects the node</tt></i> <br>
+<tt>&nbsp; folderNode.select();</tt> </p>
+<p><i><tt>&nbsp; // finds child node under jellytools folder</tt></i> <br>
+<tt>&nbsp; Node node = new Node(folderNode, "nodes|FolderNode");</tt> <br>
+<i><tt>&nbsp; // selects the node</tt></i> <br>
+<tt>&nbsp; node.select();</tt> </p>
+<p>Items in a node path are separated by "|" character and searching (exact 
+match, case sensitivity) is driven by current string comparator. Root node 
+must not be included in search path. To get root node instance you need to
+supply empty search path or use a getter method: </p>
+<p><tt>&nbsp; Node rootNode = new Node(treeOperator, "");</tt> <br>
+<tt>&nbsp; // or</tt> <br>
+<tt>&nbsp; Node rootNode = RepositoryTabOperator.invoke().getRootNode()</tt><tt>;</tt> 
+</p>
+</body>
+</html>
