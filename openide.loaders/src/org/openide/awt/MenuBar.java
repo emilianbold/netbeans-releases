@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,6 +20,7 @@ import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
+import org.openide.ErrorManager;
 import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -121,7 +122,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
      * @param list list to add created objects to
      */
     static void allInstances (InstanceCookie[] arr, java.util.List list) {
-        org.openide.ErrorManager err = org.openide.ErrorManager.getDefault ();
+        ErrorManager err = ErrorManager.getDefault();
         
         Exception ex = null;
         
@@ -138,7 +139,8 @@ public class MenuBar extends JMenuBar implements Externalizable {
             }
             
             if (newEx != null) {
-                if (err.findAnnotations(newEx) == null) {
+                ErrorManager.Annotation[] anns = err.findAnnotations(newEx);
+                if (anns == null || anns.length == 0) {
                     // if the exception is not annotated, assign it low
                     // priority
                     err.annotate(newEx, err.INFORMATIONAL, null, null, null, null);
