@@ -53,8 +53,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Debug">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             
-            <folder name="Start Session">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <folder name="StartSession">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/actions/Folder.gif" />
                 
                 <file name="org-netbeans-modules-debugger-support-actions-StartAction.instance"/>
@@ -100,7 +100,7 @@ Microsystems, Inc. All Rights Reserved.
             
             <attr name="Separator4.instance/Stack" boolvalue="true" />
             <folder name="Stack">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/actions/Folder.gif" />
                 
                 <file name="org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction.instance"/>
