@@ -173,9 +173,7 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="projectTabLogical_tc.wstcref" url="projectsLogical.wstcref"/>
                 <attr name="projectTabLogical_tc.wstcref/projectTab_tc.wstcref" boolvalue="true" />
                 <file name="projectTab_tc.wstcref" url="projects.wstcref"/>
-                <attr name="projectTab_tc.wstcref/filesystems.wstcref" boolvalue="true" />
                 <attr name="projectTab_tc.wstcref/favorites.wstcref" boolvalue="true" />
-                <file name="filesystems.wstcref" url="filesystems-override.wstcref" />
                 <file name="runtime.wstcref" url="runtime-override.wstcref" />
             </folder>
         </folder>    
