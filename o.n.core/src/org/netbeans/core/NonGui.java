@@ -322,17 +322,8 @@ public class NonGui extends NbTopManager implements Runnable {
         // -----------------------------------------------------------------------------------------------------
         // Upgrade
         try {
-            boolean dontshowisw = false;
-            File dontshowiswfile = new java.io.File(new java.io.File(System.getProperty("netbeans.user"), "system"), "dontshowisw");
-            if (dontshowiswfile.exists()) {
-                dontshowiswfile.delete();
-                dontshowisw = true;
-            }
-            
-            if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null) && !dontshowisw) {
-                if (!handleImportOfUserDir ()) {
-                    TopSecurityManager.exit(0);
-                }
+            if (!handleImportOfUserDir ()) {
+                TopSecurityManager.exit(0);
             }
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
@@ -455,15 +446,6 @@ public class NonGui extends NbTopManager implements Runnable {
     */
     static String getString (String resName) {
         return NbBundle.getMessage(NonGui.class, resName);
-    }
-
-    /** Getter for a text from resource with one argument.
-    * @param resName resource name
-    * @return string with resource
-    * @param arg the argument
-    */
-    static String getString (String resName, Object arg) {
-        return NbBundle.getMessage(NonGui.class, resName, arg);
     }
 
     /** Getter for a text from resource with one argument.
