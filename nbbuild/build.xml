@@ -193,7 +193,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module core/settings..."/>
     <ant dir="../core/settings" target="netbeans"/>
   </target>
-  <target name="all-openide/masterfs" depends="all-openide">
+  <target name="all-openide/masterfs" depends="all-openide,all-projects/queries">
     <echo message="Building module openide/masterfs..."/>
     <ant dir="../openide/masterfs" target="netbeans"/>
   </target>
