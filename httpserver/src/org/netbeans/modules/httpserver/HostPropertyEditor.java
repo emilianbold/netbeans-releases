@@ -26,34 +26,36 @@ import org.openide.util.NbBundle;
 */
 public class HostPropertyEditor extends PropertyEditorSupport {
 
-    private static final java.util.ResourceBundle bundle = NbBundle.getBundle(HostPropertyEditor.class);
-
     /** localized local (selected) host string*/
-    private final static String LOCALHOST = bundle.getString("CTL_Local_host");
+    private static String localhost() {
+        return NbBundle.getMessage(HostPropertyEditor.class, "CTL_Local_host");
+    }
 
     /** localized any host string*/
-    private final static String ANYHOST = bundle.getString("CTL_Any_host");
+    private static String anyhost() {
+        return NbBundle.getMessage(HostPropertyEditor.class, "CTL_Any_host");
+    }
 
     /** @return text for the current value */
     public String getAsText () {
         HttpServerSettings.HostProperty hp = (HttpServerSettings.HostProperty) getValue();
         String host = hp.getHost ();
         if (host.equals(HttpServerSettings.LOCALHOST)) {
-            return LOCALHOST + hp.getGrantedAddresses ();
+            return localhost () + hp.getGrantedAddresses ();
         }
         else {
-            return ANYHOST;
+            return anyhost ();
         }
     }
 
     /** @param text A text for the current value. */
     public void setAsText (String text) {
-        if (ANYHOST.equals (text)) {
+        if (anyhost ().equals (text)) {
             setValue (new HttpServerSettings.HostProperty ("", HttpServerSettings.ANYHOST));    // NOI18N
             return;
         }
-        else if (text != null && text.startsWith (LOCALHOST)) {
-            setValue (new HttpServerSettings.HostProperty (text.substring (LOCALHOST.length ()), HttpServerSettings.LOCALHOST));
+        else if (text != null && text.startsWith (localhost ())) {
+            setValue (new HttpServerSettings.HostProperty (text.substring (localhost ().length ()), HttpServerSettings.LOCALHOST));
             return;
         }
         
