@@ -134,7 +134,7 @@ public final class PropertiesDataObject extends MultiDataObject {
   * @return help context
   */
   public org.openide.util.HelpCtx getHelpCtx () {
-    return org.openide.util.HelpCtx.DEFAULT_HELP;
+    return new org.openide.util.HelpCtx (PropertiesDataObject.class);
   }
                                          
   /** Comparator used for ordering secondary files, works over file names */
@@ -238,6 +238,7 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  16   Gandalf   1.15        6/24/99  Petr Jiricka    
  *  15   Gandalf   1.14        6/23/99  Petr Jiricka    
  *  14   Gandalf   1.13        6/22/99  Ian Formanek    employed DEFAULT_HELP
  *  13   Gandalf   1.12        6/11/99  Petr Jiricka    

@@ -184,8 +184,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
   * @return help context
   */
   public HelpCtx getHelpCtx() {
-    return HelpCtx.DEFAULT_HELP;
-    // PENDING help context
+    return new HelpCtx (PropertiesFileEntry.class);
   }                 
   
   /** Children of a node representing s single properties file. 

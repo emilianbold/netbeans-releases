@@ -78,7 +78,7 @@ public class PropertiesDataNode extends DataNode {
         }
         
         public HelpCtx getHelpCtx() {
-          return HelpCtx.DEFAULT_HELP;
+          return new HelpCtx (PropertiesDataNode.class.getName () + ".new_locale");
         }                             
          
         public void create() throws IOException {

@@ -137,7 +137,7 @@ public class PropertiesLocaleNode extends FileEntryNode {
         }
         
         public HelpCtx getHelpCtx() {
-          return HelpCtx.DEFAULT_HELP;
+          return new HelpCtx (PropertiesLocaleNode.class.getName () + ".new_property");
         }                             
          
         public void create() throws IOException {
@@ -254,6 +254,7 @@ public class PropertiesLocaleNode extends FileEntryNode {
 
 /*
  * <<Log>>
+ *  7    Gandalf   1.6         6/24/99  Petr Jiricka    
  *  6    Gandalf   1.5         6/16/99  Petr Jiricka    
  *  5    Gandalf   1.4         6/10/99  Petr Jiricka    
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
