@@ -13,8 +13,11 @@
 
 package org.netbeans.core.output2;
 
+import java.awt.Dialog;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowListener;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -143,15 +146,50 @@ public class FindDialogPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
 
-    static FindDialogPanel showFindDialog() {
+    static FindDialogPanel showFindDialog(ActionListener al) {
         if ( dialog == null )
             createDialog();
 
         accepted = false;
         findPanel.init();
         dialog.show();
+        
+        acceptButton.addActionListener(al);
+        
+        dialog.addWindowListener (new DlgWindowListener(al));
 
         return findPanel;
+    }
+    
+    private static class DlgWindowListener implements WindowListener {
+        private ActionListener al;
+        public DlgWindowListener (ActionListener al) {
+            this.al = al;
+        }
+        
+        public void windowActivated(java.awt.event.WindowEvent windowEvent) {
+        }
+        
+        public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+            acceptButton.removeActionListener (al);
+            ((Dialog) windowEvent.getSource()).dispose();
+        }
+        
+        public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+        }
+        
+        public void windowDeactivated(java.awt.event.WindowEvent windowEvent) {
+        }
+        
+        public void windowDeiconified(java.awt.event.WindowEvent windowEvent) {
+        }
+        
+        public void windowIconified(java.awt.event.WindowEvent windowEvent) {
+        }
+        
+        public void windowOpened(java.awt.event.WindowEvent windowEvent) {
+        }
+        
     }
     
     private void init() {
