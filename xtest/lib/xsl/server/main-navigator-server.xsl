@@ -20,6 +20,7 @@
 
 <xsl:param name="webGroupName"/>
 <xsl:param name="mainGroup"/>
+<xsl:param name="mappedHostname"/>
 
 <xsl:template match="/">
 	<xsl:call-template name="html-page">

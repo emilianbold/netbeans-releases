@@ -154,7 +154,15 @@
 					<TD class="pass">
 						<xsl:for-each select="key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))">
                         
-							<A HREF="../{@webLink}"><xsl:value-of select="@host"/>
+							<A HREF="../{@webLink}">								
+							<xsl:choose>
+							  	<xsl:when test="@mappedHostname">
+							   		<xsl:value-of select="@mappedHostname"/>
+							   	</xsl:when>								       
+							   	<xsl:otherwise>
+							   	 	<xsl:value-of select="@host"/>
+							   	</xsl:otherwise>
+							</xsl:choose>
 							</A>
                         
 							<BR/>
