@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
   
 import com.netbeans.editor.Settings;
-import com.netbeans.editor.ColoringManager;
+import com.netbeans.editor.SettingsUtil;
 import com.netbeans.editor.BaseKit;
 
 import org.openide.util.HelpCtx;
@@ -38,12 +38,6 @@ public class BasePrintOptions extends OptionSupport {
   
   public static final String PRINT_COLORING_ARRAY_PROP = "printColoringArray";
   
-  private static final int[] COLORING_SETS = new int[] {
-    ColoringManager.PRINT_DEFAULT_SET,
-    ColoringManager.PRINT_DOCUMENT_SET,
-    ColoringManager.PRINT_TOKEN_SET
-  };
-
   static final String[] BASE_PROP_NAMES = {
     PRINT_LINE_NUMBER_VISIBLE_PROP,
     PRINT_COLORING_ARRAY_PROP,
@@ -73,17 +67,21 @@ public class BasePrintOptions extends OptionSupport {
     setSettingValue(Settings.PRINT_LINE_NUMBER_VISIBLE, (b ? Boolean.TRUE : Boolean.FALSE));
   }
 
-  public Object[] getPrintColoringArray() {
-    return getColoringsHelper(COLORING_SETS);
+  public Map getPrintColoringMap() {
+    Map cm = SettingsUtil.getColoringMap(getKitClass(), false);
+    cm.put(null, getKitClass()); // add kit class
+    return cm;
   }
-  public void setPrintColoringArray(Object[] value) {
-    setColoringsHelper(value, COLORING_SETS);
+  public void setPrintColoringMap(Map coloringMap) {
+    coloringMap.remove(null); // remove kit class
+    SettingsUtil.updateColoringSettings(getKitClass(), coloringMap, true);
   }
   
 }
 
 /*
  * Log
+ *  9    Gandalf   1.8         12/28/99 Miloslav Metelka 
  *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
  *  7    Gandalf   1.6         11/5/99  Jesse Glick     Context help jumbo 
  *       patch.
