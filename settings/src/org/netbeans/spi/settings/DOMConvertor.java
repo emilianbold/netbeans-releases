@@ -264,16 +264,17 @@ public abstract class DOMConvertor extends Convertor {
     
     /** write an object obj to String using Convertor.write() */
     private static String writeToString(Convertor c, Object obj, Lookup ctx) throws IOException {
-        java.io.Writer w = new java.io.CharArrayWriter(1024);
+        java.io.Writer caw = new java.io.CharArrayWriter(1024);
+        java.io.Writer w = caw;
         
         FileObject fo = (FileObject) ctx.lookup(FileObject.class);
         if (fo != null) {
-            w = org.netbeans.modules.settings.ContextProvider.createWriterContextProvider(w, fo);
+            w = org.netbeans.modules.settings.ContextProvider.createWriterContextProvider(caw, fo);
         }
         
         c.write(w, obj);
         w.close();
-        return w.toString();
+        return caw.toString();
     }
     
     /** read an object from String using Convertor.read() */
