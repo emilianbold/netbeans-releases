@@ -354,7 +354,13 @@ public class DataViewWindow extends TopComponent {
             //    	e.printStackTrace();
         }
     }
-
+    
+    /** Overriden to explicitely set persistence type of DataViewWindow
+     * to PERSISTENCE_NEVER */
+    public int getPersistenceType() {
+        return TopComponent.PERSISTENCE_NEVER;
+    }
+    
     /** Returns query used by panel.
     */
     public String getCommand() {
