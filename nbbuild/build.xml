@@ -1781,6 +1781,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../vcscore" target="netbeans"/>
   </target>
+  <target name="all-vcscore/javacorebridge" depends="init,all-vcscore,all-java/javacore">
+    <echo message="Building module vcscore/javacorebridge"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../vcscore/javacorebridge" target="netbeans"/>
+  </target>
   <target name="all-javacvs" depends="init,all-openidex,all-vcscore, all-diff,all-openide/deprecated">
     <echo message="Building module javacvs..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
