@@ -119,7 +119,7 @@ public abstract class AntArtifact {
             return null;
         }
         // XXX: usage of provisional API
-        FileObject fo = FileUtil.findFileObject(artifact);
+        FileObject fo = URLMapper.findFileObject(artifact);
         if (fo != null) {
             assert FileUtil.toFile(fo) != null : fo;
             return fo;

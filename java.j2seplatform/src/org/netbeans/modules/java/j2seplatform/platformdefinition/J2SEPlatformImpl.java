@@ -24,6 +24,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Utilities;
 
 /**
@@ -180,7 +181,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
                 File f = new File (path);
                 URL url = Util.getRootURL(f);
                 if (url != null) {
-                    FileObject fo = FileUtil.findFileObject (url);
+                    FileObject fo = URLMapper.findFileObject (url);
                     if (fo!=null)
                         result.add (fo);
                 }
@@ -236,7 +237,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
                 File f = new File (path);
                 URL url = Util.getRootURL(f);
                 if (url != null) {
-                    FileObject fo = FileUtil.findFileObject (url);
+                    FileObject fo = URLMapper.findFileObject (url);
                     if (fo != null)
                         result.add (fo);
                 }

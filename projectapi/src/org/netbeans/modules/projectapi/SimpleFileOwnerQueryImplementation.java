@@ -79,7 +79,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
             return null;
         }
         // XXX: usage of provisional API
-        return FileUtil.findFileObject(url);
+        return URLMapper.findFileObject(url);
     }
     
     private static URI goUp(URI u) {

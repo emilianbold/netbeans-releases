@@ -120,7 +120,7 @@ public class ArchiveURLMapperTest extends NbTestCase {
         public void testArchiveToRootFileObject () throws Exception {
             FileSystem fs = mountFs ();
             URL jarFileURL = createJarFile ();
-            FileObject fo = FileUtil.findFileObject(jarFileURL);
+            FileObject fo = URLMapper.findFileObject(jarFileURL);
             assertTrue (fo != null);   
             assertTrue (FileUtil.isArchiveFile(fo));
             FileObject rootFo = FileUtil.getArchiveRoot (fo);

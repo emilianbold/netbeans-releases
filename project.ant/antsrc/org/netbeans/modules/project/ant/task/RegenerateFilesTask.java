@@ -19,10 +19,7 @@ import java.io.IOException;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.*;
 
 // XXX should this task also do XML Schema validation of project.xml?
 
@@ -78,7 +75,7 @@ public final class RegenerateFilesTask extends Task {
         }
         try {
             // Might be running inside IDE, in which case already have a mount...
-            FileObject projectFO = FileUtil.findFileObject(projectDir.toURI().toURL());
+            FileObject projectFO = URLMapper.findFileObject(projectDir.toURI().toURL());
             if (projectFO == null) {
                 // Probably not running inside IDE, so mount it.
                 LocalFileSystem lfs = new LocalFileSystem();

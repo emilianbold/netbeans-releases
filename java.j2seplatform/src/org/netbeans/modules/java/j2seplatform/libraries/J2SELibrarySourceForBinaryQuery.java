@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
@@ -54,7 +55,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                         List src = Util.getResourcesRoots(libs[i].getContent("src"));              //NOI18N
                         List result = new ArrayList ();
                         for (Iterator sit = src.iterator(); sit.hasNext();) {
-                            FileObject sourceRootURL = FileUtil.findFileObject((URL) sit.next());
+                            FileObject sourceRootURL = URLMapper.findFileObject((URL) sit.next());
                             if (sourceRootURL!=null) {
                                 result.add (sourceRootURL);
                             }

@@ -92,7 +92,7 @@ public class JavadocRegistry {
                     
                 for ( int j = 0; j < jdRoots.length; j++ ) {
                     //System.out.println( "  JDR " + jdRoots[j] );
-                    FileObject fo = FileUtil.findFileObject(jdRoots[j]);
+                    FileObject fo = URLMapper.findFileObject(jdRoots[j]);
                     if (fo != null) {
                         roots.add(fo);
                     }
