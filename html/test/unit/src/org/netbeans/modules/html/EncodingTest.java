@@ -51,8 +51,8 @@ public class EncodingTest extends NbTestCase {
     
     /**/
     protected void setUp() throws Exception {
-        System.setProperty ("org.openide.util.Lookup", "org.netbeans.modules.html.EncodingTest$Lkp");
-        assertEquals ("Our lookup is installed", Lookup.getDefault ().getClass (), Lkp.class);
+        Utils.setUp();
+        assertEquals ("Our lookup is installed", Lookup.getDefault ().getClass (), Utils.Lkp.class);
 
         File f = File.createTempFile (this.getName (), "");
         f.delete ();
@@ -186,7 +186,7 @@ public class EncodingTest extends NbTestCase {
     
     /** Compares content of two streams. 
      */
-    private static void compareStream (InputStream i1, InputStream i2) throws Exception {
+    /*package*/ static void compareStream (InputStream i1, InputStream i2) throws Exception {
         for (int i = 0; true; i++) {
             int c1 = i1.read ();
             int c2 = i2.read ();
@@ -196,33 +196,5 @@ public class EncodingTest extends NbTestCase {
             if (c1 == -1) return;
         }
     }
-    
-    //
-    // Our fake lookup
-    //
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public Lkp () throws Exception {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) throws Exception {
-            super (ic);
-            
-            ic.add (new Pool ());
-//            ic.add (new EM ());
-        }
-    }
-    
-    
-    private static final class Pool extends DataLoaderPool {
-        
-        protected java.util.Enumeration loaders () {
-            return new org.openide.util.enum.SingletonEnumeration (
-                DataLoader.getLoader(HtmlLoader.class)
-            );
-        }
-        
-    } // end of Pool
-
     
 }
