@@ -62,6 +62,7 @@ final class SpunPhadhail extends Spin {
         } else if (method.getName().equals("mutex")) {
             return Mutex.EVENT;
         } else {
+            // XXX what about hashCode/equals? Should these be thread-safe?
             assert method.getName().endsWith("PhadhailListener") || EventQueue.isDispatchThread() : method.getName();
             if (args != null) {
                 for (int i = 0; i < args.length; i++) {
