@@ -93,6 +93,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Hopefully set up by nbbuild/build.xml: -->
         <pathelement location="${jdkhome}/lib/tools.jar"/>
         <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/j2eeserver.jar"/>
+	<pathelement path="${nb_root}/xml/api/netbeans/modules/autoload/xml-api.jar" />
       </classpath>
     </javac>
   </target>
