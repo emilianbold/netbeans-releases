@@ -29,10 +29,6 @@ import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 
 public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
 
-    // the bundle to use
-    static ResourceBundle bundle = NbBundle.getBundle (
-                                       TableModelEditor.class);
-
     public TableModelEditor() {
         support = new PropertyChangeSupport (this);
     }
@@ -230,7 +226,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
 
     public void readFromXML(org.w3c.dom.Node element) throws IOException {
         if (!XML_TABLE.equals(element.getNodeName()))
-            throw new IOException(getReadinErrorMessage()); // NOI18N
+            throw new IOException(getReadingErrorMessage()); // NOI18N
 
         org.w3c.dom.NamedNodeMap tableAttr = element.getAttributes();
         if (tableAttr == null)
@@ -249,7 +245,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
                 columnCount = Integer.parseInt(node.getNodeValue());
             }
             catch (java.lang.NumberFormatException e) {
-                ioex = new IOException(getReadinErrorMessage());
+                ioex = new IOException(getReadingErrorMessage());
                 org.openide.ErrorManager.getDefault().annotate(ioex, e);
             }
         }
@@ -261,14 +257,14 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
             }
             catch (java.lang.NumberFormatException e) {
                 if (ioex == null)
-                   ioex = new IOException(getReadinErrorMessage());
+                   ioex = new IOException(getReadingErrorMessage());
                 org.openide.ErrorManager.getDefault().annotate(ioex, e);
             }
         }
 
         if (columnCount < 0 || rowCount < 0) {
             if (ioex == null)
-               ioex = new IOException(getReadinErrorMessage());
+               ioex = new IOException(getReadingErrorMessage());
             throw ioex;
         }
 
@@ -300,7 +296,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
                     type = Class.forName(node.getNodeValue());
                 }
                 catch (Exception e) {
-                    ioex = new IOException(getReadinErrorMessage());
+                    ioex = new IOException(getReadingErrorMessage());
                     org.openide.ErrorManager.getDefault().annotate(ioex, e);
                 }
             }
@@ -311,7 +307,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
 
             if (title == null || type == null || editable == null) {
                 if (ioex == null)
-                   ioex = new IOException(getReadinErrorMessage());
+                   ioex = new IOException(getReadingErrorMessage());
                 throw ioex;
             }
 
@@ -336,7 +332,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
                         value = stringToValue(node.getNodeValue(), type);
                     }
                     catch (IllegalArgumentException e) {
-                        ioex = new IOException(getReadinErrorMessage());
+                        ioex = new IOException(getReadingErrorMessage());
                         org.openide.ErrorManager.getDefault().annotate(ioex, e);
                         throw ioex;
                     }
@@ -351,7 +347,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
                     for (int ii=0; ii < rowCount; ii++)
                         columnData.add(null);
                 else
-                    throw new IOException(getReadinErrorMessage());
+                    throw new IOException(getReadingErrorMessage());
             }
 
             // create the column
@@ -363,7 +359,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
 
         // check the column count
         if (columns.size() != columnCount)
-            throw new IOException(getReadinErrorMessage());
+            throw new IOException(getReadingErrorMessage());
 
         // create the model instance
         table = new NbTableModel(columns, rowCount);
@@ -371,8 +367,12 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
 
     // -----------
 
-    private static String getReadinErrorMessage() {
-        return bundle.getString("ERR_InvalidXMLFormat"); // NOI18N
+    private static ResourceBundle getBundle() {
+        return NbBundle.getBundle(TableModelEditor.class);
+    }
+
+    private static String getReadingErrorMessage() {
+        return getBundle().getString("ERR_InvalidXMLFormat"); // NOI18N
     }
 
     private static String valueToString(Object value) {
@@ -472,6 +472,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
         }
 
         public NbTableModel(TableModel createFrom) {
+            ResourceBundle bundle = getBundle();
             if (createFrom == null) {
                 rowCount = 4; // 4 rows and 4 columns by default
                 columns = new ArrayList(20);
@@ -640,6 +641,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
         }
 
         void setColumnCount(int newColumnCount) {
+            ResourceBundle bundle = getBundle();
             int colCount = columns.size();
             if (newColumnCount == colCount) return;
 
@@ -658,7 +660,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
         // adds one column at index
         void addColumn(int index) {
             if (index >=0 && index <= columns.size()) {
-                columns.add(index, new ColumnItem(bundle.getString("CTL_Title")+" "+Integer.toString(index+1),
+                columns.add(index, new ColumnItem(getBundle().getString("CTL_Title")+" "+Integer.toString(index+1),
                                                   Object.class, true, rowCount));
                 // rename default titles
                 for (int i=index+1, n=columns.size(); i < n; i++) {
@@ -704,9 +706,9 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
         // renames default column title according to new column's position
         // e.g. with params 2 and 3 - "Title 2" is renamed to "Title 3"
         private static void renameDefaultColumnTitle(ColumnItem ci, int fromIndex, int toIndex) {
-            String fromStr = bundle.getString("CTL_Title")+" "+Integer.toString(fromIndex);
+            String fromStr = getBundle().getString("CTL_Title")+" "+Integer.toString(fromIndex);
             if (fromStr.equals(ci.title))
-                ci.title = bundle.getString("CTL_Title")+" "+Integer.toString(toIndex);
+                ci.title = getBundle().getString("CTL_Title")+" "+Integer.toString(toIndex);
         }
 
         public void writeExternal(ObjectOutput oo) throws IOException {

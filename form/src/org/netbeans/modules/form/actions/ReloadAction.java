@@ -33,7 +33,7 @@ public class ReloadAction extends CallableSystemAction implements Runnable {
 
     public String getName() {
         if (name == null)
-            name = org.openide.util.NbBundle.getBundle(TestAction.class)
+            name = org.openide.util.NbBundle.getBundle(ReloadAction.class)
                      .getString("ACT_ReloadForm"); // NOI18N
         return name;
     }
