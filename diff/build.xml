@@ -86,6 +86,7 @@ Microsystems, Inc. All Rights Reserved.
       <property name="javadoc.packages" value="org.netbeans.api.diff,org.netbeans.spi.diff"/>
       <property name="javadoc.classpath" value="${_cp}"/>
       <property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>
+      <property name="javadoc.arch" location="arch/arch-diff.xml"/>
     </ant>
   </target>
 
