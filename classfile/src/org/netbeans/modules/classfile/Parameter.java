@@ -41,16 +41,30 @@ public final class Parameter extends Field {
     }
 
     /** Creates new Parameter */
-    Parameter(String name, String type, ClassFile classFile) {
+    private Parameter(String name, String type, ClassFile classFile,
+            DataInputStream visibleAnnotations, DataInputStream invisibleAnnotations) {
         super(name, type, classFile);
-    }
-
-    boolean loadAttribute(String type, int len, DataInputStream in, 
-			  ConstantPool pool) throws IOException {
-	assert false : "parameters are never loaded directly from classfile";
-	return false;
+        loadParameterAnnotations(visibleAnnotations, invisibleAnnotations);
     }
     
+    private void loadParameterAnnotations(DataInputStream visible, DataInputStream invisible) {
+        super.loadAnnotations();
+        if (annotations == null && (visible != null || invisible != null))
+            annotations = new HashMap(2);
+        try {
+            if (visible != null)
+                Annotation.load(visible, classFile.getConstantPool(), true, annotations);
+        } catch (IOException e) {
+            System.err.println("invalid RuntimeVisibleParameterAnnotations attribute");
+        }
+        try {
+            if (invisible != null)
+                Annotation.load(invisible, classFile.getConstantPool(), false, annotations);
+        } catch (IOException e) {
+            System.err.println("invalid RuntimeInvisibleParameterAnnotations attribute");
+        }
+    }
+
     /**
      * Return a string in the form "<type> <name>".  Class types
      * are shown in a "short" form; i.e. "Object" instead of
@@ -103,6 +117,10 @@ public final class Parameter extends Field {
         /** the current character in the type signature */
         int isig;
         
+        /** annotation attributes */
+        DataInputStream visibleAnnotations;
+        DataInputStream invisibleAnnotations;
+        
         /** 
          * @param method 
          */
@@ -116,6 +134,26 @@ public final class Parameter extends Field {
             localVars = code != null ? 
 		code.getLocalVariableTable() : 
 		new LocalVariableTableEntry[0];
+            AttributeMap attrs = method.getAttributes();
+            try {
+                visibleAnnotations = 
+                    getParamAttr(attrs, "RuntimeVisibleParameterAnnotations"); //NOI18N
+            } catch (IOException e) {
+                System.err.println("invalid RuntimeVisibleParameterAnnotations attribute");
+            }
+            try {
+                invisibleAnnotations = 
+                    getParamAttr(attrs, "RuntimeInvisibleParameterAnnotations"); //NOI18N
+            } catch (IOException e) {
+                System.err.println("invalid RuntimeInvisibleParameterAnnotations attribute");
+            }
+        }
+        
+        private DataInputStream getParamAttr(AttributeMap attrs, String name) throws IOException {
+            DataInputStream in = attrs.getStream(name);
+            if (in != null)
+                in.readByte(); // skip the redundant parameters number
+            return in;
         }
         
         public boolean hasNext() {
@@ -149,19 +187,22 @@ public final class Parameter extends Field {
                         case 'Z':
                         case 'V': {
                             String type = signature.substring(sigStart, ++isig);
-                            return new Parameter(name, type, classFile);
+                            return new Parameter(name, type, classFile, 
+                                    visibleAnnotations, invisibleAnnotations);
                         }
                         case 'D':
                         case 'J': {
                             ivar++;  // longs and doubles take two slots
                             String type = signature.substring(sigStart, ++isig);
-                            return new Parameter(name, type, classFile);
+                            return new Parameter(name, type, classFile, 
+                                    visibleAnnotations, invisibleAnnotations);
                         }
                         case 'L': {
                             int end = signature.indexOf(';', isig) + 1;
                             String type = signature.substring(isig, end);
                             isig = end;
-                            return new Parameter(name, type, classFile);
+                            return new Parameter(name, type, classFile, 
+                                    visibleAnnotations, invisibleAnnotations);
                         }
 
                     }
