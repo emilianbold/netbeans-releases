@@ -96,11 +96,11 @@ workspaceswitcher
       <config name="superslim" modules="classfile,clazz,editor,html,image,java,openidex,projects,text,utilities"/>
       <config name="slim" modules="autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,image,java,openidex,projects,text,utilities"/>
       <!-- [PENDING] A poor name; 'standard' would be more in line with the CVS pseudomodule. -->
-      <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web/core,web/jspsyntax"/>
-      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web/core,web/jspsyntax"/>
-      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web/core,web/jspsyntax"/>
+      <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax"/>
+      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax"/>
+      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax"/>
       <!-- You are on your own for getting the binaries for some of these: -->
-      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web/core,web/jspsyntax"/>
+      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web/servletapi23,web/core,web/jspparser,web/jspsyntax"/>
     </configmods>
   </target>
 
@@ -341,13 +341,21 @@ workspaceswitcher
     <echo message="Building module javacvs..."/>
     <ant dir="../javacvs" target="netbeans"/>
   </target>
-  <target name="all-web" depends="all-web/core,all-web/jspsyntax">
+  <target name="all-web" depends="all-web/servletapi23,all-web/core,all-web/jspparser,all-web/jspsyntax">
     <echo message="Building module web..."/>
   </target>
+  <target name="all-web/servletapi23" depends="all-web/core">
+    <echo message="Building module web/servletapi23..."/>
+    <ant dir="../web/servletapi23" target="netbeans"/>
+  </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html, all-jarpackager, all-debuggercore">
+  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html,all-httpserver,all-jarpackager,all-debuggercore">
     <echo message="Building module web/core..."/>
     <ant dir="../web/core" target="netbeans"/>
+  </target>
+  <target name="all-web/jspparser" depends="all-web/core,all-web/servletapi23">
+    <echo message="Building module web/jspparser..."/>
+    <ant dir="../web/jspparser" target="netbeans"/>
   </target>
   <target name="all-web/jspsyntax" depends="all-web/core">
     <echo message="Building module web/jspsyntax..."/>
