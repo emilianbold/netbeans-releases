@@ -14,12 +14,13 @@
 package org.netbeans.core;
 
 import java.awt.Image;
-import java.awt.Image;
+import java.awt.Component;
 import java.beans.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
 
+import org.openide.TopManager;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataObject;
@@ -171,6 +172,20 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
         ((DSMap)getChildren ()).refresh (fileSystemPool, fs);
     }
 
+    /** We have customizer */
+    public boolean hasCustomizer() {
+        return true;
+    }
+
+    /** Create the customizer */
+    public Component getCustomizer () {
+        NbMainExplorer.SettingsTab nb = new NbMainExplorer.SettingsTab ();
+        nb.getExplorerManager ().setRootContext (
+          TopManager.getDefault ().getPlaces().nodes().repositorySettings()
+        );
+        return nb;
+    }
+
     /** Children that listens to changes in filesystem pool.
     */
     static class DSMap extends Children.Keys implements PropertyChangeListener {
@@ -231,6 +246,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
             return getDataSystem (filter);
         }
     }
+
 }
 
 /*

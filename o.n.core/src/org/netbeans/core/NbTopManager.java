@@ -225,6 +225,17 @@ public abstract class NbTopManager extends TopManager {
     htmlViewer.setURL (url);
   }
 
+
+  /** Adds new explorer manager that will rule the selection of current
+  * nodes until the runnable is running.
+  *
+  * @param run runnable to execute (till it is running the explorer manager is in progress)
+  * @param em explorer manager 
+  */
+  public void attachExplorer (Runnable run, ExplorerManager em) {
+    WindowManagerImpl.getDefault().attachExplorer (run, em);
+  }
+
   /** Creates new dialog.
   */
   public Dialog createDialog (DialogDescriptor d) {
