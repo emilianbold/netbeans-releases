@@ -21,6 +21,8 @@ import javax.swing.border.Border;
 import org.openide.util.Mutex;
 import org.openide.cookies.InstanceCookie;
 
+import org.netbeans.modules.form.fakepeer.FakePeerSupport;
+
 /** 
  * Factory class for creating objects, providing java creation code,
  * registering CreationDescriptor classes, and related utility methods.
@@ -103,10 +105,7 @@ public class CreationFactory {
                                           cd.createDefaultInstance() :
                                           cls.newInstance();
 
-                    if (instance instanceof Component
-                            && FormUtils.isHeavyweight((Component)instance))
-                        ((Component)instance).setName(null);
-
+                    initIfAWTComponent(instance);
                     return instance;
                 }
             });
@@ -132,10 +131,7 @@ public class CreationFactory {
                                        theClass.newInstance();
                     }
 
-                    if (instance instanceof Component
-                            && FormUtils.isHeavyweight((Component)instance))
-                        ((Component)instance).setName(null);
-
+                    initIfAWTComponent(instance);
                     return instance;
                 }
         });
@@ -159,11 +155,7 @@ public class CreationFactory {
             new Mutex.ExceptionAction () {
                 public Object run() throws Exception {
                     Object instance = creator.createInstance(props);
-
-                    if (instance instanceof Component
-                            && FormUtils.isHeavyweight((Component)instance))
-                        ((Component)instance).setName(null);
-
+                    initIfAWTComponent(instance);
                     return instance;
                 }
             });
@@ -183,6 +175,18 @@ public class CreationFactory {
 
     // ------------
     // utility methods
+    
+    private static void initIfAWTComponent(Object instance) {
+        if ((instance instanceof java.awt.Component) &&
+            !(instance instanceof javax.swing.JComponent) &&
+            !(instance instanceof javax.swing.RootPaneContainer) ) {
+                ((Component)instance).setName(null);
+                ((Component)instance).setFont(FakePeerSupport.getDefaultAWTFont());
+        } else if (instance instanceof MenuComponent) {
+            ((MenuComponent)instance).setName(null);
+            ((MenuComponent)instance).setFont(FakePeerSupport.getDefaultAWTFont());
+        }
+    }
 
     public static FormProperty[] getPropertiesForCreator(
                                            CreationDescriptor.Creator creator,

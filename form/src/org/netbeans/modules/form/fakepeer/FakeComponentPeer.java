@@ -59,7 +59,7 @@ abstract class FakeComponentPeer implements FakePeer
 
         Font font = _target.getFont();
         if (font == null || (parent != null && parent.getFont() == font))
-            font = new Font("Dialog", Font.PLAIN, 12); // NOI18N
+            font = FakePeerSupport.getDefaultAWTFont();
         _delegate.setFont(font);
             
         _delegate.setName(_target.getName());

@@ -105,4 +105,8 @@ public class FakePeerSupport
         }
         return null;
     }
+    
+    public static Font getDefaultAWTFont() {
+        return new Font("Dialog", Font.PLAIN, 12); // NOI18N
+    }
 }

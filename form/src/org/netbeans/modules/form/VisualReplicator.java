@@ -306,9 +306,20 @@ public class VisualReplicator {
 
         java.lang.reflect.Method writeMethod =
             property.getPropertyDescriptor().getWriteMethod();
-        if (writeMethod == null || !writeMethod.getDeclaringClass()
-                                    .isAssignableFrom(targetComp.getClass()))
+        if (writeMethod == null) {
             return;
+        }
+        
+        if (!writeMethod.getDeclaringClass().isAssignableFrom(targetComp.getClass())) {
+            try {
+                writeMethod = targetComp.getClass().getMethod(writeMethod.getName(), 
+                                                              writeMethod.getParameterTypes());
+            } catch (Exception ex) {
+                return;
+            }
+            if (writeMethod == null)
+                return;
+        }
             
         try {
             Object value = property.getRealValue();
@@ -541,6 +552,9 @@ public class VisualReplicator {
                  && JMenuItem.class.isAssignableFrom(requiredClass)) {
             ((JMenuItem)component).setText(
                             ((MenuItem)metacomp.getBeanInstance()).getLabel());
+            
+            ((JMenuItem)component).setFont(
+                            ((MenuItem)metacomp.getBeanInstance()).getFont());
         }
 
         // just try to copy all possible properties

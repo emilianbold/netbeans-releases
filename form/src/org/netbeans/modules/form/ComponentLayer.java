@@ -16,6 +16,8 @@ package org.netbeans.modules.form;
 import java.awt.*;
 import javax.swing.*;
 
+import org.netbeans.modules.form.fakepeer.FakePeerSupport;
+
 /**
  *
  * @author Tran Duc Trung
@@ -25,7 +27,7 @@ class ComponentLayer extends JPanel
 {
     ComponentLayer() {
         setBackground(Color.white);
-        setFont(new Font("Dialog", Font.PLAIN, 12)); // NOI18N
+        setFont(FakePeerSupport.getDefaultAWTFont());
         setLayout(new BorderLayout());
     }
     
