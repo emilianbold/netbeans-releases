@@ -36,13 +36,14 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 // Node for Table/View/Procedure things.
 
-public class TableNode extends DatabaseNode implements InstanceCookie {
+public class TableNode extends DatabaseNode /*implements InstanceCookie*/ {
     public void setInfo(DatabaseNodeInfo nodeinfo)
     {
         super.setInfo(nodeinfo);
         getCookieSet().add(this);
     }
 
+/*
     public String instanceName() {
         return "org.netbeans.lib.sql.ConnectionSource"; //NOI18N
     }
@@ -79,7 +80,8 @@ public class TableNode extends DatabaseNode implements InstanceCookie {
             return null;
         }
     }
-
+*/
+    
     public void setName(String newname)
     {
         try {

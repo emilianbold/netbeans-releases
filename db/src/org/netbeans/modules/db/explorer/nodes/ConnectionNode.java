@@ -38,7 +38,7 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 * Node representing open or closed connection to database.
 */
 
-public class ConnectionNode extends DatabaseNode implements InstanceCookie {
+public class ConnectionNode extends DatabaseNode /*implements InstanceCookie*/ {
     public void setInfo(DatabaseNodeInfo nodeinfo) {
         super.setInfo(nodeinfo);
         DatabaseNodeInfo info = getInfo();
@@ -69,11 +69,12 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie {
         String displayName = getInfo().getDatabaseConnection().getName();
         setDisplayName(displayName);
     }
-
+    
+/*
     public String instanceName() {
         return "org.netbeans.lib.sql.ConnectionSource"; //NOI18N
     }
-
+    
     public Class instanceClass() throws IOException, ClassNotFoundException {
         return Class.forName("org.netbeans.lib.sql.ConnectionSource", true, org.openide.TopManager.getDefault ().currentClassLoader ()); //NOI18N
     }
@@ -108,7 +109,7 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie {
             return null;
         }
     }
-
+*/
     
     private void update(Connection connection) {
         boolean connecting = (connection != null);
