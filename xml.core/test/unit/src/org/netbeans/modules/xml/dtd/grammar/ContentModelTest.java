@@ -121,6 +121,18 @@ public class ContentModelTest extends NbTestCase {
         in = new InputEnumeration("");
         gold = new InputEnumeration("element");
         probe("(element|element)", in, gold);
+
+        in = new InputEnumeration("");
+        gold = new InputEnumeration("element element2 element3 element4");
+        probe("((element|element2)|(element3|element4))", in, gold);
+
+        in = new InputEnumeration("invalid-element");
+        gold = null;
+        probe("((element|element2)|(element3|element4))", in, gold);
+        
+        in = new InputEnumeration("element");
+        gold = new InputEnumeration("");
+        probe("((element|element2)|(element3|element4))", in, gold);
         
         
         // test options in sequence ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

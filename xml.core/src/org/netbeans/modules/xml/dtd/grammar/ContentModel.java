@@ -446,7 +446,7 @@ abstract class ContentModel {
                 if (accept) {
                     accepted = true;
                     if (food.hasNext() == false) {
-                        acceptedAndHungry = models[current].terminated() == false;
+                        acceptedAndHungry |= models[current].terminated() == false;
                     }
                     newFood = Math.max(newFood, food.mark());
                 }
@@ -466,7 +466,7 @@ abstract class ContentModel {
         protected Enumeration possibilities() {
             if (terminated() == false) {
                 Enumeration en = EmptyEnumeration.EMPTY;
-                for ( int i = current; i<models.length; i++) {
+                for ( int i = 0; i<models.length; i++) {
                     ContentModel next = models[i];
                     en = new SequenceEnumeration(en, next.possibilities());
                 }
