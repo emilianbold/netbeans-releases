@@ -68,12 +68,11 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Main menu -->
      <folder name="Menu">
         <folder name="RunProject">
-            <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow" boolvalue="true" />
+            <attr name="SeparatorRun.instance/org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow/SeparatorMainProject.instance" boolvalue="true" />
-            <attr name="SeparatorRun.instance/org-netbeans-modules-debugger-ui-actions-KillAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow/org-netbeans-modules-debugger-ui-actions-KillAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
             </file>
@@ -115,12 +114,14 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Separator3.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-
-            <attr name="Separator3.instance/Separator4.instance" boolvalue="true" />            
+            <attr name="Separator3.instance/org-netbeans-modules-debugger-ui-actions-FixAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-FixAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-FixAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-FixAction.shadow/Separator4.instance" boolvalue="true" />            
             <file name="Separator4.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-
             <attr name="Separator4.instance/Stack" boolvalue="true" />
             <folder name="Stack">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle" />
