@@ -278,14 +278,19 @@ public final class J2SEProject implements Project, AntProjectListener {
         ProjectXmlSavedHookImpl() {}
         
         protected void projectXmlSaved() throws IOException {
-            genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                J2SEProject.class.getResource("resources/build-impl.xsl"),
-                false);
-            genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_XML_PATH,
-                J2SEProject.class.getResource("resources/build.xsl"),
-                false);
+            //May be called by {@link AuxiliaryConfiguration#putConfigurationFragment}
+            //which didn't affect the j2seproject 
+            if (updateHelper.isCurrent()) {
+                //Refresh build-impl.xml only for j2seproject/2
+                genFilesHelper.refreshBuildScript(
+                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                    J2SEProject.class.getResource("resources/build-impl.xsl"),
+                    false);
+                genFilesHelper.refreshBuildScript(
+                    GeneratedFilesHelper.BUILD_XML_PATH,
+                    J2SEProject.class.getResource("resources/build.xsl"),
+                    false);
+            }
         }
         
     }
