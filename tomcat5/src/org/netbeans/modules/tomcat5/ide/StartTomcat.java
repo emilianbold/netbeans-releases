@@ -104,6 +104,13 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
         // PENDING check whether is runs or not
         String home = tm.getCatalinaHome ();
         String base = tm.getCatalinaBase ();
+        if (home == null) {
+            // no home - start not supported
+            pes.fireHandleProgressEvent (
+                null, new Status (ActionType.EXECUTE, CommandType.START, NbBundle.getMessage (StartTomcat.class, "MSG_notStarting"), StateType.COMPLETED));
+            return;
+        }
+        
         if (base == null) {
             base = home;
         }
