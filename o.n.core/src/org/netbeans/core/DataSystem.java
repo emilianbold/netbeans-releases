@@ -206,7 +206,6 @@ implements RepositoryListener, NewTemplateAction.Cookie {
 
         protected Node[] createNodes (Object key) {
             DataFolder df = (DataFolder)key;
-            // XXX should supply some display name, probably, since RootFolderNode is gone
             Node n = new FilterNode(df.getNodeDelegate(), df.createNodeChildren (getDS ().filter));
             try {
                 n = org.netbeans.core.ui.MountNode.customize (n, df.getPrimaryFile ().getFileSystem ());

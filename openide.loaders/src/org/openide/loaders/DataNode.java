@@ -70,9 +70,34 @@ public class DataNode extends AbstractNode {
 
     private void updateDisplayName () {
         FileObject prim = obj.getPrimaryFile ();
-        String newDisplayName = null;
+        String newDisplayName;
         
-        if (showFileExtensions || obj instanceof DataFolder || obj instanceof DefaultDataObject) {
+        if (prim.isRoot()) {
+            // Special case - getName{,Ext} will just return "".
+            // Used to be handled by org.netbeans.core.RootFolderNode
+            // but might as well do it here.
+            // XXX replace with #37549
+            File f = FileUtil.toFile(prim);
+            if (f == null) {
+                // Check for a JAR root explicitly.
+                FileObject archiveFile = FileUtil.getArchiveFile(prim);
+                if (archiveFile != null) {
+                    f = FileUtil.toFile(archiveFile);
+                }
+            }
+            if (f != null) {
+                // E.g. /tmp/foo or /tmp/foo.jar
+                newDisplayName = f.getAbsolutePath();
+            } else {
+                try {
+                    // E.g. http://webdavhost.nowhere.net/mystuff/
+                    newDisplayName = prim.getURL().toExternalForm();
+                } catch (FileStateInvalidException e) {
+                    // Should not happen in practice.
+                    newDisplayName = "???"; // NOI18N
+                }
+            }
+        } else if (showFileExtensions || obj instanceof DataFolder || obj instanceof DefaultDataObject) {
             newDisplayName = prim.getNameExt();
         } else {
             newDisplayName = prim.getName ();
