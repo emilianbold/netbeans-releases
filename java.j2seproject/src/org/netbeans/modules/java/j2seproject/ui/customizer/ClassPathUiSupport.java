@@ -183,7 +183,7 @@ public class ClassPathUiSupport {
         int[] indexes = new int[libraries.length];
         for (int i=0, j=0; i<listModel.getSize(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item)listModel.get (i);
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken() ) {
                 if (addedLibs.contains(item.getLibrary())) {
                     indexes[j++] =i;
                 }
