@@ -64,7 +64,8 @@ public class OpenFileAction extends CallableSystemAction {
         FileFilter currentFilter = chooser.getFileFilter();
         
         chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
-        chooser.setMultiSelectionEnabled (true);
+        
+        chooser.setMultiSelectionEnabled(true);
         
         chooser.addChoosableFileFilter(new Filter(
             new String[] {OpenFile.JAVA_EXT},
@@ -78,21 +79,33 @@ public class OpenFileAction extends CallableSystemAction {
         if(currDir != null) 
             chooser.setCurrentDirectory (currDir);
         
+        File[] files = null;
+        
         while(chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-            File[] files = chooser.getSelectedFiles ();
+            files = chooser.getSelectedFiles ();
 
-            if (files.length == 0) { // selected file doesn't exist
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                    SettingsBeanInfo.getString("MSG_noFileSelected"),NotifyDescriptor.WARNING_MESSAGE));
-                continue;
+            if (files.length == 0) {
+                // In jdk.1.2 is in fact not supported multi selection -> bug.
+                // Try to get the fisrt file and open.
+                File selected = chooser.getSelectedFile();
+                
+                if(selected != null) {
+                    files = new File[] {selected};
+                } else {
+                    // Selected file doesn't exist.
+                    TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                        SettingsBeanInfo.getString("MSG_noFileSelected"),NotifyDescriptor.WARNING_MESSAGE));
+
+                    continue;
+                }
             }
-
+            
             for(int i = 0; i < files.length; i++)
                 OpenFile.open (files[i], false, null, 0, -1);
-
+            
             break;
         }
-        
+
         currDir = chooser.getCurrentDirectory ();
     }
     
