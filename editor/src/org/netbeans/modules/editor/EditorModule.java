@@ -110,14 +110,14 @@ public class EditorModule implements ModuleInstall {
     FileObject rootFolder = rfs.getRoot();
     FileObject fo = rootFolder.getFileObject(DB_DIR);
     if (fo == null) {
-      System.out.println("EditorModule.java:104 FO not found");
+//      System.out.println("EditorModule.java:104 FO not found");
       try {
         fo = rootFolder.createFolder(DB_DIR);
-        System.out.println("EditorModule.java:112 created dir=" + fo);
+//        System.out.println("EditorModule.java:112 created dir=" + fo);
         if (fo != null) {
           InputStream is = this.getClass().getResourceAsStream(JDK12_JAR);
           if (is != null) {
-            System.out.println("EditorModule.java:114 extracting jar");
+//            System.out.println("EditorModule.java:114 extracting jar");
             FileUtil.extractJar(fo, is);
           }
         }
@@ -199,6 +199,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  24   Gandalf   1.23        7/31/99  Ian Formanek    removed debug messages
  *  23   Gandalf   1.22        7/28/99  Libor Kramolis  
  *  22   Gandalf   1.21        7/26/99  Miloslav Metelka 
  *  21   Gandalf   1.20        7/21/99  Miloslav Metelka 
