@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Hashtable;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.Icon;
@@ -33,8 +34,17 @@ import org.netbeans.modules.xml.dtd.grammar.*;
 import org.netbeans.modules.xml.spi.dom.*;
 import org.netbeans.modules.xsl.cookies.ScenarioCookie;
 import org.netbeans.modules.xsl.scenario.XSLScenario;
+import org.openide.TopManager;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.loaders.FolderLookup;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.InstanceDataObject;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.Lookup;
 
 import org.w3c.dom.*;
 import org.w3c.dom.NodeList;
@@ -51,19 +61,19 @@ import org.xml.sax.SAXException;
  * @author  asgeir@dimonsoftware.com
  */
 public class XSLGrammarQuery implements GrammarQuery{
- 
+    
     private DataObject dataObject;
     
     private ScenarioCookie scenarioCookie;
     
-    /** Contains a mapping from XSL namespace element names to set of names of 
+    /** Contains a mapping from XSL namespace element names to set of names of
      * allowed XSL children. Neither the element name keys nor the names in the
      * value set should contain the namespace prefix.
      */
     private static Map elementDecls;
     
     /** Contains a mapping from XSL namespace element names to set of names of
-     * allowed XSL attributes for that element.  The element name keys should 
+     * allowed XSL attributes for that element.  The element name keys should
      * not contain the namespace prefix.
      */
     private static Map attrDecls;
@@ -73,12 +83,12 @@ public class XSLGrammarQuery implements GrammarQuery{
     
     /** An object which indicates that result element should be allowed in a element Set */
     private static String resultElements = "RESULT_ELEMENTS_DUMMY_STRING"; // NOI18N
-        
-    /** A Set of elements which should be allowed at template level in XSL stylesheet */ 
+    
+    /** A Set of elements which should be allowed at template level in XSL stylesheet */
     private static Set template;
     
-    /** Contains a mapping from XSL namespace element names to an attribute name which 
-     * should contain XPath expression.  The element name keys should 
+    /** Contains a mapping from XSL namespace element names to an attribute name which
+     * should contain XPath expression.  The element name keys should
      * not contain the namespace prefix.
      */
     private static Map exprAttributes;
@@ -88,14 +98,14 @@ public class XSLGrammarQuery implements GrammarQuery{
     
     /** A set containing XPath axes */
     private static Set xpathAxes;
-
+    
     /** A list of prefixes using the "http://www.w3.org/1999/XSL/Transform" namespace
      * defined in the context XSL document.  The first prefix in the list is the actual XSL
      * transformation prefix, which is normally defined on the xsl:stylesheet element.
      */
     private List prefixList = new LinkedList();
     
-    /** A GrammarQuery for the result elements created for the doctype-public" and 
+    /** A GrammarQuery for the result elements created for the doctype-public" and
      * "doctype-system" attributes of the xsl:output element.*/
     private GrammarQuery resultGrammarQuery;
     
@@ -106,9 +116,14 @@ public class XSLGrammarQuery implements GrammarQuery{
     /** The value of the public identifier of the DTD which was used when
      * resultGrammarQuery was previously created */
     private String lastDoctypePublic;
-
+    
     // we cannot parse SGML DTD for HTML, let emulate it by XHTML DTD
     private final static String XHTML_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Transitional//EN";
+    
+    /** Folder which stores instances of custom external XSL customizers */
+    private static final String CUSTOMIZER_FOLDER = "Plugins/XML/XSLCustomizer";// NOI18N
+    
+    private XSLCustomizer customizer = null;
     
     /** Creates a new instance of XSLGrammarQuery */
     public XSLGrammarQuery(DataObject dataObject) {
@@ -128,82 +143,82 @@ public class XSLGrammarQuery implements GrammarQuery{
             Set emptySet = new TreeSet();
             String spaceAtt = "xml:space";
             Set tmpSet;
-
+            
             ////////////////////////////////////////////////
             // Initialize common sets
-
+            
             Set charInstructions = new TreeSet(Arrays.asList(new String[]{"apply-templates", // NOI18N
-                "call-template","apply-imports","for-each","value-of", // NOI18N
-                "copy-of","number","choose","if","text","copy", // NOI18N
-                "variable","message","fallback"}));
-
+            "call-template","apply-imports","for-each","value-of", // NOI18N
+            "copy-of","number","choose","if","text","copy", // NOI18N
+            "variable","message","fallback"}));
+            
             Set instructions = new TreeSet(charInstructions);
             instructions.addAll(Arrays.asList(new String[]{"processing-instruction", // NOI18N
-                "comment","element","attribute"}));
-
+            "comment","element","attribute"}));
+            
             Set charTemplate = charInstructions; // We don't care about PCDATA
-
+            
             template = new TreeSet(instructions);
             template.add(resultElements);
-
+            
             Set topLevel = new TreeSet(Arrays.asList(new String[]{"import","include","strip-space", // NOI18N
-                "preserve-space","output","key","decimal-format","attribute-set", // NOI18N
-                "variable","param","template","namespace-alias"}));
-
+            "preserve-space","output","key","decimal-format","attribute-set", // NOI18N
+            "variable","param","template","namespace-alias"}));
+            
             Set topLevelAttr = new TreeSet(Arrays.asList(new String[]{"extension-element-prefixes",
-                "exclude-result-prefixes","id","version",spaceAtt}));
-
+            "exclude-result-prefixes","id","version",spaceAtt}));
+            
             resultElementAttr = new TreeSet(Arrays.asList(new String[]{"extension-element-prefixes",
-                "exclude-result-prefixes","use-attribute-sets","version"}));
-
+            "exclude-result-prefixes","use-attribute-sets","version"}));
+            
             ////////////////////////////////////////////////
             // Add items to elementDecls and attrDecls maps
-
+            
             // xsl:stylesheet
             elementDecls.put("stylesheet", topLevel);
             attrDecls.put("stylesheet", topLevelAttr);
-
+            
             // xsl:transform
             elementDecls.put("transform", topLevel);
             attrDecls.put("transform", topLevelAttr);
-
+            
             // xsl:import
             elementDecls.put("import", emptySet);
             attrDecls.put("import", new TreeSet(Arrays.asList(new String[]{"href"})));
-
+            
             // xxsl:include
             elementDecls.put("include", emptySet);
             attrDecls.put("include", new TreeSet(Arrays.asList(new String[]{"href"})));
-
+            
             // xsl:strip-space
             elementDecls.put("strip-space", emptySet);
             attrDecls.put("strip-space", new TreeSet(Arrays.asList(new String[]{"elements"})));
-
+            
             // xsl:preserve-space
             elementDecls.put("preserve-space", emptySet);
             attrDecls.put("preserve-space", new TreeSet(Arrays.asList(new String[]{"elements"})));
-
+            
             // xsl:output
             elementDecls.put("output", emptySet);
             attrDecls.put("output", new TreeSet(Arrays.asList(new String[]{"method",
-                "version","encoding","omit-xml-declaration","standalone","doctype-public",
-                "doctype-system","cdata-section-elements","indent","media-type"})));
-
-            // xsl:key  
+            "version","encoding","omit-xml-declaration","standalone","doctype-public",
+            "doctype-system","cdata-section-elements","indent","media-type"})));
+            
+            // xsl:key
             elementDecls.put("key", emptySet);
             attrDecls.put("key", new TreeSet(Arrays.asList(new String[]{"name","match","use"})));
-
+            
             // xsl:decimal-format
             elementDecls.put("decimal-format", emptySet);
             attrDecls.put("decimal-format", new TreeSet(Arrays.asList(new String[]{"name",
-                "decimal-separator","grouping-separator","infinity","minus-sign","NaN",
-                "percent","per-mille","zero-digit","digit","pattern-separator"})));
-
+            "decimal-separator","grouping-separator","infinity","minus-sign","NaN",
+            "percent","per-mille","zero-digit","digit","pattern-separator"})));
+            
             // xsl:namespace-alias
             elementDecls.put("namespace-alias", emptySet);
             attrDecls.put("namespace-alias", new TreeSet(Arrays.asList(new String[]{
                 "stylesheet-prefix","result-prefix"})));
-
+                
             // xsl:template
             tmpSet = new TreeSet(instructions);
             tmpSet.add(resultElements);
@@ -215,7 +230,7 @@ public class XSLGrammarQuery implements GrammarQuery{
             // xsl:value-of
             elementDecls.put("value-of", emptySet);
             attrDecls.put("value-of", new TreeSet(Arrays.asList(new String[]{
-                "select","disable-output-escaping"})));
+            "select","disable-output-escaping"})));
 
             // xsl:copy-of
             elementDecls.put("copy-of", emptySet);
@@ -226,7 +241,7 @@ public class XSLGrammarQuery implements GrammarQuery{
             attrDecls.put("number", new TreeSet(Arrays.asList(new String[]{
                 "level","count","from","value","format","lang","letter-value",
                 "grouping-separator","grouping-size"})));
-
+                            
             // xsl:apply-templates
             elementDecls.put("apply-templates", new TreeSet(Arrays.asList(new String[]{
                 "sort","with-param"})));
@@ -243,7 +258,7 @@ public class XSLGrammarQuery implements GrammarQuery{
             tmpSet.add("sort");
             elementDecls.put("for-each", tmpSet);
             attrDecls.put("for-each", new TreeSet(Arrays.asList(new String[]{
-                "select",spaceAtt})));
+            "select",spaceAtt})));
 
             // xsl:sort
             elementDecls.put("sort", emptySet);
@@ -360,7 +375,7 @@ public class XSLGrammarQuery implements GrammarQuery{
                 "boolean(","ceiling(","concat(", "contains(","count(","current()","document(",
                 "false()", "floor(","format-number(","generate-id(",
                 "id(","local-name(","key(","lang(","last()","name(","namespace-uri(", "normalize-space(",
-                "not(","number(","position()","round(","starts-with(","string(", 
+                "not(","number(","position()","round(","starts-with(","string(",
                 "string-length(", "substring(","substring-after(","substring-before(", "sum(",
                 "system-property(","translate(",   "true()","unparsed-entity-uri("}));
         }
@@ -370,9 +385,9 @@ public class XSLGrammarQuery implements GrammarQuery{
     private static Set getXPathAxes() {
         if (xpathAxes == null) {
             xpathAxes = new TreeSet(Arrays.asList(new String[]{"ancestor::", "ancestor-or-self::",
-                "attribute::", "child::", "descendant::", "descendant-or-self::", "following::",
-                "following-sibling::", "namespace::", "parent::", "preceding::",
-                "preceding-sibling::", "self::"}));        
+            "attribute::", "child::", "descendant::", "descendant-or-self::", "following::",
+            "following-sibling::", "namespace::", "parent::", "preceding::",
+            "preceding-sibling::", "self::"}));
         }
         return xpathAxes;
     }
@@ -397,20 +412,20 @@ public class XSLGrammarQuery implements GrammarQuery{
     }
     
     
-
-////////////////////////////////////////////////////////////////////////////////
-// GrammarQuery interface fulfillment
-
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    // GrammarQuery interface fulfillment
+    
     /**
      * Support completions of elements defined by XSLT spec and by the <output>
      * doctype attribute (in result space).
      */
-    public Enumeration queryElements(HintContext ctx) {        
-        Node node = ((Node)ctx).getParentNode();        
+    public Enumeration queryElements(HintContext ctx) {
+        Node node = ((Node)ctx).getParentNode();
         
         String prefix = ctx.getCurrentPrefix();
         QueueEnumeration list = new QueueEnumeration();
-                
+        
         if (node instanceof Element) {
             Element el = (Element) node;
             updateProperties(el);
@@ -427,14 +442,14 @@ public class XSLGrammarQuery implements GrammarQuery{
             }
             
             // First we add the Result elements
-            if (elements != null && resultGrammarQuery != null && elements.contains(resultElements)) {
+            if (elements != null  && resultGrammarQuery != null && elements.contains(resultElements)) {
                 ResultHintContext resultHintContext = new ResultHintContext(ctx, firstXslPrefixWithColon, null);
                 Enumeration resultEnum = resultGrammarQuery.queryElements(resultHintContext);
                 while (resultEnum.hasMoreElements()) {
                     list.put(resultEnum.nextElement());
                 }
             }
-
+            
             // Then we add the XSLT elements of the first prefix (normally of the stylesheet node).
             addXslElementsToEnum(list, elements, prefixList.get(0) + ":", prefix);
             
@@ -462,9 +477,9 @@ public class XSLGrammarQuery implements GrammarQuery{
             addXslElementsToEnum(list, getElementDecls().keySet(), prefixList.get(0) + ":", prefix);
         } else {
             return EmptyEnumeration.EMPTY;
-        }        
-              
-        return list;                        
+        }
+        
+        return list;
     }
     
     public Enumeration queryAttributes(HintContext ctx) {
@@ -472,10 +487,10 @@ public class XSLGrammarQuery implements GrammarQuery{
         if (el == null) return EmptyEnumeration.EMPTY;
         String elTagName = el.getTagName();
         NamedNodeMap existingAttributes = el.getAttributes();
-         
+        
         updateProperties(el);
         
-       
+        
         String curXslPrefix = null;
         for (int ind = 0; ind < prefixList.size(); ind++) {
             if (elTagName.startsWith((String)prefixList.get(ind))){
@@ -483,7 +498,7 @@ public class XSLGrammarQuery implements GrammarQuery{
                 break;
             }
         }
-                
+        
         Set possibleAttributes;
         if (curXslPrefix != null) {
             // Attributes of XSL element
@@ -523,22 +538,20 @@ public class XSLGrammarQuery implements GrammarQuery{
                 }
             }
         }
-                
+        
         return list;
     }
-
+    
     public Enumeration queryValues(HintContext ctx) {
-        if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
+       if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
+            updateProperties(((Attr)ctx).getOwnerElement());
             if (prefixList.size() == 0) return EmptyEnumeration.EMPTY;
             String xslNamespacePrefix = prefixList.get(0) + ":";
             
             String prefix = ctx.getCurrentPrefix();
-            if (prefix.length() == 0) {
-                return EmptyEnumeration.EMPTY; // This should never happen
-            }            
             
             Attr attr = (Attr)ctx;
-
+            
             boolean isXPath = false;
             String elName = attr.getOwnerElement().getNodeName();
             if (elName.startsWith(xslNamespacePrefix)) {
@@ -570,7 +583,7 @@ public class XSLGrammarQuery implements GrammarQuery{
             if (isXPath) {
                 // This is an XPath expression
                 QueueEnumeration list = new QueueEnumeration();
-
+                
                 int curIndex = prefix.length();
                 while (curIndex > 0) {
                     curIndex--;
@@ -580,10 +593,10 @@ public class XSLGrammarQuery implements GrammarQuery{
                         break;
                     }
                 }
-
+                
                 preExpression += prefix.substring(0, curIndex);
                 String subExpression = prefix.substring(curIndex);
-
+                
                 int lastDiv = subExpression.lastIndexOf('/');
                 String subPre = "";
                 String subRest = "";
@@ -593,7 +606,7 @@ public class XSLGrammarQuery implements GrammarQuery{
                 } else {
                     subRest = subExpression;
                 }
-
+                
                 // At this point we need to consult transformed document or
                 // its grammar.
                 
@@ -606,19 +619,19 @@ public class XSLGrammarQuery implements GrammarQuery{
                     } catch(Exception e) {
                         // We don't care, ignore
                     }
-
+                    
                     if (doc != null) {
                         Element docElement = doc.getDocumentElement();
-
+                        
                         Set childNodeNames = new TreeSet();
-
+                        
                         String combinedXPath;
                         if (subPre.startsWith("/")) {
                             // This is an absolute XPath
                             combinedXPath = subPre;
                         } else {
-                            // This is a relative XPath 
-
+                            // This is a relative XPath
+                            
                             // Traverse up the documents tree looking for xsl:for-each
                             String xslForEachName = xslNamespacePrefix + "for-each"; // NOI18N
                             List selectAttrs = new LinkedList();
@@ -627,29 +640,29 @@ public class XSLGrammarQuery implements GrammarQuery{
                                 // We don't want to add select of our selfs
                                 curNode = curNode.getParentNode();
                             }
-
+                            
                             while (curNode != null && !(curNode instanceof Document)) {
                                 if (curNode.getNodeName().equals(xslForEachName)) {
-                                    selectAttrs.add(0, ((Element)curNode).getAttribute("select"));        
+                                    selectAttrs.add(0, ((Element)curNode).getAttribute("select"));
                                 }
-
+                                
                                 curNode = curNode.getParentNode();
                             }
-
+                            
                             combinedXPath = "";
                             for (int ind = 0; ind < selectAttrs.size(); ind++) {
                                 combinedXPath += selectAttrs.get(ind) + "/";
                             }
                             combinedXPath += subPre;
                         }
-
+                        
                         try {
                             NodeList nodeList = XPathAPI.selectNodeList(doc, combinedXPath + "child::*");
                             for (int ind = 0; ind < nodeList.getLength(); ind++) {
                                 Node curResNode = nodeList.item(ind);
                                 childNodeNames.add(curResNode.getNodeName());
                             }
-
+                            
                             nodeList = XPathAPI.selectNodeList(doc, combinedXPath + "@*");
                             for (int ind = 0; ind < nodeList.getLength(); ind++) {
                                 Node curResNode = nodeList.item(ind);
@@ -657,23 +670,23 @@ public class XSLGrammarQuery implements GrammarQuery{
                             }
                         } catch (Exception e) {
                             Util.THIS.debug("Ignored during XPathAPI operations", e);
-                           // We don't care, ignore
+                            // We don't care, ignore
                         }
-
+                        
                         addItemsToEnum(list, childNodeNames, subRest, preExpression + subPre);
                     }
                 }
-
-                addItemsToEnum(list, getXPathAxes(), subRest, preExpression + subPre);                
+                
+                addItemsToEnum(list, getXPathAxes(), subRest, preExpression + subPre);
                 addItemsToEnum(list, getXslFunctions(), subExpression, preExpression);
-
+                
                 return list;
             }
         }
-
-       return EmptyEnumeration.EMPTY;
+        
+        return EmptyEnumeration.EMPTY;
     }
-
+    
     public Enumeration queryEntities(String prefix) {
         QueueEnumeration list = new QueueEnumeration();
         
@@ -687,57 +700,117 @@ public class XSLGrammarQuery implements GrammarQuery{
         
         return list;
     }
-
+    
     public Enumeration queryNotations(String prefix) {
         return EmptyEnumeration.EMPTY;
     }
     
     public java.awt.Component getCustomizer(HintContext ctx) {
-        return new javax.swing.JLabel("Name=" + ctx.getNodeName() + ", value=" + ctx.getNodeValue());
+        if (customizer == null) {
+            try {
+                // Load the XSLCustomizer from the XML layer
+                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+                FileObject fo = fs.findResource(CUSTOMIZER_FOLDER); 
+                DataObject df = DataObject.find(fo);
+                if (!(df instanceof DataObject.Container)) {
+                    return null;
+                }
+
+                FolderLookup lookup =
+                    new FolderLookup((DataObject.Container) df);
+                Lookup.Template template =
+                    new Lookup.Template(XSLCustomizer.class);
+
+                Lookup.Item lookupItem = lookup.getLookup().lookupItem(template);
+                if (lookupItem == null) {
+                    return null;
+                }
+
+                customizer=(XSLCustomizer)lookupItem.getInstance();
+            } catch(Exception e) {
+                return null;
+            }
+        }
+        
+        if (customizer == null) {
+            return null;
+        }
+        
+        customizer.setDataObject(dataObject);
+        customizer.setContextNode(ctx);
+        return customizer.getComponent();
     }
     
     public boolean hasCustomizer(HintContext ctx) {
-        return true;
+		//Check if the node is an attribute
+		if(ctx.getNodeType() != Node.ATTRIBUTE_NODE) {
+			return false;
+		}
+        
+        return getCustomizer(ctx) != null;
     }
-
+    
     public org.openide.nodes.Node.Property[] getProperties(final HintContext ctx) {
-
+        
         if (ctx.getNodeType() != Node.ATTRIBUTE_NODE || ctx.getNodeValue() == null) {
             return null;
         }
         
-        PropertySupport attrNameProp = new PropertySupport("Attribute name", String.class, 
-            "Attribute name", "The name of the selected attribute", true, false) {
-                public void setValue(Object value) {
-                    // Dummy
-                }
-                public Object getValue() {
-                    return ctx.getNodeName();
-                }
-
+        PropertySupport attrNameProp = new PropertySupport("Attribute name", String.class,
+        "Attribute name", "The name of the selected attribute", true, false) {
+            public void setValue(Object value) {
+                // Dummy
+            }
+            public Object getValue() {
+                return ctx.getNodeName();
+            }
+            
         };
         
-        PropertySupport attrValueProp = new PropertySupport("Attribute value", String.class, 
-            "Attribute value", "The value of the selected attribute", true, true) {
-                public void setValue(Object value) {
-                    ctx.setNodeValue((String)value);
-                }
-                public Object getValue() {
-                    return ctx.getNodeValue();
-                }
-
+        PropertySupport attrValueProp = new PropertySupport("Attribute value", String.class,
+        "Attribute value", "The value of the selected attribute", true, true) {
+            public void setValue(Object value) {
+                ctx.setNodeValue((String)value);
+            }
+            public Object getValue() {
+                return ctx.getNodeValue();
+            }
+            
         };
         
         return new org.openide.nodes.Node.Property[]{attrNameProp, attrValueProp};
     }
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    // Private helper methods
+    
+    /**
+     * Looks up registered XSLCustomizer objects which will be used by this object 
+     */
+    private Lookup.Item getCustomizerLookupItem() {
+        try {
+            // Load the XSLCustomizer from the XML layer
+            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+            FileObject fo = fs.findResource(CUSTOMIZER_FOLDER); 
+            DataObject df = DataObject.find(fo);
+            if (!(df instanceof DataObject.Container)) {
+                return null;
+            }
 
-////////////////////////////////////////////////////////////////////////////////
-// Private helper methods    
-        
+            FolderLookup lookup =
+                new FolderLookup((DataObject.Container) df);
+            Lookup.Template template =
+                new Lookup.Template(XSLCustomizer.class);
+            return lookup.getLookup().lookupItem(template);
+        } catch(Exception e) {
+            return null;
+        }
+    }
+    
     /**
      * @param enum the Enumeration which the element should be added to
      * @param set a set containing strings which should be added (with prefix) to the enum
-     * @param namespacePrefix a prefix at the form "xsl:" which should be added in front 
+     * @param namespacePrefix a prefix at the form "xsl:" which should be added in front
      *          of the names in the set.
      * @param startWith Elements should only be added to enum if they start with this string
      */
@@ -765,9 +838,9 @@ public class XSLGrammarQuery implements GrammarQuery{
             }
         }
     }
-
+    
     /**
-     * This method traverses up the document tree, investigates it and updates 
+     * This method traverses up the document tree, investigates it and updates
      * prefixList, resultGrammarQuery, lastDoctypeSystem or lastDoctypePublic
      * members if necessery.
      * @param curNode the node which from wich the traversing should start.
@@ -817,10 +890,10 @@ public class XSLGrammarQuery implements GrammarQuery{
                         break;
                     }
                     
-                    if (curDoctypePublic != null && !curDoctypePublic.equals(lastDoctypePublic) || 
-                      curDoctypePublic == null && lastDoctypePublic != null ||
-                      curDoctypeSystem != null && !curDoctypeSystem.equals(lastDoctypeSystem) || 
-                      curDoctypeSystem == null && lastDoctypeSystem != null) {
+                    if (curDoctypePublic != null && !curDoctypePublic.equals(lastDoctypePublic) ||
+                    curDoctypePublic == null && lastDoctypePublic != null ||
+                    curDoctypeSystem != null && !curDoctypeSystem.equals(lastDoctypeSystem) ||
+                    curDoctypeSystem == null && lastDoctypeSystem != null) {
                         setOutputDoctype(curDoctypePublic, curDoctypeSystem);
                     }
                     
@@ -835,9 +908,9 @@ public class XSLGrammarQuery implements GrammarQuery{
             setOutputDoctype(null, null);
         }
     }
-
+    
     /**
-     * Updates resultGrammarQuery by parsing the DTD specified by publicId and 
+     * Updates resultGrammarQuery by parsing the DTD specified by publicId and
      * systemId. lastDoctypeSystem and lastDoctypePublic are assigned to the new values.
      * @param publicId the public identifier of the DTD
      * @param publicId the system identifier of the DTD
@@ -875,15 +948,15 @@ public class XSLGrammarQuery implements GrammarQuery{
                 return;
             }
         }
-
+        
         DTDParser dtdParser = new DTDParser(true);
         resultGrammarQuery = dtdParser.parse(inputSource);
         
     }
     
-////////////////////////////////////////////////////////////////////////////////
-// Private helper classes    
-        
+    ////////////////////////////////////////////////////////////////////////////////
+    // Private helper classes
+    
     private class ResultHintContext extends ResultNode implements HintContext {
         private String currentPrefix;
         
@@ -945,7 +1018,7 @@ public class XSLGrammarQuery implements GrammarQuery{
         public String getNodeName() {
             return name;
         }
-                
+        
     }
     
     private static class MyElement extends AbstractResultNode implements Element {
@@ -969,7 +1042,7 @@ public class XSLGrammarQuery implements GrammarQuery{
         }
         
     }
-
+    
     private static class MyAttr extends AbstractResultNode implements Attr {
         
         private String name;
@@ -987,16 +1060,16 @@ public class XSLGrammarQuery implements GrammarQuery{
         }
         
         public String getName() {
-            return name;                
+            return name;
         }
-
+        
         public String getValue() {
             return null;  //??? what spec says
         }
         
         
     }
-
+    
 
     private static class MyText extends AbstractResultNode implements Text {
         
