@@ -113,7 +113,7 @@ class OpenFile extends Object {
   * @param f the file on local disk
   * @return file object or <code>null</code> if not found
   */
-  private static FileObject find (File f) {
+  private static synchronized FileObject find (File f) {
     String fileName = f.toString ();
     String fileNameUpper = fileName.toUpperCase ();
     // Handle ZIP/JAR files by mounting and displaying.
@@ -459,6 +459,8 @@ class OpenFile extends Object {
 
 /*
  * Log
+ *  31   Gandalf   1.30        1/15/00  Jesse Glick     #5271 - opening multiple
+ *       files at once which share a new mount point.
  *  30   Gandalf   1.29        1/13/00  Jesse Glick     NOI18N
  *  29   Gandalf   1.28        1/12/00  Jesse Glick     I18N.
  *  28   Gandalf   1.27        1/7/00   Jesse Glick     -line option for line 
