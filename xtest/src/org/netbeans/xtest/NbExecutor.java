@@ -71,7 +71,7 @@ public class NbExecutor extends Task {
         if (null == targetParamTestType || 0 == targetParamTestType.length())
             throw new BuildException("Attribute 'targetParamTestType' has to be set.");
         
-        MConfig cfg = NbTestConfig4.getMConfig();                
+        MConfig cfg = NbTestConfig.getMConfig();                
         
         if (null == cfg)
             throw new BuildException("XTest configuration wasn't chosen, use call xtestconfig task first.", getLocation());        
