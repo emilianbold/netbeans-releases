@@ -290,9 +290,7 @@ public abstract class AbstractPhadhail implements Phadhail {
     }
     
     public InputStream getInputStream() throws IOException {
-        // XXX sometimes this is called in a RP task while AWT waits for it
-        // in that case we cannot make this run in AWT!
-        assert mutex() == Mutex.EVENT || mutex().canRead();
+        assert mutex().canRead();
         return new FileInputStream(f);
     }
     
@@ -303,7 +301,7 @@ public abstract class AbstractPhadhail implements Phadhail {
         // That would be trickier because then you would need to acquire the write mutex
         // when opening the stream but release it when closing the stream (*not* when
         // returning it to the caller).
-        assert mutex() == Mutex.EVENT || mutex().canRead();
+        assert mutex().canRead();
         return new FileOutputStream(f);
     }
     

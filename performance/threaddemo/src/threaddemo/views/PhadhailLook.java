@@ -71,36 +71,14 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     }
     
     public boolean isLeaf(Object o, Lookup e) {
+        assert EventQueue.isDispatchThread();
         Phadhail ph = (Phadhail)o;
         return !ph.hasChildren() &&
                PhadhailLookups.getLookup(ph).lookup(DomProvider.class) == null;
     }
     
-    // XXX Look.getChildObjects should not be called off AWT, yet sometimes it is (by Children)
-    private static final Map children = new WeakHashMap(); // Map<Phadhail,Reference<List<Object>>>
     public List getChildObjects(final Object o, Lookup e) {
-        if (!EventQueue.isDispatchThread()) {
-            // XXX see comment above... need to hack around threading of Children here
-            // keeping a strong hash map does not work 100% - there may be a couple
-            // entries left if the children are computed but never asked for
-            Reference r = (Reference)children.remove(o);
-            List l = (r != null) ? (List)r.get() : null;
-            if (l != null) {
-                System.err.println("PL.gCO EQ hax - with children: " + l);//XXX
-                return l;
-            } else {
-                System.err.println("PL.gCO EQ hax - without children");//XXX
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        List l = getChildObjects(o, null);
-                        System.err.println("PL.gCO EQ hax - now got children: " + l);//XXX
-                        children.put(o, new WeakReference(l));
-                        fireChange(o, Look.GET_CHILD_OBJECTS);
-                    }
-                });
-                return Collections.EMPTY_LIST;
-            }
-        }
+        assert EventQueue.isDispatchThread();
         Phadhail ph = (Phadhail)o;
         if (ph.hasChildren()) {
             return ph.getChildren();
@@ -125,7 +103,8 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
                 } else {
                     System.err.println("DOM tree is not ready");
                     p.start();
-                    return Collections.EMPTY_LIST;
+                    // Cf. PhadhailLookSelector.StringLook:
+                    return Collections.singletonList("Please wait...");
                 }
             }
             return null;
@@ -133,11 +112,13 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     }
     
     public String getName(Object o, Lookup e) {
+        assert EventQueue.isDispatchThread();
         Phadhail ph = (Phadhail)o;
         return ph.getName();
     }
 
     public String getDisplayName(Object o, Lookup e) {
+        assert EventQueue.isDispatchThread();
         Phadhail ph = (Phadhail)o;
         return ph.getPath();
     }
@@ -188,6 +169,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     }
     
     public Collection getLookupItems(Object o, Lookup env) {
+        assert EventQueue.isDispatchThread();
         Phadhail ph = (Phadhail)o;
         Lookup.Result r = (Lookup.Result)phadhails2Results.get(ph);
         if (r == null) {
@@ -203,27 +185,43 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     public void resultChanged(LookupEvent ev) {
         // XXX #33372: should be able to do ev.getResult()
         Lookup.Result r = (Lookup.Result)ev.getSource();
-        Phadhail ph = (Phadhail)results2Phadhails.get(r);
+        final Phadhail ph = (Phadhail)results2Phadhails.get(r);
         assert ph != null;
-        fireChange(ph, Look.GET_LOOKUP_ITEMS);
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                fireChange(ph, Look.GET_LOOKUP_ITEMS);
+            }
+        });
     }
     
-    public void childrenChanged(PhadhailEvent ev) {
+    public void childrenChanged(final PhadhailEvent ev) {
         assert ev.getPhadhail().mutex().canRead();
-        fireChange(ev.getPhadhail(), Look.GET_CHILD_OBJECTS);
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                fireChange(ev.getPhadhail(), Look.GET_CHILD_OBJECTS);
+            }
+        });
     }
     
-    public void nameChanged(PhadhailNameEvent ev) {
+    public void nameChanged(final PhadhailNameEvent ev) {
         assert ev.getPhadhail().mutex().canRead();
-        fireChange(ev.getPhadhail(), Look.GET_NAME | Look.GET_DISPLAY_NAME);
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                fireChange(ev.getPhadhail(), Look.GET_NAME | Look.GET_DISPLAY_NAME);
+            }
+        });
     }
     
     public void stateChanged(ChangeEvent e) {
         System.err.println("PL: got change");
         DomProvider p = (DomProvider)e.getSource();
-        Phadhail ph = (Phadhail)domProviders2Phadhails.get(p);
+        final Phadhail ph = (Phadhail)domProviders2Phadhails.get(p);
         assert ph != null;
-        fireChange(ph, Look.GET_CHILD_OBJECTS);
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                fireChange(ph, Look.GET_CHILD_OBJECTS);
+            }
+        });
     }
     
 }

@@ -28,6 +28,11 @@ import org.openide.nodes.Node;
 import threaddemo.model.Phadhail;
 import org.netbeans.api.nodes2looks.Nodes;
 import org.openide.actions.PopupAction;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.Mutex;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 
@@ -41,6 +46,7 @@ public class PhadhailViews {
     private PhadhailViews() {}
     
     private static Component nodeBasedView(Node root) {
+        root = new EQReplannedNode(root);
         ExplorerPanel p = new ExplorerPanel();
         p.setLayout(new BorderLayout());
         p.add(new BeanTreeView(), BorderLayout.CENTER);
@@ -90,6 +96,73 @@ public class PhadhailViews {
         };
         tree.setLargeModel(true);
         return new JScrollPane(tree);
+    }
+    
+    /**
+     * Workaround for the fact that Node/Look currently do not run only in AWT.
+     */
+    private static final class EQReplannedNode extends FilterNode {
+        public EQReplannedNode(Node n) {
+            super(n, n.isLeaf() ? Children.LEAF : new EQReplannedChildren(n));
+        }
+        public String getName() {
+            return (String)Mutex.EVENT.readAccess(new Mutex.Action() {
+                public Object run() {
+                    return EQReplannedNode.super.getName();
+                }
+            });
+        }
+        public String getDisplayName() {
+            return (String)Mutex.EVENT.readAccess(new Mutex.Action() {
+                public Object run() {
+                    return EQReplannedNode.super.getDisplayName();
+                }
+            });
+        }
+        // XXX any other methods could also be replanned as needed
+    }
+    private static final class EQReplannedChildren extends FilterNode.Children {
+        public EQReplannedChildren(Node n) {
+            super(n);
+        }
+        protected Node copyNode(Node n) {
+            return new EQReplannedNode(n);
+        }
+        public Node findChild(final String name) {
+            return (Node)Mutex.EVENT.readAccess(new Mutex.Action() {
+                public Object run() {
+                    return EQReplannedChildren.super.findChild(name);
+                }
+            });
+        }
+        public Node[] getNodes(final boolean optimalResult) {
+            return (Node[])Mutex.EVENT.readAccess(new Mutex.Action() {
+                public Object run() {
+                    return EQReplannedChildren.super.getNodes(optimalResult);
+                }
+            });
+        }
+        protected void filterChildrenAdded(final NodeMemberEvent ev) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    EQReplannedChildren.super.filterChildrenAdded(ev);
+                }
+            });
+        }
+        protected void filterChildrenRemoved(final NodeMemberEvent ev) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    EQReplannedChildren.super.filterChildrenRemoved(ev);
+                }
+            });
+        }
+        protected void filterChildrenReordered(final NodeReorderEvent ev) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    EQReplannedChildren.super.filterChildrenReordered(ev);
+                }
+            });
+        }
     }
     
 }
