@@ -29,13 +29,13 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="compile-dependend-modules">
-    <ant dir="../openide" antfile="build.xml" target="netbeans"/>
-    <ant dir="../openide/io" antfile="build.xml" target="netbeans"/>
-    <ant dir="../openide/execution" antfile="build.xml" target="netbeans"/>
-    <ant dir="../core" antfile="build.xml" target="netbeans"/>
-    <ant dir="../core/execution" antfile="build.xml" target="netbeans"/>
-    <ant dir="../core/term" antfile="build.xml" target="netbeans"/>
-    <ant dir="../core/output" antfile="build.xml" target="netbeans"/>
+    <ant dir="../openide" antfile="build.xml" target="jars"/>
+    <ant dir="../openide/io" antfile="build.xml" target="jars"/>
+    <ant dir="../openide/execution" antfile="build.xml" target="jars"/>
+    <ant dir="../core" antfile="build.xml" target="jars"/>
+    <ant dir="../core/execution" antfile="build.xml" target="jars"/>
+    <ant dir="../core/term" antfile="build.xml" target="jars"/>
+    <ant dir="../core/output" antfile="build.xml" target="jars"/>
   </target>
 
   <target name="compile" depends="init,compile-dependend-modules,prepare-junit-extensions">
