@@ -16,6 +16,7 @@ package org.netbeans.modules.editor.options;
 import org.openide.filesystems.FileStateInvalidException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.xml.XMLUtil;
@@ -23,6 +24,7 @@ import java.util.List;
 import org.openide.filesystems.FileSystem;
 import org.w3c.dom.Document;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 
 /** Folder for multi properties.
  *  Standard representation of this type is Popup folder, where we have to gather
@@ -31,7 +33,7 @@ import org.openide.loaders.DataFolder;
  *  @author  Martin Roskanin
  *  @since 08/2001
  */
-abstract class MultiPropertyFolder {
+public class MultiPropertyFolder {
     protected  BaseOptions base;
     protected  DataFolder folder;
     /** Creates new MultiPropertyFolder */
@@ -40,9 +42,26 @@ abstract class MultiPropertyFolder {
         this.folder = fld;
     }
     
-    abstract List getProperties();
+    /** Gets folder properties */
+    List getProperties(){
+        List newSettings = new ArrayList();
+        DataObject dob[] = folder.getChildren();
+        
+        for (int i=0; i<dob.length; i++){
+            newSettings.add(dob[i]);
+        }
+        
+        return newSettings;
+    }
     
-    abstract void setProperties(List newProps);
+    /** Set changed properties to XML files */
+    void setProperties(List newProps){
+        //[PENDING]
+    }
+    
+    public String getName(){
+        return folder.getName();
+    }
     
     /** Gets DataFolder that represents this MultiPropertFolder */
     public DataFolder getDataFolder(){

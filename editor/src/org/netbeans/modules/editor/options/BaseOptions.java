@@ -140,6 +140,7 @@ public class BaseOptions extends OptionSupport {
     public static final String TEXT_LIMIT_WIDTH_PROP = "textLimitWidth"; // NOI18N
     public static final String TOOLBAR_VISIBLE_PROP = "toolbarVisible"; // NOI18N
     public static final String TEXT_ANTIALIASING_PROP = "textAntialiasing"; // NOI18N
+    public static final String CODE_FOLDING_PROPS_PROP = "codeFoldingProps"; // NOI18N    
     
     static final String[] BASE_PROP_NAMES = {
         ABBREV_MAP_PROP,
@@ -513,18 +514,34 @@ public class BaseOptions extends OptionSupport {
         setSettingValue(SettingsNames.CARET_TYPE_OVERWRITE_MODE, type,
         CARET_TYPE_OVERWRITE_MODE_PROP);
     }
-    
+
+    /**
+     *@deprecated since adaptation to new view implementation
+        the option is not supported 
+     */
     public boolean getCaretItalicInsertMode() {
-        return getSettingBoolean(SettingsNames.CARET_ITALIC_INSERT_MODE);
+        return false;//getSettingBoolean(SettingsNames.CARET_ITALIC_INSERT_MODE);
     }
+    /**
+     *@deprecated since adaptation to new view implementation
+        the option is not supported 
+     */
     public void setCaretItalicInsertMode(boolean b) {
         setSettingBoolean(SettingsNames.CARET_ITALIC_INSERT_MODE, b,
         CARET_ITALIC_INSERT_MODE_PROP);
     }
-    
+
+    /**
+     *@deprecated since adaptation to new view implementation
+        the option is not supported 
+     */
     public boolean getCaretItalicOverwriteMode() {
-        return getSettingBoolean(SettingsNames.CARET_ITALIC_OVERWRITE_MODE);
+        return false;//getSettingBoolean(SettingsNames.CARET_ITALIC_OVERWRITE_MODE);
     }
+    /**
+     *@deprecated since adaptation to new view implementation
+        the option is not supported 
+     */
     public void setCaretItalicOverwriteMode(boolean b) {
         setSettingBoolean(SettingsNames.CARET_ITALIC_OVERWRITE_MODE, b,
         CARET_ITALIC_OVERWRITE_MODE_PROP);
@@ -1165,13 +1182,55 @@ public class BaseOptions extends OptionSupport {
         // Cause refresh or renderingHints variable in EditorUI
         Settings.touchValue(getKitClass(), SettingsNames.RENDERING_HINTS);
     }
+    
+    public Map getCodeFoldingProps(){
+        Map map = new HashMap();
+        
+        Boolean val = (Boolean)getSettingValue(SettingsNames.CODE_FOLDING_ENABLE);
+        map.put(SettingsNames.CODE_FOLDING_ENABLE, val);
+        
+        val = (Boolean)getSettingValue(SettingsNames.CODE_FOLDING_COLLAPSE_METHOD);
+        map.put(SettingsNames.CODE_FOLDING_COLLAPSE_METHOD, val);
+
+        val = (Boolean)getSettingValue(SettingsNames.CODE_FOLDING_COLLAPSE_INNERCLASS);
+        map.put(SettingsNames.CODE_FOLDING_COLLAPSE_INNERCLASS, val);
+
+        val = (Boolean)getSettingValue(SettingsNames.CODE_FOLDING_COLLAPSE_IMPORT);
+        map.put(SettingsNames.CODE_FOLDING_COLLAPSE_IMPORT, val);
+
+        val = (Boolean)getSettingValue(SettingsNames.CODE_FOLDING_COLLAPSE_JAVADOC);
+        map.put(SettingsNames.CODE_FOLDING_COLLAPSE_JAVADOC, val);
+        
+        return map;
+    }
+    
+    public void setCodeFoldingProps(Map props){
+        String name = SettingsNames.CODE_FOLDING_ENABLE;
+        setSettingValue(name, props.get(name));
+        name = SettingsNames.CODE_FOLDING_COLLAPSE_METHOD;
+        setSettingValue(name, props.get(name));
+        name = SettingsNames.CODE_FOLDING_COLLAPSE_INNERCLASS;
+        setSettingValue(name, props.get(name));
+        name = SettingsNames.CODE_FOLDING_COLLAPSE_IMPORT;
+        setSettingValue(name, props.get(name));
+        name = SettingsNames.CODE_FOLDING_COLLAPSE_JAVADOC;
+        setSettingValue(name, props.get(name));
+    }
         
     /** Retrieves the actions from XML file */
     public void initPopupMenuItems(){
+        List orderedPopupFiles = getOrderedMultiPropertyFolderFiles("Popup");
+        if (orderedPopupFiles.size() >0){
+            super.setSettingValue(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
+                OptionUtilities.getPopupStrings(orderedPopupFiles)); //NOI18N
+        }
+    }
+    
+    public List getOrderedMultiPropertyFolderFiles(String folderName){
         if (!BASE.equals(getTypeName())){
             MIMEOptionFolder mimeFolder = getMIMEFolder();
             if (mimeFolder != null){
-                MultiPropertyFolder mpf = mimeFolder.getMPFolder("Popup",false); //NOI18N
+                MultiPropertyFolder mpf = mimeFolder.getMPFolder(folderName,false); //NOI18N
                 if (mpf!=null){
                     DataFolder df = mpf.getDataFolder();
                     List mimeFolderAttribs = new ArrayList();
@@ -1182,25 +1241,24 @@ public class BaseOptions extends OptionSupport {
                     // merge folders only if mime folder has some relevant info
                     if ( (mpf.getProperties().size()!=0) || (mimeFolderAttribs.size() != 0)) {
                         
-                        // We are going to merge global popup items and mime popup items ...
+                        // We are going to merge global items and mime popup items ...
                         // Firstly merge popup items
-                        Set mergedPopupItems = new HashSet(OptionUtilities.getGlobalPopupMenuItems());
-                        mergedPopupItems.addAll(mpf.getProperties());
+                        Set mergedItems = new HashSet(OptionUtilities.getGlobalMenuItems(folderName));
+                        mergedItems.addAll(mpf.getProperties());
                         
                         // Then merge attribs
-                        Set mergedPopupAttribs = new HashSet(OptionUtilities.getGlobalPopupAttribs());
-                        mergedPopupAttribs.addAll(mimeFolderAttribs);
+                        Set mergedAttribs = new HashSet(OptionUtilities.getGlobalAttribs(folderName));
+                        mergedAttribs.addAll(mimeFolderAttribs);
                         
-                        // Sort it in accordance with merged Popup Attribs
-                        List orderedPopupItems = OptionUtilities.arrangeMergedPopup(mergedPopupItems, mergedPopupAttribs);
-                        super.setSettingValue(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST, orderedPopupItems);
-                        return;
+                        // Sort it in accordance with merged Attribs
+                        return OptionUtilities.arrangeMergedFolderObjects(mergedItems, mergedAttribs);
                     }
                 }
             }
         }
+
+        return OptionUtilities.getGlobalMenuItems(folderName);
     }
-    
     
     public IndentEngine getIndentEngine() {
         // Due to #11212

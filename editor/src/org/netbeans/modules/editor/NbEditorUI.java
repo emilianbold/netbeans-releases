@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.editor;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -41,6 +43,9 @@ import org.netbeans.editor.BaseDocument;
 import javax.swing.text.Caret;
 import javax.swing.JEditorPane;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import org.netbeans.editor.GlyphGutter;
 
 /**
 * Editor UI
@@ -106,9 +111,39 @@ public class NbEditorUI extends ExtEditorUI {
     }
     
     protected JComponent createExtComponent() {
+
+        JTextComponent component = getComponent();
+        setLineNumberEnabled(true); // enable line numbering
+
+        // extComponent will be a panel
+        JComponent ec = new JPanel(new BorderLayout());
+        ec.putClientProperty(JTextComponent.class, component);
+
+        // Add the scroll-pane with the component to the center
+        JScrollPane scroller = new JScrollPane(component);
+        scroller.getViewport().setMinimumSize(new Dimension(4,4));
+
+        CustomizableSideBar bar = new CustomizableSideBar(component);
+
+        scroller.setRowHeaderView(bar);
+        
+        initGlyphCorner(scroller);
+
+        ec.add(scroller);
+
+        // Install the status-bar panel to the bottom
+        ec.add(getStatusBar().getPanel(), BorderLayout.SOUTH);
+        
+        NbToolbarSupport.checkToolbar(ec, (JEditorPane)getComponent());        
+        
+        return ec;
+        
+
+/*        
         JComponent ec = super.createExtComponent();
         NbToolbarSupport.checkToolbar(ec, (JEditorPane)getComponent());
         return ec;
+ */
         
 /*        String toolbarFolderPath = "Editors/" + mimeType + "/Toolbars";
 

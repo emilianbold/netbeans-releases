@@ -37,6 +37,8 @@ import org.openide.cookies.InstanceCookie;
 import java.util.Enumeration;
 import java.util.ArrayList;
 import java.beans.PropertyChangeEvent;
+import javax.swing.plaf.TextUI;
+import org.netbeans.editor.BaseTextUI;
 import org.openide.filesystems.Repository;
 
 /**
@@ -151,6 +153,18 @@ public class NbToolTip extends FileChangeAdapter {
     }
      
     private void buildTip(JTextComponent target) {
+
+        TextUI textUI = target.getUI();
+        if (textUI!=null && textUI instanceof BaseTextUI){
+            BaseTextUI btui = (BaseTextUI)textUI;
+            ExtEditorUI editorUI = (ExtEditorUI)btui.getEditorUI();
+            ToolTipSupport tts = editorUI.getToolTipSupport();
+            String toolTipText = btui.getToolTipText(target, tts.getLastMouseEvent().getPoint());
+            if (toolTipText!=null){
+                return;
+            }
+        }
+        
         Annotation[] annos = getTipAnnotations();
         if (annos != null) {
             ExtEditorUI ui = ExtUtilities.getExtEditorUI(target);

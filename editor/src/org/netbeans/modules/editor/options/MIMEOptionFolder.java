@@ -113,8 +113,10 @@ public class MIMEOptionFolder{
     /** Gets Multi Property Folder */
     MultiPropertyFolder getMPFolder(String folderName, boolean forceCreation){
         // check local map first
-        MultiPropertyFolder mpFolder = (MultiPropertyFolder) mpFolderMap.get(folderName);
-        if (mpFolder != null) return mpFolder;
+        synchronized (mpFolderMap){
+            MultiPropertyFolder mpFolder = (MultiPropertyFolder) mpFolderMap.get(folderName);
+            if (mpFolder != null) return mpFolder;
+        }
 
         FileObject fo = Repository.getDefault().getDefaultFileSystem().
         findResource(folder.getPrimaryFile().getPackageName('/')+"/"+folderName); //NOI18N
@@ -132,20 +134,20 @@ public class MIMEOptionFolder{
 
         if (fo == null ) return null;
 
-        if (PopupMultiPropertyFolder.FOLDER_NAME.equals(folderName)){
-            DataFolder df = DataFolder.findFolder(fo);
-            if (df!=null){
-                synchronized (this){
-                    if (!mpFolderMap.containsKey(folderName)){
-                        mpFolder = new PopupMultiPropertyFolder(df, base);
-                        mpFolderMap.put(folderName, mpFolder);
-                    }else{
-                        mpFolder = (MultiPropertyFolder) mpFolderMap.get(folderName);
-                    }
+        DataFolder df = DataFolder.findFolder(fo);
+        if (df!=null){
+            synchronized (mpFolderMap){
+                MultiPropertyFolder mpFolder;
+                if (!mpFolderMap.containsKey(folderName)){
+                    mpFolder = new MultiPropertyFolder(df, base);
+                    mpFolderMap.put(folderName, mpFolder);
+                }else{
+                    mpFolder = (MultiPropertyFolder) mpFolderMap.get(folderName);
                 }
-                return mpFolder; 
+                return mpFolder;
             }
         }
+        
         return null;
     }
     

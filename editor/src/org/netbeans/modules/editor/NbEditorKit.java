@@ -92,6 +92,9 @@ public class NbEditorKit extends ExtKit {
     /** Name of the action for generating of Go To popup menu*/
     public static final String generateGoToPopupAction = "generate-goto-popup";
 
+    /** Name of the action for generating of code folding popup menu*/
+    public static final String generateFoldPopupAction = "generate-fold-popup";
+    
     static {
         contentTypeTable = new HashMap();
         contentTypeTable.put("org.netbeans.modules.properties.syntax.PropertiesKit", "text/x-properties");
@@ -129,7 +132,8 @@ public class NbEditorKit extends ExtKit {
                                        new NbBuildToolTipAction(),
                                        new NbToggleLineNumbersAction(),
                                        new ToggleToolbarAction(),
-                                       new NbGenerateGoToPopupAction()
+                                       new NbGenerateGoToPopupAction(),
+                                       new GenerateFoldPopupAction()
                                    };
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
@@ -609,5 +613,83 @@ public class NbEditorKit extends ExtKit {
         }
 
     }
+    
+    public static class GenerateFoldPopupAction extends BaseAction {
+
+        public GenerateFoldPopupAction() {
+            super(generateFoldPopupAction);
+        }
+
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        }
+
+        private void addAcceleretors(Action a, JMenuItem item, JTextComponent target){
+            // Try to get the accelerator
+            Keymap km = target.getKeymap();
+            if (km != null) {
+                KeyStroke[] keys = km.getKeyStrokesForAction(a);
+                if (keys != null && keys.length > 0) {
+                    item.setAccelerator(keys[0]);
+                }
+            }
+        }
+
+        protected String getItemText(JTextComponent target, String actionName, Action a) {
+            String itemText;
+            if (a instanceof BaseAction) {
+                itemText = ((BaseAction)a).getPopupMenuText(target);
+            } else {
+                itemText = actionName;
+            }
+            return itemText;
+        }
+        
+        
+        protected void addAction(JTextComponent target, JMenu menu,
+        String actionName) {
+            BaseKit kit = Utilities.getKit(target);
+            if (kit == null) return;
+            Action a = kit.getActionByName(actionName);
+            if (a != null) {
+                JMenuItem item = null;
+                if (a instanceof BaseAction) {
+                    item = ((BaseAction)a).getPopupMenuItem(target);
+                }
+                if (item == null) {
+                    String itemText = getItemText(target, actionName, a);
+                    if (itemText != null) {
+                        item = new JMenuItem(itemText);
+                        item.addActionListener(a);
+                        addAcceleretors(a, item, target);
+                        item.setEnabled(a.isEnabled());
+                        Object helpID = a.getValue ("helpID");
+                        if (helpID != null && (helpID instanceof String))
+                            item.putClientProperty ("HelpID", helpID);
+                    }
+                }
+
+                if (item != null) {
+                    menu.add(item);
+                }
+
+            } else { // action-name is null, add the separator
+                menu.addSeparator();
+            }
+        }        
+        
+        public JMenuItem getPopupMenuItem(JTextComponent target) {
+            JMenu menu = new JMenu(org.openide.util.NbBundle.getBundle (NbEditorKit.class).
+                getString(generateFoldPopupAction));
+            
+            addAction(target, menu, BaseKit.collapseFoldAction);
+            addAction(target, menu, BaseKit.expandFoldAction);
+            addAction(target, menu, BaseKit.collapseAllFoldsAction);
+            addAction(target, menu, BaseKit.expandAllFoldsAction);
+            
+            return menu;
+        }
+    
+    }
+    
 
 }

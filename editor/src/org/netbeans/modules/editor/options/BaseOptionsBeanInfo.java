@@ -59,8 +59,6 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
     private static final String[] EXPERT_PROP_NAMES = new String[] {
                 BaseOptions.CARET_BLINK_RATE_PROP,
-                BaseOptions.CARET_ITALIC_INSERT_MODE_PROP,
-                BaseOptions.CARET_ITALIC_OVERWRITE_MODE_PROP,
                 BaseOptions.CARET_TYPE_INSERT_MODE_PROP,
                 BaseOptions.CARET_TYPE_OVERWRITE_MODE_PROP,
                 BaseOptions.CARET_COLOR_INSERT_MODE_PROP,
@@ -77,7 +75,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
                 BaseOptions.TEXT_LIMIT_LINE_COLOR_PROP,
                 BaseOptions.TEXT_LIMIT_LINE_VISIBLE_PROP,
                 BaseOptions.TEXT_LIMIT_WIDTH_PROP,
-                BaseOptions.TEXT_ANTIALIASING_PROP,
+                BaseOptions.TEXT_ANTIALIASING_PROP
             };
 
 
@@ -108,7 +106,6 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
                 // Set display-name and short-description
                 pds[i].setDisplayName(getString("PROP_" + bundlePrefix + propNames[i])); // NOI18N
                 pds[i].setShortDescription(getString("HINT_" + bundlePrefix + propNames[i])); // NOI18N
-
             }
 
             descriptors = pds; // now the array are inited
@@ -187,13 +184,16 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         setPropertyEditor(BaseOptions.SCROLL_JUMP_INSETS_PROP, ScrollInsetsEditor.class);
         setPropertyEditor(BaseOptions.SCROLL_FIND_INSETS_PROP, ScrollInsetsEditor.class);
         setPropertyEditor(BaseOptions.MACRO_MAP_PROP, MacrosEditor.class, false);
-
+        setPropertyEditor(BaseOptions.CODE_FOLDING_PROPS_PROP, CodeFoldingEditor.class, false);
+        
         setExpert(EXPERT_PROP_NAMES);
 
         setHidden(new String[] {
             BaseOptions.EXPAND_TABS_PROP,
             BaseOptions.SPACES_PER_TAB_PROP,
-            BaseOptions.OPTIONS_VERSION_PROP
+            BaseOptions.OPTIONS_VERSION_PROP,
+            BaseOptions.CARET_ITALIC_INSERT_MODE_PROP,
+            BaseOptions.CARET_ITALIC_OVERWRITE_MODE_PROP
         });
 
     }

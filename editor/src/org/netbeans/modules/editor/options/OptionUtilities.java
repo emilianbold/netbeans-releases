@@ -396,11 +396,11 @@ public class OptionUtilities {
         return ret;
     }
     
-    /** Gets attributes of base popup folder */
-    public static List getGlobalPopupAttribs(){
+    /** Gets a list of attributes defined in BaseOptions.BASE MultiPropertyFolder */
+    public static List getGlobalAttribs(String folderName){
         MIMEOptionFolder mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
         if (mimeFolder == null) return new ArrayList();
-        MultiPropertyFolder mpf = mimeFolder.getMPFolder("Popup",false); //NOI18N
+        MultiPropertyFolder mpf = mimeFolder.getMPFolder(folderName,false); //NOI18N
         if ( mpf!=null ){
             List retList = new ArrayList();
             for (Enumeration e = mpf.getDataFolder().getPrimaryFile().getAttributes() ; e.hasMoreElements() ;) {
@@ -417,16 +417,28 @@ public class OptionUtilities {
         return new ArrayList();
     }
     
-    /** Gets popup menu items (DataObjects) stored in base popup folder */
+    /** Gets attributes of base popup folder */
+    public static List getGlobalPopupAttribs(){
+        return getGlobalAttribs("Popup"); //NOI18N
+    }
+    
+    /** Gets popup menu items (DataObjects) stored in base popup folder 
+     */
     public static List getGlobalPopupMenuItems(){
+        return getGlobalMenuItems("Popup"); //NOI18N
+    }
+
+    /** Retrieves a list of BaseOptions.BASE MultiPropertyFolder items */
+    public static List getGlobalMenuItems(String folderName){
         MIMEOptionFolder mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
         if (mimeFolder == null) return new ArrayList();
-        MultiPropertyFolder mpf = mimeFolder.getMPFolder("Popup",false); //NOI18N
+        MultiPropertyFolder mpf = mimeFolder.getMPFolder(folderName,false); //NOI18N
         if ( mpf!=null ){
             return mpf.getProperties();
         }
         return new ArrayList();
     }
+    
     
     /** Creates String representation of popup from DO representation */
     public static List getPopupStrings(List popup){
@@ -462,8 +474,8 @@ public class OptionUtilities {
         return retList;
     }
     
-    /** Provides sorting of merged popup elements according to sort instructions in folder attribs */
-    public static List arrangeMergedPopup(Set items, Set attribs){
+    /** Provides ordering of folder items in accordance with folder attributes */
+    public static List arrangeMergedFolderObjects(Set items, Set attribs){
         // init returnList with unsorted collection
         List retList = new ArrayList(items);
         
@@ -490,9 +502,14 @@ public class OptionUtilities {
                 }
             }
         }
-        
+        return retList;
+    }
+    
+    /** Provides sorting of merged popup elements according to sort instructions in folder attribs */
+    public static List arrangeMergedPopup(Set items, Set attribs){
+        List list = arrangeMergedFolderObjects(items, attribs);
         //return sorted result
-        return getPopupStrings(retList);
+        return getPopupStrings(list);
     }
     
 }

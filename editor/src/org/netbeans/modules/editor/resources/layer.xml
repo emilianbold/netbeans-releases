@@ -180,6 +180,10 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="generate-gutter-popup"/>
 
                 </folder>
+                
+                <folder name="SideBar">
+                    <file name="org-netbeans-editor-GlyphGutter.instance"/>
+                </folder>
 
                 <folder name="Defaults">
                     <file name="keybindings.xml" url="XMLs/DefaultGlobalKeyBindings.xml"/>
@@ -235,6 +239,16 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
 
             <folder name="x-java">
+
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance"/>
+                    <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>
+                </folder>
+                
+                <folder name="FoldMaintainer">
+                    <file name="org-netbeans-modules-editor-java-NbJavaFoldMaintainer$NbJavaFoldMaintainerFactory.instance"/>
+                </folder>
+                
                 <file name="Settings.settings" url="JavaOptions.settings"/>
                 <folder name="Defaults">
                     <file name="abbreviations.xml" url="XMLs/DefaultAbbrevs.xml"/>
@@ -259,8 +273,11 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="Separator4.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                    <attr name="Separator4.instance/format" boolvalue="true"/>
-
+                    <attr name="Separator4.instance/generate-fold-popup" boolvalue="true"/>
+                    
+                    <file name="generate-fold-popup"/>
+                    <attr name="generate-fold-popup/format" boolvalue="true"/>
+                    
                     <file name="format"/>
                     <attr name="format/Separator5.instance" boolvalue="true"/>
 
