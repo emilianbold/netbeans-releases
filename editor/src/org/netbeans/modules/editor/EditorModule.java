@@ -195,7 +195,7 @@ public class EditorModule extends ModuleInstall {
             DataObject.getRegistry().addChangeListener((ChangeListener)(WeakListener.change(rl, DataObject.getRegistry())));
         }
         
-        
+        /* removing because of the issue #22790
         if (repoListen==null){
             repoListen=new RepositListener();
             Repository repo = TopManager.getDefault().getRepository();
@@ -203,7 +203,7 @@ public class EditorModule extends ModuleInstall {
                 repo.addRepositoryListener((RepositoryListener)(WeakListener.repository(repoListen, repo)));
             }
         }
-        
+         */
 
     }
 
