@@ -7,23 +7,26 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.core.output2;
 
-import org.netbeans.core.output2.ui.AbstractOutputTab;
-import org.netbeans.core.output2.ui.AbstractOutputWindow;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-
-import java.awt.*;
+import java.awt.AWTEvent;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Point;
 import java.awt.event.FocusEvent;
 import java.util.HashSet;
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.netbeans.core.output2.ui.AbstractOutputTab;
+import org.netbeans.core.output2.ui.AbstractOutputWindow;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -37,7 +40,6 @@ import org.openide.windows.WindowManager;
  * the tabbed pane if more than one view is added, and remove it if only one
  * is present - so it is enough to simply call add() and remove() with instances
  * of OutputTab and the management of tabs will be taken care of automatically.
- *
  */
 public class OutputWindow extends AbstractOutputWindow {
     private Controller controller;
@@ -287,10 +289,8 @@ public class OutputWindow extends AbstractOutputWindow {
         return null;
     }
 
-    public void eventDispatched(AWTEvent event) {
-        if (event instanceof IOEvent) { //Could conceivably be something else if some lib uses the same ID range
-            if (Controller.log) Controller.log ("Event received: " + event);
-            IOEvent ioe = (IOEvent) event;
+    public void eventDispatched(IOEvent ioe) {
+            if (Controller.log) Controller.log ("Event received: " + ioe);
             NbIO io = ioe.getIO();
             int command = ioe.getCommand();
             boolean value = ioe.getValue();
@@ -304,10 +304,9 @@ public class OutputWindow extends AbstractOutputWindow {
                     return;
                 }
             }
-            if (Controller.log) Controller.log ("Passing command to controller " + event);
+            if (Controller.log) Controller.log ("Passing command to controller " + ioe);
             controller.performCommand (this, comp, io, command, value, data);
             ioe.consume();
-        }
     }
 
     public void hasSelectionChanged(OutputTab tab, boolean val) {
