@@ -58,6 +58,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release">
+    <!-- parser database -->
     <copy todir="netbeans">
       <fileset dir="release" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
     </copy>
@@ -113,6 +114,13 @@ Microsystems, Inc. All Rights Reserved.
   <target name="test" depends="test-build" description="Test module inside running IDE.">
     <nbinstaller module="reload/jsp-syntax.jar" action="reinstall"/>
   </target>
+
+    <!-- this task is not run as a part of the standard build --> 
+    <target name="parser-db">
+        <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="../../nbbuild/nbantext.jar"/>
+        <mkdir dir="netbeans/system/ParserDB"/>
+        <makeparserdb db="release/system/ParserDB/servlet23jsp12" sources="P:/jakarta/jakarta-servletapi-4/src/share" nbroot="../.."/>
+    </target>
 
 </project>
 
