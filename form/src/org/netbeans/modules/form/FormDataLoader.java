@@ -35,7 +35,7 @@ public class FormDataLoader extends MultiFileLoader {
   /** Constructs a new FormDataLoader */
   public FormDataLoader () {
     super (FormDataObject.class);
-    setDisplayName(NbBundle.getBundle(this).getString("PROP_FormLoader_Name"));
+    setDisplayName(NbBundle.getBundle(FormDataLoader.class).getString("PROP_FormLoader_Name"));
 
     setActions(new SystemAction[] {
       SystemAction.get (OpenAction.class),
@@ -138,6 +138,8 @@ public class FormDataLoader extends MultiFileLoader {
 
 /*
  * Log
+ *  12   Gandalf   1.11        3/26/99  Ian Formanek    Fixed use of obsoleted 
+ *       NbBundle.getBundle (this)
  *  11   Gandalf   1.10        3/24/99  Ian Formanek    
  *  10   Gandalf   1.9         3/24/99  Ian Formanek    Fixed stealing of plain 
  *       Java objects
