@@ -284,6 +284,9 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 uri = uri.substring (uri.indexOf ("http:")); // NOI18N
             }
             urlToConnectTo = new URL(uri + command);
+            
+            URLWait.waitForStartup(tm, 30000);
+            
             conn = urlToConnectTo.openConnection();
             HttpURLConnection hconn = (HttpURLConnection) conn;
 
