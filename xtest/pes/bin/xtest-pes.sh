@@ -127,7 +127,7 @@ pes_server_cmd() {
    	done
 	debug_parameters=""
 #	debug_parameters="-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8765"
-   	cmd="$JAVA_HOME/bin/java -cp $pes_classpath $debug_parameters -Dxtest.home=$PES_HOME -Dpes.config=$PES_CONFIG -Dpes.command=$pes_cmd org.netbeans.xtest.pe.server.PEServer"
+   	cmd="$JAVA_HOME/bin/java -cp $pes_classpath $debug_parameters -Dxtest.home=$PES_HOME -Dpes.config=$PES_CONFIG -Dpes.command=$pes_cmd org.netbeans.xtest.pes.PEServer"
 #	echo running : $cmd
 #	echo `date`: Running PES
 	eval $cmd

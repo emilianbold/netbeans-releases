@@ -111,7 +111,7 @@ dbfeeder_cmd() {
    	done
 	debug_parameters=""
 #	debug_parameters="-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8765"
-   	cmd="$JAVA_HOME/bin/java -cp $dbf_classpath $debug_parameters -Dpes.dbfeeder.config=$DBFEEDER_CONFIG org.netbeans.xtest.pe.server.dbfeeder.DbFeeder"
+   	cmd="$JAVA_HOME/bin/java -cp $dbf_classpath $debug_parameters -Dpes.dbfeeder.config=$DBFEEDER_CONFIG org.netbeans.xtest.pes.dbfeeder.DbFeeder"
 #	echo $cmd
 	eval $cmd
 }
