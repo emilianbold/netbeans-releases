@@ -18,7 +18,6 @@ import java.util.*;
 
 import org.openide.nodes.*;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 import org.openide.options.SystemOption;
 
 import org.netbeans.lib.ddl.*;
@@ -77,7 +76,6 @@ public class RootNode extends DatabaseNode {
         if ( (getOption() == null) || (sfactory == null) ) {
             initDebugListening();
         }
-        
         option.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
                 if (e.getPropertyName() == null) {
@@ -91,6 +89,7 @@ public class RootNode extends DatabaseNode {
                 }
             }
         });
+        sfactory.setDebugMode(option.getDebugMode());
     }
 
 }
