@@ -159,6 +159,10 @@ workspaceswitcher
     <echo message="Building module editor..."/>
     <ant dir="../editor" target="netbeans"/>
   </target>
+  <target name="all-extbrowser" depends="all-openide,all-httpserver">
+    <echo message="Building module extbrowser..."/>
+    <ant dir="../extbrowser" target="netbeans"/>
+  </target>
   <!-- XXX illegal dependence on core! -->
   <target name="all-form" depends="all-openide,all-openidex,all-java,all-clazz,all-core">
     <echo message="Building module form..."/>
