@@ -80,22 +80,22 @@
     <tocitem text="Deleting a Project" target="project.deleting" />  
   </tocitem> -->
   
-  <tocitem text="Creating Java Applications" >
+  <tocitem text="Starting with Projects" >
     <tocitem text="About Projects" target="tbd" />
-    <tocitem text="Creating a J2SE Project" target="proj_creating" />
-    <tocitem text="Adding Source Directories to a Project" target="proj_add_src" />
+    <tocitem text="Working with Projects" target="proj_process"/>
+    <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
+    <tocitem text="Creating a Project" target="proj_creating" />
+    <tocitem text="Project Templates" target="tbd" />
     <tocitem text="Setting the Main Project" target="proj_main" />
-<!--    <tocitem text="Creating a Java Package" />-->
-<!--    <tocitem text="Creating a Java File" />-->
-  </tocitem>
-  
-  <tocitem text="Working with Files" >
-    <tocitem text="Viewing the Physical Layout of Project Files" target="tbd" />
-    <tocitem text="J2SE Project Directory Structure" target="tbd" />
-    <tocitem text="Searching Files" target="search" />
-    <tocitem text="Specifying an Extension for a Text File" target="objects.specify-extension" />
-    <tocitem text="Adding a File Extension to an Object Type" target="objects.file-extensions" />
-    <tocitem text="Displaying File Extensions" target="objects.show-extensions" />
+      <tocitem text="Working with Files" >
+        <tocitem text="Viewing the Physical Layout of Project Files" target="tbd" />
+        <tocitem text="Creating a New File" target="tbd" />
+        <tocitem text="Creating a Java Package" target="tbd" />
+        <tocitem text="Searching Files" target="search" />
+        <tocitem text="Specifying an Extension for a Text File" target="objects.specify-extension" />
+        <tocitem text="Adding a File Extension to an Object Type" target="objects.file-extensions" />
+        <tocitem text="Hiding File Extensions" target="objects.show-extensions" />
+      </tocitem>
   </tocitem>
 
   <tocitem text="Editing Source Files" >
@@ -228,12 +228,15 @@
       <tocitem text="Removing a Compiler Type" target="compile.remove"/>
     </tocitem>
   </tocitem> -->
-  <tocitem text="Compiling Java Applications" >
-    <tocitem text="About the IDE Build System" target="tbd" />
+  <tocitem text="Building Java Applications" >
+    <tocitem text="About Building" target="tbd" />
+    <tocitem text="Working with Builds" target="comp_process" />
+    <tocitem text="Building Tasks: Quick Reference" target="comp_quickref" />
     <tocitem text="Building a Project" target="comp_project" />
     <tocitem text="Compiling a Single File" target="comp_file" />
     <tocitem text="Setting the Compilation Classpath" target="comp_classpath" />
     <tocitem text="Creating Build Dependencies Between Projects" target="comp_dependencies" />
+    <tocitem text="Using Libraries" target="comp_libraries" />
     <tocitem text="Building a JAR File" target="comp_jar" />
     <tocitem text="Output Window" target="output.window"/>
   </tocitem>

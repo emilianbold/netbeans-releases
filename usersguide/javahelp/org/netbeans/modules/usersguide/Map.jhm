@@ -37,9 +37,11 @@
 <!--<mapID target="project.switching" url="project/project_switching.html" />-->
 <!--<mapID target="project.deleting" url="project/project_deleting.html" />-->
 
-<mapID target="proj_add_src" url="project/proj_add_src.html" />
 <mapID target="proj_creating" url="project/proj_creating.html" />
 <mapID target="proj_main" url="project/proj_main.html" />
+<mapID target="proj_process" url="project/proj_process.html" />
+<mapID target="proj_quickref" url="project/proj_quickref.html" />
+<mapID target="proj_templates" url="project/proj_templates.html" />
 
 <mapID target="explorer" url="objects/explorer.html" />
 
@@ -288,6 +290,10 @@
 <mapID target="comp_file" url="compile/comp_file.html" />
 <mapID target="comp_jar" url="compile/comp_jar.html" />
 <mapID target="comp_project" url="compile/comp_project.html" />
+<mapID target="comp_process" url="compile/comp_process.html" />
+<mapID target="comp_quickref" url="compile/comp_quickref.html" />
+<mapID target="comp_libraries" url="compile/comp_libraries.html" />
+<mapID target="output.window" url="run/output_window.html" />
 
 <!--
 <mapID target="run.run" url="run/run.html" />
