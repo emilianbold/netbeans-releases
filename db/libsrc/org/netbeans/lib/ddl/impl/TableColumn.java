@@ -63,6 +63,9 @@ public class TableColumn extends AbstractTableColumn
 
     /** Check expression */
     String checke;
+    
+    /** Table constraint columns */
+    Vector constraintColumns;
 
     static final long serialVersionUID =4298150043758715392L;
     /** Constructor */
@@ -145,6 +148,18 @@ public class TableColumn extends AbstractTableColumn
         checke = val;
     }
 
+    /** Returns table constraint columns */
+    public Vector getTableConstraintColumns()
+    {
+        return constraintColumns;
+    }
+
+    /** Sets column check condition */
+    public void setTableConstraintColumns(Vector columns)
+    {
+        constraintColumns = columns;
+    }
+
     /**
     * Returns properties and it's values supported by this object.
     * object.name		Name of the object; use setObjectName() 
@@ -165,6 +180,7 @@ public class TableColumn extends AbstractTableColumn
         Vector charactertypes = (Vector)spec.getProperties().get("CharacterTypes"); // NOI18N
         String strdelim = (String)spec.getProperties().get("StringDelimiter"); // NOI18N
         Vector sizelesstypes = (Vector)spec.getProperties().get("SizelessTypes"); // NOI18N
+        String coldelim = (String)spec.getProperties().get("ArgumentListDelimiter"); // NOI18N
 
         // Decimal size for sizeless type
         if (sizelesstypes != null && size > 0) {
@@ -180,6 +196,17 @@ public class TableColumn extends AbstractTableColumn
         if (!nullable) args.put("column.notnull", ""); // NOI18N
         if (defval != null) args.put("default.value", qdefval); // NOI18N
         if (checke != null) args.put("check.condition", checke); // NOI18N
+        if (constraintColumns != null) {
+            String cols = new String();
+            Enumeration col_e = constraintColumns.elements();
+            while (col_e.hasMoreElements()) {
+                Object zrus = col_e.nextElement();
+                Hashtable col = (Hashtable)zrus;
+                boolean inscomma = col_e.hasMoreElements();
+                cols = cols + col.get("name")+(inscomma ? coldelim : "" );
+            }
+            args.put("constraint.columns", cols); // NOI18N
+        }
         return args;
     }
 

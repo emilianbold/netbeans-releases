@@ -221,7 +221,8 @@ public class CreateTableDialog {
                       if (result) {
                           try {
                               String tablename = getTableName();
-                              Vector data = ((DataModel)table.getModel()).getData();
+                              DataModel dataModel = (DataModel)table.getModel();
+                              Vector data = dataModel.getData();
                               Vector icols = new Vector();
                               CreateTable cmd = spec.createCommandCreateTable(tablename);
                               
@@ -234,17 +235,23 @@ public class CreateTableDialog {
                               //CreateIndex icmd = spec.createCommandCreateIndex(tablename);
                               //icmd.setIndexName(tablename+"_IDX"); // NOI18N
                               org.netbeans.lib.ddl.impl.TableColumn cmdcol = null;
+                              CreateIndex xcmd = null;
                               Enumeration enu = data.elements();
                               while (enu.hasMoreElements()) {
                                   ColumnItem enuele = (ColumnItem)enu.nextElement();
                                   String name = enuele.getName();
-                                  if (enuele.isPrimaryKey())
-                                      cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createPrimaryKeyColumn(name);
-                                  else
-                                      if (enuele.isUnique())
-                                          cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createUniqueColumn(name);
+                                  if(!dataModel.isTablePrimaryKey()&&!dataModel.isTableUniqueKey()) {
+                                      if (enuele.isPrimaryKey())
+                                          cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createPrimaryKeyColumn(name);
                                       else
-                                          cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createColumn(name);
+                                          if (enuele.isUnique())
+                                              cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createUniqueColumn(name);
+                                          else
+                                              cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createColumn(name);
+                                      
+                                  }
+                                  else
+                                      cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createColumn(name);
                                   cmdcol.setColumnType(Specification.getType(enuele.getType().getType()));
                                   cmdcol.setColumnSize(enuele.getSize());
                                   cmdcol.setDecimalSize(enuele.getScale());
@@ -256,12 +263,26 @@ public class CreateTableDialog {
                                       // add the TABLE check constraint
                                       cmd.createCheckConstraint(name, enuele.getCheckConstraint());
                                   // index support removed!
-                                  //if (enuele.isIndexed()) {
-                                  //    org.netbeans.lib.ddl.impl.TableColumn icol = icmd.specifyColumn(name);
-                                  //}
+                                  if (enuele.isIndexed()||!enuele.isPrimaryKey()||!enuele.isUnique()) {
+                                      xcmd = spec.createCommandCreateIndex(tablename);
+                                      xcmd.setIndexName(tablename+ "_" + name + "_idx"); // NOI18N
+                                      xcmd.setIndexType(new String());
+                                      xcmd.setObjectOwner((String)ownercombo.getSelectedItem());
+                                      xcmd.specifyColumn(name);
+                                  }
                               }
+                              if(dataModel.isTablePrimaryKey()) {
+                                  cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createPrimaryKeyConstraint(tablename);
+                                  cmdcol.setTableConstraintColumns(dataModel.getTablePrimaryKeys());
+                                  cmdcol.setColumnType(0);
+                                  cmdcol.setColumnSize(0);
+                                  cmdcol.setDecimalSize(0);
+                                  cmdcol.setNullAllowed(true);
 
+                              }
                               cbuff.add(cmd);
+                              if(xcmd!=null)
+                                  cbuff.add(xcmd);
                               // index support removed!
                               //if (icmd.getColumns().size()>0) cbuff.add(icmd);
 
@@ -367,6 +388,7 @@ public class CreateTableDialog {
                 }
                 
                 public void focusLost(FocusEvent e) {
+                    table.setValueAt(x.getText(), table.getEditingRow(), table.getEditingColumn());
                 }
             });
         }

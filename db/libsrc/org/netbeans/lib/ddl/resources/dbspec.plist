@@ -98,7 +98,7 @@
 
     PrimaryKeyConstraint = {
       Class = org.netbeans.lib.ddl.impl.TableColumn;
-      Format = "primary key ({column.name})";
+      Format = "primary key ({constraint.columns})";
     };
 
     ForeignKeyConstraint = {
