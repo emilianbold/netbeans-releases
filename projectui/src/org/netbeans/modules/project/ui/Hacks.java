@@ -70,7 +70,10 @@ public class Hacks {
                 
                 String className = defaultActions[i].getClass().getName();
                 
-                if ( ! "org.openide.actions.BuildAction".equals( className ) &&
+                if ( "org.openide.actions.NewTemplateAction".equals( className ) ) {
+                    newActions.add( PlaceHolderAction.NewFile.get( PlaceHolderAction.NewFile.class ) );
+                }
+                else if ( ! "org.openide.actions.BuildAction".equals( className ) &&
                      ! "org.openide.actions.BuildAllAction".equals( className ) &&
                      ! "org.openide.actions.CompileAction".equals( className ) &&
                      ! "org.openide.actions.CompileAllAction".equals( className ) ) {

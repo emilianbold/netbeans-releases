@@ -30,6 +30,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 
+// XXX I18N
+
 /**
  *
  * @author  Petr Hrebejk
@@ -85,10 +87,14 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
         if ( gui != null ) {
             gui.initValues( p );
         }
+        
+        TemplateWizard wd = (TemplateWizard)settings;
+        wd.setTitle( "New File - Choose File Type" );
+        wd.putProperty( "WizardPanel_contentData", new String[] { "Choose Template", "..." } ); // NOI18N
+        wd.putProperty( "WizardPanel_contentSelectedIndex", new Integer( 0 ) ); // NOI18N
     }
 
     public void storeSettings(Object settings) {
-        System.out.print("STORE SETTINGS ");
             
         TemplateWizard templateWizard = (TemplateWizard)settings;
         

@@ -15,6 +15,7 @@ package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -43,7 +44,9 @@ final class NewFileWizard  extends TemplateWizard {
 
     NewFileWizard( Project p, String recommendedTypes[] ) {
         this.p = p;
-        this.recommendedTypes = recommendedTypes;
+        this.recommendedTypes = recommendedTypes;        
+        setTitle( "New File" );
+        setTitleFormat( new MessageFormat( "{0}") );
     }
 
     protected org.openide.WizardDescriptor.Panel createTemplateChooser() {

@@ -79,7 +79,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         initValues( p );
         
         
-        setName( "New File - Choose File Type");
+        setName( "Choose Template");
         projectsComboBox.setRenderer( PROJECT_CELL_RENDERER );
         
         

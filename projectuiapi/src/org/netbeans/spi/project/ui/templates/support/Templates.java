@@ -58,6 +58,9 @@ public class Templates {
      * WizardIteartor associated with particular template.
      */
     public static FileObject getTemplate( WizardDescriptor wizardDescriptor ) {
+        if ( wizardDescriptor instanceof TemplateWizard ) {
+            return ((TemplateWizard)wizardDescriptor).getTemplate().getPrimaryFile();            
+        }
         return (FileObject) wizardDescriptor.getProperty( ProjectChooserFactory.WIZARD_KEY_TEMPLATE );
     }
     

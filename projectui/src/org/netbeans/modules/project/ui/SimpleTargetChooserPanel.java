@@ -14,6 +14,7 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +25,7 @@ import org.netbeans.spi.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 
@@ -82,13 +84,30 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         TemplateWizard templateWizard = (TemplateWizard)settings;
         
         if ( gui != null ) {
-            gui.initValues( Templates.getProject( templateWizard ) );
+            
+            Project project = Templates.getProject( templateWizard );
+            
+            // Try to preselect a folder
+            // XXX The test should be rewritten if external project dirs are supported
+            
+            FileObject preselectedTarget = Templates.getTargetFolder( templateWizard );
+            String targetFolder = null;
+            if ( preselectedTarget != null && FileUtil.isParentOf( project.getProjectDirectory(), preselectedTarget ) ) {
+                targetFolder = FileUtil.getRelativePath( project.getProjectDirectory(), preselectedTarget );
+            }
+                        
+            // Init values
+            gui.initValues( project, Templates.getTemplate( templateWizard ), targetFolder );
         }
     }
 
-    public void storeSettings(Object settings) {        
-        Templates.setTargetFolder( (WizardDescriptor)settings, gui.getTargetFolder() );
-        Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
+    public void storeSettings(Object settings) { 
+        if( isValid() ) {
+            String folderName = gui.getTargetFolder();
+            FileObject folder = FileUtil.fromFile( new File( folderName ) )[0];            
+            Templates.setTargetFolder( (WizardDescriptor)settings, folder );
+            Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
+        }
     }
 
     public void stateChanged(ChangeEvent e) {        

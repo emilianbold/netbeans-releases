@@ -27,6 +27,8 @@ import org.netbeans.spi.project.Sources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
+// XXX I18N
+
 /**
  *
  * @author  phrebejk
@@ -34,13 +36,14 @@ import org.openide.filesystems.FileUtil;
 public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
   
     private Project project;
+    private String expectedExtension;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     
     /** Creates new form SimpleTargetChooserGUI */
     public SimpleTargetChooserPanelGUI( Project project, SourceGroup[] folders ) {
         this.project = project;
         initComponents();
-        initValues( project );
+        initValues( project, null, null );
         browseButton.addActionListener( this );
         documentNameTextField.getDocument().addDocumentListener( this );
         folderTextField.getDocument().addDocumentListener( this );
@@ -48,13 +51,15 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         setName( "Name & Location");
     }
     
-    public void initValues( Project p ) {
-        projectTextField.setText( p.getDisplayName() );
-                               
-        folderTextField.setText( FileUtil.toFile( p.getProjectDirectory() ).getPath() );
+    public void initValues( Project p, FileObject template, String preselectedFolder ) {
+        projectTextField.setText( p.getDisplayName() );                               
+        folderTextField.setText( preselectedFolder == null ? "" : preselectedFolder ); // NOI18N
+        
+        String ext = template == null ? "" : template.getExt(); // NOI18N
+        expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
     }
-    
-    public FileObject getTargetFolder() {
+        
+    public String getTargetFolder() {
         
         String text = folderTextField.getText().trim();
         
@@ -62,7 +67,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             return null;
         }
         else {
-            return FileUtil.fromFile( new File( text ) )[0];
+            File folder = new File( FileUtil.toFile( project.getProjectDirectory() ), text );
+            return folder.getPath();
         }
     }
     
@@ -238,7 +244,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             FileObject fo = BrowseFolders.showDialog( sources.getSourceGroups( Sources.TYPE_GENERIC ) );
             
             if ( fo != null && fo.isFolder() ) {
-                folderTextField.setText( FileUtil.toFile( fo ).getPath() );
+                folderTextField.setText( FileUtil.getRelativePath( project.getProjectDirectory(), fo ) );
             }
                         
         }
@@ -246,8 +252,17 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     
     // DocumentListener implementation -----------------------------------------
     
-    public void changedUpdate(javax.swing.event.DocumentEvent e) {
-        fileTextField.setText( folderTextField.getText() + java.io.File.separatorChar + documentNameTextField.getText() );
+    public void changedUpdate(javax.swing.event.DocumentEvent e) {        
+        File tmpFile = new File( project.getProjectDirectory().getPath(), folderTextField.getText() );
+        
+        String documentName = documentNameTextField.getText().trim();
+        
+        if ( documentName.length() == 0 ) {
+            fileTextField.setText( tmpFile.getPath() );
+        }
+        else {
+            fileTextField.setText( tmpFile.getPath() + java.io.File.separatorChar +  documentName + expectedExtension );
+        }
         fireChange();
     }    
     
