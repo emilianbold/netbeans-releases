@@ -68,7 +68,7 @@ public class BiChildren extends Children.Keys {
     BiAnalyser getBiAnalyser( ) {
         return biAnalyser;
     }
-
+    
     // Children.keys implementation -------------------------------------------------------
 
     /** Creates nodes for given key.

@@ -95,6 +95,13 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
     
     //analyser
     protected BiAnalyser  biAnalyser = null;
+
+    static javax.swing.GrayFilter grayFilter = null;
+    
+    static{
+        grayFilter = new javax.swing.GrayFilter(true, 5);
+    }
+    
     // constructors .......................................................................
 
     /**
@@ -106,12 +113,33 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         this.biAnalyser = biAnalyser;
         setDisplayName (getName ());
         setShortDescription(biFeature.getToolTip());
-        setIconBase( biFeature.getIconBase() );
+        setIconBase( biFeature.getIconBase(false) );
         init ();
     }
 
     public HelpCtx getHelpCtx () {
         return new HelpCtx (BiFeatureNode.class);
+    }
+    
+    public java.awt.Image getIcon( int type ){        
+        if( biFeature instanceof BiFeature.Descriptor  && biAnalyser.isNullDescriptor() ) {
+            //setIconBase( biFeature.getIconBase(true));
+            return grayFilter.createDisabledImage(super.getIcon(type));
+        }
+        if( ( biFeature instanceof BiFeature.Property || biFeature instanceof BiFeature.IdxProperty ) && biAnalyser.isNullProperties() ) {
+            //setIconBase( biFeature.getIconBase(true));
+            return grayFilter.createDisabledImage(super.getIcon(type));
+        }
+        if( biFeature instanceof BiFeature.EventSet && biAnalyser.isNullEventSets() ) {
+            //setIconBase( biFeature.getIconBase(true));
+            return grayFilter.createDisabledImage(super.getIcon(type));
+        }
+        if( biFeature instanceof BiFeature.Method && biAnalyser.isNullMethods() ) {
+            //setIconBase( biFeature.getIconBase(true));
+            return grayFilter.createDisabledImage(super.getIcon(type));
+        }
+        //setIconBase( biFeature.getIconBase(false));
+        return super.getIcon(type);
     }
 
     /** Setter for parent node. Is protected for subclasses. Fires info about
@@ -158,7 +186,6 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NAME )
                ) {
                    public Object getValue () {
-
                        return (!(biFeature instanceof BiFeature.Descriptor )) ? biFeature.getName () : ((BiFeature.Descriptor)biFeature).getBeanName();
                    }
                    public void setValue (Object val) throws IllegalAccessException {
@@ -314,7 +341,7 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                        try {
                            biFeature.setIncluded ( ((Boolean)val).booleanValue() );
-                           setIconBase( biFeature.getIconBase() );
+                           setIconBase( biFeature.getIconBase(false) );
                        } catch (ClassCastException e) {
                            throw new IllegalArgumentException ();
                        }
@@ -404,7 +431,7 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                        try {
                            ((BiFeature.Property)biFeature).setMode ( ((Integer)val).intValue() );
-                           setIconBase( biFeature.getIconBase() );
+                           setIconBase( biFeature.getIconBase(false) );
                        } catch (ClassCastException e) {
                            throw new IllegalArgumentException ();
                        }
@@ -582,7 +609,7 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
     public void toggleSelection() {
         biFeature.setIncluded ( !biFeature.isIncluded() );
         firePropertyChange( PROP_INCLUDED, new Boolean( !biFeature.isIncluded() ), new Boolean( biFeature.isIncluded() ) );
-        setIconBase( biFeature.getIconBase() );
+        setIconBase( biFeature.getIconBase(false) );
     }
 
     /** Includes/excludes the pattern from bean info */
@@ -593,7 +620,7 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
 
         biFeature.setIncluded ( value );
         firePropertyChange( PROP_INCLUDED, new Boolean( !biFeature.isIncluded() ), new Boolean( biFeature.isIncluded() ) );
-        setIconBase( biFeature.getIconBase() );
+        setIconBase( biFeature.getIconBase(false) );
     }
 
 
@@ -637,7 +664,25 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         return (!(biFeature instanceof BiFeature.Descriptor )) ? biFeature.getName () : ((BiFeature.Descriptor)biFeature).getBeanName();
         //return biFeature.getName();
     }
-
+    
+    public void iconChanged(){
+        if( biFeature instanceof BiFeature.Descriptor  && biAnalyser.isNullDescriptor() ) {
+            setIconBase( biFeature.getIconBase(true));            
+        }
+        else if( ( biFeature instanceof BiFeature.Property || biFeature instanceof BiFeature.IdxProperty ) && biAnalyser.isNullProperties() ) {
+            setIconBase( biFeature.getIconBase(true));            
+        }
+        else if( biFeature instanceof BiFeature.EventSet && biAnalyser.isNullEventSets() ) {
+            setIconBase( biFeature.getIconBase(true));            
+        }
+        else if( biFeature instanceof BiFeature.Method && biAnalyser.isNullMethods() ) {
+            setIconBase( biFeature.getIconBase(true));            
+        }
+        else setIconBase( biFeature.getIconBase(false)); 
+        
+        fireIconChange();
+    }
+    
     abstract class CodePropertySupportRW extends PropertySupport.ReadWrite
     {
         CodePropertySupportRW(String name, Class type,

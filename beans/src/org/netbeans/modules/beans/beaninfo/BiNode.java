@@ -56,10 +56,16 @@ public final class BiNode extends AbstractNode {
     private static String PROP_BI_DEFAULT_PROPERTY = "defaultPropertyIndex"; // NOI18N
     private static String PROP_BI_DEFAULT_EVENT = "defaultEventIndex"; // NOI18N
 
+    static javax.swing.GrayFilter grayFilter = null;
+    
+    static{
+        grayFilter = new javax.swing.GrayFilter(true, 5);
+    }
+
     // variables ....................................................................................
 
     private BiAnalyser biAnalyser;
-
+    
     private PropertySupport[] descSubnodeDescriptor =  new PropertySupport[] {
                 new PropertySupport.ReadWrite (
                     PROP_NULL_DESCRIPTOR,
@@ -72,11 +78,12 @@ public final class BiNode extends AbstractNode {
                     }
                     public void setValue (Object val) throws
                         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                        try {
-                            biAnalyser.setNullDescriptor ( ((Boolean)val).booleanValue() );
+                        try {                            
+                            biAnalyser.setNullDescriptor ( ((Boolean)val).booleanValue() );                            
                         } catch (ClassCastException e) {
                             throw new IllegalArgumentException ();
                         }
+                        iconChange();
                     }
                 }
             };
@@ -98,6 +105,7 @@ public final class BiNode extends AbstractNode {
                         } catch (ClassCastException e) {
                             throw new IllegalArgumentException ();
                         }
+                        iconChange();
                     }
                 }
             };
@@ -119,6 +127,7 @@ public final class BiNode extends AbstractNode {
                         } catch (ClassCastException e) {
                             throw new IllegalArgumentException ();
                         }
+                        iconChange();
                     }
                 }
             };
@@ -140,6 +149,7 @@ public final class BiNode extends AbstractNode {
                         } catch (ClassCastException e) {
                             throw new IllegalArgumentException ();
                         }
+                        iconChange();
                     }
                 }
             };
@@ -379,11 +389,20 @@ public final class BiNode extends AbstractNode {
     public HelpCtx getHelpCtx () {
         return new HelpCtx (BiNode.class);
     }
-
+   
+    /** refresh icons after get from introspection change */
+    public void iconChange(){
+        Node[] nodes = ((Children.Array)getChildren()).getNodes();
+        for( int i = 0; i < nodes.length; i++ ){
+            ((SubNode)nodes[i]).iconChanged();
+        }
+    }
+    
     static class SubNode extends AbstractNode implements Node.Cookie {
 
         //private static SystemAction[] staticActions;
         private BiAnalyser biAnalyser;
+        private Class key; 
         
         SubNode ( BiAnalyser biAnalyser, Class[] keys, String titleKey, String iconBase,
                   PropertySupport[] properties ) {
@@ -393,7 +412,8 @@ public final class BiNode extends AbstractNode {
             setIconBase ( iconBase );
                 
             this.biAnalyser = biAnalyser;
-
+            this.key = keys[0];
+            
             Sheet sheet = Sheet.createDefault();
             Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
 
@@ -408,6 +428,32 @@ public final class BiNode extends AbstractNode {
 
         public HelpCtx getHelpCtx () {
             return new HelpCtx (SubNode.class);
+        }
+        
+        public java.awt.Image getIcon( int type ){
+            if( key == BiFeature.Descriptor.class && biAnalyser.isNullDescriptor() )
+                return grayFilter.createDisabledImage(super.getIcon(type));
+            if( key == BiFeature.Property.class && biAnalyser.isNullProperties() )
+                return grayFilter.createDisabledImage(super.getIcon(type));
+            if( key == BiFeature.EventSet.class && biAnalyser.isNullEventSets() )
+                return grayFilter.createDisabledImage(super.getIcon(type));
+            if( key == BiFeature.Method.class && biAnalyser.isNullMethods() )
+                return grayFilter.createDisabledImage(super.getIcon(type));
+
+            return super.getIcon(type);
+        }
+
+        public java.awt.Image getOpenedIcon( int type ){
+            if( key == BiFeature.Descriptor.class && biAnalyser.isNullDescriptor() )
+                return grayFilter.createDisabledImage(super.getIcon(type));
+            if( key == BiFeature.Property.class && biAnalyser.isNullProperties() )
+                return grayFilter.createDisabledImage(super.getIcon(type));
+            if( key == BiFeature.EventSet.class && biAnalyser.isNullEventSets() )
+                return grayFilter.createDisabledImage(super.getIcon(type));
+            if( key == BiFeature.Method.class && biAnalyser.isNullMethods() )
+                return grayFilter.createDisabledImage(super.getIcon(type));
+
+            return super.getOpenedIcon(type);
         }
 
         /** Getter for set of actions that should be present in the
@@ -449,6 +495,20 @@ public final class BiNode extends AbstractNode {
 
         }
 
+        /** refresh icons after get from introspection change */
+        public void iconChanged(){
+            fireIconChange();
+            fireOpenedIconChange();
+            
+            Children ch = getChildren();
+            Node[] nodes = ch.getNodes();
+            if ( nodes == null )
+                return;
+
+            for( int i = 0; i < nodes.length; i++ ) {
+                ((BiFeatureNode)nodes[i]).iconChanged();
+            }
+        }
     }
 
     // Inner Class ---------------------------------------------------------------
