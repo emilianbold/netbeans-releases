@@ -56,11 +56,9 @@ public class JavadocModule extends ModuleInstall {
         return null;
     }
     
-    public static boolean isDisabledForJDK14(){
-        if(Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.4")) >= 0)         
-            return true;
-        else
-            return false;
+    public static Boolean isDisabledForJDK14() {
+        return new Boolean(Dependency.JAVA_SPEC.compareTo(
+                               new SpecificationVersion("1.4")) >= 0); // NOI18N
     }
 
     /** Exists only for the sake of its bean info.
