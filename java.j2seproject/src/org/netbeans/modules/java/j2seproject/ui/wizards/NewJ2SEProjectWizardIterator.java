@@ -87,11 +87,20 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
     public Set/*<FileObject>*/ instantiate () throws IOException {
         Set resultSet = new HashSet ();
         File dirF = (File)wiz.getProperty("projdir");        //NOI18N
+        if (dirF != null) {
+            dirF = FileUtil.normalizeFile(dirF);
+        }
         String name = (String)wiz.getProperty("name");        //NOI18N
         String mainClass = (String)wiz.getProperty("mainClass");        //NOI18N
         if (this.type == TYPE_EXT) {
             File sourceFolder = (File)wiz.getProperty("sourceRoot");        //NOI18N
+            if (sourceFolder != null) {
+                sourceFolder = FileUtil.normalizeFile(sourceFolder);
+            }
             File testFolder = (File)wiz.getProperty("testRoot");            //NOI18N            
+            if (testFolder != null) {
+                testFolder = FileUtil.normalizeFile(testFolder);
+            }
             J2SEProjectGenerator.createProject(dirF, name, sourceFolder, testFolder );
             FileObject srcFo = FileUtil.toFileObject(sourceFolder);
             if (srcFo != null) {
