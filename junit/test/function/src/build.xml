@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir=".." default="netbeans" name="OpenAPI_unit_test">
+<project basedir=".." default="netbeans" name="MyModule_test">
+
+    <property name="binroot" value="../../.." />
+
+    <property name="xtest.home" value="../../../xtest" />
+    <property name="netbeans.test.home" value="${netbeans.home}" />
 
     <taskdef classname="org.netbeans.xtest.NbPath" classpath="${xtest.home}/lib/xtest.jar" name="nbpath"/>
     <taskdef classname="org.netbeans.xtest.XalanLauncher" classpath="${xtest.home}/lib/xtest.jar" name="xalan"/>
@@ -31,7 +36,8 @@
 
     <!-- test building -->
     <target name="build_test">
-        <xalan basedir="src" src="test.def" trg="test.xml" xslt="${xtest.home}/xslt/FunTest2build.xsl"/> 
+        <mkdir dir="results" />
+        <xalan srcfile="src/test.def" trgfile="src/test.xml" xslt="${xtest.home}/xslt/FunTest2build.xsl"/> 
         <xalan srcfile="src/test.def" trgfile="results/index.xml" xslt="${xtest.home}/xslt/test2index.xsl"/>
         <ant antfile="src/test.xml" target="testAll">
             <property name="test_type" value="empty"/>
@@ -41,22 +47,27 @@
 
     <!-- test compilation & packaging -->
     <target name="compile">
-        <nbpath nbhome="${netbeans.test.home}"/>
         <javac destdir="src" srcdir="src">
             <classpath>
-                <pathelement location="../../src"/> <!-- ???? is different for compatibility -->
-                <pathelement path="${netbeans.test.library.path}"/> 
+                <pathelement location="../../src"/>
+	        <pathelement location="../../../openide/openide-13javac-workaround.jar"/>
+                <fileset dir="../../../openide/netbeans/lib">
+                    <include name="openide*.jar" />
+                </fileset>
+                <pathelement location="../../../java/netbeans/modules/java.jar"/>
+                <pathelement location="${xtest.home}/lib/xtest.jar"/>
+                <pathelement location="${binroot}/core/release/lib/ext/junit.jar"/>
             </classpath>
         </javac>
     </target>
 
     <target depends="compile" name="jars">
         <mkdir dir="lib"/>
-        <jar basedir="src" compress="false" excludesfile="${xtest.home}/standard-jar-excludes.txt" jarfile="lib/test.jar">
+        <jar basedir="src" compress="false" excludesfile="../../../nbbuild/standard-jar-excludes.txt" jarfile="lib/test.jar">
         </jar>
     </target>
 
-    <target depends="jars, test_code" name="netbeans"/>
+    <target depends="jars, build_test, test_code" name="netbeans"/>
 
     <!-- cleanup -->
     <target name="clean">
@@ -65,7 +76,8 @@
                 <include name="**/*.class"/>
             </fileset>
         </delete>
-        <delete file="lib/test.jar"/>
+        <delete dir="lib"/>
+        <delete dir="results"/>
     </target>
 
 </project>

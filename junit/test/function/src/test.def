@@ -5,5 +5,5 @@
 
 <test_bag name="junit" title="JUnit Module Tests" main="root_test" >
     <xtest name="root_test" title="Root test" package-name="org.netbeans.modules.junit" class-name="JUnitSettingsTest"/>
-    <xtest name="sub_test" title="Sub-test" package-name="org.netbeans.modules.junit" class-name="TestCreatorTest"/>
+    <xtest name="sub_test" title="TestCreator class test" package-name="org.netbeans.modules.junit" class-name="TestCreatorTest"/>
 </test_bag>  
