@@ -17,8 +17,10 @@ import java.awt.Component;
 import java.awt.Image;
 import java.beans.*;
 
+import org.openide.awt.Actions;
 import org.openide.loaders.DataLoader;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /** BeanInfo for {@link DataLoader}. */
 public class DataLoaderBeanInfo extends SimpleBeanInfo {
@@ -33,6 +35,7 @@ public class DataLoaderBeanInfo extends SimpleBeanInfo {
             actions.setDisplayName (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("PROP_actions"));
             actions.setShortDescription (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("HINT_actions"));
             actions.setPropertyEditorClass (ActionsEditor.class);
+            actions.setValue ("canEditAsText", Boolean.FALSE); // NOI18N
             return new PropertyDescriptor[] { actions, representationClass };
         } catch (IntrospectionException ie) {
             if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
@@ -62,18 +65,23 @@ public class DataLoaderBeanInfo extends SimpleBeanInfo {
         public Component getCustomEditor () {
             return new LoaderActionsPanel (this);
         }
+        
+        public String getAsText () {
+            SystemAction[] actions = (SystemAction[]) getValue ();
+            if (actions == null) return ""; // NOI18N
+            StringBuffer buf = new StringBuffer(actions.length * 15 + 1);
+            for (int i = 0; i < actions.length; i++) {
+                if (actions[i] == null) continue;
+                if (i > 0) buf.append (", "); // I18N?
+                buf.append (Actions.cutAmpersand (actions[i].getName ()));
+            }
+            return buf.toString ();
+        }
+        
+        public void setAsText (String text) throws IllegalArgumentException {
+            throw new IllegalArgumentException ();
+        }
 
     }
 
 }
-
-/*
- * Log
- *  4    Gandalf   1.3         1/13/00  Jaroslav Tulach I18N
- *  3    Gandalf   1.2         1/13/00  Jesse Glick     DataLoader.actions now 
- *       editable.
- *  2    Gandalf   1.1         11/25/99 Jesse Glick     representationClass 
- *       expert loader property.
- *  1    Gandalf   1.0         11/3/99  Jesse Glick     
- * $
- */
