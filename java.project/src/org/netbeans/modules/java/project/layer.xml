@@ -35,9 +35,10 @@ Microsystems, Inc. All Rights Reserved.
         </file>
     </folder -->
     
-    <!-- file name="Package" url="templates/Package.template">
-        <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.createPackageIterator"/>
-    </file-->
+    <file name="Package" url="nbres:/org/netbeans/modules/java/resources/templates/Package.template">
+        <!-- attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.createPackageIterator"/ -->
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/spi/java/project/support/ui/package.gif"/>
+    </file>
         
     <folder name="Classes">
     

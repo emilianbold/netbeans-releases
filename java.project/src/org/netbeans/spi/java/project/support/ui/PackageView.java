@@ -14,7 +14,6 @@
 package org.netbeans.spi.java.project.support.ui;
 
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.nodes.Children;
 
 /**
@@ -33,7 +32,7 @@ public class PackageView {
      * @throws IllegalArgumentException if the supplied file object is not a folder
      */
     public static Children createPackageView(FileObject root) throws IllegalArgumentException {
-        return new PackageViewChildren(DataFolder.findFolder(root));
+        return new PackageViewChildren( root );
     }
     
 }
