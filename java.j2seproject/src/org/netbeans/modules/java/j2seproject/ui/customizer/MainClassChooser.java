@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -55,20 +56,6 @@ public class MainClassChooser extends JPanel {
         possibleMainClasses = null;
         jMainClassList.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         jMainClassList.setListData (getWarmupList ());
-        RequestProcessor.getDefault ().post (new Runnable () {
-            public void run () {
-                possibleMainClasses = J2SEProjectUtil.getMainClasses (sourcesRoots);
-                if (possibleMainClasses.isEmpty ()) {
-                    jMainClassList.setListData (new String[] { NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE") } ); // NOI18N
-                } else {
-                    Object[] arr = possibleMainClasses.toArray ();
-                    // #46861, sort name of classes
-                    Arrays.sort (arr);
-                    jMainClassList.setListData (arr);
-                    jMainClassList.setSelectedIndex (0);
-                }
-            }
-        });
         jMainClassList.addListSelectionListener (new ListSelectionListener () {
             public void valueChanged (ListSelectionEvent evt) {
                 if (changeListener != null) {
@@ -92,6 +79,30 @@ public class MainClassChooser extends JPanel {
             public void mouseEntered (MouseEvent e) {}
             public void mouseExited (MouseEvent e) {}
         });
+        
+        RequestProcessor.getDefault ().post (new Runnable () {
+            public void run () {
+                possibleMainClasses = J2SEProjectUtil.getMainClasses (sourcesRoots);
+                if (possibleMainClasses.isEmpty ()) {                    
+                    SwingUtilities.invokeLater( new Runnable () {
+                        public void run () {
+                            jMainClassList.setListData (new String[] { NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE") } ); // NOI18N
+                        }
+                    });                    
+                } else {
+                    final Object[] arr = possibleMainClasses.toArray ();
+                    // #46861, sort name of classes
+                    Arrays.sort (arr);
+                    SwingUtilities.invokeLater(new Runnable () {
+                        public void run () {
+                            jMainClassList.setListData (arr);
+                            jMainClassList.setSelectedIndex (0);
+                        }
+                    });                    
+                }
+            }
+        });
+        
         if (dialogSubtitle != null) {
             Mnemonics.setLocalizedText (jLabel1, dialogSubtitle);
         }
