@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
     <property name="homepage.base" value="netbeans.org"/>
-    <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+    <property name="dist.base" value="http://www.netbeans.org/download/nbms/40"/>
     <property name="storepass" value="?"/>
 
     <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
