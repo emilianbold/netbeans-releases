@@ -33,7 +33,8 @@ public abstract class Element extends Object implements Serializable {
     /** Property change support */
     private transient PropertyChangeSupport support;
 
-    /** Position of the begin and the end of the element. */
+    /** Position of the begin and the end of the element. Could
+     * be null indicating the element is not part of properties structure yet. */
     protected PositionBounds bounds;
 
     
@@ -86,17 +87,18 @@ public abstract class Element extends Object implements Serializable {
         }
     }
 
-    /** Prints this element (and all its subelements)
-     *   by calling <code>bounds.setText(...)</code>
-     */
+    /** Prints this element (and all its subelements) by calling <code>bounds.setText(...)</code>
+     * If <code>bounds</code> is null does nothing. 
+     * @see #bounds */
     public void print() {
+        if(bounds == null)
+            return;
+        
         try {
             bounds.setText(printString());
-        }
-        catch (BadLocationException e) {
+        } catch (BadLocationException e) {
             // PENDING
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             // PENDING
         }
     }
@@ -294,7 +296,7 @@ public abstract class Element extends Object implements Serializable {
             parent = ps;
         }
 
-        /** Returns parent if not null */
+        /** Returns parent if not null. */
         public PropertiesStructure getParent() {
             if (parent == null)
                 throw new InternalError();

@@ -16,6 +16,8 @@ package org.netbeans.modules.properties;
 
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -444,36 +446,66 @@ public class BundleEditPanel extends JPanel {
 
     private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         stopEditing();
-        DialogDescriptor.InputLine descr = new DialogDescriptor.InputLine(
-                                               NbBundle.getBundle(BundleEditPanel.class).getString ("CTL_PropertyKey"),
-                                               NbBundle.getBundle(BundleEditPanel.class).getString("CTL_NewPropertyTitle"));
 
-        boolean okPressed = TopManager.getDefault ().notify (descr).equals (NotifyDescriptor.OK_OPTION);
+        final Dialog[] dialog = new Dialog[1];
+        final Element.ItemElem item = new Element.ItemElem(
+            null, 
+            new Element.KeyElem(null, ""), // NOI18N
+            new Element.ValueElem(null, ""), // NOI18N
+            new Element.CommentElem(null, "") // NOI18N
+        );
+        final JPanel panel = new PropertyPanel(item);
 
-        if (okPressed) {
-            try {
-                // starts "atomic" acion for special undo redo manager of opend support
-                obj.getOpenSupport().atomicUndoRedoFlag = new Object();
+        DialogDescriptor dd = new DialogDescriptor(
+            panel,
+            NbBundle.getBundle(BundleEditPanel.class).getString("CTL_NewPropertyTitle"),
+            true,
+            DialogDescriptor.OK_CANCEL_OPTION,
+            DialogDescriptor.OK_OPTION,
+            new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    // OK pressed
+                    if(evt.getSource() == DialogDescriptor.OK_OPTION) {
+                        dialog[0].setVisible(false);
+                        dialog[0].dispose();
+                        
+                        try {
+                            // Starts "atomic" acion for special undo redo manager of open support.
+                            obj.getOpenSupport().atomicUndoRedoFlag = new Object();
 
-                String key = UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText()));
-                // add key to all entries
-                for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {            
-                    PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
-                    if (entry != null && !entry.getHandler().getStructure().addItem(key, "", "")) {
-                        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                            java.text.MessageFormat.format(
-                                NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
-                                new Object[] {UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText()))}
-                            ),
-                            NotifyDescriptor.ERROR_MESSAGE);
-                        TopManager.getDefault().notify(msg);
+                            String key = item.getKey();
+                            String value = item.getValue();
+                            String comment = item.getComment();
+                            
+                            // add key to all entries
+                            for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {            
+                                PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
+                                if (entry != null && !entry.getHandler().getStructure().addItem(key, value, comment)) {
+                                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                                        MessageFormat.format(
+                                            NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
+                                            new Object[] {UtilConvert.unicodesToChars(item.getKey())}
+                                        ),
+                                        NotifyDescriptor.ERROR_MESSAGE);
+                                    TopManager.getDefault().notify(msg);
+                                }
+                            }
+                        } finally {
+                            // Finishes "atomic" undo redo action for special undo redo manager of open support.
+                            obj.getOpenSupport().atomicUndoRedoFlag = null;
+                        }
+                        
+                    // Cancel pressed
+                    } else if (evt.getSource() == DialogDescriptor.CANCEL_OPTION) {
+                        dialog[0].setVisible(false);
+                        dialog[0].dispose();
                     }
                 }
-            } finally {
-                // finishes "atomic" undo redo action for special undo redo manager of open support
-                obj.getOpenSupport().atomicUndoRedoFlag = null;
             }
-        }
+        );
+
+        dialog[0] = TopManager.getDefault().createDialog(dd);
+        dialog[0].show();
     }//GEN-LAST:event_addButtonActionPerformed
 
 

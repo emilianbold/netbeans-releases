@@ -15,6 +15,7 @@
 package org.netbeans.modules.properties;
 
 
+import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -261,6 +262,18 @@ public class KeyNode extends AbstractNode {
         }
         
         setShortDescription(description);
+    }
+
+    /** Overrides superclass method. 
+     * @return true */
+    public boolean hasCustomizer() {
+        return true;
+    }
+    
+    /** Overrides superclass method. 
+     * @return customizer for this key node */
+    public Component getCustomizer() {
+        return new PropertyPanel(getItem());
     }
     
     /** Updates the cookies for editing/viewing at a given position (position of key element representing by this node). Helper method. */

@@ -363,10 +363,10 @@ public class PropertiesFileEntry extends PresentableFileEntry {
                         // File underlying this entry changed.
                         mySetKeys();
                     } else if(changeType == PropertyBundleEvent.CHANGE_ITEM 
-                        && evt.getEntryName().equals(getFile().getName())) {
-                            
+                        && evt.getItemName() != null
+                        && evt.getEntryName().equals(getFile().getName()))
+                        
                         refreshKey(evt.getItemName());
-                    }
                 }
             }; // End of annonymous class.
 
