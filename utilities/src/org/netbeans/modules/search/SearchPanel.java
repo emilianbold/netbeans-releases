@@ -176,7 +176,7 @@ public final class SearchPanel extends JPanel
 
         okButton = new JButton(NbBundle.getBundle(SearchPanel.class)
                                .getString("TEXT_BUTTON_SEARCH"));       //NOI18N
-        okButton.setEnabled(isCustomized());
+        updateIsCustomized();
 
         Mnemonics.setLocalizedText(cancelButton = new JButton(),
                                    NbBundle.getBundle(SearchPanel.class)
@@ -345,12 +345,8 @@ public final class SearchPanel extends JPanel
         int selectedIndex = tabbedPane.getSelectedIndex();
         if (selectedIndex >= 0) {
             SearchTypePanel panel = getSearchTypePanel(selectedIndex);
-            if (panel != null) {
-                panel.initializeWithObject();
-
-                if (panel.customizerComponent != null) {
-                    panel.customizerComponent.requestFocus();
-                }
+            if ((panel != null) && (panel.customizerComponent != null)) {
+                panel.customizerComponent.requestFocus();
             }
         }
 
@@ -385,15 +381,20 @@ public final class SearchPanel extends JPanel
     /** Implements <code>PropertyChangeListener</code> interface. */
     public void propertyChange(PropertyChangeEvent event) {
         if(SearchTypePanel.PROP_CUSTOMIZED.equals(event.getPropertyName())) {
-            customized = getCustomizedSearchTypes().length != 0;            
-            
-            okButton.setEnabled(isCustomized());
+            updateIsCustomized();
         }
 
         for(int i = 0; i < tabbedPane.getTabCount(); i++) {
             tabbedPane.setTitleAt(i, getTabText(i));
             tabbedPane.setIconAt(i, null);
         }
+    }
+    /**
+     */
+    private void updateIsCustomized() {
+        customized = getCustomizedSearchTypes().length != 0;            
+
+        okButton.setEnabled(isCustomized());
     }
 
    

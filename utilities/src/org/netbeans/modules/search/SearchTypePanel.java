@@ -39,7 +39,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import org.netbeans.modules.search.types.TextCustomizer;
+import org.netbeans.modules.search.types.FullTextCustomizer;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -116,6 +116,10 @@ public final class SearchTypePanel extends JPanel
                                + ", skipping...");                      //NOI18N
         }
 
+        customizer.setObject(this.searchType);
+        if (initFromHistory && (customizer instanceof FullTextCustomizer)) {
+            ((FullTextCustomizer) customizer).initFromHistory();
+        }
         this.searchType.addPropertyChangeListener(this);
         
         ResourceBundle bundle = NbBundle.getBundle(SearchTypePanel.class);
@@ -341,12 +345,7 @@ public final class SearchTypePanel extends JPanel
 
         if (!(o instanceof Component) ||
                 !(o instanceof Customizer)) return null;
-
-        final Customizer customizer = (Customizer) o;
-        if (initFromHistory && (customizer instanceof TextCustomizer)) {
-            ((TextCustomizer) customizer).initFromHistory();
-        }
-        return customizer;
+        return (Customizer) o;
     }
     
     /**
