@@ -23,13 +23,15 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar" name="locjar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext}/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
-  <taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
-	<classpath>
-	  <pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
-	  <pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
-	  <pathelement path="${nbroot}/schema2beans/anttask/s2banttask.jar"/>
-	</classpath>
-  </taskdef>
+  <target name="s2binit">
+	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+	  <classpath>
+		<pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
+		<pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
+		<pathelement path="${nbroot}/schema2beans/anttask/s2banttask.jar"/>
+	  </classpath>
+	</taskdef>
+  </target>
 
   <!-- These are the primary targets. -->
 
@@ -173,7 +175,7 @@ Microsystems, Inc. All Rights Reserved.
       </antcall>
   </target>
 
-  <target name="ddgen">
+  <target name="ddgen" depends="s2binit">
      <echo message="Generated schema2beans from ${dtdfile}"/>
 	<schema2beans schema="${dtdfile}" package="${dtdpackage}"
 	  rootDir="src" validate="true" attrProp="true"/>
