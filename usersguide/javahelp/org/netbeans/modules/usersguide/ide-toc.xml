@@ -112,6 +112,8 @@
     <tocitem text="Setting the Completion Box Delay" target="editing.settingdelay"/>
     <tocitem text="Disabling Automatic Completion " target="editing.disablingdelay"/>
     <tocitem text="Setting Code Completion Shortcuts" target="editing.settingccshortcuts"/>
+    <tocitem text="Using Javadoc With Code Completion" target="editing.completing-javadoc"/>    
+    <tocitem text="Code Completion Javadoc Box" target="editing.completing-javadoc-box"/>  
   </tocitem>
   <tocitem text="Using Macros and Abbreviations" target="editing.macros">
     <tocitem text="Using Abbreviations" target="editing.abbreviations"/>
@@ -128,8 +130,11 @@
     <tocitem text="Opening a Java File With 'Go To Class'" target="editing.fastopen"/>
     <tocitem text="Adding a Java Import Statement With Fast Import" target="editing.fastimport"/>
   </tocitem>
-  <tocitem text="Updating the Code Completion Database" target="editing.parserdatabase"/>
-  <tocitem text="Deleting Code Completion Database Files" target="editing.deleting-pdb"/>
+  <tocitem text="Code Completion Database" target="editing.parserdatabase">
+    <tocitem text="Updating Code Completion Database Entries" target="editing.parserdatabase_updating"/>
+    <tocitem text="Customizing the Code Completion Database" target="editing.parserdatabase_customizing"/>
+    <tocitem text="Deleting Code Completion Database Files" target="editing.deleting-pdb"/>
+  </tocitem>
   <tocitem text="Sharing Source Editor Settings" target="editing.xmlsettings"/>
   <tocitem text="Configuring the Source Editor" target="editing.configuring">    
     <tocitem text="Source Editor Properties" target="editing.editor-props"/>

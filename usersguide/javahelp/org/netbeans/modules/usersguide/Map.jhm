@@ -305,6 +305,8 @@
 <mapID target="editing.codecompletion" url="editing/codecompletion/intro.html" />
 <mapID target="editing.completing-exp" url="editing/codecompletion/completing-exp.html" />
 <mapID target="editing.completing-tag" url="editing/codecompletion/completing-tag.html" />
+<mapID target="editing.completing-javadoc" url="editing/codecompletion/completing-javadoc.html" />
+<mapID target="editing.completing-javadoc-box" url="editing/codecompletion/completing-javadoc-box.html" />
 <mapID target="editing.settingdelay" url="editing/codecompletion/settingdelay.html" />
 <mapID target="editing.disablingdelay" url="editing/codecompletion/disabling.html" />
 <mapID target="editing.settingccshortcuts" url="editing/codecompletion/settingshortcuts.html" />
@@ -322,6 +324,8 @@
 <mapID target="editing.fastimport" url="editing/fastimport.html" />
 <mapID target="editing.fastopen" url="editing/fastopen.html" />
 <mapID target="editing.parserdatabase" url="editing/parserdatabase.html" />
+<mapID target="editing.parserdatabase_customizing" url="editing/parserdatabase_customizing.html" />
+<mapID target="editing.parserdatabase_updating" url="editing/parserdatabase_updating.html" />
 <mapID target="editing.deleting-pdb" url="editing/deleting-pdb.html" />
 <mapID target="editing.xmlsettings" url="editing/xmlsettings.html" />
 <mapID target="editing.configuring" url="editing/configuring/configuring.html" />
@@ -353,6 +357,9 @@
 <!-- Csh pages for scroll insets and Fonts and Color property editors -->
 <mapID target="editing.scrollinsets" url="editing/configuring/insets.html" />
 <mapID target="editing.fonts" url="editing/configuring/fontsandcolors.html" />
+
+<!-- Csh page for Code Completion Data Manager -->
+<mapID target="editing.completion.manager" url="editing/codecompletion/intro.html" />
 
 
 <mapID target="debug.overview" url="debug/debug.html" />
