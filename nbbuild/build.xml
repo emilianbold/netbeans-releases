@@ -1745,6 +1745,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="modules_exported_interfaces"/>
     <delete dir="${netbeans.dest}"/>
     <delete file="moduleCluster.properties"/>
+    <delete>
+      <fileset dir=".">
+        <include name="build/*.built"/>
+      </fileset>
+    </delete>
   </target>
 
   <target name="cleanall" depends="init">
@@ -1759,12 +1764,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="clean" depends="init,cleanall,localclean"
           description="Clean out (almost) all build products.">
     <echo message="Run `ant real-clean' if desired."/>
-    <delete dir="${netbeans.dest}"/>
-    <delete>
-      <fileset dir=".">
-        <include name="build/*.built"/>
-      </fileset>
-    </delete>
   </target>
 
 <!-- This section contains properties and targets used to build -->
