@@ -254,6 +254,20 @@ abstract class AbstractLines implements Lines, Runnable {
         return new String (chars);
     }
 
+    /**
+     * Get a length of single line in bytes.
+     */
+    private int getLineLength(int idx) {
+        int lineStart = lineStartList.get(idx);
+        int lineEnd;
+        if (idx != lineStartList.size()-1) {
+            lineEnd = lineStartList.get(idx+1);
+        } else {
+            lineEnd = getStorage().size();
+        }
+        return lineEnd - lineStart;
+    }
+
     public boolean isLineStart (int chpos) {
         int bpos = toByteIndex(chpos);
         return lineStartList.contains (bpos);
@@ -552,7 +566,6 @@ abstract class AbstractLines implements Lines, Runnable {
      * Gets the number of lines the document will require if getLine wrapped at the
      * specified character index.
      */
-
     private int dynLogicalLineCountIfWrappedAt (int charCount) {
 
         synchronized (readLock()) {
@@ -566,17 +579,11 @@ abstract class AbstractLines implements Lines, Runnable {
             if (lineStartList.size() == 0) {
                 return 0;
             }
-            int max = lineStartList.size();
-            int prev = 0;
-            int lineCount = 1;
-            for (int i=1; i < max; i++) {
-                int curr = lineStartList.get(i);
-                if (curr - prev > bcount) {
-                    lineCount += (((curr - prev) / bcount) + 1);
-                } else {
-                    lineCount++;
-                }
-                prev = curr;
+            int nOfLines = lineStartList.size();
+            int lineCount = 0;
+            for (int i=0; i < nOfLines; i++) {
+                int currLength = getLineLength(i);
+                lineCount += (currLength > bcount) ? ((currLength / bcount) + 1) : 1;
             }
             setLastCharCountForWrapCalculation(charCount);
             lastWrappedLineCount = lineCount;

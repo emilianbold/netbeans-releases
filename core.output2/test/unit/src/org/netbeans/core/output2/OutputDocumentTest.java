@@ -208,7 +208,7 @@ public class OutputDocumentTest extends TestCase {
         assertTrue (val == ow.getLines().getLineCount());
         
         val = doc.getLines().getLogicalLineCountIfWrappedAt(50);
-        assertTrue (STATE + "With three 80 character lines of data, wrapped at 50 characters, the line count should be 5, not " + val, val == 5);
+        assertTrue (STATE + "With three 80 character lines of data, wrapped at 50 characters, the line count should be 6, not " + val, val == 6);
         
         val = doc.getLines().getLogicalLineCountAbove(2, 50);
         assertTrue (STATE + "With three 80 character lines of data, wrapped at 50 characters, there should be 4 logical lines above 2, not " + val, val == 4);
