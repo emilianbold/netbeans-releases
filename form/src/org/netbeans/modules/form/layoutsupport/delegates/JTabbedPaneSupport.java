@@ -108,6 +108,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
         Component comp = tabbedPane.getSelectedComponent();
         if (comp != null)
             comp.setVisible(true);
+        tabbedPane.repaint();
     }
 
     /** This method should calculate position (index) for a component dragged
