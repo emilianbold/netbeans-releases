@@ -71,14 +71,15 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         fillerLine.setVisible(false);
         fillerEnd.setVisible(false);
         setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        titleButton.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        titleButton.setBackground(SectionVisualTheme.getSectionHeaderColor());
         actionPanel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         titleButton.setText(title);
+        /*
         java.awt.Image image = node == null ? null : node.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
         if (image != null) {
             titleButton.setIcon(new javax.swing.ImageIcon(image));
         }
-
+        */
         titleButton.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
                 if (!SectionPanel.this.isActive()) {

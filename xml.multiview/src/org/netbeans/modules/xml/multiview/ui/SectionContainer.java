@@ -51,7 +51,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         initComponents();
         setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         headerSeparator.setForeground(SectionVisualTheme.getSectionHeaderLineColor());
-        titleButton.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        titleButton.setBackground(SectionVisualTheme.getSectionHeaderColor());
         actionPanel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         fillerLine.setForeground(SectionVisualTheme.getFoldLineColor());
         fillerEnd.setForeground(SectionVisualTheme.getFoldLineColor());

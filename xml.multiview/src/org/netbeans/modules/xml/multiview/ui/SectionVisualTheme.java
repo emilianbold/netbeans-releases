@@ -31,14 +31,15 @@ public class SectionVisualTheme {
     
     /** Creates a new instance of SectionColorTheme */
      static Color documentBackgroundColor =  new java.awt.Color(255, 255, 255);
-     static Color sectionActiveBackgroundColor =  new java.awt.Color(253, 250, 245);
+     static Color sectionActiveBackgroundColor =  new java.awt.Color(252, 250, 245);
      static Color documentMarginColor = new java.awt.Color(153, 153, 153);
      static Color sectionHeaderColor = new java.awt.Color(255, 255, 255);
-     static Color sectionHeaderActiveColor = new java.awt.Color(250, 231, 214);
+     static Color containerHeaderColor = new java.awt.Color(230, 228, 223);
+     static Color sectionHeaderActiveColor = new java.awt.Color(250, 232, 213);
      static Color fillerColor = javax.swing.UIManager.getDefaults().getColor("Button.background"); //NOI18N
      static Color tableHeaderColor = new java.awt.Color(204, 204, 204);
      static Color tableGridColor = new java.awt.Color(255, 255, 255);
-     static Color sectionHeaderLineColor = new java.awt.Color(229, 138, 45);
+     static Color sectionHeaderLineColor = new java.awt.Color(230, 139, 44);
      static Color hyperlinkColor = new java.awt.Color(0, 0, 255);
      static Color hyperlinkColorFocused = new java.awt.Color(04,84,145);
      static Color textColor = new java.awt.Color(0, 0, 0);
@@ -57,6 +58,9 @@ public class SectionVisualTheme {
     }
     static public Color getSectionHeaderColor(){
         return sectionHeaderColor;
+    }
+    static public Color getContainerHeaderColor(){
+        return containerHeaderColor;
     }
     static public Color getSectionHeaderActiveColor(){
         return sectionHeaderActiveColor;
