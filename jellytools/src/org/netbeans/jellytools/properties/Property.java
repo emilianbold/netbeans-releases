@@ -487,11 +487,11 @@ public class Property {
      * {@link #COMBOBOX_RENDERER}, {@link #RADIOBUTTON_RENDERER}, {@link #SET_RENDERER}.
      * @return class name of renderer used to render this property:
      * <UL>
-     * <LI>org.openide.explorer.propertysheet.SheetCellRenderer$StringRenderer</LI>
-     * <LI>org.openide.explorer.propertysheet.SheetCellRenderer$CheckboxRenderer</LI>
-     * <LI>org.openide.explorer.propertysheet.SheetCellRenderer$ComboboxRenderer</LI>
-     * <LI>org.openide.explorer.propertysheet.SheetCellRenderer$RadioButtonRenderer</LI>
-     * <LI>org.openide.explorer.propertysheet.SheetCellRenderer$SetRenderer</LI>
+     * <LI>org.openide.explorer.propertysheet.RendererFactory$StringRenderer</LI>
+     * <LI>org.openide.explorer.propertysheet.RendererFactory$CheckboxRenderer</LI>
+     * <LI>org.openide.explorer.propertysheet.RendererFactory$ComboboxRenderer</LI>
+     * <LI>org.openide.explorer.propertysheet.RendererFactory$RadioButtonRenderer</LI>
+     * <LI>org.openide.explorer.propertysheet.RendererFactory$SetRenderer</LI>
      * </UL>
      * @see #STRING_RENDERER
      * @see #CHECKBOX_RENDERER
@@ -519,17 +519,16 @@ public class Property {
                                                         row, 
                                                         1
                     );
-                    // if real renderer is compound with ... button we need to get real renderer
-                    if(comp.getClass().getName().endsWith("ButtonPanel")) {
-                        try {
-                            Class clazz = Class.forName(
-                                                "org.openide.explorer.propertysheet.ButtonPanel");
-                            Method getComponentMethod = clazz.getDeclaredMethod("getComponent", null);
-                            getComponentMethod.setAccessible(true);
-                            comp = (Component)getComponentMethod.invoke(comp, null);
-                        } catch (Exception e) {
-                            throw new JemmyException("ButtonPanel.getComponent() by reflection failed.", e);
-                        }
+                    // We need to find a real renderer because it can be embedded
+                    // in ButtonPanel (supplies custom editor button "...")
+                    // or IconPanel(supplies property marking).
+                    try {
+                        Class clazz = Class.forName("org.openide.explorer.propertysheet.RendererPropertyDisplayer");
+                        Method findInnermostRendererMethod = clazz.getDeclaredMethod("findInnermostRenderer", new Class[] {JComponent.class});
+                        findInnermostRendererMethod.setAccessible(true);
+                        comp = (Component)findInnermostRendererMethod.invoke(null, new Object[] {comp});
+                    } catch (Exception e) {
+                        throw new JemmyException("RendererPropertyDisplayer.findInnermostRenderer() by reflection failed.", e);
                     }
                     return comp;
                 }
