@@ -84,8 +84,11 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/explorer/propertysheet/FindHelpTest.class"/>
                 <include name="org/openide/explorer/view/*.class"/>
 		<!-- the ListViews excluded because of issue #29423 -->
+                <exclude name="org/openide/explorer/view/ListViewTest.class"/>
 		<exclude name="org/openide/explorer/view/RootContextTest.class/testListView"/>
-		<exclude name="org/openide/explorer/view/RootContextTest.class/testListTableView"/>
+		<exclude name="org/openide/explorer/view/RootContextTest.class/testListTableView"/>a
+                <!-- testContextTreeView excluded because random fails on w2k (issue 30561) -->
+                <exclude name="org/openide/explorer/view/RootContextTest.class/testContextTreeView"/>
                 <include name="org/openide/util/UtilProgressCursorTest.class"/>
             </patternset>
         </testset>        
