@@ -331,7 +331,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module j2eeserver..."/>
     <ant dir="../j2eeserver" target="netbeans"/>
   </target>
-  <target name="all-junit" depends="all-openide,all-openide/deprecated,all-java/srcmodel">
+  <target name="all-junit" depends="all-openide,all-openide/deprecated,all-openide/compiler,all-openide/execution,all-openide/io,all-java/srcmodel">
     <echo message="Building module junit..."/>
     <ant dir="../junit" target="netbeans"/>
   </target>
@@ -357,7 +357,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../javaembeddedserver" target="netbeans"/>
   </target>
   -->
-  <target name="all-jemmysupport" depends="all-openide">
+  <target name="all-jellytools" depends="all-openide,all-core,all-core/term,all-xtest">
+    <echo message="Building module jellytools..."/>
+    <ant dir="../jellytools" target="netbeans"/>
+  </target>
+  <target name="all-jemmysupport" depends="all-openide,all-diff">
     <echo message="Building module jemmysupport..."/>
     <ant dir="../jemmysupport" target="netbeans"/>
   </target>
@@ -493,7 +497,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../tasklist/javadoc" target="netbeans"/>
   </target>
 
-  <target name="all-testtools" depends="all-ant,all-openide,all-core,all-java,all-jemmysupport,all-junit,all-utilities/group">
+  <target name="all-testtools" depends="all-openide,all-openide/compiler,all-openide/execution,all-openide/io,all-core,all-java,all-ant,all-jemmysupport,all-jellytools">
     <echo message="Building module testtools..."/>
     <ant dir="../testtools" target="netbeans"/>
   </target>
@@ -718,10 +722,8 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../utilities/loaderswitcher" target="netbeans"/>
   </target>
 
-  <target name="all-xtest">
-      <ant dir="../xtest" antfile="build.xml" target="compile-dependend-modules"/>
-      <ant dir="../xtest" antfile="build.xml" target="makedist"/>
-      <ant dir="../xtest" antfile="build.xml" target="makedist-pes"/>
+  <target name="all-xtest" depends="all-openide,all-openide/io,all-openide/execution,all-core,all-core/execution,all-core/term,all-core/output,all-junit">
+      <ant dir="../xtest" antfile="build.xml" target="netbeans"/>
   </target>
   
   <!-- build NBMs for selected modules -->

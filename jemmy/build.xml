@@ -2,7 +2,7 @@
 
   <property name="src" value="src"/>
   <property name="build" value="classes"/>
-  <property name="javadoc" value="www/javadoc"/>
+  <property name="javadoc" value="javadoc"/>
   <property name="package" value="org.netbeans.jemmy"/>
   <property name="jar" value="jemmy.jar"/>
   <property name="zip" value="jemmy.zip"/>

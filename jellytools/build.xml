@@ -11,7 +11,7 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project name="jellytools" default="jars" basedir=".">
+<project name="jellytools" default="netbeans" basedir=".">
 
   <property name="nbext" value="../nbbuild"/>
   <property name="homepage.base" value="netbeans.org"/>
@@ -44,6 +44,9 @@ Microsystems, Inc. All Rights Reserved.
     </path>
 
     <target name="all" depends="jars,zipsrc,javadoc,javadocWithJemmy" description="Create jars, source zip and javadoc zip">
+    </target>
+
+    <target name="netbeans" depends="jars">
     </target>
 
     <target name="compile" depends="buildJemmy,buildXTest">
