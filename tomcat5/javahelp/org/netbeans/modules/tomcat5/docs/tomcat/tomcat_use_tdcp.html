@@ -26,9 +26,10 @@ way is to access your data source directly from a JSP file using the JSTL 1.1 ta
  testing purposes and in small web applications only.</p>
 <p><b>To set up a JSP to use the JSTL 1.1 tag library to access a data source:</b></p>
 <ol>
-	<li>Ensure that the JSTL 1.1 tag library is <a href="nbdocs:/org/netbeans/modules/usersguide/web/taglibUI/addfilesys.html">correctly added</a> to the web project.
-	<li>Expand the project node and the Web Pages node. </li>
-	<li>Double-click the index.jsp node. The JSP file opens in the Source Editor. </li>
+<li><a href="tomcat_setup_tdcp.html">Set up a Tomcat Database Connection Pool</a>.</li>
+<li>Ensure that the JSTL 1.1 tag library is <a href="nbdocs:/org/netbeans/modules/usersguide/web/taglibUI/addfilesys.html">correctly added</a> to the web project.
+<li>Expand the project node and the Web Pages node 
+and double-click the index.jsp node. The JSP file opens in the Source Editor. </li>
 <li>You need to let the web server know that the JSP page uses tags from JSTL's <tt>CORE</tt> 
   component and JSTL's <tt>SQL</tt> component. Paste or type the following <tt>taglib</tt> 
   directives after the <tt>page</tt> directives, which are at the top of your JSP file:
@@ -57,11 +58,6 @@ way is to access your data source directly from a JSP file using the JSTL 1.1 ta
 	     &lt;/c:forEach&gt;
 	   &lt;/table&gt;</pre>
 </li>
-	    
-</ol>
-<p><b>To access a data source from a JSP:</b></p>
-<ol>
-<li><a href="tomcat_setup_tdcp.html">Set up a Tomcat Database Connection Pool</a>.</li>
 <li>Modify the JSP file to enable the selection of database records. 
 Make sure to specify the same JNDI name as specified in the data source above. 
 To do so, paste or type code similar to the following below the taglib directives in a JSP file:
