@@ -120,6 +120,7 @@ public class BHImpl implements BHandler {
      * @see #ignorableWhitespace
      * @see org.xml.sax.Locator
      *
+     *
      */
     public void characters(char[] ch, int start, int length) throws SAXException {
     }
@@ -135,6 +136,7 @@ public class BHImpl implements BHandler {
      * @exception org.xml.sax.SAXException Any SAX exception, possibly
      *            wrapping another exception.
      * @see #startDocument
+     *
      *
      */
     public void endDocument() throws SAXException {
@@ -160,6 +162,7 @@ public class BHImpl implements BHandler {
      * @exception org.xml.sax.SAXException Any SAX exception, possibly
      *            wrapping another exception.
      *
+     *
      */
     public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
     }
@@ -177,6 +180,7 @@ public class BHImpl implements BHandler {
      *            an exception during processing.
      * @see #startPrefixMapping
      * @see #endElement
+     *
      *
      */
     public void endPrefixMapping(String prefix) throws SAXException {
@@ -241,6 +245,7 @@ public class BHImpl implements BHandler {
      *            wrapping another exception.
      * @see #characters
      *
+     *
      */
     public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
     }
@@ -261,6 +266,7 @@ public class BHImpl implements BHandler {
      *        whitespace separating it from the target.
      * @exception org.xml.sax.SAXException Any SAX exception, possibly
      *            wrapping another exception.
+     *
      *
      */
     public void processingInstruction(String target, String data) throws SAXException {
@@ -290,6 +296,7 @@ public class BHImpl implements BHandler {
      *                any SAX document event.
      * @see org.xml.sax.Locator
      *
+     *
      */
     public void setDocumentLocator(Locator locator) {
     }
@@ -313,6 +320,7 @@ public class BHImpl implements BHandler {
      * @exception org.xml.sax.SAXException Any SAX exception, possibly
      *            wrapping another exception.
      *
+     *
      */
     public void skippedEntity(String name) throws SAXException {
     }
@@ -327,6 +335,7 @@ public class BHImpl implements BHandler {
      * @exception org.xml.sax.SAXException Any SAX exception, possibly
      *            wrapping another exception.
      * @see #endDocument
+     *
      *
      */
     public void startDocument() throws SAXException {
@@ -390,6 +399,7 @@ public class BHImpl implements BHandler {
      * @see #endElement
      * @see org.xml.sax.Attributes
      *
+     *
      */
     public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
     }
@@ -427,6 +437,7 @@ public class BHImpl implements BHandler {
      *            an exception during processing.
      * @see #endPrefixMapping
      * @see #startElement
+     *
      *
      */
     public void startPrefixMapping(String prefix, String uri) throws SAXException {

@@ -15,6 +15,7 @@ package org.netbeans.modules.xml.tools.generator;
 import java.util.Arrays;
 import java.util.Comparator;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.modules.xml.actions.SAXDocumentHandlerWizardAction;
 import org.netbeans.jellytools.modules.xml.saxwizard.*;
 import org.netbeans.jellytools.nodes.Node;
@@ -39,8 +40,8 @@ public class SAXGeneratorJTest extends JXTest {
     /** Performs 'XSL Transformation...' action and checks output. */
     public void test() throws Exception {
         // clear output and display Transformation Dialog
-        //DataObject dao = TestUtil.THIS.findData("sax/BooksSAXBindings.xml");
-        //if (dao != null) /* then */ dao.delete();
+        DataObject dao = TestUtil.THIS.findData("sax/BooksSAXBindings.xml");
+        if (dao != null) dao.delete();
         
         // perform SAX Wizard Action
         SAXDocumentHandlerWizardAction  saxAction = new SAXDocumentHandlerWizardAction();
@@ -146,8 +147,9 @@ public class SAXGeneratorJTest extends JXTest {
             fail("Test fails on Confirm Changes dialog.", ex);
         }
         
-        // dump generated classes
+        // save handler implementation dump generated classes
         try {
+            new EditorWindowOperator().getEditor("BHImpl").save();
             ref("\n=== Handler Interface:\n");
             ref(dumpFile(TestUtil.THIS.findData("sax/BHandler.java")));
             ref("=== Handler Implementation:\n");
