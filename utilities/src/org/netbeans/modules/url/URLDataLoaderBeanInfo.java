@@ -15,9 +15,8 @@ package com.netbeans.developer.modules.loaders.url;
 
 import java.beans.*;
 import java.awt.Image;
-import java.util.ResourceBundle;
 
-import org.openide.util.NbBundle;
+import org.openide.loaders.UniFileLoader;
 
 /** URL data loader bean info.
 *
@@ -25,23 +24,19 @@ import org.openide.util.NbBundle;
 */
 public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
 
+  public BeanInfo[] getAdditionalBeanInfo () {
+    try {
+      return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
+    } catch (IntrospectionException ie) {
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+        ie.printStackTrace ();
+      return null;
+    }
+  }
+
   /** Icons for url data loader. */
   private static Image icon;
   private static Image icon32;
-
-  /** Propertydescriptors */
-  private static PropertyDescriptor[] descriptors;
-
-  /**
-  * @return Returns an array of PropertyDescriptors
-  * describing the editable properties supported by this bean.
-  */
-  public PropertyDescriptor[] getPropertyDescriptors () {
-    if (descriptors == null) { 
-      initializeDescriptors();
-    }
-    return descriptors;
-  }
 
   /** @param type Desired type of the icon
   * @return returns the URL loader's icon
@@ -59,24 +54,11 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
     }
   }
 
-  private static void initializeDescriptors () {
-    final ResourceBundle bundle =
-      NbBundle.getBundle(URLDataLoaderBeanInfo.class);
-    try {
-      descriptors =  new PropertyDescriptor[] {
-        new PropertyDescriptor ("displayName", URLDataLoader.class, "getDisplayName", null), // NOI18N
-      };
-      descriptors[0].setDisplayName(bundle.getString("PROP_Name"));
-      descriptors[0].setShortDescription(bundle.getString("HINT_Name"));
-    } catch (IntrospectionException e) {
-      e.printStackTrace ();
-    }
-  }
-
 }
 
 /*
 * Log
+*  9    Gandalf   1.8         1/16/00  Jesse Glick     
 *  8    Gandalf   1.7         1/12/00  Ian Formanek    NOI18N
 *  7    Gandalf   1.6         1/5/00   Ian Formanek    NOI18N
 *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
