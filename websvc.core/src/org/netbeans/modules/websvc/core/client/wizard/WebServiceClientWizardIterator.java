@@ -167,7 +167,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                 }
             }
             
-            sourceWsdlFile = FileUtil.toFileObject(wsdlFile);
+            sourceWsdlFile = FileUtil.toFileObject(FileUtil.normalizeFile(wsdlFile));
             if(sourceWsdlFile != null) {
                 FileLock wsdlLock = sourceWsdlFile.lock();
 
