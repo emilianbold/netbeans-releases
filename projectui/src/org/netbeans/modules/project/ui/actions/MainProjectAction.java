@@ -14,16 +14,17 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.awt.Dialog;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.NoMainProjectWarning;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.spi.project.ActionProvider;
@@ -66,6 +67,7 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
         refreshView();                
         // Start listening on open projects list to correctly enable the action
         OpenProjectList.getDefault().addPropertyChangeListener( this );
+        // XXX #47160: listen to changes in supported commands on current project, when that becomes possible
     }
 
     public void actionPerformed( ActionEvent e ) {
@@ -83,7 +85,13 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
 
         if ( command != null ) {
             ActionProvider ap = (ActionProvider)p.getLookup().lookup( ActionProvider.class );
-            ap.invokeAction( command, Lookup.EMPTY );            
+            if (Arrays.asList(ap.getSupportedActions()).contains(command)) {
+                ap.invokeAction(command, Lookup.EMPTY);
+            } else {
+                // #47160: was a supported command (e.g. on a freeform project) but was then removed.
+                Toolkit.getDefaultToolkit().beep();
+                refreshView();
+            }
         }
         else {
             performer.perform( p );
