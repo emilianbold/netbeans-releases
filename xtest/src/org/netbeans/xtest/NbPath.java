@@ -216,13 +216,15 @@ public class NbPath extends Task {
     private String lookupJdk() {
         File jdk = new File(getProject().getProperty("java.home"));
         if (jdk != null && jdk.exists ()) {
-            File tmp = new File(jdk, "lib/tools.jar");
-            if (!tmp.exists ()) {
-                jdk = jdk.getParentFile ();
+            if (!System.getProperty("os.name").startsWith("Mac OS X")) {
+                File tmp = new File(jdk, "lib/tools.jar");
+                if (!tmp.exists ()) {
+                    jdk = jdk.getParentFile ();
                 
-                tmp = new File(jdk, "lib/tools.jar");
-                if (!tmp.exists ())
-                    return null;
+                    tmp = new File(jdk, "lib/tools.jar");
+                    if (!tmp.exists ())
+                        return null;
+                }
             }
             
             return jdk.getAbsolutePath ().replace ('\\', '/');

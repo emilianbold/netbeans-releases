@@ -218,7 +218,7 @@ ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.s
         </ideexec>
         
         <ideexec dir="${netbeans.home}/bin" executable="sh"  
-              os="Linux SunOS Solaris"
+              os="Linux SunOS Solaris Mac OS X"
               failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}">
             <arg line="runide.sh ${args}"/>
         </ideexec>
