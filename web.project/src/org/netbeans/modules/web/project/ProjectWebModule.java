@@ -40,6 +40,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.dd.api.webservices.*;
+import org.openide.util.RequestProcessor;
 
 
 /** A web module implementation on top of project.
@@ -111,14 +112,17 @@ public final class ProjectWebModule extends J2eeModuleProvider
         fakeServerInstId = null;
     }
     
-    private void showErrorMessage(String message) {
-        // only display the messages if the project is opened
-        if(new Date().getTime() > notificationTimeout/* && isProjectOpened()*/) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-            // set timeout to suppress the same messages during next 20 seconds (feel free to adjust the timeout
-            // using more suitable value)
-            notificationTimeout = new Date().getTime() + 20000;
+    private void showErrorMessage(final String message) {
+        synchronized (this) {
+            if(new Date().getTime() > notificationTimeout) {
+                // set timeout to suppress the same messages during next 20 seconds (feel free to adjust the timeout
+                // using more suitable value)
+                notificationTimeout = new Date().getTime() + 20000;
+            } else {
+                return;
+            }
         }
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
     
     public FileObject getDocumentBase () {
@@ -431,47 +435,6 @@ public final class ProjectWebModule extends J2eeModuleProvider
         FileObject[] rootArray = new FileObject[roots.size()];
         return (FileObject[])roots.toArray(rootArray);        
     }
-    /*
-    private boolean isProjectOpened() {
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i < projects.length; i++) {
-            if (projects[i].equals(project)) 
-                return true;
-        }
-        return false;
-    }
-    */
-//    private Set versionListeners() {
-//        if (versionListeners == null) {
-//            versionListeners = new HashSet();
-//            WebApp webApp = getWebApp ();
-//            if (webApp != null) {
-//                PropertyChangeListener l = (PropertyChangeListener) org.openide.util.WeakListener.create(PropertyChangeListener.class, this, webApp);
-//                webApp.addPropertyChangeListener(l);
-//            }
-//        }
-//        return versionListeners;
-//    }
-//
-//    public void addVersionListener(J2eeModule.VersionListener vl) {
-//        versionListeners().add(vl);
-//    }
-//
-//    public void removeVersionListener(J2eeModule.VersionListener vl) {
-//        if (versionListeners != null)
-//            versionListeners.remove(vl);
-//    }
-//
-//    public void propertyChange(PropertyChangeEvent evt) {
-//        if (evt.getPropertyName().equals(org.netbeans.modules.j2ee.dd.api.web.WebApp.PROPERTY_VERSION)) {
-//            for (Iterator i=versionListeners.iterator(); i.hasNext();) {
-//                J2eeModule.VersionListener vl = (J2eeModule.VersionListener) i.next();
-//                String oldVersion = (String) evt.getOldValue();
-//                String newVersion = (String) evt.getNewValue();
-//                vl.versionChanged(oldVersion, newVersion);
-//            }
-//        }
-//    }
     
     private static class IT implements Iterator {
         ArrayList ch;
