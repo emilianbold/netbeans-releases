@@ -383,6 +383,23 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         if (cookie!=null) getCookieSet().remove(cookie);
     }
 
+    protected FileObject handleMove(DataFolder df) throws IOException {
+
+        FileObject retValue;
+        
+        retValue = super.handleMove(df);
+        
+        // fix for issue #55961 - remove old TagLibParseSupport and add new one. 
+        TagLibParseSupport tlps = null;
+        tlps = (TagLibParseSupport)getCookie(TagLibParseSupport.class);
+        if (tlps != null){
+            getCookieSet().remove(tlps);
+            tlps = new TagLibParseSupport(retValue);
+            getCookieSet().add(tlps);
+        }
+        return retValue;
+    }
+
 
     ////// -------- INNER CLASSES ---------
 
