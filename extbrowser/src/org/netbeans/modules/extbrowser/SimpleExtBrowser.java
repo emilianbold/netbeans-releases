@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,6 +51,14 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
         if (Utilities.getOperatingSystem () == Utilities.OS_OS2) {
             process = new NbProcessDescriptor(
                 "Netscape.exe", // NOI18N
+                // {URL}
+                " {" + BrowserFormat.TAG_URL + "}", // NOI18N
+                NbBundle.getBundle(SimpleExtBrowser.class).getString("MSG_BrowserExecutorHint")
+            );
+        }
+	else if (Utilities.getOperatingSystem () == Utilities.OS_MAC) {
+            process = new NbProcessDescriptor(
+                "/usr/bin/open", // NOI18N
                 // {URL}
                 " {" + BrowserFormat.TAG_URL + "}", // NOI18N
                 NbBundle.getBundle(SimpleExtBrowser.class).getString("MSG_BrowserExecutorHint")
