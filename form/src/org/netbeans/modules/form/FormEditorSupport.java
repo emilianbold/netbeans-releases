@@ -106,7 +106,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                         FormEditor.getFormBundle().getString("FMT_OpeningForm"), // NOI18N
                         new Object[] { formDataObject.getName() }));
 
-                if (loadForm())
+                if (loadFormImpl())
                     openGUI();
                 FormEditorSupport.this.superOpen();
 
@@ -118,21 +118,22 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
     /** Main loading method - loads form data from file.
      */
-    public synchronized boolean loadForm() {
-        if (!formLoaded) {
-            if (java.awt.EventQueue.isDispatchThread())
-                loadFormImpl();
-            else { // loading must be done in AWT event queue
-                try {
-                    java.awt.EventQueue.invokeAndWait(new Runnable() {
-                        public void run() {
-                            loadFormImpl();
-                        }
-                    });
-                }
-                catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+    public boolean loadForm() {
+        if (formLoaded)
+            return true;
+
+        if (java.awt.EventQueue.isDispatchThread())
+            loadFormImpl();
+        else { // loading must be done in AWT event queue
+            try {
+                java.awt.EventQueue.invokeAndWait(new Runnable() {
+                    public void run() {
+                        loadFormImpl();
+                    }
+                });
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
 
@@ -301,7 +302,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     private void openForm(final boolean openGui) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                if (loadForm()) {
+                if (loadFormImpl()) {
                     if (openGui)
                         openGUI();
                     FormEditorSupport.this.superOpen();
@@ -310,14 +311,14 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         });
     }
 
-    private void loadFormImpl() {
+    private boolean loadFormImpl() {
         if (formLoaded)
-            return; // form already loaded
+            return true; // form already loaded
 
         // first find PersistenceManager for loading the form
         PersistenceManager[] pms = recognizeForm(formDataObject);
         if (pms == null)
-            return;
+            return false;
         PersistenceManager loadManager = pms[0];
         saveManager = pms[1];
 
@@ -343,7 +344,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
             reportErrors(true, t); // fatal errors
 
-            return;
+            return false;
         }
 
         // form is successfully loaded...
@@ -360,6 +361,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         attachFormListener();
         attachSettingsListener();
         attachTopComponentsListener();
+
+        return true;
     }
 
     /** Finds PersistenceManager that can load and save the form.
