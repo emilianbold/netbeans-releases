@@ -1,2 +1,56 @@
-wizards help
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * 
+ *     Copyright 2002 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+ *
+ -->
+<HTML>
+<HEAD>
+<title>TestTools Module Help</title>
+<link rel="stylesheet" href="../../usersguide/ide.css" type="text/css"></HEAD>
+<body>
 
+<h2>Templates and Wizards</h2>
+Module contains several templates and associated wizards. All templates are available in folder <code>Templates/Test Tools</code>.
+
+<a name="SpaceSet"></a>
+<h3>Test Workspace</h3>
+All the code needed for testing one module is stored in directory called "<code>test</code>". 
+This directory with its content is called Test Workspace.<p>  
+<b>Test Workspace Template</b> with associated <b>Test Workspace Wizard</b> helps you to create this directory and main build.xml script.
+
+<a name="TypeTemp"></a>
+<h3>Test Type</h3>
+Test Workspace can contain several Test Types. 
+Each Test Type is represented by configuration script, build script and separate subdirectory.
+Scripts determine the way of compilation and execution of tests, subdirectory contains data and sources of the tests.<p>  
+<b>QA Functional Test Type Template</b> and  <b>Unit Test Type Template</b> are two templates of most common Test Types.<br>
+Associated <b>Test Type Wizard</b> helps you to create a new build script, configuration file and relevant subdirectory structure.
+Created subdirectory for test sources is finally mounted into filesystems repository.
+<a name="TypeSet"></a>
+<a name="TypeAdvSet"></a>
+
+<a name="BagSet"></a>
+
+<a name="SuiteTarg"></a>
+<h3>Test Suite</h3>
+Test Suite is represented by single source file with several Test Case Methods. 
+For more informations see <a href="http://xtest.netbeans.org/docs.html">http://xtest.netbeans.org/docs.html</a>.<p>
+<b>Simple Test Suite Template</b>, <b>Jemmy Test Suite Template</b> and <b>Jelly Test Suite Template</b> are three offered templates.<br>
+Associated <b>Test Suite Wizard</b> helps you to create a new test suite with defined list of test cases.
+In addition it creates proper data directory structure and empty golden file for each "golden" test case type.<p>     
+
+<a name="Cases"></a>
+
+<br><br>
+All wizards are piped together but you can finish at the end of each. 
+Following picture shows Test Tools Wizards schema.<p>
+<img src="schema.gif" border="0"> 
+ 
+
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+</body>
+</html>

@@ -51,14 +51,9 @@ For more informations see <a href="http://xtest.netbeans.org/docs.html">http://x
 <b>Simple Test Suite Template</b>, <b>Jemmy Test Suite Template</b> and <b>Jelly Test Suite Template</b> are three offered templates.<br>
 Associated <b>Test Suite Wizard</b> helps you to create a new test suite with defined list of test cases.
 In addition it creates proper data directory structure and empty golden file for each "golden" test case type.<p>     
-
-<br><br>
-All wizards are piped together but you can finish at the end of each. 
-Following picture shows Test Tools Wizards schema.<p>
-<img src="schema.gif" border="0"> 
  
 
-<h2><a href="testtools_services.html">Test Workspace Data Object</a></h2>
+<h2><img src="XTestIcon.gif"> <a href="testtools_services.html#xtDO">Test Workspace Data Object</a></h2>
 Test Workspace build.xml file is represented in IDE by special data object based on Ant Project.<br> 
 This data object offers special Cleaning, Compilation, Building, Execution and Results Cleaning in addition to functionality provided by AntProject
 (like tree browsing, source editing, etc...).<br>
@@ -66,20 +61,27 @@ XTest Compiler and XTest Executor are default for this data object.<p>
 Following picture shows XTest Build Script, all its actions available under pop up menu and its default compiler and executor.<p>  
 
 
-<h2><a href="testtools_services.html">Compiler and Executor</a></h2>
+<h2><img src="XTestCompIcon.gif"> <a href="testtools_services.html#exec">Compiler and</a>
+ <img src="XTestExecIcon.gif">  <a href="testtools_services.html#exec">Executor</a></h2>
 <code>XTest Compiler</code> and <code>XTest Executor</code> are used for compilation and execution of XTest tests directly from IDE.<br>
 Each contains several important properties for XTest execution and compilation.<p>
 Following picture shows XTest Executor properties.<p>
 <p>
 
 <i>Warning: XTest tests could not be compiled or executed against current running IDE but another IDE directory must be selected.</i>  
+<p>
 
-<h2>Jemmy Component Generator Extensions</h2>
+<h2><img src="ConfigIcon.gif"> <a href="testtools_services.html#cfgDO">Test Type Configuration Data Object</a></h2>
+Test Type configuration file <code>cfg-XXX.xml</code> is represented in IDE by special data object based on XML data object.<br>
+This data object offers basic operations like Cut, Copy, Paste, editing in colored XML text editor (in dependency on installed XML module(s)).<br>
+Added feature is <b>Customization</b>. It concentrates all Test Type configuration into one dialog box.<p>   
+
+<h2><img src="GeneratorAction.gif"> Jemmy Component Generator Extensions</h2>
 Test Tools Module plugs Jelly Operators to Jemmy Component Generator and extends it to generate full-featured Jelly Components.<br>
 When Test Tools module is active, Jelly Operators are included in generation process.<br>
-If you want to eliminate Jelly dependency of generated components, simple disable Test Tools Module.<p> 
+If you want to eliminate Jelly dependency of generated components, just disable Test Tools Module.<p> 
 
-<h2><a href="testtools_generator.html">Jelly Nodes'n'Actions Generator</a></h2>
+<h2><img src="NodeGeneratorAction.gif"> <a href="testtools_generator.html">Jelly Nodes'n'Actions Generator</a></h2>
 <a href="http://jellytools.netbeans.org">JellyTools</a> library supports custom test-nodes and test-action.<br> 
 This feature enables automated generation of source code for these Jelly nodes and actions.<br>
 Start <code>Jelly Nodes'n'Actions Generator</code> from <code>Tools</code> menu and follow instructions.

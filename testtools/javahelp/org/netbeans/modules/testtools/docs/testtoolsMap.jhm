@@ -11,12 +11,13 @@
    <mapID target="testtools_services" url="testtools_services.html" />	
    <mapID target="testtools_wizards" url="testtools_wizards.html" />	
 
-   <mapID target="org.netbeans.modules.testtools.XTestCompilerType" url="testtools_services.html" />
-   <mapID target="org.netbeans.modules.testtools.XTestDataObject" url="testtools_services.html" />
-   <mapID target="org.netbeans.modules.testtools.XTestDataObject$XTestNode" url="testtools_services.html" />
-   <mapID target="org.netbeans.modules.testtools.XTestExecutor" url="testtools_services.html" />
-   <mapID target="org.netbeans.modules.testtools.XTestDataLoader$CleanResultsAction" url="testtools_services.html" />
-   <mapID target="org.netbeans.modules.testtools.ConfigDataLoader$ConfigDataNode" url="testtools_services.html" />
+   <mapID target="org.netbeans.modules.testtools.XTestCompilerType" url="testtools_services.html#exec" />
+   <mapID target="org.netbeans.modules.testtools.XTestDataObject" url="testtools_services.html#xtDO" />
+   <mapID target="org.netbeans.modules.testtools.XTestDataObject$XTestNode" url="testtools_services.html#xtDO" />
+   <mapID target="org.netbeans.modules.testtools.XTestExecutor" url="testtools_services.html#exec" />
+   <mapID target="org.netbeans.modules.testtools.XTestDataLoader$CleanResultsAction" url="testtools_services.html#exec" />
+   <mapID target="org.netbeans.modules.testtools.ConfigDataLoader$ConfigDataNode" url="testtools_services.html#cfgDO" />
+   <mapID target="org.netbeans.modules.testtools.ConfigCustomizerPanel" url="testtools_services.html#cfgtDO" />
 
    <mapID target="org.netbeans.modules.testtools.wizards.TestTypeTemplatePanel" url="testtools_wizards.html#TypeTemp" />
    <mapID target="org.netbeans.modules.testtools.wizards.TestWorkspaceSettingsPanel" url="testtools_wizards.html#SpaceSet" />
