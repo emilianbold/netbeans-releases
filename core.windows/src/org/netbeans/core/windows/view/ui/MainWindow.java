@@ -411,12 +411,12 @@ public final class MainWindow extends JFrame {
         String buildNumber = System.getProperty("netbeans.buildnumber"); // NOI18N
         String subTitle;
         if(projectName == null) {
-            subTitle = NbBundle.getMessage(MainWindow.class, "CTL_NoProject");
+            setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title_No_Project", buildNumber));
         } else {
             subTitle = projectName;
+            setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title", buildNumber, subTitle));
         }
         
-        setTitle(NbBundle.getMessage(MainWindow.class, "CTL_MainWindow_Title", buildNumber, subTitle));
     }
 
 /*    private final class WrapperFocusTraversalPolicy extends FocusTraversalPolicy {
