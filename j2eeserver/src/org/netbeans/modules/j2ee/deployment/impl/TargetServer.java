@@ -66,18 +66,16 @@ public class TargetServer {
         if (targets != null)
             return;
         
-        if (instance.getStartServer().needsStartForTargetList()) {
-            if (instance.getStartServer().isAlsoTargetServer(null)) {
-                if (debugMode) {
-                    instance.startDebugTarget(null, ui);
-                } else {
-                    instance.start(ui);
-                }
+        if (instance.getStartServer().isAlsoTargetServer(null)) {
+            if (debugMode) {
+                instance.startDebugTarget(null, ui);
+            } else {
+                instance.start(ui);
             }
         }
-
+        
         this.targets = dtarget.getServer().toTargets();
-
+        
         // see if we want and can incremental
         if (dtarget.doFastDeploy()) {
             incremental = instance.getIncrementalDeployment();
@@ -91,29 +89,29 @@ public class TargetServer {
     private boolean canFileDeploy(Target[] targetz, DeployableObject deployable) {
         if (targetz == null || targetz.length != 1) {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, NbBundle.getMessage(
-                TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
+            TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
             return false;
         }
         
-        if (!instance.getIncrementalDeployment ().canFileDeploy(targetz[0], deployable))
+        if (!instance.getIncrementalDeployment().canFileDeploy(targetz[0], deployable))
             return false;
-
+        
         return true;
     }
     
     private boolean canFileDeploy(TargetModule[] targetModules, DeployableObject deployable) {
         if (targetModules == null || targetModules.length != 1) {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, NbBundle.getMessage(
-                TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
+            TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
             return false;
         }
         
-        if (!instance.getIncrementalDeployment ().canFileDeploy(targetModules[0].getTarget(), deployable))
+        if (!instance.getIncrementalDeployment().canFileDeploy(targetModules[0].getTarget(), deployable))
             return false;
-
+        
         return true;
     }
-
+    
     private AppChangeDescriptor distributeChanges(TargetModule targetModule, DeployProgressUI ui) {
         ServerFileDistributor sfd = new ServerFileDistributor(instance, dtarget);
         ui.setProgressObject(sfd);
@@ -121,7 +119,7 @@ public class TargetServer {
         AppChangeDescriptor acd = sfd.distribute(targetModule, mcr);
         return acd;
     }
-
+    
     private File initialDistribute(Target target, DeployProgressUI ui) {
         InitialServerFileDistributor sfd = new InitialServerFileDistributor(dtarget, target);
         ui.setProgressObject(sfd);
@@ -130,9 +128,9 @@ public class TargetServer {
     
     private boolean checkServiceImplementations() {
         String missing = null;
-        if (instance.getServer().getDeploymentPlanSplitter() == null) 
+        if (instance.getServer().getDeploymentPlanSplitter() == null)
             missing = DeploymentPlanSplitter.class.getName();
-            
+        
         if (missing != null) {
             String msg = NbBundle.getMessage(ServerFileDistributor.class, "MSG_MissingServiceImplementations", missing);
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,  msg);
@@ -161,7 +159,7 @@ public class TargetServer {
             ModuleType type = (ModuleType) dtarget.getModule().getModuleType();
             TargetModuleID[] ids = dm.getAvailableModules(type, targets);
             for (int i=0; i<ids.length; i++) {
-                availables.put(ids[i].getModuleID (), ids[i]);
+                availables.put(ids[i].getModuleID(), ids[i]);
             }
         } catch (TargetException te) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, te);
@@ -209,10 +207,10 @@ public class TargetServer {
                 }
             }
         }
-
+        
         redeployTargetModules = (TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]);
     }
-
+    
     private File getApplication() {
         if (application != null) return application;
         try {
@@ -271,7 +269,7 @@ public class TargetServer {
                 ProgressObject startPO = instance.getDeploymentManager().start(modules);
                 ui.setProgressObject(startPO);
                 new StartEventHandler(startPO);
-
+                
                 final Timer timer2 = new Timer();
                 final ProgressObject startObj = startPO;
                 timer2.schedule(new  TimerTask() {
@@ -279,7 +277,7 @@ public class TargetServer {
                         System.out.println("TimerTask on command: " + startObj.getDeploymentStatus().getCommand()
                         + " completed= " + startObj.getDeploymentStatus().isCompleted());
                         if (startObj.getDeploymentStatus().isRunning()) {
-                             wakeUp();
+                            wakeUp();
                         }
                         timer2.cancel(); //Terminate the timer thread
                     }
@@ -313,7 +311,7 @@ public class TargetServer {
             }
         }
     }
-
+    
     private class StartEventHandler implements ProgressListener {
         ProgressObject startPO;
         
@@ -367,7 +365,7 @@ public class TargetServer {
         Set originals = new HashSet();
         for (int i=0; i<modules.length; i++) {
             if (modules[i].getParentTargetModuleID() == null) {
-                String id = modules[i].getModuleID ();
+                String id = modules[i].getModuleID();
                 String targetName = modules[i].getTarget().getName();
                 TargetModule tm = new TargetModule(id, instance.getUrl(), targetName, timestamp, modules[i]);
                 deployedRootTMIDs.add(tm);
@@ -376,13 +374,13 @@ public class TargetServer {
         }
         return (TargetModuleID[]) originals.toArray(new TargetModuleID[originals.size()]);
     }
-
+    
     public TargetModule[] deploy(DeployProgressUI progressUI) throws IOException {
         init(progressUI);
         
         ProgressObject progressObject = null;
-
-        // save configuration file if not already save 
+        
+        // save configuration file if not already save
         // Note: configuration is not DO so will not be saved automatically on execute
         try {
             dtarget.getDeploymentConfigurationProvider().saveOnDemand();
@@ -390,31 +388,31 @@ public class TargetServer {
             ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ioe.getMessage());
             return null;
         }
-
+        
         File plan = dtarget.getConfigurationFile();
         DeployableObject deployable = dtarget.getDeploymentConfigurationProvider().getDeployableObject(null);
-
+        
         // handle initial file deployment or distribute
         if (distributeTargets.size() > 0) {
             Target[] targetz = (Target[]) distributeTargets.toArray(new Target[distributeTargets.size()]);
-
+            
             if (incremental != null && canFileDeploy(targetz, deployable)) {
                 InitialServerFileDistributor sfd = new InitialServerFileDistributor(dtarget, targetz[0]);
                 progressUI.setProgressObject(sfd);
                 File dir = sfd.distribute();
                 if (dir == null)
                     return new TargetModule[0];
-                progressObject = incremental.initialDeploy(targetz[0], deployable, dtarget.getDeploymentConfigurationProvider ().getDeploymentConfiguration (), dir);
+                progressObject = incremental.initialDeploy(targetz[0], deployable, dtarget.getDeploymentConfigurationProvider().getDeploymentConfiguration(), dir);
                 new DistributeEventHandler(progressUI, progressObject);
-                    StateType state = progressObject.getDeploymentStatus().getState();
-                    //System.out.println("incrementalDeploy: Status="+state);
-                    if (state !=  StateType.COMPLETED && state != StateType.FAILED) {
-                        //System.out.println("Waiting on incrementalDeploy of ="+Arrays.asList(redeployTargetModules));
-                        if (!sleep(120000) )
-                            ErrorManager.getDefault().log(ErrorManager.WARNING, "incrementalDeploy: timeout or interrupted!");
-                    } else if (state == StateType.FAILED) {
-                        sfd.cleanup ();
-                    }
+                StateType state = progressObject.getDeploymentStatus().getState();
+                //System.out.println("incrementalDeploy: Status="+state);
+                if (state !=  StateType.COMPLETED && state != StateType.FAILED) {
+                    //System.out.println("Waiting on incrementalDeploy of ="+Arrays.asList(redeployTargetModules));
+                    if (!sleep(120000) )
+                        ErrorManager.getDefault().log(ErrorManager.WARNING, "incrementalDeploy: timeout or interrupted!");
+                } else if (state == StateType.FAILED) {
+                    sfd.cleanup();
+                }
             } else {
                 if (getApplication() != null) {
                     //System.err.println("  Distributing " + application + " to " + Arrays.asList(targetz));
@@ -429,15 +427,15 @@ public class TargetServer {
         
         // handle increment or redeploy
         if (redeployTargetModules != null && redeployTargetModules.length > 0) {
-
+            
             if (incremental != null && canFileDeploy(redeployTargetModules, deployable)) {
                 AppChangeDescriptor acd = distributeChanges(redeployTargetModules[0], progressUI);
-                if (acd == null) 
+                if (acd == null)
                     return new TargetModule[0];
-
+                
                 if (anyChanged(acd)) {
                     //long t0 = System.currentTimeMillis();
-                     
+                    
                     progressObject = incremental.incrementalDeploy(redeployTargetModules[0].delegate(), acd);
                     progressUI.setProgressObject(progressObject);
                     
@@ -447,7 +445,7 @@ public class TargetServer {
                     
                     IncrementalEventHandler h = new IncrementalEventHandler(progressObject);
                     progressObject.addProgressListener(h);
-
+                    
                     StateType state = progressObject.getDeploymentStatus().getState();
                     //System.out.println("incrementalDeploy: Status="+state);
                     if (state !=  StateType.COMPLETED && state != StateType.FAILED) {
@@ -465,13 +463,13 @@ public class TargetServer {
                 if (getApplication() != null) {
                     System.err.println("  Redeploying " + application + " with TMIDs " + Arrays.asList(redeployTargetModules));
                     System.err.println("  Plan " + plan);
-                
+                    
                     progressObject = instance.getDeploymentManager().redeploy(tmids, getApplication(), plan);
                     new DistributeEventHandler(progressUI, progressObject);
                     sleep();
                 } else {
                     progressUI.addError(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
-                } 
+                }
             }
         }
         
@@ -480,7 +478,7 @@ public class TargetServer {
     
     public static boolean anyChanged(AppChangeDescriptor acd) {
         System.out.println(acd);
-        return (acd.manifestChanged() || acd.descriptorChanged() || acd.classesChanged() 
-                || acd.ejbsChanged() || acd.serverDescriptorChanged());
+        return (acd.manifestChanged() || acd.descriptorChanged() || acd.classesChanged()
+        || acd.ejbsChanged() || acd.serverDescriptorChanged());
     }
 }

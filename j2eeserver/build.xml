@@ -67,6 +67,11 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="external">
       <ant dir="external" target="unscramble"/>
+      <copy todir="netbeans/modules/autoload/ext">
+          <fileset dir="external/">
+		  	<include name="*.jar"/>
+          </fileset>
+      </copy>
   </target>
 
   <target name="nbm" depends="netbeans">
