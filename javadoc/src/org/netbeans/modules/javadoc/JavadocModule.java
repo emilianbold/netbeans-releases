@@ -42,6 +42,7 @@ import org.netbeans.modules.javadoc.search.SearchDocAction;
 import org.netbeans.modules.javadoc.search.DocFileSystem;
 
 import org.netbeans.modules.javadoc.search.environment.JavadocFolder;
+import org.openide.util.RequestProcessor;
 
 /** Class for initializing Javadoc module on IDE startup.
 
@@ -52,7 +53,7 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
     /** serialVersionUID */
     private static final long serialVersionUID = 984124010415492146L;
 
-    private static final String PROP_INSTALL_COUNT = "installCount"; // NOI18N
+    //private static final String PROP_INSTALL_COUNT = "installCount"; // NOI18N
     
     public static final ErrorManager err = TopManager.getDefault ().getErrorManager ().getInstance ("org.apache.tools.ant.module"); // NOI18N
 
@@ -79,7 +80,7 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
         while (e.hasMoreElements ()) {
             Object o = e.nextElement ();
             if (o instanceof GlobalLocalFileSystem) {
-                repo.removeFileSystem ((FileSystem) o);
+                repo.removeFileSystem ((FileSystem) o); 
             }
         }
     }
@@ -89,13 +90,13 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
     */
     public void restored() {
         // Mount docs, or remount if project was discarded:
-        Integer count = (Integer) getProperty (PROP_INSTALL_COUNT);
-        int icount = count == null ? 1 : count.intValue () + 1;
-        putProperty (PROP_INSTALL_COUNT, new Integer (icount));
+        //Integer count = (Integer) getProperty (PROP_INSTALL_COUNT);
+        //int icount = count == null ? 1 : count.intValue () + 1;
+        //putProperty (PROP_INSTALL_COUNT, new Integer (icount));
         // 1: first install (project is discarded anyway)
         // 2: first restore as actual user
         // 3: next restore (project settings incl. Repository loaded)
-        notify ("JavadocModule: numberOfStarts=" + icount); // NOI18N
+        //notify ("JavadocModule: numberOfStarts=" + icount); // NOI18N
 
         TopManager.getDefault().addPropertyChangeListener(this);
         
@@ -116,9 +117,7 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
             }
         }
         
-        if (icount <= 2) {
-            installJavadocDirectories();    //std directories
-        }
+        installJavadocDirectories();    //std directories
 
         // Install the factory for adding JavaDoc property to nodes
         invokeDynamic( "org.netbeans.modules.java.JavaDataObject", // NOI18N
@@ -128,17 +127,6 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
                        "addBrowserFilterFactory", // NOI18N
                        new JavaDocPropertySupportFactory() );
 
-        // Assign the Ctrl+F1 to JavaDoc Index Search Action
-        // [PENDING] should be in installed() whenever global keymap editor is finished
-        /*
-        Keymap map = TopManager.getDefault ().getGlobalKeymap ();
-        try {
-          assign ("C-F1", "org.netbeans.modules.javadoc.search.SearchDocAction", map);
-    } catch (ClassNotFoundException e) {
-          // print and go on
-          e.printStackTrace();
-    }
-        */
     }
 
     /** Invoked on update */
@@ -208,26 +196,15 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
     public static void installJavadocDirectories() {
 
         // Try to find Java documantation
-
-        File jdkDocsDir = new File ( System.getProperty ("java.home")  + java.io.File.separator + ".." // NOI18N
+       final File jdkDocsDir = new File ( System.getProperty ("java.home")  + java.io.File.separator + ".." // NOI18N
                                      + java.io.File.separator + "docs" ); // NOI18N
-        mount( jdkDocsDir, true );
 
-        // Try to find NetBeans open-api documentation
-        // This is now done by Apisupport module
-        /*
-        File apiDocsDir = null;
+        RequestProcessor.postRequest(new Runnable(){
+            public void run(){
+                mount( jdkDocsDir, true );
+            }
+        });
 
-        apiDocsDir = new File ( System.getProperty ("netbeans.user")  + java.io.File.separator + "docs" // NOI18N
-                                     + java.io.File.separator + "openide-api" ); // NOI18N
-        if ( apiDocsDir == null || !apiDocsDir.isDirectory() )
-          apiDocsDir = new File ( System.getProperty ("netbeans.home")  + java.io.File.separator + "docs" // NOI18N
-                                     + java.io.File.separator + "openide-api" ); // NOI18N
-        mount( apiDocsDir, true );
-        */
-
-        // Create default directory for JavaDoc
-        //StdDocletSettings sdsTemp = (StdDocletSettings) SharedClassObject.findObject (StdDocletSettings.class, true);
         StdDocletSettingsService sdsTemp = (StdDocletSettingsService)TopManager.getDefault ().getServices ().find (StdDocletSettingsService.class);
         if( sdsTemp == null ) 
             sdsTemp = new StdDocletSettingsService(); 
@@ -245,7 +222,6 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
             directory = new File (System.getProperty ("netbeans.user") + fileSep + "javadoc").getAbsoluteFile();   //NOI18N
         }
 
-        //if ( sdsTemp.getDirectory() != null && !sdsTemp.getDirectory().equals( directory ) ) {
         if ( System.getProperty ("netbeans.user") != null &&       //NOI18N
                 !System.getProperty ("netbeans.user").equals(System.getProperty ("netbeans.home") ) ) {   //NOI18N
 
@@ -280,11 +256,16 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
         }
 
         sdsTemp.setDirectory( directory );
-        File jdOutputDir = sdsTemp.getDirectory();
+        final File jdOutputDir = sdsTemp.getDirectory();
 
         if ( !jdOutputDir.isDirectory() )
             jdOutputDir.mkdirs();
-        mount( jdOutputDir, false );
+
+        RequestProcessor.postRequest(new Runnable(){
+            public void run(){
+                mount( jdOutputDir, false );
+            }
+        });
 
     }
 
@@ -292,7 +273,7 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
      *  a searchable javadoc directory if so mounts the directory
      *  into Javadoc repository
      */
-    static void mount( File root, boolean testSearchability ) {
+    static synchronized void mount( File root, boolean testSearchability ) {
         notify ("JavadocModule.mount: root=" + root); // NOI18N
   
         if ((root != null) && (root.isDirectory())) {
@@ -334,7 +315,7 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
     public void readExternal(final java.io.ObjectInput objectInput )
     throws java.io.IOException, java.lang.ClassNotFoundException {
         super.readExternal( objectInput );
-        putProperty (PROP_INSTALL_COUNT, new Integer(objectInput.readInt()));
+        //putProperty (PROP_INSTALL_COUNT, new Integer(objectInput.readInt()));
         //numberOfStarts = objectInput.readInt();
     }
 
@@ -342,8 +323,8 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
     throws java.io.IOException {
         super.writeExternal( objectOutput );
         //objectOutput.writeObject (getProperty (PROP_INSTALL_COUNT));
-        Integer i = (Integer)getProperty(PROP_INSTALL_COUNT);
-        objectOutput.writeInt(i != null ? i.intValue() : 0);
+        //Integer i = (Integer)getProperty(PROP_INSTALL_COUNT);
+        //objectOutput.writeInt(i != null ? i.intValue() : 0);
     }
 
     private static void notify (Exception e) {        
