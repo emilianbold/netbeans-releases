@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.security.*;
 import java.util.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /** NetBeans security manager implementation.
 * @author Ales Novak, Jesse Glick
@@ -419,6 +420,67 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
         }
     }
 
+    // Workaround for bug 
+    // 
+    // http://developer.java.sun.com/developer/bugParade/bugs/4818143.html
+    //
+    // sun.awt.datatransfer.ClipboardTransferable.getClipboardData() can hang
+    // for very long time (maxlong == eternity).  We tries to avoid the hang by
+    // access the system clipboard from a separate thread.  If the hang happens
+    // the thread will wait for the system clipboard forever but not the whole
+    // IDE.  See also NbClipboard
+    
+    private static ThreadLocal CLIPBOARD_FORBIDDEN = new ThreadLocal ();
+    public void checkSystemClipboardAccess () {
+        if (CLIPBOARD_FORBIDDEN.get () != null) {
+            CLIPBOARD_FORBIDDEN.set (this);
+            throw new SecurityException ();
+        }
+        super.checkSystemClipboardAccess ();
+    }    
+    
+    /** Convinces Swing components that they should use special clipboard
+     * and not Toolkit.getSystemClipboard.
+     *
+     * @param clip clipboard to use
+     */
+    public static void makeSwingUseSpecialClipboard (java.awt.datatransfer.Clipboard clip) {
+        try {
+            CLIPBOARD_FORBIDDEN.set (clip);
+            javax.swing.TransferHandler.getPasteAction ().actionPerformed (
+                new java.awt.event.ActionEvent (clip, 0, "")
+            );
+            javax.swing.TransferHandler.getCopyAction ().actionPerformed (
+                new java.awt.event.ActionEvent (clip, 0, "")
+            );
+            javax.swing.TransferHandler.getCutAction ().actionPerformed (
+                new java.awt.event.ActionEvent (clip, 0, "")
+            );
+            if (! (CLIPBOARD_FORBIDDEN.get () instanceof TopSecurityManager) ) {
+                System.err.println("Cannot install our clipboard to swing components, TopSecurityManager is not the security manager"); // NOI18N
+                return;
+            }
+
+            Class appContextClass = Class.forName ("sun.awt.AppContext"); // NOI18N
+            Method getAppContext = appContextClass.getMethod ("getAppContext", new Class[0]); // NOI18N
+            Object appContext = getAppContext.invoke (null, new Object[0]);
+            Class c = appContext.getClass();
+            
+            Class actionClass = javax.swing.TransferHandler.getCopyAction ().getClass ();
+            java.lang.reflect.Field sandboxKeyField = actionClass.getDeclaredField ("SandboxClipboardKey"); // NOI18N
+            sandboxKeyField.setAccessible (true);
+            Object value = sandboxKeyField.get (null);
+            
+            Method put = appContextClass.getMethod ("put", new Class[] { Object.class, Object.class }); // NOI18N
+            put.invoke (appContext, new Object[] { value, clip });
+        } catch (ThreadDeath ex) {
+            throw ex;
+        } catch (Throwable t) {
+            t.printStackTrace();
+        } finally {
+            CLIPBOARD_FORBIDDEN.set (null);
+        }
+    }
 
     private static final class PrivilegedCheck implements PrivilegedExceptionAction {
         int action;
