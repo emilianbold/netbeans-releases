@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.HashMap;
 import java.util.MissingResourceException;
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.SwingUtilities;
 
 import org.openide.TopManager;
 import org.openide.explorer.propertysheet.PropertyPanel;
@@ -51,6 +52,9 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
 
     /** Index of Coloring actually edited/displayed by coloringModel */
     int actValueIndex;
+    // Bug #18539 temporary index value
+    int newValueIndex;
+
 
     /** Name of the the type of the kit, which coloring we're editing */
     private String typeName;
@@ -91,6 +95,8 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
                                 //Need to recreate value here (because of equals(), then set!
                                 value = (HashMap)value.clone();
                                 value.put( names[actValueIndex], newColoring );
+                                // Bug #18539 Hack to prevent changing selected  index by firePropertyChange fired below
+                                actValueIndex = newValueIndex;
                                 support.firePropertyChange( "value", null, null ); // NOI18N
                             }
                         } catch( InvocationTargetException e ) {
@@ -244,8 +250,21 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
     }//GEN-END:initComponents
 
     private void syntaxListValueChanged (javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_syntaxListValueChanged
-        actValueIndex = syntaxList.getSelectedIndex();
-        setEditorValue( actValueIndex );
+        // Bug #18539 invoking List value change after property sheet changes the property value
+        if( syntaxList.getSelectedIndex() < 0 )
+            return;
+        if( actValueIndex != syntaxList.getSelectedIndex()) {
+            newValueIndex = syntaxList.getSelectedIndex();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    actValueIndex = newValueIndex;
+                    setEditorValue( actValueIndex );
+                }
+            });
+        }else{
+            actValueIndex = syntaxList.getSelectedIndex();
+            setEditorValue( actValueIndex );
+        }
     }//GEN-LAST:event_syntaxListValueChanged
 
 
