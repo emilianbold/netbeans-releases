@@ -93,11 +93,32 @@ public class TestCreator extends java.lang.Object {
     }
 
     static public boolean isClassTestable(ClassElement ce) {
-        return (null != ce && 
-                ce.isClass() && 
-                (0 != (ce.getModifiers() & Modifier.PUBLIC)) &&
-                (JUnitSettings.getDefault().isGenerateExceptionClasses() || !isException(ce)) &&
-                (JUnitSettings.getDefault().isGenerateAbstractImpl() || (0 == (ce.getModifiers() & Modifier.ABSTRACT))));
+// @@        System.out.println("isClassTestable : " + ce.getName().getFullName());
+        
+        ClassElement[]  innerClasses;
+
+        if (null != ce && 
+            ce.isClass() && 
+            (0 != (ce.getModifiers() & Modifier.PUBLIC)) &&
+            (JUnitSettings.getDefault().isGenerateExceptionClasses() || !isException(ce)) &&
+            (!ce.isInner() || 0 != (ce.getModifiers() & Modifier.STATIC)) &&
+            (0 == (ce.getModifiers() & Modifier.ABSTRACT) || JUnitSettings.getDefault().isGenerateAbstractImpl()) &&
+            hasTestableMethods(ce))
+            return true;
+        
+        // nothing from the non-static inner class is accessible (and testable),
+        // except there is a class specific way how to get an instance of inner class
+        if (ce.isInner() && 0 == (ce.getModifiers() & Modifier.STATIC))
+            return false;
+            
+        // check for testable inner classes
+        innerClasses = ce.getClasses();
+        for(int i = 0; i < innerClasses.length; i++) {
+            if (isClassTestable(innerClasses[i]))
+                return true;
+        }
+
+        return false;
     }
 
     
@@ -186,44 +207,40 @@ public class TestCreator extends java.lang.Object {
         
         for (int i = 0; i < allMethods.length; i++) {
             // check modifiers against the settings of test generation
-            if ((allMethods[i].getModifiers() & Modifier.PRIVATE) == 0 &&
-                ((allMethods[i].getModifiers() & cfg_MethodsFilter) != 0 ||
-                ((allMethods[i].getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) == 0 && cfg_MethodsFilterPackage))) {
+            if (isMethodAcceptable(allMethods[i])) {
                name = allMethods[i].getName().getName();
-                if (!isForbiden(name) && (allMethods[i].getModifiers() & Modifier.ABSTRACT) == 0) {
-                    method = new MethodElement();
-                    newName = Identifier.create("test" + name.substring(0,1).toUpperCase() + name.substring(1));
-                    
-                    // generate only one test method for overloaded source methods
-                    if (!existsMethod(methodList, newName)) {
-                        method.setName(newName);
-                        method.setModifiers(Modifier.PUBLIC);
+                method = new MethodElement();
+                newName = Identifier.create("test" + name.substring(0,1).toUpperCase() + name.substring(1));
 
-                        // generate JavaDoc for test method
-                        if (JUnitSettings.getDefault().isJavaDoc()) {
-                            method.getJavaDoc().setText("Test of " + name + " method, of class " + classSource.getName().getFullName() + ".");
-                        }
-                        
-                        // generate the body of method
-                        newBody.delete(0, newBody.length());
-                        newBody.append("\n");
-                        if (JUnitSettings.getDefault().isBodyContent()) {
-                            // generate default bodies, printing the name of method
-                            newBody.append("System.out.println(\"" + newName.getName() + "\");\n");
-                        }
-                        if (JUnitSettings.getDefault().isBodyComments()) {
-                            // generate comments to bodies
-                            newBody.append("\n// Add your test code below by replacing the default call to fail.\n");
-                        }
-                        if (JUnitSettings.getDefault().isBodyContent()) {
-                            // generate a test failuare by default (in response to request 022).
-                            newBody.append("fail(\"The test case is empty.\");\n");
-                        }
-                        method.setBody(newBody.toString());
-                        method.setReturn(Type.VOID);
-                        methodList.add(method);
+                // generate only one test method for overloaded source methods
+                if (!existsMethod(methodList, newName)) {
+                    method.setName(newName);
+                    method.setModifiers(Modifier.PUBLIC);
+
+                    // generate JavaDoc for test method
+                    if (JUnitSettings.getDefault().isJavaDoc()) {
+                        method.getJavaDoc().setText("Test of " + name + " method, of class " + classSource.getName().getFullName() + ".");
                     }
-                }                                                    
+
+                    // generate the body of method
+                    newBody.delete(0, newBody.length());
+                    newBody.append("\n");
+                    if (JUnitSettings.getDefault().isBodyContent()) {
+                        // generate default bodies, printing the name of method
+                        newBody.append("System.out.println(\"" + newName.getName() + "\");\n");
+                    }
+                    if (JUnitSettings.getDefault().isBodyComments()) {
+                        // generate comments to bodies
+                        newBody.append("\n// Add your test code below by replacing the default call to fail.\n");
+                    }
+                    if (JUnitSettings.getDefault().isBodyContent()) {
+                        // generate a test failuare by default (in response to request 022).
+                        newBody.append("fail(\"The test case is empty.\");\n");
+                    }
+                    method.setBody(newBody.toString());
+                    method.setReturn(Type.VOID);
+                    methodList.add(method);
+                }
             }
         }                
         return methodList;
@@ -241,38 +258,40 @@ public class TestCreator extends java.lang.Object {
         }
         return false;
     }
-    
-    static private boolean existsMethod(List methodList, MethodElement method) {
-         Iterator    li;
-         MethodElement   m;
 
-         li = methodList.iterator();
-         while(li.hasNext()) {
-             m = (MethodElement) li.next();
-             if (m.getName().equals(method.getName()) &&
-                 m.getReturn().equals(method.getReturn()) &&
-                 (Arrays.equals(getParameterTypes(m.getParameters()), getParameterTypes(method.getParameters())))) {
-
-                 return true;
-             }
-         }
-         return false;
-     }
+    static private boolean isImplemented(ClassElement implementor, MethodElement m) {
+        MethodElement[] methods = implementor.getMethods();
+        for(int i = 0; i < methods.length; i++) {
+            if (0 == (methods[i].getModifiers() & Modifier.ABSTRACT) &&
+                m.getName().equals(methods[i].getName()) &&
+                m.getReturn().equals(methods[i].getReturn()) &&
+                Arrays.equals(getParameterTypes(m.getParameters()), 
+                              getParameterTypes(methods[i].getParameters()))) {
+                return true;
+            }
+        }
+        return false;
+    }
      
-     static private Type[] getParameterTypes(MethodParameter[] params) {
-         Type[] types = new Type[params.length];
-         for (int i = 0; i < params.length; i++) {
-             types[i] = params[i].getType();
-         }
-         
-         return types;
-     }
+    static private Type[] getParameterTypes(MethodParameter[] params) {
+        Type[] types = new Type[params.length];
+        for (int i = 0; i < params.length; i++) {
+            types[i] = params[i].getType();
+        }
+
+        return types;
+    }
      
-     static private boolean isSameParameterTypeArray(Type[] base, Type[] revision) {
-         return Arrays.equals(base, revision);
-     }
-
-
+    static private boolean hasTestableMethods(ClassElement classSource) {
+        MethodElement[] allMethods = classSource.getMethods();                        
+        
+        for (int i = 0; i < allMethods.length; i++) {
+            if (isMethodAcceptable(allMethods[i]))
+                return true;
+        }
+        
+        return false;
+    }
 
     static private void fillGeneral(ClassElement classTest) throws SourceException {
         ConstructorElement  constr;
@@ -298,6 +317,9 @@ public class TestCreator extends java.lang.Object {
     static private void fillTestClass(ClassElement classSource, ClassElement classTest) throws SourceException {
         LinkedList      methods;
         ClassElement    innerClasses[];
+        
+// @@        System.out.println("fillTestClass source : " + classSource.getName().getFullName());
+// @@        System.out.println("fillTestClass test : " + classTest.getName().getFullName());
         
         fillGeneral(classTest);
 
@@ -335,6 +357,18 @@ public class TestCreator extends java.lang.Object {
         // fill methods according to the iface of tested class
         methods = createVariantMethods(classSource);
         addMethods(classTest, methods);
+        
+        // create abstract class implementation
+        if ((JUnitSettings.getDefault().isGenerateAbstractImpl()) &&
+            (0 != (classSource.getModifiers() & Modifier.ABSTRACT))) {
+// @@            System.out.println("fillTestClass : calling createAbstractImpl");
+            try {
+                createAbstractImpl(classSource, classTest);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     static private void fillSuitClass(LinkedList listMembers, String packageName, ClassElement classTest) throws SourceException {
@@ -424,7 +458,8 @@ public class TestCreator extends java.lang.Object {
     }
     
     static private boolean isException(ClassElement element) {
-        ClassElement newElement = (ClassElement)element.clone();
+// @@        ClassElement newElement = (ClassElement)element.clone();
+        ClassElement newElement = element;
         Identifier identifier = null;
         String superClassName = null;
         while ((identifier = newElement.getSuperclass()) != null) {
@@ -448,61 +483,97 @@ public class TestCreator extends java.lang.Object {
         } catch (Exception e) {}
         return false;
     }
+
+    static private boolean isMethodAcceptable(MethodElement m) {
+        String name;
+        if ((m.getModifiers() & Modifier.PRIVATE) == 0 &&
+            ((m.getModifiers() & cfg_MethodsFilter) != 0 ||
+            ((m.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) == 0 && cfg_MethodsFilterPackage))) {
+            name = m.getName().getName();
+            return !isForbiden(name) && (m.getModifiers() & Modifier.ABSTRACT) == 0;
+        }
+        return false;
+    }
     
-     static public void createAbstractImpl(ClassElement sourceClass, ClassElement targetClass) throws SourceException {
-         ClassElement innerClass;
-         Identifier implClassName = Identifier.create(sourceClass.getName().getName() + "Impl");
-         innerClass = targetClass.getClass(implClassName);
-         
-         if (innerClass == null) {
-             innerClass = new ClassElement();
-             innerClass.setName(implClassName);
-             innerClass.setModifiers(Modifier.PRIVATE);
-             innerClass.setSuperclass(sourceClass.getName());
-             createImpleConstructors(sourceClass, innerClass);
-         }
-         
-         List methods =  getAllUnimplementedMethods(sourceClass);
-         MethodElement nextMethod = null;
-         Iterator iterator = methods.iterator();
-         while (iterator.hasNext()) {
-             try {
-                 nextMethod = (MethodElement)iterator.next();
-                 createImplMethods(nextMethod);
-                 innerClass.addMethod(nextMethod);
-             } catch (SourceException e) {
-                 //ignore as the method already exists
-             }
-         }
-         try {
-             targetClass.addClass(innerClass);
-         } catch (Exception e) {
-             //ignore as the inner class already exists
-         }
-         
-     }
+    static private void createAbstractImpl(ClassElement sourceClass, ClassElement targetClass) throws SourceException {
+        Identifier      implClassName = Identifier.create(sourceClass.getName().getName() + "Impl");
+        ClassElement    innerClass = targetClass.getClass(implClassName);
+        LinkedList      methods;
+        Iterator        iterator;
+        
+        if (innerClass == null) {
+            innerClass = new ClassElement();
+            innerClass.setName(implClassName);
+            innerClass.setModifiers(Modifier.PRIVATE);
+
+            if (sourceClass.isInner())
+                innerClass.setSuperclass(Identifier.create(sourceClass.getName().getFullName()));
+            else
+                innerClass.setSuperclass(sourceClass.getName());
+
+            // generate JavaDoc for the generated implamentation of tested abstract class
+            if (JUnitSettings.getDefault().isJavaDoc()) {
+                StringBuffer    javadoc = new StringBuffer();
+                
+                javadoc.append("Generated implementation of abstract class ");
+                javadoc.append(sourceClass.getName().getFullName());
+                javadoc.append(". Please fill dummy bodies of generated methods.");
+
+                innerClass.getJavaDoc().setText(javadoc.toString());
+            }
+            createImpleConstructors(sourceClass, innerClass);
+        }
+
+        // retrieve all unimplemented abstract methods
+        methods = new LinkedList();
+        getAbstractClassMethods(sourceClass, methods);
+        
+        // created dummy implementation for all abstract methods
+        iterator = methods.iterator();
+        while (iterator.hasNext()) {
+            MethodElement origMethod = (MethodElement)iterator.next();
+            MethodElement newMethod = createMethodImpl(origMethod);
+
+            try {
+                innerClass.addMethod(newMethod);
+            } catch (SourceException e) {
+                //ignore as the method already exists
+            }
+        }
+
+        try {
+            targetClass.addClass(innerClass);
+        } catch (SourceException e) {
+            //ignore as the inner class already exists
+        }
+    }
      
-     static private void createImplMethods(MethodElement method) throws SourceException {
-         String body = null;
-         method.setModifiers(method.getModifiers() - Modifier.ABSTRACT);
-         
-         if (method.getReturn().equals(Type.VOID)) {
-             body = "";
-         } else if (method.getReturn().isClass()) {
-             body = "\nreturn null;\n";
-         } else {
-             if (method.getReturn().equals(Type.BOOLEAN)) {
-                 body = "\nreturn false;\n";
-             } else {
-                 body = "\nreturn 0;\n";
-             }
-         }
-         method.setBody(body);
-         
-         MethodParameter[] params = method.getParameters();
-         for (int i = 0; i < params.length; i++) {
-             params[i].setName("param" + String.valueOf(i));
-         }
+    static private MethodElement createMethodImpl(MethodElement origMethod) throws SourceException {
+        MethodElement   newMethod = (MethodElement)origMethod.clone();
+        StringBuffer    body = new StringBuffer();
+        int             mod = origMethod.getModifiers() & ~Modifier.ABSTRACT;
+
+// @@        System.out.println("createMethodImpl : " + origMethod.getName().getFullName());
+// @@        System.out.println("createMethodImpl : " + (null == origMethod.getDeclaringClass() ? "null" : "OK"));
+        if (origMethod.getDeclaringClass().isInterface())
+            mod |= Modifier.PUBLIC;
+        
+        newMethod.setModifiers(mod);
+
+        // prepare the body of method implementation
+        if (JUnitSettings.getDefault().isBodyComments())
+            body.append("\n//fill the body in order to provide useful implementation\n");
+        
+        if (newMethod.getReturn().isClass() || newMethod.getReturn().isArray()) {
+            body.append("\nreturn null;\n");
+        } else if (newMethod.getReturn().equals(Type.BOOLEAN)) {
+            body.append("\nreturn false;\n");
+        } else if (!newMethod.getReturn().equals(Type.VOID)) {
+            body.append("\nreturn 0;\n");
+        }
+        newMethod.setBody(body.toString());
+
+        return newMethod;
      }
      
      static private void createImpleConstructors(ClassElement sourceClass, ClassElement implInnerClass) throws SourceException {
@@ -531,80 +602,82 @@ public class TestCreator extends java.lang.Object {
          return paramString.toString();
      }
      
-     static private List getInterfaceMethods(ClassElement interfaceClass) {
-         
-         List interfaceMethods = new LinkedList();
-         
-         do {
-             MethodElement[] methods = interfaceClass.getMethods();
-             for (int i = 0; i < methods.length; i++) {
-                 if (0 == (methods[i].getModifiers() & Modifier.PRIVATE)) {
-                     interfaceMethods.add((MethodElement)methods[i].clone());
-                 }
-             }
-             try {
-                 Identifier[] interfaces = interfaceClass.getInterfaces();
-                 String interfaceName = interfaces[0].getFullName();
-                 interfaceClass = ClassElement.forName(interfaceName);
-             } catch (ArrayIndexOutOfBoundsException e) {
-                 interfaceClass = null;
-             }
-         } while (null != interfaceClass);         
-         return interfaceMethods;
-     }
+    static private LinkedList getInterfaceMethods(Identifier iface) throws SourceException {
+        LinkedList         interfaceMethods = new LinkedList();
+        MethodElement[]    methods;
+        Identifier[]       interfaces;
+        ClassElement       ifaceClass;
+
+        // add all methods of current inetrface
+        ifaceClass = ClassElement.forName(iface.getFullName());
+        methods = ifaceClass.getMethods();
+        for (int i = 0; i < methods.length; i++)
+            interfaceMethods.add(methods[i]);
+
+        // add methods of all implemented interfaces
+        interfaces = ifaceClass.getInterfaces();
+        for(int i = 0; i < interfaces.length; i++) {
+            // name duplicities should be rare and will be discovered during impl generation
+            interfaceMethods.addAll(getInterfaceMethods(interfaces[i]));
+        }
+
+        return interfaceMethods;
+    }
      
-     static private List getAbstractClassMethods(ClassElement sourceClass) {
-         
-         List abstractMethods = new LinkedList();
-         MethodElement[] methods = sourceClass.getMethods();
-         for (int i = 0; i < methods.length; i++) {
-             if (0 != (methods[i].getModifiers() & Modifier.ABSTRACT)) { 
-                 abstractMethods.add((MethodElement)methods[i].clone());
-             }
-         }
-         
-         return abstractMethods; 
-     }
-     
-     static private void addMethodsToList(MethodElement[] methods, List methodList) {
-         for (int i = 0; i < methods.length; i++) {
-             if ((0 == (methods[i].getModifiers() & Modifier.ABSTRACT)) &&
-                 (0 == (methods[i].getModifiers() & Modifier.PRIVATE))) {
-                 
-                     methodList.add(methods[i]);
-             }
-         }
-         
-     }
-     
-    static private List getAllUnimplementedMethods(ClassElement sourceClass) {
-     ClassElement currentClass = (ClassElement)sourceClass.clone();
-     List allMethods = new LinkedList();
-     List abstractMethods = new LinkedList();
-     List allSuspectMethods = new LinkedList();
+    static private void getAbstractClassMethods(ClassElement sourceClass, LinkedList abstractMethods) throws SourceException {
+        MethodElement[] methods;
+        Identifier[]    interfaces;
+        Identifier      superClassId;
 
-     do {
-         addMethodsToList(currentClass.getMethods(), allMethods);
+// @@        System.out.println("getAbstractClassMethods : " + sourceClass.getName().getFullName());
+        
+        // given bag of abstract methods of classe's descendant should be
+        // checked for those, which current class implements itself
+        removeImplemented(sourceClass, abstractMethods, false);
+        
+        // add abstract methods of all implemented ifaces
+        interfaces = sourceClass.getInterfaces();
+        for(int i = 0; i < interfaces.length; i++) {
+            LinkedList  ifaceAbstracts = getInterfaceMethods(interfaces[i]);
 
-         Identifier[] interfaces = currentClass.getInterfaces();
-         for (int i = 0; i < interfaces.length; i++) {
-             allSuspectMethods.addAll(getInterfaceMethods(ClassElement.forName(interfaces[i].getFullName())));
-         }
-         allSuspectMethods.addAll(getAbstractClassMethods(currentClass));
+            // remove implemented methods
+            removeImplemented(sourceClass, ifaceAbstracts, false);
+            abstractMethods.addAll(ifaceAbstracts);
+        }
 
-         Iterator iterator = allSuspectMethods.iterator();
-
-         while (iterator.hasNext()) {
-             MethodElement currentMethod = (MethodElement)iterator.next();
-             if (!existsMethod(allMethods, currentMethod)) {
-                 abstractMethods.add(currentMethod);
-             }
-         }
-
-         currentClass = ClassElement.forName(currentClass.getSuperclass().getFullName());
-     } while ((null != currentClass) && (0 != (currentClass.getModifiers() & Modifier.ABSTRACT)));
-
-     return abstractMethods;
+        // add all own abstract methods
+        methods = sourceClass.getMethods();
+        for (int i = 0; i < methods.length; i++) {
+            if (0 != (methods[i].getModifiers() & Modifier.ABSTRACT))
+                abstractMethods.add((MethodElement)methods[i]);
+        }
+        
+        // recurse for superclass if it is abstract or remove methods implemented by superclass
+        if (null != (superClassId = sourceClass.getSuperclass())) {
+            ClassElement superClass = ClassElement.forName(superClassId.getFullName());
+            if (null != superClass) {
+                if (0 != (superClass.getModifiers() & Modifier.ABSTRACT))
+                    getAbstractClassMethods(superClass, abstractMethods);
+                else
+                    removeImplemented(superClass, abstractMethods, true);
+            }
+        }
     }
 
+    private static void removeImplemented(ClassElement implementor, LinkedList methods, boolean traverseAll) throws SourceException {
+        Identifier  superClass;
+        Iterator    it = methods.iterator();
+        while (it.hasNext()) {
+            MethodElement m = (MethodElement)it.next();
+            if (isImplemented(implementor, m)) {
+                it.remove();
+            }
+        }
+        
+        if (traverseAll && null != (superClass = implementor.getSuperclass())) {
+            ClassElement superClassElemenet = ClassElement.forName(superClass.getFullName());
+            if (null != superClassElemenet)
+                removeImplemented(superClassElemenet, methods, true);
+        }
+    }
 }
