@@ -851,7 +851,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../xml/core" target="netbeans"/>
   </target>
 
-  <target name="all-xml/tax" depends="build-platform,all-xml/api,all-xml/core">
+  <target name="all-xml/tax" depends="build-platform,all-xml/api,all-xml/core, all-libs/xerces">
       <echo message="Building module xml/tax..."/>
       <ant dir="../xml/tax" target="netbeans"/>
   </target>

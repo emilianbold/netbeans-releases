@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
       <patternset id="xml/tax.files">
         <include name="${nb.modules/autoload.dir}/xml-tax.jar"/>
         <include name="${nb.modules/autoload.dir}/ext/tax.jar"/>
-        <include name="${nb.modules/autoload.dir}/ext/xerces2.jar"/>
+        <!--<include name="${nb.modules/autoload.dir}/ext/xerces2.jar"/>-->
       </patternset>
       <path id="cp">
          <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>

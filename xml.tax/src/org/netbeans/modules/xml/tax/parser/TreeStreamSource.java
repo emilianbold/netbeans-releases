@@ -113,11 +113,17 @@ public class TreeStreamSource implements TreeInputSource {
      */
     private TreeBuilder getImplementation () {
     
-        ParserLoader loader = ParserLoader.getInstance();
+        ClassLoader loader;
+
+        if (Boolean.getBoolean("netbeans.tax.use_private_xni_impl")) {  // NOI18N
+            loader = ParserLoader.getInstance();
         if (loader == null) {
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Can not get loader."); // NOI18N
 
             return null;
+        }
+        } else {
+            loader = TreeBuilder.class.getClassLoader();  // we need TAX module classloader which sees Xerces 2.4.0 library
         }
         
         Class impl_c = null;

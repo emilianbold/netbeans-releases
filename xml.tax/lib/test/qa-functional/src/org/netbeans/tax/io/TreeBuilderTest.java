@@ -83,7 +83,8 @@ public class TreeBuilderTest extends XTest {
         final PrintStream errStream = new PrintStream(errOut);
         
         try {
-            ClassLoader myl = ParserLoader.getInstance();
+            // ClassLoader myl = ParserLoader.getInstance();
+            ClassLoader myl = getClass().getClassLoader();
             InputSource in = new InputSource(new InputStreamReader(this.getClass().getResourceAsStream(name)));
             in.setSystemId(getClass().getResource(name).toExternalForm());
             

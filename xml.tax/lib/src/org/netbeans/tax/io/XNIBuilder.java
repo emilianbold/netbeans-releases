@@ -22,6 +22,9 @@ import org.xml.sax.*;
 import org.xml.sax.helpers.LocatorImpl;
 
 import org.apache.xerces.xni.*;
+import org.apache.xerces.xni.parser.XMLDTDSource;
+import org.apache.xerces.xni.parser.XMLDTDContentModelSource;
+import org.apache.xerces.xni.parser.XMLDocumentSource;
 import org.apache.xerces.parsers.*;
 
 import org.netbeans.tax.*;
@@ -42,7 +45,7 @@ import java.util.List;
  * be needed (JAXP validation on request could be a good approach).
  *
  * @author  Petr Kuzel
- * @version in progress...
+ * @version rewritten to XNI 2.4.0
  */
 public final class XNIBuilder implements TreeBuilder {
         
@@ -116,7 +119,8 @@ public final class XNIBuilder implements TreeBuilder {
             builder.setFeature (SAX_FEATURE + "external-general-entities", true); // NOI18N
             builder.setFeature (SAX_FEATURE + "external-parameter-entities", true); // NOI18N
             builder.setFeature (XERCES_FEATURE + "validation/warn-on-duplicate-attdef", true); // NOI18N
-            builder.setFeature (XERCES_FEATURE + "validation/warn-on-undeclared-elemdef", true); // NOI18N
+            // unrecognized in Xerces 2.4.0
+            //builder.setFeature (XERCES_FEATURE + "validation/warn-on-undeclared-elemdef", true); // NOI18N
             builder.setFeature (XERCES_FEATURE + "allow-java-encodings", true); // NOI18N
             builder.setFeature (XERCES_FEATURE + "scanner/notify-char-refs", true); // NOI18N
             builder.setFeature (XERCES_FEATURE + "scanner/notify-builtin-refs", true); // NOI18N
@@ -272,6 +276,11 @@ public final class XNIBuilder implements TreeBuilder {
         
         private RememberingReader rememberingReader;
 
+        private XMLDTDSource xmldtdSource;  // XMLDTDHandler 2.4.0
+
+        private XMLDTDContentModelSource xmldtdContentModelSource; // XMLDTDContentModelHandler 2.4.0
+
+        private XMLDocumentSource xmlDocumentSource; // XMLDocumentHanlder 2.4.0
 
         /**
          * Create a parser with standard configuration.
@@ -308,15 +317,30 @@ public final class XNIBuilder implements TreeBuilder {
             super.parse (in);
         }
         
+
         //
         // XMLDocumentHandler methods
         //
         
+        public XMLDocumentSource getDocumentSource() {
+            return xmlDocumentSource;
+        }
+
+        public void setDocumentSource(XMLDocumentSource src) {
+            xmlDocumentSource = src;
+        }
+
+        // XMLDocumentHandler 2.4.0
+        public void startDocument (XMLLocator locator, String encoding, NamespaceContext nsCtx, Augmentations a) {
+            startDocument(locator, encoding, a);
+        }
+
         /**
          * The start of the document.
          *
          * @throws SAXException Thrown by handler to signal an error.
          */
+        // XMLDocumentHandler 2.0.0b4
         public void startDocument (XMLLocator locator, String encoding, Augmentations a) {
             
             trace ("startDocument()"); // NOI18N
@@ -354,6 +378,7 @@ public final class XNIBuilder implements TreeBuilder {
         } // xmlDecl(String,String,String)
         
         
+        // XMLDTDHandler 2.4.0 and XMLDocumentHandler > 2.0.0b4
         public void textDecl (String version, String encoding, Augmentations a) {
             
             trace ("textDecl()"); // NOI18N
@@ -368,7 +393,7 @@ public final class XNIBuilder implements TreeBuilder {
             }
         }
 
-        //??? DTDHAndler
+        // XMLDTDHAndler 2.0.0b4
         public void textDecl (String version, String encoding) {
             textDecl(version, encoding, null);
         }
@@ -696,7 +721,12 @@ DOCTYPE_LOOP:
         } // characters(XMLString)
   
         
-        //??? DTDHandler
+        // XMLDTDHandler 2.4.0
+        public void ignoredCharacters (XMLString text, Augmentations a) {
+            characters( text, null);
+        }
+
+        // XMLDTDHandler 2.0.0b4
         public void characters (XMLString text) {
             characters( text, null);
         }
@@ -728,7 +758,6 @@ DOCTYPE_LOOP:
                 throw new XNIException (exc);
             }
         } // endElement(QName)
-        
         
         /**
          * The start of a CDATA section. Buffer its content.
@@ -782,13 +811,31 @@ DOCTYPE_LOOP:
             // not interested
         }
         
+        // XMLDTDHandler 2.4.0
+        public void startExternalSubset(XMLResourceIdentifier entity, Augmentations a) {
+            startEntity(
+                "[dtd]", entity.getPublicId(), entity.getLiteralSystemId(),
+                entity.getBaseSystemId(), null, a
+            );
+        }
+
+        public void startGeneralEntity(String name, XMLResourceIdentifier entity, String encoding, Augmentations a) {
+            startEntity(
+                name, entity.getPublicId(), entity.getLiteralSystemId(),
+                entity.getBaseSystemId(), encoding, a
+            );
+        }
+
         /**
          * This method notifies of the start of an entity. The document entity
          * has the pseudo-name of "[xml]"; The DTD has the pseudo-name of "[dtd];
          * parameter entity names start with '%'; and general entity names are
          * just the entity name.
+         *
+         * @param encoding special value of "IGNORE" markg parameter
+         *        entities in DTD markup (these are ignored)
          */
-        public void startEntity (String name, String publicId, String systemId,
+        private void startEntity (String name, String publicId, String systemId,
         String baseSystemId, String encoding, Augmentations a) {
             
             trace ("startEntity(" + name + ")"); // NOI18N
@@ -868,15 +915,28 @@ DOCTYPE_LOOP:
         } // startEntity(String,String,String,String)
         
 
-        //??? DTDHandler
+        // XMLDTDHandler 2.0.0b4
         public void startEntity (String name, String publicId, String systemId,
         String baseSystemId, String encoding) {
             startEntity(name, publicId, systemId, baseSystemId, encoding, null);
         }
         
+        // XMLDTDHanlder 2.4.0
+        public void startParameterEntity(String name, XMLResourceIdentifier entity, String encoding, Augmentations a) {
+            String pname = name;
+            if (false == name.startsWith("%")) {
+                pname = "%" + name;
+            }
+            startEntity(
+                pname, entity.getPublicId(), entity.getLiteralSystemId(),
+                entity.getBaseSystemId(), encoding, a
+            );
+        }
+
         /**
          * A comment.
          */
+        // XMLDTDHandler 2.4.0 and XMLDocumentHandler
         public void comment (XMLString text, Augmentations a) {
             
             trace ("comment()"); // NOI18N
@@ -890,7 +950,7 @@ DOCTYPE_LOOP:
             }
         } // comment(XMLString)
         
-        //??? DTDHandler
+        // XMLDTDHandler 2.0.0b4
         public void comment (XMLString text) {
             comment(text, null);
         }
@@ -900,6 +960,7 @@ DOCTYPE_LOOP:
          * target name and, optionally, text data. The data is only meaningful
          * to the application.
          */
+        // XMLDTDHandler 2.4.0 and XMLDocumentHandler > 2.0.0b4
         public void processingInstruction (String target, XMLString data, Augmentations a) {
             
             trace ("processingInstruction(" + target + ")"); // NOI18N
@@ -913,18 +974,36 @@ DOCTYPE_LOOP:
             }
         } // processingInstruction(String,XMLString)
 
-        //??? DTDHandler
+        // XMLDTDHandler 2.0.0b4
         public void processingInstruction (String target, XMLString data) {
             processingInstruction( target, data, null);
         }
         
+        // XMLDTDHandler 2.4.0
+        public void endExternalSubset(Augmentations a) {
+            endEntity("[dtd]", a);
+        }
+
+        // XMLDTDHandler 2.4.0
+        public void endParameterEntity(String name, Augmentations a) {
+            String pname = name;
+            if (false == name.startsWith("%")) {
+                pname = "%" + name;
+            }
+            endEntity(pname, a);
+        }
+
+        public void endGeneralEntity(String name, Augmentations a) {
+            endEntity(name, a);
+        }
+
         /**
          * This method notifies the end of an entity. The document entity has
          * the pseudo-name of "[xml]"; the DTD has the pseudo-name of "[dtd];
          * parameter entity names start with '%'; and general entity names are
          * just the entity name.
          */
-        public void endEntity (String name, Augmentations a) {
+        private void endEntity (String name, Augmentations a) {
             trace ("endEntity(" + name + ")");  // NOI18N
             
             // skip for root entities of XML documents and
@@ -954,11 +1033,27 @@ DOCTYPE_LOOP:
             endEntity(name, null);
         }
         
-        // ~~~~~~~~~~~~~ XMLDTDHandler methods ~~~~~~~~~~~~~~~~~~~~~~~~~
+        // XMLDTDHandler methods ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        // XMLDTDHandler 2.4.0
+        public XMLDTDSource getDTDSource() {
+            return xmldtdSource;
+        }
+
+        // XMLDTDHandler 2.4.0
+        public void setDTDSource( XMLDTDSource src) {
+            xmldtdSource = src;
+        }
+
+        // XMLDTDHandler 2.0.0b4
+        public void startDTD ( XMLLocator locator, Augmentations a) {
+            startDTD(locator);
+        }
         
         /**
          * The start of the DTD (external part of it is reported by startEntity).
          */
+        // XMLDTDHandler 2.0.0b4
         public void startDTD ( XMLLocator locator) {
             trace ("startDTD()");  // NOI18N
             
@@ -980,9 +1075,15 @@ DOCTYPE_LOOP:
             }
         } // startDTD()
         
+        // XMLDTDHandler 2.4.0
+        public void elementDecl (String name, String contentModel, Augmentations a) {
+            elementDecl(name, contentModel);
+        }
+
         /**
          * An element declaration.
          */
+        // XMLDTDHandler 2.0.0b4
         public void elementDecl (String name, String cM) {
             trace ("elementDecl(" + name + ")"); // NOI18N
             if (ASSERT)
@@ -997,9 +1098,15 @@ DOCTYPE_LOOP:
             
         } // elementDecl(String,String)
         
+        // XMLDTDHandler 2.4.0
+        public void startAttlist (String elementName, Augmentations a) {
+            startAttlist(elementName);
+        }
+
         /**
          * The start of an attribute list.
          */
+        // XMLDTDHandler 2.0.0b4
         public void startAttlist (String elementName) {
             
             trace ("startAttlist(" + elementName + ")"); // NOI18N
@@ -1013,9 +1120,21 @@ DOCTYPE_LOOP:
             }
         } // startAttlist(String)
         
+        // XMLDTDHandler 2.4.0
+        public void attributeDecl(String elementName, String attributeName,
+                                  String type, String[] enumeration,
+                                  String defaultType, XMLString defaultValue,
+                                  XMLString nonNormalizedDefaultValue, Augmentations a) {
+            attributeDecl(
+                elementName, attributeName, type,
+                enumeration, defaultType, defaultValue
+            );
+        }
+
         /**
          * An attribute declaration.
          */
+        // XMLDTDHandler 2.0.0b4
         public void attributeDecl (String elementName, String attributeName,
                                    String type, String[] enumeration,
                                    String defaultType, XMLString defaultValue) {
@@ -1051,9 +1170,15 @@ DOCTYPE_LOOP:
             }
         } // attributeDecl(String,String,String,String[],String,XMLString)
         
+        // XMLDTDHandler 2.4.0
+        public void endAttlist (Augmentations a) {
+            endAttlist();
+        }
+
         /**
          * The end of an attribute list.
          */
+        // XMLDTDHandler 2.0.0b4
         public void endAttlist () {
             
             trace ("endAttlist()"); // NOI18N
@@ -1061,6 +1186,11 @@ DOCTYPE_LOOP:
             attlistDecl = null;
         } // endAttlist()
         
+        // XMLDTDHandler 2.4.0
+        public void internalEntityDecl (String name, XMLString text, XMLString nonNormalizedText, Augmentations a)  {
+            internalEntityDecl(name, text, nonNormalizedText);
+        }
+
         /**
          * An internal entity declaration.
          *
@@ -1068,6 +1198,7 @@ DOCTYPE_LOOP:
          *             '%', whereas the name of a general entity is just the
          *             entity name.
          */
+        // XMLDTDHandler 2.0.0b4
         public void internalEntityDecl (String name, XMLString text, XMLString nonNormalizedText)  {
             
             trace ("internalEntityDecl(" + name + ")"); // NOI18N
@@ -1083,6 +1214,12 @@ DOCTYPE_LOOP:
             }
         } // internalEntityDecl(String,XMLString)
         
+        // XMLDTDHandler 2.4.0
+        public void externalEntityDecl (String name, String publicId,
+        String systemId, String baseSystemId, Augmentations a) {
+            externalEntityDecl( name, publicId, systemId, baseSystemId);
+        }
+
         /**
          * An external entity declaration.
          *
@@ -1090,6 +1227,7 @@ DOCTYPE_LOOP:
          *                 with '%', whereas the name of a general entity is just
          *                 the entity name.
          */
+        // XMLDTDHandler 2.0.0b4
         public void externalEntityDecl (String name, String publicId,
         String systemId, String baseSystemId) {
             
@@ -1107,9 +1245,17 @@ DOCTYPE_LOOP:
             }
         } // externalEntityDecl(String,String,String)
         
+        // XMLDTDHAnlder 2.4.0
+        public void unparsedEntityDecl (String name,
+        String publicId, String systemId,
+        String notation, Augmentations a) {
+            unparsedEntityDecl(name, publicId, systemId, notation);
+        }
+
         /**
          * An unparsed entity declaration.
          */
+        // XMLDTDHAnlder 2.0.0b4
         public void unparsedEntityDecl (String name,
         String publicId, String systemId,
         String notation) {
@@ -1123,9 +1269,15 @@ DOCTYPE_LOOP:
             }
         } // unparsedEntityDecl(String,String,String,String)
         
+        // XMLDTDHandler 2.4.0
+        public void notationDecl (String name, String publicId, String systemId, Augmentations a) {
+            notationDecl(name, publicId, systemId);
+        }
+
         /**
          * A notation declaration
          */
+        // XMLDTDHandler 2.0.0b4
         public void notationDecl (String name, String publicId, String systemId) {
             
             trace ("notationDecl(" + name + ")"); // NOI18N
@@ -1137,12 +1289,18 @@ DOCTYPE_LOOP:
             }
         } // notationDecl(String,String,String)
         
+        // XMLDTDHandler 2.4.0
+        public void startConditional (short type, Augmentations a) {
+            startConditional(type);
+        }
+
         /**
          * The start of a conditional section.
          *
          * @param type The type of the conditional section. This value will
          *             either be CONDITIONAL_INCLUDE or CONDITIONAL_IGNORE.
          */
+        // XMLDTDHandler 2.0.0b4
         public void startConditional (short type) {
             trace ("startConditional(" + type + ")"); // NOI18N
             if (ASSERT)
@@ -1160,20 +1318,32 @@ DOCTYPE_LOOP:
             
         } // startConditional(short)
         
+        // XMLDTDHandler 2.4.0
+        public void endConditional (Augmentations a) {
+            endConditional();
+        }
+
         /**
          * The end of a conditional section.
          */
+        // XMLDTDHandler 2.0.0b4
         public void endConditional () {
             trace ("endConditional()");  // NOI18N
             
             popParentNode ();
         } // endConditional()
         
+        // XMLDTDHandler 2.4.0
+        public void endDTD (Augmentations a) {
+            endDTD();
+        }
+
         /**
          * The end of the DTD.
          *
          * @throws SAXException Thrown by handler to signal an error.
          */
+        // XMLDTDHandler 2.0.0b4
         public void endDTD () {
             trace ("endDTD()");  // NOI18N
             
@@ -1197,14 +1367,21 @@ DOCTYPE_LOOP:
         } // endDTD()
         
         
-        // ~~~~~~~~~~~~~~~~~ Content Model parser ~~~~~~~~~~~~~~~~~~~
-        
+        // Content Model parser ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         
         private TreeElementDecl.ContentType lastType;     // occurence operators are applied on this
         private TreeElementDecl.ContentType contentModel; // OUTPUT result field
         private Stack contentModelMembersStack;           // stack of parent group members
         
-        public void startContentModel (String elementName) {
+        public XMLDTDContentModelSource getDTDContentModelSource() {
+            return xmldtdContentModelSource;
+        }
+
+        public void setDTDContentModelSource(XMLDTDContentModelSource src) {
+            xmldtdContentModelSource = src;
+        }
+
+        public void startContentModel (String elementName, Augmentations a) {
             
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("startContentModel(" + elementName + ")"); // NOI18N
             
@@ -1213,27 +1390,27 @@ DOCTYPE_LOOP:
             
         }
         
-        public void any () {
+        public void any (Augmentations a) {
             contentModel = new ANYType ();
         }
         
-        public void empty () {
+        public void empty (Augmentations a) {
             contentModel = new EMPTYType ();
         }
         
-        public void pcdata () {
+        public void pcdata (Augmentations a) {
             setMembersType (new MixedType ());
         }
         
         
         // it is not called for mixed type
-        public void startGroup () {
+        public void startGroup (Augmentations a) {
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("startGroup()"); // NOI18N
 
             startMembers ();
         }
         
-        public void element (String elementName) {
+        public void element (String elementName, Augmentations a) {
             
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("element(" + elementName + ")"); // NOI18N
             
@@ -1242,7 +1419,7 @@ DOCTYPE_LOOP:
         }
         
         // determine type of content model group
-        public void separator (short separator) {
+        public void separator (short separator, Augmentations a) {
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("childrenSeparator()"); // NOI18N
             
             switch (separator) {
@@ -1260,7 +1437,7 @@ DOCTYPE_LOOP:
         //
         // INPUT lastType field
         //
-        public void occurrence (short occurrence) {
+        public void occurrence (short occurrence, Augmentations a) {
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("childrenOccurrence()"); // NOI18N
             
             switch (occurrence) {
@@ -1279,7 +1456,7 @@ DOCTYPE_LOOP:
             
         }
         
-        public void endGroup () {
+        public void endGroup (Augmentations a) {
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("childrenEndGroup()"); // NOI18N
 
             ChildrenType group = getMembersType ();
@@ -1288,7 +1465,7 @@ DOCTYPE_LOOP:
             addMember (lastType);
         }
         
-        public void endContentModel () {
+        public void endContentModel (Augmentations a) {
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("endContentModel()"); // NOI18N
 
             if (contentModel == null && lastType == null) { // #PCDATA
@@ -1510,7 +1687,7 @@ DOCTYPE_LOOP:
             if ( Util.THIS.isLoggable() ) {
                 String location = "";
                 if (locator != null) {
-                    String entity = locator.getSystemId ();
+                    String entity = locator.getExpandedSystemId ();
                     int index = entity.lastIndexOf ('/');
                     entity = entity.substring (index > 0 ? index : 0);
                     location =  entity + "/" + locator.getLineNumber () + ":" + locator.getColumnNumber () ;
