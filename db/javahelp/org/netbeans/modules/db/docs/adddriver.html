@@ -1,0 +1,121 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+ *        Copyright (C) 2000  Sun Microsystems, Inc
+ *                    All rights reserved.
+ *          Notice of copyright on this source code
+ *          product does not indicate publication.
+ *
+ * RESTRICTED RIGHTS LEGEND: Use, duplication, or disclosure by
+ * the U.S. Government is subject to restrictions as set forth
+ * in subparagraph (c)(1)(ii) of the Rights in Technical Data
+ * and Computer Software Clause at DFARS 252.227-7013 (Oct. 1988)
+ * and FAR 52.227-19 (c) (June 1988).
+ *
+ *    Sun Microsystems, Inc., 901 San Antonio Road,
+ *    Palo Alto, California 94303 U.S.A.
+ *
+-->
+<html>
+<head>
+<title>Adding a New Driver</title>
+</head>
+
+<body bgColor=#ffffff>
+<h2>Adding a New Driver</h2>
+
+You can add any one of the predefined drivers available under Runtime | Databases
+| Drivers. <br>
+After you add a driver, you can test the driver to ensure that it is compatible
+with Database Explorer.
+<p> <b>To add your own driver:</b> </p>
+<ol>
+  <li>Right click on Drivers or a specific driver under Drivers.</li>
+  <li>Choose Add driver. A dialog appears to enable you to add a new driver.</li>
+  <li>Specify a Driver name for the new driver. The IDE uses this name only
+      for display purposes. </li>
+  <li>In the Driver URL, provide the fully qualified driver class name, for example:<br>
+    <code>COM.pointbase.jdbc.jdbcUniversalDriver</code>. 
+  <li>Provide the URL, for example:<br>
+    <code>jdbc:pointbase://embedded[:<PORT>]/<DB></code>.
+    <eul> 
+<table>
+ <tr><!--"Tip" to be replaced by a gif-->
+      <td valign="top" width="30" height="37"><b><img src="images/tip.gif" width="12" height="12"></b></td>
+       <td valign="top" align=left height="37"> The driver (usually in a JAR
+          or ZIP archive) must be in the Forte for Java CLASSPATH..</td>
+      </tr>
+    </table>
+  </li>
+  <li> In the Database URL prefix, enter a template for the URLs of connections
+    you want to make <br>
+    using this driver. The template can represent a URL that is not the real URL;
+    you can complete the URL later<br>
+    when you connect. For example, you can now add <code>jdbc:pointbase://embedded[:<PORT>]/<DB>
+    </code> </li>
+  <li>Click OK to add the new driver to the list. </li>
+  <li> Later, you can remove drivers by selecting them in the Explorer and pressing
+    Delete, <br>
+    or you can open the<br>
+    property sheet and modify their configuration. </li>
+</ol>
+<p> Note: Adding a new driver just creates a template for new connections; Forte
+  for Java does not actually try to <br>
+  use that driver or check to make sure it is the correct one until a connection
+  is made using the driver.. </p>
+
+<p> <b>To test a connected driver:</b>
+<ol>
+  <li> Right-click on the driver or connection in the Explorer and select Test
+    Driver from the context menu.
+  <li> In the dialog that appears, enter the connection information (database
+    URL, user name,<br>
+    and password) and click OK.
+  <li>If all values shown in the output correspond with the actual database, you
+    can use the drive.
+  <li> If an "unsupported exception" appears, test to make sure that the data
+    displayed in the output window is<br>
+    valid -- for example, that the number of tables or columns in the table corresponds
+    with the actual data
+</ol>
+
+<table>
+<tr><!--"Tip" to be replaced by a gif-->
+    <td valign="top" width="30" height="37"><b><img src="images/tip.gif" width="12" height="12"></b></td>
+    <td valign="top" align=left height="37"> The system returns the "Internal
+      test driver failed" message whenever it finds a return value of 0<br>
+      or an exception. If your database is empty or a table has no foreign references,
+      the driver might<br>
+      not be the problem.</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<th colspan=2 align=left>See also</th>
+</tr>
+<tr>
+<td width="30"></td>
+    <td> <a href="dbadapt.html">Using a Database Adaptor to Replace Missing
+      Metadata</a><br>
+      <a href="connectdb.html">Connecting to a Database</a> <br>
+      <a href="connusupp.html">Connecting to Unsupported Databases </a></td>
+</tr>
+</table>
+
+<hr>
+<font size=-2><a href="credits.html">Legal Notices</a></font>
+</body>
+</html>

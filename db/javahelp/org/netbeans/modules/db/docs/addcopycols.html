@@ -1,0 +1,83 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--       
+ *        Copyright (C) 2000  Sun Microsystems, Inc
+ *                    All rights reserved.
+ *          Notice of copyright on this source code 
+ *          product does not indicate publication. 
+ * 
+ * RESTRICTED RIGHTS LEGEND: Use, duplication, or disclosure by 
+ * the U.S. Government is subject to restrictions as set forth 
+ * in subparagraph (c)(1)(ii) of the Rights in Technical Data
+ * and Computer Software Clause at DFARS 252.227-7013 (Oct. 1988) 
+ * and FAR 52.227-19 (c) (June 1988).
+ *
+ *    Sun Microsystems, Inc., 901 San Antonio Road,
+ *    Palo Alto, California 94303 U.S.A.
+ *
+-->
+<html>
+<head>
+<title>Adding Database Columns</title>
+</head>
+
+<body bgColor=#ffffff>
+<h2>Adding Database Columns</h2>
+
+In addition to adding columns while creating a new table, you can add columns 
+to an existing table in the database using Add column. 
+<p> <b>To add columns to an existing table:</b></p>
+<ol>
+  <li>Select Add column in the pop-up menu for the table node or for an existing 
+    column in the table. <br>
+    Forte for Java opens a dialog for you to enter values for the column. </li>
+  <li>Enter the Name of the column. This is the name used by SQL. </li>
+  <li>Select constraints you want for column values (Primary key, and Unique or 
+    Null).<br>
+    If you select the Primary key checkbox, the column is included in the primary 
+    key, and <br>
+    you need to choose an index. </li>
+  <li>If you want to use an index, check the Index checkbox and select an index 
+    from the drop-down list. </li>
+  <li>You can optionally use the Checkcheckbox to enter constraints to be checked 
+    <br>
+    while inserting or updating data in that column. </li>
+</ol>
+<table>
+<tr><!--"Tip" to be replaced by a gif-->
+    <td valign="top" width="30"><b>Note</b></td>
+    <td valign="top" align=left> The ability to add or copy columns depends on 
+      the database you use: <br>
+      if your database system allows you to alter tables containing data, <br>
+      you can use it on non-empty tables,<br>
+      but some systems might require the table to be empty.</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<th colspan=2 align=left>See also</th>
+</tr>
+<tr>
+<td width="30"></td>
+    <td> <a href="createtables.html">Creating Tables</a> <br>
+    </td>
+</tr>
+</table>
+
+<hr>
+<font size=-2><a href="credits.html">Legal Notices</a></font> 
+</body>
+</html>

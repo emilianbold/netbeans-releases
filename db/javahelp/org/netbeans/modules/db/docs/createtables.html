@@ -1,0 +1,106 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+ *        Copyright (C) 2000  Sun Microsystems, Inc
+ *                    All rights reserved.
+ *          Notice of copyright on this source code
+ *          product does not indicate publication.
+ *
+ * RESTRICTED RIGHTS LEGEND: Use, duplication, or disclosure by
+ * the U.S. Government is subject to restrictions as set forth
+ * in subparagraph (c)(1)(ii) of the Rights in Technical Data
+ * and Computer Software Clause at DFARS 252.227-7013 (Oct. 1988)
+ * and FAR 52.227-19 (c) (June 1988).
+ *
+ *    Sun Microsystems, Inc., 901 San Antonio Road,
+ *    Palo Alto, California 94303 U.S.A.
+ *
+-->
+<html>
+<head>
+<title>Creating Tables</title>
+</head>
+
+<body bgColor=#ffffff>
+<h2> Creating Tables</h2>
+<p>Forte for Java enables you to create a database table with columns and to add
+  this table to database. You can open the Create table dialog in either:</p>
+<ol>
+  <li>The pop-up menu for Tables, or</li>
+  <li>The pop-up menus for existing tables.</li>
+</ol>
+<p> You can create a table for one database at time. </p>
+<p> <b>To create a table using the Create table dialog:</b></p>
+<ol>
+  <li> Enter the Table name. This name must follow conventions for table names
+    your database; case is usually<br>
+    insignificant and you must not use spaces. </li>
+  <li> Select the Owner of the new table from the possible names of database users
+    offered to you in the dialog.<br>
+    The dialog defaults to the name by which you are connected. </li>
+  <li>Click Add column or Remove to add or remove columns from the table. Each
+    displayed row will be a <br>
+    column in the new table. </li>
+  <li>Once you have specified Name, Type, and Size, the table is created. All
+    other properties are optional,<br>
+    according to your needs. See the description of Add column for details on
+    customizing your table. </li>
+  <li>Click OK to create the table. </li>
+</ol>
+<p> <b>Using a database snapshot to recreate a table and its structure without
+  data:</b></p>
+<ol>
+  <li>Right-click on a table.</li>
+  <li>Select Grab structure.</li>
+  <li>Forte for Java prompts you for a file name in which to save the structure
+    of the table (the table definition.)</li>
+  <li>Select Recreate table from the context menu of the Tables node, or</li>
+  <li>Select Recreate table from the node of any table under the Tables node.</li>
+  <li>Select a file name to load to send the proper SQL commands to the database
+    to recreate a table.</li>
+
+</ol>
+<p><b>Recreating tables in a different database:</b></p>
+<p>You can recreate tables in a different database from the one from which you
+  saved the structure, even if the SQL syntax to<br>
+  create the second database is different from the syntax of the first. You can
+  thus create database-independent schemas<br>
+  with the Database Explorer. To do so, you can, for example:</p>
+<ol>
+  <li>Develop a complete application with a Pointbase database. </li>
+  <li>For deployment, transfer the table structures to an Oracle database to create
+    the Oracle database without editing SQL .</li>
+</ol>
+
+
+
+<table>
+<tr>
+<th colspan=2 align=left>See also</th>
+</tr>
+<tr>
+<td width="30"></td>
+    <td>
+      <p><a href="browstruct.html">Browsing Structures</a><br>
+      <a href="manipsql.html">Enabling and Disabling Debug Mode to Monitor SQL Commands</a><br>
+      <a href="addcopycols.html">Adding and Copying Database Columns </a></p>
+    </td>
+</tr>
+</table>
+
+<hr>
+<font size=-2><a href="credits.html">Legal Notices</a></font>
+</body>
+</html>

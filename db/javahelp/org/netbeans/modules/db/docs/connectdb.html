@@ -1,0 +1,105 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+ *        Copyright (C) 2000  Sun Microsystems, Inc
+ *                    All rights reserved.
+ *          Notice of copyright on this source code
+ *          product does not indicate publication.
+ *
+ * RESTRICTED RIGHTS LEGEND: Use, duplication, or disclosure by
+ * the U.S. Government is subject to restrictions as set forth
+ * in subparagraph (c)(1)(ii) of the Rights in Technical Data
+ * and Computer Software Clause at DFARS 252.227-7013 (Oct. 1988)
+ * and FAR 52.227-19 (c) (June 1988).
+ *
+ *    Sun Microsystems, Inc., 901 San Antonio Road,
+ *    Palo Alto, California 94303 U.S.A.
+ *
+-->
+<html>
+<head>
+<title>Connecting to a Database</title>
+</head>
+
+<body bgColor=#ffffff>
+<h2>Connecting to a Database </h2>
+
+<p>There are two ways to open the New connection dialog, which lets you connect
+  Forte for Java to a database. </p>
+<ol>
+  <li>In the pop-up menu for Databases or for any existing connection, select
+    Add connection.</li>
+  <li> In the pop-up menu for a driver select Connect using... to preselect the
+    driver.</li>
+</ol>
+<p> <b>Enter the following in the Connect using... dialog:</b></p>
+<ol>
+  <li>Ensure the correct driver is selected in Driver name. </li>
+  <li> Provide the JDBC URL for the database connection in the Database URL. </li>
+  <p>This URL typically begins with <code>jdbc:</code>, followed by a short code
+    name for the driver, followed <br>
+    by another colon.
+  <p>The rest of the URL depends on the type of driver you are using. <br>
+    For example, you might need to specify a host and port; alternatively, the
+    name of a <br>
+    database file might suffice, or an ODBC DSN.
+  <p>To help you get started, existing drivers are provided with templates for
+    the correct URL format;<br>
+    if in doubt, refer to the documentation for the driver you are using.<br>
+  </p>
+  <li>Provide the User Name and Password, if required by your database configuration.</li>
+  <li>Click the Remember Password check box to have the IDE remember your password.<br>
+  </li>
+  <table>
+    <tr><!--"Tip" to be replaced by a gif-->
+      <td valign="top" width="33"><b>Note</b></td>
+      <td valign="top" align=left width="434"> The password is saved only for
+        the current Forte for Java session;<br>
+        after restarting Forte for Java the password must be entered again. <br>
+        This feature can be turned on or off in the properties of each connected<br>
+        database in the Explorer. </td>
+    </tr>
+  </table>
+  <li>Click OK to connect Forte for Java to the database.</li>
+  <li>If the connection is successful, a new node appears on the same level as
+    Drivers.<br>
+    The icon for a<br>
+    connected database shows complete. </li>
+</ol>
+<p>If the connection attempt fails, Forte for Java displays a dialog box indicating
+  the connection is broken.</p>
+<p> <b>To correct the connection:</b></p>
+<ol>
+  <li> Correct the URL in the property sheet.</li>
+  <li>Connect to the database from the Popup Menu.</li>
+</ol>
+<p><b>To disconnect from the database connection</b>:</p>
+<p> Choose Disconnect from the Connection Pop-up menu. You cannot browse<br>
+  the database until you reconnect to the database using Connect.</p>
+<p>&nbsp;
+<table width="305">
+  <tr>
+    <th colspan=2 align=left>See also</th>
+</tr>
+<tr>
+    <td width="192"><a href="connusupp.html">Connecting to Unsupported Databases</a></td>
+    <td width="18">&nbsp;</td>
+</tr>
+</table>
+
+<hr>
+<font size=-2><a href="credits.html">Legal Notices</a></font>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE toc
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
+         "http://java.sun.com/products/javahelp/toc_1_0.dtd">
+<toc version="1.0">
+
+<tocitem text="Database Explorer" target="dbexpovew">
+
+<tocitem text="Adding a Driver" target="adddriver" />
+
+<tocitem text="Connecting to a Database" target="connectdb" />
+
+<tocitem text="Testing a  New Driver" target="testdriver" />
+
+<tocitem text="Using a Database Adaptor to Replace Missing Metadata" target="dbadapt" />
+
+<tocitem text="Connecting to Unsupported Databases" target="connunsupp" />
+
+<tocitem text="Adding Database Columns" target="addcopycols" />
+
+<tocitem text="Creating Tables" target="createtables" />
+
+<tocitem text="Creating Views" target="createviews" />
+
+<tocitem text="Enabling and Disabling Debug Mode to Monitor SQL Commands" target="manipsql" />
+
+<tocitem text="Hints and Tips for Use with the Database EXplorer" target="misc" />
+
+<tocitem text="Configuring Database Explorer Properties" target="dbconfig" />
+
+<tocitem text="Browsing Structures" target="browstruct" />
+
+<tocitem text="Viewing Data" target="viewdata" />
+
+<tocitem text="Executing SQL Commands Using the Database Explorer" target="dbmod" />
+
+</tocitem>
+
+</toc>

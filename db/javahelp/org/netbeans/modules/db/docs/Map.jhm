@@ -12,6 +12,32 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
+<!DOCTYPE map
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+         "http://java.sun.com/products/javahelp/map_1_0.dtd">
+
 <map version="1.0">
-  <mapID target="org.netbeans.modules.db.HOMEID" url="dbexplo2.htm" />
+
+<mapID target="org.netbeans.modules.db.HOMEID" url="dbexpovew.html" />
+<mapID target="dbexpovew" url="dbexpovew.html" />
+
+<mapID target="adddriver" url="adddriver.html" />
+<mapID target="connectdb" url="connectdb.html" />
+<mapID target="testdriver" url="testdriver.html" />
+<mapID target="dbadapt" url="dbadapt.html" />
+<mapID target="connunsupp" url="connusupp.html" />
+
+<mapID target="addcopycols" url="addcopycols.html" />
+<mapID target="createtables" url="createtables.html" />
+<mapID target="createviews" url="createviews.html" />
+<mapID target="manipsql" url="manipsql.html" />
+
+<mapID target="misc" url="misc.html" />
+<mapID target="dbconfig" url="dbconfig.html" />
+
+<mapID target="browstruct" url="browstruct.html" />
+<mapID target="viewdata" url="viewdata.html" />
+
+<mapID target="dbmod" url="dbmod.html" />
+
 </map>
