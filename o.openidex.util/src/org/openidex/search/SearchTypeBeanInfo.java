@@ -20,25 +20,16 @@ import com.netbeans.developer.modules.search.res.*;
 public class SearchTypeBeanInfo extends SimpleBeanInfo {
             
   // Property identifiers //GEN-FIRST:Properties
-  private static final int PROPERTY_class = 0;
-  private static final int PROPERTY_name = 1;
-  private static final int PROPERTY_displayName = 2;
-  private static final int PROPERTY_helpCtx = 3;
-  private static final int PROPERTY_scannerClass = 4;
+  private static final int PROPERTY_displayName = 0;
+  private static final int PROPERTY_scannerClass = 1;
 
   // Property array 
-  private static PropertyDescriptor[] properties = new PropertyDescriptor[5];
+  private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
 
   static {
     try {
-      properties[PROPERTY_class] = new PropertyDescriptor ( "class", SearchType.class, "getClass", null ); // NOI18N
-      properties[PROPERTY_class].setHidden ( true );
-      properties[PROPERTY_name] = new PropertyDescriptor ( "name", SearchType.class, "getName", "setName" ); // NOI18N
-      properties[PROPERTY_name].setHidden ( true );
       properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", SearchType.class, "getDisplayName", null ); // NOI18N
       properties[PROPERTY_displayName].setHidden ( true );
-      properties[PROPERTY_helpCtx] = new PropertyDescriptor ( "helpCtx", SearchType.class, "getHelpCtx", null ); // NOI18N
-      properties[PROPERTY_helpCtx].setHidden ( true );
       properties[PROPERTY_scannerClass] = new PropertyDescriptor ( "scannerClass", SearchType.class, "getScannerClass", null ); // NOI18N
       properties[PROPERTY_scannerClass].setHidden ( true );
     }
