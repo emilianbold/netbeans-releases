@@ -78,7 +78,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
             return null;
         }
         FileObject dd = webInfFo.getFileObject (FILE_DD);
-        if (dd == null && !silent && isProjectOpened()) {
+        if (dd == null && !silent) {
             showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebXmlNotFound", //NOI18N
                     webInfFo.getPath()));
         }
@@ -112,7 +112,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     private void showErrorMessage(String message) {
-        if(new Date().getTime() > notificationTimeout) {
+        // only display the messages if the project is opened
+        if(new Date().getTime() > notificationTimeout && isProjectOpened()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
             // set timeout to suppress the same messages during next 20 seconds (feel free to adjust the timeout
             // using more suitable value)
@@ -126,8 +127,9 @@ public final class ProjectWebModule extends J2eeModuleProvider
 
     public FileObject getDocumentBase (boolean silent) {
         FileObject docBase = getFileObject(WebProjectProperties.WEB_DOCBASE_DIR);
-        if (docBase == null && !silent && isProjectOpened()) {
-            String path = helper.resolvePath(helper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR));
+        if (docBase == null && !silent) {
+            String relativePath = helper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
+            String path = (relativePath != null ? helper.resolvePath(relativePath) : ""); // NOI18N
             showErrorMessage(NbBundle.getMessage(ProjectWebModule.class, "MSG_DocBase_Corrupted", //NOI18N
                     project.getName(), path));
         }
@@ -156,7 +158,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
             return null;
         }
         FileObject webInf = documentBase.getFileObject (FOLDER_WEB_INF);
-        if (webInf == null && !silent && isProjectOpened()) {
+        if (webInf == null && !silent) {
                 showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted", //NOI18N
                         documentBase.getPath()));
         }
@@ -404,17 +406,14 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public FileObject getDD() {
        FileObject webInfFo = getWebInf();
        if (webInfFo==null) {
-           if (isProjectOpened()) {
-               DialogDisplayer.getDefault().notify(
-               new NotifyDescriptor.Message(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted"),
-               NotifyDescriptor.ERROR_MESSAGE));
-           }
+           showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted"));
            return null;
        }
-       return getWebInf().getFileObject(WebProjectWebServicesSupport.WEBSERVICES_DD, "xml");
+       return getWebInf().getFileObject(WebProjectWebServicesSupport.WEBSERVICES_DD, "xml"); // NOI18N
    }
     
     public FileObject[] getSourceRoots() {
+        // TODO: AB: this is not correct, instead should not only include getDocumentBase() iff not null
         if (!isProjectOpened())
             return new FileObject[0];
         
