@@ -48,7 +48,7 @@ import org.openide.util.actions.Presenter;
 public abstract class MainMenuAction extends GlobalContextAction implements Presenter.Menu, ChangeListener {
 
     public static final Icon BLANK_ICON = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/editor/resources/empty.gif"));
-    
+    public boolean menuInitialized = false;
     
     /** Creates a new instance of ShowLineNumbersAction */
     public MainMenuAction() {
@@ -100,10 +100,16 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
 
         if (km != null) {
             KeyStroke[] keys = km.getKeyStrokesForAction(a);
+            KeyStroke itemAccelerator = item.getAccelerator();
+            
             if (keys != null && keys.length > 0) {
-                item.setAccelerator(keys[0]);
+                if (itemAccelerator==null || !itemAccelerator.equals(keys[0])){
+                    item.setAccelerator(keys[0]);
+                }
             }else{
-                item.setAccelerator(null);
+                if (itemAccelerator!=null && kitAction!=null){
+                    item.setAccelerator(null);
+                }
             }
         }
     }
@@ -138,11 +144,28 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
 
         if (am!=null){
             action = am.get(getActionName());
-            presenter.setAction(action);
+            Action presenterAction = presenter.getAction();
+            if (presenterAction == null){
+                if (action != null){
+                    presenter.setAction(action);
+                    menuInitialized = false;
+                }
+            }else{
+                if ((action!=null && action.getClass() != presenterAction.getClass())){
+                    presenter.setAction(action);
+                    menuInitialized = false;
+                }else if (action == null){
+                    presenter.setEnabled(false);
+                }
+            }
         }
 
-        Mnemonics.setLocalizedText(presenter, getMenuItemText());
-        presenter.setIcon(BLANK_ICON);
+        if (!menuInitialized){
+            Mnemonics.setLocalizedText(presenter, getMenuItemText());
+            presenter.setIcon(BLANK_ICON);
+            menuInitialized = true;
+        }
+        
         presenter.setEnabled(action != null);
         addAccelerators(action, presenter, Utilities.getFocusedComponent());
     }
