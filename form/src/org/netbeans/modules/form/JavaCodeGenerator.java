@@ -482,6 +482,9 @@ class JavaCodeGenerator extends CodeGenerator {
             addCreateCode(top, initCodeWriter);
             initCodeWriter.write("\n");
 
+            if (addLocalVariables(initCodeWriter))
+                initCodeWriter.write("\n");
+                
             for (int i = 0; i < nonVisualComponents.length; i++) {
                 addInitCode(nonVisualComponents[i], initCodeWriter, 0);
             }
@@ -579,7 +582,7 @@ class JavaCodeGenerator extends CodeGenerator {
             variablesWriter.write(VARIABLES_HEADER);
             variablesWriter.write("\n"); // NOI18N
 
-            addVariables(formModel.getModelContainer(), variablesWriter);
+            addVariables(/*formModel.getModelContainer(),*/ variablesWriter);
 
             variablesWriter.write(VARIABLES_FOOTER);
             variablesWriter.write("\n"); // NOI18N
@@ -1072,8 +1075,21 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    private void addVariables(ComponentContainer cont, Writer variablesWriter) throws IOException {
-        RADComponent[] children = cont.getSubBeans();
+    private void addVariables(/*ComponentContainer cont,*/ Writer variablesWriter)
+        throws IOException
+    {
+        Iterator it = formModel.getCodeStructure().getVariablesIterator(
+                                                   CodeElementVariable.FIELD,
+                                                   CodeElementVariable.SCOPE_MASK,
+                                                   null);
+
+        while (it.hasNext()) {
+            CodeElementVariable var = (CodeElementVariable) it.next();
+            variablesWriter.write(
+                var.getDeclaration().getJavaCodeString(null, null));
+            variablesWriter.write("\n"); // NOI18N
+        }
+/*        RADComponent[] children = cont.getSubBeans();
         RADComponent topComp = formModel.getTopRADComponent();
 
         for (int i = 0; i < children.length; i++) {
@@ -1099,7 +1115,26 @@ class JavaCodeGenerator extends CodeGenerator {
 
             if (comp instanceof ComponentContainer)
                 addVariables((ComponentContainer)comp, variablesWriter);
+        } */
+    }
+
+    private boolean addLocalVariables(Writer initCodeWriter)
+        throws IOException
+    {
+        Iterator it = formModel.getCodeStructure().getVariablesIterator(
+            CodeElementVariable.LOCAL | CodeElementVariable.EXPLICIT_DECLARATION,
+            CodeElementVariable.SCOPE_MASK | CodeElementVariable.DECLARATION_MASK,
+            null);
+
+        boolean anyVariable = false;
+        while (it.hasNext()) {
+            CodeElementVariable var = (CodeElementVariable) it.next();
+            initCodeWriter.write(
+                var.getDeclaration().getJavaCodeString(null, null));
+            initCodeWriter.write("\n"); // NOI18N
+            anyVariable = true;
         }
+        return anyVariable;
     }
 
     private static String getVariableGenString(RADComponent comp) {

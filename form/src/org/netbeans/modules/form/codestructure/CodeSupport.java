@@ -108,10 +108,14 @@ class CodeSupport {
         }
     }
 
-    static final class VariableAssignmentConnection extends AbstractCodeConnection
-    {
-        public VariableAssignmentConnection(CodeElement createdElement) {
-            super(createdElement);
+    static final class AssignVariableConnection extends AbstractCodeConnection {
+        private CodeElementVariable variable;
+
+        public AssignVariableConnection(CodeElementVariable var,
+                                        CodeElement element)
+        {
+            super(element);
+            variable = var;
         }
 
         public Object getConnectingObject() {
@@ -123,25 +127,84 @@ class CodeSupport {
         }
 
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
-            CodeElementVariable var = parentElement.getVariable();
-            if (var == null)
-                return null;
-
+//            CodeElementVariable var = parentElement.getVariable();
+//            if (var == null)
+//                return null;
             StringBuffer buf = new StringBuffer();
-            CodeElementOrigin origin = parentElement.getOrigin();
+            int varType = variable.getType();
 
-            int varType = var.getType();
-            if (varType == CodeElementVariable.LOCAL) {
-                buf.append(origin.getType().getName().replace('$','.'));
+            int declareMask = CodeElementVariable.LOCAL |
+                              CodeElementVariable.EXPLICIT_DECLARATION;
+            if ((varType & declareMask) == CodeElementVariable.LOCAL) {
+                buf.append(variable.getDeclaredType().getName()
+                                                       .replace('$','.'));
                 buf.append(" "); // NOI18N
             }
-            if (varType != CodeElementVariable.NO_VARIABLE) {
-                buf.append(var.getName());
-                buf.append(" = "); // NOI18N
+
+            buf.append(variable.getName());
+            buf.append(" = "); // NOI18N
+            buf.append(parentElement.getOrigin().getJavaCodeString(
+                                                     parentStr, paramsStr));
+            buf.append(";");
+
+            return buf.toString();
+        }
+    }
+
+    static final class DeclareVariableConnection extends AbstractCodeConnection
+    {
+        private CodeStructure.Variable variable;
+
+        public DeclareVariableConnection(CodeStructure.Variable var) {
+            super(null);
+            variable = var;
+        }
+
+        public Object getConnectingObject() {
+            return null;
+        }
+
+        public CodeElement[] getConnectionParameters() {
+            return CodeStructure.EMPTY_PARAMS;
+        }
+
+        public String getJavaCodeString(String parentStr, String[] paramsStr) {
+            StringBuffer buf = new StringBuffer();
+
+            int type = variable.getType();
+            if ((type & CodeElementVariable.SCOPE_MASK) == CodeElementVariable.FIELD) {
+                if ((type & CodeElementVariable.TRANSIENT) == CodeElementVariable.TRANSIENT)
+                    buf.append("transient "); // NOI18N
+                if ((type & CodeElementVariable.STATIC) == CodeElementVariable.STATIC)
+                    buf.append("static "); // NOI18N
+
+                int access = type & CodeElementVariable.ACCESS_MASK;
+                if (access == CodeElementVariable.DEFAULT_ACCESS)
+                    access = variable.getDefaultAccessType();
+
+                switch (access) {
+                    case CodeElementVariable.PUBLIC:
+                        buf.append("public "); // NOI18N
+                        break;
+                    case CodeElementVariable.PROTECTED:
+                        buf.append("protected "); // NOI18N
+                        break;
+                    case CodeElementVariable.PACKAGE_PRIVATE:
+                        break;
+                    case CodeElementVariable.PRIVATE:
+                    default:
+                        buf.append("private "); // NOI18N
+                        break;
+                }
+
+                if ((type & CodeElementVariable.FINAL) == CodeElementVariable.FINAL)
+                    buf.append("final "); // NOI18N
             }
 
-            buf.append(origin.getJavaCodeString(parentStr, paramsStr));
-            buf.append(";"); // we do add ; at the end // NOI18N
+            buf.append(variable.getDeclaredType().getName().replace('$','.'));
+            buf.append(" "); // NOI18N
+            buf.append(variable.getName());
+            buf.append(";"); // NOI18N
 
             return buf.toString();
         }

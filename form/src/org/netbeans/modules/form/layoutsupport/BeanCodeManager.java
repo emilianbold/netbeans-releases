@@ -93,7 +93,7 @@ final class BeanCodeManager
 
         CodeElementVariable var = beanElement.getVariable();
         CodeConnection variableConnection =
-            var != null ? var.getAssignmentConnection() : null;
+                       var != null ? var.getAssignment(beanElement) : null;
 
         isVariableSet = variableConnection != null;
         variableType = var != null ? var.getType() : 0;
@@ -258,19 +258,22 @@ final class BeanCodeManager
 
         if (anyPropertyConnection) {
             if (!isVariableSet) {
-                CodeElementVariable var = codeStructure.createVariable(
-                                              beanElement, variableType, null);
-                if (beanCode != null)
-                    beanCode.addConnection(0, var.getAssignmentConnection());
+                CodeElementVariable var =
+                    codeStructure.createVariableForElement(
+                                      beanElement, variableType, null);
+                if (beanCode != null) {
+                    beanCode.addConnection(0, var.getAssignment(beanElement));
+                }
                 isVariableSet = true;
             }
         }
         else if (isVariableSet) {
-            CodeElementVariable var = codeStructure.releaseVariable(beanElement);
+            CodeElementVariable var = beanElement.getVariable();
             if (var != null) {
                 if (beanCode != null)
-                    beanCode.remove(var.getAssignmentConnection());
+                    beanCode.remove(var.getAssignment(beanElement));
                 variableType = var.getType();
+                codeStructure.removeElementUsingVariable(beanElement);
             }
             isVariableSet = false;
         }

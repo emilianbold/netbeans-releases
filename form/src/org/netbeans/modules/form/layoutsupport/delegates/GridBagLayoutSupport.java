@@ -31,10 +31,8 @@ import org.netbeans.modules.form.FormProperty;
 
 public class GridBagLayoutSupport extends AbstractLayoutSupport
 {
-    // [where is the icon ??]
     private static Constructor constrConstructor;
 
-//    private String constraintsVariableName;
     public Class getSupportedClass() {
         return GridBagLayout.class;
     }
@@ -139,6 +137,12 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         private CodeConnection[] propertyConnections;
 
         private static Constructor constrConstructor;
+
+        private static final int variableType = CodeElementVariable.LOCAL
+                                   | CodeElementVariable.EXPLICIT_DECLARATION;
+        private static final int variableMask = CodeElementVariable.SCOPE_MASK
+                                   | CodeElementVariable.DECLARATION_MASK;
+        private static final String defaultVariableName = "gridBagConstraints"; // NOI18N
 
         public GridBagLayoutConstraints() {
             constraints = new GridBagConstraints();
@@ -264,14 +268,54 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
         private void setupVariable(boolean anyChangedProperty) {
             CodeStructure codeStructure = constraintsElement.getCodeStructure();
-            if (anyChangedProperty) {
-                CodeElementVariable var = codeStructure.createVariable(
-                        constraintsElement, CodeElementVariable.LOCAL, null);
-                constraintsCode.addConnection(0, var.getAssignmentConnection());
+            CodeElementVariable var = constraintsElement.getVariable();
+            if (anyChangedProperty) { // there should be a variable
+                if (var == null) { // no variable currently used
+                    var = findVariable(); // find and reuse variable
+                    if (var == null) { // create a new variable
+                        var = codeStructure.createVariableForElement(
+                                                constraintsElement,
+                                                variableType,
+                                                defaultVariableName);
+                    }
+                    else { // attach the constraints element to the variable
+                        codeStructure.addElementUsingVariable(
+                                          var, constraintsElement);
+                    }
+                }
+                // add assignment code
+                constraintsCode.addConnection(
+                                  0, var.getAssignment(constraintsElement));
             }
-            else {
-                codeStructure.releaseVariable(constraintsElement);
+            else { // no variable needed
+                codeStructure.removeElementUsingVariable(constraintsElement);
             }
+        }
+
+        private CodeElementVariable findVariable() {
+            CodeStructure codeStructure = constraintsElement.getCodeStructure();
+
+            // first try  "gridBagConstraints" name - this succeeds in most
+            // cases (unless the name is used elsewhere or not created yet)
+            CodeElementVariable var =
+                codeStructure.getVariable(defaultVariableName);
+            if (var != null
+                    && (var.getType() & variableMask) == variableType
+                    && GridBagConstraints.class.equals(var.getDeclaredType()))
+                return var;
+
+            // try to find variable of corresponding type
+            Iterator it = codeStructure.getVariablesIterator(
+                                            variableType,
+                                            variableMask,
+                                            GridBagConstraints.class);
+            while (it.hasNext()) {
+                var = (CodeElementVariable) it.next();
+                if (var.getName().startsWith(defaultVariableName))
+                    return var;
+            }
+
+            return null;
         }
 
         private void createProperties() {
@@ -613,7 +657,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
     // temporary hacks for GridBagCustomizer and GridBagControlCenter
 
     static ResourceBundle getBundleHack() {
-        return /*org.netbeans.modules.form.layoutsupport.AbstractLayoutSupport.*/getBundle();
+        return getBundle(); // from AbstractLayoutSupport
     }
 
     LayoutSupportContext getLayoutSupportHack() {

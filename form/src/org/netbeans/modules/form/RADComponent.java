@@ -241,11 +241,14 @@ public class RADComponent implements FormDesignValue {
 
     protected void createCodeElement() {
         resetCodeElement();
-        componentCodeElement = formModel.getCodeStructure().createElement(
-//                                   beanClass,
+
+        CodeStructure codeStructure = formModel.getCodeStructure();
+        componentCodeElement = codeStructure.createElement(
                                    FormCodeSupport.createOrigin(this));
+        codeStructure.registerElement(componentCodeElement);
+
         if (formModel.getTopRADComponent() != this)
-            formModel.getCodeStructure().createVariable(
+            codeStructure.createVariableForElement(
                 componentCodeElement, CodeElementVariable.FIELD, storedName);
     }
 
@@ -411,13 +414,17 @@ public class RADComponent implements FormDesignValue {
             throw iae;
         }
 
-        String oldName = var != null ? var.getName() : null;
-        formModel.getCodeStructure().createVariable(
-                componentCodeElement, CodeElementVariable.FIELD, name);
+        String oldName;
 
-//        if (oldName != null)
-//            formModel.getVariablePool().deleteVariable(oldName);
-//        formModel.getVariablePool().createVariable(componentName, beanClass);
+        if (var != null) {
+            oldName = var.getName();
+            formModel.getCodeStructure().renameVariable(oldName, name);
+        }
+        else {
+            oldName = null;
+            formModel.getCodeStructure().createVariableForElement(
+                componentCodeElement, CodeElementVariable.FIELD, name);
+        }
 
         if (oldName != null)
             renameDefaultEventHandlers(oldName, name);

@@ -87,12 +87,14 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
     protected CodeElement readComponentCode(CodeConnection connection,
                                             CodeConnectionGroup componentCode)
     {
-        if (getSetViewportViewMethod().equals(
-                                         connection.getConnectingObject()))
+        if (getSetViewportViewMethod().equals(connection.getConnectingObject())
+            || getSimpleAddMethod().equals(connection.getConnectingObject()))
         {
             componentCode.addConnection(connection);
+            getConstraintsList().add(null); // no constraints
             return connection.getConnectionParameters()[0];
         }
+
         return null;
     }
 

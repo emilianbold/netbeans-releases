@@ -26,8 +26,12 @@ public class CodeStructure {
 
     public static final CodeElement[] EMPTY_PARAMS = new CodeElement[0];
 
+    private static UsingCodeObject globalUsingObject;
+
     private Map namesToVariables = new HashMap(50);
     private Map elementsToVariables = new HashMap(50);
+
+    private int defaultVariableAccessType = CodeElementVariable.PRIVATE;
 
     // -------
     // elements
@@ -80,12 +84,23 @@ public class CodeStructure {
         return new DefaultCodeElement(this);
     }
 
+    // prevents element from being removed automatically from structure when
+    // not used (by any UsingCodeObject)
+    public void registerElement(CodeElement element) {
+        if (globalUsingObject == null)
+            globalUsingObject = new GlobalUsingObject();
+
+        element.addUsingObject(globalUsingObject,
+                               UsedCodeObject.USING,
+                               CodeStructure.class);
+    }
+
     // removes element from the structure completely
     public static void removeElement(CodeElement element) {
         unregisterUsedCodeObject(element);
         unregisterUsingCodeObject(element);
 
-        element.getCodeStructure().releaseVariable(element);
+        element.getCodeStructure().removeElementUsingVariable(element);
     }
 
     // --------
@@ -110,16 +125,6 @@ public class CodeStructure {
         CodeConnection connection =
                         new CodeSupport.FieldConnection(element, f, assignEl);
         registerUsingCodeObject(connection);
-        return connection;
-    }
-
-    // creates a special connection for assigning element's variable
-    static CodeConnection createVariableConnection(CodeElement element) {
-        CodeConnection connection =
-                         new CodeSupport.VariableAssignmentConnection(element);
-        element.addUsingObject(
-            connection, UsedCodeObject.DEFINING, CodeConnection.class);
-        // [need to add as the first ??]
         return connection;
     }
 
@@ -278,22 +283,81 @@ public class CodeStructure {
         }
     }
 
+    private static class GlobalUsingObject implements UsingCodeObject {
+        public void usageRegistered(UsedCodeObject usedObject) {
+        }
+        public boolean usedObjectRemoved(UsedCodeObject usedObject) {
+            return true;
+        }
+        public Iterator getUsedObjectsIterator() {
+            return null;
+        }
+    }
+
     // -------
     // variables
 
-    public CodeElementVariable createVariable(CodeElement element,
-                                              int varType,
+    public CodeElementVariable createVariable(int varType,
+                                              Class declaredType,
                                               String varName)
     {
-        Variable var = (Variable) elementsToVariables.get(element);
-        if (var != null) {
-            var.type = varType;
-            if (varName == null || var.name.equals(varName))
-                return var;
+        if (getVariable(varName) != null)
+            return null; // variable already exists, cannot create new one
 
-            elementsToVariables.remove(element);
-            namesToVariables.remove(var.name);
-        }
+        if (varType < 0 || varName == null)
+            throw new IllegalArgumentException();
+
+        CodeElementVariable var = new Variable(varType, declaredType, varName);
+        namesToVariables.put(varName, var);
+        return var;
+    }
+
+    public boolean renameVariable(String oldName, String newName) {
+        Variable var = (Variable) namesToVariables.get(oldName);
+        if (var == null || newName == null
+                || newName.equals(var.getName())
+                || namesToVariables.get(newName) != null)
+            return false;
+
+        namesToVariables.remove(oldName);
+        var.name = newName;
+        namesToVariables.put(newName, var);
+
+        return true;
+    }
+
+    public CodeElementVariable releaseVariable(String name) {
+        Variable var = (Variable) namesToVariables.remove(name);
+        if (var == null)
+            return null; // there is no such variable
+
+        Map elementsMap = var.elementsMap;
+        if (elementsMap == null)
+            return var;
+
+        Iterator it = elementsMap.values().iterator();
+        while (it.hasNext())
+            elementsToVariables.remove(it.next());
+
+        return var;
+    }
+
+    public boolean isVariableNameReserved(String name) {
+        return namesToVariables.get(name) != null;
+    }
+
+    public CodeElementVariable createVariableForElement(CodeElement element,
+                                                        int varType,
+                                                        String varName)
+    {
+        if (element == null)
+            throw new IllegalArgumentException();
+
+        if (getVariable(element) != null)
+            return null; // variable already exists, cannot create new one
+
+        if (varType < 0)
+            throw new IllegalArgumentException();
 
         int n = 0;
         String baseName;
@@ -314,10 +378,11 @@ public class CodeStructure {
         while (namesToVariables.get(varName) != null)
             varName = baseName + (++n);
 
-        if (var == null)
-            var = new Variable(element, varType, varName,
-                               createVariableConnection(element));
-        else var.name = varName;
+        Variable var = new Variable(varType,
+                                    element.getOrigin().getType(),
+                                    varName);
+        var.addCodeElement(element,
+                           createVariableAssignment(var, element));
 
         namesToVariables.put(varName, var);
         elementsToVariables.put(element, var);
@@ -325,46 +390,64 @@ public class CodeStructure {
         return var;
     }
 
+    public void addElementUsingVariable(CodeElementVariable var,
+                                        CodeElement element)
+    {
+        if (element == null)
+            return;
+        // [should we check also element type ??]
+
+        if (var.getAssignment(element) != null)
+            return; // element already attached
+
+        // check if this variable can have multiple expressions attached
+        int mask = CodeElementVariable.LOCAL
+                   | CodeElementVariable.EXPLICIT_DECLARATION;
+        if ((var.getType() & mask) == CodeElementVariable.LOCAL
+             && var.getAttachedElements().size() > 0)
+        {
+            // local variable without a standalone declaration can be used
+            // only for one expression
+            throw new IllegalStateException(
+                      "Standalone local variable declaration required"); // NOI18N
+        }
+
+        ((Variable)var).addCodeElement(element,
+                                       createVariableAssignment(var, element));
+
+        elementsToVariables.put(element, var);
+    }
+
+    public void removeElementUsingVariable(CodeElement element) {
+        if (element == null)
+            return;
+
+        Variable var = (Variable) elementsToVariables.remove(element);
+        if (var == null)
+            return;
+
+        var.removeCodeElement(element);
+    }
+
+    public CodeElementVariable getVariable(String name) {
+        return (Variable) namesToVariables.get(name);
+    }
+
     public CodeElementVariable getVariable(CodeElement element) {
         return (Variable) elementsToVariables.get(element);
     }
 
-//    public String getVariableName(CodeElement element) {
-//        Variable var = (Variable) elementsToVariables.get(element);
-//        return var != null ? var.name : null;
-//    }
-
-//    public int getVariableType(CodeElement element) {
-//        Variable var = (Variable) elementsToVariables.get(element);
-//        return var != null ? var.type : 0;
-//    }
-
-//    public CodeConnection getVariableConnection(CodeElement element) {
-//        Variable var = (Variable) elementsToVariables.get(element);
-//        return var != null ? var.assignmentConnection : null;
-//    }
-
-    public boolean isVariableNameReserved(String name) {
-        return namesToVariables.get(name) != null;
+    public Iterator getVariablesIterator(int type, int typeMask,
+                                         Class declaredType)
+    {
+        return new VariablesIterator(type, typeMask, declaredType);
     }
 
-    public CodeElementVariable releaseVariable(String name) {
-        Variable var = (Variable) namesToVariables.remove(name);
-        if (var != null) {
-            removeConnection(var.assignmentConnection);
-            elementsToVariables.remove(var.element);
-        }
-        return var;
+    public Collection getAllVariables() {
+        return Collections.unmodifiableCollection(namesToVariables.values());
     }
 
-    public CodeElementVariable releaseVariable(CodeElement element) {
-        Variable var = (Variable) elementsToVariables.remove(element);
-        if (var != null) {
-            removeConnection(var.assignmentConnection);
-            namesToVariables.remove(var.name);
-        }
-        return var;
-    }
+    // ---------
 
     protected Map getNamesToVariablesMap() {
         return namesToVariables;
@@ -374,24 +457,33 @@ public class CodeStructure {
         return elementsToVariables;
     }
 
+    private CodeConnection createVariableAssignment(CodeElementVariable var,
+                                                    CodeElement element)
+    {
+        CodeConnection connection =
+            new CodeSupport.AssignVariableConnection(var, element);
+
+        // important: assignment connection does not register usage of code
+        // elements (assigned element, parameters) - so it does not hold
+        // the elements in the structure
+
+        return connection;
+    }
+
+    // --------
+    // inner classes
+
     final class Variable implements CodeElementVariable {
-        private CodeElement element;
         private int type;
+        private Class declaredType;
         private String name;
-        private CodeConnection assignmentConnection;
+        private Map elementsMap;
+        private CodeConnection declarationConnection;
 
-        Variable(CodeElement element,
-                 int type, String name,
-                 CodeConnection assignmentConnection)
-        {
-            this.element = element;
+        Variable(int type, Class declaredType, String name) {
             this.type = type;
+            this.declaredType = declaredType;
             this.name = name;
-            this.assignmentConnection = assignmentConnection;
-        }
-
-        public CodeElement getCodeElement() {
-            return element;
         }
 
         public int getType() {
@@ -402,8 +494,94 @@ public class CodeStructure {
             return name;
         }
 
-        public CodeConnection getAssignmentConnection() {
-            return assignmentConnection;
+        public Class getDeclaredType() {
+            return declaredType;
+        }
+
+        public Collection getAttachedElements() {
+            return elementsMap != null ?
+                     Collections.unmodifiableCollection(elementsMap.values()) :
+                     Collections.EMPTY_LIST;
+        }
+
+        public CodeConnection getDeclaration() {
+            if (declarationConnection == null)
+                declarationConnection =
+                    new CodeSupport.DeclareVariableConnection(this);
+            return declarationConnection;
+        }
+
+        public CodeConnection getAssignment(CodeElement element) {
+            return elementsMap != null ?
+                   (CodeConnection) elementsMap.get(element) : null;
+        }
+
+        // -------
+
+        void addCodeElement(CodeElement element, CodeConnection connection) {
+            if (elementsMap == null)
+                elementsMap = new HashMap();
+            elementsMap.put(element, connection);
+        }
+
+        void removeCodeElement(CodeElement element) {
+            if (elementsMap != null)
+                elementsMap.remove(element);
+        }
+
+        int getDefaultAccessType() {
+            return defaultVariableAccessType;
+        }
+    }
+
+    final class VariablesIterator implements Iterator {
+        private int type;
+        private int typeMask;
+        private Class declaredType;
+
+        private Iterator subIterator;
+
+        private CodeElementVariable currentVar;
+
+        public VariablesIterator(int type, int typeMask, Class declaredType) {
+            this.type = type;
+            this.typeMask = typeMask;
+            this.declaredType = declaredType;
+
+            subIterator = namesToVariables.values().iterator();
+        }
+
+        public boolean hasNext() {
+            if (currentVar != null)
+                return true;
+
+            while (subIterator.hasNext()) {
+                CodeElementVariable var = (CodeElementVariable) subIterator.next();
+                if ((type < 0
+                        || (type & typeMask) == (var.getType() & typeMask))
+                    &&
+                    (declaredType == null
+                        || declaredType.equals(var.getDeclaredType())))
+                {
+                    currentVar = var;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public Object next() {
+            if (!hasNext())
+                throw new NoSuchElementException();
+
+            CodeElementVariable var = currentVar;
+            currentVar = null;
+            return var;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
         }
     }
 }
