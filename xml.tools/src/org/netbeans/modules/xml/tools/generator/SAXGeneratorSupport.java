@@ -401,47 +401,40 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             file = folder.createData(name, ext);
             return DataObject.find(file);
             
-        } else if ( file.isVirtual() ) {
-            // FileObject represents virtual file (not available),
-            
+        } else if ( file.isVirtual() || overwrite) {
+            // isVirtual:
+            //     FileObject represents virtual file (not available),
+            //     so it is important to delete such virtual file
+            //     and create real one.
+            // overwrite:
+            //     make backup of original file
+                        
             FileSystem fs = folder.getFileSystem();
-            final FileObject virtFile = file;
+            final FileObject tempFile = file;
 
             fs.runAtomicAction (new FileSystem.AtomicAction () {
-                    
                 public void run () throws IOException {
-                    // so it is important to delete such virtual file
-                    // and create real one.
-                    virtFile.delete();
-                    folder.createData (name, ext);
+
+                    if ( (overwrite == true ) &&
+                         (tempFile.isVirtual() == false) ) {
+                        // Make copy of original not virtual file
+
+                        for (int i = 1; true; i++) {
+                            if (tempFile.existsExt (ext + i) == false) {
+                                tempFile.copy (folder, name, ext + i);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    tempFile.delete();
+                    folder.createData (name, ext);                    
                 }
             });
 
             file = folder.getFileObject (name, ext);
 
-            return DataObject.find (file);            
-
-        } else if (overwrite) {  // backup it
-            
-            FileLock lock = null;
-            try {
-                lock = file.lock();
-                for (int i = 1; true; i++) {
-                    if (file.existsExt(ext + i) == false) {
-                        file.move(lock, folder, name, ext + i);
-                        break;
-                    }
-                }
-                
-                file = folder.createData(name, ext);
-                
-            } catch (IOException ex) {
-                // can not move -> do not back up
-            } finally {
-                if (lock != null) lock.releaseLock();
-            }
-                        
-            return DataObject.find(file);
+            return DataObject.find (file);
             
         } else {
             return null;
