@@ -25,6 +25,7 @@ import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
+import javax.swing.filechooser.*;
 
 import org.openide.*;
 import org.openide.nodes.Node;
@@ -33,7 +34,8 @@ import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.*;
 import org.openide.util.HelpCtx;
-import org.openide.util.SharedClassObject; 
+import org.openide.util.SharedClassObject;
+import org.openide.util.Utilities;
 
 import org.netbeans.modules.form.FormLoaderSettings;
 import org.netbeans.modules.form.GlobalJarFileSystem;
@@ -382,6 +384,20 @@ public final class BeanInstaller
             }
         });
 
+        if (lastDirectory == null)
+        {
+            try
+            {
+                if (Utilities.isUnix())
+                    lastDirectory = new File(System.getProperty("user.home"));
+                else if (Utilities.isWindows())
+                    lastDirectory = FileSystemView.getFileSystemView().getRoots()[0].listFiles()[0];
+            }
+            catch (Exception ex)
+            {
+                lastDirectory = null;
+            }
+        }
         if (lastDirectory != null) {
             chooser.setCurrentDirectory(lastDirectory);
         }
