@@ -34,54 +34,54 @@ public class ColorPicker extends javax.swing.JFrame {
         redSlider = new javax.swing.JSlider();
         greenSlider = new javax.swing.JSlider();
         blueSlider = new javax.swing.JSlider();
-        
+
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 exitForm(evt);
             }
         });
-        
+
         colorPreviewPanel.setLayout(new java.awt.BorderLayout());
-        
-        colorPreviewPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(134, 134, 134)), "Color Preview", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), java.awt.Color.black));
+
+        colorPreviewPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color (134, 134, 134)), "Color Preview", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), java.awt.Color.black));
         colorPreviewPanel.add(colorPreview1, java.awt.BorderLayout.CENTER);
-        
+
         getContentPane().add(colorPreviewPanel, java.awt.BorderLayout.CENTER);
-        
+
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.Y_AXIS));
-        
+
         redSlider.setMaximum(255);
-        redSlider.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(134, 134, 134)), "Red", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), java.awt.Color.black));
+        redSlider.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color (134, 134, 134)), "Red", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), java.awt.Color.black));
         redSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 redSliderStateChanged(evt);
             }
         });
-        
+
         jPanel1.add(redSlider);
-        
+
         greenSlider.setMaximum(255);
-        greenSlider.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(134, 134, 134)), "Green", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), java.awt.Color.black));
+        greenSlider.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color (134, 134, 134)), "Green", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), java.awt.Color.black));
         greenSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 greenSliderStateChanged(evt);
             }
         });
-        
+
         jPanel1.add(greenSlider);
-        
+
         blueSlider.setMaximum(255);
-        blueSlider.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(134, 134, 134)), "Blue", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), java.awt.Color.black));
+        blueSlider.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color (134, 134, 134)), "Blue", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), java.awt.Color.black));
         blueSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 blueSliderStateChanged(evt);
             }
         });
-        
+
         jPanel1.add(blueSlider);
-        
+
         getContentPane().add(jPanel1, java.awt.BorderLayout.NORTH);
-        
+
     }//GEN-END:initComponents
 
     private void blueSliderStateChanged (javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_blueSliderStateChanged
@@ -103,11 +103,11 @@ public class ColorPicker extends javax.swing.JFrame {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel colorPreviewPanel;
     private examples.colorpicker.ColorPreview colorPreview1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JSlider redSlider;
+    private javax.swing.JPanel colorPreviewPanel;
     private javax.swing.JSlider greenSlider;
+    private javax.swing.JSlider redSlider;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JSlider blueSlider;
     // End of variables declaration//GEN-END:variables
 
