@@ -86,6 +86,8 @@ public class FormLoaderSettings extends SystemOption {
     public static final String PROP_SHOW_COMPONENTS_NAMES = "showComponentsNames"; // NOI18N
     /** Property name of the paletteIconSize property. */
     public static final String PROP_PALETTE_ICON_SIZE = "paletteIconSize"; // NOI18N
+    /** Property name of the foldGeneratedCode property. */
+    public static final String PROP_FOLD_GENERATED_CODE = "foldGeneratedCode"; // NOI18N
 
 //    public static final String PROP_CONTAINER_BEANS = "containerBeans"; // NOI18N
 
@@ -143,6 +145,9 @@ public class FormLoaderSettings extends SystemOption {
     
     /** If true, only editable properties are displayed in the ComponentInspector */
     private static boolean displayWritableOnly = true;
+    
+    /** If true then the generated code will be folded. */
+    private static boolean foldGeneratedCode = true;
 
     /** Array of package names to search for property editors used in Form Editor */
     private static String [] editorSearchPath =
@@ -554,6 +559,20 @@ public class FormLoaderSettings extends SystemOption {
         firePropertyChange(PROP_FORMDESIGNER_BORDER_COLOR,
                            oldValue,
                            formDesignerBorderColor);
+    }
+    
+    /** Getter for the foldGeneratedCode option */
+    public boolean getFoldGeneratedCode() {
+        return foldGeneratedCode;
+    }
+
+    /** Setter for the foldGeneratedCode option */
+    public void setFoldGeneratedCode(boolean value) {
+        Boolean oldValue = foldGeneratedCode ? Boolean.TRUE : Boolean.FALSE;
+        foldGeneratedCode = value;
+        firePropertyChange(PROP_FOLD_GENERATED_CODE,
+                           oldValue, 
+                           value ? Boolean.TRUE : Boolean.FALSE);
     }
 
 //    public Map getContainerBeans() {

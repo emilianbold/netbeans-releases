@@ -719,6 +719,12 @@ class JavaCodeGenerator extends CodeGenerator {
             containerDependentProperties.clear();
 
         try {
+            boolean foldGeneratedCode = formSettings.getFoldGeneratedCode();
+            if (foldGeneratedCode) {
+                initCodeWriter.write("// <editor-fold defaultstate=\"collapsed\" desc=\" "); // NOI18N
+                initCodeWriter.write(FormUtils.getBundleString("MSG_GeneratedCode")); // NOI18N
+                initCodeWriter.write("\">\n"); // NOI18N
+            }
             initCodeWriter.write("private void initComponents() {\n"); // NOI18N
 
             if (addLocalVariables(initCodeWriter))
@@ -819,6 +825,9 @@ class JavaCodeGenerator extends CodeGenerator {
             }
             else listenersInMainClass = null;
 
+            if (foldGeneratedCode) {
+                initCodeWriter.write("// </editor-fold>\n"); // NOI18N
+            }
             initCodeWriter.close();
 
             // set the text into the guarded block

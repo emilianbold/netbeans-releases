@@ -137,7 +137,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                 new PropertyDescriptor(FormLoaderSettings.PROP_SHOW_MNEMONICS_DIALOG,
                                        FormLoaderSettings.class,
                                        "getShowMnemonicsDialog", // NOI18N
-                                       "setShowMnemonicsDialog") // NOI18N
+                                       "setShowMnemonicsDialog"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_FOLD_GENERATED_CODE,
+                                       FormLoaderSettings.class,
+                                       "getFoldGeneratedCode", // NOI18N
+                                       "setFoldGeneratedCode") // NOI18N
             };
 
             ResourceBundle bundle = FormUtils.getBundle();
@@ -227,6 +231,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
             desc[++i].setDisplayName(bundle.getString("PROP_SHOW_MNEMONICS_DIALOG")); // NOI18N
             desc[i].setShortDescription(bundle.getString("HINT_SHOW_MNEMONICS_DIALOG")); // NOI18N
+            desc[i].setExpert(true);
+            
+            desc[++i].setDisplayName(bundle.getString("PROP_FOLD_GENERATED_CODE")); // NOI18N
+            desc[i].setShortDescription(bundle.getString("HINT_FOLD_GENERATED_CODE")); // NOI18N
             desc[i].setExpert(true);
 
             return desc;
