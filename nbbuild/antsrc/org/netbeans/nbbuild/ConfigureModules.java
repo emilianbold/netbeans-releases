@@ -82,7 +82,7 @@ public class ConfigureModules extends Task {
 
     public void init () throws BuildException {
 	if (property == null || config == null)
-	    throw new BuildException ("Must set both the property and config attributes", location);
+	    throw new BuildException ("Must set both the property and selectedconfig attributes", location);
 	/*
 	Iterator it = configs.iterator ();
 	while (it.hasNext ()) {
