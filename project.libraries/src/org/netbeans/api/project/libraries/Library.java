@@ -7,19 +7,22 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.project.libraries;
 
-
-import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.openide.util.NbBundle;
-
-import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
  * Library models typed bundle of typed volumes.
@@ -41,7 +44,7 @@ public final class Library {
     // delegating peer
     private LibraryImplementation impl;
 
-    private ArrayList listeners;
+    private List/*<PropertyChangeListener>*/ listeners;
 
     /**
      * Creates new library instance
@@ -164,7 +167,7 @@ public final class Library {
         synchronized (this) {
             if (this.listeners == null)
                 return;
-            it = ((ArrayList)this.listeners.clone()).iterator();
+            it = new ArrayList(listeners).iterator();
         }
         PropertyChangeEvent event = new PropertyChangeEvent (this, propertyName, oldValue, newValue);
         while (it.hasNext()) {
@@ -174,14 +177,24 @@ public final class Library {
 
 
     private String getLocalizedString (String bundleName, String key) {
-        if (key == null)
+        if (key == null) {
             return null;
-        if (bundleName == null)
+        }
+        if (bundleName == null) {
             return key;
+        }
+        ResourceBundle bundle;
         try {
-            ResourceBundle bundle = NbBundle.getBundle(bundleName);
-            return bundle.getString (key);
+            bundle = NbBundle.getBundle(bundleName);
         } catch (MissingResourceException mre) {
+            // Bogus bundle.
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mre);
+            return key;
+        }
+        try {
+            return bundle.getString(key);
+        } catch (MissingResourceException mre) {
+            // OK, not required to be there.
             return key;
         }
     }

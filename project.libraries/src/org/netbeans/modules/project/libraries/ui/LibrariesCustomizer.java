@@ -7,29 +7,20 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.project.libraries.ui;
 
-
-import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.LibraryTypeProvider;
-import org.openide.DialogDisplayer;
-import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-
-import javax.swing.event.*;
-import javax.swing.*;
-import java.beans.Customizer;
-import java.awt.*;
-import java.awt.event.ActionListener;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -38,9 +29,19 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.ResourceBundle;
 import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.Repository;
@@ -50,12 +51,14 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author  tom
  */
-public final class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
+public final class LibrariesCustomizer extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
     
     private static final Dimension PREFERRED_SIZE = new Dimension (720,400);
     
@@ -441,14 +444,24 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
 
 
     static String getLocalizedString (String bundleResourceName, String key) {
-        if (key == null)
+        if (key == null) {
             return null;
-        if (bundleResourceName == null)
+        }
+        if (bundleResourceName == null) {
             return key;
+        }
+        ResourceBundle bundle;
         try {
-            ResourceBundle bundle = NbBundle.getBundle (bundleResourceName);
+            bundle = NbBundle.getBundle(bundleResourceName);
+        } catch (MissingResourceException mre) {
+            // Bundle should have existed.
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mre);
+            return key;
+        }
+        try {
             return bundle.getString (key);
         } catch (MissingResourceException mre) {
+            // No problem, not specified.
             return key;
         }
     }
