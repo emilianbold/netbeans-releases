@@ -112,7 +112,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         cp.mode = "compile";
         cu.classpath = Collections.singletonList(cp);
         cu.sourceLevel = "1.4";
-        cu.packageRoot = src.getAbsolutePath();
+        cu.packageRoots = Collections.singletonList(src.getAbsolutePath());
         compUnits.add(cu);
         AntProjectHelper helper = FreeformProjectGenerator.createJavaProject(base, base, projectName, null, new ArrayList(), sources, compUnits);
         return helper;
@@ -379,7 +379,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         cucp.classpath = lib2.getAbsolutePath();
         cucp.mode = "compile";
         cu.classpath = Collections.singletonList(cucp);
-        cu.packageRoot = test.getAbsolutePath();
+        cu.packageRoots = Collections.singletonList(test.getAbsolutePath());
         cus.add(cu);
         FreeformProjectGenerator.putJavaCompilationUnits(helper, aux, cus);
         cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux);

@@ -706,11 +706,12 @@ public class FreeformProjectGenerator {
             JavaCompilationUnit cu = new JavaCompilationUnit();
             List outputs = new ArrayList();
             List cps = new ArrayList();
+            List packageRoots = new ArrayList();
             Iterator it2 = Util.findSubElements(cuEl).iterator();
             while (it2.hasNext()) {
                 Element el = (Element)it2.next();
                 if (el.getLocalName().equals("package-root")) { // NOI18N
-                    cu.packageRoot = Util.findText(el);
+                    packageRoots.add(Util.findText(el));
                     continue;
                 }
                 if (el.getLocalName().equals("classpath")) { // NOI18N
@@ -732,6 +733,7 @@ public class FreeformProjectGenerator {
             }
             cu.output = outputs.size() > 0 ? outputs : null;
             cu.classpath = cps.size() > 0 ? cps: null;
+            cu.packageRoots = packageRoots.size() > 0 ? packageRoots: null;
             list.add(cu);
         }
         return list;
@@ -765,10 +767,14 @@ public class FreeformProjectGenerator {
             data.appendChild(cuEl);
             JavaCompilationUnit cu = (JavaCompilationUnit)it2.next();
             Element el;
-            if (cu.packageRoot != null) {
-                el = doc.createElementNS(FreeformProjectType.NS_JAVA, "package-root"); // NOI18N
-                el.appendChild(doc.createTextNode(cu.packageRoot));
-                cuEl.appendChild(el);
+            if (cu.packageRoots != null) {
+                Iterator it3 = cu.packageRoots.iterator();
+                while (it3.hasNext()) {
+                    String packageRoot = (String)it3.next();
+                    el = doc.createElementNS(FreeformProjectType.NS_JAVA, "package-root"); // NOI18N
+                    el.appendChild(doc.createTextNode(packageRoot));
+                    cuEl.appendChild(el);
+                }
             }
             if (cu.classpath != null) {
                 Iterator it3 = cu.classpath.iterator();
@@ -919,7 +925,7 @@ public class FreeformProjectGenerator {
      * Data in the struct are in the same format as they are stored in XML.
      */
     public static final class JavaCompilationUnit {
-        public String packageRoot;
+        public List/*<String>*/ packageRoots;
         public List/*<CP>*/ classpath;
         public List/*<String>*/ output;
         public String sourceLevel;
