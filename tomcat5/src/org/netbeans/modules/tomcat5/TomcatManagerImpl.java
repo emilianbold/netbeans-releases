@@ -148,9 +148,15 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         
     }
     
-    public void initialDeploy (Target t, String path, File dir) {
-        this.tmId = new TomcatModule (t, path);
-        command = "deploy?path=" + tmId.getPath () + "&war=" + dir.getAbsoluteFile().toURI().toASCIIString(); // NOI18N
+    public void initialDeploy (Target t, File contextXml, File dir) {
+        try {
+            FileInputStream in = new FileInputStream (contextXml);
+            Context ctx = Context.createGraph (in);
+            this.tmId = new TomcatModule (t, ctx.getAttributeValue ("path"));
+        } catch (java.io.FileNotFoundException fnfe) {
+            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, fnfe.getLocalizedMessage (), StateType.FAILED));
+        }
+        command = "deploy?config=" + contextXml.toURI ().toASCIIString () + "&war=" + dir.getAbsoluteFile().toURI().toASCIIString(); // NOI18N
         cmdType = CommandType.DISTRIBUTE;
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
         rp ().post (this, 0, Thread.NORM_PRIORITY);

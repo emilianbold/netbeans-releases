@@ -101,7 +101,8 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
     
     public ProgressObject initialDeploy (Target target, javax.enterprise.deploy.model.DeployableObject app, DeploymentConfiguration configuration, File dir) {
         TomcatManagerImpl tmi = new TomcatManagerImpl (tm);
-        tmi.initialDeploy (target, ((WebappConfiguration)configuration).getPath (), dir);
+        File contextXml = new File (dir.getAbsolutePath () + "/META-INF/context.xml"); //NOI18N
+        tmi.initialDeploy (target, contextXml, dir);
         return tmi;
     }
     
