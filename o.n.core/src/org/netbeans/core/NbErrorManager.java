@@ -21,6 +21,7 @@ import java.util.*;
 
 import org.openide.ErrorManager;
 import org.openide.TopManager;
+import org.openide.util.NbBundle;
 
 /** This is the implementation of the famous exception manager.
 *
@@ -95,6 +96,7 @@ final class NbErrorManager extends ErrorManager {
     * @param arr array of annotations (or null)
     */
     public synchronized Throwable attachAnnotations (Throwable t, Annotation[] arr) {
+        // [PENDING] shouldn't it *add* not *replace* the annotations?
         map.put (t, Arrays.asList(arr));
         lastException.put (Thread.currentThread(), new WeakReference (t));
 
@@ -215,6 +217,20 @@ final class NbErrorManager extends ErrorManager {
         // Or Exc should look for its own sub-annotations and deal
         // with them sensibly.
         List l = (List)map.get (t);
+        // MissingResourceException should be printed nicely... --jglick
+        if (t instanceof MissingResourceException) {
+            if (l == null) l = new ArrayList ();
+            MissingResourceException mre = (MissingResourceException) t;
+            String cn = mre.getClassName ();
+            if (cn != null) {
+                l.add (new Ann (EXCEPTION, NbBundle.getMessage (NbErrorManager.class, "EXC_MissingResourceException_class_name", cn), null, null, null));
+            }
+            String k = mre.getKey ();
+            if (k != null) {
+                l.add (new Ann (EXCEPTION, NbBundle.getMessage (NbErrorManager.class, "EXC_MissingResourceException_key", k), null, null, null));
+            }
+            if (l.size () == 0) l = null; // not clear if null means something other than new Annotation[0]
+        }
         Annotation[] arr;
         if (l == null) {
             arr = null;
