@@ -17,7 +17,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
@@ -174,8 +173,8 @@ abstract class Lookup {
         ) {
             ArrayList l = new ArrayList ();
             try {
+                ClassLoader cl = (ClassLoader) org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
                 String v = "\nR lookup " + resourceName;
-                ClassLoader cl = Thread.currentThread ().getContextClassLoader ();
                 Enumeration e = cl.getResources (resourceName);
                 while (e.hasMoreElements ()) {
                     URL url = (URL) e.nextElement();
