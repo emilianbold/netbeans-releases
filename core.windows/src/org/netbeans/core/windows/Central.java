@@ -246,6 +246,25 @@ final class Central implements ControllerHandler {
                     }
                 }
             }
+            // when switching to SDI, undock sliding windows
+            // #51992 -start
+            if (mode.getKind() == Constants.MODE_KIND_SLIDING && editorAreaState == Constants.EDITOR_AREA_SEPARATED) {
+                TopComponent[] tcs = mode.getTopComponents();
+                for (int i = 0; i < tcs.length;i++) {
+                    ModeImpl targetMode = model.getModeTopComponentPreviousMode(mode, tcs[i]);
+                    if ((targetMode == null) || !model.getModes().contains(targetMode)) {
+                        SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints(mode, tcs[i]);
+                        constraints = constraints == null ? new SplitConstraint[0] : constraints;
+                        // create mode to dock topcomponent back into
+                        targetMode = WindowManagerImpl.getInstance().createModeImpl(
+                            ModeImpl.getUnusedModeName(), Constants.MODE_KIND_VIEW, false);
+                        model.setModeState(targetMode, requiredState);
+                        model.addMode(targetMode, constraints);
+                    }
+                    moveTopComponentsIntoMode(targetMode, new TopComponent[] { tcs[i] } );                    
+                }
+            }
+            // #51992 - end
         }
                                                 
         if(editorAreaState == Constants.EDITOR_AREA_SEPARATED) {

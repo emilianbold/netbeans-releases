@@ -275,6 +275,9 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             return null;
         }
         Object orientation = locInfo.getOrientation(getDisplayer().getModel().getTab(index).getComponent());
+        if (orientation == TabDisplayer.ORIENTATION_INVISIBLE) {
+            return null;
+        }
         pinButton.setOrientation(orientation);
         
         return pinButton;

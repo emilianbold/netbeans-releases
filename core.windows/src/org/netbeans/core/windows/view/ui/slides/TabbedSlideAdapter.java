@@ -363,10 +363,13 @@ public final class TabbedSlideAdapter implements Tabbed {
     
     /** Add action for disabling slide */
     public Action[] getPopupActions(Action[] defaultActions, int tabIndex) {
-        Action[] result = new Action[defaultActions.length + 1];
+        boolean isMDI = WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED;
+        Action[] result = new Action[defaultActions.length + (isMDI ? 1 : 0)];
         System.arraycopy(defaultActions, 0, result, 0, defaultActions.length);
-        result[defaultActions.length] = 
-            new ActionUtils.AutoHideWindowAction(slideBar, tabIndex, true);
+        if (isMDI) {
+            result[defaultActions.length] = 
+                new ActionUtils.AutoHideWindowAction(slideBar, tabIndex, true);
+        }
         return result;
     }
     

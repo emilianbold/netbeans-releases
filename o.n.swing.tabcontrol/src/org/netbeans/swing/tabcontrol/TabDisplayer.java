@@ -182,6 +182,11 @@ public final class TabDisplayer extends JComponent implements Accessible {
      */
     public static final Object ORIENTATION_CENTER = "center"; //NOI18N
     
+    /** Client property value for pin button to be invisible 
+     */
+    public static final Object ORIENTATION_INVISIBLE = "invisible"; //NOI18N
+    
+    
     /**
      * Utility field holding list of ActionListeners.
      */

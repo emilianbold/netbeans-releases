@@ -41,6 +41,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ui.Tabbed;
 import org.netbeans.swing.tabcontrol.DefaultTabDataModel;
 import org.netbeans.swing.tabcontrol.LocationInformer;
@@ -344,6 +345,9 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     /********* implementation of LocationInformer **************/
     
     public Object getOrientation(Component comp) {
+        if (WindowManagerImpl.getInstance().getEditorAreaState() != Constants.EDITOR_AREA_JOINED) {
+            return TabDisplayer.ORIENTATION_INVISIBLE;
+        }
         return TabDisplayer.ORIENTATION_CENTER;
     }
     

@@ -436,10 +436,13 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         if (TabbedContainer.TYPE_EDITOR == getType()) {
             return defaultActions;
         }
-        Action[] result = new Action[defaultActions.length + 1];
+        boolean isMDI = isMDI();
+        Action[] result = new Action[defaultActions.length + (isMDI ? 1 : 0)];
         System.arraycopy(defaultActions, 0, result, 0, defaultActions.length);
-        result[defaultActions.length] = 
-            new ActionUtils.AutoHideWindowAction(this, tabIndex, false);
+        if (isMDI) {
+            result[defaultActions.length] = 
+                new ActionUtils.AutoHideWindowAction(this, tabIndex, false);
+        }
         return result;
     }
     
@@ -459,12 +462,18 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         return getTabRect(tabIndex, new Rectangle());
     }
     
+    private static boolean isMDI() {
+        return WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED;
+    }
     /********* implementation of LocationInformer ********/
     
     static class LocInfo implements LocationInformer {
     
         public Object getOrientation(Component comp) {
-            String side = ((WindowManagerImpl)WindowManagerImpl.getDefault()).guessSlideSide((TopComponent)comp);
+            if (! isMDI()) {
+                return TabDisplayer.ORIENTATION_INVISIBLE;
+            }
+            String side = WindowManagerImpl.getInstance().guessSlideSide((TopComponent)comp);
             Object result = null;
             if (side.equals(Constants.LEFT)) {
                 result = TabDisplayer.ORIENTATION_WEST;
