@@ -36,9 +36,11 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="View/Build" boolvalue="true" />
         <folder name="Build">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-          <attr name="org-netbeans-core-actions-PreviousOutJumpAction.instance/Separator5[javax-swing-JSeparator].instance" boolvalue="true" />
-          <file name="Separator5[javax-swing-JSeparator].instance"/>
-          <attr name="Separator5[javax-swing-JSeparator].instance/org-netbeans-core-actions-SetArgumentsAction.instance" boolvalue="true" />
+          <attr name="org-netbeans-core-actions-PreviousOutJumpAction.instance/Separator5.instance" boolvalue="true" />
+          <file name="Separator5.instance">
+	      <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+	  </file>
+          <attr name="Separator5.instance/org-netbeans-core-actions-SetArgumentsAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-SetArgumentsAction.instance"/>
           <attr name="org-netbeans-core-actions-SetArgumentsAction.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true" />
           <file name="org-openide-actions-ExecuteAction.instance"/>
@@ -62,8 +64,13 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Shortcuts">
-        <file name="F6[org-openide-actions-ExecuteAction].instance" />
-        <file name="C-6[org-netbeans-core-actions-ExecutionViewAction].instance" />
+        <file name="F6.instance">
+	    <attr name="instanceClass" stringvalue="org.openide.actions.ExecuteAction"/>
+	</file>
+
+        <file name="C-6.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.ExecutionViewAction"/>
+	</file>
     </folder>
     
     <folder name="Templates">
