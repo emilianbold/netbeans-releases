@@ -98,14 +98,17 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
         if (createJAR.booleanValue()) {
             jarName = (String) wiz.getProperty(WizardProperties.JAR_NAME);
         }
+        String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
+        String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);
         
-        return testableInstantiate(dirF,name,j2eeLevel, serverInstanceID, contextPath, warName,jarName);
+        return testableInstantiate(dirF,name,j2eeLevel, serverInstanceID, contextPath, warName,jarName, platformName, sourceLevel);
     }
     
     Set testableInstantiate(File dirF, String name, String j2eeLevel,
-            String serverInstanceID, String contextPath, String warName, String jarName) throws IOException {
+            String serverInstanceID, String contextPath, String warName, String jarName,
+            String platformName, String sourceLevel) throws IOException {
         Set resultSet = new HashSet();
-        AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID, contextPath);
+        AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID, contextPath, sourceLevel);
         FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
         Project p = ProjectManager.getDefault().findProject(dir);
         // XXX -- this code may be necessary for 54381 (once 54534 is addressed)
@@ -139,6 +142,9 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
                     serverInstanceID,
                     WebProjectGenerator.SRC_STRUCT_BLUEPRINTS,
                     j2eeLevel, "/"+warName); //NOI18N
+            if (platformName != null || sourceLevel != null) {
+                WebProjectGenerator.setPlatform(h, platformName, sourceLevel);
+            }
             FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(webAppDir));
             p = ProjectManager.getDefault().findProject(dir2);
             epp.addJ2eeSubprojects(new Project[] { p });
@@ -147,6 +153,9 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
             File ejbJarDir = new File(dirF,name+"-ejb"); // NOI18N
             h = EjbJarProjectGenerator.createProject(FileUtil.normalizeFile(ejbJarDir),jarName,
                     j2eeLevel, serverInstanceID);
+            if (platformName != null || sourceLevel != null) {
+                EjbJarProjectGenerator.setPlatform(h, platformName, sourceLevel);
+            }
             FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(ejbJarDir));
             p = ProjectManager.getDefault().findProject(dir2);
             epp.addJ2eeSubprojects(new Project[] { p });

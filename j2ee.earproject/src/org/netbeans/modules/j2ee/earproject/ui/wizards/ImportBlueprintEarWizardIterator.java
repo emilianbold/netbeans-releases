@@ -76,8 +76,10 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Instan
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
         String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
+        String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
+        String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);
         // remove the hard-coded level
-        AntProjectHelper h = EarProjectGenerator.importProject(dirF, srcF, name, "1.4", serverInstanceID);
+        AntProjectHelper h = EarProjectGenerator.importProject(dirF, srcF, name, "1.4", serverInstanceID, platformName, sourceLevel); // NOI18N
         
         FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
         // XXX -- this code may be necessary for 54381 (once 54534 is addressed)

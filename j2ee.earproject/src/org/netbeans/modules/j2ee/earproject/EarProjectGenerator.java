@@ -22,13 +22,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.modules.InstalledFileLocator;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -46,6 +44,7 @@ import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -78,7 +77,7 @@ public class EarProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, String name, String j2eeLevel, String serverInstanceId, String contextPath) throws IOException {
+    public static AntProjectHelper createProject(File dir, String name, String j2eeLevel, String serverInstanceId, String contextPath, String sourceLevel) throws IOException {
         dir.mkdirs();
         // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
         File rootF = dir;
@@ -134,10 +133,14 @@ public class EarProjectGenerator {
 //        if (pwm != null) //should not be null
 //            pwm.setContextPath(contextPath);
         
+        if (sourceLevel != null) {
+            EarProjectGenerator.setPlatformSourceLevel(h, sourceLevel);
+        }
+        
         return h;
     }
     
-    public static AntProjectHelper importProject (File pDir, File sDir, String name, String j2eeLevel, String serverInstanceID) throws IOException {
+    public static AntProjectHelper importProject (File pDir, File sDir, String name, String j2eeLevel, String serverInstanceID, String platformName, String sourceLevel) throws IOException {
 //        wmFO = dir;
 //        File docRoot = 
         File top = sDir;
@@ -273,6 +276,9 @@ public class EarProjectGenerator {
                     subProjHelper = WebProjectGenerator.importProject(subProjDir,
                         subprojectRoot.getName(), subprojectRoot, srcFolders, new File[0],
                         subprojectRoot.getFileObject("web"), null, j2eeLevel, serverInstanceID, "build.xml");
+                    if (platformName != null || sourceLevel != null) {
+                        WebProjectGenerator.setPlatform(subProjHelper, platformName, sourceLevel);
+                    }
                 }
 
                 // ---- test to see if it is an ejb jar project and trigger the import
@@ -284,6 +290,9 @@ public class EarProjectGenerator {
 			 null, j2eeLevel, serverInstanceID);
 //                    subProjHelper = EjbJarProjectGenerator.importProject(subProjDir, 
 //                        subprojectRoot.getName(), subprojectRoot, javaRoot, ejbJarDotXml.getParent(), j2eeLevel, serverInstanceID, "build.xml");
+                    if (platformName != null || sourceLevel != null) {
+                        EjbJarProjectGenerator.setPlatform(subProjHelper, platformName, sourceLevel);
+                    }
                 }
                     
                 // XXX ---- test to see if it is an app client and figure out how to import it.
@@ -298,9 +307,13 @@ public class EarProjectGenerator {
         }
                 
                 // XXX all web module URI-to-ContextRoot mapping should happen here
-        
+                
         ProjectManager.getDefault().saveProject(p);
             ((EarProject)p).getAppModule().getConfigSupport ().createInitialConfiguration();
+            
+        if (sourceLevel != null) {
+            EarProjectGenerator.setPlatformSourceLevel(h, sourceLevel);
+        }
         
         return h;
     }
@@ -379,13 +392,13 @@ public class EarProjectGenerator {
         ep.setProperty(EarProjectProperties.DISPLAY_BROWSER, "true");
         Deployment deployment = Deployment.getDefault ();
         ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
-        ep.setProperty(EarProjectProperties.JAVAC_SOURCE, "1.4");
+        ep.setProperty(EarProjectProperties.JAVAC_SOURCE, "${default.javac.source}"); //NOI18N
         ep.setProperty(EarProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(EarProjectProperties.JAVAC_DEPRECATION, "false");
         
         //xxx Default should be 1.2
         //http://projects.netbeans.org/buildsys/j2se-project-ui-spec.html#Build_Compiling_Sources
-        ep.setProperty(EarProjectProperties.JAVAC_TARGET, "1.4");
+        ep.setProperty(EarProjectProperties.JAVAC_TARGET, "${default.javac.target}"); //NOI18N
         
         ep.setProperty(EarProjectProperties.BUILD_DIR, DEFAULT_BUILD_DIR);
         ep.setProperty(EarProjectProperties.BUILD_ARCHIVE_DIR, "${"+EarProjectProperties.BUILD_DIR+"}/jar");
@@ -447,6 +460,23 @@ public class EarProjectGenerator {
         } else {
             return refHelper.createForeignFileReference(FileUtil.toFile(referencedFO), null);
         }
+    }
+    
+    public static void setPlatformSourceLevel(final AntProjectHelper helper, final String sourceLevel) {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                try {
+                    EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    ep.setProperty(EarProjectProperties.JAVAC_SOURCE, sourceLevel);
+                    ep.setProperty(EarProjectProperties.JAVAC_TARGET, sourceLevel);
+                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));
+                }
+                catch (IOException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+            }
+        });
     }
 
 //    private static String relativePath (FileObject parent, FileObject child) {
