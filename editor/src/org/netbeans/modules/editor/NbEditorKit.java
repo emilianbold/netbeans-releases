@@ -703,8 +703,16 @@ public class NbEditorKit extends ExtKit {
 
         public GenerateFoldPopupAction() {
             super(generateFoldPopupAction);
+            String desc = getShortDescription();
+            if (desc != null) {
+                putValue(SHORT_DESCRIPTION, desc);
+            }
         }
 
+        public String getShortDescription() {
+            return org.openide.util.NbBundle.getBundle (NbEditorKit.class).getString(generateFoldPopupAction); // NOI18N
+        }
+        
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
         }
 
