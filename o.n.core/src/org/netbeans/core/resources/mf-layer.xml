@@ -105,6 +105,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-PreviousWorkspaceAction.instance"/>
             <file name="org-netbeans-core-actions-FocusNextWorkspaceAction.instance"/>
             <file name="org-netbeans-core-actions-NextWorkspaceAction.instance"/>
+            <file name="org-netbeans-core-actions-WorkspaceExplorerAction.instance"/>
             <file name="org-netbeans-core-actions-OutputWindowAction.instance"/>
             <file name="org-openide-actions-PropertiesAction.instance"/>
             <file name="org-netbeans-core-actions-StatusLineAction.instance"/>
@@ -421,8 +422,9 @@ Microsystems, Inc. All Rights Reserved.
     <file name="CS-F7[org-openide-actions-AddWatchAction].instance" />
     <file name="C-N[org-netbeans-core-actions-NewTemplateCallableAction].instance" />
     <file name="S-F10[org-openide-actions-PopupAction].instance" />
-    <file name="C-S-DOWN[org-netbeans-core-actions-FocusNextWorkspaceAction].instance" />
-    <file name="C-S-UP[org-netbeans-core-actions-FocusPreviousWorkspaceAction].instance" />        
+    <file name="CS-DOWN[org-netbeans-core-actions-FocusNextWorkspaceAction].instance" />
+    <file name="CS-UP[org-netbeans-core-actions-FocusPreviousWorkspaceAction].instance" />
+    <file name="CS-F12[org-netbeans-core-actions-WorkspaceExplorerAction].instance" />
   </folder>
 
 
