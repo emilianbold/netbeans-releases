@@ -343,10 +343,6 @@ public final class MainWindow extends JFrame {
         if(desktop != null) {
             desktopPanel.add(desktop, BorderLayout.CENTER);
         }
-         
-        invalidate();
-        validate();
-        repaint();
     }
 
     // XXX PENDING used in DnD only.
