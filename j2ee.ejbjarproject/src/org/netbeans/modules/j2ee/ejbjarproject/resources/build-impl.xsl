@@ -592,7 +592,7 @@ is divided into following sections:
                         </xsl:if>
                         <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
                             <xsl:variable name="target" select="'${dist.ear.dir}'"/>
-                            <xsl:variable name="libfile" select="$included.prop.name"/>
+                            <xsl:variable name="libfile" select="concat('${',$included.prop.name,'}')"/>
                             <copy todir="{$target}">
                                 <fileset dir="{$libfile}" includes="**/*"/>
                             </copy>
