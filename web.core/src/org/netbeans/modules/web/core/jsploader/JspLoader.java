@@ -46,9 +46,17 @@ public class JspLoader extends UniFileLoader {
     
     /** Recommended extension for JSP pages in XML syntax */
     public static final String JSPX_EXTENSION = "jspx"; // NOI18N
+    /** Extension for tag files */
+    public static final String TAG_FILE_EXTENSION = "tag"; // NOI18N
+    /** Recommended extension for tag file fragments */
+    public static final String TAGF_FILE_EXTENSION = "tagf"; // NOI18N
+    /** Recommended extension for tag files in XML syntax */
+    public static final String TAGX_FILE_EXTENSION = "tagx"; // NOI18N
     
     public static final String JSP_MIME_TYPE  = "text/x-jsp"; // NOI18N
 
+    public static final String TAG_MIME_TYPE  = "text/x-tag"; // NOI18N
+    
     protected void initialize () {
         super.initialize();
         ExtensionList ext = new ExtensionList();
@@ -56,6 +64,9 @@ public class JspLoader extends UniFileLoader {
         ext.addExtension(JSPF_EXTENSION);
         ext.addExtension(JSF_EXTENSION);
         ext.addExtension(JSPX_EXTENSION);
+        ext.addExtension(TAG_FILE_EXTENSION);
+        ext.addExtension(TAGF_FILE_EXTENSION);
+        ext.addExtension(TAGX_FILE_EXTENSION);
         setExtensions(ext);
 
     }

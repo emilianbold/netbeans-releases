@@ -46,8 +46,9 @@ public class JspNode extends DataNode {
     private static final String SHEETNAME_TEXT_PROPERTIES = "textProperties"; // NOI18N
     private static final String PROP_ENCODING = "encoding"; // NOI18N
 
-    private static final String ICON_BASE = "org/netbeans/modules/web/core/resources/jspObject"; // NOI18N
-
+    private static final String ICON_BASE_JSP = "org/netbeans/modules/web/core/resources/jspObject"; // NOI18N
+    private static final String ICON_BASE_TAG = "org/netbeans/modules/web/core/resources/tag"; // NOI18N
+    
     public static final String PROP_REQUEST_PARAMS   = "requestparams"; // NOI18N
 
     /** Create a node for the internet data object using the default children.
@@ -59,7 +60,7 @@ public class JspNode extends DataNode {
     }
 
     private void initialize () {
-        setIconBase(ICON_BASE);
+        setIconBase(getIconBase());
         setDefaultAction (SystemAction.get (OpenAction.class));
         setShortDescription (NbBundle.getMessage(JspNode.class, "LBL_jspNodeShortDesc"));
     }
@@ -315,7 +316,16 @@ public class JspNode extends DataNode {
     * @see #getIcons
     */
     protected String getIconBase() {
-        return ICON_BASE;
+        String ext = getDataObject().getPrimaryFile().getExt();
+        String iconBase;
+        
+        if (ext.equals(JspLoader.TAG_FILE_EXTENSION) 
+            || ext.equals(JspLoader.TAGF_FILE_EXTENSION)
+            || ext.equals(JspLoader.TAGX_FILE_EXTENSION))
+            iconBase = ICON_BASE_TAG;
+        else
+            iconBase = ICON_BASE_JSP;
+        return iconBase;
     }
 
     public HelpCtx getHelpCtx() {
