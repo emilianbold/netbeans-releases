@@ -779,6 +779,9 @@
 <mapID target="NetbeansDebuggerConstructorPropertiesSheet" url="debug/properties/classes_cons_properties.html" />
 <mapID target="NetbeansDebuggerMethodPropertiesSheet" url="debug/properties/classes_method_properties.html" />
 
+<mapID target="NetbeansDebuggerJPDAPopOldFrame" url="debug/fix/fix.html" />
+
+
 <mapID target="org.netbeans.modules.httpserver.HttpServerNode_properties" url="webbrowser/httpserver_properties.html" />
 <mapID target="org.netbeans.modules.httpserver.HttpServerNode_expert" url="webbrowser/httpserver_expert.html" />
 
