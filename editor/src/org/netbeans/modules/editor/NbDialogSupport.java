@@ -42,7 +42,6 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
     private static final String HELP_ID_MacroSavePanel = "editing.macros.recording"; // !!! NOI18N
     private static final String HELP_ID_FindPanel = "editing.find"; // !!! NOI18N
     private static final String HELP_ID_JavaFastImportPanel = "editing.fastimport"; // !!! NOI18N
-    private static final String HELP_ID_JavaFastOpenPanel = "editing.fastopen"; // !!! NOI18N
     private static final String HELP_ID_ScrollCompletionPane = "editing.codecompletion"; // !!! NOI18N
     
     public NbDialogSupport()
@@ -54,7 +53,6 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
             helpIDs.put("org.netbeans.editor.ext.FindDialogSupport$FindPanel", HELP_ID_FindPanel); // NOI18N
             helpIDs.put("org.netbeans.editor.ext.ScrollCompletionPane", HELP_ID_ScrollCompletionPane); // NOI18N
             helpIDs.put("org.netbeans.editor.ext.java.JavaFastImportPanel", HELP_ID_JavaFastImportPanel); // NOI18N
-            helpIDs.put("org.netbeans.editor.ext.java.JavaFastOpenPanel", HELP_ID_JavaFastOpenPanel); // NOI18N
         }
     }
     
@@ -64,7 +62,7 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
      * @param panel The content of the dialog to be displayed.
      * @param modal Whether the dialog should be modal.
      * @param buttons The array of JButtons to be added to the dialog.
-     * @param sidebuttons The buttons could be placed under the panel (false),
+     * @param sideButtons The buttons could be placed under the panel (false),
      *     or on the right side of the panel (true).
      * @param defaultIndex The index of default button in the buttons array,
      *   if <CODE>index < 0</CODE>, no default button is set.
