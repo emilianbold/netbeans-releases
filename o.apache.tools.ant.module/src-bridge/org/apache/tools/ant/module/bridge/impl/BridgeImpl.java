@@ -131,7 +131,6 @@ public class BridgeImpl implements BridgeInterface {
                     AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
-            //writer.println("#2"); // NOI18N
             project.addBuildListener(logger);
             if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 AntModule.err.log("CCL when configureProject is called: " + Thread.currentThread().getContextClassLoader());
@@ -139,7 +138,6 @@ public class BridgeImpl implements BridgeInterface {
             ProjectHelper projhelper = ProjectHelper.getProjectHelper();
             project.addReference("ant.projectHelper", projhelper); // NOI18N
             projhelper.parse(project, buildFile);
-            //writer.println("#3"); // NOI18N
             
             String inputHandlerName = AntSettings.getDefault().getInputHandler();
             InputHandler inputHandler = null;
@@ -159,7 +157,7 @@ public class BridgeImpl implements BridgeInterface {
         }
         catch (BuildException be) {
             // Write errors to the output window, since
-            // alot of errors could be annoying as dialogs
+            // a lot of errors could be annoying as dialogs
             if (verbosity >= Project.MSG_VERBOSE) {
                 be.printStackTrace(err);
             } else {
@@ -180,9 +178,7 @@ public class BridgeImpl implements BridgeInterface {
             return false;
         }
         
-        // Interesting fact: Project.build{Started,Finished} is protected!
-        // So it must be fired directly on the listener. Poor API design IMHO.
-        logger.buildStarted(new BuildEvent(project));
+        project.fireBuildStarted();
         
         // Save & restore system output streams.
         InputStream is = System.in;
@@ -211,23 +207,12 @@ public class BridgeImpl implements BridgeInterface {
             }
             project.executeTargets(targs);
             //writer.println("#5"); // NOI18N
-            logger.buildFinished(new BuildEvent(project));
+            project.fireBuildFinished(null);
             ok = true;
-        } catch (ThreadDeath td) {
-            if (useStatusLine) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "FMT_target_failed_status", displayName));
-            }
-            // don't throw ThreadDeath, just return. ThreadDeath sometimes
-            // generated when killing process in Execution Window
-            //throw td;
-        } catch (Exception e) {
-            BuildEvent ev = new BuildEvent(project);
-            ev.setException(e);
-            logger.buildFinished(ev);
-        } catch (LinkageError e) {
-            BuildEvent ev = new BuildEvent(project);
-            ev.setException(e);
-            logger.buildFinished(ev);
+        } catch (Throwable t) {
+            // Really need to catch everything, else AntClassLoader.cleanup may
+            // not be called, resulting in a memory leak and/or locked JARs (#42431).
+            project.fireBuildFinished(t);
         } finally {
             AntBridge.restoreSystemInOutErr();
             out.close();

@@ -98,7 +98,6 @@ final class NbBuildLogger implements BuildLogger {
         // result message
         long time = System.currentTimeMillis() - startTime; // #10305
         if (t == null) {
-            // [PENDING] should check for target member (and TargetExecutor should set it...)
             out.println(formatMessageWithTime("FMT_finished_target_printed", time));
             if (updateStatusLine) {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbBuildLogger.class, "FMT_finished_target_status", displayName));
@@ -107,7 +106,8 @@ final class NbBuildLogger implements BuildLogger {
             if ((t instanceof BuildException) && level < Project.MSG_VERBOSE) {
                 // Stack trace probably not required.
                 err.println(t);
-            } else {
+            } else if (!(t instanceof ThreadDeath) || level >= Project.MSG_VERBOSE) {
+                // ThreadDeath can be thrown when killing an Ant process, so don't print it normally
                 t.printStackTrace(err);
             }
             err.println(formatMessageWithTime("FMT_target_failed_printed", time)); // #10305
