@@ -16,9 +16,6 @@ Microsystems, Inc. All Rights Reserved.
 ToDo:
 - build validator DTD for this build system
 - sanity check that module list actually satisfies module dependencies
-Modules:
-treefs (complete yet?)
-workspaceswitcher
 -->
 
 <project name="nbbuild" default="all" basedir=".">
