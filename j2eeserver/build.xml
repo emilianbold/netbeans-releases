@@ -18,6 +18,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- <property name="buildroot" value="/trout1/gfink/build/dublin"/>-->
   <property name="nbroot" value=".."/>
   <property name="nbext" value="${nbroot}/nbbuild"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="${nbext}/standard-nbm-license.txt"/>
   
   <taskdef classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar" name="locjar"/>
