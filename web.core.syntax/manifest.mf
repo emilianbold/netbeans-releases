@@ -5,13 +5,13 @@ OpenIDE-Module-Install: org/netbeans/modules/web/core/syntax/RestoreColoring.cla
 OpenIDE-Module-Layer: org/netbeans/modules/web/core/syntax/layer.xml
 OpenIDE-Module-Public-Packages: org.netbeans.modules.web.core.syntax.spi.**
 OpenIDE-Module-Specification-Version: 1.13
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Implementation-Version: ${buildnumber}
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor/1 > 1.6, 
-  org.netbeans.modules.servletapi24/1 > @SERVLET24_SPEC_VERS_SUBST@,
+  org.netbeans.modules.servletapi24/1 > ${web.servletapi24.specification.version},
   org.netbeans.modules.html/1,
   org.openide.execution > 1.0, 
   org.netbeans.modules.web.jspparser/2,
-  org.netbeans.modules.xml.text/2,
+  org.netbeans.modules.xml.text/2 = ${xml.common.spec.version},
   org.openide.loaders > 4.11
 
