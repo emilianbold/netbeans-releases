@@ -1,6 +1,8 @@
 package org.netbeans.modules.extbrowser;
 
+import java.awt.Image;
 import java.beans.*;
+
 import org.openide.util.NbBundle;
 
 public class ExtWebBrowserBeanInfo extends SimpleBeanInfo {
@@ -23,9 +25,12 @@ public class ExtWebBrowserBeanInfo extends SimpleBeanInfo {
             try {
                 properties = new PropertyDescriptor [] {
                     new PropertyDescriptor ("name", ExtWebBrowser.class, "getName", null),    // NOI18N
+                    new PropertyDescriptor ("executable", ExtWebBrowser.class, "getExecutable", "setExecutable")    // NOI18N
                 };
                 properties[0].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_browserName"));
                 properties[0].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_browserName"));
+                properties[1].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_browserExecutable"));
+                properties[1].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_browserExecutable"));
             } catch (IntrospectionException ie) {
                 if (Boolean.getBoolean ("netbeans.debug.exceptions"))   // NOI18N
                     ie.printStackTrace ();
@@ -33,5 +38,12 @@ public class ExtWebBrowserBeanInfo extends SimpleBeanInfo {
             }
         }
         return properties;
+    }
+
+    /**
+    * Returns the IceBrowserSettings' icon. 
+    */
+    public Image getIcon (int type) {
+        return loadImage("/org/openide/resources/html/htmlView.gif"); // NOI18N
     }
 }

@@ -24,6 +24,7 @@ import org.openide.*;
 //import org.openide.awt.SwingBrowserImpl;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.options.SystemOption;
 
 import org.netbeans.modules.httpserver.*;
@@ -50,11 +51,20 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     
     /** length of delay between each probe to get XWindow identification */
     int probeDelayLength = 3000;
+    
+    /** reference to a factory to gett settings */
+    private ExtWebBrowser extBrowserFactory;
 
     /** Creates new UnixBrowserImpl */
     public UnixBrowserImpl () {
+        this (null);
+    }
+    
+    /** Creates new UnixBrowserImpl */
+    public UnixBrowserImpl (ExtWebBrowser extBrowserFactory) {
         super ();
         currWinID = -1;
+        this.extBrowserFactory = extBrowserFactory;
     }
     
     /** This should navigate browser back. Actually does nothing.
@@ -138,9 +148,9 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 byte [] buff = new byte [256];
                 
                 // is netcape running?
-                Process p = Runtime.getRuntime ().exec ("xwininfo -name Netscape"); // NOI18N
+                Process p = Runtime.getRuntime ().exec ("xwininfo -name " + getCommand (false)); // NOI18N
                 if (p.waitFor () == 0) {
-                    cmd = "netscape -raise -remote openURL("+url.toString ()+",new-window)"; // NOI18N
+                    cmd = getCommand (true) + " -raise -remote openURL("+url.toString ()+",new-window)"; // NOI18N
                     setStatusMessage (bundle.getString("MSG_Running_command")+cmd);
                     p = Runtime.getRuntime ().exec (cmd);
                     if (p.waitFor () != 0) {
@@ -152,7 +162,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                     }
                 }
                 else {
-                    cmd = "netscape "+url.toString (); // NOI18N
+                    cmd = getCommand (true) + " "+url.toString (); // NOI18N
                     setStatusMessage (bundle.getString("MSG_Running_command")+cmd);
                     p = Runtime.getRuntime ().exec (cmd);
                 }
@@ -162,7 +172,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             else {
                 setStatusMessage (bundle.getString("MSG_use_win")+Integer.toHexString (currWinID));
                 
-                cmd = "netscape -id 0x"+Integer.toHexString (currWinID)+
+                cmd = getCommand (true) + " -id 0x"+Integer.toHexString (currWinID)+
                     " -raise -remote openURL("+url.toString ()+")"; // NOI18N
                 setStatusMessage (bundle.getString("MSG_Running_command")+cmd);
                 Process p = Runtime.getRuntime ().exec (cmd);
@@ -213,6 +223,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     }
     
     private void setWindowID (int winID) {
+        System.out.println("setWindowID to "+Integer.toHexString (winID));
         currWinID = winID;
     }
     
@@ -263,6 +274,32 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         }
         return null;
     }
+    
+    /**
+     * Looks into factory for executable. If nothing is found then netscape is returned
+     * 
+     * @param wholePath if true then all path is returned, 
+     *                  if false then it is cut to last part and first char is converted
+     *                  to uppercase
+     * @return command to be executed
+     */
+    private String getCommand (boolean wholePath) {
+        String exec = "netscape";  // NOI18N
+        if (extBrowserFactory != null) {
+            String s = extBrowserFactory.getExecutable ();
+            if (s != null) 
+                exec = s;
+        }
+        if (!wholePath) {
+            int idx = exec.lastIndexOf ('/');
+            if ((idx == -1) && Utilities.isWindows ()) {
+                idx = exec.lastIndexOf ('\\');
+            }
+            if ((idx != -1) && (exec.length () > idx))
+                exec = exec.substring (idx+1);
+        }
+        return exec;
+    }  
 
 
     class WindowFinder implements Runnable {
@@ -279,7 +316,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                     // now try to get win ID
                     setStatusMessage (bundle.getString("MSG_look_for_win"));
                     Process p = Runtime.getRuntime ().exec (new String [] {
-                        "sh", "-c", "xwininfo -root -tree|grep Netscape"}); // NOI18N
+                        "sh", "-c", "xwininfo -root -tree|grep " + getCommand (false)}); // NOI18N
                     java.io.InputStream inp = p.getInputStream ();
                     int errCode = p.waitFor ();
                     if (errCode == 0) {
@@ -302,6 +339,29 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                         }
                     }
                     Thread.sleep (probeDelayLength);
+                }
+                // fallback - use the first one if you can't find it by URL
+                setStatusMessage (bundle.getString("MSG_look_for_win"));
+                Process p = Runtime.getRuntime ().exec (new String [] {
+                    "sh", "-c", "xwininfo -root -tree|grep " + getCommand (false) }); // NOI18N
+                java.io.InputStream inp = p.getInputStream ();
+                int errCode = p.waitFor ();
+                if (errCode == 0) {
+                    String line, s, prop;
+                    int winID;
+                    BufferedReader r = new BufferedReader (new InputStreamReader(inp));
+
+                    while ((line = r.readLine ()) != null) {
+                        s = line.substring (line.indexOf ('x')+1);
+                        s = s.substring (0, s.indexOf (' '));
+                        winID = Integer.parseInt (s, 16);
+
+                        prop = getXProperty (winID, "WM_NAME"); // NOI18N
+                        if (prop != null) {
+                            setWindowID (winID);
+                            return;
+                        }
+                    }
                 }
             }
             catch (java.io.IOException ex) {

@@ -13,7 +13,9 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.awt.Image;
 import java.beans.*;
+
 import org.openide.util.NbBundle;
 
 public class SimpleExtBrowserBeanInfo extends SimpleBeanInfo {
@@ -64,6 +66,13 @@ public class SimpleExtBrowserBeanInfo extends SimpleBeanInfo {
             }
         }
         return properties;
+    }
+
+    /**
+    * Returns the IceBrowserSettings' icon. 
+    */
+    public Image getIcon (int type) {
+        return loadImage("/org/openide/resources/html/htmlView.gif"); // NOI18N
     }
 }
 

@@ -25,12 +25,22 @@ import org.openide.awt.HtmlBrowser;
 
 public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable {
 
-    private PropertyChangeSupport pcs;
-    
     private static final long serialVersionUID = -3021027901671504127L;
+    
+    private static final String PROP_EXECUTABLE = "Executable"; // NOI18N
+    
+    /** command that executes the browser */
+    private String executable;
+    
+    private transient PropertyChangeSupport pcs;
     
     /** Creates new Browser */
     public ExtWebBrowser () {
+        init ();
+    }
+
+    /** initialize object */
+    private void init () {
         pcs = new PropertyChangeSupport (this);
     }
 
@@ -41,6 +51,16 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
         return NbBundle.getMessage (ExtWebBrowser.class, "CTL_ExternalBrowser");
     }
     
+    public String getExecutable () {
+        return executable;
+    }
+    
+    public void setExecutable (String executable) {
+        String old = this.executable;
+        this.executable = executable;
+        pcs.firePropertyChange (PROP_EXECUTABLE, old, executable);
+    }
+    
     /**
      * Returns a new instance of BrowserImpl implementation.
      */
@@ -48,7 +68,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
         ExtBrowserImpl impl = null;
 
         if (org.openide.util.Utilities.isUnix ())
-            impl = new UnixBrowserImpl ();
+            impl = new UnixBrowserImpl (this);
         else if (org.openide.util.Utilities.isWindows ())
             impl = new NbDdeBrowserImpl ();
         return impl;
@@ -57,8 +77,6 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
     /**
      * @param l new PropertyChangeListener */    
     public void addPropertyChangeListener (PropertyChangeListener l) {
-        if (pcs == null)
-            pcs = new PropertyChangeSupport (this);
         pcs.addPropertyChangeListener (l);
     }
     
@@ -68,4 +86,9 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
         pcs.removePropertyChangeListener (l);
     }
     
+    private void readObject (java.io.ObjectInputStream ois) 
+    throws java.io.IOException, ClassNotFoundException {
+        ois.defaultReadObject ();
+        init ();
+    }
 }
