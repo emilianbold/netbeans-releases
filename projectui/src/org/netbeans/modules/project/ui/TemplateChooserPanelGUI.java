@@ -83,32 +83,57 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     //GUI Builder
     private TemplatesPanelGUI.Builder builder;
     private Project project;
-    
-    public TemplateChooserPanelGUI(Project p /* , String[] recommendedTypes */ ) {
-        assert p != null : "Project cannot be null.";  // NOI18N
-        project = p;
+    private String category;
+    private String template;
+    private boolean isWarmUp = true;
+
+    public TemplateChooserPanelGUI() {
         this.builder = new FileChooserBuilder ();
         initComponents();
         setPreferredSize( PREF_DIM );
         setName (org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_Name")); // NOI18N
         Utilities.attachInitJob (this, this);
      }
-    
+
+
+    public void readValues (Project p, String category, String template) {
+        assert p != null : "Project can not be null";   //NOI18N
+        boolean wf;
+        synchronized (this) {
+            this.project = p;
+            this.category = category;
+            this.template = template;
+            wf = this.isWarmUp;
+        }
+        if (!wf) {
+            this.selectProject ( project );
+            ((TemplatesPanelGUI)this.templatesPanel).setSelectedCategoryByName (this.category);
+            ((TemplatesPanelGUI)this.templatesPanel).setSelectedTemplateByName (this.template);
+        }
+    }
+
     /** Called from readSettings, to initialize the GUI with proper components
      */
-    public void initValues( Project p ) {
+    private void initValues( Project p ) {
         // Populate the combo box with list of projects
         Project openProjects[] = OpenProjectList.getDefault().getOpenProjects();
         Arrays.sort( openProjects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
-        DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
+         DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
         projectsComboBox.setModel( projectsModel );
-        if ( projectsModel.getIndexOf( p ) == -1 ) {
-            projectsModel.insertElementAt( p, 0 );
-        }
-        projectsComboBox.setSelectedItem( p );
+        this.selectProject (p);
     }
-    
-    
+
+    private void selectProject (Project p) {
+        if (p != null) {
+            DefaultComboBoxModel projectsModel = (DefaultComboBoxModel) projectsComboBox.getModel ();
+            if ( projectsModel.getIndexOf( p ) == -1 ) {
+                projectsModel.insertElementAt( p, 0 );
+            }
+            projectsComboBox.setSelectedItem( p );
+        }
+    }
+
+
     public synchronized void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
@@ -147,8 +172,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         return PREF_DIM;
     }
     
-    private String getCategory () {
+    public String getCategoryName () {
         return ((TemplatesPanelGUI)this.templatesPanel).getSelectedCategoryName ();
+    }
+
+    public String getTemplateName () {
+        return ((TemplatesPanelGUI)this.templatesPanel).getSelectedTemplateName ();
     }
 
     public void setCategory (String category) {
@@ -257,7 +286,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         public void actionPerformed (ActionEvent event) {
-            String cat = getCategory ();
+            String cat = getCategoryName ();
             String template =  ((TemplatesPanelGUI)TemplateChooserPanelGUI.this.templatesPanel).getSelectedTemplateName();
             this.updateKeys ();
             setCategory (cat);
@@ -441,12 +470,22 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         //In the awt
         Cursor cursor = null;
         try {
+            Project p;
+            String c,t;
+            synchronized (this) {
+                p = this.project;
+                c = this.category;
+                t = this.template;
+            }
             cursor = TemplateChooserPanelGUI.this.getCursor();
             TemplateChooserPanelGUI.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             projectsComboBox.setRenderer( PROJECT_CELL_RENDERER );
-            initValues( project );
-            ((TemplatesPanelGUI)this.templatesPanel).doFinished (this.templatesFolder,null,null);
+            initValues( p );
+            ((TemplatesPanelGUI)this.templatesPanel).doFinished (this.templatesFolder, c, t);
         } finally {
+            synchronized (this) {
+                isWarmUp = false;
+            }
             if (cursor != null) {
                 this.setCursor (cursor);
             }

@@ -368,6 +368,11 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         public void propertyChange (final PropertyChangeEvent event) {
             // workaround of issue 43502, update of Help button set back the focus
             // to component which is active when this change starts
+            //XXX: this workaround causes problems in the selection of templates
+            // and should be removed, this workaround can be workarounded in the
+            // setSelectedTemplateByName when template name is null
+            // select the first template only if no template is already selected,
+            // but nicer solution is to remove this workaround at all.
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     firePropertyChange(event.getPropertyName(),

@@ -23,6 +23,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -37,6 +38,9 @@ import org.openide.util.NbBundle;
 
 final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListener {
 
+    private static String lastCategory = null;
+    private static String lastTemplate = null;
+
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     private TemplateChooserPanelGUI gui;
 
@@ -50,7 +54,7 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
 
     public Component getComponent() {
         if (gui == null) {
-            gui = new TemplateChooserPanelGUI(project /*, recommendedTypes */ );
+            gui = new TemplateChooserPanelGUI();
             gui.addChangeListener(this);
         }
         return gui;
@@ -86,9 +90,8 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
     }
 
     public void readSettings(Object settings) {
-        if ( gui != null ) {
-            gui.initValues( project );
-        }
+        TemplateChooserPanelGUI panel = (TemplateChooserPanelGUI) this.getComponent();
+        panel.readValues( project, lastCategory, lastTemplate );
         ((WizardDescriptor)settings).putProperty ("WizardPanel_contentSelectedIndex", new Integer (0)); // NOI18N
         ((WizardDescriptor)settings).putProperty ("WizardPanel_contentData", new String[] { // NOI18N
                 NbBundle.getBundle (TemplateChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
@@ -122,9 +125,12 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
                 } else {
                     wd.putProperty( ProjectChooserFactory.WIZARD_KEY_TEMPLATE, gui.getTemplate () );
                 }
+
+                lastCategory = gui.getCategoryName();
+                lastTemplate = gui.getTemplateName();
             }
             catch( DataObjectNotFoundException e ) {
-                // XXX
+                ErrorManager.getDefault().notify (e);
             }
         }
     }
