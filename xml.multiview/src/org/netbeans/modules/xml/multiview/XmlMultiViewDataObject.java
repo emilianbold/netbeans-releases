@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.xml.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
@@ -269,5 +268,5 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         }
     }
 
-    public abstract RootInterface getOriginal();
+    public abstract Object getOriginal();
 }

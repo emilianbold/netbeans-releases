@@ -547,7 +547,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         };
     }
 
-    public RootInterface getOriginal() {
+    public Object getOriginal() {
         return ((EjbJarProxy) ejbJar).getOriginal();
     }
 
