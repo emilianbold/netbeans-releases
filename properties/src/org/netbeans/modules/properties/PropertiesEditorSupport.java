@@ -99,23 +99,6 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     public void initialize() {
         setMIMEType (PropertiesDataObject.MIME_PROPERTIES);
     }
-
-    /** Overrides superclass method. Closes component. */
-    public boolean close() {
-        SaveCookie savec = (SaveCookie) myEntry.getCookie(SaveCookie.class);
-        if ((savec != null) && hasOpenedTableComponent()) {
-            return false;
-        }
-        
-        if (!super.close())
-            return false;
-
-        // #21850. Don't reparse invalid or virtual file.
-        if(myEntry.getFile().isValid() && !myEntry.getFile().isVirtual()) {
-            myEntry.getHandler().reparseNowBlocking();
-        }
-        return true;
-    }
     
     /** 
      * Overrides superclass method.
@@ -132,8 +115,6 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             if (propDO == null || !propDO.isModified()) return true;
             return super.canClose();
         }
-            
-            
     }
     
     /** 
@@ -260,7 +241,14 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     protected void notifyClosed() {
         // Close document only in case there is not open table editor.
         if(!hasOpenedTableComponent()) {
+            boolean wasModified = isModified();
             super.notifyClosed();
+            if (wasModified) {
+                // #21850. Don't reparse invalid or virtual file.
+                if(myEntry.getFile().isValid() && !myEntry.getFile().isVirtual()) {
+                    myEntry.getHandler().reparseNowBlocking();
+                }
+            }
         }
     }
 
