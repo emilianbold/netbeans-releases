@@ -92,7 +92,6 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 //				setDisplayName(dname);
 				displayFormat = new java.text.MessageFormat(fmt);
 				setName((String)info.get(DatabaseNodeInfo.DATABASE));
-				System.out.println("name "+getName());
 //			}
 		}
 		

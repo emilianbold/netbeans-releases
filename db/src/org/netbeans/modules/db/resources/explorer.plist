@@ -258,19 +258,19 @@
 			{
 				name = "Cut";
 				class = org.openide.actions.CutAction;
-				node = driverlist;
+//				node = driverlist;
 				system = YES;
 			},
 			{
 				name = "Copy";
 				class = org.openide.actions.CopyAction;
-				node = driverlist;
+//				node = driverlist;
 				system = YES;
 			},
 			{
 				name = "Paste";
 				class = org.openide.actions.PasteAction;
-				node = driverlist;
+//				node = driverlist;
 				system = YES;
 			},
 			delimiter,

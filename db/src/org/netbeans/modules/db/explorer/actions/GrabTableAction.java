@@ -48,7 +48,6 @@ public class GrabTableAction extends DatabaseAction
 			while (enu.hasMoreElements()) {
 				Object element = enu.nextElement();
 				if (element instanceof ColumnNodeInfo) {
-					System.out.println("Specification "+((ColumnNodeInfo)element).getColumnSpecification());
 					cmd.getColumns().add(((ColumnNodeInfo)element).getColumnSpecification());
 				} else System.out.println(element.getClass()+" not grabbed");
 			}

@@ -107,7 +107,6 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 
 	public void setName(String newname)
 	{
-		System.out.println("Set name "+newname);
 		super.setName(newname);
 		info.setName(newname);
 	}

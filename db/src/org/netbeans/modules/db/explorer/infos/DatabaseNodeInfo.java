@@ -376,13 +376,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 
 	public String getName()
 	{
-		System.out.println("Get name "+get(NAME));
 		return (String)get(NAME);
 	}
 
 	public void setName(String nam)
 	{
-		System.out.println("Set name to info "+nam);
 		put(NAME, nam);
 	}
 
@@ -438,13 +436,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 
 	public String getDisplayname()
 	{
-		System.out.println("Get displayname "+get("displayname"));
 		return (String)get("displayname");
 	}
 
 	public void setDisplayname(String name)
 	{
-		System.out.println("Set displayname "+name);
 		put("displayname", name);
 	}
 

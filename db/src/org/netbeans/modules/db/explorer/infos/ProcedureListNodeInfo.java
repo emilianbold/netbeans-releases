@@ -54,7 +54,7 @@ implements ProcedureOwnerOperations
 			String tname = tinfo.getName();
 			Specification spec = (Specification)getSpecification();
 			AbstractCommand cmd = spec.createCommandDropProcedure(tname);
-			System.out.println(cmd.getCommand()); // execute();
+//			System.out.println(cmd.getCommand()); // execute();
 			getNode().getChildren().remove(new Node[]{node});
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());
