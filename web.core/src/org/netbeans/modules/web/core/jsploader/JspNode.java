@@ -14,32 +14,19 @@
 package org.netbeans.modules.web.core.jsploader;
 
 import java.io.*;
-import java.beans.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
+import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
 
-import javax.swing.SwingUtilities;
-
-import org.openide.*;
-import org.openide.cookies.OpenCookie;
+import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.CompilerSupport;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
-import org.openide.src.*;
 import org.openide.actions.OpenAction;
-import org.openide.src.nodes.SourceChildren;
-import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.Lookup;
-import org.openide.execution.Executor;
-import org.openide.debugger.DebuggerType;
 
 import org.netbeans.modules.web.core.WebExecSupport;
 import org.netbeans.modules.j2ee.impl.ServerExecSupport;
@@ -259,11 +246,8 @@ public class JspNode extends DataNode {
                     } catch (IOException ex) {
                         InvocationTargetException t =  new InvocationTargetException(ex);
                         wrapThrowable(t, ex,
-                            java.text.MessageFormat.format(NbBundle.getBundle(JspNode.class).getString("FMT_UnsupportedEncoding"), // NOI18N
-                                new Object[] {
-                                    encoding
-                                }
-                            ));
+                            NbBundle.getMessage(JspNode.class, "FMT_UnsupportedEncoding", encoding) // NOI18N
+                            );
                         throw t;
                     }
                 }
@@ -294,9 +278,7 @@ public class JspNode extends DataNode {
             /** Returms the display value for the default encoding. */
             private String getDefaultEncodingDisplay() {
                 String enc = JspDataObject.getDefaultEncoding();
-                return MessageFormat.format(
-                    NbBundle.getBundle(JspNode.class).getString("FMT_DefaultEncoding"),
-                    new Object[] {enc});
+                return NbBundle.getMessage(JspNode.class, "FMT_DefaultEncoding", enc);
             }
         });
         sheet.put(ps);
@@ -305,7 +287,7 @@ public class JspNode extends DataNode {
     }
 
     static final void wrapThrowable(Throwable outer, Throwable inner, String message) {
-        ((ErrorManager)Lookup.getDefault().lookup(ErrorManager.class)).annotate(
+        ErrorManager.getDefault().annotate(
             outer, ErrorManager.USER, null, message, inner, null);
     }
 
@@ -348,6 +330,3 @@ public class JspNode extends DataNode {
 
 }
 
-/*
- * Log
- */
