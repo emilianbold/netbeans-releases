@@ -48,7 +48,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="compile" depends="init,buildDependentModules">
-        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+        <mkdir dir="build/classes"/>
+        <javac srcdir="src" destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
           <classpath>
             <path refid="jellytools.classpath"/>
           </classpath>
@@ -71,13 +72,12 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Create jelly2 jar -->
         <delete file="manifest-subst.mf"/>
         <copy file="src/org/netbeans/jellytools/version_info" tofile="manifest-subst.mf" filtering="on"/>
-        <move file="src/org/netbeans/jellytools/version_info" todir="."/>
-        <copy file="manifest-subst.mf" tofile="src/org/netbeans/jellytools/version_info" overwrite="true"/>
-        <jar basedir="src" compress="false" jarfile="jelly2-nb.jar"
+        <copy file="manifest-subst.mf" tofile="build/classes/org/netbeans/jellytools/version_info"/>
+        <copy file="src/org/netbeans/jellytools/timeouts" toDir="build/classes/org/netbeans/jellytools"/>
+        <jar basedir="build/classes" compress="false" jarfile="jelly2-nb.jar"
              manifest="manifest-subst.mf" excludesfile="../nbbuild/standard-jar-excludes.txt">
           <include name="**/jellytools/**"/>
         </jar>
-        <move file="./version_info" todir="src/org/netbeans/jellytools"/>
      </target>
 
     <!-- only to enable call both 'ant jar' and 'ant jars' -->
@@ -127,6 +127,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target  name="clean" depends="init" description="Clean all build products">
+        <delete dir="build"/>
         <delete>
             <fileset dir=".">
                 <include name="**/*.class"/>
