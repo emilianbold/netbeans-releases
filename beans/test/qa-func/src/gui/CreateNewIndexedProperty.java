@@ -1,52 +1,26 @@
 package gui;
 
-
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-
 import java.io.File;
 import java.io.IOException;
 
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.operators.Operator;
-
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.ChooseTemplateStepOperator;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.ExplorerOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewWizardOperator;
-import org.netbeans.jellytools.TargetLocationStepOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jellytools.actions.DeleteAction;
-import org.netbeans.jellytools.actions.MountLocalAction;
-import org.netbeans.jellytools.actions.NewTemplateAction;
-import org.netbeans.jellytools.modules.form.FormEditorOperator;
-import org.netbeans.jellytools.nodes.FilesystemNode;
-import org.netbeans.jellytools.nodes.FolderNode;
+import junit.textui.TestRunner;
+import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.ComboBoxProperty;
 import org.netbeans.jellytools.properties.PropertySheetTabOperator;
+import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.junit.NbTestSuite;
+
 import org.openide.actions.SaveAllAction;
 import org.openide.filesystems.FileObject;
 
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-
-//////
-
 
 
 public class CreateNewIndexedProperty extends JellyTestCase {
@@ -86,7 +60,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
-        junit.textui.TestRunner.run(suite());
+        TestRunner.run(suite());
         // run only selected test case
         //junit.textui.TestRunner.run(new BeansTemplates("testJavaBean"));
     }
@@ -98,9 +72,9 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         Utilities.mountSampledir();
 
         OptionsOperator optionsOperator = OptionsOperator.invoke();
-        optionsOperator.selectOption("Editing"+"|"+"Beans Property");
+        optionsOperator.selectOption(Bundle.getString("org.netbeans.core.Bundle", "UI/Services/Editing")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Menu"));
         PropertySheetTabOperator propertySheetTabOperator = new PropertySheetTabOperator(optionsOperator);
-        new ComboBoxProperty(propertySheetTabOperator, "Style of Declared Variable").setValue("this.property_Value");
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "MSG_Option_Gen_This"));
         
         FileObject testFile = Repository.getDefault().findResource("gui/data/" + NAME_TEST_FILE + ".java");
         FileObject destination = Repository.getDefault().findFileSystem(sampleDir.replace('\\', '/')).getRoot();
@@ -128,7 +102,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
         JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);
@@ -168,7 +142,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
 
@@ -207,7 +181,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
 
@@ -220,7 +194,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         jComboBoxOperator.setSelectedItem("Read Only");
         nbDialogOperator.btOK().pushNoBlock();
         
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));        
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));        
         nbDialogOperator = new NbDialogOperator(dialogTitle);
         jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
         jTextFieldOperator.typeText("second");        
@@ -231,7 +205,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         jComboBoxOperator.setSelectedItem("Write Only");
         nbDialogOperator.btOK().pushNoBlock();
 
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));        
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));        
         nbDialogOperator = new NbDialogOperator(dialogTitle);
         jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
         jTextFieldOperator.typeText("third");        
@@ -239,7 +213,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.setSelectedItem("long");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
-        jComboBoxOperator.setSelectedItem("Read / Write");
+        jComboBoxOperator.setSelectedItem(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add"));
         nbDialogOperator.btOK().pushNoBlock();
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
         
@@ -258,7 +232,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
 
@@ -268,7 +242,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.setSelectedItem("MyType");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
-        jComboBoxOperator.setSelectedItem("Read / Write");
+        jComboBoxOperator.setSelectedItem(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add"));
         JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, 0);
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(3000);
@@ -290,7 +264,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
 
@@ -300,7 +274,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.setSelectedItem("MyType");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
-        jComboBoxOperator.setSelectedItem("Read / Write");
+        jComboBoxOperator.setSelectedItem(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add"));
         JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_constrainedCheckBox"));
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(3000);
@@ -322,7 +296,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
 
@@ -332,7 +306,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.setSelectedItem("MyType");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
-        jComboBoxOperator.setSelectedItem("Read / Write");
+        jComboBoxOperator.setSelectedItem(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add"));
         JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(3000);
@@ -354,7 +328,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
 
@@ -364,7 +338,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.setSelectedItem("MyType");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
-        jComboBoxOperator.setSelectedItem("Read / Write");
+        jComboBoxOperator.setSelectedItem(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add"));
         JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(3000);
@@ -390,7 +364,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
 
@@ -400,7 +374,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.setSelectedItem("MyType");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
-        jComboBoxOperator.setSelectedItem("Read / Write");
+        jComboBoxOperator.setSelectedItem(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add"));
         JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(3000);
@@ -427,7 +401,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
 
@@ -437,7 +411,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.setSelectedItem("MyType");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
-        jComboBoxOperator.setSelectedItem("Read / Write");
+        jComboBoxOperator.setSelectedItem(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add"));
         JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(3000);
@@ -467,7 +441,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
 
@@ -477,7 +451,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.setSelectedItem("MyType");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
-        jComboBoxOperator.setSelectedItem("Read / Write");
+        jComboBoxOperator.setSelectedItem(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add"));
         JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(3000);
@@ -507,7 +481,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
 
@@ -517,7 +491,7 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.setSelectedItem("MyType");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
-        jComboBoxOperator.setSelectedItem("Read / Write");
+        jComboBoxOperator.setSelectedItem(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add"));
         
         JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
         jCheckBoxOperator.push();

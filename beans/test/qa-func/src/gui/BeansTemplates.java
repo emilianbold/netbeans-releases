@@ -10,12 +10,12 @@ import org.netbeans.jellytools.nodes.FolderNode;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 
 
-import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbTestSuite;
-
 import org.openide.actions.SaveAllAction;
+
 
 /////////////////////
 public class BeansTemplates extends JellyTestCase {
@@ -75,13 +75,12 @@ public class BeansTemplates extends JellyTestCase {
         Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
         FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
         examplesFolderNode.select();
-        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
+        DefaultStringComparator comparator = new DefaultStringComparator(true, true);
         new NewTemplateAction().perform();
         NewWizardOperator newWizardOper = new NewWizardOperator();
         ChooseTemplateStepOperator ctso = new ChooseTemplateStepOperator();
         ctso.setComparator(comparator);
         String bean = Bundle.getString("org.netbeans.modules.beans.Bundle", "Templates/Beans") + "|" + Bundle.getString("org.netbeans.modules.beans.Bundle", "Templates/Beans/Bean.java");
-        System.out.println("lookin for " + bean);
         new EventTool().waitNoEvent(1000);
         ctso.selectTemplate(bean);
         ctso.next();
@@ -112,7 +111,7 @@ public class BeansTemplates extends JellyTestCase {
         Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
         FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
         examplesFolderNode.select();
-        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
+        DefaultStringComparator comparator = new DefaultStringComparator(true, true);
         new NewTemplateAction().perform();
         NewWizardOperator newWizardOper = new NewWizardOperator();
         ChooseTemplateStepOperator ctso = new ChooseTemplateStepOperator();
@@ -138,12 +137,11 @@ public class BeansTemplates extends JellyTestCase {
         Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
         FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
         examplesFolderNode.select();
-        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
+        DefaultStringComparator comparator = new DefaultStringComparator(true, true);
         new NewTemplateAction().perform();
         NewWizardOperator newWizardOper = new NewWizardOperator();
         ChooseTemplateStepOperator ctso = new ChooseTemplateStepOperator();
         String bean = Bundle.getString("org.netbeans.modules.beans.Bundle", "Templates/Beans") + "|" + Bundle.getString("org.netbeans.modules.beans.Bundle","Templates/Beans/BeanInfoNoIcon.java");
-        System.out.println("lookin for " + bean);
         new EventTool().waitNoEvent(1000);
         ctso.selectTemplate(bean);
         ctso.next();
@@ -167,12 +165,11 @@ public class BeansTemplates extends JellyTestCase {
         Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
         FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
         examplesFolderNode.select();
-        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
+        DefaultStringComparator comparator = new DefaultStringComparator(true, true);
         new NewTemplateAction().perform();
         NewWizardOperator newWizardOper = new NewWizardOperator();
         ChooseTemplateStepOperator ctso = new ChooseTemplateStepOperator();
         String bean = Bundle.getString("org.netbeans.modules.beans.Bundle", "Templates/Beans") + "|" + Bundle.getString("org.netbeans.modules.beans.Bundle","Templates/Beans/Customizer.java");
-        System.out.println("lookin for " + bean);
         new EventTool().waitNoEvent(1000);
         ctso.selectTemplate(bean);
         ctso.next();
@@ -189,7 +186,7 @@ public class BeansTemplates extends JellyTestCase {
         explorerOperator.selectPageFilesystems();        
         repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
         JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_CUSTOMIZER); // NOI18N
-        javaNode.performPopupActionNoBlock("Edit");
+        javaNode.performPopupActionNoBlock(Bundle.getString("org.openide.actions.Bundle", "Edit"));
         new EventTool().waitNoEvent(100);
         EditorWindowOperator ewo = new EditorWindowOperator();
         ewo.getEditor();
@@ -207,12 +204,11 @@ public class BeansTemplates extends JellyTestCase {
         Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
         FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
         examplesFolderNode.select();
-        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
+        DefaultStringComparator comparator = new DefaultStringComparator(true, true);
         new NewTemplateAction().perform();
         NewWizardOperator newWizardOper = new NewWizardOperator();
         ChooseTemplateStepOperator ctso = new ChooseTemplateStepOperator();
         String bean = Bundle.getString("org.netbeans.modules.beans.Bundle", "Templates/Beans") + "|" + Bundle.getString("org.netbeans.modules.beans.Bundle","Templates/Beans/PropertyEditor.java");
-        System.out.println("lookin for " + bean);
         new EventTool().waitNoEvent(1000);
         ctso.selectTemplate(bean);
         ctso.next();

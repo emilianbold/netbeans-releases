@@ -14,17 +14,12 @@ import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 
-
-
 import org.openide.actions.SaveAllAction;
 import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-
-
 
 public class BeanInfoGeneration extends JellyTestCase {
     
@@ -103,7 +98,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_PROPERTY"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_PROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
         
@@ -135,7 +130,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
         dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
         nbDialogOperator = new NbDialogOperator(dialogTitle);
         
@@ -175,7 +170,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_UNICASTSE"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_UNICASTSE"));
         dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewUniCastES");
         nbDialogOperator = new NbDialogOperator(dialogTitle);
         
@@ -199,7 +194,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_MULTICASTSE"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_MULTICASTSE"));
         dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewMultiCastES");
         nbDialogOperator = new NbDialogOperator(dialogTitle);
         
@@ -224,7 +219,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
         patternsNode.select();
-        patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_MULTICASTSE"));
+        patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_MULTICASTSE"));
         dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewMultiCastES");
         nbDialogOperator = new NbDialogOperator(dialogTitle);
         
@@ -252,7 +247,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_GenerateBeanInfo"));
         new EventTool().waitNoEvent(DELAY);
-        String dialogTitle = "BeanInfo Editor";
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_TITLE_GenerateBeanInfo");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
         //new EventTool().waitNoEvent(1500);
         nbDialogOperator.ok();
@@ -274,23 +269,23 @@ public class BeanInfoGeneration extends JellyTestCase {
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_GenerateBeanInfo"));
         new EventTool().waitNoEvent(DELAY);
-        String dialogTitle = "BeanInfo Editor";
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_TITLE_GenerateBeanInfo");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
         JTreeOperator jTreeOperator = new JTreeOperator(nbDialogOperator);
-        Node node = new Node(jTreeOperator, "Event Sources");
+        Node node = new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_EventSets"));
         node.select();
-        for (int i=0; i<(new Node(jTreeOperator, "Event Sources").getChildren().length); i++ ) {
+        for (int i=0; i<(new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_EventSets")).getChildren().length); i++ ) {
             new Node(node,i).select();
             PropertySheetOperator propertySheetOperator = new PropertySheetOperator(nbDialogOperator);
-            PropertySheetTabOperator propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Properties");
-            new ComboBoxProperty(propertySheetTabOperator, "Include in BeanInfo").setValue("False");
+            PropertySheetTabOperator propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.openide.explorer.propertysheet.Bundle", "CTL_Properties"));
+            new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_included")).setValue("False");
             //new EventTool().waitNoEvent(1000);
         }
         
-        new Node(jTreeOperator, "Bean").select();
+        new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Descriptor")).select();
         PropertySheetOperator propertySheetOperator = new PropertySheetOperator(nbDialogOperator);
-        PropertySheetTabOperator propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Properties");
-        new ComboBoxProperty(propertySheetTabOperator, "Get From Introspection").setValue("False");
+        PropertySheetTabOperator propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.openide.explorer.propertysheet.Bundle", "CTL_Properties"));
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_nullDescriptor")).setValue("False");
         
         nbDialogOperator.ok();
         
@@ -300,7 +295,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"BeanInfo");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Open");
+        javaNode.performPopupActionNoBlock(Bundle.getString("org.openide.actions.Bundle", "Open"));
         
         new EventTool().waitNoEvent(500);
         
@@ -319,14 +314,14 @@ public class BeanInfoGeneration extends JellyTestCase {
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_GenerateBeanInfo"));
         new EventTool().waitNoEvent(DELAY);
-        String dialogTitle = "BeanInfo Editor";
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_TITLE_GenerateBeanInfo");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
         JTreeOperator jTreeOperator = new JTreeOperator(nbDialogOperator);
         
-        new Node(jTreeOperator, "Bean").select();
+        new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Descriptor")).select();
         PropertySheetOperator propertySheetOperator = new PropertySheetOperator(nbDialogOperator);
-        PropertySheetTabOperator propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Properties");
-        new ComboBoxProperty(propertySheetTabOperator, "Get From Introspection").setValue("False");
+        PropertySheetTabOperator propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.openide.explorer.propertysheet.Bundle", "CTL_Properties"));
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_nullDescriptor")).setValue("False");
         
         nbDialogOperator.ok();
         //new EventTool().waitNoEvent(750);
@@ -358,7 +353,7 @@ public class BeanInfoGeneration extends JellyTestCase {
                 Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
                 Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+NAME_NON_INDEX_PROPERTY);
                 patternsNode.select();
-                patternsNode.performPopupActionNoBlock("Delete");
+                patternsNode.performPopupActionNoBlock(Bundle.getStringTrimmed("org.openide.actions.Bundle", "Delete"));
             }
         });
         thread.start();
@@ -377,13 +372,13 @@ public class BeanInfoGeneration extends JellyTestCase {
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_GenerateBeanInfo"));
         new EventTool().waitNoEvent(DELAY);
-        dialogTitle = "BeanInfo Editor";
+        dialogTitle = Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_TITLE_GenerateBeanInfo");
         nbDialogOperator = new NbDialogOperator(dialogTitle);
         
-        new Node(jTreeOperator, "Bean").select();
+        new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Descriptor")).select();
         propertySheetOperator = new PropertySheetOperator(nbDialogOperator);
-        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Properties");
-        new ComboBoxProperty(propertySheetTabOperator, "Get From Introspection").setValue("False");
+        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.openide.nodes.Bundle", "Properties"));
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_nullDescriptor")).setValue("False");
         
         nbDialogOperator.ok();
         //new EventTool().waitNoEvent(1500);
@@ -392,7 +387,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"BeanInfo");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Open");
+        javaNode.performPopupActionNoBlock(Bundle.getString("org.openide.actions.Bundle", "Open"));
         try {
             EditorWindowOperator ewo = new EditorWindowOperator();
             EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE+"BeanInfo");
@@ -416,37 +411,37 @@ public class BeanInfoGeneration extends JellyTestCase {
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_GenerateBeanInfo"));
         new EventTool().waitNoEvent(DELAY);
-        String dialogTitle = "BeanInfo Editor";
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_TITLE_GenerateBeanInfo");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
         System.err.println(nbDialogOperator);
         
         JTreeOperator jTreeOperator = new JTreeOperator(nbDialogOperator);
         System.err.println(jTreeOperator);
-        Node node = new Node(jTreeOperator, "Bean|TestFile");
+        Node node = new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Descriptor") + '|' + "TestFile");
         node.select();
         //new EventTool().waitNoEvent(1000);
-        node = new Node(jTreeOperator, "Properties|nonIndexProperty");
+        node = new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Properties") + '|' + "nonIndexProperty");
         node.select();
         //new EventTool().waitNoEvent(1000);
-        node = new Node(jTreeOperator, "Properties|indexProperty");
+        node = new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Properties") + '|' + "indexProperty");
         node.select();
         //new EventTool().waitNoEvent(1000);
-        node = new Node(jTreeOperator, "Event Sources|itemListener");
+        node = new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_EventSets") + '|' + "itemListener");
         node.select();
         new EventTool().waitNoEvent(100);
-        node = new Node(jTreeOperator, "Event Sources|focusListener");
+        node = new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_EventSets") + '|' + "focusListener");
         node.select();
         //new EventTool().waitNoEvent(1000);
-        node = new Node(jTreeOperator, "Event Sources|vetoableChangeListener");
+        node = new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_EventSets") + '|' + "vetoableChangeListener");
         node.select();
         //new EventTool().waitNoEvent(1000);
-        node = new Node(jTreeOperator, "Event Sources|propertyChangeListener");
+        node = new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_EventSets") + '|' + "propertyChangeListener");
         node.select();
         //new EventTool().waitNoEvent(1000);
-        node = new Node(jTreeOperator, "Event Sources|actionListener");
+        node = new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_EventSets") + '|' + "actionListener");
         node.select();
         //new EventTool().waitNoEvent(1000);
-        node = new Node(jTreeOperator, "Methods");
+        node = new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Methods"));
         node.select();
         //new EventTool().waitNoEvent(1000);
         nbDialogOperator.close();
@@ -462,7 +457,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_GenerateBeanInfo"));
         new EventTool().waitNoEvent(DELAY);
-        String dialogTitle = "BeanInfo Editor";
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_TITLE_GenerateBeanInfo");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
         
         JTreeOperator jTreeOperator = new JTreeOperator(nbDialogOperator);
@@ -471,23 +466,23 @@ public class BeanInfoGeneration extends JellyTestCase {
         jTreeOperator.setSelectionRow(0);
         //new EventTool().waitNoEvent(1000);
         PropertySheetOperator propertySheetOperator = new PropertySheetOperator(nbDialogOperator);
-        PropertySheetTabOperator propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Properties");
-        new TextFieldProperty(propertySheetTabOperator, "Default Property Index").setValue("123");
+        PropertySheetTabOperator propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Properties"));
+        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_defaultPropertyIndex")).setValue("123");
         //new EventTool().waitNoEvent(1000);
-        new TextFieldProperty(propertySheetTabOperator, "Default Event Index").setValue("456");
+        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_defaultEventIndex")).setValue("456");
         //new EventTool().waitNoEvent(1000);
         
-        new Node(jTreeOperator, "Bean").select();
+        new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Descriptor")).select();
         propertySheetOperator = new PropertySheetOperator(nbDialogOperator);
-        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Properties");
-        new ComboBoxProperty(propertySheetTabOperator, "Get From Introspection").setValue("False");
+        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.openide.explorer.propertysheet.Bundle", "CTL_Properties"));
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_nullDescriptor")).setValue("False");
         nbDialogOperator.ok();
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"BeanInfo");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Open");
+        javaNode.performPopupActionNoBlock(Bundle.getString("org.openide.actions.Bundle", "Open"));
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE+"BeanInfo");
         ref(eo.getText());
@@ -503,33 +498,33 @@ public class BeanInfoGeneration extends JellyTestCase {
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_GenerateBeanInfo"));
         new EventTool().waitNoEvent(DELAY);
-        String dialogTitle = "BeanInfo Editor";
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_TITLE_GenerateBeanInfo");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
         
         JTreeOperator jTreeOperator = new JTreeOperator(nbDialogOperator);
-        new Node(jTreeOperator, "Bean").select();
+        new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Descriptor")).select();
         //new EventTool().waitNoEvent(1000);
         PropertySheetOperator propertySheetOperator = new PropertySheetOperator(nbDialogOperator);
-        PropertySheetTabOperator propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Properties");
-        new ComboBoxProperty(propertySheetTabOperator, "Get From Introspection").setValue("True");
+        PropertySheetTabOperator propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.openide.explorer.propertysheet.Bundle", "CTL_Properties"));
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_nullDescriptor")).setValue("True");
         
-        new Node(jTreeOperator, "Properties").select();
+        new Node(jTreeOperator, Bundle.getString("org.openide.explorer.propertysheet.Bundle", "CTL_Properties")).select();
         //new EventTool().waitNoEvent(1000);
         propertySheetOperator = new PropertySheetOperator(nbDialogOperator);
-        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Properties");
-        new ComboBoxProperty(propertySheetTabOperator, "Get From Introspection").setValue("True");
+        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.openide.explorer.propertysheet.Bundle", "CTL_Properties"));
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_nullProperties")).setValue("True");
         
-        new Node(jTreeOperator, "Event Sources").select();
+        new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_EventSets")).select();
         //new EventTool().waitNoEvent(1000);
         propertySheetOperator = new PropertySheetOperator(nbDialogOperator);
-        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Properties");
-        new ComboBoxProperty(propertySheetTabOperator, "Get From Introspection").setValue("True");
+        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.openide.explorer.propertysheet.Bundle", "CTL_Properties"));
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_nullEvents")).setValue("True");
         
-        new Node(jTreeOperator, "Methods").select();
+        new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Methods")).select();
         //new EventTool().waitNoEvent(1000);
         propertySheetOperator = new PropertySheetOperator(nbDialogOperator);
-        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Properties");
-        new ComboBoxProperty(propertySheetTabOperator, "Get From Introspection").setValue("True");
+        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.openide.explorer.propertysheet.Bundle", "CTL_Properties"));
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_nullProperties")).setValue("True");
         //new EventTool().waitNoEvent(1000);
         
         nbDialogOperator.ok();
@@ -538,7 +533,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"BeanInfo");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Open");
+        javaNode.performPopupActionNoBlock(Bundle.getString("org.openide.actions.Bundle", "Open"));
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE+"BeanInfo");
         ref(eo.getText());
@@ -555,84 +550,84 @@ public class BeanInfoGeneration extends JellyTestCase {
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_GenerateBeanInfo"));
         new EventTool().waitNoEvent(DELAY);
-        String dialogTitle = "BeanInfo Editor";
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_TITLE_GenerateBeanInfo");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
         
         JTreeOperator jTreeOperator = new JTreeOperator(nbDialogOperator);
-        new Node(jTreeOperator, "Bean|TestFile").select();
+        new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Descriptor") + "|TestFile").select();
         //new EventTool().waitNoEvent(1000);
         PropertySheetOperator propertySheetOperator = new PropertySheetOperator(nbDialogOperator);
-        PropertySheetTabOperator propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Properties");
-        new TextFieldProperty(propertySheetTabOperator, "Name").getValue();
+        PropertySheetTabOperator propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Properties"));
+        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_name")).getValue();
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Expert").setValue(new ComboBoxProperty(propertySheetTabOperator, "Expert").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_expert")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_expert")).getValue());
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Hidden").setValue(new ComboBoxProperty(propertySheetTabOperator, "Hidden").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_hidden")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_hidden")).getValue());
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Preferred").setValue(new ComboBoxProperty(propertySheetTabOperator, "Preferred").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_preferred")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_preferred")).getValue());
         //new EventTool().waitNoEvent(750);
-        new TextFieldProperty(propertySheetTabOperator, "Display Name Code").setValue(new TextFieldProperty(propertySheetTabOperator, "Display Name Code").getValue());
+        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_displayName")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_displayName")).getValue());
         //new EventTool().waitNoEvent(750);
-        new TextFieldProperty(propertySheetTabOperator, "Short Description Code").setValue(new TextFieldProperty(propertySheetTabOperator, "Short Description Code").getValue());
+        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).getValue());
         //new EventTool().waitNoEvent(750);
-        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Expert");
-        new TextFieldProperty(propertySheetTabOperator, "Customizer Name Code").getValue();
+        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_expert"));
+        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_customizer")).getValue();
         //new EventTool().waitNoEvent(750);
         
         jTreeOperator.setComparator(new DefaultStringComparator(true, true));
-        new Node(jTreeOperator, "Properties|indexProperty").select();
+        new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Properties") + "|indexProperty").select();
         
         //new EventTool().waitNoEvent(1000);
         propertySheetOperator = new PropertySheetOperator(nbDialogOperator);
-        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Properties");
-        new TextFieldProperty(propertySheetTabOperator, "Name").getValue();
+        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Properties"));
+        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_name")).getValue();
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Expert").setValue(new ComboBoxProperty(propertySheetTabOperator, "Expert").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_expert")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_expert")).getValue());
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Hidden").setValue(new ComboBoxProperty(propertySheetTabOperator, "Hidden").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_hidden")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_hidden")).getValue());
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Preferred").setValue(new ComboBoxProperty(propertySheetTabOperator, "Preferred").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_preferred")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_preferred")).getValue());
         //new EventTool().waitNoEvent(750);
-        new TextFieldProperty(propertySheetTabOperator, "Short Description Code").setValue(new TextFieldProperty(propertySheetTabOperator, "Short Description Code").getValue());
+        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).getValue());
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Include in BeanInfo").setValue(new ComboBoxProperty(propertySheetTabOperator, "Include in BeanInfo").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_included")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_included")).getValue());
         //new EventTool().waitNoEvent(750);
-        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Expert");
-        new ComboBoxProperty(propertySheetTabOperator, "Bound").setValue(new ComboBoxProperty(propertySheetTabOperator, "Bound").getValue());
+        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_expert"));
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_bound")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_bound")).getValue());
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Constrained").setValue(new ComboBoxProperty(propertySheetTabOperator, "Constrained").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_bound")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_bound")).getValue());
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Mode").setValue(new ComboBoxProperty(propertySheetTabOperator, "Mode").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_mode")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_mode")).getValue());
         //new EventTool().waitNoEvent(750);
-        new TextFieldProperty(propertySheetTabOperator, "Property Editor Class").setValue(new TextFieldProperty(propertySheetTabOperator, "Property Editor Class").getValue());
+        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_propertyEditorClass")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_propertyEditorClass")).getValue());
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Non-Indexed Getter").setValue(new ComboBoxProperty(propertySheetTabOperator, "Non-Indexed Getter").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_niGetter")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_niGetter")).getValue());
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Non-Indexed Setter").setValue(new ComboBoxProperty(propertySheetTabOperator, "Non-Indexed Setter").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_niSetter")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_niSetter")).getValue());
         //new EventTool().waitNoEvent(750);
         
-        new Node(jTreeOperator, "Event Sources|focusListener").select();
+        new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_EventSets") + "|focusListener").select();
         //new EventTool().waitNoEvent(1000);
         propertySheetOperator = new PropertySheetOperator(nbDialogOperator);
-        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Properties");
-        new TextFieldProperty(propertySheetTabOperator, "Name").getValue();
+        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Properties"));
+        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_name")).getValue();
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Expert").setValue(new ComboBoxProperty(propertySheetTabOperator, "Expert").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_expert")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_expert")).getValue());
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Hidden").setValue(new ComboBoxProperty(propertySheetTabOperator, "Hidden").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_hidden")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_hidden")).getValue());
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Preferred").setValue(new ComboBoxProperty(propertySheetTabOperator, "Preferred").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_preferred")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_preferred")).getValue());
         //new EventTool().waitNoEvent(750);
-        new TextFieldProperty(propertySheetTabOperator, "Display Name Code").setValue(new TextFieldProperty(propertySheetTabOperator, "Display Name Code").getValue());
+        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_displayName")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_displayName")).getValue());
         //new EventTool().waitNoEvent(750);
-        new TextFieldProperty(propertySheetTabOperator, "Short Description Code").setValue(new TextFieldProperty(propertySheetTabOperator, "Short Description Code").getValue());
+        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).getValue());
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "Include in BeanInfo").setValue(new ComboBoxProperty(propertySheetTabOperator, "Include in BeanInfo").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_included")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_included")).getValue());
         //new EventTool().waitNoEvent(750);
-        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator("Expert");
-        new ComboBoxProperty(propertySheetTabOperator, "Unicast").getValue();
+        propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_expert"));
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_unicast")).getValue();
         //new EventTool().waitNoEvent(750);
-        new ComboBoxProperty(propertySheetTabOperator, "In Default Event Set").setValue(new ComboBoxProperty(propertySheetTabOperator, "In Default Event Set").getValue());
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_inDefaultEventSet")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_inDefaultEventSet")).getValue());
         //new EventTool().waitNoEvent(750);
         nbDialogOperator.ok();
         
@@ -647,7 +642,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         patternsNode.select();
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_GenerateBeanInfo"));
         new EventTool().waitNoEvent(DELAY);
-        String dialogTitle = "BeanInfo Editor";
+        String dialogTitle = Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_TITLE_GenerateBeanInfo");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
         nbDialogOperator.ok();
         //new EventTool().waitNoEvent(1000);
@@ -656,7 +651,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"BeanInfo");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Compile");
+        javaNode.compile();
         
         MainWindowOperator.getDefault().waitStatusText("Finished TestFileBeanInfo");
         assertNotNull("Generated BeanInfo is not compilable", Repository.getDefault().findResource("TestFileBeanInfo.class"));
