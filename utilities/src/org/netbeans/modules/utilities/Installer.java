@@ -137,10 +137,10 @@ public class Installer extends ModuleInstall {
       // OpenFile:
       Utilities2.createAction (OpenFileAction.class,
         DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File"), /* NO I18N */
-        "ShowBrowserAction", true, false, false, false); /* NO I18N */
+        "SaveAction", false, true, false, false); /* NO I18N */
       Utilities2.createAction (OpenFileAction.class,
         DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System"), /* NO I18N */
-        "ShowBrowserAction", true, false, false, false); /* NO I18N */
+        "SaveAction", false, true, false, false); /* NO I18N */
       Utilities2.createAction (OpenFileAction.class,
         DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); /* NO I18N */
 
@@ -172,6 +172,9 @@ public class Installer extends ModuleInstall {
 
 /*
  * Log
+ *  7    Gandalf   1.6         1/5/00   Jesse Glick     Should be relative to 
+ *       SaveAction, since OB is now installed after OpenFile due to module 
+ *       dependencies.
  *  6    Gandalf   1.5         1/4/00   Ian Formanek    
  *  5    Gandalf   1.4         1/4/00   Petr Kuzel      Search module.
  *  4    Gandalf   1.3         1/4/00   Jesse Glick     OpenFile module 
