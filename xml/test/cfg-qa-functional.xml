@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="XML-ALL config">
 
-    <testbag testattribs="stable,full" compiler="qa-compiler" executor="ide" name="all_xml_full" resultsprocessor="qa-reporter">
+    <testbag testattribs="stable" compiler="qa-compiler" executor="ide" name="all_xml_full" resultsprocessor="qa-reporter">
         <testset dir="qa-functional/src">
             <patternset>
                 <!-- TAX -->

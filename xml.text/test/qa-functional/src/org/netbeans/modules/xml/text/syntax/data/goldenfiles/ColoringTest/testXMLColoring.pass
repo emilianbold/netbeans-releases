@@ -1,12 +1,14 @@
 pi-start: <?
 pi-target: xml
 ws:  
-pi-content: version="1.0" encoding="ISO-8859-1" standalone="no"
+pi-content: version="1.0" encoding="UTF-8" standalone="no"
 pi-end: ?>
 text: 
 
+
 comment: <!-- Created by mschovanek on October 25, 2000, 3:49 PM -->
 text: 
+
 
 pi-start: <?
 pi-target: target
@@ -14,6 +16,7 @@ ws:
 pi-content: processing instruction data
 pi-end: ?>
 text: 
+
 
 doctype: <!DOCTYPE Books PUBLIC 
 value: "+//XML Test//EN"
@@ -104,12 +107,14 @@ doctype:
 ]>
 text: 
 
+
 pi-start: <?
 pi-target: target
 ws:  
 pi-content: processing instruction data
 pi-end: ?>
 text: 
+
 
 tag: <Books
 tag: >
@@ -159,4 +164,5 @@ text:
 tag: </Books
 tag: >
 text: 
+
 

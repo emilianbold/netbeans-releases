@@ -12,13 +12,14 @@
  */
 package org.netbeans.tax;
 
+import java.io.File;
 import java.util.Iterator;
 import junit.textui.TestRunner;
 import org.netbeans.modules.xml.core.XMLDataObject;
 import org.netbeans.tests.xml.XTest;
 import org.openide.cookies.CloseCookie;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 
 /**
  * <P>
@@ -62,46 +63,41 @@ public class EncodingTest extends XTest {
         final String DATA_OBJECT = "encoding.xml";
         final String NDATA_OBJECT = "newEncoding.xml";
         
-        XMLDataObject origDataObject = (XMLDataObject) TestUtil.THIS.findData(DATA_OBJECT);
-        if (origDataObject == null) {
+        // prepare data
+        XMLDataObject original = (XMLDataObject) TestUtil.THIS.findData(DATA_OBJECT);
+        if (original == null) {
             throw new IllegalStateException("\"" + DATA_OBJECT + "\" data object is not found!");
         }
-        
-        TreeElement docRoot = origDataObject.getTreeDocument().getDocumentElement();
-        String defEncoding =  origDataObject.getTreeDocument().getEncoding();
+        TreeElement docRoot = original.getTreeDocument().getDocumentElement();
+        String defEncoding =  original.getTreeDocument().getEncoding();
         String gString = TestUtil.THIS.nodeToString(docRoot);
-        DataFolder dataFolder = (DataFolder) TestUtil.THIS.findData("");
         Iterator encodings = TreeUtilities.getSupportedEncodings().iterator();
+        
+        // prepare workdir
+        File workDir = getWorkDir();
+        clearWorkDir();
+        FileSystem fs = TestUtil.THIS.mountDirectory(workDir);
+        DataFolder dataFolder = DataFolder.findFolder(fs.getRoot());
         
         while (encodings.hasNext()) {
             String encoding = (String) encodings.next();
+            String fileName = encoding + ".xml";
             try {
                 dbg.println("Testing encoding: " + encoding + " ... ");
                 if (encoding.equals(defEncoding)) break;  // Nothing to test.
                 
-                DataObject fo = TestUtil.THIS.findData(NDATA_OBJECT);
-                if (fo != null) {
-//                    while (!!! fo.getNodeDelegate().canDestroy()) {
-//                        getLog().println("Cannot destroy node Waiting...");
-//                        try { Thread.currentThread().sleep(2000); } catch (Exception e){};
-//                    }
-//                    fo.getNodeDelegate().destroy();
-                    fo.delete();
-                }
-                
-                XMLDataObject newDataObject = (XMLDataObject) origDataObject.createFromTemplate(dataFolder, "newEncoding");
-                TreeDocument newDoc = newDataObject.getTreeDocument();
+                // create new document, set encoding, save and close it
+                XMLDataObject xdao = (XMLDataObject) original.createFromTemplate(dataFolder, encoding);
+                TreeDocument newDoc = xdao.getTreeDocument();
                 newDoc.setEncoding(encoding);
-                TestUtil.THIS.saveDataObject(newDataObject);
-                
-                CloseCookie cc = (CloseCookie) newDataObject.getCookie(CloseCookie.class);
+                TestUtil.THIS.saveDataObject(xdao);
+                CloseCookie cc = (CloseCookie) xdao.getCookie(CloseCookie.class);
                 cc.close();
-                
-                TreeElement newRoot = newDataObject.getTreeDocument().getDocumentElement();
+
+                // read the document and check his content
+                TreeElement newRoot = xdao.getTreeDocument().getDocumentElement();
                 String nString = TestUtil.THIS.nodeToString(newRoot);
-                
                 assertEquals("Encoding: " + encoding + ", documents are differ", gString, nString);
-                
             } catch (Exception ex) {
                 ex.printStackTrace(dbg);
                 fail("Encoding: " + encoding + ", test faill due:\n" + ex);

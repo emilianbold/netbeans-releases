@@ -32,7 +32,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.execution.NbfsURLConnection;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem.AtomicAction;
-import org.openide.filesystems.LocalFileSystem.Impl;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -213,7 +212,7 @@ public abstract class AbstractTestUtil {
     /**
      * Mounts local directory
      */
-    public static Impl mountDirectory(File dir) throws PropertyVetoException, IOException {
+    public static LocalFileSystem mountDirectory(File dir) throws PropertyVetoException, IOException {
         LocalFileSystem fs = new LocalFileSystem();
         fs.setRootDirectory(dir);
         Repository rep = Repository.getDefault();
@@ -222,7 +221,7 @@ public abstract class AbstractTestUtil {
             rep.removeFileSystem(ffs);
         }
         rep.addFileSystem(fs);
-        return new Impl(fs);
+        return fs;
     }
     
     /**

@@ -12,8 +12,9 @@
  */
 package org.netbeans.tests.xml;
 
+import java.io.PrintStream;
 import java.io.PrintWriter;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.jellytools.JellyTestCase;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Utilities;
 import org.openide.util.io.NullOutputStream;
@@ -22,7 +23,7 @@ import org.openide.util.io.NullOutputStream;
  * Provides the basic support for XML API tests.
  * @author mschovanek
  */
-public abstract class XTest extends NbTestCase {
+public abstract class XTest extends JellyTestCase {
     public final String CATALOG_BUNDLE   = "org.netbeans.modules.xml.catalog.resources.Bundle";
     public final String CORE_BUNDLE      = "org.netbeans.modules.xml.core.resources.Bundle";
     public final String CSS_BUNDLE       = "org.netbeans.modules.css.resources.Bundle";
@@ -36,27 +37,14 @@ public abstract class XTest extends NbTestCase {
     protected String fsName;
     
     /** debug test output */
-    protected PrintWriter dbg;
-    protected PrintWriter out = new PrintWriter(System.out, true);
+    protected PrintWriter dbg = new PrintWriter(new NullOutputStream());
     
     /** debug switch */
     protected static boolean DEBUG = false;
+    private static boolean LOG_INTO_CONSOLE = false;
     
     public XTest(String testName) {
         super(testName);
-        if (DEBUG) {
-            dbg = new PrintWriter(System.out, true);
-        } else {
-            dbg = new PrintWriter(getLog(), true);
-        }
-    }
-    
-    protected void println(String string) { //???
-        if (out == null) {
-            System.out.println(string);
-        } else {
-            out.println(string);
-        }
     }
     
     /** @depricated use getPackegeName() */
@@ -82,8 +70,7 @@ public abstract class XTest extends NbTestCase {
         name += separator + "data";
         return name;
     }
-    
-    
+
     protected String getAbsolutePath() {
         if (absolutePath == null) {
             String url = this.getClass().getResource("").toExternalForm();
@@ -97,5 +84,26 @@ public abstract class XTest extends NbTestCase {
             fsName = TestUtil.findFileObject(packageName(), Utilities.getShortClassName(this.getClass()), "class").getFileSystem().getDisplayName();
         }
         return fsName;
+    }
+    
+    /** Returns default log. @see super#getLog() , @see #logIntoConsole(boolean) */
+    public PrintStream getLog() {
+        if (LOG_INTO_CONSOLE) {
+            return System.out;
+        } else {
+            return super.getLog();
+        }
+    }
+    
+    /** Simple and easy to use method for printing a message to a default log
+     * @param message meesage to log
+     */    
+    public void log(String message) {
+        getLog().println(message);
+    }
+    
+    /** Redirects log into console. @see #getLog() */
+    public static void logIntoConsole(boolean console) {
+        LOG_INTO_CONSOLE = console;
     }
 }

@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Ant property. Value 'ignore' means that system classpath is ignored
          and only classpath specified in build file is used. -->
     <property name="build.sysclasspath" value="ignore"/>
-    <property name="xtest.ide.winsys" value="sdi"/>
+    <property name="xtest.ide.winsys" value="mdi"/>
     <!--property name="xtest.ide.commandline.suffix" value="-J-Dtest.exit=false"/-->
 
     <!-- Points to directory with IDE to test-->
@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
    
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="qa-functional"/>
-    <property name="xtest.attribs" value="stable"/>
+    <property name="xtest.attribs" value="full"/>
     <property name="xtest.includes" value=""/>
     <property name="xtest.excludes" value=""/>   
     <!--property name="test.exit" value="false"/-->

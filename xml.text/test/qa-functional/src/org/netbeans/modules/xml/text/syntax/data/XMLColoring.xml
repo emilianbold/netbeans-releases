@@ -1,6 +1,9 @@
-<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
 <!-- Created by mschovanek on October 25, 2000, 3:49 PM -->
+
 <?target processing instruction data?>
+
 <!DOCTYPE Books PUBLIC "+//XML Test//EN" "any.dtd" [
     <!ELEMENT Books (Product+,Price?)*>         <!ELEMENT Product (#PCDATA|Descript)*>
     <!ELEMENT Price (#PCDATA)>                  <!ENTITY % states SYSTEM "states.dtd">
@@ -20,7 +23,9 @@
     <!ENTITY extern SYSTEM "externalEntity.xml"><!-- PARAMETR ENTITY -->
    <!ENTITY % sourceinfo "lang   CDATA #REQUIRED cprght CDATA #IMPLIED">
 ]>
+
 <?target processing instruction data?>
+
 <Books><?pi data?>
   <Product>Product 1 - &#100; &gt; &#x99;  
     <Descript lang="x &lt; &#100; value'''">text data made in &cz;</Descript>
@@ -30,3 +35,4 @@
     ~!@#$%^*()_+|QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM?
   </Product>
 </Books>
+

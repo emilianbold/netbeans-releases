@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
    
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="qa-functional"/>
-    <property name="xtest.attribs" value="stable"/>
+    <property name="xtest.attribs" value="full"/>
     <property name="xtest.includes" value=""/>
     <property name="xtest.excludes" value=""/>   
     <!--property name="test.exit" value="false"/-->

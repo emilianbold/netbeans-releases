@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="XML-Catalog config">
 
-    <testbag testattribs="stable,full" compiler="qa-compiler" executor="ide" name="xml_catalog_full" resultsprocessor="qa-reporter">
+    <testbag testattribs="full" compiler="qa-compiler" executor="ide" name="xml_catalog_full" resultsprocessor="qa-reporter">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/modules/xml/catalog/CatalogTest.class"/>

@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
              this file will be searched in directories specified by property xtest.extra.jars.path 
                  example: <property name="xtest.extra.jars" value="jemmy.jar;jelly.jar"/>
           -->
-        <property name="xtest.extra.jars"  value="jemmy.jar;jelly-nb.jar;xml-test-lib.jar"/>
+        <property name="xtest.extra.jars"  value="jemmy.jar;jelly-nb.jar;xml-test-lib.jar;jelly2-nb.jar"/>
    
         <!-- These jars will be copied to directory ${netebans.home}/lib/ext.
 	     Again you can write only name of jar or zip file, not in which directory it is and 
