@@ -466,7 +466,11 @@ public final class NbMainExplorer extends CloneableTopComponent {
         private NodeListener rcListener;
         /** validity flag */
         private boolean valid = true;
-
+        
+        /** Used by ModuleTab to set persistence type according
+         * root context node persistence ability. */
+        protected int persistenceType = TopComponent.PERSISTENCE_ALWAYS;
+        
         public ExplorerTab () {
             super();
             // complete initialization of composited explorer actions
@@ -607,10 +611,10 @@ public final class NbMainExplorer extends CloneableTopComponent {
             Node.Handle handle = getExplorerManager().getRootContext().getHandle();
             if(handle == null) {
                 // Not persistent.
-                putClientProperty("PersistenceType", "Never"); // NOI18N
+                persistenceType = TopComponent.PERSISTENCE_NEVER;
             } else {
                 // Persistent.
-                putClientProperty("PersistenceType", "OnlyOpened"); // NOI18N
+                persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED;
             }
         }
 
@@ -818,7 +822,13 @@ public final class NbMainExplorer extends CloneableTopComponent {
             NbPlaces.getDefault().environment(), false
             );
         }
-
+        
+        /** Overriden to explicitely set persistence type of MainTab
+         * to PERSISTENCE_ALWAYS */
+        public int getPersistenceType() {
+            return TopComponent.PERSISTENCE_ALWAYS;
+        }
+        
         /** Deserialization of RepositoryTab */
         public Object readResolve() throws java.io.ObjectStreamException {
             if (DEFAULT == null) {
@@ -923,7 +933,13 @@ public final class NbMainExplorer extends CloneableTopComponent {
             RepositoryNodeFactory.getDefault().repository(DataFilter.ALL), false
             );
         }
-
+        
+        /** Overriden to explicitely set persistence type of RepositoryTab
+         * to PERSISTENCE_ALWAYS */
+        public int getPersistenceType() {
+            return TopComponent.PERSISTENCE_ALWAYS;
+        }
+        
         /** Deserialization of RepositoryTab */
         public Object readResolve() throws java.io.ObjectStreamException {
             if (DEFAULT == null) {
@@ -1104,6 +1120,12 @@ public final class NbMainExplorer extends CloneableTopComponent {
         public void setRootContext(Node root) {
             super.setRootContext(root);
             adjustComponentPersistence();
+        }
+        
+        /** Overriden to explicitely set persistence type of ModuleTab
+         * to PERSISTENCE_ALWAYS */
+        public int getPersistenceType() {
+            return persistenceType;
         }
         
         /** Throws deserialized root context and sets proper node found
