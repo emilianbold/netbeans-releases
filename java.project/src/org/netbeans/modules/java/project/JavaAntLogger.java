@@ -77,7 +77,7 @@ public final class JavaAntLogger extends AntLogger {
      * <li>the classpath
      * </ol>
      */
-    private static final Pattern CLASSPATH_ARGS = Pattern.compile("\n'-classpath'\n'(.*)'\n"); // NOI18N
+    private static final Pattern CLASSPATH_ARGS = Pattern.compile("\r?\n'-classpath'\r?\n'(.*)'\r?\n"); // NOI18N
     
     /**
      * Ant task names we will pay attention to.
