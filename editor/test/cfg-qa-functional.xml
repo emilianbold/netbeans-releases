@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
                 <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testDoWhile" />
                 <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTwoBrackets" />
+                <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTernary" />
                 <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class" />
             </patternset>
         </testset>
@@ -60,6 +61,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testDoWhile" />
                 <include name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTwoBrackets" />
+                <include name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTernary" />                
                 <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testPackageCC" />
                 <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testInstantSubstitution" />
             </patternset>
@@ -109,7 +111,7 @@ Microsystems, Inc. All Rights Reserved.
         
     <!-- Key bindings tests -->
     
-    <testbag testattribs="all,full,validation" name="KeyBindings-Actions">
+    <testbag testattribs="all,full,validation,actions" name="KeyBindings-Actions">
         <testset dir="qa-functional/src">
             <patternset>            
                 <include name="org/netbeans/test/editor/suites/keybindings/*Performer.class"/>            

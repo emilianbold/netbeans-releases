@@ -528,6 +528,44 @@ System.out.println("Back line");"]]>
         <![CDATA[""]]>
       </Comment>
     </TestCallAction>
+    <TestStep Name="TernaryActions">
+      <TestStringAction Name="string3" String="String htmlName =" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string4" String="\0C(type == &apos;P&apos; ?" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string5" String="\0CgetProcIndexFileName( ABSOLUTE ) :" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string6" String="\0C(type == &apos;t&apos; ?" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string7" String="\0CgetTriggerIndexFileName ( ABSOLUTE ) :" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string8" String=" getViewAsProcIndexFileName( ABSOLUTE ))" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string9" String="\0C);" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string10" String=" PrintStream out = open( htmlName );" />
+      <TestLogAction Name="insert-break" Command="\0C" />
+      <TestStringAction Name="string11" String="\0C" />
+    </TestStep>
+    <TestCallAction Name="Ternary" Call="TernaryActions" Set="Settings" Enable="true" Repeat="1" Delay="50">
+      <Input>
+        <![CDATA[""]]>
+      </Input>
+      <Output>
+        <![CDATA["String htmlName =
+(type == 'P' ?
+getProcIndexFileName( ABSOLUTE ) :
+    (type == 't' ?
+    getTriggerIndexFileName ( ABSOLUTE ) :
+         getViewAsProcIndexFileName( ABSOLUTE ))
+         );
+PrintStream out = open( htmlName );
+          "]]>
+      </Output>
+      <Comment>
+        <![CDATA["Issue waits for fix of issue 30346."]]>
+      </Comment>
+    </TestCallAction>
     <Comment>
       <![CDATA[""]]>
     </Comment>
