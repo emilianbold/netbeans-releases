@@ -101,11 +101,12 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
             return null;
         }
         FileObject projectFile = projectDirectory.getFileObject(PROJECT_XML_PATH);
-        if (projectFile == null || !projectFile.isData()) {
+        //#54488: Added check for virtual
+        if (projectFile == null || !projectFile.isData() || projectFile.isVirtual()) {
             return null;
         }
         File projectDiskFile = FileUtil.toFile(projectFile);
-        assert projectDiskFile != null;
+        assert projectDiskFile != null && projectDiskFile.exists();
         Document projectXml;
         try {
             projectXml = XMLUtil.parse(new InputSource(projectDiskFile.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
