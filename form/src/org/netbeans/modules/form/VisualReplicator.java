@@ -287,10 +287,22 @@ public class VisualReplicator {
         if (property == null)
             return;
 
+        RADComponent metacomp = property.getRADComponent();
+
         // target component of the property
-        Object targetComp = getClonedComponent(property.getRADComponent());
+        Object targetComp = getClonedComponent(metacomp);
         if (targetComp == null)
             return;
+
+        // another Scrollbar hack - to change some properties of Scrollbar we
+        // must create a new instance of Scrollbar (peer must be recreated - 
+        // - maybe this should be done for all AWT components)
+        if (targetComp instanceof java.awt.Scrollbar) {
+            // remove the component and add a new clone
+            removeComponent(metacomp);
+            addComponent(metacomp);
+            return;
+        }
 
         java.lang.reflect.Method writeMethod =
             property.getPropertyDescriptor().getWriteMethod();
@@ -329,7 +341,8 @@ public class VisualReplicator {
     // recursive method
     private Object cloneComponent(RADComponent metacomp,
                                   java.util.List relativeProperties)
-    throws Exception {
+        throws Exception
+    {
         Object clone;
         if (needsConversion(metacomp)) {
             clone = cloneComponentWithConversion(
