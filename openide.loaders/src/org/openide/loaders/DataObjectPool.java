@@ -97,10 +97,10 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         return ret;
     }
     
-    /** Calls into FolderLoader. Setups security condition to allow DataObject ocnstructor
+    /** Calls into FolderLoader. Setups security condition to allow DataObject constructor
      * to succeed.
      */
-    public static MultiDataObject createMultiObject (DataLoaderPool$FolderLoader loader, FileObject fo, DataFolder original) 
+    public static MultiDataObject createMultiObject (DataLoaderPool$FolderLoader loader, FileObject fo, DataFolder original)
     throws java.io.IOException {
         MultiDataObject ret;
         
@@ -119,8 +119,23 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         }
         
         return ret;
-    }
+     }
     
+        
+    
+    /** Executes atomic action with priviledge to create DataObjects.
+     */
+    public void runAtomicActionSimple (FileObject fo, FileSystem.AtomicAction action) 
+    throws java.io.IOException {
+        Object prev = FIND.get ();
+        try {
+            FIND.set (fo);
+            fo.getFileSystem ().runAtomicAction(action);
+        } finally {
+            FIND.set (prev);
+            notifyCreationAll ();
+        }
+    }
     
     //
     // Support for running really atomic actions

@@ -734,6 +734,12 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     /** Invokes atomic action. 
      */
     private void invokeAtomicAction (FileObject target, FileSystem.AtomicAction action) throws IOException {
+        if (Boolean.getBoolean ("netbeans.dataobject.insecure.operation")) {
+            DataObjectPool.getPOOL ().runAtomicActionSimple (target, action);
+            return;
+        }
+            
+        
         if (this instanceof DataFolder) {
             // action is slow
             target.getFileSystem().runAtomicAction(action);
