@@ -93,7 +93,6 @@ public final class BeanInstaller
         TopManager.getDefault().createDialog(desc).show();
         if (desc.getValue() == NotifyDescriptor.OK_OPTION) {
             String cat = selectPaletteCategory();
-            System.err.println("*** cat = " + cat); // XXX
             if (cat != null) {
                 installBeans(jar, sel.getSelectedBeans(), cat);
             }
@@ -217,7 +216,6 @@ public final class BeanInstaller
 
 
     private static void addJarFileSystem(JarFileSystem jar) {
-
         // 1. store information about the JAR/ZIP into $NETBEANS_USER/beans/libs.properties
         //    so that it will be added to every new project's filesystems
         File localFolder = new File(System.getProperty("netbeans.user") + File.separator + "beans");
@@ -514,7 +512,12 @@ public final class BeanInstaller
             }
         }
 
-        String[] categories = ComponentPalette.getDefault().getPaletteCategories();
+        // XXX(-tdt) ComponentPalette.<init> kicks off a thread to load
+        // installed beans. This thread must be postponed until bean jars are
+        // added to the repository
+        // 
+        // String[] categories = ComponentPalette.getDefault().getPaletteCategories();
+        
         for (int i = 0; i < list.length; i++) {
             if (list[i].getName().endsWith(JAR_EXT)) {
                 if (alreadyInstalled.get(list[i].getName()) == null) {
