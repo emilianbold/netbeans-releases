@@ -3168,5 +3168,21 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         For more information: http://www.netbeans.org/community/guidelines/commit.html
     </echo>
   </target>
+
+  <target name="build-source"
+    depends="bootstrap"
+    description="Packages sources needed to compile given by cluster.name (can be specified by -Dcluster.name=nb.cluster.platform"
+  >
+    <echo message="Packaging sources of ${cluster.name} modules"/>
+    <resolve name="cluster-modules" property="${cluster.name}"/>
+    <mkdir dir="${netbeans.build.dir}"/>
+    <taskdef name="definefileset" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
+    <definefileset modules="${cluster-modules}" targetprefix="all-" id="source-modules" dir=".." />
+    <definefileset modules="${cluster-modules}" targetprefix="all-" id="external-modules" dir=".." mode="binaries" />
+    <zip zipfile="${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip" duplicate="preserve">
+      <fileset refid="source-modules" />
+      <fileset refid="external-modules" />
+    </zip>
+  </target>
   
 </project>

@@ -35,6 +35,8 @@ public class PrintCvsModules extends Task {
     private String targetprefix = "all-";    
     private String dummyName;
     private Hashtable targets;
+    private String selectorId;
+    private File dir;
     
     /** Comma-separated list of modules to include. */
     public void setModules (String s) {
@@ -52,11 +54,43 @@ public class PrintCvsModules extends Task {
         targetprefix = s;
     }
     
+    /** Name of property to set the file set to.
+     */
+    public void setId (String s) {
+        selectorId = s;
+    }
+    
+    /** Directory with sources */
+    public void setDir (File f) {
+        dir = f;
+    }
+
+    /** Mode - either sources or external unscrambled binaries
+     */
+    public static final class Mode extends org.apache.tools.ant.types.EnumeratedAttribute {
+        public String[] getValues() {
+            return new String[] {
+                "sources",
+                "binaries"
+            };
+        }
+    }
+    
+    public void setMode (Mode m) {
+        mode = m.getValue ();
+    }
+    
+    private String mode = "sources";
+    
+    /**
+     * 
+     * @throws org.apache.tools.ant.BuildException 
+     */
     public void execute () throws BuildException {
 
         buildmodules.addAll(modules);
         Target dummy = new Target ();
-        dummyName = "nbmerge-" + getOwningTarget().getName();
+        dummyName = "nbmerge-" + getOwningTarget().getName() + selectorId;
         targets = getProject().getTargets();
         while (targets.contains (dummyName))
             dummyName += "-x";
@@ -107,6 +141,34 @@ public class PrintCvsModules extends Task {
         log("compiletime="+compiletime);
         log("selectedmodules="+modules);
         log("cvsmodules="+cvslist);    
+        
+        if (selectorId != null) {
+            if ("sources".equals (mode)) {
+                org.netbeans.nbbuild.CvsFileSet set = new org.netbeans.nbbuild.CvsFileSet ();
+                set.setDir (dir);
+                Iterator it = cvslist.iterator ();
+                while (it.hasNext ()) {
+                    String modname = (String)it.next ();
+                    set.createInclude ().setName (modname + "/**/*");
+                    set.createExclude ().setName (modname + "/www/**/*");
+                    set.createExclude ().setName (modname + "/test/**/*");
+                }
+                set.createExclude ().setName ("*/*/test/**/*");
+                getProject ().addReference (selectorId, set);
+            } else {
+                // binaries
+                org.apache.tools.ant.types.FileSet set = new org.apache.tools.ant.types.FileSet ();
+                set.setDir (dir);
+                Iterator it = cvslist.iterator ();
+                while (it.hasNext ()) {
+                    String modname = (String)it.next ();
+                    set.createInclude ().setName (modname + "/external/*");
+                }
+                set.createExclude ().setName ("**/*.scrambled");
+                set.createExclude ().setName ("**/unscrambling.log");
+                getProject ().addReference (selectorId, set);
+            }
+        }
     }        
 
 }
