@@ -142,12 +142,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Just test whether tests are already unzipped -->
     <target name="test-unjared">
-        <condition property="unjared">
-          <or>
-             <available file="${xtest.workdir}/${tbag.testtype}/work/Meta-inf/Manifest.mf"/>  
-             <available file="${xtest.workdir}/${tbag.testtype}/work/META-INF/MANIFEST.MF"/>  
-          </or>
-        </condition>
+        <available property="unjared" file="${xtest.workdir}/${tbag.testtype}/work/META-INF/MANIFEST.MF"/>
     </target>
     
     <!-- ============== -->
@@ -270,6 +265,7 @@ Microsystems, Inc. All Rights Reserved.
             <sysproperty key="work.dir" value="${xtest.workdir}/${tbag.testtype}/work"/>
             <sysproperty key="xtest.workdir" value="${xtest.workdir}/${tbag.testtype}/formaters/${tbag.formater}"/>
             <sysproperty key="system.dir" value="${xtest.workdir}/${tbag.testtype}/work"/>
+            <sysproperty key="nbjunit.workdir" value="${xtest.workdir}/${tbag.testtype}/work"/>
             <syspropertyfile file="${test.propertyfile}"/>
             <formatter classname="org.netbeans.xtest.junit.JUnitXMLFormatter" extension=".xml"/>
             
@@ -321,7 +317,7 @@ Microsystems, Inc. All Rights Reserved.
        </for>
     </target>
     
-    <target name="compile-one-dir" depends="init,extra-classpath">
+    <target name="compile-one-dir" depends="init,extra-classpath,ide-extra-jars">
         <property name="test.extra.classpath" value=""/>
         <property name="compiletest.classpath" value=""/>
         <javac srcdir="${compile.srcdir.parsed}" 
@@ -332,6 +328,7 @@ Microsystems, Inc. All Rights Reserved.
     		<pathelement path="${xerces.path}"/>
     		<pathelement path="${test.extra.classpath}"/>
 		<pathelement path="${compiletest.classpath}"/>
+		<pathelement path="${ide.extra.classpath}"/>
             </classpath>
         </javac>
     </target>
