@@ -33,6 +33,8 @@ public class FoldersListSettings extends SystemOption {
 
     private static final String LAST_USED_CP_FOLDER = "lastUsedClassPathFolder";    //NOI18N
 
+    private static final String LAST_USED_ARTIFACT_FOLDER = "lastUsedArtifactFolder"; //NOI18N
+
     public static FoldersListSettings getDefault () {
         return (FoldersListSettings) SystemOption.findObject (FoldersListSettings.class, true);
     }
@@ -71,15 +73,29 @@ public class FoldersListSettings extends SystemOption {
     public File getLastUsedClassPathFolder () {
         String lucpr = (String) this.getProperty (LAST_USED_CP_FOLDER);
         if (lucpr == null) {
-            lucpr = System.getProperty("user.home");
+            lucpr = System.getProperty("user.home");    //NOI18N
         }
         return new File (lucpr);
     }
 
-    public void setLastUsedClassPathFolder (File cpRoot) {
-        assert cpRoot != null : "ClassPath root can not be null";
-        String path = cpRoot.getAbsolutePath();
+    public void setLastUsedClassPathFolder (File folder) {
+        assert folder != null : "ClassPath root can not be null";
+        String path = folder.getAbsolutePath();
         this.putProperty(LAST_USED_CP_FOLDER, path, true);
+    }
+
+    public File getLastUsedArtifactFolder () {
+        String folder = (String) this.getProperty (LAST_USED_ARTIFACT_FOLDER);
+        if (folder == null) {
+            folder = System.getProperty("user.home");    //NOI18N
+        }
+        return new File (folder);
+    }
+
+    public void setLastUsedArtifactFolder (File folder) {
+        assert folder != null : "Folder can not be null";
+        String path = folder.getAbsolutePath();
+        this.putProperty (LAST_USED_ARTIFACT_FOLDER, path, true);
     }
 
 }

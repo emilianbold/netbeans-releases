@@ -27,6 +27,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -178,13 +179,13 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
         
         AntArtifactChooser accessory = new AntArtifactChooser( artifactType, chooser );
         chooser.setAccessory( accessory );
-        
         chooser.setPreferredSize( new Dimension( 650, 380 ) );
-        
+        chooser.setCurrentDirectory (FoldersListSettings.getDefault().getLastUsedArtifactFolder());
+
         int option = chooser.showOpenDialog( null ); // Show the chooser
               
         if ( option == JFileChooser.APPROVE_OPTION ) {
-            
+
             File dir = chooser.getSelectedFile();
             dir = FileUtil.normalizeFile (dir);
             Project selectedProject = accessory.getProject( dir );
@@ -216,6 +217,7 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
                 artifacts[i] = ((ArtifactItem)model.getElementAt( i )).getArtifact();
             }
             
+            FoldersListSettings.getDefault().setLastUsedArtifactFolder (FileUtil.normalizeFile(chooser.getCurrentDirectory()));
             return artifacts;
             
         }
