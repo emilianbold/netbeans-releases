@@ -14,11 +14,15 @@ package org.netbeans.modules.openfile;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Enumeration;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
+import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.openfile.cli.Callback;
 import org.openide.DialogDisplayer;
@@ -144,11 +148,16 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
      *             if the <code>cookie</code> is not an instance
      *             of the specified cookie class
      */
-    protected boolean openByCookie(Node.Cookie cookie, Class cookieClass, int line) {
-        if (cookieClass == EditorCookie.class) {
-            EditorCookie editorCookie = (EditorCookie) cookie;
+    protected boolean openByCookie(Node.Cookie cookie,
+                                   Class cookieClass,
+                                   final int line) {
+        if ((cookieClass == EditorCookie.Observable.class)
+                || (cookieClass == EditorCookie.class)) {
+            final EditorCookie editorCookie = (EditorCookie) cookie;
             editorCookie.open();
-            StyledDocument doc;
+            final StyledDocument doc;
+            
+            /* get the document: */
             try {
                 doc = editorCookie.openDocument();
             } catch (IOException ex) {
@@ -161,16 +170,92 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
                 clearStatusLine();
                 return false;
             }
-            JEditorPane[] panes = editorCookie.getOpenedPanes();
-
-            if (panes != null) {
-                //assert panes.length > 0;
-                panes[0].setCaretPosition(NbDocument.findLineOffset(doc, line));
-            } else {
+            
+            /* get the target cursor offset: */
+            int lineOffset;
+            try {
+                lineOffset = NbDocument.findLineOffset(doc, line);
+            } catch (IndexOutOfBoundsException ex) {
+                /* probably line number out of bounds */
+                
+                Element lineRootElement
+                        = NbDocument.findLineRootElement(doc);
+                int lineCount = lineRootElement.getElementCount();
+                if (line >= lineCount) {
+                    lineOffset = NbDocument.findLineOffset(doc, lineCount - 1);
+                } else {
+                    throw ex;
+                }
+            }
+            final int offset = lineOffset;
+            
+            class OpenDocAtLineTask implements Runnable {
+                private boolean completed = false;
+                private PropertyChangeListener listenerToUnregister;
+                private boolean perform() {
+                    if (EventQueue.isDispatchThread()) {
+                        run();
+                    } else {
+                        try {
+                            EventQueue.invokeAndWait(this);
+                        } catch (InterruptedException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        } catch (InvocationTargetException ex) {
+                            ErrorManager.getDefault().notify(
+                                    ex.getTargetException());
+                        }
+                    }
+                    return completed;
+                }
+                public void run() {
+                    assert EventQueue.isDispatchThread();
+                    
+                    if (completed) {
+                        return;
+                    }
+                    
+                    JEditorPane[] panes = editorCookie.getOpenedPanes();
+                    if (panes != null) {
+                        panes[0].setCaretPosition(offset);
+                        if (listenerToUnregister != null) {
+                            ((EditorCookie.Observable) editorCookie)
+                            .removePropertyChangeListener(listenerToUnregister);
+                        }
+                        completed = true;
+                    }
+                }
+                private void setListenerToUnregister(PropertyChangeListener l) {
+                    listenerToUnregister = l;
+                }
+            }
+            
+            final OpenDocAtLineTask openTask = new OpenDocAtLineTask();
+            if (openTask.perform()) {
+                return true;
+            }
+            
+            if (cookieClass != EditorCookie.Observable.class) {
                 setStatusLine(NbBundle.getMessage(
                         OpenFileImpl.class,
                         "MSG_couldNotOpenAt"));                         //NOI18N
+                return true;
             }
+            
+            final EditorCookie.Observable obEdCookie
+                                          = (EditorCookie.Observable) cookie;
+            PropertyChangeListener openPanesListener
+                    = new PropertyChangeListener() {
+                        public void propertyChange(PropertyChangeEvent e) {
+                            if (EditorCookie.Observable.PROP_OPENED_PANES
+                                    .equals(e.getPropertyName())) {
+                                openTask.perform();
+                            }
+                        }
+                    };
+            openTask.setListenerToUnregister(openPanesListener);
+
+            obEdCookie.addPropertyChangeListener(openPanesListener);
+            openTask.perform();
         } else if (cookieClass == OpenCookie.class) {
             ((OpenCookie) cookie).open();
         } else if (cookieClass == EditCookie.class) {
@@ -200,7 +285,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
                                        int line) {
         Node.Cookie cookie;
         Class cookieClass;
-        if ((line != -1 && (cookie = dataObject.getCookie(cookieClass = EditorCookie.class)) != null)
+        if ((line != -1 && ((cookie = dataObject.getCookie(cookieClass = EditorCookie.Observable.class)) != null
+                            || (cookie = dataObject.getCookie(cookieClass = EditorCookie.class)) != null))
                 || (cookie = dataObject.getCookie(cookieClass = OpenCookie.class)) != null
                 || (cookie = dataObject.getCookie(cookieClass = EditCookie.class)) != null
                 || (cookie = dataObject.getCookie(cookieClass = ViewCookie.class)) != null) {
