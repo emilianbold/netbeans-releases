@@ -204,8 +204,10 @@ public class CheckBundles extends Task {
         HashMap files = new HashMap(10);
         try {
             File mf = new File(srcdir, "manifest-subst.mf");
-            if (!mf.exists())
+            if (!mf.exists()) {
+                log("Manifest file not found", Project.MSG_VERBOSE);
                 return files;
+            }
             
             log("Found manifest", Project.MSG_VERBOSE);
             
