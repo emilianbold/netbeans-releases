@@ -255,9 +255,9 @@ public final class ActionsManager {
      * @param breakpoint  a breakpoint that was removed
      */
     private void fireActionStateChanged (
-        final Object action, 
-        boolean enabled
+        final Object action
     ) {
+        boolean enabled = isEnabled (action);
         initListeners ();
         Vector l = (Vector) listener.clone ();
         Vector l1 = (Vector) listeners.get (
@@ -288,7 +288,7 @@ public final class ActionsManager {
             actionProviders.put (action, l);
         }
         l.add (p);
-        fireActionStateChanged (action, p.isEnabled (action));
+        fireActionStateChanged (action);
         p.addActionsProviderListener (actionListener);
     }
     
@@ -360,7 +360,7 @@ public final class ActionsManager {
     
     class MyActionListener implements ActionsProviderListener {
         public void actionStateChange (Object action, boolean enabled) {
-            fireActionStateChanged (action, enabled);
+            fireActionStateChanged (action);
         }
     }
 }
