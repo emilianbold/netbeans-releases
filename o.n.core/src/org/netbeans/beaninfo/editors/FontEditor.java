@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -103,7 +103,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
     public String getJavaInitializationString () {
-        return "new java.awt.Font (\"" + font.getName () + "\", " + font.getStyle () + // NOI18N
+        return "new java.awt.Font(\"" + font.getName () + "\", " + font.getStyle () + // NOI18N
                ", " + font.getSize () + ")"; // NOI18N
     }
 
@@ -161,7 +161,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
         JList lFont, lStyle, lSize;
 
         static final long serialVersionUID =8377025140456676594L;
-        
+
         FontPanel () {
             setLayout (new BorderLayout ());
 
@@ -178,9 +178,9 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             l.setLabelFor(lFont);
             la.setConstraints (l, c);
             add (l);
-            
-            c.insets = new Insets (0, 5, 0, 0);  
-            l = new JLabel (bundle.getString ("CTL_FontStyle"));                           //NoI18N  
+
+            c.insets = new Insets (0, 5, 0, 0);
+            l = new JLabel (bundle.getString ("CTL_FontStyle"));                           //NoI18N
             l.setDisplayedMnemonic(bundle.getString ("CTL_FontStyle_mnemonic").charAt(0)); //NoI18N
             l.setLabelFor(lStyle);
             la.setConstraints (l, c);
@@ -195,7 +195,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             add (l);
 
             c.insets = new Insets (5, 0, 0, 0);
-            c.gridwidth = 1;            
+            c.gridwidth = 1;
             c.fill = GridBagConstraints.HORIZONTAL;
             tfFont = new JTextField (FontEditor.this.font.getName ());
             tfFont.setEnabled (false);
