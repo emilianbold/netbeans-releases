@@ -17,9 +17,10 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init">
     
         <path id="compiletest.classpath">
-
-	       <pathelement location="../src"/>
-	       <pathelement location="../libsrc"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-util.jar"/>
 
             <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
             <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
@@ -29,14 +30,15 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
 <!--            <pathelement location="${debuggercore/oldapi.dir}/${nb.modules.dir}/org-openide-debugger.jar"/> -->
             <pathelement location="${projects/queries.dir}/${nb.modules.dir}/org-netbeans-modules-queries.jar"/>
-
 <!--            <pathelement path="${junit.path}"/> -->
             <pathelement path="${xerces.path}"/>
         </path>
     
         <path id="codetest.classpath">
-
-	       <pathelement location="${editor.dir}/${nb.modules.dir}/editor.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-util.jar"/>
 
             <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
             <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
