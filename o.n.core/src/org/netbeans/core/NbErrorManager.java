@@ -43,7 +43,7 @@ final class NbErrorManager extends ErrorManager {
     private static Map lastException = new WeakHashMap (27);
 
     /** Minimum value of severity to write message to the log file*/
-    private int minLogSeverity = ErrorManager.INFORMATIONAL; // NOI18N
+    private int minLogSeverity = ErrorManager.INFORMATIONAL + 1; // NOI18N
 
     /** Prefix preprended to customized loggers, if any. */
     private String prefix = null;
@@ -208,9 +208,6 @@ final class NbErrorManager extends ErrorManager {
      *    discard the message
      */
     public boolean isLoggable (int severity) {
-        // logging severity is more important - by default INFORMATIONAL
-        // messages are not logged
-        severity = severity >> 1;
         return severity >= minLogSeverity;
     }
     
