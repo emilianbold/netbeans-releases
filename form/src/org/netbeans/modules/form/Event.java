@@ -67,15 +67,17 @@ public class Event
     }
 
     public void createDefaultEventHandler() {
-        metacomponent.getFormModel().getFormEventHandlers().addEventHandler(
-            this,
-            FormUtils.getDefaultEventName(metacomponent, listenerMethod));
-            
+        if (!metacomponent.getFormModel().getFormEventHandlers()
+                .addEventHandler(this, FormUtils.getDefaultEventName(
+                                           metacomponent, listenerMethod)))
+            return;
+
         metacomponent.getFormModel().fireFormChanged();
-            
-        String newHandlerName = ((EventHandler) eventHandlers.get(
-            eventHandlers.size() -1)).getName();
-            
+
+        String newHandlerName =
+            ((EventHandler)eventHandlers.get(eventHandlers.size() - 1))
+                .getName();
+
         metacomponent.getNodeReference().firePropertyChangeHelper(
             FormEditor.EVENT_PREFIX + getName(), null, newHandlerName);
     }
