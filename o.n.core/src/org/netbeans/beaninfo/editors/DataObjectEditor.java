@@ -158,8 +158,10 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
         if (newObj instanceof Integer) {
             selectionMode = (Integer)newObj;
         }
-        // fix of 19318
-        env.getFeatureDescriptor().setValue( "canEditAsText", Boolean.FALSE );
+        // fix of 19318, set canEditAsText to false by default
+        if ( env.getFeatureDescriptor().getValue( "canEditAsText" ) == null ) {    // NOI18N
+            env.getFeatureDescriptor().setValue( "canEditAsText", Boolean.FALSE ); // NOI18N
+        }
     }
     
     /**
