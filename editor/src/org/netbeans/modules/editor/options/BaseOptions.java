@@ -71,6 +71,7 @@ import org.openide.util.Lookup.Item;
 import java.util.StringTokenizer;
 import org.netbeans.modules.editor.NbEditorUtilities;
 
+
 /**
  * Options for the base editor kit
  *
@@ -692,7 +693,7 @@ public class BaseOptions extends OptionSupport {
             getTypeName() + "-coloring-map-initializer" //NOI18N
             );
             
-            firePropertyChange(COLORING_MAP_PROP, null, null);
+            //firePropertyChange(COLORING_MAP_PROP, null, null);
         }
     }
     
@@ -726,7 +727,7 @@ public class BaseOptions extends OptionSupport {
             }
             setColoringMap(cm);
             
-            firePropertyChange(FONT_SIZE_PROP, null, null);
+            //firePropertyChange(FONT_SIZE_PROP, null, null);
         }
     }
     
@@ -1139,10 +1140,12 @@ public class BaseOptions extends OptionSupport {
     public void setOptionsVersion(int optionsVersion) {
         int oldOptionsVersion = this.optionsVersion;
         this.optionsVersion = optionsVersion;
+        /*
         if (optionsVersion != oldOptionsVersion) {
             firePropertyChange(OPTIONS_VERSION_PROP,
             new Integer(oldOptionsVersion), new Integer(optionsVersion));
         }
+         */
     }
     
     public int getOptionsVersion() {
@@ -1168,6 +1171,12 @@ public class BaseOptions extends OptionSupport {
         try {
             // Read the serialized options
             super.readExternal(in);
+        }catch(java.io.OptionalDataException ode){
+            // Temporary error log
+            System.err.println();
+            System.err.println("It should be a bug #17385.\nIt is already fixed, but file Settings.settings, that causes the problem, "+  //NOI18N
+            "should remain in your \nuserdir/system/Editors/text/<MIME folder>. Please delete it to avoid this error. "); //NOI18N
+            ode.printStackTrace();
         } finally {
 
             // Make sure the indent engine settings are propagated
