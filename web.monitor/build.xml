@@ -120,9 +120,9 @@ Microsystems, Inc. All Rights Reserved.
          they will be in the same directory as the rest of bundled Tomcat (it means there won't 
          be a conflict between IDE instalation dir and user dir when installed from NBM
     --> 
-    <copy file="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat404/lib/schema2beans.jar"/>
-    <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat404/lib/httpmonitor.jar"/>
-    <copy file="netbeans/modules/ext/monitor-valve.jar"                    tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat404/server/lib/monitor-valve.jar"/>
+    <copy file="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/lib/schema2beans.jar"/>
+    <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/lib/httpmonitor.jar"/>
+    <copy file="netbeans/modules/ext/monitor-valve.jar"                    tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/server/lib/monitor-valve.jar"/>
   </target>
 
 
@@ -167,7 +167,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile-catalina-check">
-    <available property="have-catalina" file="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat404/server/lib/catalina.jar"/>
+    <available property="have-catalina" file="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/server/lib/catalina.jar"/>
   </target>
 
   <target name="compile-catalina" if="have-catalina" depends="compile-server,compile-catalina-check">
@@ -178,7 +178,7 @@ Microsystems, Inc. All Rights Reserved.
 	 includes="**/monitor/catalina/**">
        <classpath>
           <pathelement location="${servlet23}"/>
-          <pathelement location="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat404/server/lib/catalina.jar"/> 
+          <pathelement location="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/server/lib/catalina.jar"/> 
        </classpath>
      </javac>
   </target>
