@@ -45,14 +45,13 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.swing.event.ChangeListener;
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -146,15 +145,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     }
 
 
-    public void saveDocument() {
-        waitForSync();
-        try {
-            editor.saveDocument();
-        } catch (IOException e) {
-            Utils.notifyError(e);
-        }
-    }
-
     private Project getProject() {
         return FileOwnerQuery.getOwner(getPrimaryFile());
     }
@@ -217,13 +207,10 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     }
 
     /**
-     * Method from EjbJarProfy.OutputProvider
+     * Method from EjbJarProxy.OutputProvider
      */
     public void write(EjbJar ejbJarProxy) throws IOException {
-        EjbJar app = getEjbJar();
-        if (app != null) {
-            app.merge(ejbJarProxy, EjbJar.MERGE_UNION);
-        }
+        modelChanged();
     }
 
     /**
@@ -231,30 +218,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
      */
     public FileObject getTarget() {
         return getPrimaryFile();
-    }
-
-    /**
-     * Adds Ejb
-     * <p/>
-     * One ejb element element. The ejb-name is
-     * set to Ejb_&lt clazz&gt by default.
-     *
-     * @param clazz      class name of ejb
-     * @param urlPattern path to ejb class (pkg/foo/Bar)
-     */
-    public void createDefaultEJBConfiguration(String clazz, String urlPattern) {
-        // PENDING: should be synchronized
-        EnterpriseBeans a = getEjbJar().getEnterpriseBeans();
-        try {
-            Session newEjb = a.newSession();//Ludo todo add more ejb type cmp, mdb.
-            newEjb.setEjbClass(clazz);
-            String name = "Ludo was there Name123";//DDUtils.findFreeName (a.getServlet (), "EjbName" , "Ejb_"+clazz); // NOI18N
-            newEjb.setEjbName(name);
-            newEjb.setDescription(NbBundle.getMessage(EjbJarMultiViewDataObject.class, "TXT_newEjbElementDescription"));
-            newEjb.setDisplayName("Session " + clazz); // NOI18N
-            a.addSession(newEjb);
-        } catch (Exception ex) {
-        }
     }
 
     protected DataObject handleCopy(DataFolder f) throws IOException {
@@ -661,12 +624,10 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
                     }
             }
         }
-        ///assert(false : "control should never reach here -unsupported event type detected"); //NOI18N
         return -1;
     }
 
-    private boolean fireEvent(String oldResourceName, String resourceName,
-            int eventType) {
+    private boolean fireEvent(String oldResourceName, String resourceName, int eventType) {
         boolean elementFound = false;
         String resource = null;
         int specificEventType = -1;
