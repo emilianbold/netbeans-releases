@@ -30,7 +30,7 @@ public class EclipseUtils {
      */
     public static boolean isRegularProject(String projectDir) {
         return projectDir != null &&
-                isRegularProject(new File(projectDir));
+                isRegularProject(new File(projectDir.trim()));
     }
     
     /**
@@ -59,7 +59,7 @@ public class EclipseUtils {
      */
     public static boolean isRegularJavaProject(String projectDir) {
         return projectDir != null &&
-                isRegularJavaProject(new File(projectDir));
+                isRegularJavaProject(new File(projectDir.trim()));
     }
     
     /**
@@ -68,7 +68,7 @@ public class EclipseUtils {
      */
     public static boolean isRegularWorkSpace(String workspaceDir) {
         return workspaceDir != null &&
-                isRegularWorkSpace(new File(workspaceDir));
+                isRegularWorkSpace(new File(workspaceDir.trim()));
     }
     
     /**
@@ -76,6 +76,8 @@ public class EclipseUtils {
      * <code>workspaceDir</code>.
      */
     public static boolean isRegularWorkSpace(File workspaceDir) {
+        System.out.println("MK> calling: FileUtil.toFileObject(FileUtil.normalizeFile(\"" + workspaceDir + "\"))");
+        FileUtil.toFileObject(FileUtil.normalizeFile(workspaceDir));
         return workspaceDir != null
                 && FileUtil.toFileObject(FileUtil.normalizeFile(workspaceDir)) != null
                 && workspaceDir.isDirectory()
@@ -88,7 +90,7 @@ public class EclipseUtils {
             "NB___TMP___ENOUGH___UNIQUE___CONSTANT___"; // NOI18N
     
     public static boolean isWritable(String projectDestination) {
-        File tmpDir = new File(projectDestination,
+        File tmpDir = new File(projectDestination.trim(),
                 (TMP_NAME + System.currentTimeMillis()));
         if (tmpDir.mkdirs()) {
             tmpDir.delete();
