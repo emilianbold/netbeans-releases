@@ -22,20 +22,39 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.NbBundle;
 
 public final class NewFileWizard extends TemplateWizard {
         
     private Project p;
+    private MessageFormat format;
     // private String[] recommendedTypes;
 
     public NewFileWizard( Project p /*, String recommendedTypes[] */ ) {
         this.p = p;
         putProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT, p );
+        format = new MessageFormat (NbBundle.getBundle (NewFileWizard.class).getString ("LBL_NewJavaFileWizard_MessageFormat"));
         // this.recommendedTypes = recommendedTypes;        
-        setTitle( "New File" );
-        setTitleFormat( new MessageFormat( "{0}") );
+        //setTitleFormat( new MessageFormat( "{0}") );
     }
-
+    
+    public void updateState () {
+        super.updateState ();
+        String substitute = (String)getProperty ("NewFileWizard_Title"); // NOI18N
+        String title;
+        if (substitute == null) {
+            title = NbBundle.getBundle (NewFileWizard.class).getString ("LBL_NewJavaFileWizard_Title"); // NOI18N
+        } else {
+            Object[] args = new Object[] {
+                    NbBundle.getBundle (NewFileWizard.class).getString ("LBL_NewJavaFileWizard_Subtitle"), // NOI18N
+                    substitute};
+            title = format.format (args);
+        }
+        super.setTitle (title);
+    }
+    
+    public void setTitle (String ignore) {}
+    
     protected WizardDescriptor.Panel createTemplateChooser () {
         return new TemplateChooserPanel( p /*, recommendedTypes */ );
 

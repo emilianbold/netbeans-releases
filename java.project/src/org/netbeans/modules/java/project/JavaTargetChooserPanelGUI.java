@@ -36,6 +36,7 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -82,6 +83,16 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                 
         // Show name of the project
         projectTextField.setText( ProjectUtils.getInformation(p).getDisplayName() );
+        assert template != null;
+        String displayName = null;
+        try {
+            DataObject templateDo = DataObject.find (template);
+            displayName = templateDo.getNodeDelegate ().getDisplayName ();
+        } catch (DataObjectNotFoundException ex) {
+            displayName = template.getName ();
+        }
+        putClientProperty ("NewFileWizard_Title", displayName);// NOI18N
+        
         // Setup comboboxes 
         rootComboBox.setModel( new DefaultComboBoxModel( this.groupItems ) );
         updatePackages();        

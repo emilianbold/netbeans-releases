@@ -51,8 +51,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
-// XXX I18N
-
 /** If you are looking for the non-GUI part of the panel please look
  * into new file wizard
  */
@@ -87,7 +85,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         initValues( p );
         
         
-        setName( "Choose Template");
+        setName (org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_Name")); // NOI18N
         projectsComboBox.setRenderer( PROJECT_CELL_RENDERER );
         
         
@@ -190,7 +188,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Project:");
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_jLabel1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 13, 0);
         add(jLabel1, gridBagConstraints);
@@ -202,7 +200,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(projectsComboBox, gridBagConstraints);
 
-        jLabel2.setText("Templates:");
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_jLabel2"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -221,7 +219,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         add(templatesPanel, gridBagConstraints);
 
         showRecommendedTemplatesCheckBox.setMnemonic('A');
-        showRecommendedTemplatesCheckBox.setText("Only Show File Types Supported in Selected Project");
+        showRecommendedTemplatesCheckBox.setText(org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_showRecommendedTemplatesCheckBox"));
         showRecommendedTemplatesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -229,7 +227,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 12, 0);
         add(showRecommendedTemplatesCheckBox, gridBagConstraints);
 
-        jLabel3.setText("Description:");
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_jLabel3"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -240,7 +238,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         descriptionScrollPane.setRequestFocusEnabled(false);
         descriptionScrollPane.setEnabled(false);
         jTextArea1.setEditable(false);
-        jTextArea1.setText("No description");
+        jTextArea1.setText(org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_jTextArea"));
         jTextArea1.setFocusable(false);
         descriptionScrollPane.setViewportView(jTextArea1);
 

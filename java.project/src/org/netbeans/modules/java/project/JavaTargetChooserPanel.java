@@ -109,6 +109,13 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         if ( bottomPanel != null ) {
             bottomPanel.readSettings( settings );
         }        
+        
+        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+        // this name is used in NewFileWizard to modify the title
+        Object substitute = gui.getClientProperty ("NewFileWizard_Title"); // NOI18N
+        if (substitute != null) {
+            wizard.putProperty ("NewFileWizard_Title", substitute); // NOI18N
+        }
     }
 
     public void storeSettings(Object settings) { 
@@ -131,6 +138,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
             Templates.setTargetFolder( (WizardDescriptor)settings, folder );
             Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
         }
+        ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
     }
 
     public void stateChanged(ChangeEvent e) {        

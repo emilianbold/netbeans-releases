@@ -87,7 +87,7 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
         }
         return res;
     }
-        
+    
     public Set/*<FileObject>*/ instantiate () throws IOException {
         FileObject dir = Templates.getTargetFolder( wiz );
         
@@ -139,7 +139,8 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
     }
     
     public String name() {
-        return "" + (index + 1) + " of " + panels.length; // XXX I18N
+        //return "" + (index + 1) + " of " + panels.length; // XXX I18N
+        return "";
     }
     
     public boolean hasNext() {
