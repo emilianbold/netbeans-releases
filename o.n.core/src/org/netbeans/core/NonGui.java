@@ -462,7 +462,12 @@ public class NonGui extends NbTopManager implements Runnable {
         // 7. Initialize FileSystems
         getRepository ();
         StartLog.logProgress ("Repository initialized"); // NOI18N
-        
+
+        // -----------------------------------------------------------------------------------------------------
+        // this indirectly sets system properties for proxy servers with values
+        // taken from IDESettings
+        SharedClassObject.findObject(IDESettings.class, true);
+         
         // -----------------------------------------------------------------------------------------------------
         // Upgrade
         try {
