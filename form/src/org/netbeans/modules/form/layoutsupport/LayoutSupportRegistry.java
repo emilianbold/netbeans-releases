@@ -93,15 +93,10 @@ public class LayoutSupportRegistry {
 
     public static Class getSupportClassForLayout(Class layoutClass) {
         String className = (String) getLayoutsMap().get(layoutClass.getName());
-        if (className == null) {
+        if (className == null && needPaletteRescan)
+            className = scanPalette(layoutClass.getName());
+        if (className == null)
             className = findSuperClass(getLayoutsMap(), layoutClass);
-            if (className == null && needPaletteRescan) {
-                className = scanPalette(layoutClass.getName());
-                if (className == null) // try container superclass again
-                    className = findSuperClass(getContainersMap(),
-                                               layoutClass);
-            }
-        }
 
         if (className != null) {
             try {
@@ -117,6 +112,8 @@ public class LayoutSupportRegistry {
 
     public static String getSupportNameForLayout(String layoutClassName) {
         String className = (String) getLayoutsMap().get(layoutClassName);
+        if (className == null && needPaletteRescan)
+            className = scanPalette(layoutClassName);
         if (className == null) {
             Class layoutClass;
             try {
@@ -128,12 +125,6 @@ public class LayoutSupportRegistry {
             }
 
             className = findSuperClass(getLayoutsMap(), layoutClass);
-            if (className == null && needPaletteRescan) {
-                className = scanPalette(layoutClassName);
-                if (className == null) // try container superclass again
-                    className = findSuperClass(getContainersMap(),
-                                               layoutClass);
-            }
         }
 
         return className;
