@@ -95,7 +95,13 @@ final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ im
     public int compare(Object o1, Object o2) {
         TargetLister.Target t1 = (TargetLister.Target) o1;
         TargetLister.Target t2 = (TargetLister.Target) o2;
-        return SORTER.compare(t1.getName(), t2.getName());
+        int x = SORTER.compare(t1.getName(), t2.getName());
+        if (x != 0 || t1 == t2) {
+            return x;
+        } else {
+            // #44491: was not displaying overridden targets.
+            return System.identityHashCode(t1) - System.identityHashCode(t2);
+        }
     }
     
 }
