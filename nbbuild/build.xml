@@ -2858,6 +2858,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <!-- by the regular daily Javadoc build process. -->
     <!-- Then all of this stuff can be deleted from the www part of CVS. -->
     <mkdir dir="www/nbantext-javadoc"/>
+    <delete>
+        <fileset dir="www/nbantext-javadoc">
+            <include name="**/*.html"/>
+        </fileset>
+    </delete>
     <tstamp/>
     <javadoc sourcepath="antsrc"
              destdir="www/nbantext-javadoc"
