@@ -14,6 +14,7 @@ package org.netbeans.test.editor.app.core;
 
 import org.netbeans.test.editor.app.gui.*;
 import java.beans.*;
+import java.util.ArrayList;
 import javax.swing.SwingUtilities;
 import org.netbeans.test.editor.app.util.Scheduler;
 import org.netbeans.test.editor.app.core.TestAction;
@@ -21,23 +22,36 @@ import org.w3c.dom.Element;
 
 import java.util.Vector;
 import java.util.Collection;
+import org.netbeans.test.editor.app.Main;
+import org.netbeans.test.editor.app.core.properties.ArrayProperty;
+import org.netbeans.test.editor.app.core.properties.BadPropertyNameException;
+import org.netbeans.test.editor.app.core.properties.BooleanProperty;
+import org.netbeans.test.editor.app.core.properties.IntegerProperty;
+import org.netbeans.test.editor.app.core.properties.MultiLineStringProperty;
+import org.netbeans.test.editor.app.core.properties.Properties;
+import org.netbeans.test.editor.app.gui.actions.TestDeleteAction;
+import org.netbeans.test.editor.app.gui.actions.TestGrabInputAction;
+import org.netbeans.test.editor.app.gui.actions.TestGrabOutputAction;
+import org.netbeans.test.editor.app.gui.tree.ActionsCache;
+import org.netbeans.test.editor.app.util.ParsingUtils;
+
 /**
  *
  * @author  ehucka
  * @version
  */
-public class TestCallAction extends TestAction
-/*implements PropertyChangeListener */{
+public class TestCallAction extends TestAction {
     
     public static final String INPUT="Input";
     public static final String OUTPUT="Output";
-    public static final String TOCALL="ToCall";
-    public static final String TOSET="ToSet";
+    public static final String COMMENT="Comment";
+    public static final String TOCALL="Call";
+    public static final String TOSET="Set";
     public static final String ENABLE="Enable";
     public static final String REPEAT="Repeat";
-    public static final String LOGGERDELAY="Logger_delay";
+    public static final String LOGGERDELAY="Delay";
     
-    private String input,output,toCall,toSet;
+    private String input,output,toCall,toSet,comment;
     private int repeat,loggerDelay;
     
     private boolean enable;
@@ -53,6 +67,7 @@ public class TestCallAction extends TestAction
         output="";
         toCall="";
         toSet="";
+        comment="";
         enable=true;
         loggerDelay=50;
         repeat=1;
@@ -60,22 +75,40 @@ public class TestCallAction extends TestAction
     
     public TestCallAction(Element node) {
         super(node);
-//        System.err.println("node:" + node);
-        input = Test.loadString(node, INPUT);
-        output = Test.loadString(node, OUTPUT);
-        toCall = Test.loadString(node, TOCALL);
-        toSet = Test.loadString(node, TOSET);
-        enable = node.getAttribute(ENABLE).equals("true");
-        repeat = Integer.parseInt(node.getAttribute(REPEAT));
-        loggerDelay = Integer.parseInt(node.getAttribute(LOGGERDELAY));
+        
+        if ((input = ParsingUtils.loadString(node, INPUT)) == null) {
+            input="";
+        }
+        if ((output = ParsingUtils.loadString(node, OUTPUT)) == null) {
+            output="";
+        }
+        if ((toCall = ParsingUtils.loadString(node, TOCALL)) == null) {
+            toCall = ParsingUtils.fromSafeString(node.getAttribute(TOCALL)); // backward compatibility
+            if (toCall == null) {
+                toCall="";
+            }
+        }
+        if ((toSet = ParsingUtils.loadString(node, TOSET)) == null) {
+            toSet = ParsingUtils.fromSafeString(node.getAttribute(TOSET)); // backward compatibility
+            if (toSet == null) {
+                toSet="";
+            }
+        }
+        if ((comment = ParsingUtils.loadString(node, COMMENT)) == null) {
+            comment="";
+        }
+        enable = ParsingUtils.readBoolean(node,ENABLE);
+        repeat = ParsingUtils.parseInt(node.getAttribute(REPEAT),1);
+        loggerDelay = ParsingUtils.parseInt(node.getAttribute(LOGGERDELAY),50);
     }
     
     public Element toXML(Element node) {
         node = super.toXML(node);
-        node = Test.saveString(node, INPUT, input);
-        node = Test.saveString(node, OUTPUT, output);
-        node = Test.saveString(node, TOCALL, toCall);
-        node = Test.saveString(node, TOSET, toSet);
+        node = ParsingUtils.saveString(node, INPUT, input);
+        node = ParsingUtils.saveString(node, OUTPUT, output);
+        node = ParsingUtils.saveString(node, COMMENT, comment);
+        node.setAttribute(TOCALL, ParsingUtils.toSafeString(toCall));
+        node.setAttribute(TOSET, ParsingUtils.toSafeString(toSet));
         node.setAttribute(ENABLE, enable ? "true" : "false");
         node.setAttribute(REPEAT, Integer.toString(repeat));
         node.setAttribute(LOGGERDELAY, Integer.toString(loggerDelay));
@@ -85,53 +118,27 @@ public class TestCallAction extends TestAction
     public void setRepeat(int i) {
         int oldValue = repeat;
         repeat = i;
-        firePropertyChange (REPEAT,new Integer(oldValue),new Integer(repeat));
-    }
-    
-    public void setRep(String s) {
-        Integer oldValue = new Integer(repeat);
-        try {
-            repeat = Integer.parseInt(s);
-        } catch (Exception e) {
-            Main.log("Bad number format for repeat value");
-        }
-        firePropertyChange (REPEAT,oldValue,null);
+        firePropertyChange(REPEAT,new Integer(oldValue),new Integer(repeat));
     }
     
     public int getRepeat() {
         return repeat;
     }
     
-    public String getRep() {
-        return Integer.toString(repeat);
-    }
-    
     public void setLoggerDelay(int value) {
         int oldValue = repeat;
         loggerDelay = value;
-        firePropertyChange (LOGGERDELAY,new Integer(oldValue),new Integer(loggerDelay));
+        firePropertyChange(LOGGERDELAY,new Integer(oldValue),new Integer(loggerDelay));
     }
     
     public int getLoggerDelay() {
         return loggerDelay;
     }
     
-    public void setDelay(String s) {
-        try {
-            setLoggerDelay(Integer.parseInt(s));
-        } catch (Exception e) {
-            Main.log("Bad number format for repeat value");
-        }
-    }
-    
-    public String getDelay() {
-        return Integer.toString(getLoggerDelay());
-    }
-    
     public void setInput(String value) {
         String oldValue = input;
         input = value;
-        firePropertyChange (INPUT, oldValue, input);
+        firePropertyChange(INPUT, oldValue, input);
     }
     
     public String getInput() {
@@ -141,7 +148,7 @@ public class TestCallAction extends TestAction
     public void setOutput(String value) {
         String oldValue = output;
         output = value;
-        firePropertyChange (OUTPUT, oldValue, output);
+        firePropertyChange(OUTPUT, oldValue, output);
     }
     
     public String getOutput() {
@@ -151,7 +158,7 @@ public class TestCallAction extends TestAction
     public void setToCall(String value) {
         String oldValue = toCall;
         toCall = value;
-        firePropertyChange (TOCALL, oldValue, toCall);
+        firePropertyChange(TOCALL, oldValue, toCall);
     }
     
     public String getToCall() {
@@ -161,66 +168,46 @@ public class TestCallAction extends TestAction
     public void setToSet(String value) {
         String oldValue = toSet;
         toSet = value;
-        firePropertyChange (TOSET, oldValue, toSet);
+        firePropertyChange(TOSET, oldValue, toSet);
     }
     
     public String getToSet() {
         return toSet;
     }
+    
+    public void setComment(String value) {
+        String oldValue = comment;
+        comment = value;
+        firePropertyChange(COMMENT, oldValue, comment);
+    }
+    
+    public String getComment() {
+        return comment;
+    }
+    
     public void setEnabled(boolean value) {
         boolean oldValue = enable;
         enable = value;
-        firePropertyChange (ENABLE, oldValue ? Boolean.TRUE : Boolean.FALSE, enable ? Boolean.TRUE : Boolean.FALSE);
+        firePropertyChange(ENABLE, oldValue ? Boolean.TRUE : Boolean.FALSE, enable ? Boolean.TRUE : Boolean.FALSE);
     }
     
     public boolean isEnable() {
         return enable;
     }
     
-    public String[] getToCalls() {
+    private String[] getToCalls(boolean empty) {
         TestStep st;
-        int stepCount=0;
-        for(int i=0;i < owner.getChildCount();i++) {
-            
-            if (owner.get(i) instanceof TestStep) {
-                st=(TestStep)(owner.get(i));
-                if (st.isToCall())
-                    stepCount++;
-            }
-        }
-        String[] ret=new String[stepCount];
-        stepCount=0;
+        ArrayList lst=new ArrayList();
+        
+        if (empty)
+            lst.add("");
         for(int i=0;i < owner.getChildCount();i++) {
             if (owner.get(i) instanceof TestStep) {
                 st=(TestStep)(owner.get(i));
-                if (st.isToCall())
-                    ret[stepCount++]=st.getName();
+                lst.add(st.getName());
             }
         }
-        return ret;
-    }
-    
-    public String[] getToSets() {
-        TestStep st;
-        int stepCount=0;
-        for(int i=0;i < owner.getChildCount();i++) {
-            
-            if (owner.get(i) instanceof TestStep) {
-                st=(TestStep)(owner.get(i));
-                if (!st.isToCall())
-                    stepCount++;
-            }
-        }
-        String[] ret=new String[stepCount];
-        stepCount=0;
-        for(int i=0;i < owner.getChildCount();i++) {
-            if (owner.get(i) instanceof TestStep) {
-                st=(TestStep)(owner.get(i));
-                if (!st.isToCall())
-                    ret[stepCount++]=st.getName();
-            }
-        }
-        return ret;
+        return (String[])(lst.toArray(new String[] {}));
     }
     
     private TestStep readStepToCall(String toCall) {
@@ -232,7 +219,7 @@ public class TestCallAction extends TestAction
                 if (n.getName().equals(toCall) && n instanceof TestStep) {
                     return (TestStep)n;
                 }
-            };
+            }
         }
         return null;
     }
@@ -241,10 +228,8 @@ public class TestCallAction extends TestAction
         Scheduler.getDefault().addTask(new Thread() {
             public void run() {
                 String old=input;
-                //        Main.editor.lock(getLogger());
-                input=Main.editor.getText();
-                //        Main.editor.unlock(getLogger());
-                firePropertyChange (INPUT,old ,input );
+                input=Main.frame.getEditor().getText();
+                firePropertyChange(INPUT,old ,input );
             }
         });
     }
@@ -253,17 +238,16 @@ public class TestCallAction extends TestAction
         Scheduler.getDefault().addTask(new Thread() {
             public void run() {
                 String old=output;
-                //        Main.editor.lock(getLogger());
-                output=Main.editor.getText();
-                //        Main.editor.unlock(getLogger());
-                firePropertyChange (INPUT,old ,output );
+                output=Main.frame.getEditor().getText();
+                firePropertyChange(INPUT,old ,output );
             }
         });
     }
     
     public void perform() {
         if (!enable) return;
-        Main.log("Call action: "+name+" starts performing.");
+        System.err.println("Call action: "+name+" starts performing.");
+        System.err.println(">>>>>Comment: "+comment);
         isPerforming=true;
         Scheduler.getDefault().addTask(new Thread() {
             public void run() {
@@ -271,43 +255,46 @@ public class TestCallAction extends TestAction
                 TestStep call;
                 TestStep set;
                 
-                Main.editor.grabFocus();
-                Main.editor.requestFocus();
+                Main.frame.getEditor().grabFocus();
+                Main.frame.getEditor().requestFocus();
                 call=readStepToCall(toCall);
-/*                if (call == null) {
-                    Main.log("Call action "+name+": bad call step name: "+toCall);
-                    return;
-                }*/
                 set=readStepToCall(toSet);
                 if (set != null) {
                     set.perform();
                 }
-                //        Main.editor.lock(getLogger());
-		if (call != null) {
-		    getLogger().setDelay(getLoggerDelay());
-		    getLogger().clear();
-		    for(int i=0;i < repeat;i++) {
-			getLogger().loadActions(call);
-		    }
-		    Main.editor.setText(input);
-		    getLogger().addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(final java.beans.PropertyChangeEvent p1) {
-			    if (p1.getPropertyName().compareTo(Logger.PERFORMING) == 0) {
-				if (!((Boolean)(p1.getNewValue())).booleanValue()) {
-				    String content=Main.editor.getText();
-				    Main.log("Call action: "+name+" finished performing");
-				    if (content.compareTo(output) != 0 && !Test.isTesting())
-					Main.log("Call action: "+name+" error in comparation outputs*********************");
-				    getLogger().removePropertyChangeListener(this);
-				    //                Main.editor.unlock(getLogger());
-				    isPerforming=false;
-				}
-			    }
-			}});
-			getLogger().startPerforming();
-		} else {
-		    isPerforming = false;
-		}
+                if (call != null) {
+                    getLogger().setDelay(getLoggerDelay());
+                    
+                    for(int i=0;i < repeat;i++) {
+                        getLogger().clear();
+                        getLogger().loadActions(call);
+                        Main.frame.getEditor().setText(input);
+                        
+                        if (i == repeat-1) {
+                            getLogger().addPropertyChangeListener(new PropertyChangeListener() {
+                                public void propertyChange(final java.beans.PropertyChangeEvent p1) {
+                                    if (p1.getPropertyName().compareTo(Logger.PERFORMING) == 0) {
+                                        if (!((Boolean)(p1.getNewValue())).booleanValue()) {
+                                            String content=Main.frame.getEditor().getText();
+                                            System.err.println("Call action: "+name+" finished performing");
+                                            if (!Test.isTesting()) {
+                                                if (content.compareTo(output) != 0 )
+                                                    System.err.println("***************** Call action: "+name+" error in outputs comparation. ******************");
+                                            } else {
+                                                System.out.println(content);
+                                            }
+                                            getLogger().removePropertyChangeListener(this);
+                                            isPerforming=false;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                        getLogger().startPerforming();
+                    }
+                } else {
+                    isPerforming = false;
+                }
             }
         });
     }
@@ -316,17 +303,17 @@ public class TestCallAction extends TestAction
     
     public void performAndWait() {
         perform();
-	
-	long time = System.currentTimeMillis();
-	
-	while (isPerforming) {
-	    long actualTime = System.currentTimeMillis();
-	    
-	    if ((actualTime - time) > TIMEOUT) {
-		return;
-	    }
+        
+        long time = System.currentTimeMillis();
+        
+        while (isPerforming) {
+            long actualTime = System.currentTimeMillis();
+            
+            if ((actualTime - time) > TIMEOUT) {
+                return;
+            }
             Thread.yield();
-	}
+        }
     }
     
     public Vector getPerformedActions() {
@@ -344,4 +331,96 @@ public class TestCallAction extends TestAction
         getLogger().stopPerforming();
     }
     
+    public void fromXML(Element node) throws BadPropertyNameException {
+        super.fromXML(node);
+        if ((input = ParsingUtils.loadString(node, INPUT)) == null) {
+            input="";
+        }
+        if ((output = ParsingUtils.loadString(node, OUTPUT)) == null) {
+            output="";
+        }
+        if ((toCall = ParsingUtils.loadString(node, TOCALL)) == null) {
+            toCall = ParsingUtils.fromSafeString(node.getAttribute(TOCALL)); // backward compatibility
+            if (toCall == null) {
+                toCall="";
+            }
+        }
+        if ((toSet = ParsingUtils.loadString(node, TOSET)) == null) {
+            toSet = ParsingUtils.fromSafeString(node.getAttribute(TOSET)); // backward compatibility
+            if (toSet == null) {
+                toSet="";
+            }
+        }
+        if ((comment = ParsingUtils.loadString(node, COMMENT)) == null) {
+            comment="";
+        }
+        enable = ParsingUtils.readBoolean(node,ENABLE);
+        repeat = ParsingUtils.parseInt(node.getAttribute(REPEAT),1);
+        loggerDelay = ParsingUtils.parseInt(node.getAttribute(LOGGERDELAY),50);
+    }
+    
+    public Properties getProperties() {
+        Properties ret=super.getProperties();
+        ret.put(INPUT, new MultiLineStringProperty(input));
+        ret.put(OUTPUT, new MultiLineStringProperty(output));
+        ret.put(TOCALL, new ArrayProperty(toCall,getToCalls(false)));
+        ret.put(TOSET, new ArrayProperty(toSet,getToCalls(true)));
+        ret.put(COMMENT, new MultiLineStringProperty(comment));
+        ret.put(ENABLE, new BooleanProperty(enable));
+        ret.put(REPEAT, new IntegerProperty(repeat));
+        ret.put(LOGGERDELAY, new IntegerProperty(loggerDelay));
+        return ret;
+    }
+    
+    public Object getProperty(String name) throws BadPropertyNameException {
+        if (name.compareTo(INPUT) == 0) {
+            return new MultiLineStringProperty(input);
+        } else if (name.compareTo(OUTPUT) == 0) {
+            return new MultiLineStringProperty(output);
+        } else if (name.compareTo(TOCALL) == 0) {
+            return new ArrayProperty(toCall,getToCalls(false));
+        } else if (name.compareTo(TOSET) == 0) {
+            return new ArrayProperty(toSet,getToCalls(false));
+        } else if (name.compareTo(COMMENT) == 0) {
+            return new MultiLineStringProperty(comment);
+        } else if (name.compareTo(ENABLE) == 0) {
+            return new BooleanProperty(enable);
+        } else if (name.compareTo(REPEAT) == 0) {
+            return new IntegerProperty(repeat);
+        } else if (name.compareTo(LOGGERDELAY) == 0) {
+            return new IntegerProperty(loggerDelay);
+        } else {
+            return super.getProperty(name);
+        }
+    }
+    
+    public void setProperty(String name, Object value)  throws BadPropertyNameException {
+        if (value == null) {
+            throw new NullPointerException();
+        } else if (name.compareTo(INPUT) == 0) {
+            setInput(((MultiLineStringProperty)(value)).getProperty());
+        } else if (name.compareTo(OUTPUT) == 0) {
+            setOutput(((MultiLineStringProperty)(value)).getProperty());
+        } else if (name.compareTo(TOCALL) == 0) {
+            setToCall(((ArrayProperty)(value)).getProperty());
+        } else if (name.compareTo(TOSET) == 0) {
+            setToSet(((ArrayProperty)(value)).getProperty());
+        } else if (name.compareTo(COMMENT) == 0) {
+            setComment(((MultiLineStringProperty)(value)).getProperty());
+        } else if (name.compareTo(ENABLE) == 0) {
+            setEnabled(((BooleanProperty)value).getValue());
+        } else if (name.compareTo(REPEAT) == 0) {
+            setRepeat(((IntegerProperty)(value)).getValue());
+        } else if (name.compareTo(LOGGERDELAY) == 0) {
+            setLoggerDelay(((IntegerProperty)(value)).getValue());
+        } else {
+            super.setProperty(name, value);
+        }
+    }
+    
+    protected void registerActions() {
+        super.registerActions();
+        ActionsCache.getDefault().addNodeAction(getClass(), new TestGrabInputAction());
+        ActionsCache.getDefault().addNodeAction(getClass(), new TestGrabOutputAction());
+    }
 }

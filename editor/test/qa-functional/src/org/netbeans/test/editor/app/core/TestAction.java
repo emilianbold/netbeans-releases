@@ -13,14 +13,15 @@
 package org.netbeans.test.editor.app.core;
 
 import org.netbeans.test.editor.app.core.TestNode;
+import org.netbeans.test.editor.app.core.cookies.PerformCookie;
 import org.w3c.dom.Element;
 /**
  *
  * @author  ehucka
- * @version 
+ * @version
  */
 public abstract class TestAction extends TestNode {
-
+    
     /** Creates new TestAction */
     public TestAction(String name) {
         super(name);
@@ -36,5 +37,17 @@ public abstract class TestAction extends TestNode {
     
     public boolean isParent() {
         return false;
+    }
+    
+    protected void registerCookies() {
+        getCookieSet().put(PerformCookie.class,new PerformCookie() {
+            public void perform() {
+                TestAction.this.perform();
+            }
+            
+            public boolean isPerforming() {
+                return TestAction.this.isPerforming;
+            }
+        });
     }
 }

@@ -12,20 +12,24 @@
  */
 package org.netbeans.test.editor.app.gui;
 
+import java.awt.Component;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
 import javax.swing.*;
 import java.util.Vector;
 import java.io.File;
-import org.netbeans.core.NbMainExplorer;
+import java.util.ArrayList;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.tree.DefaultTreeModel;
+import org.netbeans.test.editor.app.Main;
 
 import org.netbeans.test.editor.app.core.*;
-import org.openide.explorer.view.*;
-import org.openide.NotifyDescriptor;
-import org.openide.explorer.ExplorerPanel;
-import org.openide.windows.WindowManager;
 import org.netbeans.test.editor.app.core.Test;
-import org.openide.DialogDisplayer;
-import org.openide.windows.Workspace;
-import org.openide.nodes.Node;
+import org.netbeans.test.editor.app.gui.QuestionDialog;
+import org.netbeans.test.editor.app.gui.tree.TestNodeDelegate;
+import org.netbeans.test.editor.app.tests.GenerateTests;
+import org.netbeans.test.editor.app.util.Scheduler;
 
 /**
  *
@@ -39,69 +43,79 @@ import org.openide.nodes.Node;
 
 public class TestEditorFrame extends javax.swing.JFrame {
     
-    private Node root;
+    private static String TITLE="Editor Test Application";
+    
+    private TestNodeDelegate root;
     
     private Test test;
     
-    private Vector explorers;
+    private TreeDialog tree=null;
+    
+    File currentDirectory;
+    
+    String oldpath,oldpackage;
     
     /** Creates new form TestEditorFrame */
     
     public TestEditorFrame() {
-        
-        explorers=new Vector();
-        
         initComponents();
-        
         pack();
-        
         this.setSize(800,500);
-        
+        this.setLocation(300,100);
+        oldpath="";
+        oldpackage="";
+        //        currentDirectory=new File(System.getProperty("user.dir"));
+        currentDirectory=new File("/mnt/data/Sources/repository/editortest2/org/netbeans/test/editor/app");
     }
-    
-    
     
     public EventLoggingEditorPane getEditor() {
-        
         return (EventLoggingEditorPane)editor;
-        
     }
     
-    
-    
-    public void setRoot(Test test) {
-        
+    public void setTest(Test test) {
         this.test=test;
-        
-        root = test.getNodeDelegate();
-        
-        
-        
-        for(int i=0;i < explorers.size();i++) {
-            
-            ((ExplorerPanel)explorers.get(i)).getExplorerManager().
-            
-            setRootContext(root);
-            
+        root = (TestNodeDelegate)test.getNodeDelegate();
+        if (tree != null) {
+            tree.setRootContext(root);
         }
-        
     }
     
     public void newRootWindow() {
-        
-        NbMainExplorer.ExplorerTab et = new NbMainExplorer.ExplorerTab();
-        explorers.add(et);
-        et.getExplorerManager().setRootContext(root);
-        
-        Workspace curWorkspace = WindowManager.getDefault().getCurrentWorkspace();
-        String modeName = "Test tree explorer "+Integer.toString(explorers.size());
-        curWorkspace.createMode("explorer"+Integer.toString(explorers.size()),modeName,null).dockInto(et);
-        et.open();
+        if (tree == null) {
+            tree=new TreeDialog(this);
+            tree.setRootContext(root);
+            addComponentListener(new ComponentAdapter() {
+                public void componentMoved(ComponentEvent e) {
+                    if (tree != null) {
+                        tree.setLocation(getX()-tree.getWidth(), getY());
+                    }
+                }
+                
+                public void componentResized(ComponentEvent e) {
+                    if (tree != null) {
+                        tree.setSize(tree.getWidth(),getHeight());
+                    }
+                }
+            });
+            viewExplorerM.setEnabled(false);
+            tree.addWindowListener(new WindowAdapter() {
+                public void windowClosing(java.awt.event.WindowEvent evt) {
+                    viewExplorerM.setEnabled(true);
+                    tree=null;
+                }
+            });
+            tree.show();
+        }
     }
     
-    public Node getRoot() {
+    public Test getTest() {
+        return test;
+    }
+    
+    public TestNodeDelegate getRootNode() {
         return root;
     }
+    
     /** This method is called from within the constructor to
      *
      * initialize the form.
@@ -118,10 +132,8 @@ public class TestEditorFrame extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         editor = new EventLoggingEditorPane();
-        jPanel3 = new javax.swing.JPanel();
-        controller = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        historyScrollPane = new javax.swing.JScrollPane();
         history = new javax.swing.JTextArea();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
@@ -131,11 +143,16 @@ public class TestEditorFrame extends javax.swing.JFrame {
         jMenuItem4 = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JSeparator();
         jMenuItem5 = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
+        jMenu3 = new javax.swing.JMenu();
         jMenuItem6 = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JSeparator();
+        jMenuItem7 = new javax.swing.JMenuItem();
+        jMenu2 = new javax.swing.JMenu();
+        viewExplorerM = new javax.swing.JMenuItem();
 
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
+        setTitle("Editor Test Application");
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 exitForm(evt);
@@ -155,7 +172,7 @@ public class TestEditorFrame extends javax.swing.JFrame {
         jPanel2.add(jScrollPane3, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.gridheight = 3;
@@ -164,41 +181,17 @@ public class TestEditorFrame extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1.0;
         getContentPane().add(jPanel2, gridBagConstraints);
 
-        jPanel3.setLayout(new java.awt.BorderLayout());
-
-        jPanel3.setBorder(new javax.swing.border.TitledBorder("Actions set"));
-        jPanel3.setMinimumSize(new java.awt.Dimension(100, 200));
-        jPanel3.setPreferredSize(new java.awt.Dimension(100, 200));
-        controller.setMinimumSize(new java.awt.Dimension(100, 100));
-        controller.setPreferredSize(new java.awt.Dimension(100, 100));
-        jPanel3.add(controller, java.awt.BorderLayout.CENTER);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        getContentPane().add(jPanel3, gridBagConstraints);
-
         jPanel4.setLayout(new java.awt.BorderLayout());
 
         jPanel4.setBorder(new javax.swing.border.TitledBorder("History"));
         jPanel4.setMinimumSize(new java.awt.Dimension(500, 75));
         jPanel4.setPreferredSize(new java.awt.Dimension(500, 75));
-        history.setColumns(80);
-        history.setEditable(false);
-        history.setRows(1000);
-        history.setMinimumSize(new java.awt.Dimension(500, 75));
-        history.setPreferredSize(new java.awt.Dimension(960, 17000));
-        jScrollPane2.setViewportView(history);
+        historyScrollPane.setViewportView(history);
 
-        jPanel4.add(jScrollPane2, java.awt.BorderLayout.CENTER);
+        jPanel4.add(historyScrollPane, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -206,7 +199,7 @@ public class TestEditorFrame extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1.0;
         getContentPane().add(jPanel4, gridBagConstraints);
 
-        jMenu1.setText("File");
+        jMenu1.setText("Test");
         jMenuItem1.setText("New");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -256,15 +249,38 @@ public class TestEditorFrame extends javax.swing.JFrame {
 
         jMenuBar1.add(jMenu1);
 
-        jMenu2.setText("View");
-        jMenuItem6.setText("Explorer");
+        jMenu3.setText("Tools");
+        jMenuItem6.setText("Generate Test");
         jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rootSetting(evt);
+                generateTest(evt);
             }
         });
 
-        jMenu2.add(jMenuItem6);
+        jMenu3.add(jMenuItem6);
+
+        jMenu3.add(jSeparator2);
+
+        jMenuItem7.setText("Test Threads");
+        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                testThreads(evt);
+            }
+        });
+
+        jMenu3.add(jMenuItem7);
+
+        jMenuBar1.add(jMenu3);
+
+        jMenu2.setText("View");
+        viewExplorerM.setText("Explorer");
+        viewExplorerM.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                viewExplorer(evt);
+            }
+        });
+
+        jMenu2.add(viewExplorerM);
 
         jMenuBar1.add(jMenu2);
 
@@ -272,11 +288,52 @@ public class TestEditorFrame extends javax.swing.JFrame {
 
     }//GEN-END:initComponents
     
-  private void rootSetting(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rootSetting
-      // Add your handling code here:
-      newRootWindow();
-  }//GEN-LAST:event_rootSetting
-  
+    private void testThreads(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testThreads
+        // Add your handling code here:
+    }//GEN-LAST:event_testThreads
+    
+    private void generateTest(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateTest
+        // Add your handling code here:
+        if (Main.getFileName() == null) {
+            System.err.println("You have not specify xml file of the Test.");
+            return;
+        }
+        TestGenerateDialog dlg = new TestGenerateDialog(this,currentDirectory.getAbsolutePath());
+        if (oldpath.length() > 0) {
+            dlg.setPath(oldpath);
+        }
+        if (oldpackage.length() > 0) {
+            dlg.setPackageName(oldpackage);
+        }
+        dlg.show();
+        if (dlg.getState()) {
+            new Thread() {
+                String path,pack;
+                
+                public void start(String pth,String pck) {
+                    path=pth;
+                    pack=pck;
+                    oldpath=path;
+                    oldpackage=pack;
+                    start();
+                }
+                
+                public void run() {
+                    try {
+                        GenerateTests.generateTest(test, Main.getFileName(), path, pack);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }.start(dlg.getPath(),dlg.getPackageName());
+        }
+    }//GEN-LAST:event_generateTest
+    
+    private void viewExplorer(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewExplorer
+        // Add your handling code here:
+        newRootWindow();
+    }//GEN-LAST:event_viewExplorer
+    
   private void exitTest(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitTest
       // Add your handling code here:
       exitForm(null);
@@ -284,20 +341,22 @@ public class TestEditorFrame extends javax.swing.JFrame {
   
   private void saveAsTest(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsTest
       // Add your handling code here:
-      String dlgFile = fileDlg(false);
+      String dlgFile;
       
-      new Thread() {
-          private String file;
-          
-          public void start(String afile) {
-              file = afile;
-              start();
-          }
-          
-          public void run() {
-              Main.saveAsTest(file);
-          }
-      }.start(dlgFile);
+      if ((dlgFile = fileDlg(false)) != null) {
+          new Thread() {
+              private String file;
+              
+              public void start(String afile) {
+                  file = afile;
+                  start();
+              }
+              
+              public void run() {
+                  Main.saveAsTest(file);
+              }
+          }.start(dlgFile);
+      }
   }//GEN-LAST:event_saveAsTest
   
   private void saveTest(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveTest
@@ -315,20 +374,22 @@ public class TestEditorFrame extends javax.swing.JFrame {
   
   private void openTest(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openTest
       // Add your handling code here:
-      String dlgFile = fileDlg(true);
+      String dlgFile;
       
-      new Thread() {
-          
-          private String file;
-          
-          public void start(String afile) {
-              file = afile;
-              start();
-          }
-          public void run() {
-              Main.openTest(file);
-          }
-      }.start("file://" + dlgFile);
+      if ((dlgFile = fileDlg(true)) != null) {
+          new Thread() {
+              
+              private String file;
+              
+              public void start(String afile) {
+                  file = afile;
+                  start();
+              }
+              public void run() {
+                  Main.openTest(file);
+              }
+          }.start(dlgFile);
+      }
   }//GEN-LAST:event_openTest
   
   private void newTest(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newTest
@@ -347,36 +408,43 @@ public class TestEditorFrame extends javax.swing.JFrame {
                 saveTest(null);
             }
         }
-        for(int i=0;i < explorers.size();i++) {
-            ((ExplorerPanel)explorers.get(i)).close();
+        
+        if (tree != null) {
+            tree.close();
         }
         Main.finish();  //I think, it's useless now.
         System.exit(0);
     }//GEN-LAST:event_exitForm
     
-    public void closeFrames() {
-        
-        for(int i=0;i < explorers.size();i++) {
-            ((ExplorerPanel)explorers.get(i)).close();
-        }
-    }
-    
     public void killFrame() {
-        closeFrames();
         setVisible(false);
     }
     
     public boolean quest(String question) {
-        NotifyDescriptor.Confirmation dlg=new NotifyDescriptor.Confirmation(question,NotifyDescriptor.YES_NO_OPTION);
-        return NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg));
+        QuestionDialog dlg=new QuestionDialog(this,question);
+        dlg.show();
+        return dlg.getAnswer();
     }
     
     public String fileDlg(boolean open) {
         
         JFileChooser fch;
         File file = null;
-        
-        fch=new JFileChooser();
+        System.err.println(currentDirectory);
+        fch=new JFileChooser(currentDirectory);
+        fch.setFileFilter(new FileFilter() {
+            public boolean accept(File f) {
+                String s=f.getName().substring(f.getName().lastIndexOf('.')+1).toLowerCase();
+                if (f.isDirectory() || s.compareTo("xml") == 0) {
+                    return true;
+                }
+                return false;
+            }
+            
+            public String getDescription() {
+                return "XML Test files";
+            }
+        });
         if (open) {
             fch.setDialogTitle("Open Test ...");
             if (fch.showOpenDialog(fch) == JFileChooser.APPROVE_OPTION)
@@ -388,17 +456,21 @@ public class TestEditorFrame extends javax.swing.JFrame {
                 file = fch.getSelectedFile();
             }
         }
-        System.err.println("file=" + file);
         if (file == null)
             return null;
+        else
+            currentDirectory=file.getParentFile();
         return file.getAbsolutePath();
     }
     
     public void appendHistory(String text) {
         history.append(text);
-        history.revalidate();
+        JScrollBar bar=historyScrollPane.getVerticalScrollBar();
+        if (bar != null) {
+            bar.setValue(bar.getMaximum());
+        }
     }
-        
+    
     private int horizontalScrollBarPolicy() {
         return ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS/*AS_NEEDED;*/;
     }
@@ -407,28 +479,40 @@ public class TestEditorFrame extends javax.swing.JFrame {
         return ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS/*AS_NEEDED;*/;
     }
     
+    /** Getter for property tree.
+     * @return Value of property tree.
+     *
+     */
+    public TreeDialog getTree() {
+        return tree;
+    }
+    
+    public void setTitleFileName(String name) {
+        setTitle(TITLE+" ["+name+"]");
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuItem jMenuItem5;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem viewExplorerM;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JMenuItem jMenuItem4;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuItem jMenuItem6;
-    private javax.swing.JPanel controller;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JEditorPane editor;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JTextArea history;
+    private javax.swing.JScrollPane historyScrollPane;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JMenuBar jMenuBar1;
     // End of variables declaration//GEN-END:variables
-    
-    
     
 }
 

@@ -28,7 +28,13 @@ import java.util.Enumeration;
 import org.netbeans.modules.editor.options.JavaOptions;
 import org.netbeans.test.editor.app.util.Scheduler;
 import javax.swing.SwingUtilities;
+import org.netbeans.test.editor.app.Main;
 import org.netbeans.test.editor.app.core.TestSetAction;
+import org.netbeans.test.editor.app.core.properties.ArrayProperty;
+import org.netbeans.test.editor.app.core.properties.BadPropertyNameException;
+import org.netbeans.test.editor.app.core.properties.Properties;
+import org.netbeans.test.editor.app.gui.actions.TestDeleteAction;
+import org.netbeans.test.editor.app.gui.tree.ActionsCache;
 import org.w3c.dom.Element;
 /**
  *
@@ -38,26 +44,12 @@ import org.w3c.dom.Element;
 public class TestSetKitAction extends TestSetAction {
     
     private String kit;
-    private String indentationEngine;
-/**
- *Abbreviations
- *Font Size
- *Fonts and Colors
- *Indentation Engine
- *Key Bindings
- *Line Number
- *Tab Size
- ********************************Java + HTML************************************
- *Auto Popup of Java Completion
- *Delay of Java Completion Auto Popup
- **/
     
     public static final String KIT="Kit";
-    public static final String INDENTATION_ENGINE="Indentation_engine";
     
-    public static String[] editorKitsNames={"PlainKit","JavaKit","HTMLKit"/*,"JSPKit"*/};
+    public static String[] editorKitsNames={"PlainKit","JavaKit","HTMLKit"};
     public static String[] kitsTypes={PlainKit.PLAIN_MIME_TYPE,
-    JavaKit.JAVA_MIME_TYPE,HTMLKit.HTML_MIME_TYPE/*,JspLoader.JSP_MIME_TYPE*/};
+    JavaKit.JAVA_MIME_TYPE,HTMLKit.HTML_MIME_TYPE};
     
     
     /** Creates new TestSetAction */
@@ -82,20 +74,37 @@ public class TestSetKitAction extends TestSetAction {
         return node;
     }
     
-    public String getIndentationEngine() {
-        return indentationEngine;
+    public void fromXML(Element node) throws BadPropertyNameException {
+        super.fromXML(node);
+        kit = node.getAttribute(KIT);
     }
     
-    public void setIndentationEngine(String value) {
-        String oldValue = indentationEngine;
-        indentationEngine = value;
-        firePropertyChange (KIT, oldValue, value);
+    public Properties getProperties() {
+        Properties ret=super.getProperties();
+        ret.put(KIT, new ArrayProperty(kit, editorKitsNames));
+        return ret;
+    }
+    
+    public Object getProperty(String name) throws BadPropertyNameException {
+        if (name.compareTo(KIT) == 0) {
+            return new ArrayProperty(kit, editorKitsNames);
+        } else {
+            return super.getProperty(name);
+        }
+    }
+    
+    public void setProperty(String name, Object value)  throws BadPropertyNameException {
+        if (name.compareTo(KIT) == 0) {
+            setKit(((ArrayProperty)value).getProperty());
+        } else {
+            super.setProperty(name, value);
+        }
     }
     
     public void setKit(String value) {
         String oldValue = kit;
         kit = value;
-        firePropertyChange (KIT, oldValue, kit);
+        firePropertyChange(KIT, oldValue, kit);
     }
     
     public String getKit() {
@@ -116,12 +125,10 @@ public class TestSetKitAction extends TestSetAction {
     }
     
     public void perform() {
+        super.perform();
         Scheduler.getDefault().addTask(new Thread() {
             public void run() {
-//                Main.editor.lock(getLogger());
-                Main.editor.setEditorKit(getKitI());
-                Main.log("Set Action "+getName()+" sets kit to "+getKit());
-//                Main.editor.unlock(getLogger());
+                Main.frame.getEditor().setEditorKit(getKitI());
             }
         });
     }

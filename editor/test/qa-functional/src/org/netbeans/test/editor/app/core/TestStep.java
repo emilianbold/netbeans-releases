@@ -12,14 +12,19 @@
  */
 package org.netbeans.test.editor.app.core;
 
-import org.netbeans.test.editor.app.gui.Main;
+import java.util.ArrayList;
 import org.netbeans.test.editor.app.core.TestGroup;
 import org.w3c.dom.Element;
 
 import java.util.Collection;
 import java.util.Vector;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.datatransfer.NewType;
+import org.netbeans.test.editor.app.core.actions.ActionRegistry;
+import org.netbeans.test.editor.app.core.cookies.LoggingCookie;
+import org.netbeans.test.editor.app.core.cookies.PackCookie;
+import org.netbeans.test.editor.app.core.cookies.PerformCookie;
+import org.netbeans.test.editor.app.gui.actions.TestDeleteAction;
+import org.netbeans.test.editor.app.gui.actions.TestPackAction;
+import org.netbeans.test.editor.app.gui.actions.TreeNewType;
 
 /**
  *
@@ -35,44 +40,28 @@ public class TestStep extends TestGroup {
     
     public TestStep(String name) {
         super(name);
-        initialize();
     }
     
     public TestStep(Element node) {
         super(node);
-        initialize();
     }
     
     public Element toXML(Element node) {
         return super.toXML(node);
     }
     
-    private void initialize() {
-        getCookieSet().add(new LoggingCookie() {
-            public void start() {
-                TestStep.this.startLogging();
-            }
-            public void stop() {
-                TestStep.this.stopLogging();
-            }
-            public boolean isLogging() {
-                return TestStep.this.isLogging();
-            }
-        });
-    }
-    
     public void startLogging() {
-//        Main.editor.lock(getLogger());
+        System.err.println("Start Logging");
         getLogger().clear();
         getLogger().startLogging();
     }
     
     public void stopLogging() {
+        System.err.println("Stop Logging");
         getLogger().stopLogging();
-        getLogger().saveActions(this);
+        TestNode[] nodes=getLogger().saveActions(this);
         getLogger().clear();
-//        Main.editor.unlock(getLogger());
-        firePropertyChange (CHANGE_CHILD,null,null);
+        firePropertyChange(ADD_CHILDS,null,nodes);
     }
     
     public boolean isLogging() {
@@ -90,14 +79,6 @@ public class TestStep extends TestGroup {
     
     public void stop() {
         isPerforming=false;
-    }
-    
-    public boolean isToCall() {
-        if (getChildCount() == 0)
-            return true;
-        if (get(0) instanceof TestSetAction)
-            return false;
-        return true;
     }
     
     public void delete() {
@@ -118,9 +99,63 @@ public class TestStep extends TestGroup {
         }
         owner.remove(this);
     }
-
-    protected Collection getNewTypes() {
-        return generateSetNewTypes();
+    
+    public boolean isPacked() {
+        TestNode tn;
+        for (int i=0;i < getChildCount();i++) {
+            tn=(TestNode)(get(i));
+            if (tn instanceof TestLogAction && tn.getName().compareTo(TestStringAction.STRINGED_NAME) == 0) {
+                return false;
+            }
+        }
+        return true;
     }
-
+    
+    public void pack() {
+        TestAction[] tas=TestStringAction.generate(getChildNodes());
+        removeAll();
+        addNodes(tas);
+    }
+    
+    protected void registerNewTypes() {
+        ActionRegistry.getDefault().addRegisteredNewType(getClass(), TestLogAction.class);
+        ActionRegistry.getDefault().addRegisteredNewType(getClass(), TestStringAction.class);
+        ActionRegistry.getDefault().addRegisteredNewType(getClass(), TestCompletionAction.class);
+        ActionRegistry.getDefault().addRegisteredNewType(getClass(), TestSetKitAction.class);
+        ActionRegistry.getDefault().addRegisteredNewType(getClass(), TestSetIEAction.class);
+        ActionRegistry.getDefault().addRegisteredNewType(getClass(), TestSetJavaIEAction.class);
+        ActionRegistry.getDefault().addRegisteredNewType(getClass(), TestSetCompletionAction.class);
+        ActionRegistry.getDefault().addRegisteredNewType(getClass(), TestAddAbbreviationAction.class);
+    }
+    
+    protected void registerCookies() {
+        getCookieSet().put(PerformCookie.class,new PerformCookie() {
+            public void perform() {
+                TestStep.this.perform();
+            }
+            
+            public boolean isPerforming() {
+                return TestStep.this.isPerforming;
+            }
+        });
+        getCookieSet().put(LoggingCookie.class,new LoggingCookie() {
+            public void start() {
+                TestStep.this.startLogging();
+            }
+            public void stop() {
+                TestStep.this.stopLogging();
+            }
+            public boolean isLogging() {
+                return TestStep.this.isLogging();
+            }
+        });
+        getCookieSet().put(PackCookie.class,new PackCookie() {
+            public void pack() {
+                TestStep.this.pack();
+            }
+            public boolean isPacked() {
+                return TestStep.this.isPacked();
+            }
+        });
+    }
 }

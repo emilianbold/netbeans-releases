@@ -15,11 +15,19 @@ package org.netbeans.test.editor.app.core;
 import org.netbeans.modules.editor.java.JavaIndentEngine;
 import org.w3c.dom.Element;
 import javax.swing.text.Document;
+import org.netbeans.test.editor.app.core.properties.BadPropertyNameException;
+import org.netbeans.test.editor.app.core.properties.BooleanProperty;
+import org.netbeans.test.editor.app.core.properties.IntegerProperty;
+import org.netbeans.test.editor.app.core.properties.Properties;
+import org.netbeans.test.editor.app.gui.actions.TestDeleteAction;
+import org.netbeans.test.editor.app.gui.tree.ActionsCache;
+import org.netbeans.test.editor.app.util.ParsingUtils;
+import org.openide.text.IndentEngine;
 
 /**
  *
  * @author  jlahoda
- * @version 
+ * @version
  */
 public class TestSetJavaIEAction extends TestSetIEAction {
     
@@ -29,21 +37,21 @@ public class TestSetJavaIEAction extends TestSetIEAction {
     private boolean expandTabs;
     private int     tabSize;
     
-    public static String LEADING_STAR_IN_COMMENTS = "leadingStarInComment";
-    public static String ADD_NEW_LINE_BEFORE_PAR = "addNewLineBeforePar";
-    public static String ADD_SPACE_BEFORE_BRACKETS = "addSpaceBeforeBrackets";
-    public static String EXPAND_TABS = "expandTabs";
-    public static String TAB_SIZE = "tabSize";
+    public static String LEADING_STAR_IN_COMMENTS = "LeadingStarInComment";
+    public static String ADD_NEW_LINE_BEFORE_PAR = "AddNewLineBeforeParenthesis";
+    public static String ADD_SPACE_BEFORE_BRACKETS = "AddSpaceBeforeBrackets";
+    public static String EXPAND_TABS = "ExpandTabs";
+    public static String TAB_SIZE = "TabSize";
     
     /** Creates new TestSetJavaIEAction */
     public TestSetJavaIEAction(int num) {
-        this("setJavaIndentEngine"+Integer.toString(num));
+        this("setJavaIE"+Integer.toString(num));
     }
     
     public TestSetJavaIEAction(String name) {
         super(name);
         setIndentEngine(findIndentEngine(JavaIndentEngine.class));
-
+        
         JavaIndentEngine engine = (JavaIndentEngine) getIndentEngine();
         
         setExpandTabs(engine.isExpandTabs());
@@ -53,47 +61,22 @@ public class TestSetJavaIEAction extends TestSetIEAction {
         setTabSize(engine.getSpacesPerTab());
     }
     
-    private boolean readBoolean(Element node, String name) {
-        String attribute = node.getAttribute(name);
-        
-        if (attribute == null) {
-            return false;
-        }
-	if ("true".equalsIgnoreCase(attribute)) {
-	    return true;
-	} else {
-	    return false;
-	}
-    }
-    
-    private int readInt(Element node, String name) {
-        String attribute = node.getAttribute(name);
-        
-        if (attribute == null) {
-            return 0;
-        }
-        try {
-            return Integer.parseInt(attribute);
-        } catch (NumberFormatException e) {
-            e.printStackTrace(System.err);
-            return 0;
-        }
-    }
-    
     public TestSetJavaIEAction(Element node) {
         super(node);
-	System.err.println("TestSetJavaIEAction( " + this + "): <init>: start.");
-        setLeadingStarInComment(readBoolean(node, LEADING_STAR_IN_COMMENTS));
-        setAddNewLineBeforePar(readBoolean(node, ADD_NEW_LINE_BEFORE_PAR));
-        setAddSpaceBeforeBrackets(readBoolean(node, ADD_SPACE_BEFORE_BRACKETS));
-        setExpandTabs(readBoolean(node, EXPAND_TABS));
-        setTabSize(readInt(node, TAB_SIZE));
-	System.err.println("TestSetJavaIEAction( " + this + "): <init>: end.");
+        setLeadingStarInComment(ParsingUtils.readBoolean(node, LEADING_STAR_IN_COMMENTS));
+        setAddNewLineBeforePar(ParsingUtils.readBoolean(node, ADD_NEW_LINE_BEFORE_PAR));
+        setAddSpaceBeforeBrackets(ParsingUtils.readBoolean(node, ADD_SPACE_BEFORE_BRACKETS));
+        setExpandTabs(ParsingUtils.readBoolean(node, EXPAND_TABS));
+        setTabSize(ParsingUtils.readInt(node, TAB_SIZE));
+    }
+    
+    public void setIndentEngine(IndentEngine indentEngine) {  //no indent engine except Java IE
+        this.indentEngine = findIndentEngine(JavaIndentEngine.class);
     }
     
     public Element toXML(Element node) {
         node = super.toXML(node);
-
+        
         node.setAttribute(LEADING_STAR_IN_COMMENTS, String.valueOf(getLeadingStarInComment()));
         node.setAttribute(ADD_NEW_LINE_BEFORE_PAR, String.valueOf(getAddNewLineBeforePar()));
         node.setAttribute(ADD_SPACE_BEFORE_BRACKETS, String.valueOf(getAddSpaceBeforeBrackets()));
@@ -102,55 +85,106 @@ public class TestSetJavaIEAction extends TestSetIEAction {
         return node;
     }
     
+    public void fromXML(Element node) throws BadPropertyNameException {
+        super.fromXML(node);
+        setLeadingStarInComment(ParsingUtils.readBoolean(node, LEADING_STAR_IN_COMMENTS));
+        setAddNewLineBeforePar(ParsingUtils.readBoolean(node, ADD_NEW_LINE_BEFORE_PAR));
+        setAddSpaceBeforeBrackets(ParsingUtils.readBoolean(node, ADD_SPACE_BEFORE_BRACKETS));
+        setExpandTabs(ParsingUtils.readBoolean(node, EXPAND_TABS));
+        setTabSize(ParsingUtils.readInt(node, TAB_SIZE));
+    }
+    
+    public Properties getProperties() {
+        Properties ret=super.getProperties();
+        ret.put(LEADING_STAR_IN_COMMENTS, new BooleanProperty(getLeadingStarInComment()));
+        ret.put(ADD_NEW_LINE_BEFORE_PAR, new BooleanProperty(getAddNewLineBeforePar()));
+        ret.put(ADD_SPACE_BEFORE_BRACKETS, new BooleanProperty(getAddSpaceBeforeBrackets()));
+        ret.put(EXPAND_TABS, new BooleanProperty(getExpandTabs()));
+        ret.put(TAB_SIZE, new IntegerProperty(getTabSize()));
+        return ret;
+    }
+    
+    public Object getProperty(String name) throws BadPropertyNameException {
+        if (name.compareTo(LEADING_STAR_IN_COMMENTS) == 0) {
+            return  new BooleanProperty(leadingStarInComment);
+        } else if (name.compareTo(ADD_NEW_LINE_BEFORE_PAR) == 0) {
+            return  new BooleanProperty(addNewLineBeforePar);
+        } else if (name.compareTo(ADD_SPACE_BEFORE_BRACKETS) == 0) {
+            return  new BooleanProperty(addSpaceBeforeBrackets);
+        } else if (name.compareTo(EXPAND_TABS) == 0) {
+            return  new BooleanProperty(expandTabs);
+        } else if (name.compareTo(TAB_SIZE) == 0) {
+            return new IntegerProperty(tabSize);
+        } else {
+            return super.getProperty(name);
+        }
+    }
+    
+    public void setProperty(String name, Object value)  throws BadPropertyNameException {
+        if (name.compareTo(LEADING_STAR_IN_COMMENTS) == 0) {
+            setLeadingStarInComment(((BooleanProperty)value).getValue());
+        } else if (name.compareTo(ADD_NEW_LINE_BEFORE_PAR) == 0) {
+            setAddNewLineBeforePar(((BooleanProperty)value).getValue());
+        } else if (name.compareTo(ADD_SPACE_BEFORE_BRACKETS) == 0) {
+            setAddSpaceBeforeBrackets(((BooleanProperty)value).getValue());
+        } else if (name.compareTo(EXPAND_TABS) == 0) {
+            setExpandTabs(((BooleanProperty)value).getValue());
+        } else if (name.compareTo(TAB_SIZE) == 0) {
+            setTabSize(((IntegerProperty)value).getValue());
+        } else {
+            super.setProperty(name, value);
+        }
+    }
+    
     public boolean getLeadingStarInComment() {
         return leadingStarInComment;
     }
-
+    
     public void setLeadingStarInComment(boolean value) {
         boolean old = getLeadingStarInComment();
-
+        
         leadingStarInComment = value;
         firePropertyChange(LEADING_STAR_IN_COMMENTS, old ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
-
+    
     public boolean getAddNewLineBeforePar() {
         return addNewLineBeforePar;
     }
-
+    
     public void setAddNewLineBeforePar(boolean value) {
         boolean old = getAddNewLineBeforePar();
         
         addNewLineBeforePar = value;
         firePropertyChange(ADD_NEW_LINE_BEFORE_PAR, old ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
-
+    
     public boolean getAddSpaceBeforeBrackets() {
         return addSpaceBeforeBrackets;
     }
-
+    
     public void setAddSpaceBeforeBrackets(boolean value) {
         boolean old = getAddSpaceBeforeBrackets();
         
         addSpaceBeforeBrackets = value;
         firePropertyChange(ADD_SPACE_BEFORE_BRACKETS, old ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
-
+    
     public boolean getExpandTabs() {
         return expandTabs;
     }
-
+    
     public void setExpandTabs(boolean value) {
         boolean old = getExpandTabs();
         
         expandTabs = value;
         firePropertyChange(EXPAND_TABS, old ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
-
-    public int     getTabSize() {
+    
+    public int getTabSize() {
         return tabSize;
     }
-
-    public void    setTabSize(int value) {
+    
+    public void setTabSize(int value) {
         int old = getTabSize();
         
         tabSize = value;
@@ -167,5 +201,4 @@ public class TestSetJavaIEAction extends TestSetIEAction {
         engine.setJavaFormatSpaceBeforeParenthesis(getAddSpaceBeforeBrackets());
         engine.setSpacesPerTab(getTabSize());
     }
-
 }

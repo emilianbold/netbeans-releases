@@ -28,12 +28,14 @@ import java.util.Vector;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
-import org.netbeans.modules.editor.options.JavaOptions;
-import org.openide.options.SystemOption;
+import java.lang.reflect.Method;
 import org.netbeans.test.editor.app.util.Scheduler;
 import javax.swing.SwingUtilities;
+import org.netbeans.test.editor.app.core.TestAction;
 
 public class Logger implements Serializable {
+    
+    static final String COMPLETION_ACTION="completion-action";
     
     static final long serialVersionUID = 8269484241745322111L;
     static final String PERFORMING="Performing";
@@ -41,14 +43,15 @@ public class Logger implements Serializable {
     
     private Vector actions = new Vector();
     private Vector events = new Vector();
+    private Vector testActions = new Vector();
     
-  /** Property about delay between steps of simulation */
+    /** Property about delay between steps of simulation */
     private int delay = 20;
-  /** Property about logging */
+    /** Property about logging */
     private boolean logging=false;
-  /** Property about running gathered actions */
+    /** Property about running gathered actions */
     private boolean performing=false;
-  /** Property change support. */
+    /** Property change support. */
     private PropertyChangeSupport changeSupport;
     public EventLoggingEditorPane editor;
     
@@ -57,12 +60,12 @@ public class Logger implements Serializable {
         this.editor=(EventLoggingEditorPane)editor;
         changeSupport = new PropertyChangeSupport(this);
     }
-  /**
-   * Start/Restart the logging of actions into this logger. Everybody interested
-   * can hook-up listener
-   *
-   * @see addPropertyChangeListener
-   */
+    /**
+     * Start/Restart the logging of actions into this logger. Everybody interested
+     * can hook-up listener
+     *
+     * @see addPropertyChangeListener
+     */
     
     public void startLogging() {
         if( logging == true ) return;
@@ -72,12 +75,12 @@ public class Logger implements Serializable {
     }
     
     
-  /**
-   * Stop the logging of actions into this logger. Everybody interested
-   * can hook-up listener
-   *
-   * @see addPropertyChangeListener
-   */
+    /**
+     * Stop the logging of actions into this logger. Everybody interested
+     * can hook-up listener
+     *
+     * @see addPropertyChangeListener
+     */
     
     public void stopLogging() {
         if( logging == false ) return;
@@ -86,37 +89,36 @@ public class Logger implements Serializable {
         firePropertyChange(LOGGING, Boolean.TRUE, Boolean.FALSE );
     }
     
-  /**
-   * Returns the actual state of logging.
-   */
+    /**
+     * Returns the actual state of logging.
+     */
     
     public boolean isLogging() {
         return logging;
     }
     
-  /**
-   * Start performing of logged actions from beginning. Everybody interested
-   * can hook-up listener.
-   *
-   * @see addPropertyChangeListener
-   */
+    /**
+     * Start performing of logged actions from beginning. Everybody interested
+     * can hook-up listener.
+     *
+     * @see addPropertyChangeListener
+     */
     
     public synchronized void startPerforming() {
         if( performing == true ) return;
         performing = true;
         firePropertyChange(PERFORMING, Boolean.FALSE, Boolean.TRUE );
         System.err.println("creating SimulationPerformer");
-        Thread sim = new SimulationPerformer( delay, (Vector)actions.clone(), (Vector)events.clone(), this );
-        
+        Thread sim = new SimulationPerformer( delay, this );
         sim.start();
     }
     
-  /**
-   * Stop the logging of actions into this logger. Everybody interested
-   * can hook-up listener.
-   *
-   * @see addPropertyChangeListener
-   */
+    /**
+     * Stop the logging of actions into this logger. Everybody interested
+     * can hook-up listener.
+     *
+     * @see addPropertyChangeListener
+     */
     
     public synchronized void stopPerforming() {
         if( performing == false ) return;
@@ -124,17 +126,17 @@ public class Logger implements Serializable {
         firePropertyChange(PERFORMING, Boolean.TRUE, Boolean.FALSE );
     }
     
-  /**
-   * Returns the actual state of logging.
-   */
+    /**
+     * Returns the actual state of logging.
+     */
     
     public synchronized boolean isPerforming() {
         return performing;
     }
     
-  /**
-   * Forget all the bufferred actions
-   */
+    /**
+     * Forget all the bufferred actions
+     */
     
     public void setDelay(int value) {
         delay=value;
@@ -147,71 +149,119 @@ public class Logger implements Serializable {
     public void clear() {
         actions = new Vector();
         events = new Vector();
+        testActions = new Vector();
     }
     
-    public void saveActions( TestStep step ) {
+    public TestNode[] saveActions( TestStep step ) {
         TestNode[] nodes;
+        String name;
+        String cmd;
         
         nodes=new TestNode[actions.size()];
         for( int i=0; i < actions.size(); i++ ) {
-            String cmd = ((ActionEvent)events.get(i)).getActionCommand();
-            if (cmd == null) cmd="";
-            nodes[i]=new TestLogAction((String)(actions.get(i)),cmd);
+            name=(String)(actions.get(i));
+            if (name.compareTo(COMPLETION_ACTION) != 0) {
+                cmd = ((ActionEvent)events.get(i)).getActionCommand();
+                if (cmd == null) cmd="";
+                nodes[i]=new TestLogAction(name,cmd);
+            } else {
+                nodes[i]=new TestCompletionAction(name,(String)(events.get(i)));
+            }
         }
         step.addNodes(nodes);
+        return nodes;
     }
     
-    public void loadAction(TestLogAction action) {
+/*    public void loadAction(TestLogAction action) {
         actions.add(action.getName());
         events.add(new ActionEvent(editor,ActionEvent.ACTION_PERFORMED,
         action.getCommand()));
     }
-    
+ 
     public void loadActions(TestStep step) {
         TestLogAction a;
-        
+        TestAction ta;
+ 
         for(int i=0;i < step.getChildCount();i++) {
             a=(TestLogAction)(step.get(i));
             loadAction(a);
         }
+   }*/
+    
+    public void loadActions(TestStep step) {
+        for(int i=0;i < step.getChildCount();i++) {
+            testActions.add(step.get(i));
+        }
     }
-  /**
-   * Add a {@link PropertyChangeListener} to the listener list.
-   *
-   * @param listener  the <code>PropertyChangeListener</code> to be added
-   */
+    /**
+     * Add a {@link PropertyChangeListener} to the listener list.
+     *
+     * @param listener  the <code>PropertyChangeListener</code> to be added
+     */
     public synchronized void addPropertyChangeListener( PropertyChangeListener listener ) {
         if( changeSupport == null ) changeSupport = new java.beans.PropertyChangeSupport( this );
         changeSupport.addPropertyChangeListener( listener );
     }
-  /**
-   * Remove a {@link PropertyChangeListener} from the listener list.
-   *
-   * @param listener  the <code>PropertyChangeListener</code> to be removed
-   */
+    /**
+     * Remove a {@link PropertyChangeListener} from the listener list.
+     *
+     * @param listener  the <code>PropertyChangeListener</code> to be removed
+     */
     public synchronized void removePropertyChangeListener( PropertyChangeListener listener ) {
         if( changeSupport != null ) changeSupport.removePropertyChangeListener( listener );
     }
-  /**
-   * Fire a {@link PropertyChangeEvent} to each listener.
-   *
-   * @param propertyName the programmatic name of the property that was changed
-   * @param oldValue the old value of the property
-   * @param newValue the new value of the property
-   */
+    /**
+     * Fire a {@link PropertyChangeEvent} to each listener.
+     *
+     * @param propertyName the programmatic name of the property that was changed
+     * @param oldValue the old value of the property
+     * @param newValue the new value of the property
+     */
     protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
         if (changeSupport != null) changeSupport.firePropertyChange(propertyName, oldValue, newValue);
     }
     
     
-  /**
-   * Add an Action/ActionEvent pair to the list of events
-   */
+    /**
+     * Add an Action/ActionEvent pair to the list of events
+     */
     public void logAction( Action a, ActionEvent evt ) {
-//        System.err.println("logged action, logging=" + logging);
-        if( logging ) {
+        if( logging && a.getValue(Action.NAME) != null) {
             actions.add( a.getValue( Action.NAME ) );
             events.add( evt );
+        }
+    }
+    
+    /**
+     * Add an Action/ActionEvent pair to the list of events
+     */
+    public void logCompletionAction(String name) {
+        actions.add(COMPLETION_ACTION);
+        events.add(name);
+    }
+    
+    public void performAction(TestStringAction act) {
+        String s=act.getString();
+        Action a = (Action)editor.namesToActions.get(TestStringAction.STRINGED_NAME);
+        if (a == null) return;
+        
+        for (int i=0;i < s.length();i++) {
+            ActionEvent evt = new ActionEvent(editor,ActionEvent.ACTION_PERFORMED, new String(new char[] {s.charAt(i)}));
+            editor.grabFocus();
+            a.actionPerformed(evt);
+        }
+    }
+    
+    public void performAction(TestCompletionAction act) {
+        String c=act.getCommand();
+        Action a=editor.getCompletion().getJDCPopupPanel().getActionMap().get(c);
+        if (a == null) return;
+        editor.grabFocus();
+        int time=20;
+        if (editor.getCompletion().isPaneVisible()) {
+            a.actionPerformed(new ActionEvent(editor,ActionEvent.ACTION_PERFORMED,""));
+        } else {
+            System.err.println("Warrning: Logger cannot perform Completion action: Completion isn't visible.");
         }
     }
     
@@ -223,64 +273,81 @@ public class Logger implements Serializable {
         editor.grabFocus();
         a.actionPerformed(evt);
     }
-    
+    ////////////////////////////////////////////////////////////////////////////
     private void performAction(int index) {
-        Action a = (Action)editor.namesToActions.get((String)actions.get(index));
+/*	Action a = (Action)editor.namesToActions.get((String)actions.get(index));
         ActionEvent evt = (ActionEvent)events.get(index);
         editor.grabFocus();
         if (evt.getSource() != editor) {
             throw new IllegalArgumentException("evt.getSource() != editor!");
         }
-        a.actionPerformed(evt);
+        a.actionPerformed(evt);*/
+        TestAction ta=(TestAction)(testActions.get(index));
+        if (ta instanceof TestLogAction)
+            performAction((TestLogAction)ta);
+        else if (ta instanceof TestStringAction)
+            performAction((TestStringAction)ta);
+        else if (ta instanceof TestCompletionAction)
+            performAction((TestCompletionAction)ta);
     }
     
     private class SimulationPerformer extends Thread {
-        private Vector actions;
-        private Vector events;
         private int delay;
         private boolean performing;
         private Logger master;
         
-        SimulationPerformer( int delay, Vector actions, Vector events, Logger master ) {
+        SimulationPerformer( int delay, Logger master ) {
             super();
             this.delay = delay;
-            this.actions = actions;
-            this.events = events;
             this.master = master;
         }
-        
-        //        private int howMuchFinished;
         
         public void run() {
             System.err.println("SimulationPerformer started.");
             try {
-                JavaOptions opts = (JavaOptions)(SystemOption.findObject(JavaOptions.class));
-                int compdelay= opts.getCompletionAutoPopupDelay();
-                Main.log("Logger: Starts performing.");
-                //              howMuchFinished = 0;
-                for( int i=0; i < actions.size(); i++ ) {
+                System.err.println("Logger: Starts performing.");
+                for( int i=0; i < testActions.size(); i++ ) {
                     final int cntr = i;
-                    final boolean isLast = (cntr + 1) == actions.size();
+                    final boolean isLast = (cntr + 1) == testActions.size();
                     
-                    //                        System.err.println("Putting task: " + cntr + ".");
-                        Scheduler.getDefault().addTask(new Thread() {
-                            private boolean last = isLast;
-                            
-                            public void run() {
-                                if (!master.isPerforming())
-                                    return;
-                                performAction(cntr);
-                                //                            howMuchFinished++;
-                                if (last) {
-                                    Main.log("Logger: Stops performing.");
-                                    master.stopPerforming();
-                                };
+                    Scheduler.getDefault().addTask(new Thread() {
+                        private boolean last = isLast;
+                        
+                        public void run() {
+                            try {
+                                sleep(delay);
+                            } catch (InterruptedException ex) {
                             }
-                        });
-                };
+                            if (!master.isPerforming())
+                                return;
+                            performAction(cntr);
+                            if (last) {
+                                System.err.println("Logger: Stops performing.");
+                                master.stopPerforming();
+                            }
+                        }
+                    });
+                    //special timeout for completion-show action
+                    if (testActions.get(cntr) instanceof TestLogAction &&
+                    ((TestLogAction)(testActions.get(cntr))).getName().compareTo("completion-show") == 0) {
+                        int time=50;
+                        //wait max two second for completion
+                        while (!editor.getCompletion().isPaneVisible() && time > 0) {
+                            try {
+                                sleep(100);
+                            } catch (InterruptedException ex) {
+                                time=0;
+                            }
+                            time--;
+                        }
+                        if (!editor.getCompletion().isPaneVisible()) {
+                            System.err.println("Warning: Completion isn't visible after \"completion-show\" action.");
+                        }
+                    }
+                }
             } catch (Throwable e) {
-                System.out.println("Throwable: " + e);
-            };
+                System.err.println("Throwable: " + e);
+            }
         }
     }  // SimulationPerformer
 }

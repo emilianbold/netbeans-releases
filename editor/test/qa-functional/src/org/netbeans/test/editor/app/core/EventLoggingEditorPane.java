@@ -24,6 +24,10 @@ import java.awt.event.*;
 import org.netbeans.modules.editor.NbEditorDocument;
 import javax.swing.text.EditorKit;
 import javax.swing.plaf.TextUI;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.Completion;
+import org.netbeans.editor.ext.ExtEditorUI;
+import org.netbeans.test.editor.app.Main;
 
 /**
  *
@@ -55,9 +59,26 @@ public class EventLoggingEditorPane extends JEditorPane {
         logger = log;
     }
     
+    public Completion getCompletion() {
+        return ((ExtEditorUI)(Utilities.getEditorUI(Main.frame.getEditor()))).getCompletion();
+    }
+    
     private final boolean myMapEventToAction(KeyEvent e) {
-        
         Keymap binding = getKeymap();
+        Completion comp=((ExtEditorUI)(Utilities.getEditorUI(this))).getCompletion();
+        
+        if (comp.isPaneVisible()) {
+            KeyStroke kst=KeyStroke.getKeyStroke(e.getKeyCode(),e.getModifiers(),false);
+            
+            if (logger != null) {
+                String com=(String)(comp.getJDCPopupPanel().getInputMap().get(kst));
+                if (com != null) {
+                    logger.logCompletionAction(com);
+                    return true;
+                }
+            }
+        }
+        
         if (binding != null) {
             KeyStroke k = KeyStroke.getKeyStrokeForEvent(e);
             Action a = binding.getAction(k);
@@ -74,7 +95,7 @@ public class EventLoggingEditorPane extends JEditorPane {
                 return true;
             }
         }
-        return false ;
+        return false;
     }
     
     protected void processComponentKeyEvent(KeyEvent e) {
@@ -116,10 +137,6 @@ public class EventLoggingEditorPane extends JEditorPane {
     
     private void poorSetEditorKit(int index) {
         EditorKit kit = getEditorKitForContentType(TestSetKitAction.kitsTypes[index]);
-        
-        System.out.println("Content type: "+TestSetKitAction.kitsTypes[index]);
-        System.out.println("Kit class: "+kit.getClass());
-        
         setDocument(new NbEditorDocument(kit.getClass()));
         super.setEditorKit(kit);
         actions = null;
@@ -141,5 +158,4 @@ public class EventLoggingEditorPane extends JEditorPane {
             logger.logAction( a, p1 );
         a.actionPerformed(p1);
     }
-    
 }

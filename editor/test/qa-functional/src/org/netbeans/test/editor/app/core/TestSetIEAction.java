@@ -12,6 +12,7 @@
  */
 package org.netbeans.test.editor.app.core;
 
+import java.util.ArrayList;
 import org.netbeans.test.editor.app.gui.*;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
@@ -29,6 +30,12 @@ import javax.swing.text.Document;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.options.AllOptions;
 import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.test.editor.app.Main;
+import org.netbeans.test.editor.app.core.properties.ArrayProperty;
+import org.netbeans.test.editor.app.core.properties.BadPropertyNameException;
+import org.netbeans.test.editor.app.core.properties.Properties;
+import org.netbeans.test.editor.app.gui.actions.TestDeleteAction;
+import org.netbeans.test.editor.app.gui.tree.ActionsCache;
 import org.w3c.dom.Element;
 
 /**
@@ -37,29 +44,24 @@ import org.w3c.dom.Element;
  * @version
  */
 public class TestSetIEAction extends TestSetAction {
-
-    /** Holds value of property IndentEngine. */
-    private IndentEngine indentEngine;
     
-    public static String INDENT_ENGINE = "indentationengine";
+    /** Holds value of property IndentEngine. */
+    protected IndentEngine indentEngine;
+    
+    public static String INDENT_ENGINE = "IndentationEngine";
     
     public TestSetIEAction(int num) {
-        this("set"+Integer.toString(num));
+        this("setIE"+Integer.toString(num));
     }
     
     public TestSetIEAction(String name) {
         super(name);
-        indentEngine=((BaseOptions)(SystemOption.findObject(JavaOptions.class, true)))
-        .getIndentEngine();
-	System.err.println("TestSetIEAction: <init>(String name): indentEngine=" + indentEngine);
-	System.err.println("TestSetIEAction: <init>(String name): indentEngine=" + indentEngine.getName());
+        indentEngine=((BaseOptions)(SystemOption.findObject(JavaOptions.class, true))).getIndentEngine();
     }
     
     public TestSetIEAction(Element node) {
         super(node);
         indentEngine = findIndentEngine(node.getAttribute(INDENT_ENGINE));
-	System.err.println("TestSetIEAction: <init>(Element node): indentEngine=" + indentEngine);
-	System.err.println("TestSetIEAction: <init>(Element node): indentEngine=" + indentEngine.getName());
     }
     
     public Element toXML(Element node) {
@@ -69,7 +71,35 @@ public class TestSetIEAction extends TestSetAction {
         return node;
     }
     
+    public void fromXML(Element node) throws BadPropertyNameException {
+        super.fromXML(node);
+        indentEngine = findIndentEngine(node.getAttribute(INDENT_ENGINE));
+    }
+    
+    public Properties getProperties() {
+        Properties ret=super.getProperties();
+        ret.put(INDENT_ENGINE, new ArrayProperty(indentEngine.getName(),getIndentEnginesNames()));
+        return ret;
+    }
+    
+    public Object getProperty(String name) throws BadPropertyNameException {
+        if (name.compareTo(INDENT_ENGINE) == 0) {
+            return new ArrayProperty(indentEngine.getName(),getIndentEnginesNames());
+        } else {
+            return super.getProperty(name);
+        }
+    }
+    
+    public void setProperty(String name, Object value)  throws BadPropertyNameException {
+        if (name.compareTo(INDENT_ENGINE) == 0) {
+            setIndentEngine(findIndentEngine(((ArrayProperty)value).getProperty()));
+        } else {
+            super.setProperty(name, value);
+        }
+    }
+    
     public void perform() {
+        super.perform();
         Scheduler.getDefault().addTask(new Thread() {
             public void run() {
                 IndentEngine toSet = getIndentEngine();
@@ -79,7 +109,7 @@ public class TestSetIEAction extends TestSetAction {
                     return;
                 }
                 
-                EditorKit kit = Main.editor.getUI().getEditorKit(Main.editor);
+                EditorKit kit = Main.frame.getEditor().getUI().getEditorKit(Main.frame.getEditor());
                 
                 if (kit == null) {
                     System.err.println("TestSetIEAction: perform: kit == null!");
@@ -87,17 +117,14 @@ public class TestSetIEAction extends TestSetAction {
                 }
                 
                 Class kitClass = kit.getClass();
-		System.err.println("TestSetIEAction: perform: kitClass= " + kitClass);
-		
-		BaseOptions options = BaseOptions.getOptions(kitClass);
-		
-		if (options != null) {
-		    options.setIndentEngine(toSet);
-		    System.err.println("TestSetIEAction: perform: options.getIndentEngine()= " + options.getIndentEngine());
-		    System.err.println("TestSetIEAction: perform: options.getIndentEngine().getName()= " + options.getIndentEngine().getName());
-		} else {
-	            System.err.println("TestSetIEAction: perform kit class " + kitClass + " not found.");
-		}
+                
+                BaseOptions options = BaseOptions.getOptions(kitClass);
+                
+                if (options != null) {
+                    options.setIndentEngine(toSet);
+                } else {
+                    System.err.println("TestSetIEAction: perform kit class " + kitClass + " not found.");
+                }
             }
         });
     }
@@ -106,7 +133,6 @@ public class TestSetIEAction extends TestSetAction {
      * @return Value of property IndentEngine.
      */
     public IndentEngine getIndentEngine() {
-        System.err.println("TestSetIEAction( " + this + " ): getIndentEngine: indentEngine=" + indentEngine);
         return indentEngine;
     }
     
@@ -118,7 +144,7 @@ public class TestSetIEAction extends TestSetAction {
         
         this.indentEngine = indentEngine;
         
-        firePropertyChange (INDENT_ENGINE, old, indentEngine);
+        firePropertyChange(INDENT_ENGINE, old, indentEngine);
     }
     
     public String[] getIndentEngines() {
@@ -155,7 +181,7 @@ public class TestSetIEAction extends TestSetAction {
         }
         return null;
     }
-
+    
     protected IndentEngine findIndentEngine(Class clazz) {
         if (clazz == null)
             return null;
@@ -170,5 +196,14 @@ public class TestSetIEAction extends TestSetAction {
         }
         return null;
     }
-
+    
+    public static String[] getIndentEnginesNames() {
+        ArrayList a=new ArrayList();
+        Enumeration e=IndentEngine.indentEngines();
+        while (e.hasMoreElements()) {
+            IndentEngine item = (IndentEngine) e.nextElement();
+            a.add(item.getName());
+        }
+        return (String[])(a.toArray(new String[a.size()]));
+    }
 }
