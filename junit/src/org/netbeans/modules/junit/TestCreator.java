@@ -187,7 +187,7 @@ public class TestCreator extends java.lang.Object {
         return methodList;
     }
     
-    static boolean existsMethod(LinkedList methodList, Identifier id) {
+    static private boolean existsMethod(LinkedList methodList, Identifier id) {
         ListIterator    li;
         MethodElement   m;
         
