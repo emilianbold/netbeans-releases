@@ -25,9 +25,7 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
     private PanelConfigureProject panel;
     
     private String oldName;
-    // private String oldLocation;
-    // private String oldFolder;
-
+    private String oldLocation;
     
     /** Creates new form PanelProjectLocationVisual */
     public PanelProjectLocationVisual( PanelConfigureProject panel ) {
@@ -39,15 +37,15 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         File last = chooser.getSelectedFile() == null ? chooser.getCurrentDirectory() : chooser.getSelectedFile();
         
         projectLocationTextField.setText( last.getPath() );         
-        createdFolderTextField.setText( projectNameTextField.getText() );
+        createdFolderTextField.setText( last.getPath() + File.separatorChar + projectNameTextField.getText() );
         
         // Setup oldValues
         updateOldTexts();
         
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener( this );
-        // projectLoctionTextField.getDocument().addDocumentListener( this );
-        // createdFolderTextField.getDocument().addDocumentListener( this );
+        projectLocationTextField.getDocument().addDocumentListener( this );
+        
     }
     
     /** This method is called from within the constructor to
@@ -63,6 +61,7 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         projectLocationLabel = new javax.swing.JLabel();
         projectLocationTextField = new javax.swing.JTextField();
         Button = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
         createdFolderLabel = new javax.swing.JLabel();
         createdFolderTextField = new javax.swing.JTextField();
 
@@ -111,20 +110,32 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(Button, gridBagConstraints);
 
-        createdFolderLabel.setText("Project Folder:");
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        createdFolderLabel.setText("Created Project Folder:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(createdFolderLabel, gridBagConstraints);
+        jPanel1.add(createdFolderLabel, gridBagConstraints);
 
+        createdFolderTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        add(createdFolderTextField, gridBagConstraints);
+        jPanel1.add(createdFolderTextField, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        add(jPanel1, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -149,9 +160,10 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         projectNameTextField.requestFocus();
     }
     
-    boolean valid() {
+    boolean valid( WizardDescriptor wizardDescriptor ) {
         
         if ( projectNameTextField.getText().length() == 0 ) {
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", "Project Name is not valid folder name." );
             return false; // Display name not specified
         }
         
@@ -159,9 +171,11 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", "Project Folder already exists and is not empty." );
             return false;
         }
                 
+        wizardDescriptor.putProperty( "WizardPanel_errorMessage", "" );
         return true;
     }
     
@@ -171,7 +185,7 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         String location = projectLocationTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
         
-        d.putProperty( /*XXX Define somewhere */ "projdir", new File( location, folder )); // NOI18N
+        d.putProperty( /*XXX Define somewhere */ "projdir", new File( folder )); // NOI18N
         d.putProperty( /*XXX Define somewhere */ "displayName", name ); // NOI18N      
         d.putProperty( /*XXX Define somewhere */ "codename", name.replace(' ', '-' ) ); // NOI18N
     }
@@ -181,6 +195,7 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
     private javax.swing.JButton Button;
     private javax.swing.JLabel createdFolderLabel;
     private javax.swing.JTextField createdFolderTextField;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel projectLocationLabel;
     private javax.swing.JTextField projectLocationTextField;
     private javax.swing.JLabel projectNameLabel;
@@ -219,15 +234,15 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         
         Document doc = e.getDocument();
                 
-        if ( doc == projectNameTextField.getDocument() ) {
+        if ( doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument() ) {
             // Change in the project name
         
             String projectName = projectNameTextField.getText();
-            String projectFolder = createdFolderTextField.getText(); 
+            String projectFolder = projectLocationTextField.getText(); 
 
-            if ( projectFolder.trim().length() == 0 || projectFolder.equals( oldName )  ) {                
-                createdFolderTextField.setText( projectName );
-            }
+            //if ( projectFolder.trim().length() == 0 || projectFolder.equals( oldName )  ) {                
+            createdFolderTextField.setText( projectFolder + File.separatorChar + projectName );
+            //}
             
         }
         
@@ -239,8 +254,7 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
     
     private void updateOldTexts() {
         oldName = projectNameTextField.getText();
-        // oldLocation = projectLocationTextField.getText();
-        // oldFolder = createdFolderTextField.getText();        
+        oldLocation = projectLocationTextField.getText();
     }
 
     

@@ -6,27 +6,55 @@
 
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 
 /** XXX I18N
  *
  * @author  phrebejk
  */
-public class PanelOptionsVisual extends javax.swing.JPanel {
+public class PanelOptionsVisual extends javax.swing.JPanel implements ActionListener {
     
     private static boolean lastMainClassCheck = false; // XXX Store somewhere
     
     private PanelConfigureProject panel;
     
     /** Creates new form PanelOptionsVisual */
-    public PanelOptionsVisual( PanelConfigureProject panel ) {
+    public PanelOptionsVisual( PanelConfigureProject panel, boolean isLibrary ) {
         initComponents();
         this.panel = panel;
         
-        createMainCheckBox.setSelected( lastMainClassCheck );
-        mainClassCheck( null );
+        if ( isLibrary ) {
+            setAsMainCheckBox.setSelected( false );
+            createMainCheckBox.setVisible( false );
+            mainClassTextField.setVisible( false );
+        }
+        else {        
+            createMainCheckBox.addActionListener( this );
+            useExistingSourcesCheckBox.addActionListener( this );
+
+            createMainCheckBox.setSelected( lastMainClassCheck );
+            mainClassTextField.setEnabled( lastMainClassCheck );
+        }
     }
-    
+
+    public void actionPerformed( ActionEvent e ) {
+        
+        if ( e.getSource() == createMainCheckBox ) {
+            lastMainClassCheck = createMainCheckBox.isSelected();
+            mainClassTextField.setEnabled( lastMainClassCheck );        
+        }        
+        else if ( e.getSource() == useExistingSourcesCheckBox && useExistingSourcesCheckBox.isSelected() ) {            
+            // XXX            
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                "Not implemented yet", 
+                 NotifyDescriptor.INFORMATION_MESSAGE ));
+        }
+        
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -39,6 +67,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         setAsMainCheckBox = new javax.swing.JCheckBox();
         createMainCheckBox = new javax.swing.JCheckBox();
         mainClassTextField = new javax.swing.JTextField();
+        useExistingSourcesCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -47,32 +76,35 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         add(setAsMainCheckBox, gridBagConstraints);
 
         createMainCheckBox.setText("Create Main Class:");
         createMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        createMainCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mainClassCheck(evt);
-            }
-        });
-
-        add(createMainCheckBox, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        add(createMainCheckBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(mainClassTextField, gridBagConstraints);
 
-    }//GEN-END:initComponents
+        useExistingSourcesCheckBox.setText("Use Existing Sources");
+        useExistingSourcesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(useExistingSourcesCheckBox, gridBagConstraints);
 
-    private void mainClassCheck(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mainClassCheck
-        lastMainClassCheck = createMainCheckBox.isSelected();
-        mainClassTextField.setEnabled( lastMainClassCheck );        
-    }//GEN-LAST:event_mainClassCheck
+    }//GEN-END:initComponents
     
     boolean valid() {
         return true;
@@ -87,6 +119,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     private javax.swing.JCheckBox createMainCheckBox;
     private javax.swing.JTextField mainClassTextField;
     private javax.swing.JCheckBox setAsMainCheckBox;
+    private javax.swing.JCheckBox useExistingSourcesCheckBox;
     // End of variables declaration//GEN-END:variables
     
 }

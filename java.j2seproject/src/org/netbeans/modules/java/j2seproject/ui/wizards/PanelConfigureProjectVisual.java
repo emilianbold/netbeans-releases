@@ -41,15 +41,15 @@ public class PanelConfigureProjectVisual extends JPanel {
     private PanelOptionsVisual optionsPanel;
     
     /** Creates new form PanelInitProject */
-    public PanelConfigureProjectVisual( PanelConfigureProject panel ) {
+    public PanelConfigureProjectVisual( PanelConfigureProject panel, boolean isLibrary ) {
         this.panel = panel;
         initComponents();
                 
         projectLocationPanel = new PanelProjectLocationVisual( panel );
-        locationContainer.add( projectLocationPanel, java.awt.BorderLayout.NORTH );
+        locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );
         
-        optionsPanel = new PanelOptionsVisual( panel );
-        optionsContainer.add( optionsPanel, java.awt.BorderLayout.NORTH );
+        optionsPanel = new PanelOptionsVisual( panel, isLibrary );
+        optionsContainer.add( optionsPanel, java.awt.BorderLayout.CENTER );
         
         // Provide a name in the title bar.
         setName("J2SE Project"); // XXX I18N
@@ -66,9 +66,8 @@ public class PanelConfigureProjectVisual extends JPanel {
         
     }
     
-    boolean valid() {
-        
-        return projectLocationPanel.valid() && optionsPanel.valid();
+    boolean valid( WizardDescriptor wizardDescriptor ) {        
+        return projectLocationPanel.valid( wizardDescriptor ) && optionsPanel.valid();
     }
     
     void store( WizardDescriptor d ) {

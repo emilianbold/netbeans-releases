@@ -41,12 +41,29 @@ public class NewJ2SEProjectWizardIterator implements TemplateWizard.Iterator {
     
     private static final long serialVersionUID = 1L;
     
+    private boolean isLibrary;
+    
     /** Create a new wizard iterator. */
-    public NewJ2SEProjectWizardIterator() {}
+    public NewJ2SEProjectWizardIterator() {
+        this( false );
+    }
+    
+    public NewJ2SEProjectWizardIterator( boolean isLibrary ) {
+        this.isLibrary = isLibrary;
+    }
+        
+    public static NewJ2SEProjectWizardIterator library() {
+        return new NewJ2SEProjectWizardIterator( true );
+    }
+    
+    public static NewJ2SEProjectWizardIterator trada() {
+        System.out.println("Trada");
+        return new NewJ2SEProjectWizardIterator();
+    }
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new PanelConfigureProject(),
+            new PanelConfigureProject( isLibrary ),
         };
     }
     

@@ -28,15 +28,18 @@ import org.openide.util.HelpCtx;
  */
 final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.FinishPanel {
     
+    private WizardDescriptor wizardDescriptor;
+    private boolean isLibrary;
     private PanelConfigureProjectVisual component;
     
     /** Create the wizard panel descriptor. */
-    public PanelConfigureProject() {
+    public PanelConfigureProject( boolean isLibrary ) {
+        this.isLibrary = isLibrary;
     }
     
     public Component getComponent() {
         if (component == null) {
-            component = new PanelConfigureProjectVisual(this);
+            component = new PanelConfigureProjectVisual(this, isLibrary);
         }
         return component;
     }
@@ -47,7 +50,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     
     public boolean isValid() {
         getComponent();
-        return component.valid();
+        return component.valid( wizardDescriptor );
     }
     
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
@@ -73,6 +76,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     }
     
     public void readSettings(Object settings) {
+        wizardDescriptor = (WizardDescriptor)settings;        
     }
     
     public void storeSettings(Object settings) {

@@ -27,6 +27,14 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/emptyProject.html"/>
             </file>
         
+            <file name="emptyJ2SElibrary.xml">
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.j2seproject.ui.wizards.NewJ2SEProjectWizardIterator.library"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.wizards.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/emptyLibrary.html"/>
+            </file>
+            
         </folder>
     </folder>
     
