@@ -107,6 +107,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     private static Properties mappedServlets = new Properties();
 
     /** http settings */
+    // public static HttpServerSettings OPTIONS = (HttpServerSettings)findObject (HttpServerSettings.class, true);
     public static HttpServerSettings OPTIONS = new HttpServerSettings();
 
     /** last used servlet name */
@@ -116,6 +117,9 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
     /** Used to remember the state of the running property during the deserialization */
     private boolean pendingRunning = true;
+
+    /** Used to remember that server should be restarted after the deserialization */
+    private boolean pendingRestart = false;
 
     static final long serialVersionUID =7387407495740535307L;
 
@@ -183,6 +187,10 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
     /** Restarts the server if it is running - must be called in a synchronized block */
     private void restartIfNecessary(boolean printMessages) {
+        if (isReadExternal () && (running || pendingRunning)) {
+            pendingRestart = true;
+            return;
+        }
         if (running) {
             if (!printMessages)
                 setStartStopMessages(false);
@@ -190,6 +198,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
             HttpServerModule.initHTTPServer();
             // messages will be enabled by the server thread
         }
+        pendingRestart = false;
     }
 
     /** Reads from the serialized state */
@@ -197,6 +206,10 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     throws IOException, ClassNotFoundException {
         super.readExternal(in);
         setRunning(pendingRunning);
+        if (pendingRestart && (pendingRunning == running))
+            restartIfNecessary (false);
+        else
+            setRunning(pendingRunning);
     }
 
     /** Returns a relative directory URL with a leading and a trailing slash */
