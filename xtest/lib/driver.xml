@@ -94,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
      <instances property="xtest.instance.postfixes"/>
      <echo message="Found following instances: ${xtest.instance.postfixes}"/>
 
-     <buildinfo ideHome="${ide.home}" buildNumberProperty="xtest.ide.build.name"
+     <buildinfo ideLibDir="${openide.dir}/${nb.lib.dir}" buildNumberProperty="xtest.ide.build.name"
                 buildProjectNameProperty="xtest.tested.project" buildTimestampProperty="ide.timestamp"/>
      <property name="ide.timestamp" value=""/>
 
@@ -135,7 +135,7 @@ Microsystems, Inc. All Rights Reserved.
    </target>
    
    <target name="pack-results2" if="xtest.ship.results.to">
-         <buildinfo ideHome="${ide.home}" buildNumberProperty="ide.build"
+         <buildinfo ideLibDir="${openide.dir}/${nb.lib.dir}" buildNumberProperty="ide.build"
                 buildProjectNameProperty="xtest.tested.project" />
          <echo message="Shipping results for build ${ide.build}"/>
          <property name="ide.build" value="unknown"/>
@@ -208,11 +208,8 @@ Microsystems, Inc. All Rights Reserved.
      <ant dir="${xtest.instance.dir}" target="cleantests"/>
      <ant dir="${xtest.instance.dir}" target="buildtests">
         <property name="xtest.source.location" value="ide"/>
+        <!-- XXX probably not needed to set netbeans.home -->
         <property name="netbeans.home" value="${ide.home}"/>
-        <!-- Hotfix - need to set netbeans.dest.dir property to directory 
-        with moduleCluster.properties and directories.properties.
-        It expects ide.home points one level up, e.g. <root>/netbeans. -->
-        <property name="netbeans.dest.dir" location="${ide.home}/.."/>
      </ant>
    </target>
    
@@ -238,11 +235,8 @@ Microsystems, Inc. All Rights Reserved.
      <!-- <ant dir="${xtest.instance.dir}" target="cleanresults"/>
      <ant dir="${xtest.instance.dir}" target="localresults-clean"/> -->
      <ant dir="${xtest.instance.dir}" target="runtests">
+        <!-- XXX probably not needed to set netbeans.home -->
        	<property name="netbeans.home" value="${ide.home}"/>
-        <!-- Hotfix - need to set netbeans.dest.dir property to directory 
-        with moduleCluster.properties and directories.properties.
-        It expects ide.home points one level up, e.g. <root>/netbeans. -->
-        <property name="netbeans.dest.dir" location="${ide.home}/.."/>
       	<property name="xtest.mode" value="ide"/>
       	<property name="xtest.noboot" value="true"/>
  	<property name="xtest.source.location" value="ide"/>
@@ -300,9 +294,12 @@ Microsystems, Inc. All Rights Reserved.
   </target>   
   
   <target name="install-from-dir" depends="check-ide-param" if="ide.install.type.dir">
-      <available file="${ide.install.path}/lib/openide.jar" type="file" property="ide.home" value="${ide.install.path}"/>
-      <available file="${ide.install.path}/netbeans/lib/openide.jar" type="file" property="ide.home" value="${ide.install.path}${file.separator}netbeans"/>
-      <antcall target="find-existing-ide"/>
+     <!-- Read moduleCluster.properties and directories.properties from netbeans.dest.dir -->
+     <property name="netbeans.dest.dir" location="${ide.install.path}/netbeans"/>
+     <property file="${ide.install.path}/directories.properties"/>
+     <property file="${ide.install.path}/netbeans/moduleCluster.properties"/>
+     <available file="${openide.dir}/${nb.lib.dir}/openide.jar" type="file" property="ide.home" value="${ide.install.path}"/>
+     <antcall target="find-existing-ide"/>
   </target>   
   
   <target name="find-existing-ide" unless="ide.home">
@@ -310,12 +307,15 @@ Microsystems, Inc. All Rights Reserved.
   </target>    
       
   <target name="find-installed-ide" depends="install-from" unless="ide.home">
-     <available file="${ide.installto}/lib/openide.jar" type="file" property="ide.home" value="${ide.installto}"/>
-     <available file="${ide.installto}/netbeans/lib/openide.jar" type="file" property="ide.home" value="${ide.installto}${file.separator}netbeans"/>
+     <!-- Read moduleCluster.properties and directories.properties from netbeans.dest.dir -->
+     <property name="netbeans.dest.dir" location="${ide.installto}/netbeans"/>
+     <property file="${ide.installto}/directories.properties"/>
+     <property file="${ide.installto}/netbeans/moduleCluster.properties"/>
+     <available file="${openide.dir}/${nb.lib.dir}/openide.jar" type="file" property="ide.home" value="${ide.installto}"/>
   </target>
   
   <target name="check-installed-ide" depends="find-installed-ide,actionlist" unless="ide.home" if="xtest.execute_actions.install-ide">
-     <fail message="IDE wasn't properly installed. Can't find ${ide.home}${file.separator}lib${file.separator}openide.jar."/>
+     <fail message="IDE wasn't properly installed. Can't find ${openide.dir}/${nb.lib.dir}/openide.jar."/>
   </target>
 
   <target name="install-type-fail" unless="ide.install.type.ok">
