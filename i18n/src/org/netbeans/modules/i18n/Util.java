@@ -122,7 +122,7 @@ public class Util {
 
         // or on the execution class-path
         ClassPath ecp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE);
-        ret = scp.findResource(bundleName);
+        ret = ecp.findResource(bundleName);
         if (ret != null) return ret;
 
         return null;
