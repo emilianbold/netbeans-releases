@@ -61,7 +61,8 @@ public class FindInSourceEditor extends org.netbeans.performance.test.utilities.
     }
 
     public void shutdown(){
-        editor.closeDiscard();
+        if(editor!=null && editor.isShowing())
+            editor.closeDiscard();
     }
     
 }

@@ -55,8 +55,8 @@ public class VersioningWindow extends org.netbeans.performance.test.utilities.Pe
     }
     
     public void close() {
-        // close the tab
-        ((VersioningOperator)testedComponentOperator).close();
+        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
+            ((VersioningOperator)testedComponentOperator).close();
     }
     
 }

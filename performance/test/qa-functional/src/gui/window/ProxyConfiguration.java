@@ -67,7 +67,7 @@ public class ProxyConfiguration extends org.netbeans.performance.test.utilities.
     }
 
     public void shutdown() {
-        // close the wizard
-        wizard.close();
+        if(wizard!=null && wizard.isShowing())
+            wizard.close();
     }
 }

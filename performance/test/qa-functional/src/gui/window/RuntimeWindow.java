@@ -48,8 +48,8 @@ public class RuntimeWindow extends org.netbeans.performance.test.utilities.Perfo
     }
     
     public void close() {
-        // close the tab
-        ((RuntimeTabOperator)testedComponentOperator).close();
+        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
+            ((RuntimeTabOperator)testedComponentOperator).close();
     }
     
 }

@@ -61,7 +61,8 @@ public class InternationalizeDialog extends org.netbeans.performance.test.utilit
     }
  
     public void shutdown(){
-        editor.closeDiscard();
+        if(editor!=null && editor.isShowing())
+            editor.closeDiscard();
     }
     
 }

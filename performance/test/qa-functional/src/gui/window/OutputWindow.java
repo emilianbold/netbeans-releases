@@ -48,8 +48,8 @@ public class OutputWindow extends org.netbeans.performance.test.utilities.Perfor
     }
     
     public void close() {
-        // close the tab
-        ((OutputWindowOperator)testedComponentOperator).close();
+        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
+            ((OutputWindowOperator)testedComponentOperator).close();
     }
     
 }

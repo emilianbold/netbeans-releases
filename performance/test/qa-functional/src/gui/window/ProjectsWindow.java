@@ -47,8 +47,8 @@ public class ProjectsWindow extends org.netbeans.performance.test.utilities.Perf
     }
     
     public void close() {
-        // close the tab
-        ((ProjectsTabOperator)testedComponentOperator).close();
+        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
+            ((ProjectsTabOperator)testedComponentOperator).close();
     }
     
     public void shutdown() {

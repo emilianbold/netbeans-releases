@@ -62,7 +62,8 @@ public class GotoLineDialog extends org.netbeans.performance.test.utilities.Perf
     }
     
     public void shutdown(){
-        editor.closeDiscard();
+        if(editor!=null && editor.isShowing())
+            editor.closeDiscard();
     }
 
 }

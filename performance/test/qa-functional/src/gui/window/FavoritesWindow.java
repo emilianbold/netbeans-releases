@@ -47,8 +47,8 @@ public class FavoritesWindow extends org.netbeans.performance.test.utilities.Per
     }
 
     public void close() {
-        // close the tab
-        ((FavoritesOperator)testedComponentOperator).close();
+        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
+            ((FavoritesOperator)testedComponentOperator).close();
     }
     
 }

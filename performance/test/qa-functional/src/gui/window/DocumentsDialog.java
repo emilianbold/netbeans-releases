@@ -57,7 +57,8 @@ public class DocumentsDialog extends org.netbeans.performance.test.utilities.Per
     }
 
     public void shutdown(){
-        editor.closeDiscard();
+        if(editor!=null && editor.isShowing())
+            editor.closeDiscard();
     }
     
 }

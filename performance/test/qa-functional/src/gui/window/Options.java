@@ -52,6 +52,7 @@ public class Options extends org.netbeans.performance.test.utilities.Performance
     }
     
     public void close(){
-        options.close();
+        if(options != null)
+            options.close();
     }
 }

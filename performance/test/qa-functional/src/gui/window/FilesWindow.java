@@ -47,8 +47,8 @@ public class FilesWindow extends org.netbeans.performance.test.utilities.Perform
     }
     
     public void close() {
-        // close the tab
-        ((FilesTabOperator)testedComponentOperator).close();
+        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
+            ((FilesTabOperator)testedComponentOperator).close();
     }
     
     public void shutdown() {

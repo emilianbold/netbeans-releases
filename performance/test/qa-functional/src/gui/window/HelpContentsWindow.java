@@ -50,7 +50,8 @@ public class HelpContentsWindow extends org.netbeans.performance.test.utilities.
     }
     
     public void close() {
-        ((HelpOperator)testedComponentOperator).close();
+        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
+            ((HelpOperator)testedComponentOperator).close();
     }
     
 }
