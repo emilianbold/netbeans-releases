@@ -450,6 +450,10 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
             public FeatureDescriptor getFeatureDescriptor() {
                 FeatureDescriptor desc = new FeatureDescriptor();
                 desc.setDisplayName(displayName);
+                if (editor == PropertyEditorManager.findEditor(Font.class).getClass()){
+                    //#39916
+                    desc.setValue("canEditAsText", Boolean.FALSE); //NOI18N 
+                }
                 return desc;
             }
             
