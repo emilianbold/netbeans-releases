@@ -117,7 +117,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.java.JavaKit"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaKit.JavaKit"/>
                 </file>
             </folder>
 
@@ -125,7 +124,6 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Settings.settings" url="HTMLOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.html.HTMLKit"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.html.HTMLKit.HTMLKit"/>
                 </file>
             </folder>
 
@@ -133,7 +131,6 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Settings.settings" url="PlainOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.plain.PlainKit"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.plain.PlainKit.PlainKit"/>
                 </file>
             </folder>
         </folder>
