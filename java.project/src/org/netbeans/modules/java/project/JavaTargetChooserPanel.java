@@ -113,7 +113,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         boolean returnValue=true;
         FileObject rootFolder = gui.getRootFolder();
         String errorMessage = canUseFileName (rootFolder, gui.getPackageFileName(), gui.getTargetName(), template.getExt ());        
-        if (gui.isShowing ()) {
+        if (gui != null) {
             setLocalizedErrorMessage (errorMessage);
         }
         if (errorMessage!=null) returnValue=false;
