@@ -259,12 +259,12 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-   <folder name="windows">
-     <folder name="components">
+   <folder name="Windows">
+     <folder name="Components">
         <file name="DebuggerWindow.settings" url="DebuggerWindow.settings"/>
      </folder>
 
-     <folder name="windowmanager">
+     <folder name="WindowManager">
         <attr name="Running/Debugging" boolvalue="true" />
         <file name="Debugging.wswksp" url="Debugging.wswksp"/>
         <folder name="Debugging">

@@ -764,10 +764,10 @@ SystemFileSystem
   </folder>
 
   <!-- default workspaces, frames and their layout defined by core-->
-  <folder name="windows">
+  <folder name="Windows">
     <attr name="SystemFileSystem.layer" stringvalue="project"/>
-    <file name="windowmanager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
-    <folder name="windowmanager">
+    <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
+    <folder name="WindowManager">
       <attr name="Editing/Running" boolvalue="true" />
       <file name="Editing.wswksp" url="windowmanager/Editing.wswksp" />
       <folder name="Editing">
@@ -825,7 +825,7 @@ SystemFileSystem
         </folder>
       </folder>
     </folder>
-    <folder name="components">
+    <folder name="Components">
       <file name="filesystems.settings" url="components/filesystems.settings" >
       </file>
       <file name="runtime.settings" url="components/runtime.settings" >

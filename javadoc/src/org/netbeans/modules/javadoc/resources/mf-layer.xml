@@ -224,15 +224,15 @@ SystemFileSystem
 
 <!-- XML Workspace Layout part -->
 
-    <folder name="windows">
-        <folder name="windowmanager">
+    <folder name="Windows">
+        <folder name="WindowManager">
             <folder name="Editing">
                 <folder name="explorer">
                     <file name="Javadoc.wstcref" url="windowmanager/Editing/explorer/Javadoc.wstcref" />
                 </folder>
             </folder>
         </folder>
-        <folder name="components">
+        <folder name="Components">
             <file name="Javadoc.settings" url="components/Javadoc.settings" />
         </folder>
     </folder>

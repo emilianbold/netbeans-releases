@@ -661,8 +661,8 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <!-- default workspaces, frames and their layout defined by core-->
-    <folder name="windows">
-        <folder name="windowmanager">
+    <folder name="Windows">
+        <folder name="WindowManager">
             <attr name="Visual/Running" boolvalue="true" />
             <file name="Visual.wswksp" url="windowmanager/Visual.wswksp" />
             <folder name="Visual">
@@ -692,7 +692,7 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
         </folder>
-        <folder name="components">
+        <folder name="Components">
             <file name="ComponentInspector.settings" url="components/ComponentInspector.settings" />
             <file name="ComponentPalette.settings" url="components/ComponentPalette.settings" />
         </folder>
