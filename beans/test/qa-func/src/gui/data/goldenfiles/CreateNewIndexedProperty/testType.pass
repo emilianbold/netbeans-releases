@@ -7,6 +7,7 @@ public class TestFile {
     /** Indexed getter for property indexProperty.
      * @param index Index of the property.
      * @return Value of the property at <CODE>index</CODE>.
+     *
      */
     public double getIndexProperty(int index) {
     }
@@ -14,6 +15,7 @@ public class TestFile {
     /** Indexed setter for property indexProperty.
      * @param index Index of the property.
      * @param indexProperty New value of the property at <CODE>index</CODE>.
+     *
      */
     public void setIndexProperty(int index, double indexProperty) {
     }
