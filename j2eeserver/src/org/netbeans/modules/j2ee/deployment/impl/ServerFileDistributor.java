@@ -103,7 +103,7 @@ public class ServerFileDistributor extends ServerProgress {
         List descriptorRelativePaths = getDescriptorPath(module);
         
         ModuleType moduleType = (ModuleType) module.getModuleType ();
-        List serverDescriptorRelativePaths = Arrays.asList(splitter.getDeploymentPlanFileNames(moduleType));
+        List serverDescriptorRelativePaths = Arrays.asList(instance.getServer().getDeploymentPlanFiles(moduleType));
         return new AppChanges(descriptorRelativePaths, serverDescriptorRelativePaths, (ModuleType) dtarget.getModule ().getModuleType ());
     }
     
@@ -229,7 +229,7 @@ public class ServerFileDistributor extends ServerProgress {
             }
             
             ModuleType moduleType = (ModuleType) dtarget.getModule ().getModuleType ();
-            String[] rPaths = splitter.getDeploymentPlanFileNames(moduleType);
+            String[] rPaths = instance.getServer().getDeploymentPlanFiles(moduleType);
             /*for (int n=0; n < rPaths.length; n++) {
                 FileObject removedFO = (FileObject)destMap.remove(rPaths[n]);
                 System.out.println("Sparing plan file: "+rPaths[n]+" removedFO="+removedFO);
