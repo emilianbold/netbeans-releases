@@ -524,21 +524,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     void updateName(String name) {
         setName(name);
-
-        if (DataNode.getShowFileExtensions())
-            name += ".form"; // NOI18N
-
-        if (topDesignComponent != null
-                && topDesignComponent != formModel.getTopRADComponent())
-            name += " / " + topDesignComponent.getName(); // NOI18N
-        String format = DataNode.getShowFileExtensions() ?
-            (formModel.isReadOnly() ? "FMT_FormTitle_RO_ext" : "FMT_FormTitle_ext") : // NOI18N
-            (formModel.isReadOnly() ? "FMT_FormTitle_RO" : "FMT_FormTitle"); // NOI18N
-        name = FormUtils.getFormattedBundleString(format, new Object[] { name });
-        setDisplayName(name);
-
-        FormDataObject fdo = formEditorSupport.getFormDataObject();
-        setToolTipText(FileUtil.getFileDisplayName(fdo.getFormFile()));
     }
 
     void updateVisualSettings() {
@@ -802,13 +787,14 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     public void setMultiViewCallback(MultiViewElementCallback callback) {
         multiViewObserver = callback;
-        multiViewObserver.updateTitle(getDisplayName());
 
         // needed for deserialization...
         if (formEditorSupport != null) {
             // this is used (or misused?) to obtain the deserialized multiview
             // topcomponent and set it to FormEditorSupport
             formEditorSupport.setTopComponent(callback.getTopComponent());
+            multiViewObserver.updateTitle(FormEditorSupport.getMVTCDisplayName(
+                formEditorSupport.getFormDataObject()));
         }
     }
 
@@ -849,12 +835,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     public void componentOpened() {
         super.componentOpened();
     }
-
-    public void setDisplayName(String displayName) {
-        super.setDisplayName(displayName);
-        if (multiViewObserver != null)
-            multiViewObserver.updateTitle(getDisplayName());
-    }    
 
     public CloseOperationState canCloseElement() {
         // return a placeholder state - to be sure our CloseHandler is called

@@ -26,6 +26,7 @@ import org.openide.*;
 import org.openide.nodes.Node;
 import org.openide.awt.UndoRedo;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.Mutex;
@@ -61,7 +62,7 @@ public class FormEditorSupport extends JavaEditor
 
     /** Icon for the form editor multiview window */
     private static final String iconURL =
-        "org/netbeans/modules/form/resources/formDesigner.gif"; // NOI18N
+        "org/netbeans/modules/form/resources/form.gif"; // NOI18N
 
     /** The FormModel instance holding the form itself */
     private FormModel formModel;
@@ -734,6 +735,20 @@ public class FormEditorSupport extends JavaEditor
             multiviewTC = null;
         }
     }
+    
+    protected boolean notifyModified () {
+        boolean alreadyModified = isModified();
+        boolean retVal = super.notifyModified();
+        if (!alreadyModified) {
+            multiviewTC.setDisplayName(getMVTCDisplayName(formDataObject));
+        }
+        return retVal;
+    }
+    
+    protected void notifyUnmodified () {
+        super.notifyUnmodified();
+        multiviewTC.setDisplayName(getMVTCDisplayName(formDataObject));
+    }
 
     /** Closes the form. Used when closing the form editor or reloading
      * the form. */
@@ -1049,8 +1064,30 @@ public class FormEditorSupport extends JavaEditor
                                              descs,
                                              descs[elementToOpen],
                                              new CloseHandler(formDataObject));
+            multiviewTC.setToolTipText(getMVTCToolTipText(formDataObject));
         }
         return multiviewTC;
+    }
+    
+    private static String getMVTCToolTipText(FormDataObject formDataObject) {
+        String name = FileUtil.getFileDisplayName(formDataObject.getFormFile());
+        if (name.endsWith(".form")) { // NOI18N
+            name = name.substring(0, name.length()-5);
+        }
+        return name;
+    }
+    
+    static String getMVTCDisplayName(FormDataObject formDataObject) {
+        boolean readonly = formDataObject.getPrimaryFile().isReadOnly();
+        int version;
+        if (formDataObject.isModified()) {
+            version = readonly ? 2 : 1;
+        } else {
+            version = readonly ? 0 : 3;
+        }
+
+        return FormUtils.getFormattedBundleString("FMT_FormMVTCTitle",
+            new Object[] {new Integer(version), formDataObject.getName()});
     }
 
     /**
@@ -1297,6 +1334,7 @@ public class FormEditorSupport extends JavaEditor
                 // multiview topcomponent and set it to FormEditorSupport
                 ((FormDataObject)obj).getFormEditor().setTopComponent(
                                                    callback.getTopComponent());
+                multiViewObserver.updateTitle(getMVTCDisplayName((FormDataObject)obj));
             }
         }
 
@@ -1319,8 +1357,6 @@ public class FormEditorSupport extends JavaEditor
         }        
 
         public void componentShowing() {
-            if (multiViewObserver != null)
-                multiViewObserver.updateTitle(getDisplayName());
             super.componentShowing();
         }
 
@@ -1335,7 +1371,9 @@ public class FormEditorSupport extends JavaEditor
         public void updateName() {
             super.updateName();
             if (multiViewObserver != null) {
-                multiViewObserver.updateTitle(getDisplayName());
+                FormDataObject formDataObject = (FormDataObject)obj;
+                setDisplayName(getMVTCDisplayName(formDataObject));
+                multiViewObserver.getTopComponent().setToolTipText(getMVTCToolTipText(formDataObject));
             }
         }
 
