@@ -27,10 +27,15 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks" classpath="../nbbuild/nbantext.jar:${binroot}/core/release/lib/ext/regexp.jar"/>
 
+  <target name="init-14">
+    <available property="jdk14" classname="java.lang.CharSequence" />
+  </target>
+  
   <target name="compile-regular">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <!-- Needs core, it is deprecated anyway: -->
       <exclude name="org/openide/loaders/ExtensionListEditor.java"/>
+      <exclude name="org/openide/**/*14.java"/>
       <bootclasspath>
         <!-- XXX not nice to use undocumented property here: -->
         <pathelement path="${sun.boot.class.path}"/>
@@ -57,8 +62,26 @@ Microsystems, Inc. All Rights Reserved.
       </classpath>
     </javac>
   </target>
-  
-  <target name="compile" depends="13javac-workaround,compile-regular,compile-preprocessed"
+
+  <target name="compile-14" if="jdk14" >
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <include name="org/openide/**/*14.java"/>
+      <bootclasspath>
+        <!-- XXX not nice to use undocumented property here: -->
+        <pathelement path="${sun.boot.class.path}"/>
+        <pathelement location="openide-13javac-workaround.jar"/>
+      </bootclasspath>
+<!--
+      <classpath>
+        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>        
+	<pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+      </classpath>
+-->      
+    </javac>
+  </target>
+    
+  <target name="compile" depends="init-14,13javac-workaround,compile-regular,compile-preprocessed,compile-14"
           description="Compile all source files but do not package them."/>
   
   <target name="compile-preprocessed" depends="preprocess" >
