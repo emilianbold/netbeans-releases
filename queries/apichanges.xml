@@ -78,19 +78,20 @@ is the proper place.
 
         <change id="fileinfo-NonRecursiveFolder">
             <api name="general"/>
-            <summary>Added &quote;fileinfo&quote; package with NonRecursiveFolder interface.</summary>
+            <summary>Added <code>fileinfo</code> package with <code>NonRecursiveFolder</code> interface.</summary>
             <version major="1" minor="4"/>
             <date day="14" month="1" year="2005"/>
             <author login="mentlicher"/>
             <compatibility addition="yes" binary="compatible" semantic="compatible" />
             <description>
                 <p>
-                    &quote;fileinfo&quote; package introduced for classes providing extra
-                    information about files or folders. NonRecursiveFolder interface
+                    <code>fileinfo</code> package introduced for classes providing extra
+                    information about files or folders. <code>NonRecursiveFolder</code> interface
                     added. It marks a representation of a folder that have non-recursive
                     content (does not contain subfiles).
                 </p>
-            <description/>
+            </description>
+            <class package="org.netbeans.api.fileinfo" name="NonRecursiveFolder"/>
             <issue number="52271"/>
         </change>
 
