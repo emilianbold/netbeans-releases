@@ -53,6 +53,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                                 "getConfirmDelete", "setConfirmDelete"),
         new PropertyDescriptor ("loadedBeans", IDESettings.class,
                                 "getLoadedBeans", "setLoadedBeans"),
+        new PropertyDescriptor (IDESettings.PROP_HOME_PAGE, IDESettings.class,
+                                "getHomePage", "setHomePage"),
       };
 
       desc[0].setDisplayName (Main.getString ("PROP_OUTPUT_LEVEL"));
@@ -81,6 +83,9 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
       desc[7].setHidden(true);
 
+      desc[8].setDisplayName (Main.getString ("PROP_HOME_PAGE"));
+      desc[8].setShortDescription (Main.getString ("HINT_HOME_PAGE"));
+      
     } catch (IntrospectionException ex) {
       ex.printStackTrace ();
     }
@@ -204,6 +209,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  5    Gandalf   1.4         7/19/99  Jan Jancura     
  *  4    Gandalf   1.3         4/8/99   Ian Formanek    Undone last change
  *  3    Gandalf   1.2         4/8/99   Ian Formanek    Removed SearchPath 
  *       properties

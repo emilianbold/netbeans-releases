@@ -24,6 +24,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
+import org.openide.awt.HtmlBrowser;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -51,6 +52,8 @@ public class IDESettings extends SystemOption {
   public static String PROP_PROPERTYEDITOR_SEARCH_PATH = "propertyEditorSearchPath";
   /** confirmDelete property name */
   public static String PROP_CONFIRM_DELETE = "confirmDelete";
+  /** home page property name */
+  public static String PROP_HOME_PAGE = "homePage";
 
   /** Minimum output detail level */
   public static final int OUTPUT_MINIMUM = 0;
@@ -232,11 +235,22 @@ public class IDESettings extends SystemOption {
     alreadyLoadedBeans = table;
   }
 
-
+  /** Getter for home page used in html viewer.
+  */
+  public String getHomePage () {
+    return HtmlBrowser.getHomePage ();
+  }
+  
+  /** Setter for home page used in html viewer.
+  */
+  public void setHomePage (String homePage) {
+    HtmlBrowser.setHomePage (homePage);
+  }
 }
 
 /*
  * Log
+ *  7    Gandalf   1.6         7/19/99  Jan Jancura     
  *  6    Gandalf   1.5         7/2/99   Jesse Glick     More help IDs.
  *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
