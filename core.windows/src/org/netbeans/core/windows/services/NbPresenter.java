@@ -150,7 +150,6 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         getRootPane().setOpaque(true);
         
         descriptor = d;
-        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         buttonListener = new ButtonListener();
         
         getRootPane().registerKeyboardAction(
@@ -937,7 +936,6 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
     }
     public void windowClosing(final java.awt.event.WindowEvent p1) {
         descriptor.setValue(NotifyDescriptor.CLOSED_OPTION);
-        dispose();
     }
     public void windowActivated(final java.awt.event.WindowEvent p1) {
     }
