@@ -415,12 +415,13 @@ is divided into following sections:
                 </xsl:variable>
 
                 <target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
+                    <property name="config_target" location="${{meta.inf}}/wsdl"/>
                     <copy file="${{meta.inf}}/wsdl/{$wsclientname}-config.xml"
                         tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
                         <filterset>
                             <!-- replace token with reference to WSDL file in source tree, not build tree, since the
                                  the file probably has not have been copied to the build tree yet. -->
-                            <filter token="CONFIG_ABSOLUTE_PATH" value="${{basedir}}/${{meta.inf}}/wsdl"/>
+                            <filter token="CONFIG_ABSOLUTE_PATH" value="${{config_target}}"/>
                         </filterset>
                     </copy>
                     <wscompile
