@@ -699,7 +699,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                     if (ido == null) {
                         // create new settings file
                         InstanceDataObject.create(
-                            compsFolder, (String)curEntry.getKey(), curTC, null
+                            compsFolder, unescape((String)curEntry.getKey()), curTC, null
                           );
                     } else {
                         // save to settings file if there is already
@@ -709,7 +709,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                         } else {
                             ido.delete();
                             InstanceDataObject.create(
-                            compsFolder, (String)curEntry.getKey(), curTC, null
+                            compsFolder, unescape((String)curEntry.getKey()), curTC, null
                             );
                         }
                     }
@@ -782,6 +782,26 @@ public final class PersistenceManager implements PropertyChangeListener {
         }
     }
     
+    /** compute filename in the same manner as InstanceDataObject.create
+     * [PENDING] in next version this should be replaced by public support
+     * likely from FileUtil
+     * @see issue #17186
+     */
+    private static String unescape(String name) {
+        try {
+            java.lang.reflect.Method unescape =
+            InstanceDataObject.class.getDeclaredMethod(
+            "unescape", new Class[] {String.class}); //NOI18N
+            unescape.setAccessible(true);
+            return (String) unescape.invoke(null, new String[] {name});
+        } catch (Exception ex) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+            "Escape support failed"); // NOI18N
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return name;
+        }
+    }
+    
     private String createTopComponentNonPersistentID (TopComponent tc, String preferredID) {
         String compName = preferredID;
         // be prepared for null names, empty names and convert to filesystem friendly name
@@ -849,7 +869,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         DataFolder compsFolder = DataFolder.findFolder(getComponentsLocalFolder());
         String compName = WindowManager.getDefault().findTopComponentID(tc);
         InstanceDataObject ido = InstanceDataObject.create(compsFolder,
-            compName, tc, null);
+            unescape(compName), tc, null);
         
         return compName;
     }
