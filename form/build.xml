@@ -39,8 +39,8 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
         <pathelement location="../java/netbeans/modules/java.jar"/>
         <pathelement location="../clazz/netbeans/modules/clazz.jar"/>
-        <pathelement location="../core/release/lib/ext/parser.jar"/>
-        <pathelement location="../core/release/lib/ext/jaxp.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/parser.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
       </classpath>
     </javac>
   </target>
