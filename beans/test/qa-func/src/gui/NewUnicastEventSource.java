@@ -21,6 +21,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.RepositoryTabOperator;
+import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
@@ -75,6 +76,7 @@ public class NewUnicastEventSource extends JellyTestCase {
         } catch (IOException e) {
             fail(e);
         }
+        new PropertiesAction().perform();        
     }
     
     /** tearDown method */

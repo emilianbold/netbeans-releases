@@ -21,6 +21,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.RepositoryTabOperator;
+import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.Property;
@@ -86,6 +87,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         } catch (IOException e) {
             fail(e);
         }
+        new PropertiesAction().perform();
     }
     
     /** tearDown method */

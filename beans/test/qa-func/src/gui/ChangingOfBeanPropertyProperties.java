@@ -27,6 +27,7 @@ import org.netbeans.jellytools.RepositoryTabOperator;
 import org.netbeans.jellytools.TargetLocationStepOperator;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.NewTemplateAction;
+import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.nodes.FolderNode;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
@@ -93,6 +94,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
                 fail(e);
             }
         }
+        new PropertiesAction().perform();
     }
     
     /** tearDown method */

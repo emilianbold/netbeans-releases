@@ -17,6 +17,7 @@ import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.NewTemplateAction;
+import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.nodes.FolderNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
@@ -62,6 +63,7 @@ public class BeansTemplates extends JellyTestCase {
     
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
+        new PropertiesAction().perform();
     }
     
     public void tearDown() {
@@ -75,9 +77,8 @@ public class BeansTemplates extends JellyTestCase {
     }
     
     public void testJavaBean() {
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
-        Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
+        Node repositoryRootNode = new RepositoryTabOperator().getRootNode();
         FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
         examplesFolderNode.select();
         DefaultStringComparator comparator = new DefaultStringComparator(true, true);
@@ -102,15 +103,14 @@ public class BeansTemplates extends JellyTestCase {
     
     private void writeResult(String name) {
         new EventTool().waitNoEvent(1000);
-        new EditorWindowOperator().getEditor(name);
+        new EditorOperator(name);
         ref(Utilities.unify(Utilities.getAsString(name+".java")));
         new EventTool().waitNoEvent(500);
     }
     
     public void testBeanInfo() {
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
-        Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
+        Node repositoryRootNode = new RepositoryTabOperator().getRootNode();
         FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
         examplesFolderNode.select();
         DefaultStringComparator comparator = new DefaultStringComparator(true, true);
@@ -132,9 +132,8 @@ public class BeansTemplates extends JellyTestCase {
     }
     
     public void testBeanInfoNoIcon() {
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
-        Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
+        Node repositoryRootNode = new RepositoryTabOperator().getRootNode();
         FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
         examplesFolderNode.select();
         DefaultStringComparator comparator = new DefaultStringComparator(true, true);
@@ -158,9 +157,8 @@ public class BeansTemplates extends JellyTestCase {
     public void testCustomizer() {
         MainWindowOperator mainWindowOper  = MainWindowOperator.getDefault();
 //        mainWindowOper.switchToGUIEditingWorkspace();
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
-        Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
+        Node repositoryRootNode = new RepositoryTabOperator().getRootNode();
         FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
         examplesFolderNode.select();
         DefaultStringComparator comparator = new DefaultStringComparator(true, true);
@@ -182,9 +180,8 @@ public class BeansTemplates extends JellyTestCase {
     }
     
     public void testPropertyEditor() {
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
-        Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
+        RepositoryTabOperator explorerOperator = new RepositoryTabOperator();
+        Node repositoryRootNode = new RepositoryTabOperator().getRootNode();
         FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
         examplesFolderNode.select();
         DefaultStringComparator comparator = new DefaultStringComparator(true, true);
