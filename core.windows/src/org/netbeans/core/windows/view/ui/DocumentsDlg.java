@@ -282,8 +282,14 @@ implements PropertyChangeListener {
             nodeArray.add((TopComponentNode[])tcNodes.toArray(new TopComponentNode[0]));
             Node root = new AbstractNode(nodeArray);
             explorer.getExplorerManager().setRootContext(root);
-            
-            jButtonClose.setEnabled(false);
+            //#54656 begin
+            try {
+                explorer.getExplorerManager().setSelectedNodes(new Node[] {root.getChildren().getNodes()[0]});
+            } catch (PropertyVetoException exc) {
+                //mkleint - well, what can we do, I've never seen the selection being vetoed anyway.
+            }
+            listView.requestFocusInWindow();
+            //#54656 end
         }
     }//GEN-LAST:event_closeDocuments
 
