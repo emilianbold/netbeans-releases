@@ -123,6 +123,11 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         return super.getNodes( false );
     }
     
+    public Node findChild (String name) {
+        getNodes (true);
+        return super.findChild (name);
+    }
+    
     public void run() {
         computeKeys();
         refreshKeys();
