@@ -516,8 +516,10 @@ class HandleLayer extends JPanel
 
             RADVisualFormContainer form = (RADVisualFormContainer)
                                           formModel.getTopRADComponent();
-            if (form.getFormMenu() == null)
+            if (form.getFormMenu() == null) {
                 form.setFormMenu(newMenuComp.getName());
+                formModel.fireComponentAdded(newMenuComp, null);
+            }
         }
 
         formDesigner.setSelectedComponent(newMenuComp);
