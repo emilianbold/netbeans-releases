@@ -33,7 +33,8 @@ import org.openide.util.enum.*;
 import org.netbeans.modules.xml.dtd.grammar.*;
 import org.netbeans.modules.xml.spi.dom.*;
 import org.netbeans.modules.xml.api.cookies.ScenarioCookie;
-import org.netbeans.modules.xsl.scenario.XSLScenario;
+import org.netbeans.modules.xsl.api.XSLCustomizer;
+import org.netbeans.modules.xsl.api.XSLScenario;
 import org.openide.TopManager;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
@@ -712,47 +713,24 @@ public class XSLGrammarQuery implements GrammarQuery{
     
     public java.awt.Component getCustomizer(HintContext ctx) {
         if (customizer == null) {
-            try {
-                // Load the XSLCustomizer from the XML layer
-                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-                FileObject fo = fs.findResource(CUSTOMIZER_FOLDER); 
-                DataObject df = DataObject.find(fo);
-                if (!(df instanceof DataObject.Container)) {
-                    return null;
-                }
-
-                FolderLookup lookup =
-                    new FolderLookup((DataObject.Container) df);
-                Lookup.Template template =
-                    new Lookup.Template(XSLCustomizer.class);
-
-                Lookup.Item lookupItem = lookup.getLookup().lookupItem(template);
-                if (lookupItem == null) {
-                    return null;
-                }
-
-                customizer=(XSLCustomizer)lookupItem.getInstance();
-            } catch(Exception e) {
+            customizer = lookupCustomizerInstance();
+            if (customizer == null) {
                 return null;
             }
         }
         
-        if (customizer == null) {
-            return null;
-        }
-        
-        customizer.setDataObject(dataObject);
-        customizer.setContextNode(ctx);
-        return customizer.getComponent();
+        return customizer.getCustomizer(ctx, dataObject);
     }
     
     public boolean hasCustomizer(HintContext ctx) {
-		//Check if the node is an attribute
-		if(ctx.getNodeType() != Node.ATTRIBUTE_NODE) {
-			return false;
-		}
+        if (customizer == null) {
+            customizer = lookupCustomizerInstance();
+            if (customizer == null) {
+                return false;
+            }
+        }
         
-        return getCustomizer(ctx) != null;
+        return customizer.hasCustomizer(ctx);
     }
     
     public org.openide.nodes.Node.Property[] getProperties(final HintContext ctx) {
@@ -788,11 +766,11 @@ public class XSLGrammarQuery implements GrammarQuery{
     
     ////////////////////////////////////////////////////////////////////////////////
     // Private helper methods
-    
+    	
     /**
      * Looks up registered XSLCustomizer objects which will be used by this object 
      */
-    private Lookup.Item getCustomizerLookupItem() {
+    private XSLCustomizer lookupCustomizerInstance() {
         try {
             // Load the XSLCustomizer from the XML layer
             FileSystem fs = Repository.getDefault().getDefaultFileSystem();
@@ -806,7 +784,13 @@ public class XSLGrammarQuery implements GrammarQuery{
                 new FolderLookup((DataObject.Container) df);
             Lookup.Template template =
                 new Lookup.Template(XSLCustomizer.class);
-            return lookup.getLookup().lookupItem(template);
+
+            Lookup.Item lookupItem = lookup.getLookup().lookupItem(template);
+            if (lookupItem == null) {
+                return null;
+            }
+
+            return (XSLCustomizer)lookupItem.getInstance();
         } catch(Exception e) {
             return null;
         }
