@@ -135,6 +135,7 @@ public class SelectLayoutAction extends NodeAction {
                 Node[] nodes = getActivatedNodes();
                 if (nodes.length == 0)
                     return;
+                layoutMenu.removeAll();
                 PaletteItem[] layouts = getAllLayouts();
                 for (int i = 0; i < layouts.length; i++) {
                     JMenuItem mi = new JMenuItem(layouts[i].getDisplayName());
