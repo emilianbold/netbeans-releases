@@ -107,7 +107,6 @@ class TransactionView extends ExplorerPanel implements
     private transient RequestDisplay requestDisplay = null;
     private transient CookieDisplay  cookieDisplay = null;
     private transient SessionDisplay sessionDisplay = null;
-    private transient ServletDisplay servletDisplay = null;
     private transient ContextDisplay contextDisplay = null;
     private transient ClientDisplay  clientDisplay = null;
     private transient HeaderDisplay  headerDisplay = null;
@@ -527,10 +526,6 @@ class TransactionView extends ExplorerPanel implements
 	p = new JScrollPane(sessionDisplay);
 	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Session_24"), p); 
 
-	servletDisplay = new ServletDisplay(); 
-	p = new JScrollPane(servletDisplay);
-	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Servlet_23"), p);
-
 	contextDisplay = new ContextDisplay(); 
 	p = new JScrollPane(contextDisplay);
 	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Context_23"), p);
@@ -659,13 +654,12 @@ class TransactionView extends ExplorerPanel implements
 	else if (displayType == 2)
 	    sessionDisplay.setData(dr);
 	else if (displayType == 3)
-	    servletDisplay.setData(dr);
-	else if (displayType == 4)
 	    contextDisplay.setData(dr);
-	else if (displayType == 5)
+	else if (displayType == 4)
 	    clientDisplay.setData(dr);
-	else if (displayType == 6)
+	else if (displayType == 5)
 	    headerDisplay.setData(dr);
+
 	this.repaint();
 	
 	if(debug) log("Finished showData()"); // NOI18N
