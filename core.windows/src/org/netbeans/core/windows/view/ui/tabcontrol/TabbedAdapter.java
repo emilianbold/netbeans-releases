@@ -132,6 +132,10 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
     public void removeTopComponent(TopComponent tc) {
         int i=indexOfTopComponent(tc);
         getModel().removeTab(i);
+        if (getModel().size() == 0) {
+            revalidate();
+            repaint();
+        }
     }
     
     public void setTabPlacement(int placement) {
