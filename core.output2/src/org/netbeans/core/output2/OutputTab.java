@@ -10,19 +10,18 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.core.output2;
 
+import java.awt.Component;
+import java.awt.Point;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
-import org.openide.ErrorManager;
-
-import javax.swing.*;
-import javax.swing.text.Document;
-import java.awt.*;
 
 /**
  * A component representing one tab in the output window.
- *
  */
 final class OutputTab extends AbstractOutputTab {
     private NbIO io;
@@ -146,13 +145,8 @@ final class OutputTab extends AbstractOutputTab {
     
     private int firstNavigableListenerLine = -1;
     /**
-     * Okay, this is a bit of a hack - we actually look for the text
-     * [deprecation] and ignore lines that contain it.  The goal is to
-     * not unlock the scrollbar unless there is a bona-fide error to 
+     * Do not unlock scrollbar unless there is a bona-fide error to 
      * show - deprecation warnings should be ignored.
-     * <p>
-     * Longer term, a better solution would be a method on OutputListener
-     * or a marker interface implemented over it.
      */
     public int getFirstNavigableListenerLine() {
         if (firstNavigableListenerLine != -1) {
@@ -165,26 +159,6 @@ final class OutputTab extends AbstractOutputTab {
             if (Controller.log) Controller.log ("Looking for first appropriate" +
                 " listener line to send the caret to");
             result = out.getLines().firstImportantListenerLine();
-            // mkleint - still use the old way as fallback until modules start using OutputWriter.println(String, Listener, boolean imporant);
-//            if (result == -1) {
-//                int[] lines = out.getLines().allListenerLines();
-//                for (int i=0; i < lines.length; i++) {
-//                    try {
-//                        String s = out.getLines().getLine(lines[i]);
-//                        if (s.indexOf("[deprecation]") == -1 && s.indexOf("warning") == -1 && s.indexOf("stopped") == -1) {
-//                            result = lines[i];
-//                            if (Controller.log) Controller.log("Line to navigate to" +
-//                                    "is line " + lines[i] + ": " + s);
-//                            break;
-//                        }
-//                        if (Controller.log) Controller.log("Ignoring " +
-//                                " \"" + s + "\"\n  it is just a deprecation msg");
-//                    } catch (Exception e) {
-//                        ErrorManager.getDefault().notify(e);
-//                        break;
-//                    }
-//                }
-//            }
         }
         return result;
     }
