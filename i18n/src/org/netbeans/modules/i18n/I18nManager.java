@@ -22,6 +22,7 @@ import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
@@ -131,6 +132,8 @@ public class I18nManager {
             NotifyDescriptor.Message message = new NotifyDescriptor.Message(NbBundle.getBundle(I18nModule.class).
                 getString("MSG_NoInternationalizableString"), NotifyDescriptor.INFORMATION_MESSAGE); // to info message
             TopManager.getDefault().notify(message);
+            
+            cancel();
         }
     }
 
@@ -251,7 +254,7 @@ public class I18nManager {
         // Keep weak reference to i18n panel only.
         i18nPanelWRef = new WeakReference(i18nPanel);
         
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, i18nPanel, component);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(i18nPanel), component);
         splitPane.setOneTouchExpandable(true);
         
         // Remove original component.
