@@ -5,7 +5,9 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/netbeans/modules/utilities/Installer.class
 OpenIDE-Module-Layer: org/netbeans/modules/utilities/Layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.23
-OpenIDE-Module-Module-Dependencies: org.openidex.util/2
+OpenIDE-Module-Module-Dependencies: 
+ org.openidex.util/2,
+ org.netbeans.modules.settings/1 > 1.0
 OpenIDE-Module-Package-Dependencies: org.apache.regexp[RE]
 Main-Class: org.netbeans.modules.openfile.Main
 

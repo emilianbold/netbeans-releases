@@ -41,7 +41,7 @@ class PDFOpenSupport implements OpenCookie {
     }
     
     public void open () {
-        PDFSettings sett = PDFSettings.getDefault ();
+        Settings sett = Settings.getDefault ();
         try {
             Process p = Runtime.getRuntime ().exec (new String[] {
                 sett.getPDFViewer ().getAbsolutePath (), f.getAbsolutePath ()
