@@ -15,8 +15,6 @@
 package org.openide.explorer.view;
 
 import java.beans.PropertyVetoException;
-import java.util.Arrays;
-import javax.swing.SwingUtilities;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -103,30 +101,14 @@ public class RootContextTest extends NbTestCase {
     }
     
     /** Run all tests in AWT thread */
-    public final void run (final junit.framework.TestResult result) {
-        try {
-            // XXX ExplorerManager when updating selected nodes
-            // replanes all firing into AWT thread, therefore the test
-            // has to run in AWT.
-            javax.swing.SwingUtilities.invokeAndWait (new Runnable () {
-                public void run () {
-                    RootContextTest.super.run (result);
-                }
-            });
-        } catch (Exception ex) {
-            ex.printStackTrace ();
-            throw new IllegalStateException ();
-        }
+    protected boolean runInEQ() {
+        return true;
     }
     
     // asure the node selections with given manager
     public void doViewTest (final ExplorerManager mgr) throws Exception {
         mgr.setRootContext (root1);
-        try {
-            mgr.setSelectedNodes (new Node[] {arr1[0], arr1[2]});
-        } catch (PropertyVetoException pve) {
-            fail (pve.getMessage ());
-        }
+        mgr.setSelectedNodes (new Node[] {arr1[0], arr1[2]});
 
         Node[] selNodes = mgr.getSelectedNodes ();
         assertEquals ("Root context is ", "Root1", mgr.getRootContext ().getName ());
@@ -137,11 +119,7 @@ public class RootContextTest extends NbTestCase {
         assertEquals ("Selected node is ", "Three", selNodes[1].getName ());
 
         mgr.setRootContext (root2);
-        try {
-            mgr.setSelectedNodes (new Node[] { arr2[1] });
-        } catch (PropertyVetoException pve) {
-            fail (pve.getMessage ());
-        }
+        mgr.setSelectedNodes(new Node[] { arr2[1] });
 
         selNodes = mgr.getSelectedNodes ();
         assertEquals ("Root context is ", "Root2", mgr.getRootContext ().getName ());
@@ -152,7 +130,7 @@ public class RootContextTest extends NbTestCase {
     
     // test for each type of view
     
-    public void testBeanTreeView () {
+    public void testBeanTreeView() throws Exception {
         
         initText ();
         
@@ -164,15 +142,11 @@ public class RootContextTest extends NbTestCase {
         panel.add (view);
         panel.open ();
         
-        try {
-            doViewTest (mgr);
-        } catch (Exception e) {
-            fail (e.toString ());
-        }
+        doViewTest(mgr);
         
     }
     
-    public void testContextTreeView () {
+    public void testContextTreeView() throws Exception {
         
         initText ();
         
@@ -184,15 +158,11 @@ public class RootContextTest extends NbTestCase {
         panel.add (view);
         panel.open ();
         
-        try {
-            doViewTest (mgr);
-        } catch (Exception e) {
-            fail (e.toString ());
-        }
+        doViewTest(mgr);
         
     }
     
-    public void testTreeTableView () {
+    public void testTreeTableView() throws Exception {
         
         initText ();
         
@@ -204,15 +174,11 @@ public class RootContextTest extends NbTestCase {
         panel.add (view);
         panel.open ();
         
-        try {
-            doViewTest (mgr);
-        } catch (Exception e) {
-            fail (e.toString ());
-        }
+        doViewTest(mgr);
         
     }
     
-    public void testListView () {
+    public void testListView() throws Exception {
         
         initText ();
         
@@ -224,15 +190,11 @@ public class RootContextTest extends NbTestCase {
         panel.add (view);
         panel.open ();
         
-        try {
-            doViewTest (mgr);
-        } catch (Exception e) {
-            fail (e.toString ());
-        }
-        
+        doViewTest(mgr);
+
     }
     
-    public void testListTableView () {
+    public void testListTableView() throws Exception {
         
         initText ();
         
@@ -244,11 +206,7 @@ public class RootContextTest extends NbTestCase {
         panel.add (view);
         panel.open ();
         
-        try {
-            doViewTest (mgr);
-        } catch (Exception e) {
-            fail (e.toString ());
-        }
+        doViewTest(mgr);
         
     }
     

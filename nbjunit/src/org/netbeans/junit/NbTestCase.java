@@ -13,8 +13,10 @@
 
 package org.netbeans.junit;
 
+import java.awt.EventQueue;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.AssertionFailedError;
@@ -76,13 +78,45 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     
     /**
- * Runs the test case and collects the results in TestResult.
- * overrides JUnit run, because filter check
- */
-    public void run(TestResult result) {
-        if (canRun())
-            //result.run(this);
-            super.run(result);
+     * Provide ability for tests to request that they run only in the AWT event queue.
+     * By default, false.
+     * @return true to run all test methods in the EQ, false to run in whatever thread
+     */
+    protected boolean runInEQ() {
+        return false;
+    }
+    
+    /**
+     * Runs the test case and collects the results in TestResult.
+     * overrides JUnit run, because filter check
+     * and handling of {@link #runInEQ}
+     */
+    public void run(final TestResult result) {
+        if (canRun()) {
+            if (runInEQ()) {
+                try {
+                    EventQueue.invokeAndWait(new Runnable() {
+                        public void run() {
+                            NbTestCase.super.run(result);
+                        }
+                    });
+                } catch (InterruptedException e) {
+                    result.addError(this, e);
+                } catch (InvocationTargetException e) {
+                    Throwable t = e.getCause();
+                    if (t instanceof AssertionFailedError) {
+                        result.addFailure(this, (AssertionFailedError)t);
+                    } else if (t instanceof ThreadDeath) {
+                        throw (ThreadDeath)t;
+                    } else {
+                        result.addError(this, t);
+                    }
+                }
+            } else {
+                // Regular test.
+                super.run(result);
+            }
+        }
     }
 
     
