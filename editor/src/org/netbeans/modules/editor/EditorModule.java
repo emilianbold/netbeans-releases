@@ -56,6 +56,8 @@ public class EditorModule implements ModuleInstall {
   private static final String MIME_IDL = "text/x-idl";
   private static final String MIME_XML = "text/xml";
   private static final String MIME_DTD = "text/x-dtd";
+  private static final String MIME_PROPERTIES = "text/x-properties";
+  private static final String MIME_JSP = "text/x-jsp";
 
   /** Kit replacements that will be installed into JEditorPane */
   KitInfo[] replacements = new KitInfo[] {
@@ -64,7 +66,9 @@ public class EditorModule implements ModuleInstall {
     new KitInfo(MIME_HTML, "com.netbeans.developer.modules.text.NbEditorHTMLKit"),
     new KitInfo(MIME_IDL, "com.netbeans.developer.modules.text.NbEditorIDLKit"),
     new KitInfo(MIME_XML, "com.netbeans.developer.modules.text.NbEditorXMLKit"),
-    new KitInfo(MIME_DTD, "com.netbeans.developer.modules.text.NbEditorDTDKit")
+    new KitInfo(MIME_DTD, "com.netbeans.developer.modules.text.NbEditorDTDKit"),
+    new KitInfo(MIME_PROPERTIES, "com.netbeans.developer.modules.text.NbEditorPropertiesKit"),
+    new KitInfo(MIME_JSP, "com.netbeans.developer.modules.text.NbEditorJSPKit")
   };
 
   private static PropertyChangeListener settingsListener;
@@ -199,6 +203,8 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  25   Gandalf   1.24        8/4/99   Petr Jiricka    Added editor kits for 
+ *       text/x-jsp and text/x-properties
  *  24   Gandalf   1.23        7/31/99  Ian Formanek    removed debug messages
  *  23   Gandalf   1.22        7/28/99  Libor Kramolis  
  *  22   Gandalf   1.21        7/26/99  Miloslav Metelka 
