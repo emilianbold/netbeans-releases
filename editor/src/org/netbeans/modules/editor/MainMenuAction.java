@@ -102,6 +102,8 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             KeyStroke[] keys = km.getKeyStrokesForAction(a);
             if (keys != null && keys.length > 0) {
                 item.setAccelerator(keys[0]);
+            }else{
+                item.setAccelerator(null);
             }
         }
     }
