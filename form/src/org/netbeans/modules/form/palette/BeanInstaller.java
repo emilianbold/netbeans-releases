@@ -227,7 +227,8 @@ public final class BeanInstaller
         try {
             installedLibs.load(new FileInputStream(installedLibsFile));
         } catch (IOException e) {
-            if (System.getProperty("netbeans.debug.exceptions") != null) e.printStackTrace();
+            if (System.getProperty("netbeans.debug.exceptions") != null)
+                System.err.println("INFO: Cannot open " + installedLibsFile);//e.printStackTrace();
             /* ignore */
         }
         HashMap libsMap = new HashMap(installedLibs.size()*2);
