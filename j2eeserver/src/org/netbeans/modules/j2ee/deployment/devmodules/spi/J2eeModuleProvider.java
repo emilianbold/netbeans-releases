@@ -236,7 +236,10 @@ public abstract class J2eeModuleProvider {
      * Returns true if the current target platform provide verifier support for this module.
      */
     public boolean hasVerifierSupport() {
-        return ServerRegistry.getInstance().getServer(getServerID()).canVerify(getJ2eeModule().getModuleType());
+        String serverId = getServerID();
+        if (serverId == null)
+            return false;
+        return ServerRegistry.getInstance().getServer(serverId).canVerify(getJ2eeModule().getModuleType());
     }
     
     /**
