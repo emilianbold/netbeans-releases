@@ -24,6 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.io.File;
+import java.nio.charset.Charset;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
@@ -715,7 +716,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             // regardless of the setting of the file.encoding property
             //return System.getProperty("file.encoding", "ISO-8859-1");
         }
-        return System.getProperty("file.encoding", "ISO-8859-1");
+        return canonizeEncoding(System.getProperty("file.encoding", "ISO-8859-1"));
 
 /*        if ("ja".equals(language)) { // NOI18N
             // we are Japanese
@@ -727,6 +728,27 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         else
             // we are English
             return "ISO-8859-1"; // NOI18N*/
+    }
+    
+    private static final String CORRECT_WINDOWS_31J = "windows-31j";
+    private static final String CORRECT_EUC_JP = "EUC-JP";
+    
+    private static String canonizeEncoding(String encodingAlias) {
+        // this does not work correctly on JDK 1.4.1
+        if (encodingAlias.equalsIgnoreCase("MS932")) {
+            return CORRECT_WINDOWS_31J;
+        }
+        // this is not a correct charset by http://www.iana.org/assignments/character-sets
+        if (encodingAlias.equalsIgnoreCase("EUC-JP-LINUX")) {
+            return CORRECT_EUC_JP;
+        }
+        
+        if (Charset.isSupported(encodingAlias)) {
+            Charset cs = Charset.forName(encodingAlias);
+            return cs.name();
+        } else {
+            return encodingAlias;
+        }
     }
 
     private void printJob(CompilerJob job) {
