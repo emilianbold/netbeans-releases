@@ -36,9 +36,7 @@ import java.lang.ref.WeakReference;
  *
  * @author   Ian Formanek
  */
-public class PaletteItem implements java.io.Serializable {
-    /** generated Serialized Version UID */
-    //  static final long serialVersionUID = -2098259549820241091L;
+public class PaletteItem {
 
     public final static String ATTR_IS_CONTAINER = "isContainer"; // NOI18N
     // -----------------------------------------------------------------------------
@@ -48,16 +46,11 @@ public class PaletteItem implements java.io.Serializable {
     private WeakReference sharedReference = null;
 
     /** The JavaBean Class represented by this PaletteItem */
-    private Class beanClass;
     private boolean beanClassFailed;
 
     private Node itemNode;
     private InstanceCookie instanceCookie;
     private InstanceDataObject instanceDO;
-
-    static final long serialVersionUID =6553170650531136255L;
-    // -----------------------------------------------------------------------------
-    // Constructors
 
     /** Creates a new PaletteItem */
     public PaletteItem(Node node) throws ClassNotFoundException,
@@ -76,29 +69,6 @@ public class PaletteItem implements java.io.Serializable {
         }
         instanceCookie = ic;
     }
-
-    /** Creates a new PaletteItem for specified JavaBean class
-     * @param beanClass the string name of the Java Bean's classass
-     */
-//    public PaletteItem(String beanName) throws ClassNotFoundException {
-//        this(Class.forName(beanName));
-//    }
-
-    /** Creates a new PaletteItem for specified JavaBean class
-     * @param beanClass the Java Bean's class
-     */
-//    public PaletteItem(Class beanClass) {
-//        this(beanClass, Container.class.isAssignableFrom(beanClass));
-//    }
-
-    /** Creates a new PaletteItem for specified JavaBean class
-     * @param beanClass the Java Bean's class
-     * @param isContainer allows to explicitly specify whether the item represents bean which can contain other beans
-     */
-//    public PaletteItem(Class beanClass, boolean isContainer) {
-//        this.beanClass = beanClass;
-//        this.expliciteIsContainer = new Boolean(isContainer);
-//    }
 
     // -----------------------------------------------------------------------------
     // Class Methods
@@ -152,7 +122,7 @@ public class PaletteItem implements java.io.Serializable {
     public Object createInstance() throws InstantiationException,
                                           IllegalAccessException {
         try {
-            getBeanClass();
+            Class beanClass = getBeanClass();
             if (beanClass == null)
                 return null;
 
@@ -197,7 +167,8 @@ public class PaletteItem implements java.io.Serializable {
     }
 
     public boolean isBorder() {
-        if (getBeanClass() == null)
+        Class beanClass = getBeanClass();
+        if (beanClass == null)
             return false;
 
         return BorderInfo.class.isAssignableFrom(beanClass)
@@ -205,39 +176,25 @@ public class PaletteItem implements java.io.Serializable {
     }
 
     public boolean isVisual() {
-        if (getBeanClass() == null)
+        Class beanClass = getBeanClass();
+        if (beanClass == null)
             return false;
 
         return Component.class.isAssignableFrom(beanClass);
     }
 
     public boolean isLayout() {
-        if (getBeanClass() == null)
+        Class beanClass = getBeanClass();
+        if (beanClass == null)
             return false;
 
         return LayoutSupportDelegate.class.isAssignableFrom(beanClass)
                || LayoutManager.class.isAssignableFrom(beanClass);
     }
 
-/*    public boolean isContainer() {
-//        if (expliciteIsContainer != null)
-//            return expliciteIsContainer.booleanValue(); // explicitly set isContainer flag
-
-        if (!Container.class.isAssignableFrom(beanClass))
-            return false;
-
-        DataObject dobj = (DataObject) itemNode.getCookie(DataObject.class);
-        if (dobj != null) {
-            Object attr = dobj.getPrimaryFile().getAttribute(PaletteItem.ATTR_IS_CONTAINER);
-            if (attr instanceof Boolean)
-                return ((Boolean)attr).booleanValue();
-        }
-
-        return PaletteItemNode.canBeContainer(instanceCookie);
-    } */
-
     public boolean isMenu() {
-        if (getBeanClass() == null)
+        Class beanClass = getBeanClass();
+        if (beanClass == null)
             return false;
 
         return MenuBar.class.isAssignableFrom(beanClass) ||
@@ -247,9 +204,9 @@ public class PaletteItem implements java.io.Serializable {
     }
 
     private Class getBeanClass() {
-        if (beanClass == null && !beanClassFailed) {
+        if (!beanClassFailed) {
             try {
-                beanClass = instanceCookie.instanceClass();
+                return instanceCookie.instanceClass();
             }
             catch (Exception ex) {
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -257,7 +214,7 @@ public class PaletteItem implements java.io.Serializable {
                 beanClassFailed = true;
             }
         }
-        return beanClass;
+        return null;
     }
 
     // ------------------------------------
