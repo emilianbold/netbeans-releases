@@ -312,15 +312,15 @@ public class TestCallAction extends TestAction {
                         }
                         isPerforming=true;
                         
-                        getLogger().startPerforming();
                         long sleeps=0;
-                        while (isPerforming && sleeps < 600000) {  //max 10 minutes waits
+                        while (getLogger().isPerforming() && sleeps < TIMEOUT) {
                             try {
                                 Thread.currentThread().sleep(250);
                                 sleeps+=250;
                             } catch (Exception ex) {
                             }
                         }
+                        getLogger().startPerforming();                        
                         System.err.println("Sleeps="+sleeps);
                     }
                 } else {
@@ -342,6 +342,7 @@ public class TestCallAction extends TestAction {
             long actualTime = System.currentTimeMillis();
             
             if ((actualTime - time) > TIMEOUT) {
+                System.err.println("CallAction "+getName()+" timeout expired "+TIMEOUT+" ms.");
                 return;
             }
             Thread.yield();
