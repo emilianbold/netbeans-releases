@@ -613,7 +613,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
     // temporary hacks for GridBagCustomizer and GridBagControlCenter
 
     static ResourceBundle getBundleHack() {
-        return AbstractLayoutSupport.getBundle();
+        return /*org.netbeans.modules.form.layoutsupport.AbstractLayoutSupport.*/getBundle();
     }
 
     LayoutSupportContext getLayoutSupportHack() {
