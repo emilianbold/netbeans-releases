@@ -386,6 +386,9 @@ public class ServerInstance implements Node.Cookie {
     //------------------------------------------------------------
     // multiplexor state-machine core
     private boolean startTarget(Target target, DeployProgressUI ui, boolean debugMode) {
+        if (isReallyRunning())
+            return true;
+        
         StartServer ss = checkForSupportStartDM(ui);
         if (ss == null) {
             return false;
@@ -395,26 +398,21 @@ public class ServerInstance implements Node.Cookie {
             if (debugMode) {
                 if (ss.isDebuggable(target)) { // imply ss.isRunning() true in
                     return true;
-                } else if (isReallyRunning()) {
+                } else {
                     if (! _stop(ui)) {
                         return false;
                     }
                 }
                 
                 return _startDebug(target, ui);
-            
-            } else if (isReallyRunning()) {
-                return true;
             }
 
             return _start(ui);
 
         } else { // not also target server
             // make sure admin is running
-            if (! isReallyRunning()) {
-                if (! _start(ui)) {
-                    return false;
-                }
+            if (! _start(ui)) {
+                return false;
             }
             if (debugMode) {
                 if (ss.isDebuggable(target)) {
