@@ -165,7 +165,7 @@ public class URLDataObject extends MultiDataObject {
   * @return help context
   */
   public com.netbeans.ide.util.HelpCtx getHelpCtx () {
-    return new HelpCtx ();
+    return HelpCtx.DEFAULT_HELP;
     //[PENDING]
   }
 
@@ -191,6 +191,8 @@ public class URLDataObject extends MultiDataObject {
 
 /*
  * Log
+ *  7    Gandalf   1.6         4/27/99  Jesse Glick     new HelpCtx () -> 
+ *       HelpCtx.DEFAULT_HELP.
  *  6    Gandalf   1.5         4/8/99   Ian Formanek    Removed debug prints
  *  5    Gandalf   1.4         3/26/99  Ian Formanek    Fixed use of obsoleted 
  *       NbBundle.getBundle (this)

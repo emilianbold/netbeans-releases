@@ -42,7 +42,7 @@ public final class GlobalPropertiesAction extends CallableSystemAction {
   /** @return the action's help context */
   public HelpCtx getHelpCtx() {
     // PENDING
-    return new HelpCtx();
+    return HelpCtx.DEFAULT_HELP;
   }
 
   /**
@@ -56,6 +56,8 @@ public final class GlobalPropertiesAction extends CallableSystemAction {
 
 /*
 * Log
+*  2    src-jtulach1.1         4/27/99  Jesse Glick     new HelpCtx () -> 
+*       HelpCtx.DEFAULT_HELP.
 *  1    src-jtulach1.0         4/2/99   Jaroslav Tulach 
 * $
 */
