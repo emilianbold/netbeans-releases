@@ -689,14 +689,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
         synchronized (LOCK) {
             if (getState () == STATE_STOPPED) return;
             if (virtualMachine != null) {
-                // virtualMachine.suspend () does not work correctly
-                List l = virtualMachine.allThreads ();
-                int i, k = l.size ();
-                for (i = 0; i < k; i++) {
-                    ThreadReference tr = (ThreadReference) l.get (i);
-                    if (!tr.isSuspended ())
-                        tr.suspend ();
-                }
+                virtualMachine.suspend ();
+//                List l = virtualMachine.allThreads ();
+//                int i, k = l.size ();
+//                for (i = 0; i < k; i++) {
+//                    ThreadReference tr = (ThreadReference) l.get (i);
+//                    int p = tr.suspendCount ();
+////                    if (!tr.isSuspended ())
+////                        tr.suspend ();
+//                    System.out.println("  " + tr.name () + " : " + p + " : " + tr.suspendCount ());
+//                }
             }
             setState (STATE_STOPPED);
         }
@@ -709,16 +711,18 @@ public class JPDADebuggerImpl extends JPDADebugger {
         synchronized (LOCK) {
             if (getState () == STATE_RUNNING) return;
             if (virtualMachine != null) {
-                // virtualMachine.resume () does not work correctly
-                List l = virtualMachine.allThreads ();
-                int i, k = l.size ();
-                for (i = 0; i < k; i++) {
-                    ThreadReference tr = (ThreadReference) l.get (i);
-                    int count = tr.suspendCount ();
-                    while (count > 0) {
-                        tr.resume (); count--;
-                    }
-                }
+                virtualMachine.resume ();
+//                List l = virtualMachine.allThreads ();
+//                int i, k = l.size ();
+//                for (i = 0; i < k; i++) {
+//                    ThreadReference tr = (ThreadReference) l.get (i);
+//                    int count = tr.suspendCount ();
+//                    int p = count;
+////                    while (count > 0) {
+////                        tr.resume (); count--;
+////                    }
+//                    System.out.println("  " + tr.name () + " : " + p + " : " + tr.suspendCount ());
+//                }
             }
             setState (STATE_RUNNING);
         }
