@@ -29,4 +29,12 @@ Microsystems, Inc. All Rights Reserved.
         <summary>Exception, when try replace root element</summary>
         <description>When you try to set element into document, which already contains element, then exception should be thrown.</description>
     </item>
+    <item priority="3">
+        <summary>UML Model of TAX</summary>
+        <description>Create <b>UML Model</b> of TAX to better understanding TAX design.</description>
+    </item>
+    <item priority="4">
+        <summary>MOF Model of TAX</summary>
+        <description>Create <b>MOF Model</b> of TAX to support prepared MDR module and next generation of data modules.</description>
+    </item>
 </list>

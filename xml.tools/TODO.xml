@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
   -->
 
 <list module="tools">
-    <item>
+    <item priority="2">
         <summary>Cleanup files structure</summary>
         <description>Files' structure is not synoptical. I see two possible structures:
 <ol>
@@ -25,5 +25,9 @@ Microsystems, Inc. All Rights Reserved.
     <li><b>By class types</b> - separated parts (cookies, actions, impl, wizard, ...) of each service are in common folder.</li>
 </ol>
         </description>
+    </item>
+    <item priority="4">
+        <summary>Doclet could generate html with link to source DTD.</summary>
+        <description>Doclet could generate html with link to source DTD to be able to see / download original document.</description>
     </item>
 </list>

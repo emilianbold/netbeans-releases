@@ -18,8 +18,8 @@ Microsystems, Inc. All Rights Reserved.
   <property name="binroot" location="${nbroot}/../nbextra"/>
 
   <property name="nbext" location="${nbroot}/nbbuild"/>
-  <taskdef name="for-each-submodule" classname="org.netbeans.nbbuild.ForEachSubmodule" classpath="${nbext}/nbantext.jar"/>
-  <property name="submodules" value="tax,core,catalog,tools,text-edit,tree-edit,css"/>
+  <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext}/nbantext.jar"/>
+  <property name="submodules" value="tax, core, catalog, tools, text-edit, tree-edit, css"/>
 
 
   <target name="init">
@@ -29,35 +29,35 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile">
-    <for-each-submodule submodules="${submodules}"/>
+    <for-each locations="${submodules}"/>
   </target>
 
   <target name="jars" depends="init,compile">
-    <for-each-submodule submodules="${submodules}"/>
+    <for-each locations="${submodules}"/>
   </target>
 
   <target name="release">
-    <for-each-submodule submodules="${submodules}"/>
+    <for-each locations="${submodules}"/>
   </target>
 
   <target name="javahelp">
-    <for-each-submodule submodules="${submodules}"/>
+    <for-each locations="${submodules}"/>
   </target>
 
   <target name="netbeans" depends="jars,release,javahelp"/>
 
   <target name="nbm" depends="netbeans">
-    <for-each-submodule submodules="${submodules}"/>
+    <for-each locations="${submodules}"/>
   </target>
 
   <target name="clean">
-    <for-each-submodule submodules="${submodules}"/>
+    <for-each locations="${submodules}"/>
   </target>
 
   <target name="all" depends="clean,nbm" />
 
   <target name="javadoc">
-    <for-each-submodule submodules="${submodules}"/>
+    <for-each locations="${submodules}"/>
   </target>
 
 
@@ -65,9 +65,9 @@ Microsystems, Inc. All Rights Reserved.
   <target name="all-xml" depends="all-depend,clean,netbeans"/>
 
   <target name="all-depend">
-    <property name="modules" value="../openide,../openidex,../core,../editor"/>
-    <for-each-submodule submodules="${modules}" target="clean"/>
-    <for-each-submodule submodules="${modules}" target="jars"/>
+    <property name="modules" value="../openide, ../openidex, ../core, ../editor"/>
+    <for-each locations="${modules}" target="clean"/>
+    <for-each locations="${modules}" target="jars"/>
   </target>
 
 

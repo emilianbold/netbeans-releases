@@ -28,19 +28,15 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <list module="xml">
-    <item>
+    <item priority="4">
         <summary>Backward compatability</summary>
         <description>Add to modules manifest conflict with old xml.jar and xml-syntax.jar modules OR try to load old settings.</description>
     </item>
-    <item>
+    <item priority="2">
         <summary>clean *.properties</summary>
         <description>Clean *.properties files (remove unused, uniform look)</description>
     </item>
-    <item>
-        <summary>Components in Issuezilla</summary>
-        <description>Does it make sense to have subcomponents same as submodules in Issuezilla OR use prefix like [submodule] in Summary field of bug.</description>
-    </item>
-    <item>
+    <item priority="2">
         <summary>XML module API</summary>
         <description>When we will have xml-api module (see core's <a href="#core">TODO</a>), than we can guarantee TAX, XML-API with Looks as API around xml.</description>
     </item>
@@ -48,6 +44,15 @@ Microsystems, Inc. All Rights Reserved.
         <summary>Javahelp</summary>
         <description>What about javahelp?</description>
     </item>
+    <item priority="4">
+        <summary>IssueZilla</summary>
+        <description>Clean <a href="http://www.netbeans.org/issues/buglist.cgi?component=xml&amp;issue_status=UNCONFIRMED&amp;issue_status=NEW&amp;issue_status=STARTED&amp;issue_status=REOPENED&amp;email1=&amp;emailtype1=substring&amp;emailassigned_to1=1&amp;email2=&amp;emailtype2=substring&amp;emailreporter2=1&amp;issueidtype=include&amp;issue_id=&amp;changedin=&amp;votes=&amp;chfieldfrom=&amp;chfieldto=Now&amp;chfieldvalue=&amp;short_desc=&amp;short_desc_type=substring&amp;long_desc=&amp;long_desc_type=substring&amp;issue_file_loc=&amp;issue_file_loc_type=substring&amp;status_whiteboard=&amp;status_whiteboard_type=substring&amp;keywords=&amp;keywords_type=anywords&amp;field0-0-0=noop&amp;type0-0-0=noop&amp;value0-0-0=&amp;cmdtype=doit&amp;newqueryname=&amp;order=%27Importance%27">issues</a>, set them subcomponent.</description>
+    </item>
+    <item priority="4">
+        <summary>Features</summary>
+        <description>Interconnect <a href="../plans/features.html">Features</a> with IssueZilla items.</description>
+    </item>
+
     &catalog_todo.xml;
     &core_todo.xml;
     &css_todo.xml;
