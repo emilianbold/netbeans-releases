@@ -334,8 +334,7 @@ workspaceswitcher
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
-  <target name="virgin" depends="firststart-merge"
-          description="Create a virgin build that has never been started.">
+  <target name="virgin-nozip" depends="firststart-merge">
     <taskdef name="createmodulexml" classname="org.netbeans.nbbuild.CreateModuleXML" classpath="nbantext.jar"/>
     <mkdir dir="${netbeans.dest}/system/Modules"/>
     <mkdir dir="${netbeans.dest}/modules/autoload"/>
@@ -355,6 +354,9 @@ workspaceswitcher
         <include name="*.jar"/>
       </autoload>
     </createmodulexml>
+  </target>
+  <target name="virgin" depends="virgin-nozip"
+          description="Create a virgin build that has never been started.">
     <!-- zip task not well suited to making final build, as it does not set +x bits -->
     <!-- so on Unix try to use native ZIP first -->
     <delete file="NetBeans-${buildnum}-virgin.zip"/>
