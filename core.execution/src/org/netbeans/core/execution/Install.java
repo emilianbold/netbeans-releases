@@ -43,6 +43,7 @@ import org.openide.util.actions.SystemAction;
 import org.netbeans.TopSecurityManager;
 
 import org.netbeans.core.ModuleActions;
+import org.openide.ErrorManager;
 
 /**
  * Registers security manager for execution.
@@ -126,6 +127,15 @@ public class Install extends ModuleInstall {
     private static void startFolder(DataFolder f) {
         DataObject[] obj = f.getChildren();
         if (obj.length == 0) return;
+        ErrorManager err = ErrorManager.getDefault();
+        if (err.isLoggable(ErrorManager.WARNING)) {
+            StringBuffer b = new StringBuffer("Warning - using the Startup folder is deprecated. Found objects:"); // NOI18N
+            for (int i = 0; i < obj.length; i++) {
+                b.append(' '); // NOI18N
+                b.append(obj[i].getPrimaryFile().getPath());
+            }
+            err.log(ErrorManager.WARNING, b.toString());
+        }
         ExecuteAction.execute(obj, true);
     }
 

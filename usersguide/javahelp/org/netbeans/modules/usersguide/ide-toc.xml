@@ -187,7 +187,6 @@
     <tocitem text="Running a Program in Debug Mode" target="run.debugmode" />
     <tocitem text="Running and Debugging an Applet" target="run.debug.applet" />
     <tocitem text="Specifying the Main Class to Run" target="run.mainclass" />
-    <tocitem text="Running a Class When the IDE Starts" target="run.startup" />
     <tocitem text="Running Java Sources in a Specific Locale" target="run.locale" />
     <tocitem text="Running a Program on a 64-Bit Java Virtual Machine" target="run.64bit.jvm" />
   </tocitem>

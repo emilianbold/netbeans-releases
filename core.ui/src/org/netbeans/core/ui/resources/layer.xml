@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
@@ -583,11 +583,6 @@ Microsystems, Inc. All Rights Reserved.
 
                     <file name="org-openide-text-PrintSettings.shadow">
                         <attr name="originalFile" stringvalue="Services/org-openide-text-PrintSettings.settings"/>
-                    </file>
-
-                    <file name="Startup.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createStartup" />
-                        <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
                     </file>
 
                     <file name="org-netbeans-core-IDESettings.shadow">

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -44,8 +44,6 @@ public final class UINodes extends Object {
 
     private final static String templatesIconURL = "org/netbeans/core/resources/templates.gif"; // NOI18N
     private final static String templatesIcon32URL = "org/netbeans/core/resources/templates32.gif"; // NOI18N
-    private final static String startupIconURL = "org/netbeans/core/resources/startup.gif"; // NOI18N
-    private final static String startupIcon32URL = "org/netbeans/core/resources/startup32.gif"; // NOI18N
     private final static String objectTypesIconURL = "org/netbeans/core/resources/objectTypes.gif"; // NOI18N
     private final static String objectTypesIcon32URL = "org/netbeans/core/resources/objectTypes32.gif"; // NOI18N
 
@@ -102,12 +100,6 @@ public final class UINodes extends Object {
     */
     public static Node createTemplate () {
         return new TemplatesNode ();
-    }
-
-    /** Creates startup node.
-    */
-    public static Node createStartup () {
-        return new StartupNode ();
     }
 
     /** Creates object types node.
@@ -207,39 +199,6 @@ public final class UINodes extends Object {
             return staticActions;
         }
     }
-
-    /** Node representing startup folder */
-    private static class StartupNode extends IconSubstituteNode {
-        /** generated Serialized Version UID */
-        static final long serialVersionUID = -8202001968004798680L;
-
-        private static SystemAction[] staticActions;
-
-        public StartupNode() {
-            super (NbPlaces.getDefault().startup ().getNodeDelegate (), startupIconURL, startupIcon32URL);
-            super.setDisplayName(bundle.getString("CTL_Startup_name"));
-            super.setShortDescription(bundle.getString("CTL_Startup_hint"));
-        }
-
-        public HelpCtx getHelpCtx () {
-            return new HelpCtx (StartupNode.class);
-        }
-
-        public SystemAction[] getActions () {
-            if (staticActions == null) {
-                staticActions = new SystemAction[] {
-                                    SystemAction.get(PasteAction.class),
-                                    null,
-                                    SystemAction.get(ReorderAction.class),
-                                    null,
-                                    SystemAction.get(ToolsAction.class),
-                                    SystemAction.get(PropertiesAction.class)
-                                };
-            }
-            return staticActions;
-        }
-    }
-
 
     /** Node representing object types folder */
     private static class ObjectTypesNode extends IconSubstituteNode {

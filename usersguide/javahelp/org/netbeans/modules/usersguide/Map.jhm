@@ -1616,10 +1616,6 @@
    <mapID target="org.netbeans.beaninfo.editors.DimensionCustomEditor" url="pending.html" /> 
    <mapID target="org.netbeans.core.MainWindow" url="pending.html" />
    <mapID target="org.netbeans.core.ActionsPoolNode" url="pending.html" />
-   <mapID target="org.netbeans.core.Desktop$TemplatesNode" url="pending.html" /> 
-   <mapID target="org.netbeans.core.DesktopNode$TemplatesNode" url="pending.html" /> 
-   <mapID target="org.netbeans.core.DesktopNode" url="pending.html" /> 
-   <mapID target="org.netbeans.core.DesktopNode$StartupNode" url="run/startup.html" />      
    <mapID target="org.openide.actions.FindAction" url="pending.html" />
    <mapID target="org.openide.actions.ReplaceAction" url="pending.html" />
  
