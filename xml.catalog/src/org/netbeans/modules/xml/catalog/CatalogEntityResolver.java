@@ -71,10 +71,6 @@ public class CatalogEntityResolver extends UserCatalog implements EntityResolver
             if (result != null) break;
         }
         
-        if (result == null && systemId != null) {
-            return new InputSource(systemId);
-        }
-
         // fallback to ordinaly readers        
         
         if (result == null && publicId != null) {
