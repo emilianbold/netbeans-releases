@@ -738,7 +738,8 @@ class HandleLayer extends JPanel
                             e.isControlDown() || e.isAltDown() ?
                             COMP_SELECTED : COMP_DEEPEST);
 
-                    formDesigner.connectBean(hitMetaComp, true);
+                    if (hitMetaComp != null)
+                        formDesigner.connectBean(hitMetaComp, true);
                 }
                 else if (componentDragger != null) {
                     componentDragger.dropComponents(e.getPoint());
@@ -787,11 +788,15 @@ class HandleLayer extends JPanel
                 if (componentDragger == null) {
                     if (!mouseOnComponentLayer(e.getPoint())) {
                         selectOtherComponentsNode();
-                    } else {
+                    }
+                    else {
                         RADComponent hitMetaComp =
                             getMetaComponentAt(e.getPoint(), COMP_SELECTED);
-                        if (!formDesigner.isComponentSelected(hitMetaComp))
+                        if (hitMetaComp != null
+                            && !formDesigner.isComponentSelected(hitMetaComp))
+                        {
                             formDesigner.setSelectedComponent(hitMetaComp);
+                        }
                     }
 
                 }
@@ -819,7 +824,7 @@ class HandleLayer extends JPanel
                             processDoubleClick(e);
                         else {
                             RADComponent hitMetaComp = selectComponent(e);
-                            if (!modifier) // plain single click
+                            if (hitMetaComp != null && !modifier) // plain single click
                                 processMouseClickInLayoutSupport(hitMetaComp, e);
                         }
                     }
@@ -854,7 +859,8 @@ class HandleLayer extends JPanel
 
                         if (!mouseOnComponentLayer(e.getPoint())) {
                             formDesigner.getModel().getComponentCreator()
-                                .createComponent(item.getInstanceCookie(), null, null);
+                                .createComponent(item.getInstanceCookie(),
+                                                 null, null);
                         }
                         else {
                             formDesigner.getModel().getComponentCreator()
