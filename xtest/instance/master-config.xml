@@ -209,6 +209,13 @@ Microsystems, Inc. All Rights Reserved.
       <module name="qa" 	testtypes="serialization"   attributes="validation,full"/>
       <module name="qa"       	testtypes="qa-functional"   attributes="validation,full"/>
       <module name="vcsgeneric"	testtypes="qa-functional"   attributes="validation,full"/>      
+      <module name="xml"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/catalog"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/core"		testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/text-edit"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/tools"		testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/tax/lib"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/tree-edit"	testtypes="qa-functional"  attributes="validation,full"/>
   </config>
   
   <!-- QA functional tests for FFJ CE on jdk 1.3 -->
@@ -227,7 +234,31 @@ Microsystems, Inc. All Rights Reserved.
       <module name="qa" 	testtypes="serialization"   attributes="validation,full"/>
       <module name="qa"       	testtypes="qa-functional"   attributes="validation,full"/>
       <module name="vcsgeneric"	testtypes="qa-functional"   attributes="validation,full"/>      
+      <module name="xml"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/catalog"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/core"		testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/text-edit"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/tools"		testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/tax/lib"	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="xml/tree-edit"	testtypes="qa-functional"  attributes="validation,full"/>
   </config>
+
+  <!-- QA functional tests for FFJ EE -->
+  <config name="qa-functional-ffjee">
+      <module name="corba"   	testtypes="qa-functional"  attributes="validation,full"/>  
+      <module name="jndi"    	testtypes="qa-functional"  attributes="validation,full">
+          <property file="../../../nbextra/qa/jndi/jndi.properties"/>
+      </module>      
+  </config>      
+
+  <!-- QA functional tests for FFJ EE on jdk 1.3 -->
+  <config name="qa-functional-ffjee-jdk13">
+      <module name="corba"   	testtypes="qa-functional"  attributes="validation,full"/>  
+      <module name="jndi"    	testtypes="qa-functional"  attributes="validation,full">
+          <property file="../../../nbextra/qa/jndi/jndi.properties"/>
+      </module>      
+      <module name="rmi" 	testtypes="qa-functional"   attributes="validation,full"/>
+  </config>      
   
   <config name="david">
       <module name="jndi"    	testtypes="qa-functional"  attributes="validation">
