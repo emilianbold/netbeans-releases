@@ -20,8 +20,8 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.netbeans.ide.DataLoader;
-import com.netbeans.ide.DataLoaderPool;
+import com.netbeans.ide.loaders.DataLoader;
+import com.netbeans.ide.loaders.DataLoaderPool;
 import com.netbeans.ide.TopManager;
 import com.netbeans.ide.actions.*;
 import com.netbeans.ide.nodes.*;
@@ -522,6 +522,8 @@ public final class LoaderPoolNode extends IndexedNode {
 
 /*
 * Log
+*  3    Gandalf   1.2         1/6/99   Ian Formanek    Reflecting change in 
+*       datasystem package
 *  2    Gandalf   1.1         1/6/99   Ian Formanek    Fixed outerclass 
 *       specifiers uncompilable under JDK 1.2
 *  1    Gandalf   1.0         1/5/99   Ian Formanek    

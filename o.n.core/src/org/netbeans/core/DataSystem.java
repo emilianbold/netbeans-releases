@@ -22,9 +22,9 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import com.netbeans.ide.DataFolder;
-import com.netbeans.ide.DataFilter;
-import com.netbeans.ide.DataObject;
+import com.netbeans.ide.loaders.DataFolder;
+import com.netbeans.ide.loaders.DataFilter;
+import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.util.*;
 import com.netbeans.ide.nodes.*;
@@ -420,6 +420,8 @@ final class DataSystem extends AbstractNode {
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/6/99   Ian Formanek    Reflecting change in 
+ *       datasystem package
  *  2    Gandalf   1.1         1/6/99   Ian Formanek    Fixed outerclass 
  *       specifiers uncompilable under JDK 1.2
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    

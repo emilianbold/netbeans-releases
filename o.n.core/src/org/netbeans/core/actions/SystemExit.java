@@ -30,7 +30,7 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.border.CompoundBorder;
 
-import com.netbeans.ide.DataObject;
+import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.TopManager;
 import com.netbeans.ide.NotifyDescriptor;
 import com.netbeans.developer.impl.CoronaDialog;
@@ -72,7 +72,7 @@ public class SystemExit extends CallableSystemAction {
   }
 
   public void performAction() {
-    java.util.Set set = com.netbeans.ide.DataObject.getModifiedObjects();
+    java.util.Set set = com.netbeans.ide.loaders.DataObject.getModifiedObjects();
     if (!set.isEmpty())
       new ExitDlg(TopManager.getDefault().getWindowManager().getMainWindow()).show();
     else {
@@ -267,6 +267,8 @@ public class SystemExit extends CallableSystemAction {
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/6/99   Ian Formanek    Reflecting change in 
+ *       datasystem package
  *  2    Gandalf   1.1         1/6/99   Ian Formanek    Reflecting changes in 
  *       location of package "awt"
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    

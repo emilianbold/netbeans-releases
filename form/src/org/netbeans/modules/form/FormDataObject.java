@@ -16,9 +16,9 @@ package com.netbeans.developer.modules.loaders.form;
 import java.io.IOException;
 import java.text.MessageFormat;
 
-import com.netbeans.ide.DataFolder;
-import com.netbeans.ide.DataObject;
-import com.netbeans.ide.DataObjectExistsException;
+import com.netbeans.ide.loaders.DataFolder;
+import com.netbeans.ide.loaders.DataObject;
+import com.netbeans.ide.loaders.DataObjectExistsException;
 import com.netbeans.ide.NotifyDescriptor;
 import com.netbeans.ide.TopManager;
 import com.netbeans.ide.filesystems.FileLock;
@@ -457,6 +457,8 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/6/99   Ian Formanek    Reflecting change in 
+ *       datasystem package
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  * Beta Change History:
