@@ -121,7 +121,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_PropertyPanel_supportCheckBox"));
         jCheckBoxOperator.push();
         //new EventTool().waitNoEvent(1500);
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         // End - NonIndexProperty
         // Start - IndexProperty
         explorerOperator = new ExplorerOperator();
@@ -161,7 +161,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_supportCheckBox"));
         jCheckBoxOperator.push();
         //new EventTool().waitNoEvent(1500);
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         // End - IndexProperty
         // Start - UnicastEventSource
         explorerOperator = new ExplorerOperator();
@@ -185,7 +185,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         
         //new EventTool().waitNoEvent(1500);
         
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         // End - UnicastEventSource
         // Start - MulticastEventSourceArrayListImpl
         explorerOperator = new ExplorerOperator();
@@ -210,7 +210,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         
         //new EventTool().waitNoEvent(1500);
         
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         // End - MulticastEventSourceArrayListImpl
         // Start - MulticastEventSourceEventListenerListImpl
         explorerOperator = new ExplorerOperator();
@@ -230,11 +230,11 @@ public class BeanInfoGeneration extends JellyTestCase {
         jRadioButtonOperator.push();
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_EventSetPanel_fireCheckBox"));
         jCheckBoxOperator.push();
-        new EventTool().waitNoEvent(100);
+        new EventTool().waitNoEvent(400);
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_EventSetPanel_passEventCheckBox"));
         jCheckBoxOperator.push();
         //new EventTool().waitNoEvent(1500);
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         
     }
     
@@ -573,7 +573,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         //new EventTool().waitNoEvent(750);
         propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_expert"));
         new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_customizer")).getValue();
-        //new EventTool().waitNoEvent(750);
+        new EventTool().waitNoEvent(400);
         
         jTreeOperator.setComparator(new DefaultStringComparator(true, true));
         new Node(jTreeOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "CTL_NODE_Properties") + "|indexProperty").select();

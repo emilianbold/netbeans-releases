@@ -93,7 +93,7 @@ public class NewUnicastEventSource extends JellyTestCase {
 
         new EventTool().waitNoEvent(2000);
                                
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -125,7 +125,7 @@ public class NewUnicastEventSource extends JellyTestCase {
 
         new EventTool().waitNoEvent(2000);
                                
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -160,7 +160,7 @@ public class NewUnicastEventSource extends JellyTestCase {
         
         new EventTool().waitNoEvent(2000);
                                
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -197,7 +197,7 @@ public class NewUnicastEventSource extends JellyTestCase {
         
         new EventTool().waitNoEvent(2000);
                                
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 

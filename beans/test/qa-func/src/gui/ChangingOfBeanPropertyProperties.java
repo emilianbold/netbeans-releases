@@ -132,7 +132,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_PropertyPanel_supportCheckBox"));
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(2000);
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         
         new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "MSG_Option_Gen_Undescored"));
         new EventTool().waitNoEvent(3000);
@@ -166,7 +166,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_PropertyPanel_supportCheckBox"));
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(2000);
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         optionsOperator.close();
         
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
@@ -220,7 +220,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_PropertyPanel_returnCheckBox"));
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(2000);
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         
         new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue("_property_Value");
         new EventTool().waitNoEvent(3000);
@@ -306,10 +306,11 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_PropertyPanel_supportCheckBox"));
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(1000);
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         
         new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_Option_Prop_Style")).setValue("_property_Value");
         new EventTool().waitNoEvent(1000);
+        optionsOperator.close();
         //////////////////
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
@@ -340,8 +341,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_PropertyPanel_supportCheckBox"));
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(1000);
-        nbDialogOperator.btOK().pushNoBlock();
-        optionsOperator.close();
+        nbDialogOperator.ok();
         ////
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
@@ -476,7 +476,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_PropertyPanel_supportCheckBox"));
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(1500);
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         // End - NonIndexProperty
         // Start - IndexProperty
         explorerOperator = new ExplorerOperator();
@@ -516,7 +516,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_supportCheckBox"));
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(1500);
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         // End - IndexProperty
         // Start - UnicastEventSource
         explorerOperator = new ExplorerOperator();
@@ -540,7 +540,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         
         new EventTool().waitNoEvent(1500);
         
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         // End - UnicastEventSource
         // Start - MulticastEventSourceArrayListImpl
         explorerOperator = new ExplorerOperator();
@@ -565,7 +565,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         
         new EventTool().waitNoEvent(1500);
         
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         // End - MulticastEventSourceArrayListImpl
         // Start - MulticastEventSourceEventListenerListImpl
         explorerOperator = new ExplorerOperator();
@@ -588,7 +588,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_EventSetPanel_passEventCheckBox"));
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(1500);
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         
     }
     
@@ -652,6 +652,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         thread.start();
         
         String confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
+        new EventTool().waitNoEvent(1000);
         new NbDialogOperator(confirmTitle).yes();
         new EventTool().waitNoEvent(1500);
         String questionTitle = Bundle.getString("org.openide.Bundle", "NTF_QuestionTitle");

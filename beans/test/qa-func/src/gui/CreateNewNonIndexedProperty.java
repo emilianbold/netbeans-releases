@@ -105,7 +105,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.setSelectedItem("String");
         
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new EventTool().waitNoEvent(3000);
 
@@ -116,7 +116,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         
         jComboBoxOperator.setSelectedItem("String");
                        
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -145,7 +145,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         
         JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.typeText(TYPE_WRONG);
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new EventTool().waitNoEvent(3000);
         new NbDialogOperator("Error").ok();
@@ -155,7 +155,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         jComboBoxOperator.clearText();
         jComboBoxOperator.setSelectedItem("Double");
                        
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
         EditorWindowOperator ewo = new EditorWindowOperator();
@@ -184,7 +184,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         jComboBoxOperator.typeText("int");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
         jComboBoxOperator.setSelectedItem(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_ReadOnlyMODE"));
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new EventTool().waitNoEvent(1000);
         
@@ -198,7 +198,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         jComboBoxOperator.typeText("double");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
         jComboBoxOperator.setSelectedItem(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_WriteOnlyMODE"));
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.openide.src.nodes.Bundle", "LAB_Add")+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_PROPERTY"));
         dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewProperty");
@@ -210,7 +210,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         jComboBoxOperator.typeText("long");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
         jComboBoxOperator.setSelectedItem(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_ReadWriteMODE"));
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -242,7 +242,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         jComboBoxOperator.setSelectedItem(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_ReadWriteMODE"));
         JCheckBoxOperator jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_PropertyPanel_boundCheckBox"));
         jCheckBoxOperator.push();
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -277,7 +277,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
 
         new EventTool().waitNoEvent(2000);
 
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -312,7 +312,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
 
         new EventTool().waitNoEvent(2000);
 
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -349,7 +349,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         
         new EventTool().waitNoEvent(2000);
 
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -386,7 +386,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         
         new EventTool().waitNoEvent(2000);
 
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -429,7 +429,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         
         new EventTool().waitNoEvent(2000);
 
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
         EditorWindowOperator ewo = new EditorWindowOperator();

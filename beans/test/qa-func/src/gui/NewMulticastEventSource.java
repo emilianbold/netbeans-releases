@@ -94,7 +94,7 @@ public class NewMulticastEventSource extends JellyTestCase {
 
         new EventTool().waitNoEvent(2000);
                                
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -126,7 +126,7 @@ public class NewMulticastEventSource extends JellyTestCase {
 
         new EventTool().waitNoEvent(2000);
                                
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -157,7 +157,7 @@ public class NewMulticastEventSource extends JellyTestCase {
 
         new EventTool().waitNoEvent(3000);
                                
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -190,7 +190,7 @@ public class NewMulticastEventSource extends JellyTestCase {
 
         new EventTool().waitNoEvent(3000);
                                
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -225,7 +225,7 @@ public class NewMulticastEventSource extends JellyTestCase {
 
         new EventTool().waitNoEvent(3000);
                                
-        nbDialogOperator.btOK().pushNoBlock();
+        nbDialogOperator.ok();
 
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
