@@ -16,13 +16,16 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- location for workdir for the harness -->
     <property name="xtest.workdir" location="work"/>
+    <!-- Directory where test are unpacked before their execution. 
+         Used in prepare-tests target and MTestExecutor. -->
+    <property name="xtest.tests.dir" location="${xtest.workdir}/sys/tests"/>
     <!-- location for results from the harness -->
     <property name="xtest.results" location="results"/>
     <!-- XTest data directory. It corresponds with test/${xtest.testtype}/data 
         directory where test developer can store golden files, sample files 
         or additional resources needed for tests.
     -->
-    <property name="xtest.data" location="${xtest.workdir}/sys/tests/${xtest.testtype}/data"/>
+    <property name="xtest.data" location="${xtest.tests.dir}/${xtest.testtype}/data"/>
 
     <property name="xtest.tmpdir" location="${xtest.workdir}/tmpdir"/>
     <property name="xtest.sketchpad" location="${xtest.workdir}/user/sketch-pad"/>
@@ -141,13 +144,6 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </nbpatternset>
         
-        <!-- There will be test classpath created from folowing two properties inside   -->
-        <!-- test executor in folowing way:                                             -->
-        <!-- ${xtest.classpath.root}/${xtest.testtype}/${tbag.classpath.work}           -->
-        <!-- and then testset specific dir and then returned in property tbag.classpath -->
-        <property name="tbag.classpath.root" location="${xtest.workdir}"/>
-        <property name="tbag.classpath.work" value="sys/tests"/>
-        
        	<property file="${xtest.userdata.propertyfile}"/>       
         
         <!-- initialize plugins -->
@@ -217,7 +213,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${xtest.workdir}/user/sketch-pad"/>
         <mkdir dir="${xtest.workdir}/tmpdir"/>
         <mkdir dir="${xtest.workdir}/sys"/>
-        
+
         <property name="xtest.debug.port" value="0"/>
         <property name="xtest.debug.suspend" value="true"/>
         <property name="xtest.enable.assertions" value="true"/>
@@ -229,7 +225,7 @@ Microsystems, Inc. All Rights Reserved.
                        resultDir="${xtest.workdir}/xmlresults/suites"
                        workDir="${xtest.workdir}/sys"
                        />
-                       
+
         <ant antfile="${xtest.home}/lib/harness.xml" target="mail-results"/>
 
         <!-- print summary -->
@@ -292,7 +288,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- prepare workdir structure -->
         <mkdir dir="${xtest.workdir}/xmlresults"/>
         <mkdir dir="${xtest.workdir}/xmlresults/suites"/>
-        <mkdir dir="${xtest.workdir}/sys/tests"/>        
+        <mkdir dir="${xtest.tests.dir}"/>        
         <mkdir dir="${xtest.workdir}/user"/>
 
         <property name="test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
@@ -305,15 +301,15 @@ Microsystems, Inc. All Rights Reserved.
     </target>    
                 
     <target name="prepare-tests" depends="prepare-tests-init,test-unjared" unless="unjared">
-        <unjar dest="${xtest.workdir}/sys/tests" 
+        <unjar dest="${xtest.tests.dir}" 
                src="${xtest.build}/${xtest.file.location}/${xtest.file.name}"/>
         <!-- src is added to xtest.netbeans.systemclassloader.patches, so it must exist. -->
-        <mkdir dir="${xtest.workdir}/sys/tests/${xtest.testtype}/src"/>
+        <mkdir dir="${xtest.tests.dir}/${xtest.testtype}/src"/>
     </target>
     
     <!-- Just test whether tests are already unzipped -->
     <target name="test-unjared">
-        <available property="unjared" file="${xtest.workdir}/sys/tests/META-INF/MANIFEST.MF"/>
+        <available property="unjared" file="${xtest.tests.dir}/META-INF/MANIFEST.MF"/>
     </target>
     
     <!-- ============== -->

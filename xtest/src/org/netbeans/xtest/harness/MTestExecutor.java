@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -158,14 +158,7 @@ public class MTestExecutor extends Task {
                 for (int j=0; j<testbag.getTestsets().length; j++) {
                     // sources don't need to be on classpath (work/sys/test/${xtest.testtype}/src)
                     // but for golden files it has to be there
-                    
-                    // name of this property should be passed by atribute
-                    // and also it's not clear where it's resolved !!!!!!
-                    stb.append( ant_new.getProject().getProperty( "tbag.classpath.root" ) );
-                    // don't need it :-)
-                    
-                    stb.append( "/" );
-                    stb.append( ant_new.getProject().getProperty( "tbag.classpath.work" ) );
+                    stb.append( ant_new.getProject().getProperty("xtest.tests.dir"));
                     stb.append( "/" );
                     String testsetDir = testbag.getTestsets()[j].getDir();
                     stb.append( testsetDir );
@@ -173,11 +166,7 @@ public class MTestExecutor extends Task {
                     
                     // add compiled tests to classpath (work/sys/test/${xtest.testtype}/classes)
                     
-                    // name of this property should be passed by atribute
-                    // and also it's not clear where it's resolved !!!!!!
-                    stb.append( ant_new.getProject().getProperty( "tbag.classpath.root" ) );
-                    stb.append( "/" );
-                    stb.append( ant_new.getProject().getProperty( "tbag.classpath.work" ) );
+                    stb.append( ant_new.getProject().getProperty("xtest.tests.dir") );
                     stb.append( "/" );
                     stb.append(MTestConfigTask.getMTestConfig().getTesttype());
                     stb.append( "/" );
@@ -223,6 +212,10 @@ public class MTestExecutor extends Task {
                     timeoutprop.setValue( testbag.getTimeout().toString() );
                 }
                 
+                // Need to unpack test because we want to search for tests only
+                // in compiled distribution.
+                getProject().executeTarget("prepare-tests");
+                
                 createJUnitTestRunnerPropertyFile(testbag);
                 
                 // execute tests
@@ -243,11 +236,10 @@ public class MTestExecutor extends Task {
             Testbag.Testset testset = testbag.getTestsets()[i];
             TestScanner ts = new TestScanner();
 
-            // set in cfg-xxx.xml (e.g. <testset dir="unit/src">)
-            ts.setBasedir(project.resolveFile(testset.getDir()));
-
-            // scan for tests in compile dest dir instead of in src dir
-            ts.setBasePath(getProject().getProperty("compile.destdir"));
+            // scan for tests in ${xtest.tests.dir}/${xtest.testtype}/classes (e.g. work/sys/tests/unit/classes)
+            String testsClassesDir = getProject().getProperty("xtest.tests.dir")+File.separator+
+                    getProject().getProperty("xtest.testtype")+File.separator+"classes";
+            ts.setBasedir(testsClassesDir);
 
             /*
             for (int i=0; i<additionalPatterns.size(); i++) {

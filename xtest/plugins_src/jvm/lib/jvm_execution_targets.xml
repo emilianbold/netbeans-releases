@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project default="forbidden" name="jvm_plugin_targets">
@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement path="${xtest.home}/lib/xtest.jar"/>
                 <pathelement path="${xtest.home}/lib/xtest-junit-testrunner.jar"/>
                 <pathelement path="${xtest.plugin.home}/lib/xtest-jvm-plugin.jar"/>
-                <pathelement location="${xtest.workdir}/sys/tests"/>
+                <pathelement location="${xtest.tests.dir}"/>
                 <pathelement path="${coverage.test.path}"/>
             </path>
         </pathdef>    
