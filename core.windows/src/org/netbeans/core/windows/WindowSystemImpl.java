@@ -58,10 +58,5 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
             ErrorManager.getDefault().notify(ioe);
         }
     }
-    
-    // PENDING
-    public boolean isModalDialogPresent() {
-        return false;
-    }
-    
+   
 }

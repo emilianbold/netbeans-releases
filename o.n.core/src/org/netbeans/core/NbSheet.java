@@ -395,10 +395,7 @@ public final class NbSheet extends TopComponent {
         Listener() {}
         public void propertyChange (PropertyChangeEvent ev) {
             if (ev.getPropertyName().equals( TopComponent.Registry.PROP_ACTIVATED_NODES )) {
-                NbTopManager.WindowSystem windowSystem = (NbTopManager.WindowSystem)
-                    org.openide.util.Lookup.getDefault().lookup(NbTopManager.WindowSystem.class);
-                if(windowSystem != null && !windowSystem.isModalDialogPresent() // PENDING
-                && NbSheet.this.isShowing()) {
+                if(!NbTopManager.isModalDialogPresent() && NbSheet.this.isShowing()) {
                     // update the nodes only in case when there is no
                     // modal dialog shown and the sheet is visible
                     activate();
