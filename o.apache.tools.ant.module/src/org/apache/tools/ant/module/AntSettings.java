@@ -17,7 +17,9 @@ package org.apache.tools.ant.module;
 
 import java.util.Properties;
 
-import org.openide.execution.NbClassPath;
+import org.openide.*;
+import org.openide.compiler.*;
+import org.openide.execution.*;
 import org.openide.filesystems.FileSystemCapability;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
@@ -26,6 +28,8 @@ import org.openide.util.NbBundle;
 import org.apache.tools.ant.Project;
 
 import org.apache.tools.ant.module.api.IntrospectedInfo;
+import org.apache.tools.ant.module.loader.AntCompilerSupport;
+import org.apache.tools.ant.module.run.AntExecutor;
 
 public class AntSettings extends SystemOption {
 
@@ -33,7 +37,9 @@ public class AntSettings extends SystemOption {
     public static final String PROP_PROPERTIES = "properties"; // NOI18N
     public static final String PROP_SAVE_ALL = "saveAll"; // NOI18N
     public static final String PROP_CUSTOM_DEFS = "customDefs"; // NOI18N
-
+    public static final String PROP_COMPILER = "compiler"; // NOI18N
+    public static final String PROP_EXECUTOR = "executor"; // NOI18N
+    
     private static final String DEF_CLASS_PATH = "netbeans.class.path"; // NOI18N
     private static final String DEF_BOOTCLASS_PATH = "netbeans.bootclass.path"; // NOI18N
     private static final String DEF_LIBRARY_PATH = "netbeans.library.path"; // NOI18N
@@ -114,4 +120,49 @@ public class AntSettings extends SystemOption {
         putProperty (PROP_CUSTOM_DEFS, ii, true);
     }
 
+    // Compiler and Executor settings copied from JavaSettings
+    /** @return CompilerType */
+    public CompilerType getCompiler() {
+        CompilerType.Handle compilerType = (CompilerType.Handle) getProperty (PROP_COMPILER);
+        CompilerType type = null;
+        
+        if (compilerType != null) {
+            type = (CompilerType) compilerType.getServiceType ();
+        }
+        if (type == null) {
+            return setDefaultCompilerType ();
+	}
+        return type;
+    }
+
+    /** Sets a default Compiler for Ant Scripts. */
+    CompilerType setDefaultCompilerType() {
+        CompilerType antCompilerType = AntCompilerSupport.NoCompiler.NO_COMPILER;
+        setCompiler(antCompilerType);
+        return antCompilerType;
+    }
+    
+    /** Uses given CompilerType */
+    public void setCompiler(CompilerType ct) {
+        putProperty(PROP_COMPILER, new CompilerType.Handle(ct), true);
+    }
+
+    /** @return Executor */
+    public Executor getExecutor() {
+        ServiceType.Handle serviceType = (ServiceType.Handle) getProperty(PROP_EXECUTOR);
+        if ((serviceType == null) || (serviceType.getServiceType() == null)) {
+            Executor exec = Executor.find (AntExecutor.class);
+            if (exec == null)
+                exec = Executor.getDefault();
+            serviceType = new ServiceType.Handle(exec);
+            putProperty(PROP_EXECUTOR, serviceType, false);
+            return exec;
+        }
+        return (Executor) serviceType.getServiceType();
+    }
+
+    /** sets an executor */
+    public void setExecutor(Executor ct) {
+        putProperty(PROP_EXECUTOR, new ServiceType.Handle(ct), true);
+    }
 }
