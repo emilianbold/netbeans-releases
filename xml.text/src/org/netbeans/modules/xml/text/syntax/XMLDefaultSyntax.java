@@ -82,6 +82,17 @@ public class XMLDefaultSyntax extends Syntax {
     private static final int ISI_PI_CONTENT = 38;   //in PI content
     private static final int ISA_PI_CONTENT_QMARK = 39;  //after ? in content
     private static final int ISP_PI_CONTENT_QMARK = 40;  //spotet ? in content
+
+    // CDATA section handler
+    private static final int ISA_LTEXBR = 41;
+    private static final int ISA_LTEXBRC = 42;
+    private static final int ISA_LTEXBRCD = 43;
+    private static final int ISA_LTEXBRCDA = 44;
+    private static final int ISA_LTEXBRCDAT = 45;
+    private static final int ISA_LTEXBRCDATA = 46;
+    private static final int ISI_CDATA = 47;
+    private static final int ISA_CDATA_BR = 48;
+    private static final int ISA_CDATA_BRBR = 49;
     
     public XMLDefaultSyntax() {
         tokenContextPath = XMLDefaultTokenContext.contextPath;
@@ -124,7 +135,7 @@ public class XMLDefaultSyntax extends Syntax {
                     
                 case ISA_LT:         // PENDING other transitions - e.g '<?'
                     
-                    if( UnicodeClasses.isXMLNameStartChar( actChar ) ) {   // <'a..Z'
+                    if( UnicodeClasses.isXMLNameStartChar( actChar ) ) {
                         state = ISI_TAG;
                         break;
                     }
@@ -361,7 +372,10 @@ public class XMLDefaultSyntax extends Syntax {
                     
                     
                 case ISA_SGML_ESCAPE:       // DONE
-                    if( isAZ(actChar) ) {
+                    if (actChar == '[') {
+                        state = ISA_LTEXBR;
+                        break;
+                    } else if( isAZ(actChar) ) {
                         state = ISI_SGML_DECL;
                         break;
                     }
@@ -374,6 +388,85 @@ public class XMLDefaultSyntax extends Syntax {
                             continue;
                     }
                     break;
+                    
+                case ISA_LTEXBR:
+                    if (actChar == 'C') {
+                        state = ISA_LTEXBRC;
+                        break;
+                    } else {
+                        state = ISI_TEXT;
+                        continue;
+                    }
+
+                case ISA_LTEXBRC:
+                    if (actChar == 'D') {
+                        state = ISA_LTEXBRCD;
+                        break;
+                    } else {
+                        state = ISI_TEXT;
+                        continue;
+                    }
+
+                case ISA_LTEXBRCD:
+                    if (actChar == 'A') {
+                        state = ISA_LTEXBRCDA;
+                        break;
+                    } else {
+                        state = ISI_TEXT;
+                        continue;
+                    }
+
+                case ISA_LTEXBRCDA:
+                    if (actChar == 'T') {
+                        state = ISA_LTEXBRCDAT;
+                        break;
+                    } else {
+                        state = ISI_TEXT;
+                        continue;
+                    }
+
+                case ISA_LTEXBRCDAT:
+                    if (actChar == 'A') {
+                        state = ISA_LTEXBRCDATA;
+                        break;
+                    } else {
+                        state = ISI_TEXT;
+                        continue;
+                    }
+
+                case ISA_LTEXBRCDATA:
+                    if (actChar == '[') {
+                        state = ISI_CDATA;
+                        break;
+                    } else {
+                        state = ISI_TEXT;
+                        continue;
+                    }
+
+                case ISI_CDATA:
+                    if (actChar == ']') {
+                        state = ISA_CDATA_BR;
+                        break;
+                    }
+
+                case ISA_CDATA_BR:
+                    if (actChar == ']') {
+                        state = ISA_CDATA_BRBR;
+                        break;
+                    } else {
+                        state = ISI_CDATA;
+                        break;                        
+                    }
+
+                case ISA_CDATA_BRBR:
+                    if (actChar == '>') {
+                        state = ISI_TEXT;           //It s allowed only in content
+                        break;
+                    } else {
+                        state = ISI_CDATA;
+                        break;
+                    }
+                    
                     
                 case ISA_SGML_DASH:       // DONE
                     switch( actChar ) {
@@ -463,7 +556,7 @@ public class XMLDefaultSyntax extends Syntax {
                         if(isWS(actChar)){
                             state = ISI_ERROR;
                             continue;
-                        }else{
+                        } else {
                             state = ISI_SGML_DECL;
                             continue;
                         }
@@ -610,11 +703,26 @@ public class XMLDefaultSyntax extends Syntax {
                 case ISP_PI_CONTENT_QMARK:
                     // we are at end of the last buffer and expect that next char will be '>'
                     return XMLDefaultTokenContext.PI_END;  
+
+                case ISA_LTEXBR:
+                case ISA_LTEXBRC:
+                case ISA_LTEXBRCD:
+                case ISA_LTEXBRCDA:
+                case ISA_LTEXBRCDAT:
+                case ISA_LTEXBRCDATA:                    
+                    return XMLDefaultTokenContext.TEXT;
+                case ISI_CDATA:                    
+                case ISA_CDATA_BR:
+                case ISA_CDATA_BRBR:
+                    //!!! we could introduce here CDATA token
+                    return XMLDefaultTokenContext.TEXT;
                     
+                default:
+                    throw new IllegalStateException("Last buffer does not handle state " + state + "!");    //NOI18N
             }
         }
         
-        return null;
+        return null;  // ask for next buffer
         
     }
     
