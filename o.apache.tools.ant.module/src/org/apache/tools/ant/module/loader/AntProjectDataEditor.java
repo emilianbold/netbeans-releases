@@ -71,7 +71,7 @@ class AntProjectDataEditor extends DataEditorSupport implements OpenCookie, Edit
         }
 
         protected FileLock takeLock () throws IOException {
-            return getDataObject ().getPrimaryFile ().lock ();
+            return ((AntProjectDataObject) getDataObject ()).getPrimaryEntry ().takeLock ();
         }
 
         public void save () throws IOException {
