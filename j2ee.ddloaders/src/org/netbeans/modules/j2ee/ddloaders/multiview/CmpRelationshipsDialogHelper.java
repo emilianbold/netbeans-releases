@@ -214,11 +214,7 @@ class CmpRelationshipsDialogHelper {
 
         private String getRoleName() {
             String roleName = roleNameTextField.getText().trim();
-            if (roleName.length() == 0) {
-                return getEjbName();
-            } else {
-                return roleName;
-            }
+            return roleName.length() == 0 ? null : roleName;
         }
 
         private void setRoleName(String roleName) {
@@ -524,7 +520,7 @@ class CmpRelationshipsDialogHelper {
 
             final String roleNameA = roleA.getRoleName();
             final String roleNameB = roleB.getRoleName();
-            if (roleNameA == roleNameB || (roleNameA != null && roleNameA.equals(roleNameB))) {
+            if (roleNameA != null && roleNameA.equals(roleNameB)) {
                 errorLabel.setText(Utils.getBundleMessage("MSG_SameRoleNames"));
                 dialogDescriptor.setValid(false);
             } else {
