@@ -551,42 +551,48 @@ public class DataNode extends AbstractNode {
     /** Support for firing property change.
     * @param ev event describing the change
     */
-    void fireChange (final PropertyChangeEvent ev) {
+    void fireChange(final PropertyChangeEvent ev) {
         Mutex.EVENT.writeAccess(new Runnable() {
             public void run() {
-        
-        if (DataFolder.PROP_CHILDREN.equals (ev.getPropertyName ())) {
-            // the node is not interested in children changes
-            return;
-        }
 
-        if (DataObject.PROP_PRIMARY_FILE.equals (ev.getPropertyName ())) {
-            // the node is not interested in children changes
-            propL.updateStatusListener ();
-            setName (obj.getName (), false);
-            return;
-        }
-        
-        if (DataObject.PROP_NAME.equals(ev.getPropertyName())) {
-            DataNode.super.setName (obj.getName ());
-            updateDisplayName();
-            return;
-        }
-        if (DataObject.PROP_COOKIE.equals(ev.getPropertyName())) {
-            fireCookieChange ();
-        } else {
-            firePropertyChange (ev.getPropertyName (), ev.getOldValue (), ev.getNewValue ());
-        }
-        
-        // if the DataOjbect is not valid the node should be
-        // removed
-        if (DataObject.PROP_VALID.equals (ev.getPropertyName ())) {
-            Object newVal = ev.getNewValue();
-            if ((newVal instanceof Boolean)&&(! ((Boolean)newVal).booleanValue())) {
-                fireNodeDestroyed();
-            }
-        }
+                if (DataFolder.PROP_CHILDREN.equals(ev.getPropertyName())) {
+                    // the node is not interested in children changes
+                    return;
+                }
 
+                if (DataObject.PROP_PRIMARY_FILE.equals(ev.getPropertyName())) {
+                    // the node is not interested in children changes
+                    propL.updateStatusListener();
+                    setName(obj.getName(), false);
+                    return;
+                }
+
+                if (DataObject.PROP_NAME.equals(ev.getPropertyName())) {
+                    DataNode.super.setName(obj.getName());
+                    updateDisplayName();
+                    return;
+                }
+                if (DataObject.PROP_COOKIE.equals(ev.getPropertyName())) {
+                    fireCookieChange();
+                    //return;
+                } 
+        
+                // if the DataOjbect is not valid the node should be
+                // removed
+                if (DataObject.PROP_VALID.equals(ev.getPropertyName())) {
+                    Object newVal = ev.getNewValue();
+                    if ((newVal instanceof Boolean) && (!((Boolean) newVal).booleanValue())) {
+                        fireNodeDestroyed();
+                    }
+                    return;
+                } 
+                
+                 /*See #31413*/
+                List transmitProperties = Arrays.asList(new String[] {
+                    DataObject.PROP_NAME, DataObject.PROP_FILES, DataObject.PROP_TEMPLATE});
+                if (transmitProperties.contains(ev.getPropertyName())) {
+                    firePropertyChange(ev.getPropertyName(), ev.getOldValue(), ev.getNewValue());   
+                }                
             }
         });
     }
