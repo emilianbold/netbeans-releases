@@ -41,7 +41,12 @@
 
     <!-- templates -->
     <folder name="Templates">
+    	<attr name="Classes/JUnit" boolvalue="true"/>
+    	<attr name="JarPackager/JUnit" boolvalue="true"/>    	
+    	<attr name="JUnit/Ant" boolvalue="true"/>
+    	<attr name="JUnit/Other" boolvalue="true"/>          
         <folder name="JUnit">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
             <file name="SimpleJUnitTest.java" url="templates/SimpleJUnitTest.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
