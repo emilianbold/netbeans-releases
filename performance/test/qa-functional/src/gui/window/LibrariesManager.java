@@ -48,7 +48,7 @@ public class LibrariesManager extends testUtilities.PerformanceTestCase {
     
     public ComponentOperator open() {
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Tools|Library Manager","|");
-        return new NbDialogOperator("Libraries Manager");
+        return new NbDialogOperator("Library Manager");
     }
     
 }
