@@ -34,6 +34,10 @@ import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
+
+/**
+ * Implementation of {@link Sources} interface for J2SEProject.
+ */
 public class J2SESources implements Sources, PropertyChangeListener, ChangeListener  {
     
     private static final String BUILD_DIR_PROP = "${" + J2SEProjectProperties.BUILD_DIR + "}";    //NOI18N
@@ -45,6 +49,10 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
     private final SourceRoots testRoots;
     private SourcesHelper sourcesHelper;
     private Sources delegate;
+    /**
+     * Flag to forbid multiple invocation of {@link SourcesHelper#registerExternalRoots} 
+     **/
+    private boolean externalRootsRegistered;    
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
 
     J2SESources(AntProjectHelper helper, PropertyEvaluator evaluator,
@@ -59,7 +67,13 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
         initSources(); // have to register external build roots eagerly
     }
 
-
+    /**
+     * Returns an array of SourceGroup of given type. It delegates to {@link SourcesHelper}.
+     * This method firstly acquire the {@link ProjectManager#mutex} in read mode then it enters
+     * into the synchronized block to ensure that just one instance of the {@link SourcesHelper}
+     * is created. These instance is cleared also in the synchronized block by the
+     * {@link J2SESources#fireChange} method.
+     */
     public SourceGroup[] getSourceGroups(final String type) {
         return (SourceGroup[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
@@ -98,9 +112,13 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
         }        
         this.sourcesHelper.addNonSourceRoot (BUILD_DIR_PROP);
         this.sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
+        externalRootsRegistered = false;
         ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+            public void run() {                
+                if (!externalRootsRegistered) {
+                    sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                    externalRootsRegistered = true;
+                }
             }
         });
         return this.sourcesHelper.createSources();
