@@ -201,10 +201,9 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="openide-util.mf" tofile="openide-util-subst.mf" filtering="on"/>
         
         <!-- include nearly whole org.openide.util, plus some important stuff around -->
-  	<jar 
-        	jarfile="netbeans/lib/openide-util.jar"
-	        manifest="openide-util-subst.mf"
-        >
+  	<jar jarfile="netbeans/lib/openide-util.jar"
+	     manifest="openide-util-subst.mf"
+	     compress="false">
              <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
                   <include name="org/openide/ErrorManager*class"/>
              	  <include name="org/openide/util/io/*"/>
@@ -248,10 +247,9 @@ Microsystems, Inc. All Rights Reserved.
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="openide-fs.mf" tofile="openide-fs-subst.mf" filtering="on"/>
         
-  	<jar 
-        	jarfile="netbeans/lib/openide-fs.jar"
-                manifest="openide-fs-subst.mf"
-        >
+  	<jar jarfile="netbeans/lib/openide-fs.jar"
+	     manifest="openide-fs-subst.mf"
+	     compress="false">
              <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
                   <include name="org/openide/filesystems/*"/>
                   
