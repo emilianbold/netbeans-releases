@@ -412,7 +412,8 @@ public class FormModel
             t("ending compound edit"); // NOI18N
             compoundEdit.end();
             if (undoRedoRecording && compoundEdit.isSignificant())
-                getUndoRedoManager().addEdit(compoundEdit);
+                getUndoRedoManager().undoableEditHappened(
+                    new UndoableEditEvent(this, compoundEdit));
             CompoundEdit edit = compoundEdit;
             compoundEdit = null;
             return edit;
