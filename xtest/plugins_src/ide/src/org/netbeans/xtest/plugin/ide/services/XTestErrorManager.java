@@ -61,8 +61,8 @@ public class XTestErrorManager extends ErrorManager {
     }
 
     public void notify(int severity, Throwable t) {
-        // log only ERROR or EXCEPTION severity
-        if(severity == ERROR || severity == EXCEPTION) {
+        // log only ERROR, EXCEPTION or UNKNOWN severity
+        if(severity == ERROR || severity == EXCEPTION || severity == UNKNOWN) {
             // add the exception to exceptions queue of NbTestCase
             exceptions.add(t);
         }
