@@ -182,7 +182,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building IDE core implementation..."/>
     <ant dir="../core" target="netbeans"/>
   </target>
-  <target name="all-core/javahelp" depends="all-openide">
+  <target name="all-core/javahelp" depends="all-openide,all-openide/loaders">
     <echo message="Building module core/javahelp..."/>
     <ant dir="../core/javahelp" target="netbeans"/>
   </target>
