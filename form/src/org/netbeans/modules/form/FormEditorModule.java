@@ -59,6 +59,7 @@ public class FormEditorModule implements ModuleInstall {
   public void restored () {
     // [PENDING - ugly workaround so that borders editor works - ideally, a FormPropertyEditorManager would be used for finding border's properties editors]
     java.beans.PropertyEditorManager.registerEditor (javax.swing.border.Border.class, com.netbeans.developer.explorer.propertysheet.editors.BorderEditor.class);
+    FormPropertyEditorManager.registerEditor (javax.swing.ListModel.class, com.netbeans.developer.modules.loaders.form.editors.ListModelFormAwareEditor.class);
     BeanInstaller.autoLoadBeans ();
   }
 
@@ -338,6 +339,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  23   Gandalf   1.22        6/30/99  Ian Formanek    added registration of 
+ *       ListModelFormAwareEditor
  *  22   Gandalf   1.21        6/22/99  Ian Formanek    Added Canvas to AWT 
  *       components
  *  21   Gandalf   1.20        6/10/99  Ian Formanek    copy templates on 
