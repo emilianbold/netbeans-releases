@@ -118,46 +118,33 @@ public class CreationFactory {
     public static Object createDefaultInstance(final Class cls)
         throws Exception
     {
-        final CreationDescriptor cd = getDescriptor(cls);
-        
-        return FormLAF.executeWithLookAndFeel(
-            UIManager.getLookAndFeel().getClass().getName(),
-            new Mutex.ExceptionAction () {
-                public Object run() throws Exception {
-                    Object instance = cd != null ?
-                                          cd.createDefaultInstance() :
-                                          cls.newInstance();
+        CreationDescriptor cd = getDescriptor(cls);
+        Object instance = cd != null ?
+                              cd.createDefaultInstance() :
+                              cls.newInstance();
 
-                    initAfterCreation(instance);
-                    return instance;
-                }
-            });
+        initAfterCreation(instance);
+        return instance;
     }
 
     public static Object createInstance(final InstanceSource source)
         throws Exception
     {
-        return FormLAF.executeWithLookAndFeel(
-            UIManager.getLookAndFeel().getClass().getName(),
-            new Mutex.ExceptionAction () {
-                public Object run() throws Exception {
-                    Object instance;
+        Object instance;
 
-                    if (source.getInstanceCookie() != null)
-                        instance = source.getInstanceCookie().instanceCreate();
-                    else { // create default instance
-                        Class theClass = source.getInstanceClass();
-                        CreationDescriptor cd =
-                            CreationFactory.getDescriptor(theClass);
-                        instance = cd != null ?
-                                       cd.createDefaultInstance() :
-                                       theClass.newInstance();
-                    }
+        if (source.getInstanceCookie() != null)
+            instance = source.getInstanceCookie().instanceCreate();
+        else { // create default instance
+            Class theClass = source.getInstanceClass();
+            CreationDescriptor cd =
+                CreationFactory.getDescriptor(theClass);
+            instance = cd != null ?
+                           cd.createDefaultInstance() :
+                           theClass.newInstance();
+        }
 
-                    initAfterCreation(instance);
-                    return instance;
-                }
-        });
+        initAfterCreation(instance);
+        return instance;
     }
 
     public static Object createInstance(Class cls,
@@ -173,15 +160,9 @@ public class CreationFactory {
         if (creator == null)
             return null;
 
-        return FormLAF.executeWithLookAndFeel(
-            UIManager.getLookAndFeel().getClass().getName(),
-            new Mutex.ExceptionAction () {
-                public Object run() throws Exception {
-                    Object instance = creator.createInstance(props);
-                    initAfterCreation(instance);
-                    return instance;
-                }
-            });
+        Object instance = creator.createInstance(props);
+        initAfterCreation(instance);
+        return instance;
     }
 
     public static String getJavaCreationCode(Class cls,

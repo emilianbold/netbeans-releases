@@ -200,7 +200,6 @@ public class FormDesigner extends TopComponent
         throws Exception
     {
         return (Container) FormLAF.executeWithLookAndFeel(
-            UIManager.getLookAndFeel().getClass().getName(),
             new Mutex.ExceptionAction () {
                 public Object run() throws Exception {
                     VisualReplicator r =
@@ -776,10 +775,22 @@ public class FormDesigner extends TopComponent
 
     // Listener on FormModel - ensures updating of designer view.
     private class FormListener implements FormModelListener, Runnable {
+
         private FormModelEvent[] events;
 
-        public void formChanged(FormModelEvent[] events) {
-            this.events = events; // we expect invoking in one thread...
+        public void formChanged(final FormModelEvent[] events) {
+            if (!EventQueue.isDispatchThread())
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        processEvents(events);
+                    }
+                });
+            else
+                processEvents(events);
+        }
+
+        private void processEvents(FormModelEvent[] events) {
+            this.events = events;
 
             boolean lafBlock;
             if (events == null) {
@@ -803,31 +814,10 @@ public class FormDesigner extends TopComponent
                     return;
             }
 
-            if (lafBlock) { // Look&Feel UI defaults remapping needed
-                try {
-                    FormLAF.executeWithLookAndFeel(
-                        UIManager.getLookAndFeel().getClass().getName(),
-                        new Mutex.ExceptionAction () {
-                            public Object run() throws Exception {
-                                performUpdates();
-                                return null;
-                            }
-                        }
-                    );
-                }
-                catch (Exception ex) { // no exceptions expected
-                    ex.printStackTrace();
-                }
-            }
-            else if (!EventQueue.isDispatchThread()) {
-                try {
-                    EventQueue.invokeAndWait(this);
-                }
-                catch (Exception ex) { // ignore
-                    ex.printStackTrace();
-                }
-            }
-            else performUpdates();
+            if (lafBlock) // Look&Feel UI defaults remapping needed
+                FormLAF.executeWithLookAndFeel(this);
+            else
+                performUpdates();
         }
 
         public void run() {

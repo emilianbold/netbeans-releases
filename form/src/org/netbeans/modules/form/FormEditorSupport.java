@@ -23,8 +23,7 @@ import org.openide.nodes.*;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.*;
 import org.openide.loaders.*;
-import org.openide.util.Utilities;
-import org.openide.util.SharedClassObject;
+import org.openide.util.*;
 import org.openide.windows.*;
 
 import org.netbeans.modules.java.JavaEditor;
@@ -537,15 +536,24 @@ public class FormEditorSupport extends JavaEditor
         // load the form data (FormModel) and report errors
         synchronized(persistenceManager) {
             try {
-                persistenceManager.loadForm(formDataObject,
-                                            formModel,
-                                            persistenceErrors);
+                FormLAF.executeWithLookAndFeel(new Mutex.ExceptionAction() {
+                    public Object run() throws Exception {
+                        persistenceManager.loadForm(formDataObject,
+                                                    formModel,
+                                                    persistenceErrors);
+                        return null;
+                    }
+                });
             }
             catch (PersistenceException ex) { // some fatal error occurred
                 persistenceManager = null;
                 openForms.remove(formModel);
                 formModel = null;
                 throw ex;
+            }
+            catch (Exception ex) { // should not happen
+                ex.printStackTrace();
+                return;
             }
         }
 

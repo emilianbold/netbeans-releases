@@ -24,6 +24,7 @@ import org.openide.*;
 import org.openide.src.*;
 import org.openide.nodes.Node;
 import org.openide.cookies.InstanceCookie;
+import org.openide.util.Mutex;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
@@ -108,21 +109,12 @@ public class MetaComponentCreator {
      * @return the component if it was successfully created and added (all
      *         errors are reported immediately)
      */
-    public RADComponent copyComponent(RADComponent sourceComp,
-                                      RADComponent targetComp)
+    public RADComponent copyComponent(final RADComponent sourceComp,
+                                      final RADComponent targetComp)
     {
-        int targetPlacement = getTargetPlacement(sourceComp.getBeanClass(),
-                                                 targetComp,
-                                                 false, false);
-
-        // if layout or border is to be copied from a meta component, we just
-        // apply the cloned instance, but don't copy the meta component
-        if (targetPlacement == TARGET_LAYOUT)
-            return copyAndApplyLayout(sourceComp, targetComp);
-
-        if (targetPlacement == TARGET_BORDER)
-            return copyAndApplyBorder(sourceComp, targetComp);
-
+        final int targetPlacement = getTargetPlacement(sourceComp.getBeanClass(),
+                                                       targetComp,
+                                                       false, false);
         if (targetPlacement == NO_TARGET)
             return null;
 
@@ -130,6 +122,156 @@ public class MetaComponentCreator {
         if (targetPlacement == TARGET_MENU
                 && !(sourceComp instanceof RADMenuItemComponent))
             return null;
+
+        try { // Look&Feel UI defaults remapping needed
+            return (RADComponent) FormLAF.executeWithLookAndFeel(
+                new Mutex.ExceptionAction() {
+                    public Object run() throws Exception {
+                        return copyComponent2(sourceComp,
+                                              targetComp,
+                                              targetPlacement);
+                    }
+                }
+            );
+        }
+        catch (Exception ex) { // should not happen
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    public static boolean canAddComponent(Class beanClass,
+                                          RADComponent targetComp)
+    {
+        int targetPlacement = getTargetPlacement(beanClass, targetComp,
+                                                 false, false);
+        return targetPlacement == TARGET_OTHER
+                || targetPlacement == TARGET_MENU
+                || targetPlacement == TARGET_VISUAL;
+    }
+
+    public static boolean canApplyComponent(Class beanClass,
+                                            RADComponent targetComp)
+    {
+        int targetPlacement = getTargetPlacement(beanClass, targetComp,
+                                                 false, false);
+        return targetPlacement == TARGET_BORDER
+                || targetPlacement == TARGET_LAYOUT;
+    }
+
+    // --------
+
+    private FormDesigner getDesigner() {
+        return formModel.getFormDesigner();
+    }
+
+    private RADComponent createAndAddComponent(
+                             final CreationFactory.InstanceSource source,
+                             final RADComponent targetComp,
+                             final Object constraints)
+    {
+        Class beanClass = source.getInstanceClass();
+        if (beanClass == null)
+            return null;
+
+        // check adding form class to itself
+        if (formModel.getFormBaseClass().isAssignableFrom(beanClass)) {
+            // it might be...
+            SourceElement formSource =
+                FormEditorSupport.getFormDataObject(formModel).getSource();
+            if (formSource != null) {
+                ClassElement formClass = formSource.getClasses()[0];
+                if (formClass != null
+                    &&  formClass.getVMName().equals(beanClass.getName()))
+                {
+                    TopManager.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            FormUtils.getBundleString("MSG_ERR_CannotAddForm"), // NOI18N
+                            NotifyDescriptor.WARNING_MESSAGE));
+                    return null;
+                }
+            }
+        }
+
+        final int targetPlacement =
+            getTargetPlacement(beanClass, targetComp, true, true);
+
+        if (targetPlacement == NO_TARGET)
+            return null;
+
+        try { // Look&Feel UI defaults remapping needed
+            return (RADComponent) FormLAF.executeWithLookAndFeel(
+                new Mutex.ExceptionAction() {
+                    public Object run() throws Exception {
+                        return createAndAddComponent2(source,
+                                                      targetComp, targetPlacement,
+                                                      constraints);
+                    }
+                }
+            );
+        }
+        catch (Exception ex) { // should not happen
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    private RADComponent createAndAddComponent2(
+                             CreationFactory.InstanceSource source,
+                             RADComponent targetComp,
+                             int targetPlacement,
+                             Object constraints)
+    {
+        if (targetPlacement == TARGET_LAYOUT)
+            return setContainerLayout(source, targetComp);
+
+        if (targetPlacement == TARGET_BORDER)
+            return setComponentBorder(source, targetComp);
+
+        // turn on undo/redo recording on code structure (if allowed)
+        CodeStructure codeStructure = formModel.getCodeStructure();
+        if (formModel.isUndoRedoRecording()
+            && !codeStructure.isUndoRedoRecording())
+        {
+            codeStructure.setUndoRedoRecording(true);
+            undoEdit = new CreatorCodeUndoableEdit();
+            undoEdit.codeUndoRedoStart = codeStructure.markForUndo();
+            if (!formModel.isCompoundEditInProgress())
+                formModel.fireFormChanged(); // to start compound undo [a bit ugly...]
+            formModel.addUndoableEdit(undoEdit);
+        }
+        else undoEdit = null;
+
+        RADComponent newMetaComp = null;
+
+        if (targetPlacement == TARGET_MENU)
+            newMetaComp = addMenuComponent(source, targetComp);
+
+        else if (targetPlacement == TARGET_VISUAL)
+            newMetaComp = addVisualComponent(source, targetComp, constraints);
+
+        else if (targetPlacement == TARGET_OTHER)
+            newMetaComp = addOtherComponent(source, targetComp);
+
+        else finishCreatorCodeUndoableEdit(); // should not happen
+
+        // finish undo setup
+        undoEdit = null;
+
+        return newMetaComp;
+    }
+
+    private RADComponent copyComponent2(RADComponent sourceComp,
+                                        RADComponent targetComp,
+                                        int targetPlacement)
+    {
+        // if layout or border is to be copied from a meta component, we just
+        // apply the cloned instance, but don't copy the meta component
+        if (targetPlacement == TARGET_LAYOUT)
+            return copyAndApplyLayout(sourceComp, targetComp);
+
+        if (targetPlacement == TARGET_BORDER)
+            return copyAndApplyBorder(sourceComp, targetComp);
 
         // in other cases let's copy the source meta component
 
@@ -189,104 +331,6 @@ public class MetaComponentCreator {
             addOtherComponent(newMetaComp, targetComp);
         }
         else finishCreatorCodeUndoableEdit();
-
-        return newMetaComp;
-    }
-
-    public static boolean canAddComponent(Class beanClass,
-                                          RADComponent targetComp)
-    {
-        int targetPlacement = getTargetPlacement(beanClass, targetComp,
-                                                 false, false);
-        return targetPlacement == TARGET_OTHER
-                || targetPlacement == TARGET_MENU
-                || targetPlacement == TARGET_VISUAL;
-    }
-
-    public static boolean canApplyComponent(Class beanClass,
-                                            RADComponent targetComp)
-    {
-        int targetPlacement = getTargetPlacement(beanClass, targetComp,
-                                                 false, false);
-        return targetPlacement == TARGET_BORDER
-                || targetPlacement == TARGET_LAYOUT;
-    }
-
-    // --------
-
-    private FormDesigner getDesigner() {
-        return formModel.getFormDesigner();
-    }
-
-    private RADComponent createAndAddComponent(
-                             CreationFactory.InstanceSource source,
-                             RADComponent targetComp,
-                             Object constraints)
-    {
-        Class beanClass = source.getInstanceClass();
-        if (beanClass == null)
-            return null;
-
-        // check adding form class to itself
-        if (formModel.getFormBaseClass().isAssignableFrom(beanClass)) {
-            // it might be...
-            SourceElement formSource =
-                FormEditorSupport.getFormDataObject(formModel).getSource();
-            if (formSource != null) {
-                ClassElement formClass = formSource.getClasses()[0];
-                if (formClass != null
-                    &&  formClass.getVMName().equals(beanClass.getName()))
-                {
-                    TopManager.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                            FormUtils.getBundleString("MSG_ERR_CannotAddForm"), // NOI18N
-                            NotifyDescriptor.WARNING_MESSAGE));
-                    return null;
-                }
-            }
-        }
-
-        int targetPlacement =
-            getTargetPlacement(beanClass, targetComp, true, true);
-
-        if (targetPlacement == TARGET_LAYOUT)
-            return setContainerLayout(source, targetComp);
-
-        if (targetPlacement == TARGET_BORDER)
-            return setComponentBorder(source, targetComp);
-
-        if (targetPlacement == NO_TARGET)
-            return null;
-
-        // turn on undo/redo recording on code structure (if allowed)
-        CodeStructure codeStructure = formModel.getCodeStructure();
-        if (formModel.isUndoRedoRecording()
-            && !codeStructure.isUndoRedoRecording())
-        {
-            codeStructure.setUndoRedoRecording(true);
-            undoEdit = new CreatorCodeUndoableEdit();
-            undoEdit.codeUndoRedoStart = codeStructure.markForUndo();
-            if (!formModel.isCompoundEditInProgress())
-                formModel.fireFormChanged(); // to start compound undo [a bit ugly...]
-            formModel.addUndoableEdit(undoEdit);
-        }
-        else undoEdit = null;
-
-        RADComponent newMetaComp = null;
-
-        if (targetPlacement == TARGET_MENU)
-            newMetaComp = addMenuComponent(source, targetComp);
-
-        else if (targetPlacement == TARGET_VISUAL)
-            newMetaComp = addVisualComponent(source, targetComp, constraints);
-
-        else if (targetPlacement == TARGET_OTHER)
-            newMetaComp = addOtherComponent(source, targetComp);
-
-        else finishCreatorCodeUndoableEdit(); // should not happen
-
-        // finish undo setup
-        undoEdit = null;
 
         return newMetaComp;
     }

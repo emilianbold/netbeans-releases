@@ -23,43 +23,40 @@ import org.openide.util.*;
  * @author Tran Duc Trung
  */
 
-class FormLAF
-{
+class FormLAF {
+
+    private static LookAndFeel defaultLookAndFeel;
+    private static DefaultMetalTheme defaultMetalTheme;
     private static Map ideDefaults;
-    private static Map lafInstances = new HashMap(5);
     private static int useIdeLaf = -1;
-    private static DefaultMetalTheme defMetalTheme;
-    private static MetalTheme ideMetalTheme;
-    private static String lastLAFName;
-    
+    private static boolean lafBlockEntered;
+
     private FormLAF() {}
 
-    static Object executeWithLookAndFeel(final String lafclassname,
-                                         final Mutex.ExceptionAction act)
+    static Object executeWithLookAndFeel(final Mutex.ExceptionAction act)
         throws Exception
     {
         try {
-            return Mutex.EVENT.readAccess(
-                new Mutex.ExceptionAction () {
+            if (checkUseIdeLaf())
+                return Mutex.EVENT.readAccess(act);
+            else
+                return Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
                     public Object run() throws Exception {
                         boolean restoreAfter = true;
-                        UIDefaults defaults = UIManager.getDefaults();
-                        synchronized (defaults) {
-                            try {
-                                if (lafclassname.equals(lastLAFName))
-                                    restoreAfter = false;
-                                else {
-                                    lastLAFName = lafclassname;
-                                    useLookAndFeel(lafclassname);
-                                    restoreAfter = true;
-                                }
-                                return act.run();
+                        try {
+                            if (lafBlockEntered)
+                                restoreAfter = false;
+                            else {
+                                lafBlockEntered = true;
+                                useDefaultLookAndFeel();
+                                restoreAfter = true;
                             }
-                            finally {
-                                if (restoreAfter) {
-                                    useIDELookAndFeel();
-                                    lastLAFName = null;
-                                }
+                            return act.run();
+                        }
+                        finally {
+                            if (restoreAfter) {
+                                useIDELookAndFeel();
+                                lafBlockEntered = false;
                             }
                         }
                     }
@@ -69,7 +66,36 @@ class FormLAF
             throw ex.getException();
         }
     }
-    
+
+    static void executeWithLookAndFeel(final Runnable run) {
+        Mutex.EVENT.readAccess(new Mutex.Action() {
+            public Object run() {
+                if (checkUseIdeLaf())
+                    run.run();
+                else {
+                    boolean restoreAfter = true;
+                    try {
+                        if (lafBlockEntered)
+                            restoreAfter = false;
+                        else {
+                            lafBlockEntered = true;
+                            useDefaultLookAndFeel();
+                            restoreAfter = true;
+                        }
+                        run.run();
+                    }
+                    finally {
+                        if (restoreAfter) {
+                            useIDELookAndFeel();
+                            lafBlockEntered = false;
+                        }
+                    }
+                }
+                return null;
+            }
+        });
+    }
+
     private static boolean checkUseIdeLaf() {
         if (useIdeLaf == -1) {
             if (System.getProperty("netbeans.form.use_idelaf") != null) // NOI18N
@@ -80,6 +106,41 @@ class FormLAF
         return useIdeLaf > 0;
     }
     
+    private static void useDefaultLookAndFeel() {
+        if (defaultLookAndFeel == null) {
+            try {
+                String lafName = UIManager.getLookAndFeel().getClass().getName();
+                defaultLookAndFeel = (LookAndFeel)
+                                     Class.forName(lafName).newInstance();
+                defaultLookAndFeel.initialize();
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+                return;
+            }
+            catch (LinkageError ex) {
+                ex.printStackTrace();
+                return;
+            }
+        }
+
+        if (ideDefaults == null)
+            saveIDELookAndFeelDefaults();
+
+        if (defaultLookAndFeel instanceof MetalLookAndFeel) {
+            if (defaultMetalTheme == null)
+                defaultMetalTheme = new DefaultMetalTheme();
+            MetalLookAndFeel.setCurrentTheme(defaultMetalTheme);
+        }
+
+        copyMap(UIManager.getDefaults(), defaultLookAndFeel.getDefaults());
+    }
+
+    private static void useIDELookAndFeel() {
+        if (ideDefaults != null)
+            copyMap(UIManager.getDefaults(), ideDefaults);
+    }
+
     private static void saveIDELookAndFeelDefaults() {
         if (checkUseIdeLaf())
             return;
@@ -93,60 +154,6 @@ class FormLAF
         ideDefaults = new HashMap(defaults.size() + lafDefaults.size());
         copyMap(ideDefaults, lafDefaults);
         copyMap(ideDefaults, defaults);
-    }
-
-    private static void useLookAndFeel(String lafClassName) {
-        if (checkUseIdeLaf())
-            return;
-        
-        LookAndFeel laf = (LookAndFeel) lafInstances.get(lafClassName);
-        if (laf == null) {
-            try {
-                laf = (LookAndFeel) Class.forName(lafClassName).newInstance();
-                laf.initialize();
-                lafInstances.put(lafClassName, laf);
-            }
-            catch (Throwable ignore) {
-                return;
-            }
-        }
-        useLookAndFeel(laf);
-    }
-    
-    private static void useLookAndFeel(LookAndFeel laf) {
-        if (checkUseIdeLaf())
-            return;
-        
-        saveIDELookAndFeelDefaults();
-        UIDefaults defaults = UIManager.getDefaults();
-        synchronized (defaults) {
-//              defaults.clear();
-//              if (laf.getDefaults().get("LabelUI") != null) // NOI18N
-//                  defaults.put("LabelUI", laf.getDefaults().get("LabelUI")); // NOI18N
-            
-            if (laf instanceof MetalLookAndFeel) {
-                if (defMetalTheme == null)
-                    defMetalTheme = new DefaultMetalTheme();
-                MetalLookAndFeel.setCurrentTheme(defMetalTheme);
-            }
-
-            copyMap(defaults, laf.getDefaults());
-        }
-    }
-
-    private static void useIDELookAndFeel() {
-        if (checkUseIdeLaf())
-            return;
-        
-        if (ideDefaults != null) {
-            UIDefaults defaults = UIManager.getDefaults();
-            synchronized (defaults) {
-//                  defaults.clear();
-//                  if (ideDefaults.get("LabelUI") != null) // NOI18N
-//                      defaults.put("LabelUI", ideDefaults.get("LabelUI")); // NOI18N
-                copyMap(defaults, ideDefaults);
-            }
-        }
     }
 
     private static void copyMap(Map dest, Map src) {
