@@ -162,6 +162,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
         <attr name="SystemFileSystem.layer" stringvalue="project"/>
+        <attr name="helpID" stringvalue="org.netbeans.core.ui.MountNode"/>
 
         <file name="SystemFileSystem.instance">
             <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
