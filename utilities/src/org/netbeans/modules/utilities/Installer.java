@@ -23,6 +23,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.*;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 import org.openidex.util.Utilities2;
 
@@ -46,6 +47,7 @@ public class Installer extends ModuleInstall {
   
   /** Module installed for the first time. */
   public void installed () {
+    //System.err.println("utilities.Installer.installed");
   // -----------------------------------------------------------------------------
   // 1. copy Templates
     copyURLTemplates ();
@@ -59,10 +61,14 @@ public class Installer extends ModuleInstall {
   // 3. install Bookmarks action
     installActions ();
 
-    // OpenFile:
-    Settings.DEFAULT.setRunning (true);
-    
     searchInstaller.installed();
+    
+    // Don't ask:
+    RequestProcessor.postRequest (new Runnable () {
+      public void run () {
+        Settings.DEFAULT.isRunning ();
+      }
+    }, 60000);
   }
   
   public void uninstalled () {
@@ -84,7 +90,15 @@ public class Installer extends ModuleInstall {
   }
   
   public void restored () {
+    //System.err.println("utilities.Installer.restored");
     searchInstaller.restored();
+    
+    // Don't ask:
+    RequestProcessor.postRequest (new Runnable () {
+      public void run () {
+        Settings.DEFAULT.isRunning ();
+      }
+    }, 60000);
   }
 
 // -----------------------------------------------------------------------------
@@ -172,6 +186,8 @@ public class Installer extends ModuleInstall {
 
 /*
  * Log
+ *  9    Gandalf   1.8         1/10/00  Jesse Glick     OpenFile server now 
+ *       started differently.
  *  8    Gandalf   1.7         1/5/00   Ian Formanek    NOI18N
  *  7    Gandalf   1.6         1/5/00   Jesse Glick     Should be relative to 
  *       SaveAction, since OB is now installed after OpenFile due to module 
