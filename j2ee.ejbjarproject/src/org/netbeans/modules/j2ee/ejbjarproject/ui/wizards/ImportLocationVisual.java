@@ -80,11 +80,13 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     private List earProjects;
     private BigDecimal ejbJarXmlVersion;
     private WizardDescriptor wizardDescriptor;
+    private J2eeVersionWarningPanel warningPanel;
         
     /** Creates new form TestPanel */
     public ImportLocationVisual (ImportLocation panel) {
         this.panel = panel;
         initComponents ();
+        setJ2eeVersionWarningPanel();
         initServerInstances();
         initEnterpriseApplications();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
@@ -138,6 +140,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         j2eeSpecComboBox = new javax.swing.JComboBox();
         addToAppLabel = new javax.swing.JLabel();
         addToAppComboBox = new javax.swing.JComboBox();
+        warningPlaceHolderPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -265,14 +268,15 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
 
         jCheckBox1.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_SetAsMainProject_CheckBox"));
+        jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 0);
         jPanel1.add(jCheckBox1, gridBagConstraints);
         jCheckBox1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("ACS_LBL_IW_SetAsMainProject_A11YDesc"));
 
@@ -311,7 +315,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         jPanel1.add(jLabel7, gridBagConstraints);
 
         j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
@@ -328,7 +332,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 11);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         jPanel1.add(j2eeSpecComboBox, gridBagConstraints);
         j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("ACS_LBL_IW_SelectJ2EEVersion_A11YDesc"));
 
@@ -357,6 +361,16 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         jPanel1.add(addToAppComboBox, gridBagConstraints);
+
+        warningPlaceHolderPanel.setLayout(new java.awt.BorderLayout());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(warningPlaceHolderPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -462,6 +476,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     public javax.swing.JTextField projectName;
     private javax.swing.JComboBox serverInstanceComboBox;
     private javax.swing.JLabel serverInstanceLabel;
+    private javax.swing.JPanel warningPlaceHolderPanel;
     // End of variables declaration//GEN-END:variables
     
     private static JFileChooser createChooser() {
@@ -658,6 +673,11 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         d.putProperty(WizardProperties.SERVER_INSTANCE_ID, getSelectedServerInstanceID());
         d.putProperty(WizardProperties.J2EE_LEVEL, getSelectedJ2eeSpec());
         d.putProperty(WizardProperties.EAR_APPLICATION, getSelectedEarApplication());
+        if (warningPanel != null && warningPanel.getDowngradeAllowed()) {
+            d.putProperty(WizardProperties.JAVA_PLATFORM, warningPanel.getJava14PlatformName());
+            d.putProperty(WizardProperties.SOURCE_LEVEL, "1.4"); // NOI18N
+        }
+        
         // TODO: ma154696: add also search for test roots
     }
     
@@ -925,4 +945,12 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         }
     }
     
+    private void setJ2eeVersionWarningPanel() {
+        String warningType = J2eeVersionWarningPanel.findWarningType();
+        if (warningType == null)
+            return;
+        
+        warningPanel = new J2eeVersionWarningPanel(warningType);
+        warningPlaceHolderPanel.add(warningPanel, java.awt.BorderLayout.CENTER);
+    }
 }

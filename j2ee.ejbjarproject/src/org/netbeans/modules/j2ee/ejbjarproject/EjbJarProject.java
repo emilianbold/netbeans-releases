@@ -226,6 +226,10 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     ReferenceHelper getReferenceHelper () {
         return this.refHelper;
     }
+    
+    public UpdateHelper getUpdateHelper() {
+        return updateHelper;
+    }
 
     public Lookup getLookup() {
         return lookup;

@@ -35,6 +35,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 
 /**
@@ -77,7 +78,7 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
         String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         
-        EjbJarProjectGenerator.importProject(dirF, name, sourceFolders, testFolders, configFilesFolder, libName, j2eeLevel, serverInstanceID);
+        AntProjectHelper h = EjbJarProjectGenerator.importProject(dirF, name, sourceFolders, testFolders, configFilesFolder, libName, j2eeLevel, serverInstanceID);
         FileObject dir = FileUtil.toFileObject (dirF);
 
         Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
@@ -94,6 +95,13 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
         dirF = (dirF != null) ? dirF.getParentFile() : null;
         if (dirF != null && dirF.exists()) {
             ProjectChooser.setProjectsFolder (dirF);    
+        }
+        
+        // downgrade the Java platform or src level to 1.4        
+        String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
+        String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);
+        if (platformName != null || sourceLevel != null) {
+            EjbJarProjectGenerator.setPlatform(h, platformName, sourceLevel);
         }
                         
         return resultSet;

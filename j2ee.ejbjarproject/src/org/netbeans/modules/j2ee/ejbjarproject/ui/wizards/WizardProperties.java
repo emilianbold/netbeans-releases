@@ -27,4 +27,7 @@ public class WizardProperties {
     public static final String JAVA_ROOT = "javaRoot"; //NOI18N
     public static final String TEST_ROOT = "testRoot"; //NOI18N
     public static final String LIB_FOLDER = "libFolder"; //NOI18N
+    
+    public static final String JAVA_PLATFORM = "setJavaPlatform"; // NOI18N
+    public static final String SOURCE_LEVEL = "setSourceLevel"; // NOI18N
 }
