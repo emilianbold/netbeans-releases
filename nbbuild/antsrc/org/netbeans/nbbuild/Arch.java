@@ -175,11 +175,24 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         
         // apply the transform operation
         try {
-            javax.xml.transform.Transformer t = javax.xml.transform.TransformerFactory.newInstance().newTransformer(
-                new javax.xml.transform.stream.StreamSource (
+            javax.xml.transform.stream.StreamSource ss;
+            String file = getProject().getProperty ("arch.xsl");
+            if (file != null) {
+                log ("Using " + file + " as the XSL stylesheet");
+                try {
+                    ss = new javax.xml.transform.stream.StreamSource (
+                        new java.io.FileInputStream (file)
+                    );
+                } catch (java.io.IOException ex) {
+                    throw new BuildException (ex);
+                }
+            } else {
+                ss = new javax.xml.transform.stream.StreamSource (
                     getClass ().getResourceAsStream ("Arch.xsl")
-                )
-            );
+                );
+            }
+            
+            javax.xml.transform.Transformer t = javax.xml.transform.TransformerFactory.newInstance().newTransformer(ss);
             javax.xml.transform.Source s = new javax.xml.transform.dom.DOMSource (q);
             javax.xml.transform.Result r = new javax.xml.transform.stream.StreamResult (output);
 
