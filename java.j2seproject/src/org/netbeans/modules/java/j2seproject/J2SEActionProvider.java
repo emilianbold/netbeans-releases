@@ -426,7 +426,6 @@ class J2SEActionProvider implements ActionProvider {
 
     private boolean isSetMainClass (FileObject[] sourcesRoots, String mainClass) {
 
-
         // support for unit testing
         if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
             return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
@@ -435,13 +434,20 @@ class J2SEActionProvider implements ActionProvider {
         if (mainClass == null || mainClass.length () == 0) {
             return false;
         }
+        
+        // bugfix #51255, ClassPath.EXECUTE doesn't contain classes which 
+        // will be created later during invoke 'run' target
+        // first check sources
+        if (J2SEProjectUtil.isMainClass (mainClass, sourcesRoots)) {
+            return true;
+        }
 
         // check also EXECUTE classpath
         
         // find mainclass FileObject
         ClassPath classPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.EXECUTE);  //Single compilation unit
-        mainClass = mainClass.replace ('.','/');// NOI18N
-        FileObject mainFO = classPath.findResource (mainClass + ".class"); // XXX // NOI18N
+        mainClass = mainClass.replace ('.','/') + ".class"; // XXX // NOI18N
+        FileObject mainFO = classPath.findResource (mainClass); // NOI18N
 
         return canBeRun (mainFO);
     }
