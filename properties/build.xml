@@ -18,6 +18,8 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
 
   <target name="compile">
+    <!-- See core/build.xml for explanation. -->
+    <property name="build.compiler" value="classic"/>
     <javac srcdir="src" destdir="src">
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>

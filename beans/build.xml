@@ -15,13 +15,9 @@ Microsystems, Inc. All Rights Reserved.
 <project name="beans" default="netbeans" basedir=".">
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
   <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
-  <!-- See core/build.xml for explanation. -->
   <target name="compile">
-    <ant dir="../beans" target="compile-with-classic-Javac">
-      <property name="build.compiler" value="classic"/>
-    </ant>
-  </target>
-  <target name="compile-with-classic-Javac">
+    <!-- See core/build.xml for explanation. -->
+    <property name="build.compiler" value="classic"/>
     <javac srcdir="src" destdir="src">
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>

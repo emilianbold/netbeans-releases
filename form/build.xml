@@ -21,13 +21,9 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
   <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
 
-  <!-- See core/build.xml for explanation. -->
   <target name="compile">
-    <ant dir="../form" target="compile-with-classic-Javac">
-      <property name="build.compiler" value="classic"/>
-    </ant>
-  </target>
-  <target name="compile-with-classic-Javac">
+    <!-- See core/build.xml for explanation. -->
+    <property name="build.compiler" value="classic"/>
     <javac srcdir="src" destdir="src">
       <classpath>
         <!-- XXX illegally uses org.netbeans.beaninfo classes: -->
