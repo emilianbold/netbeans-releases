@@ -51,7 +51,7 @@ public class TableNode extends DatabaseNode
 	{
 		super.createPasteTypes(t, s);
 		DatabaseNodeInfo nfo;
-		Node n = NodeTransfer.node(t, true);
+		Node n = NodeTransfer.node(t, NodeTransfer.MOVE);
 		if (n != null && n.canDestroy ()) {
 /*			
 			nfo = (TableNodeInfo)n.getCookie(TableNodeInfo.class);
@@ -76,7 +76,7 @@ public class TableNode extends DatabaseNode
 				return;
 			}
 */	
-			nfo = (DatabaseNodeInfo)NodeTransfer.copyCookie(t, ColumnNodeInfo.class);
+			nfo = (DatabaseNodeInfo)NodeTransfer.cookie(t, NodeTransfer.COPY, ColumnNodeInfo.class);
 			if (nfo != null) {
 				s.add(new ColumnPasteType((ColumnNodeInfo)nfo, null));
 				return;

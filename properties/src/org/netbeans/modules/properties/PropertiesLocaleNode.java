@@ -169,7 +169,7 @@ public class PropertiesLocaleNode extends FileEntryNode {
   protected void createPasteTypes(Transferable t, List s) {
     super.createPasteTypes(t, s);
     Element.ItemElem item;
-    Node n = NodeTransfer.node(t, true);
+    Node n = NodeTransfer.node(t, NodeTransfer.MOVE);
     // cut
     if (n != null && n.canDestroy ()) {
       item = (Element.ItemElem)n.getCookie(Element.ItemElem.class);
@@ -185,7 +185,7 @@ public class PropertiesLocaleNode extends FileEntryNode {
     } 
     // copy
     else {
-      item = (Element.ItemElem)NodeTransfer.copyCookie(t, Element.ItemElem.class);
+      item = (Element.ItemElem)NodeTransfer.cookie(t, NodeTransfer.COPY, Element.ItemElem.class);
       if (item != null) {
         s.add(new KeyPasteType(item, null, KeyPasteType.MODE_PASTE_WITH_VALUE));
         s.add(new KeyPasteType(item, null, KeyPasteType.MODE_PASTE_WITHOUT_VALUE));
@@ -254,6 +254,8 @@ public class PropertiesLocaleNode extends FileEntryNode {
 
 /*
  * <<Log>>
+ *  8    Gandalf   1.7         6/30/99  Ian Formanek    NodeTransfer related 
+ *       changes to make it compilable
  *  7    Gandalf   1.6         6/24/99  Petr Jiricka    
  *  6    Gandalf   1.5         6/16/99  Petr Jiricka    
  *  5    Gandalf   1.4         6/10/99  Petr Jiricka    

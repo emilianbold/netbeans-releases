@@ -51,7 +51,7 @@ public class IndexNode extends DatabaseNode
 	protected void createPasteTypes(Transferable t, List s) 
 	{
 		super.createPasteTypes(t, s);
-		Node node = NodeTransfer.node(t, true);
+		Node node = NodeTransfer.node(t, NodeTransfer.MOVE);
 		if (node != null) {
 			ColumnNodeInfo nfo = (ColumnNodeInfo)node.getCookie(ColumnNodeInfo.class);
 			if (nfo != null) s.add(new IndexPasteType((ColumnNodeInfo)nfo, null));

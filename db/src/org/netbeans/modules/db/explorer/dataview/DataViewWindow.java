@@ -357,9 +357,9 @@ public class DataViewWindow extends TopComponent
     
     	private ColumnNodeInfo getNodeInfo(Transferable t)
     	{
-			Node n = NodeTransfer.node(t, true);
+			Node n = NodeTransfer.node(t, NodeTransfer.MOVE);
 			if (n != null) return (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
-			n = NodeTransfer.node(t, false);
+			n = NodeTransfer.node(t, NodeTransfer.COPY);
 			if (n != null) return (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
 			return null;
 		}
