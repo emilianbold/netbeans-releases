@@ -33,4 +33,9 @@ public class LibrariesCustomizerAction extends CallableSystemAction {
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
+    
+    protected boolean asynchronous () {
+        return false;
+    }
+    
 }
