@@ -12,57 +12,167 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="xtest" default="netbeans" basedir=".">
+<project name="xtest_master" default="netbeans" basedir=".">
 
-  <target name="compile">
-    <javac srcdir="src" destdir="src">
-      <classpath>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-	<pathelement location="../core/netbeans/lib/core.jar"/>
-      </classpath>
-    </javac>
-  </target>
+    <!-- Properties -->
+    <property name="buildnumber" value="000"/>
+    <!-- Must be absolute path -->
+    <property name="netbeans.home" value="${basedir}/../nbbuild/netbeans"/>
+    <property name="netbeans.test.home" value="${netbeans.home}"/>
 
-  <target name="jars" depends="compile">
-    <mkdir dir="lib"/>
-    <mkdir dir="lib/patches"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <property name="xtest.mode" value="ide"/>
+    <property name="xtest.file" value="test.jar"/>
+    <property name="xtest.results" value="results"/>
 
-    <jar jarfile="lib/xtest.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
-            excludesfile="../nbbuild/standard-jar-excludes.txt"
-            compress="false"
-            includes="org/netbeans/xtest/**"/>
+    <property name="xtest.config" value="default"/>
+    <property name="xtest.uploaddir" value="results"/>
+    <property name="xtest.distdir" value="dist"/>
+    <property name="xtest.basedir" value="${xtest.distdir}"/>
 
-    <jar jarfile="lib/patches/testmain.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
-            compress="false"
-            includes="org/netbeans/Main*.class"/>
+    <property name="build.compiler.deprecation" value="off"/>
+    <property name="build.compiler.debug" value="off"/>
 
-    <jar jarfile="lib/patches/junit-file-diff.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
-            excludesfile="../nbbuild/standard-jar-excludes.txt"
-            compress="false"
-            includes="junit/**"/>
-  </target>
+    <!-- build up the xtest framework -->
+    <target name="bootstrap">
+        <echo message="Bootstrapping XTest-specific Ant extensions..."/>
+        <ant antfile="xtest.xml" target="netbeans"/>
+    </target>
 
-  <target name="netbeans" depends="jars"/>
+    <target name="init" depends="bootstrap">
+        <taskdef name="nbtestconfig" classname="org.netbeans.xtest.NbTestConfig" classpath="lib/xtest.jar"/>
+        <taskdef name="nbtestconfig-print" classname="org.netbeans.xtest.NbTestConfigPrint" classpath="lib/xtest.jar"/>
+        <taskdef name="xtest" classname="org.netbeans.xtest.NbExecutor" classpath="lib/xtest.jar"/>
 
-  <target name="clean">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-    </delete>
-    <delete file="manifest-subst.mf"/>
-    <delete dir="lib"/>
-  </target>
+        <nbtestconfig   config="${xtest.config}" 
+                        modulesproperty="xtest.modules" 
+                        testsproperty="xtest.testypes" 
+                        prefix="xtest.">
+            <config name="default" modules="core,openide" testtypes="unit"/>
+        </nbtestconfig>
+    </target>
 
+    <!-- build test helper -->
+    <target name="build-test">
+        <echo message="Building ${xtest.testtype} test of ${xtest.module}..."/>
+        <ant dir="../${xtest.module}/test/${xtest.testtype}" target="jars">
+            <property name="buildnumber" value="${buildnumber}"/>
+            <property name="netbeans.home" value="${netbeans.home}"/>
+            <property name="netbeans.test.home" value="${netbeans.test.home}"/>
+            <property name="xtest.file" value="${xtest.file}"/>
+            <property name="build.compiler.deprecation" value="${build.compiler.deprecation}"/>
+            <property name="build.compiler.debug" value="${build.compiler.debug}"/>
+        </ant>
+
+        <mkdir dir="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}/lib"/>
+        <copy   file="../${xtest.module}/test/${xtest.testtype}/lib/${xtest.file}" 
+                toDir="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}/lib"/>
+        <copy   file="../${xtest.module}/test/${xtest.testtype}/build.xml" 
+                toDir="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}"/>
+    </target>
+
+    <!-- run test helper -->
+    <target name="run-test">
+        <echo message="Running ${xtest.testtype} test of ${xtest.module}..."/>
+        <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="test">
+            <property name="netbeans.home" value="${netbeans.home}"/>
+            <property name="netbeans.test.home" value="${netbeans.test.home}"/>
+            <property name="xtest.mode" value="${xtest.mode}"/>
+            <property name="xtest.home" value="${basedir}"/>
+            <property name="xtest.file" value="${xtest.file}"/>
+            <property name="xtest.results" value="${xtest.results}"/>
+        </ant>
+
+        <mkdir dir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}"/>
+        <copy toDir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}">
+            <fileset dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}/${xtest.results}"/>
+        </copy>
+    </target>
+
+    <!-- clean test results helper -->
+    <target name="clean-test-results">
+        <echo message="Cleaning results of ${xtest.module} ${xtest.testtype} test..."/>
+        <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="clean_results"/>
+    </target>
+
+    <!-- clean test build helper -->
+    <target name="clean-test-build">
+        <echo message="Cleaning build of ${xtest.module} ${xtest.testtype} test..."/>
+        <ant dir="../${xtest.module}/test/${xtest.testtype}" target="clean_build"/>
+    </target>
+
+    <!-- main executor -->
+    <target name="executor">
+        <xtest  targetname="${target.name}"
+                modules="${xtest.modules}" 
+                prefix="xtest."
+                keyparam="xtest.module"
+                valueparam="xtest.testtype">
+        </xtest>
+    </target>
+
+    <target name="jars" depends="init">
+        <antcall target="executor">
+            <param name="target.name" value="build-test"/>
+        </antcall>
+        <zip zipfile="Test-${buildnumber}.zip" basedir="${xtest.distdir}"/>
+    </target>
+
+    <target name="test" depends="init, clean-results, clean-uploaded-results">
+        <antcall target="executor">
+            <param name="target.name" value="run-test"/>
+        </antcall>
+
+        <!-- make summary, mail reports -->
+    </target>
+
+    <target name="netbeans" depends="jars,test"/>
+
+    <!-- Cleaning targets -->
+    <target name="localclean">
+        <echo message="Cleaning tests distribution..."/>
+        <delete dir="${xtest.distdir}"/>
+    </target>
+
+    <target name="real-clean" depends="clean"
+            description="Clean up built tests, distribution and XTest framework">
+        <!-- Add clean up code here (if neccessary) -->
+        <echo message="Cleaning old tests..."/>
+        <delete>
+            <fileset dir=".">
+                <include name="Test-*.zip"/>
+            </fileset>
+        </delete>
+
+        <!-- This step must be last: -->
+        <echo message="Cleaning XTest framework..."/>
+        <ant antfile="xtest.xml" target="clean"/>
+    </target>
+
+    <target name="clean-uploaded-results">
+        <echo message="Cleaning uploaded old test results..."/>
+        <delete dir="${xtest.uploaddir}"/>
+    </target>
+
+    <target name="clean-results" depends="init">
+        <echo message="Cleaning old test results..."/>
+        <antcall target="executor">
+            <param name="target.name" value="clean-test-results"/>
+        </antcall>
+    </target>
+
+    <target name="clean-build" depends="init">
+        <echo message="Cleaning built tests..."/>
+        <antcall target="executor">
+            <param name="target.name" value="clean-test-build"/>
+        </antcall>
+    </target>
+
+    <target name="clean" depends="clean-build, clean-results, localclean" 
+            description="Clean up built tests, test results and distribution"/>
+
+    <target name="print-test-config" depends="init">
+        <nbtestconfig-print modulesproperty="xtest.modules" 
+                            testsproperty="xtest.testypes" 
+                            prefix="xtest."/>
+    </target>
 </project>
