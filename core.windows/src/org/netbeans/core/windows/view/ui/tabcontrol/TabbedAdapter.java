@@ -164,10 +164,11 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
         for(int i = 0; i < tcs.length; i++) {
             TopComponent tc = tcs[i];
             Image icon = tc.getIcon();
+            String displayName = WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
             data[i] = new TabData(
                 tc,
                 icon == null ? null : new ImageIcon(icon),
-                WindowManagerImpl.getInstance().getTopComponentDisplayName(tc),
+                displayName == null ? "" : displayName, // NOI18N
                 tc.getToolTipText());
             if (selected == tcs[i]) {
                 toSelect = i;

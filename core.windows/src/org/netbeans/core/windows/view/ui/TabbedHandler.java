@@ -132,6 +132,9 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
         try {
             ignoreChange = true;
             String title = WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
+            if(title == null) {
+                title = ""; // NOI18N
+            }
             tabbed.addTopComponent(
                 title + CloseButtonTabbedPane.TAB_NAME_TRAILING_SPACE,
                 icon == null ? null : new ImageIcon(icon),
@@ -158,6 +161,9 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
         try {
             ignoreChange = true;
             String title = WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
+            if(title == null) {
+                title = ""; // NOI18N
+            }
             tabbed.insertTopComponent(
                 title + CloseButtonTabbedPane.TAB_NAME_TRAILING_SPACE,
                 icon == null ? null : new ImageIcon(icon),
@@ -214,6 +220,9 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
         }
         
         String title = WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
+        if(title == null) {
+            title = ""; // NOI18N
+        }
         tabbed.setTitleAt(index, title + CloseButtonTabbedPane.TAB_NAME_TRAILING_SPACE);
     }
     
