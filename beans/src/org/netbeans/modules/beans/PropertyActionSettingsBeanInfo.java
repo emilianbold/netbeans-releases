@@ -30,7 +30,7 @@ public class PropertyActionSettingsBeanInfo extends SimpleBeanInfo {
         BeanDescriptor descr = new BeanDescriptor(org.netbeans.modules.beans.PropertyActionSettings.class);
         descr.setDisplayName(NbBundle.getBundle(PropertyActionSettingsBeanInfo.class).getString("PROP_Option_Menu"));
         descr.setValue ("version", "1.1"); // NOI18N            
-        descr.setValue("global", Boolean.FALSE); // now it is global                     
+        descr.setValue("global", Boolean.FALSE); // NOI18N
         return descr;
     }
 
