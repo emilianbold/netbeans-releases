@@ -125,6 +125,7 @@ public class Install extends ModuleInstall {
     */
     private static void startFolder(DataFolder f) {
         DataObject[] obj = f.getChildren();
+        if (obj.length == 0) return;
         ExecuteAction.execute(obj, true);
     }
 
