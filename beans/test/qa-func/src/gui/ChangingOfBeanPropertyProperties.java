@@ -241,12 +241,9 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         patternsNode.select();
 
         propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
+        answerYes();
         new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_name")).setValue("requiredName");
-
-        String questionTitle = Bundle.getString("org.openide.Bundle", "NTF_QuestionTitle");
-        nbDialogOperator =new NbDialogOperator(questionTitle);
         new EventTool().waitNoEvent(1500);
-        nbDialogOperator.yes();
         
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
@@ -256,6 +253,21 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         compareReferenceFiles();
         
     }
+    
+    private void answerYes() {
+        new Thread() {
+            public void run () {
+               String questionTitle = Bundle.getString("org.openide.Bundle", "NTF_QuestionTitle");
+               NbDialogOperator nbDialogOperator =new NbDialogOperator(questionTitle);
+               nbDialogOperator.yes();
+            }
+        }.start();
+    }
+
+               
+
+                
+            
     
     /** - Create an empty class
      *  - Set Tools|Options|Editing|Beans Property|Style of Declared Variable = this.property_Value
@@ -350,26 +362,20 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"firstName");
         patternsNode.select();
         new EventTool().waitNoEvent(1000);
+        answerYes();
         propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
         //new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_ReadOnlyMODE"));
         new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).setValue(1);
         new EventTool().waitNoEvent(1000);
-        String questionTitle = Bundle.getString("org.openide.Bundle", "NTF_QuestionTitle");
-        nbDialogOperator =new NbDialogOperator(questionTitle);
-        new EventTool().waitNoEvent(1000);
-        nbDialogOperator.yes();
         
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"secondName");
         patternsNode.select();
         new EventTool().waitNoEvent(1000);
+        answerYes();
         propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
         //new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_WriteOnlyMODE"));
         new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).setValue(2);
         new EventTool().waitNoEvent(1000);
-        questionTitle = Bundle.getString("org.openide.Bundle", "NTF_QuestionTitle");
-        nbDialogOperator =new NbDialogOperator(questionTitle);
-        new EventTool().waitNoEvent(1000);
-        nbDialogOperator.yes();
         
         new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
         
