@@ -140,55 +140,37 @@ public final class Models {
             Object model = it.next ();
             boolean first = model.getClass ().getName ().endsWith ("First");
             if (model instanceof TreeModel)
-                if (first)
-                    treeModels.addLast (model);
-                else
-                    treeModels.addFirst (model);
+                treeModels.addLast (model);
             if (model instanceof TreeModelFilter)
                 if (first)
                     treeModelFilters.addLast (model);
                 else
                     treeModelFilters.addFirst (model);
             if (model instanceof TreeExpansionModel)
-                if (first)
-                    treeExpansionModels.addLast (model);
-                else
-                    treeExpansionModels.addFirst (model);
+                treeExpansionModels.addLast (model);
             if (model instanceof NodeModel)
-                if (first)
-                    nodeModels.addLast (model);
-                else
-                    nodeModels.addFirst (model);
+                nodeModels.addLast (model);
             if (model instanceof NodeModelFilter)
                 if (first)
                     nodeModelFilters.addLast (model);
                 else
                     nodeModelFilters.addFirst (model);
             if (model instanceof TableModel)
-                if (first)
-                    tableModels.addLast (model);
-                else
-                    tableModels.addFirst (model);
+                tableModels.addLast (model);
             if (model instanceof TableModelFilter)
                 if (first)
                     tableModelFilters.addLast (model);
                 else
                     tableModelFilters.addFirst (model);
             if (model instanceof NodeActionsProvider)
-                if (first)
-                    nodeActionsProviders.addLast (model);
-                else
-                    nodeActionsProviders.addFirst (model);
+                nodeActionsProviders.addLast (model);
             if (model instanceof NodeActionsProviderFilter)
                 if (first)
                     nodeActionsProviderFilters.addLast (model);
                 else
                     nodeActionsProviderFilters.addFirst (model);
             if (model instanceof ColumnModel)
-                if (first)
-                    columnModels.addLast (model);
-                else
-                    columnModels.addFirst (model);
+                columnModels.addLast (model);
         }
         
         if (treeModels.isEmpty ()) treeModels.add (new EmptyTreeModel ());
