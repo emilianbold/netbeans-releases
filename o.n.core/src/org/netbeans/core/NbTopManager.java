@@ -188,8 +188,15 @@ public class NbTopManager extends TopManager {
   /** Prints the stack.
   */
   public void notifyException (Throwable t) {
-    t.printStackTrace();
-    super.notifyException (t);
+    if (t instanceof NotImplementedException) {
+      NotifyDescriptor nd = new NotifyDescriptor.Message("This feature is not yet implemented.");
+      nd.setTitle("Information");
+      notify(nd);
+    }
+    else {
+      t.printStackTrace();
+      super.notifyException (t);
+    }
   }
 
   /** Notifies user by a dialog.
