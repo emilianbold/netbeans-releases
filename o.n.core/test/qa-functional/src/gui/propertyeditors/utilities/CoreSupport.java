@@ -102,7 +102,7 @@ public class CoreSupport {
     public static void makeIDEScreenshot(NbTestCase testCase) {
         try{
             testCase.getWorkDir();
-            com.sun.jemmy.util.PNGEncoder.captureScreen(testCase.getWorkDirPath()+System.getProperty("file.separator")+"IDEscreenshot.png");
+            org.netbeans.jemmy.util.PNGEncoder.captureScreen(testCase.getWorkDirPath()+System.getProperty("file.separator")+"IDEscreenshot.png");
         }catch(Exception ioexc){
             testCase.log("Impossible make IDE screenshot!!! \n" + ioexc.toString());
         }
@@ -112,7 +112,7 @@ public class CoreSupport {
         try{
             testCase.getWorkDir();
             if(component != null)
-                com.sun.jemmy.util.PNGEncoder.captureScreen(component,testCase.getWorkDirPath()+System.getProperty("file.separator")+"ComponentScreenshot.png");
+                org.netbeans.jemmy.util.PNGEncoder.captureScreen(component,testCase.getWorkDirPath()+System.getProperty("file.separator")+"ComponentScreenshot.png");
             else
                 makeIDEScreenshot(testCase);
         }catch(Exception ioexc){
