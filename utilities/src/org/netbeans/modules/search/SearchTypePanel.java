@@ -283,8 +283,11 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         return customizerComponent;
     }
 
-    /** Sets customized property.
-     * @param cust value to which customized property to set. */
+    /**
+     * Sets customized property.
+     *
+     * @param cust value to which customized property to set.
+     */
     private void setCustomized(boolean cust) {
         customized = cust;
 
@@ -315,7 +318,9 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         JTextField textField;
         if (lastSavedName != null) {
             textField = new JTextField(lastSavedName, 20);
-        } else textField = new JTextField(20);
+        } else {
+            textField = new JTextField(20);
+        }
         textField.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_TEXT_LABEL_SELECT")); // NOI18N
         
         nameLab.setLabelFor(textField);
@@ -325,7 +330,7 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         DialogDescriptor desc = new DialogDescriptor(pane, NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_LABEL_SAVE_CRITERION")); // NOI18N        
         Dialog dialog = TopManager.getDefault().createDialog(desc);
         
-        while(true) {
+        while (true) {
             dialog.show();
             Object retVal = desc.getValue();
             
@@ -341,8 +346,11 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         }
     }
     
-    /** Saves the search type.
-     * @return true if new value was created */
+    /**
+     * Saves the search type.
+     *
+     * @return true if new value was created
+     */
     private boolean saveSearchType(String name) throws IllegalArgumentException {
         boolean savedNew;
 
@@ -360,7 +368,9 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         return savedNew;
     }
     
-    /** Restores the criterion. */
+    /**
+     * Restores the criterion.
+     */
     private void restoreCriterion() {
         JPanel pane = new JPanel();
         pane.setLayout(new BorderLayout(12,0));
@@ -423,7 +433,9 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         return searchType;
     }
     
-    /** Class equality
+    /**
+     * Class equality
+     *
      * @return this.bean.getClass().equals(bean.getClass());
      */
     public boolean equals(Object obj) {
@@ -466,7 +478,9 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
 
     /**
      * Remove specified search type from service registry.
-     * @param obj service template - used name and class  */
+     *
+     * @param obj service template - used name and class
+     */
     private static void removeFromRegistry(SearchType obj) {
         ServiceType.Registry registry = TopManager.getDefault().getServices();
         List result = registry.getServiceTypes();

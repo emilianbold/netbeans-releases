@@ -23,9 +23,9 @@ import org.openide.TopManager;
 
 
 /**
- * Search type is sevice which provides serch functionality on set of nodes. 
+ * Search type is service which provides search functionality on set of nodes. 
  * It has to provide GUI presentation so user can have the possibility to
- * set/moify criteria.
+ * set/modify criteria.
  * It performs search according to that.
  * And additionaly could provide feature of dynamic change of result for cases 
  * the original nodes were changed the way it affect the result of search.
@@ -51,30 +51,37 @@ public abstract class SearchType extends ServiceType implements Cloneable {
     private Class[] searchTypeClasses;
     
 
-    /** Gets class types of objects this search type can search (test) on.
+    /**
+     * Gets class types of objects this search type can search (test) on.
      * The classes are used for associating search types working on the same
      * object types to create <code>SearchGroup</code>. 
-     * <em>Note: </em> the order of classes declares also priority. */
+     * <em>Note: </em> the order of classes declares also priority.
+     */
     public synchronized final Class[] getSearchTypeClasses() {
-        if(searchTypeClasses == null)
+        if (searchTypeClasses == null) {
             searchTypeClasses = createSearchTypeClasses();
-        
+        }
         return searchTypeClasses;
     }
 
-    /** Actually creates array of class types of objects this search type can search.
-     * <em>Note: </em> the order of classes declares also priority. */
+    /**
+     * Actually creates array of class types of objects this search type can search.
+     * <em>Note: </em> the order of classes declares also priority.
+     */
     protected abstract Class[] createSearchTypeClasses();
     
 
-    /** Accepts search root nodes. Subclasses have a chance to exclude some of
+    /**
+     * Accepts search root nodes. Subclasses have a chance to exclude some of
      * the non interesting node systems. E.g. CVS search type can exclude non
-     * CVS node systems. */
+     * CVS node systems.
+     */
     protected Node[] acceptSearchRootNodes(Node[] roots) {
         return roots;
     }
 
-    /** Accepts search object to the search. Subclasses have a chance to excluide
+    /**
+     * Accepts search object to the search. Subclasses have a chance to exclude
      * the non interesting objects from the search. E.g. Java search type will
      * exclude non Java data objects.
      * <em>Note:</em> the search object instance is of the class type
@@ -85,40 +92,60 @@ public abstract class SearchType extends ServiceType implements Cloneable {
         return true;
     }
 
-    /** Prepares search object. Dummy implementation. Gives a chance to subclasses to 
+    /**
+     * Prepares search object. Dummy implementation. Gives a chance to subclasses to 
      * provide changes for dynamic changes on search objects.
      * Typically it has to add some listener at the object and in the case some change
      * which could lead to a change of the search result should fire 
-     * PROP_OBJECT_CHANGED property change. */
+     * PROP_OBJECT_CHANGED property change.
+     */
     protected void prepareSearchObject(Object searchObject) {}
     
-    /** Provides actual search processing of one node based on concrete search type
-     * criteria.
-     * @return <code>true</code> if the node satisfies criteria of this search type
-     * or <code>false</code> if doesn't */
+    /**
+     * Checks whether an object matches the criteria defined in this search
+     * type.
+     *
+     * @param  searchObject  object to be tested
+     * @return  <code>true</code> if the object matches the criteria,
+     *          <code>false</code> it it does not
+     */
     protected abstract boolean testObject(Object searchObject);
 
-    /** Gets details for object satisfied the search.
+    /**
+     * Gets details for object satisfied the search.
      * Subclasses should override the method to get detail nodes for the
      * specified result object.
      *
      * @param resultObject object which has satisfied this search type
-     * @return <code>null</code> */
+     * @return <code>null</code>
+     */
     public Node[] getDetails(Object resultObject) {
         return null;
     }
     
-    /** Gets details for node which represents one result node.
+    /**
+     * Gets details for node which represents one result node.
      * Subclasses should override the method to get detail nodes for the
      * specified result object.
      *
      * @param node which represents object which has satisfied this search type
-     * @return <code>null</code> */
+     * @return <code>null</code>
+     */
     public Node[] getDetails(Node node) {
         return null;
     }
-    
-    /** Tests whether the search type is enabled on certain nodes. */
+
+    /**
+     * Checks that this search type is able to search the specified set
+     * of nodes.
+     * <p>
+     * This method is usually implemented such that it returns <code>true</code>
+     * if it is possible to search at least one of the nodes.
+     *
+     * @param  nodes  nodes to be searched
+     * @return  <code>true</code> if this search type is able to search
+     *          the nodes, <code>false</code> otherwise
+     */
     public abstract boolean enabled(Node[] nodes);
     
     /** Now the custonized criterion changed validity state. */
@@ -143,7 +170,9 @@ public abstract class SearchType extends ServiceType implements Cloneable {
     }
 
 
-    /** Enumeration of all SearchTypes in the system.
+    /**
+     * Enumeration of all SearchTypes in the system.
+     *
      * @return enumeration of SearchType instances
      * @deprecated Please use {@link org.openide.util.Lookup} instead.
      */

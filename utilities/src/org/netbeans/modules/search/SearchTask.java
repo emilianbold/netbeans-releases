@@ -62,13 +62,13 @@ public class SearchTask extends Task {
     public void run() {
         try {
             // Set of search types to be used able to search on the same object type.
-            if(searchGroup == null)
+            if (searchGroup == null) {
                 return;
-
+            }
             searchGroup.addPropertyChangeListener(WeakListener.propertyChange(
                 propListener = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
-                        if(SearchGroup.PROP_FOUND.equals(evt.getPropertyName())) {
+                        if (SearchGroup.PROP_FOUND.equals(evt.getPropertyName())) {
                             resultModel.acceptFoundObjects(new Object[] {evt.getNewValue()});
                         }
                     }
@@ -85,7 +85,7 @@ public class SearchTask extends Task {
     
     /** Stops this search task. */
     public void stop() {
-        if(searchGroup != null) {
+        if (searchGroup != null) {
             searchGroup.stopSearch();
         }
     }

@@ -40,23 +40,29 @@ import org.openide.TopManager;
  * abstract class.
  *
  * @author  Peter Zavadsky
+ * @author  Marian Petras
  * @see org.openidex.search.SearchGroup
  */
 public class FileObjectSearchGroup extends SearchGroup {
 
-    
-    /** Adds item to this search group. Implements superclass abstract method.
-     * @param item <code>SearchType</code> type to be added. */
-    protected void add(SearchType item) {
-        if(!Arrays.asList(item.getSearchTypeClasses()).contains(FileObject.class))
-            return;
-     
-        List list = new ArrayList(Arrays.asList(searchTypes));
-        
-        if(!list.contains(item))
-            list.add(item);
-        
-        searchTypes = (SearchType[])list.toArray(new SearchType[list.size()]);
+    /**
+     * {@inheritDoc} If the specified search type does not support searching
+     * in <code>FileObject</code>s, the group is left unmodified, too.
+     *
+     * @see  SearchType#getSearchTypeClasses()
+     */
+    protected void add(SearchType searchType) {
+        boolean ok = false;
+        Class[] classes = searchType.getSearchTypeClasses();
+        for (int i = 0; i < classes.length; i++) {
+            if (classes[i] == FileObject.class) {
+                ok = true;
+                break;
+            }
+        }
+        if (ok) {
+            super.add(searchType);
+        }
     }
 
     /**
@@ -65,11 +71,11 @@ public class FileObjectSearchGroup extends SearchGroup {
     public void doSearch() {
         FileObject[] rootFolders = getFileFolders();
         
-        if(rootFolders == null)
+        if (rootFolders == null) {
             return;
-        
+        }
         for(int i = 0; i < rootFolders.length; i++) {
-            if(!scanFolder(rootFolders[i])) {
+            if (!scanFolder(rootFolders[i])) {
                 return;
             }
         }
@@ -82,33 +88,34 @@ public class FileObjectSearchGroup extends SearchGroup {
         List children = new ArrayList(nodes.length);
 
         // test whether scan whole repository
-        if(nodes.length == 1) {
-            InstanceCookie ic = (InstanceCookie)nodes[0].getCookie(InstanceCookie.class);
+        if (nodes.length == 1) {
+            InstanceCookie ic = (InstanceCookie) nodes[0].getCookie(InstanceCookie.class);
 
             try {
-                if(ic != null && Repository.class.isAssignableFrom(ic.instanceClass())) {
+                if (ic != null && Repository.class.isAssignableFrom(ic.instanceClass())) {
                     Repository rep = TopManager.getDefault().getRepository();
                     Enumeration fss = rep.getFileSystems();
 
                     while (fss.hasMoreElements()) {
                         FileSystem fs = (FileSystem)fss.nextElement();
-                        if (fs.isValid() && !fs.isHidden())
+                        if (fs.isValid() && !fs.isHidden()) {
                             children.add(fs.getRoot());
+                        }
                     }
 
-                    return (FileObject[])children.toArray(new FileObject[children.size()]);
+                    return (FileObject[]) children.toArray(new FileObject[children.size()]);
                 }
-            } catch(IOException ioe) {
+            } catch (IOException ioe) {
                 ioe.printStackTrace();                    
-            } catch(ClassNotFoundException cne) {
+            } catch (ClassNotFoundException cne) {
                 cne.printStackTrace();
             }
         }
 
 
-        for(int i = 0; i<nodes.length; i++) {
-            DataFolder dataFolder = (DataFolder)nodes[i].getCookie(DataFolder.class);
-            if(dataFolder != null) {
+        for (int i = 0; i < nodes.length; i++) {
+            DataFolder dataFolder = (DataFolder) nodes[i].getCookie(DataFolder.class);
+            if (dataFolder != null) {
                 children.add(dataFolder.getPrimaryFile());
             }
         }
@@ -122,15 +129,15 @@ public class FileObjectSearchGroup extends SearchGroup {
     private boolean scanFolder(FileObject folder) {
         FileObject[] children = folder.getChildren();
 
-        for(int i = 0; i < children.length; i++) {
+        for (int i = 0; i < children.length; i++) {
             // Test if the search was stopped.
-            if(stopped) {
+            if (stopped) {
                 stopped = true;
                 return false;
             }
             
-            if(children[i].isFolder()) {
-                if(!scanFolder(children[i])) {
+            if (children[i].isFolder()) {
+                if (!scanFolder(children[i])) {
                     return false;
                 }
             } else {
@@ -146,15 +153,15 @@ public class FileObjectSearchGroup extends SearchGroup {
      * @return node delegate for found data object or <code>null</code>
      * if the object is not of <code>DataObjectType</code> */
     public Node getNodeForFoundObject(final Object object) {
-        if(!(object instanceof FileObject))
+        if (!(object instanceof FileObject)) {
             return null;
-        
+        }
         try {
-            return DataObject.find((FileObject)object).getNodeDelegate();
-        } catch(DataObjectNotFoundException dnfe) {
+            return DataObject.find((FileObject) object).getNodeDelegate();
+        } catch (DataObjectNotFoundException dnfe) {
             return new AbstractNode(Children.LEAF) {
                 public String getName() {
-                    return ((FileObject)object).getName();
+                    return ((FileObject) object).getName();
                 }
             };
         }
@@ -167,19 +174,22 @@ public class FileObjectSearchGroup extends SearchGroup {
 
         List ret = new ArrayList();
 
-        for(int i = 0; i<nodes.length; i++) {
-            if(!hasParent(nodes[i],nodes))
+        for (int i = 0; i<nodes.length; i++) {
+            if (!hasParent(nodes[i], nodes)) {
                 ret.add(nodes[i]);
+            }
         }
 
-        return (Node[])ret.toArray(new Node[ret.size()]);
+        return (Node[]) ret.toArray(new Node[ret.size()]);
     }
 
     /** Tests if the node has parent. Helper method. */
     private static boolean hasParent(Node node, Node[] nodes) {
         for (Node parent = node.getParentNode(); parent != null; parent = parent.getParentNode()) {
             for (int i = 0; i<nodes.length; i++) {
-                if (nodes[i].equals(parent)) return true;
+                if (nodes[i].equals(parent)) {
+                    return true;
+                }
             }
         }
         return false;
