@@ -18,6 +18,7 @@ import com.installshield.product.ProductActionSupport;
 import com.installshield.product.ProductBuilderSupport;
 import com.installshield.product.ProductException;
 import com.installshield.product.RequiredBytesTable;
+import com.installshield.product.service.product.ProductService;
 import com.installshield.util.Log;
 import com.installshield.wizard.platform.win32.Win32RegistryService;
 import com.installshield.wizard.service.MutableOperationState;
@@ -77,20 +78,19 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     }
     
     private void init(ProductActionSupport support)
-    throws Exception{
-	/*
-        ProductService pservice = (ProductService)getService(ProductService.NAME);
-        String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
-        instDirPath = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation")); */
-        nbInstallDir = Util.getNbInstallDir();
+    throws Exception {
+        ProductService productService = (ProductService) getService(ProductService.NAME);
+        nbInstallDir = (String) productService.getProductBeanProperty
+        (ProductService.DEFAULT_PRODUCT_SOURCE,null,"absoluteInstallLocation");
         logEvent(this, Log.DBG,"nbInstallDir: " + nbInstallDir);
+        
         origJ2SEInstallDir = (String) System.getProperties().get("j2seInstallDir");
+        
         logEvent(this, Log.DBG,"$D(common): " + resolveString("$D(common)"));
         logEvent(this, Log.DBG,"$D(install): " + resolveString("$D(install)"));
         jreInstallDir = resolveString("$D(install)") + "\\Java\\"
         + resolveString("$L(org.netbeans.installer.Bundle,JRE.defaultInstallDirectory)");
         logEvent(this, Log.DBG,"jreInstallDir: " + jreInstallDir);
-        
         System.getProperties().put("jreInstallDir",jreInstallDir);
         
         tempDir = resolveString("$J(temp.dir)");
@@ -214,16 +214,15 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                     }
                 }
             }
-
+            
             //Delete files
-            //Delete _uninst dir on Windows
-            //XXX this must be reconsidered as storage builder is run after JDK install action
-            /*if (Util.isWindowsOS()) {
-                File uninstDirFile = new File(uninstDir);
-                if (uninstDirFile.exists()) {
-                    deleteCompletely(uninstDirFile);
+            if (Util.isWindowsNT() || Util.isWindows98()) {
+                FileService fileService = (FileService) getService(FileService.NAME);
+                String jdkInstaller = nbInstallDir + File.separator + findJDKWindowsInstaller();
+                if (fileService.fileExists(jdkInstaller)) {
+                    fileService.deleteFile(jdkInstaller);
                 }
-            }*/
+            }
             
             //Move JDK up one dir level
             if (!Util.isWindowsOS()) {
@@ -236,29 +235,6 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         logEvent(this, Log.DBG,"J2SE installation took: (ms) " + (System.currentTimeMillis() - currtime));
     }
     
-    /** Delete given file/folder completely. It is called recursively when necessary.
-     * @file - name of file/folder to be deleted
-     */
-    private void deleteCompletely (File file) {
-        if (file.isDirectory()) {
-            //Delete content of folder
-            File [] fileArr = file.listFiles();
-            for (int i = 0; i < fileArr.length; i++) {
-                if (fileArr[i].isDirectory()) {
-                    deleteCompletely(fileArr[i]);
-                }
-                logEvent(this, Log.DBG,"Delete file: " + fileArr[i].getPath());
-                if (!fileArr[i].delete()) {
-                    logEvent(this, Log.DBG,"Cannot delete file: " + fileArr[i].getPath());
-                }
-            }
-        }
-        logEvent(this, Log.DBG,"Delete file: " + file.getPath());
-        if (!file.delete()) {
-            logEvent(this, Log.DBG,"Cannot delete file: " + file.getPath());
-        }
-    }
-    
     /** Does nothing. JDK is not uninstalled by jdkbundle uninstaller. */
     public void uninstall(ProductActionSupport support) {
         long currtime = System.currentTimeMillis();
@@ -268,11 +244,46 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         
         try {
             init(support);
-            logEvent(this, Log.DBG,"origJ2SEInstallDir = " + origJ2SEInstallDir);
             installMode = UNINSTALL;
+            logEvent(this, Log.DBG,"origJ2SEInstallDir = " + origJ2SEInstallDir);
+            logEvent(this, Log.DBG,"nbInstallDir = " + nbInstallDir);
             
-            logEvent(this, Log.DBG,"Do nothing here -> " + origJ2SEInstallDir);
-            
+            //Delete files
+            if (Util.isWindowsOS()) {
+                FileService fileService = (FileService) getService(FileService.NAME);
+                String uninstDir = nbInstallDir + File.separator + "_uninst";
+                String fileName;
+                fileName = uninstDir + File.separator + "custom-install-jre.template";
+                if (fileService.fileExists(fileName)) {
+                    logEvent(this, Log.DBG,"Deleting: " + fileName);
+                    fileService.deleteFile(fileName);
+                }
+                fileName = uninstDir + File.separator + "custom-install-jre.bat";
+                if (fileService.fileExists(fileName)) {
+                    logEvent(this, Log.DBG,"Deleting: " + fileName);
+                    fileService.deleteFile(fileName);
+                }
+                fileName = uninstDir + File.separator + "custom-install-jdk.template";
+                if (fileService.fileExists(fileName)) {
+                    logEvent(this, Log.DBG,"Deleting: " + fileName);
+                    fileService.deleteFile(fileName);
+                }
+                fileName = uninstDir + File.separator + "custom-install-jdk.bat";
+                if (fileService.fileExists(fileName)) {
+                    logEvent(this, Log.DBG,"Deleting: " + fileName);
+                    fileService.deleteFile(fileName);
+                }
+                fileName = uninstDir + File.separator + "install-jdk.log";
+                if (fileService.fileExists(fileName)) {
+                    logEvent(this, Log.DBG,"Deleting: " + fileName);
+                    fileService.deleteFile(fileName);
+                }
+                fileName = uninstDir + File.separator + "install-jre.log";
+                if (fileService.fileExists(fileName)) {
+                    logEvent(this, Log.DBG,"Deleting: " + fileName);
+                    fileService.deleteFile(fileName);
+                }
+            }
         } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
             logEvent(this, Log.DBG, ex);
