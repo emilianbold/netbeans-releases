@@ -23,10 +23,11 @@ import java.util.Timer;
 import java.util.TimerTask; 
 import java.util.Vector;
 
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.StatusDisplayer;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.options.SystemOption;
 import org.openide.util.SharedClassObject;
@@ -75,7 +76,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 openUrlTimeout = i.intValue();
             }
         } catch(Exception e) {
-            TopManager.getDefault ().notify (
+            DialogDisplayer.getDefault ().notify (
                 new NotifyDescriptor.Message(NbBundle.getMessage(NbDdeBrowserImpl.class, "ERR_cant_locate_dll"),
                 NotifyDescriptor.INFORMATION_MESSAGE)
             );
@@ -292,7 +293,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                         public void run() {
                             if (isDisplaying) {
                                 NbDdeBrowserImpl.nativeThread.interrupt ();
-                                TopManager.getDefault().notify(
+                                DialogDisplayer.getDefault().notify(
                                 new NotifyDescriptor.Message(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_win_browser_invocation_failed"),
                                 NotifyDescriptor.INFORMATION_MESSAGE)
                                 );
@@ -327,7 +328,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 String winID;
                 // activate browser window (doesn't work on Win9x)
                 if (!win9xHack (task.browser.realDDEServer())) {
-                    TopManager.getDefault ().setStatusText (NbBundle.getMessage (NbDdeBrowserImpl.class, "MSG_activatingBrowser"));
+                    StatusDisplayer.getDefault ().setStatusText (NbBundle.getMessage (NbDdeBrowserImpl.class, "MSG_activatingBrowser"));
                     winID = windowId (task.browser.realDDEServer(), hasNoWindow? 0: task.browser.currWinID)+",0x0"; // NOI18N
 
                     try {
@@ -355,7 +356,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 }
 
 
-                TopManager.getDefault ().setStatusText (NbBundle.getMessage (NbDdeBrowserImpl.class, "MSG_openingURLInBrowser"));
+                StatusDisplayer.getDefault ().setStatusText (NbBundle.getMessage (NbDdeBrowserImpl.class, "MSG_openingURLInBrowser"));
                 winID = windowId (task.browser.realDDEServer(), hasNoWindow? 0: task.browser.currWinID);
                     
                 String args1;
@@ -404,7 +405,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 });
             }
             finally {
-                TopManager.getDefault ().setStatusText ("");    // NOI18N
+                StatusDisplayer.getDefault ().setStatusText ("");    // NOI18N
             }
         }
         
@@ -426,7 +427,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             String b;
             if (task.browser.winBrowserFactory.isStartWhenNotRunning()) {
                 NbProcessDescriptor cmd = task.browser.winBrowserFactory.getBrowserExecutable();
-                TopManager.getDefault ().setStatusText (NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_startingBrowser"));
+                StatusDisplayer.getDefault ().setStatusText (NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_startingBrowser"));
                 cmd.exec();
                 // wait for browser start
                 Thread.currentThread().sleep(5000);

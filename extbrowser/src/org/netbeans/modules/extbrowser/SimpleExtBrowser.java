@@ -16,15 +16,15 @@ package org.netbeans.modules.extbrowser;
 import java.beans.*;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
 
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
-import org.openide.execution.ExecInfo;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.MapFormat;
 
 import org.openide.util.Utilities;
 
@@ -155,10 +155,10 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
                 if (url.getProtocol().equals("nbfs")) {   // NOI18N
                     url = URLUtil.createExternalURL(url);
                 }
-                process.exec(new BrowserFormat(new ExecInfo(""), (url == null)? "": url.toString())); // NOI18N
+                process.exec(new BrowserFormat((url == null)? "": url.toString())); // NOI18N
                 this.url = url;
             } catch (IOException ex) {
-                TopManager.getDefault().notify(
+                org.openide.DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Confirmation(
                     NbBundle.getBundle(SimpleExtBrowser.class).getString("EXC_Invalid_Processor"),
                     NotifyDescriptor.DEFAULT_OPTION,
@@ -232,7 +232,7 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
     
     /** Default format that can format tags related to execution. Currently this is only the URL.
      */
-    private static class BrowserFormat extends org.openide.execution.ProcessExecutor.Format {
+    private static class BrowserFormat extends org.openide.util.MapFormat {
         
         private static final long serialVersionUID = 5990981835151848381L;
         /** Tag replaced with the URL */
@@ -245,8 +245,8 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
          * @param repository repository path
          * @param library library path
          */
-        public BrowserFormat (ExecInfo info, String url) {
-            super(info);
+        public BrowserFormat (String url) {
+            super(new HashMap());
             java.util.Map map = getMap ();
             
             map.put (TAG_URL, url);

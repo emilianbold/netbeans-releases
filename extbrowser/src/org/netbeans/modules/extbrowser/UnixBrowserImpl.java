@@ -21,8 +21,8 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 
 import org.openide.*;
+import org.openide.awt.StatusDisplayer;
 import org.openide.awt.HtmlBrowser;
-import org.openide.execution.ExecInfo;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -122,7 +122,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     public void setURL(URL url) {
         if (SwingUtilities.isEventDispatchThread ()) {
             final URL newUrl = url;
-            RequestProcessor.postRequest (
+            RequestProcessor.getDefault ().post (
                 new Runnable () {
                     public void run () {
                         UnixBrowserImpl.this.setURL (newUrl);
@@ -133,7 +133,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         
         NbProcessDescriptor cmd = extBrowserFactory.getBrowserExecutable ();    // NOI18N
         Process p;
-        TopManager tm = TopManager.getDefault ();
+        StatusDisplayer sd = StatusDisplayer.getDefault ();
         try {
             // internal protocols cannot be displayed in external viewer
             if (isInternalProtocol (url.getProtocol ())) {
@@ -156,10 +156,10 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 p = cmd.exec (); 
                 if (p.waitFor () == 0) {
                     cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
-                    tm.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
-                    p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (new ExecInfo(""), "-raise -remote openURL(\""+url.toString ()+"\",new-window)"));   // NOI18N
+                    sd.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
+                    p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat ("-raise -remote openURL(\""+url.toString ()+"\",new-window)"));   // NOI18N
                     if (p.waitFor () != 0) {
-                        tm.notify (
+                        DialogDisplayer.getDefault ().notify (
                             new NotifyDescriptor.Message (
                             NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd.getProcessName () }),
                             NotifyDescriptor.Message.WARNING_MESSAGE)
@@ -169,8 +169,8 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 }
                 else {
                     cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
-                    tm.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
-                    p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (new ExecInfo(""), "\""+url.toString ()+"\""));   // NOI18N
+                    sd.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
+                    p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat ("\""+url.toString ()+"\""));   // NOI18N
                 }
                 
                 new Thread (new UnixBrowserImpl.WindowFinder (url.toString())).start();
@@ -179,12 +179,12 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 // reuse old window
                 
                 cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
-                    tm.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
+                    sd.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
                 p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (
-                    new ExecInfo(""), "-id 0x"+Integer.toHexString (currWinID)+" -raise -remote openURL(\""+url.toString ()+"\")")   // NOI18N
+                    "-id 0x"+Integer.toHexString (currWinID)+" -raise -remote openURL(\""+url.toString ()+"\")")   // NOI18N
                 );
                 if (p.waitFor () != 0) {
-                    tm.notify (
+                    DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message (
                         NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd.getProcessName () }),
                         NotifyDescriptor.Message.WARNING_MESSAGE)
@@ -197,10 +197,10 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             this.url = url;
             pcs.firePropertyChange (PROP_URL, old, url);
             // browser works on displaying, clear the message now
-            RequestProcessor.postRequest (
+            RequestProcessor.getDefault ().post (
                 new Runnable () {
                     public void run () {
-                        TopManager.getDefault ().setStatusText (""); // NOI18N
+                        StatusDisplayer.getDefault ().setStatusText (""); // NOI18N
                     }
                 },
                 2000,
@@ -209,7 +209,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         }
         catch (java.io.IOException ex) {
             // occurs when executable is not found or not executable
-            tm.notify (
+            DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message (
                 NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd.getProcessName () }),
                 NotifyDescriptor.Message.WARNING_MESSAGE)
