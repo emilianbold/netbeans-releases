@@ -217,6 +217,7 @@ public class CreateTableDialog {
                       result = validate();
 
                       CommandBuffer cbuff = new CommandBuffer();
+                      Vector idxCommands = new Vector();
 
                       if (result) {
                           try {
@@ -232,26 +233,17 @@ public class CreateTableDialog {
                                * creating indexes for primary or unique keys,
                                * most of database are creating indexes by myself,
                                * support was removed */
-                              //CreateIndex icmd = spec.createCommandCreateIndex(tablename);
-                              //icmd.setIndexName(tablename+"_IDX"); // NOI18N
                               org.netbeans.lib.ddl.impl.TableColumn cmdcol = null;
                               CreateIndex xcmd = null;
                               Enumeration enu = data.elements();
                               while (enu.hasMoreElements()) {
                                   ColumnItem enuele = (ColumnItem)enu.nextElement();
                                   String name = enuele.getName();
-                                  if(!dataModel.isTablePrimaryKey()&&!dataModel.isTableUniqueKey()) {
-                                      if (enuele.isPrimaryKey())
-                                          cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createPrimaryKeyColumn(name);
-                                      else
-                                          if (enuele.isUnique())
-                                              cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createUniqueColumn(name);
-                                          else
-                                              cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createColumn(name);
-                                      
-                                  }
-                                  else
-                                      cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createColumn(name);
+                                  if (enuele.isPrimaryKey()&&!dataModel.isTablePrimaryKey())
+                                      cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createPrimaryKeyColumn(name);
+                                  else if (enuele.isUnique()&&!enuele.isPrimaryKey())
+                                      cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createUniqueColumn(name);
+                                  else cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createColumn(name);
                                   cmdcol.setColumnType(Specification.getType(enuele.getType().getType()));
                                   cmdcol.setColumnSize(enuele.getSize());
                                   cmdcol.setDecimalSize(enuele.getScale());
@@ -262,13 +254,13 @@ public class CreateTableDialog {
                                   if (enuele.hasCheckConstraint())
                                       // add the TABLE check constraint
                                       cmd.createCheckConstraint(name, enuele.getCheckConstraint());
-                                  // index support removed!
-                                  if (enuele.isIndexed()||!enuele.isPrimaryKey()||!enuele.isUnique()) {
+                                  if (enuele.isIndexed()&&!enuele.isPrimaryKey()&&!enuele.isUnique()) {
                                       xcmd = spec.createCommandCreateIndex(tablename);
                                       xcmd.setIndexName(tablename+ "_" + name + "_idx"); // NOI18N
                                       xcmd.setIndexType(new String());
                                       xcmd.setObjectOwner((String)ownercombo.getSelectedItem());
                                       xcmd.specifyColumn(name);
+                                      idxCommands.add(xcmd);
                                   }
                               }
                               if(dataModel.isTablePrimaryKey()) {
@@ -281,8 +273,8 @@ public class CreateTableDialog {
 
                               }
                               cbuff.add(cmd);
-                              if(xcmd!=null)
-                                  cbuff.add(xcmd);
+                              for(int i=0;i<idxCommands.size();i++)
+                                  cbuff.add((CreateIndex)idxCommands.elementAt(i));
                               // index support removed!
                               //if (icmd.getColumns().size()>0) cbuff.add(icmd);
 

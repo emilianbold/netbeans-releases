@@ -364,7 +364,7 @@ public class AddTableColumnDialog {
             con.weightx = 1.0;
             con.weighty = 0.0;
             idxcombo = new JComboBox(new Vector(ixmap.keySet()));
-            idxcombo.setSelectedIndex(0);
+            //idxcombo.setSelectedIndex(0);
             pane.add(idxcombo, con);
 
             // Check title and textarea
@@ -403,7 +403,9 @@ public class AddTableColumnDialog {
             nullcheckbox.setSelected(false);
             uniquecheckbox.setSelected(false);
             pkcheckbox.setEnabled(!isPK);
-
+            idxcombo.setEnabled(idxcombo.getItemCount()>0);
+            ixcheckbox.setEnabled(idxcombo.isEnabled());
+            
             item.addPropertyChangeListener(new PropertyChangeListener() {
                                                public void propertyChange(PropertyChangeEvent evt) {
                                                    String pname = evt.getPropertyName();
@@ -427,6 +429,8 @@ public class AddTableColumnDialog {
                                                                idxcombo.setSelectedItem(tempStr);
                                                            } else {
                                                                idxcombo.removeItem(tempStr);
+                                                               idxcombo.setEnabled(idxcombo.getItemCount()>0);
+                                                               ixcheckbox.setEnabled(idxcombo.isEnabled());
                                                            }
                                                        } else if (pname.equals(ColumnItem.NULLABLE)) {
                                                            nullcheckbox.setSelected(set);
