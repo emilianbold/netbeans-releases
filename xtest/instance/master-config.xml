@@ -57,7 +57,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- removed (not runnable): html, schema2beans -->
         <!-- hangs: core/execution -->
         <!-- does not run: core/multiview -->
-        <!-- other candidate modules in current default moduleconfig: debuggercore debuggerjpda editor editor/fold editor/util extbrowser httpserver j2eeserver mdr refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks tomcatint/tomcat5 web/core web/jspparser web/webapi xml/api xml/core xml/schema xml/text-edit xml/xsl -->
+        <!-- other candidate modules in current default moduleconfig: debuggercore debuggerjpda editor editor/fold editor/util httpserver mdr refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks tomcatint/tomcat5 web/core web/jspparser xml/api xml/core xml/schema xml/text-edit xml/xsl -->
     </config>
   
   <config name="unit-nb-nbm">
@@ -116,7 +116,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="core" testtypes="unit" attributes="commit"/>
       <module name="core/windows" testtypes="unit" attributes="commit" />
       <module name="core/javahelp" testtypes="unit" attributes="commit" />
-      <!--module name="ide" testtypes="qa-functional" attributes="commit"/-->
+      <module name="ide" testtypes="qa-functional" attributes="commit"/>
   </config>
 
 </testconfig>
