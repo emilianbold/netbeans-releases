@@ -459,7 +459,12 @@ final class ViewHierarchy {
         if(maximizedModeView != null) { // PENDING
             return;
         }
-        updateSplitElement(splitRoot, getDesktopComponent().getSize());
+        
+        // #38014 The destkop can be null if special switch used.
+        Component desktop = getDesktopComponent();
+        if(desktop != null) {
+            updateSplitElement(splitRoot, desktop.getSize());
+        }
     }
 
     private static void updateSplitElement(ViewElement view, Dimension realSize) {
