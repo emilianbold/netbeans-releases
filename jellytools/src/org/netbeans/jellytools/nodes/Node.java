@@ -452,7 +452,7 @@ public class Node {
                     return isChildPresent(childName) ? null : Boolean.TRUE;
                 }
                 public String getDescription() {
-                    return("Child \""+childName+"\" present under parent \""+getPath()+"\"");
+                    return("Child \""+childName+"\" not present under parent \""+getPath()+"\"");
                 }
             }).waitAction(null);
         } catch (InterruptedException e) {
