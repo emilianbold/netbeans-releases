@@ -35,7 +35,7 @@ import java.beans.PropertyDescriptor;
 import java.util.HashMap;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
-import org.netbeans.modules.editor.java.JavaIndentEngine;
+//import org.netbeans.modules.editor.java.JavaIndentEngine;//SPLIT-TEMP
 
 /**<FONT COLOR="#CC3333" FACE="Courier New, Monospaced" SIZE="+1">
  * <B>                                                                             
@@ -116,7 +116,7 @@ public class IndentCore extends java.lang.Object {
 	    write.invoke(engine, new Object[] {value});
         }
 
-        System.err.println("spacesPerTab=" + ((JavaIndentEngine) engine).getSpacesPerTab());
+//        System.err.println("spacesPerTab=" + ((JavaIndentEngine) engine).getSpacesPerTab());  //SPLIT-TEMP
     }
     
     /** Finds the appropriate indentation writer for the java sources.

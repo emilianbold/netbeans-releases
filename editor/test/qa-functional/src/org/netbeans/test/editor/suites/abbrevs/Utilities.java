@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.netbeans.modules.editor.options.HTMLOptions;
-import org.netbeans.modules.editor.options.JavaOptions;
-import org.netbeans.modules.editor.options.PlainOptions;
+//import org.netbeans.modules.editor.options.HTMLOptions; //SPLIT-TEMP
+//import org.netbeans.modules.editor.options.JavaOptions; //SPLIT-TEMP
+//import org.netbeans.modules.editor.options.PlainOptions; //SPLIT-TEMP
 import org.openide.options.SystemOption;
 
 /**
@@ -48,8 +48,9 @@ public class Utilities {
      */
     public static Object saveAbbreviationsState() {
         //        SystemOption[] options = ((AllOptions) AllOptions.findObject(AllOptions.class, true)).getOptions();  -- //return null
-        SystemOption[] options = new SystemOption[] {(JavaOptions)SystemOption.findObject(JavaOptions.class),
-        (PlainOptions)SystemOption.findObject(PlainOptions.class),(HTMLOptions)SystemOption.findObject(HTMLOptions.class)};
+        SystemOption[] options = new SystemOption[]{};//SPLIT-TEMP
+        //{(JavaOptions)SystemOption.findObject(JavaOptions.class),
+        //(PlainOptions)SystemOption.findObject(PlainOptions.class),(HTMLOptions)SystemOption.findObject(HTMLOptions.class)};
         
         Map            result  = new HashMap();
         
@@ -78,8 +79,9 @@ public class Utilities {
         
         /*The main functionality:
          */
-        SystemOption[] options = new SystemOption[] {(JavaOptions)SystemOption.findObject(JavaOptions.class),
-        (PlainOptions)SystemOption.findObject(PlainOptions.class),(HTMLOptions)SystemOption.findObject(HTMLOptions.class)};
+        SystemOption[] options = new SystemOption[] {};//SPLIT-TEMP
+        //{(JavaOptions)SystemOption.findObject(JavaOptions.class),
+        //(PlainOptions)SystemOption.findObject(PlainOptions.class),(HTMLOptions)SystemOption.findObject(HTMLOptions.class)};
         
         //        SystemOption[] options = ((AllOptions) AllOptions.findObject(AllOptions.class)).getOptions();   --- //return null
         
