@@ -180,8 +180,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    //SystemAction.get (AccessLogAction.class),
                    SystemAction.get (ContextLogAction.class),
                    null,
-                   SystemAction.get(PropertiesAction.class),
-                   null
+                   SystemAction.get(PropertiesAction.class)
                };        
     }
 
