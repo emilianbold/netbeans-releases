@@ -679,13 +679,9 @@ public class FormDesigner extends TopComponent
             return;
         }
 
-//        layeredPane.remove(handleLayer);
-//        layeredPane.add(textEditLayer, new Integer(2001));
-        textEditLayer.requestFocus();
         textEditLayer.setVisible(true);
         handleLayer.setVisible(false);
-        layeredPane.revalidate();
-        layeredPane.repaint();
+        textEditLayer.requestFocus();
     }
 
     private void finishInPlaceEditing(boolean applyChanges) {
@@ -700,10 +696,6 @@ public class FormDesigner extends TopComponent
 
         textEditLayer.setVisible(false);
         handleLayer.setVisible(true);
-//        layeredPane.remove(textEditLayer);
-//        layeredPane.add(handleLayer, new Integer(1001));
-        layeredPane.revalidate();
-        layeredPane.repaint();
         handleLayer.requestFocus();
         editedProperty = null;
     }

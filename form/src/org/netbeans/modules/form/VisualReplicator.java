@@ -556,23 +556,8 @@ public class VisualReplicator {
                 }
             }
 
-            if ((restrictions & DISABLE_FOCUSING) != 0
-                    && clone instanceof JComponent)
-            {
-                java.lang.reflect.Method m = null;
-                try {
-                    m = clone.getClass().getMethod("setFocusable", // NOI18N
-                                                   new Class[] { Boolean.TYPE });
-                }
-                catch (NoSuchMethodException ex) {} // ignore
-
-                if (m != null) { // JDK 1.4 or newer
-                    m.invoke(clone, new Object[] { Boolean.FALSE });
-                }
-                else { // JDK 1.3
-                    ((JComponent)clone).setRequestFocusEnabled(false);
-                    ((JComponent)clone).setNextFocusableComponent((JComponent)clone);
-                }
+            if ((restrictions & DISABLE_FOCUSING) != 0) {
+                disableFocusing((Component)clone);
 
                 // patch for JDK 1.4 - hide glass pane of JInternalFrame
                 if (clone instanceof JInternalFrame)
@@ -616,6 +601,15 @@ public class VisualReplicator {
         return metacomp == getTopMetaComponent()
                && requiredTopClass != null
                && !requiredTopClass.isAssignableFrom(beanClass);
+    }
+
+    private static void disableFocusing(Component comp) {
+        comp.setFocusable(false);
+        if (comp instanceof Container) {
+            Container cont = (Container) comp;
+            for (int i=0, n=cont.getComponentCount(); i < n; i++)
+                disableFocusing(cont.getComponent(i));
+        }
     }
 
     private static void setContainerMenu(Container cont,

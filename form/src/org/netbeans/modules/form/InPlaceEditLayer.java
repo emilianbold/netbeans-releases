@@ -94,17 +94,8 @@ class InPlaceEditLayer extends JPanel
             oldText = editingTextComp.getText();
             editingTextComp.setText(editedText);
 
-            // enable focus on component in component layer [it's a bit ugly...]
-            try {
-                java.lang.reflect.Method m =
-                    editingTextComp.getClass().getMethod("setFocusable", // NOI18N
-                                                 new Class[] { Boolean.TYPE });
-                // JDK 1.4
-                m.invoke(editingTextComp, new Object[] { Boolean.TRUE });
-            }
-            catch (Exception ex) { // JDK 1.3
-                editingTextComp.setRequestFocusEnabled(true);
-            }
+            // enable focus on component in component layer
+            editingTextComp.setFocusable(true);
         }
         else throw new IllegalArgumentException();
 
@@ -146,18 +137,7 @@ class InPlaceEditLayer extends JPanel
         }
         else if (!isLayerEditing()) {
             editingTextComp.setText(oldText);
-
-            // disable focus on component in component layer [it's a bit ugly...]
-            try {
-                java.lang.reflect.Method m =
-                    editingTextComp.getClass().getMethod("setFocusable", // NOI18N
-                                                 new Class[] { Boolean.TYPE });
-                // JDK 1.4
-                m.invoke(editingTextComp, new Object[] { Boolean.FALSE });
-            }
-            catch (Exception ex) { // JDK 1.3
-                editingTextComp.setRequestFocusEnabled(false);
-            }
+            editingTextComp.setFocusable(false);
         }
 
         editingTextComp.removeKeyListener(compKeyListener);
@@ -177,7 +157,7 @@ class InPlaceEditLayer extends JPanel
             inPlaceField = new InPlaceTextField(editedText);
             inPlaceField.setFont(label.getFont());
             inPlaceField.setHorizontalAlignment(label.getHorizontalAlignment());
-            inPlaceField.setNextFocusableComponent(this);
+//            inPlaceField.setNextFocusableComponent(this);
 //            inPlaceField.setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
 //            inPlaceField.setBackground(label.getBackground());
 //            inPlaceField.setForeground(label.getForeground());
@@ -188,7 +168,7 @@ class InPlaceEditLayer extends JPanel
             inPlaceField = new InPlaceTextField(editedText);
             inPlaceField.setFont(button.getFont());
             inPlaceField.setHorizontalAlignment(button.getHorizontalAlignment());
-            inPlaceField.setNextFocusableComponent(this);
+//            inPlaceField.setNextFocusableComponent(this);
         }
         else return; // should not happen
 /*        else if (editedComp instanceof JTextField) {
