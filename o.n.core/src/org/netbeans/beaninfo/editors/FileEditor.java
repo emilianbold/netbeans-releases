@@ -143,25 +143,26 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
      * @return string reprezentation
      */
     public String getAsText() {
-        File retValue = (File)getValue();
-        if (retValue == null) {
+        File file = (File)getValue();
+        if (file == null) {
             return ""; // NOI18N
         }
 
+        String path = null;
+        
         if(baseDirectory != null) {
-            String relPath = getRelativePath(baseDirectory, retValue);
-            if(relPath != null) {
-                return relPath;
+            if(file.isAbsolute()) {
+                path = getChildRelativePath(baseDirectory, file);
             }
+
+            if(path == null) {
+                path = file.getPath();
+            }
+        } else {
+            path = file.getAbsolutePath();
         }
         
-        try {
-            return retValue.getCanonicalPath();
-        } catch (IOException ioe) {
-            // Should not happen.
-        }
-        
-        return null;
+        return path;
     }
     
     /** Parses the given string and should create a new instance of the
@@ -174,17 +175,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             throw new IllegalArgumentException("null"); // NOI18N
         }
 
-        File f = null;
-        
-        if(baseDirectory != null) {
-            f = new File(str);
-            
-            if(!f.isAbsolute()) {
-                f = new File(baseDirectory, str);
-            }
-        } else {
-            f = new File(str);
-        }
+        File f = new File(str);
         
         if(f != null)  {
             setValue(f);
@@ -222,22 +213,20 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             chooser.setCurrentDirectory (currentDirectory);
         }
         
-        chooser.setApproveButtonText (getString ("CTL_ApproveSelect"));
-        chooser.setApproveButtonToolTipText (getString ("CTL_ApproveSelectToolTip"));
         if (fileFilter != null) {
             chooser.setFileFilter(fileFilter);
         }
         
         switch (mode) {
-        case JFileChooser.FILES_AND_DIRECTORIES:
-            chooser.setDialogTitle (getString ("CTL_DialogTitleFilesAndDirs"));
-            break;
-        case JFileChooser.FILES_ONLY:
-            chooser.setDialogTitle (getString ("CTL_DialogTitleFiles"));
-            break;
-        case JFileChooser.DIRECTORIES_ONLY:
-            chooser.setDialogTitle (getString ("CTL_DialogTitleDirs"));
-            break;
+            case JFileChooser.FILES_AND_DIRECTORIES:
+                chooser.setDialogTitle (getString ("CTL_DialogTitleFilesAndDirs"));
+                break;
+            case JFileChooser.FILES_ONLY:
+                chooser.setDialogTitle (getString ("CTL_DialogTitleFiles"));
+                break;
+            case JFileChooser.DIRECTORIES_ONLY:
+                chooser.setDialogTitle (getString ("CTL_DialogTitleDirs"));
+                break;
         }
 
         chooser.setControlButtonsAreShown(false);
@@ -281,9 +270,17 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         } else {
             // [PENDING] not a full escape of filenames, but enough to at least
             // handle normal Windows backslashes
-            return "new java.io.File (\"" + // NOI18N
-                   Utilities.replaceString (value.getAbsolutePath (), "\\", "\\\\") // NOI18N
-                   + "\")"; // NOI18N
+            if(baseDirectory != null && !value.isAbsolute()) {
+                return "new java.io.File (\"" // NOI18N
+                    + Utilities.replaceString(baseDirectory.getAbsolutePath(), "\\", "\\\\") // NOI18N
+                    + " ," // NOI18N
+                    + Utilities.replaceString(value.getPath(), "\\", "\\\\") // NOI18N
+                    + "\")"; // NOI18N
+            }
+            
+            return "new java.io.File (\"" // NOI18N
+                + Utilities.replaceString (value.getAbsolutePath(), "\\", "\\\\") // NOI18N
+                + "\")"; // NOI18N
         }
     }
 
@@ -297,82 +294,25 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         return NbBundle.getBundle(FileEditor.class).getString(key);
     }
     
-    /** Gets relative path of file to specified directory.
+    /** Gets relative path of file to specified directory only for case the file
+     * is in directory tree.
      * @param baseDir base directory
      * @param file file which relative path to <code>baseDir</code> is needed
-     * @return rtelative path or <code>null</code> can't be resolved */
-    private static String getRelativePath(File baseDir, File file) {
-        if(baseDir.equals(file)) {
-            return "."; // NOI18N
-        }
+     * @return relative path or <code>null</code> can't be resolved 
+     * or if the <code>file</code> is not under <code>baseDir</code> tree */
+    private static String getChildRelativePath(File baseDir, File file) {
+        File parent = file.getParentFile();
         
-        String basePath = getNormalizedAbsolutePath(baseDir);
-        String filePath = getNormalizedAbsolutePath(file);
-        
-        File parent = baseDir;
-        
-        int level = 0;
-    
-        String relPath;
-        
-        while(true) {
-            relPath = extractChildRelativePath(basePath, filePath);
-            
-            if(relPath != null) {
-                break;
+        while(parent != null) {
+            if(parent.equals(baseDir)) {
+                return file.getPath().substring(parent.getPath().length());
             }
             
             parent = parent.getParentFile();
-
-            if(parent == null) {
-                return null;
-            }
-            
-            basePath = parent.getAbsolutePath();
-            level++;
         }
 
-        StringBuffer buffer = new StringBuffer();
-        for(int i = 0; i < level; i++) {
-            buffer.append(".."); // NOI18N
-            if(i < (level - 1)) {
-                buffer.append(File.separatorChar);
-            }
-        }
-        
-        return buffer.append(relPath).toString();
-    }
-
-    /** Gets 'normalized' absolute class path, i.e. path 
-     * which doesn't end with '.' and ends with separator char if it is directory.  */
-    private static String getNormalizedAbsolutePath(File file) {
-        String path = file.getAbsolutePath();
-        
-        if(path.endsWith(".")) { // NOI18N
-            path = path.substring(0, path.length() - 1);
-        }
-        
-        if(file.isDirectory() && !path.endsWith(new String(new char[] {File.separatorChar}))) {
-            path += File.separatorChar;
-        }
-        
-        return path;
-    }
-    
-    /** Extracts childs relative path to the path of directory which contains it.
-     * @param basePath absolute path to the base directory
-     * @param childPath absolute path to the child file/directory
-     * @return child's relative path or <code>null</code> if the child path
-     * is not in the base directory tree */
-    private static String extractChildRelativePath(String basePath, String childPath) {
-        if(childPath.startsWith(basePath)) {
-            return childPath.substring(basePath.length());
-        }
-        
         return null;
     }
-
-    
     
     /** Property change listaner attached to the JFileChooser chooser. */
     private class PListener implements PropertyChangeListener {
