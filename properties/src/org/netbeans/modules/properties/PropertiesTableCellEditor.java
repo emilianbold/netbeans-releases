@@ -128,11 +128,13 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
             if(isKeyCell) {
                 value = UtilConvert.escapeJavaSpecialChars(UtilConvert.escapePropertiesSpecialChars(value));
                 valueLabel.setText(NbBundle.getBundle(PropertyPanel.class).getString("LBL_KeyLabel"));
+                valueLabel.setDisplayedMnemonic((NbBundle.getBundle(BundleEditPanel.class).getString("LBL_KeyLabel_Mnem")).charAt(0));
             }
             // Cell is a properties value.
             else {
                 value = UtilConvert.escapeJavaSpecialChars(UtilConvert.escapeLineContinuationChar(value));
                 valueLabel.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel"));
+                valueLabel.setDisplayedMnemonic((NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel_Mnem")).charAt(0));
             }
             
             // the cell is a properties key 
