@@ -17,6 +17,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import javax.swing.text.JTextComponent;
@@ -147,7 +148,7 @@ public class BaseOptions extends OptionSupport {
   }
   
   public Map getAbbrevMap() {
-    return (Map)getSettingValue(Settings.ABBREV_MAP);
+    return new HashMap( (Map)getSettingValue(Settings.ABBREV_MAP) );
   }
 
   public void setAbbrevMap(Map map) {
@@ -247,16 +248,21 @@ public class BaseOptions extends OptionSupport {
       }
     }
 
-    return kbList;
+    List kb2= new ArrayList( kbList );                                         
+    kb2.add( 0, kitClass.getName() ); //insert kit class name                   
+    return kb2; 
   }
   
   public void setKeyBindingList(List list) {
+    if( list.get( 0 ) instanceof Class || list.get( 0 ) instanceof String ) {   
+      list.remove( 0 ); //remove kit class name                                 
+    }
     setSettingValue(Settings.KEY_BINDING_LIST, list);
   }
 
   public Map getColoringMap() {
     Map cm = SettingsUtil.getColoringMap(getKitClass(), false);
-    cm.put(null, getKitClass()); // add kit class
+    cm.put(null, getKitClass(),getName() ); // add kit class
     return cm;
   }
 
@@ -428,6 +434,8 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  16   Gandalf-post-FCS1.14.1.0    2/28/00  Petr Nejedly    Redesign of 
+ *       ColoringEditor
  *  15   Gandalf   1.14        1/13/00  Miloslav Metelka Localization
  *  14   Gandalf   1.13        1/10/00  Miloslav Metelka 
  *  13   Gandalf   1.12        12/28/99 Miloslav Metelka 
