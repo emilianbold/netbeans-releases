@@ -310,10 +310,10 @@ public class NbTopManager extends TopManager {
     }
   }
 
-  /** @return the desktop pool for this manager
+  /** @return the workspace pool for this manager
   */
-  public DesktopPool getDesktopPool () {
-    return CoronaDesktopPool.getDefault ();
+  public WorkspacePool getWorkspacePool () {
+    return CoronaWorkspacePool.getDefault ();
   }
 
   /** Provides access to data loader pool.
@@ -432,7 +432,7 @@ public class NbTopManager extends TopManager {
 *  0    Tuborg    0.58        --/--/98 Petr Hamernik   shortcut manager changed
 *  0    Tuborg    0.59        --/--/98 Jan Formanek    reflecting move of SystemFileSystem
 *  0    Tuborg    0.60        --/--/98 Jan Jancura     getDebugger added
-*  0    Tuborg    0.61        --/--/98 Ales Novak      desktopcontext changed to nodes
+*  0    Tuborg    0.61        --/--/98 Ales Novak      workspacecontext changed to nodes
 *  0    Tuborg    0.62        --/--/98 Jan Formanek    FileSelector bugfix
 *  0    Tuborg    0.63        --/--/98 Ales Novak      exit
 *  0    Tuborg    0.65        --/--/98 Jan Formanek    reflecting move of Actions class to com.netbeans.developer.impl
@@ -471,7 +471,7 @@ public class NbTopManager extends TopManager {
 *  0    Tuborg    0.100       --/--/98 Jan Formanek    iconification/deiconification of main window (w/ the opened TopFrames)
 *  0    Tuborg    0.101       --/--/98 Jan Formanek    IDESettings added
 *  0    Tuborg    0.102       --/--/98 Jaroslav Tulach ExClipboard
-*  0    Tuborg    0.103       --/--/98 Jaroslav Tulach placeDesktopElement
+*  0    Tuborg    0.103       --/--/98 Jaroslav Tulach placeWorkspaceElement
 *  0    Tuborg    0.104       --/--/98 Petr Hamernik   security manager changes...
 *  0    Tuborg    0.105       --/--/98 Petr Hamernik   light commented
 *  0    Tuborg    0.106       --/--/98 Petr Hamernik   small change
@@ -481,7 +481,7 @@ public class NbTopManager extends TopManager {
 *  0    Tuborg    0.110       --/--/98 Jan Formanek    FormLoaderSettings added to the options pool
 *  0    Tuborg    0.111       --/--/98 Petr Hamernik   systemFS changes...
 *  0    Tuborg    0.112       --/--/98 Petr Hamernik   bugfix
-*  0    Tuborg    0.113       --/--/98 Jan Formanek    Desktops change - Running desktop added, names taken from ResourceBundle
+*  0    Tuborg    0.113       --/--/98 Jan Formanek    Workspaces change - Running workspace added, names taken from ResourceBundle
 *  0    Tuborg    0.114       --/--/98 Jan Formanek    getMainWindow changed
 *  0    Tuborg    0.115       --/--/98 Jan Palka       Startup dialog is showing in the end of main()
 *  0    Tuborg    0.116       --/--/98 Jan Formanek    changed showing startup tips
@@ -499,7 +499,7 @@ public class NbTopManager extends TopManager {
 *  0    Tuborg    0.128       --/--/98 Jan Formanek    explore moved to NodeOperation
 *  0    Tuborg    0.129       --/--/98 Jan Formanek    changes in TemplateExplorer
 *  0    Tuborg    0.130       --/--/98 Jan Formanek    shows a message in status line during exit
-*  0    Tuborg    0.131       --/--/98 Ales Novak      method getDesktopPoolContextNode added
+*  0    Tuborg    0.131       --/--/98 Ales Novak      method getWorkspacePoolContextNode added
 *  0    Tuborg    0.132       --/--/98 Jan Formanek    Tuborg -> Netbeans
 *  0    Tuborg    0.133       --/--/98 Jan Formanek    the failure to mount the normal "bad" items in the classpath
 *  0    Tuborg    0.134       --/--/98 Jan Formanek    new SplashWindow

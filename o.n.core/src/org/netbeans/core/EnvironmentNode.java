@@ -88,7 +88,7 @@ final class EnvironmentNode extends AbstractNode {
     ret = new Node[8];
     ret[0] = new FSPoolNode(this);
     ret[1] = new MainWindowNode(this);
-    ret[2] = CoronaTopManager.getDesktopPoolContextNode(this);
+    ret[2] = CoronaTopManager.getWorkspacePoolContextNode(this);
     ret[3] = CoronaTopManager.getShortcutNode (this);
     if (paletteContextNode != null) // deserialized
       ret[4] = paletteContextNode;
@@ -175,6 +175,8 @@ final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  8    Gandalf   1.7         2/12/99  Ian Formanek    Reflected renaming 
+ *       Desktop -> Workspace
  *  7    Gandalf   1.6         1/25/99  Jaroslav Tulach Added default project, 
  *       its desktop and changed default explorer in Main.
  *  6    Gandalf   1.5         1/20/99  Jaroslav Tulach 
@@ -187,5 +189,5 @@ final class EnvironmentNode extends AbstractNode {
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  * Beta Change History:
- *  0    Tuborg    0.12        --/--/98 Jan Formanek    Shortcuts and desktops moved here from the MainWindowNode
+ *  0    Tuborg    0.12        --/--/98 Jan Formanek    Shortcuts and Workspaces moved here from the MainWindowNode
  */

@@ -18,7 +18,7 @@ import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.util.NotImplementedException;
 import com.netbeans.ide.nodes.*;
-import com.netbeans.developer.impl.desktop.DesktopPoolContext;
+import com.netbeans.developer.impl.workspace.WorkspacePoolContext;
 
 /** Important places in the system.
 *
@@ -85,9 +85,9 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     return ControlPanelNode.getDefault ();
   }
 
-  /** Node with all desktops */
-  public Node desktops () {
-    return DesktopPoolContext.getDefault ();
+  /** Node with all workspaces */
+  public Node workspaces () {
+    return WorkspacePoolContext.getDefault ();
   }
 
   /** Repository settings */
@@ -95,7 +95,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     return FSPoolNode.getFSPoolNode ();
   }
 
-  /** Desktop node for current project. This node can change when project changes.
+  /** Workspace node for current project. This node can change when project changes.
   */
   public Node projectDesktop () {
     return NbProjectOperation.getProject ().projectDesktop ();
@@ -146,6 +146,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  9    Gandalf   1.8         2/12/99  Ian Formanek    Reflected renaming 
+*       Desktop -> Workspace
 *  8    Gandalf   1.7         2/11/99  Ian Formanek    Renamed FileSystemPool ->
 *       Repository
 *  7    Gandalf   1.6         2/2/99   Jaroslav Tulach Tries to create non 
