@@ -14,6 +14,8 @@
 
 package org.openide.explorer;
 
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.Transferable;
 import java.util.Arrays;
 
 import junit.framework.Test;
@@ -22,20 +24,17 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
 import javax.swing.Action;
-import javax.swing.JMenu;
 
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.io.NbMarshalledObject;
 
@@ -69,26 +68,16 @@ public class ExplorerPanelTest extends NbTestCase {
         return suite;
     }
 
-    /** Run all tests in AWT thread */
-    public final void run(final junit.framework.TestResult result) {
-        try {
-            // XXX ExplorerManager when updating selected nodes
-            // replanes all firing into AWT thread, therefore the test
-            // has to run in AWT.
-            javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    ExplorerPanelTest.super.run (result);
-                }
-            });
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new IllegalStateException ();
-        }
+
+    protected boolean runInEQ() {
+        return true;
     }
     
     /** Setups the tests.
      */
     protected final void setUp () {
+        System.setProperty ("org.openide.util.Lookup", "org.openide.explorer.ExplorerPanelTest$Lkp");
+        
         Object[] arr = createManagerAndContext ();
         manager = (ExplorerManager)arr[0];
         context = (Lookup)arr[1];
@@ -254,8 +243,8 @@ public class ExplorerPanelTest extends NbTestCase {
         ExplorerPanel panel = new ExplorerPanel ();
 
         FileObject fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
-        DataObject rootFilesystem = DataObject.find (fo);
-        Node root = rootFilesystem.getNodeDelegate ();
+        
+        Node root = new SerializableNode ();
         panel.getExplorerManager ().setRootContext (root);
         panel.getExplorerManager ().setSelectedNodes (new Node[] {root});
         
@@ -383,5 +372,65 @@ public class ExplorerPanelTest extends NbTestCase {
         }
         
     }
+
+    public static final class SerializableNode extends AbstractNode 
+    implements Node.Handle, java.io.Externalizable {
+        
+        static final long serialVersionUID = 439503248509342L;
+        
+        public SerializableNode () {
+            super (Children.LEAF);
+        }
+        
+        public Handle getHandle () {
+            return this;
+        }
+        
+        public Node getNode () {
+            return this;
+        }
+        
+        public void writeExternal (java.io.ObjectOutput oo) {
+        }
+        public void readExternal (java.io.ObjectInput oi) {
+        }
+        
+        //
+        // All instances of SerializableNode are equal
+        //
+
+        public int hashCode() {
+            return getClass ().hashCode ();
+        }
+
+        public boolean equals(java.lang.Object obj) {
+            return obj != null && getClass ().equals (obj.getClass ());
+        }
+    } // end SerializableNode
     
+    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
+        public Lkp () {
+            this (new org.openide.util.lookup.InstanceContent ());
+        }
+        
+        private Lkp (org.openide.util.lookup.InstanceContent ic) {
+            super (ic);
+            ic.add (new Clb ("Testing clipboard"));
+        }
+    }
+    
+    private static final class Clb extends org.openide.util.datatransfer.ExClipboard {
+        public Clb (String s) {
+            super (s);
+        }
+
+        protected org.openide.util.datatransfer.ExClipboard.Convertor[] getConvertors() {
+            return new org.openide.util.datatransfer.ExClipboard.Convertor[0];
+        }
+        
+        public void setContents (Transferable t, ClipboardOwner o) {
+            super.setContents (t, o);
+            fireClipboardChange ();
+        }
+    }
 }
