@@ -23,9 +23,17 @@ Microsystems, Inc. All Rights Reserved.
       <file name="webapp.warImage" url="templates/WebModule.template">
           <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/context/resources/WebModule.html"/>
-          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.context.WebAppWizardIterator.singleton"/>
+          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.context.WebAppWizardIterator.emptyModule"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.context.Bundle"/>
       </file>
+<!--
+      <file name="webappSample.warImage" url="templates/WebModuleSample.template">
+          <attr name="template" boolvalue="true"/>
+          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/context/resources/WebModuleSample.html"/>
+          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.context.WebAppWizardIterator.sampleModule"/>
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.context.Bundle"/>
+      </file>
+--> 
       <file name="JSP.jsp" url="templates/JSP.template">
           <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
@@ -45,6 +53,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.html.Bundle"/>
       </file>
       <attr name="webapp.warImage/JSP.jsp" boolvalue="true"/>
+      <attr name="webappSample.warImage/JSP.jsp" boolvalue="true"/>
       <attr name="JSP.jsp/Servlet.java" boolvalue="true"/>
       <attr name="Servlet.java/Html.html" boolvalue="true"/>
       
