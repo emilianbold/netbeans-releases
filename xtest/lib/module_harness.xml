@@ -93,9 +93,11 @@ Microsystems, Inc. All Rights Reserved.
         <!-- set jdkhome to a real valid value -->
         <nbpath jdkHomePropertyName="jdkhome"/>        
         <!-- set junit.classpath to contain also nbjunit -->
-        <property name="junit.classpath" value="${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar"/>        
+        <!-- Add also nbjunit-ide.jar to be available in compiler of base plugin.
+            Ideally it should be added in compiler of ide plugin only. -->
+       <property name="junit.classpath" value="${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar:${xtest.home}/lib/nbjunit-ide.jar"/>
 
-	<!-- publishing tasks -->
+        <!-- publishing tasks -->
         <nbtaskdef classpath="${xtest.home}/lib/xtest.jar">
             <taskdef name="testruninfo" classname="org.netbeans.xtest.pe.TestRunInfoTask"/>
             <taskdef name="testbaginfo" classname="org.netbeans.xtest.pe.TestBagInfoTask"/>

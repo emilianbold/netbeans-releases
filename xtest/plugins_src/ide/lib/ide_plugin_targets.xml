@@ -95,10 +95,13 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${xtest.home}/lib/xtest.jar" todir="${xtest.userdir}/xtest/lib"/>
         <copy file="${xtest.plugin.home}/lib/xtest-ide-main.jar" todir="${xtest.userdir}/xtest/lib"/>
         <copy file="${xtest.home}/lib/junit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
-        <copy file="${xtest.home}/lib/nbjunit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>        
+        <copy file="${xtest.home}/lib/nbjunit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
                 
         <copy file="${xtest.home}/lib/xtest-junit-testrunner.jar" todir="${xtest.workdir.idejars}"/> 
         <copy file="${xtest.plugin.home}/lib/xtest-ide-testexec.jar" todir="${xtest.workdir.idejars}"/> 
+        <!-- Add projects support to system classloader classpath. 
+            It is added in module_harness.xml to compile classpath. --> 
+        <copy file="${xtest.home}/lib/nbjunit-ide.jar" todir="${xtest.workdir.idejars}"/>
 
         <antcall target="copy-user-jars"/>    
     </target>    
