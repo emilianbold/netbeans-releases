@@ -148,14 +148,16 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     getFormManager ().fireComponentsReordered (this);
    }
   
-  public void add (RADVisualComponent comp) {
+  public void add (RADComponent comp) {
+    if (!(comp instanceof RADVisualComponent)) throw new IllegalArgumentException ();
     subComponents.add (comp);
-    comp.initParent (this);
+    ((RADVisualComponent)comp).initParent (this);
     ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
   }
 
-  public void remove (RADVisualComponent comp) {
-    designLayout.removeComponent (comp);
+  public void remove (RADComponent comp) {
+    if (!(comp instanceof RADVisualComponent)) throw new IllegalArgumentException ();
+    designLayout.removeComponent (((RADVisualComponent)comp));
     int index = subComponents.indexOf (comp);
     if (index != -1) {
       subComponents.remove (index);
@@ -163,7 +165,8 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
   }
 
-  public int getIndexOf (RADVisualComponent comp) {
+  public int getIndexOf (RADComponent comp) {
+    if (!(comp instanceof RADVisualComponent)) throw new IllegalArgumentException ();
     return subComponents.indexOf (comp);
   }
 
@@ -181,6 +184,8 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  20   Gandalf   1.19        7/5/99   Ian Formanek    implemented additions to
+ *       ComponentsContainer
  *  19   Gandalf   1.18        7/5/99   Ian Formanek    Fixed last change
  *  18   Gandalf   1.17        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
  *        getComponentClass->getBeanClass

@@ -13,25 +13,61 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import java.util.ArrayList;
+
 /** 
 *
 * @author Ian Formanek
 */
 public class RADContainer extends RADComponent implements ComponentContainer {
-  private RADComponent[] subComponents;
+  private ArrayList subComponents;
 
   public RADComponent[] getSubBeans () {
-    return subComponents;
+    RADComponent[] components = new RADComponent [subComponents.size ()];
+    subComponents.toArray (components);
+    return components;
   }
 
   public void initSubComponents (RADComponent[] initComponents) {
-    subComponents = initComponents;
+    subComponents = new ArrayList (initComponents.length);
+    for (int i = 0; i < initComponents.length; i++) {
+      subComponents.add (initComponents[i]);
+    }
   }
 
   public void reorderSubComponents (int[] perm) {
-    // [PENDING]
+    for (int i = 0; i < perm.length; i++) {
+      int from = i;
+      int to = perm[i];
+      if (from == to) continue;
+      Object value = subComponents.remove (from);
+      if (from < to) {
+        subComponents.add (to - 1, value);
+      } else {
+        subComponents.add (to, value);
+      }
+    }
+    getFormManager ().fireComponentsReordered (this);
   }
-  
+
+  public void add (RADComponent comp) {
+    subComponents.add (comp);
+    ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
+  }
+
+  public void remove (RADComponent comp) {
+    int index = subComponents.indexOf (comp);
+    if (index != -1) {
+      subComponents.remove (index);
+    }
+    ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
+  }
+
+  public int getIndexOf (RADComponent comp) {
+    return subComponents.indexOf (comp);
+  }
+
+
   public String getContainerGenName () {
     return "";
   }
@@ -39,6 +75,8 @@ public class RADContainer extends RADComponent implements ComponentContainer {
 
 /*
  * Log
+ *  8    Gandalf   1.7         7/5/99   Ian Formanek    implemented additions to
+ *       ComponentsContainer
  *  7    Gandalf   1.6         6/2/99   Ian Formanek    ToolsAction, Reorder
  *  6    Gandalf   1.5         5/12/99  Ian Formanek    
  *  5    Gandalf   1.4         5/11/99  Ian Formanek    Build 318 version
