@@ -46,7 +46,8 @@ public class BeanInfoSource extends Object {
     private static final String ICONS_SECTION = "Icons"; // NOI18N
     private static final String IDX_SECTION = "Idx"; // NOI18N
     private static final String METHODS_SECTION = "Methods"; // NOI18N
-
+    private static final String SUPERCLASS_SECTION = "Superclass";  // NOI18N
+    
     private ClassElement classElement;
 
     private DataObject   biDataObject = null;
@@ -99,6 +100,18 @@ public class BeanInfoSource extends Object {
             return false;
         }
         JavaEditor.InteriorSection dis = javaEditor.findInteriorSection( DESCRIPTOR_SECTION );
+        return ( dis != null );
+    }
+
+    /** Checks wether the bean info object has Guarded sections for superclass i.e.
+     * was created from new netbeans template.
+     */
+    boolean isNbSuperclass() {
+
+        if ( !exists() || javaEditor == null ) {
+            return false;
+        }
+        JavaEditor.InteriorSection dis = javaEditor.findInteriorSection( SUPERCLASS_SECTION );
         return ( dis != null );
     }
 
@@ -334,6 +347,27 @@ public class BeanInfoSource extends Object {
         JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( IDX_SECTION );
         if ( ss != null )
             ss.setText( text );
+    }
+
+    /** Sets the header and bottom of properties section */
+    void setSuperclassSection( String header, String bottom ) {
+        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( SUPERCLASS_SECTION );
+
+        if ( is != null ) {
+            is.setHeader( header );
+            is.setBottom( bottom );
+        }
+    }
+
+    /** Gets the header of properties setion */
+    String getSuperclassSection() {
+        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( SUPERCLASS_SECTION );
+
+        if ( is != null ) {
+            return is.getText();
+        }
+        else
+            return null;
     }
 
     /*

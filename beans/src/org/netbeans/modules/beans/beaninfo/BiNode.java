@@ -59,7 +59,8 @@ public final class BiNode extends AbstractNode {
     private static String PROP_BI_ICON_M32 = "iconMono32x32"; // NOI18N
     private static String PROP_BI_DEFAULT_PROPERTY = "defaultPropertyIndex"; // NOI18N
     private static String PROP_BI_DEFAULT_EVENT = "defaultEventIndex"; // NOI18N
-
+    private static String PROP_USE_SUPERCLASS   = "useSuperclass";
+    
     static javax.swing.GrayFilter grayFilter = null;
     
     static{
@@ -474,6 +475,28 @@ public final class BiNode extends AbstractNode {
                     }
                 }
               );
+        //only if it is super class version (since 3.3)      
+        if(biAnalyser.isSuperclassVersion()){      
+            ps.put( new PropertySupport.ReadWrite (
+                        PROP_USE_SUPERCLASS,
+                        Boolean.TYPE,
+                        GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_USE_SUPERCLASS ),
+                        GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_USE_SUPERCLASS )
+                    ) {
+                        public Object getValue () {
+                            return new Boolean( biAnalyser.isUseSuperClass() );
+                        }
+                        public void setValue (Object val) throws
+                            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                            try {
+                                biAnalyser.setUseSuperClass( ((Boolean)val).booleanValue() );
+                            } catch (ClassCastException e) {
+                                throw new IllegalArgumentException ();
+                            }
+                        }
+                    }
+                  );
+        }              
         setSheet(sheet);
 
         ((Children.Array)getChildren()).add( subnodes );
