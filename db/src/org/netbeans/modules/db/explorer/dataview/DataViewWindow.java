@@ -675,7 +675,14 @@ public class DataViewWindow extends TopComponent {
                 ResultSetMetaData mdata = rs.getMetaData();
 
                 int cols = mdata.getColumnCount();
-                coldef.clear();
+                // Bug : 5083676
+                // Data is getting cleared and modified in a independent thread , while the swing 
+                // thread tries to render the table. Hence this sometimes results in a 
+                // ArrayIndexOutOfBoundsException
+                // Creating two 'work' vectors here and populating required changes in these
+                // Then replacing the model vectors with these.
+                Vector coldefWork = new Vector();
+                Vector dataWork = new Vector();
                 for(int column = 1; column <= cols; column++) {
                     boolean writable;
                     try {
@@ -686,7 +693,7 @@ public class DataViewWindow extends TopComponent {
                     }
                     ColDef cd = new ColDef(mdata.getColumnLabel(column), writable);
                     cd.setDataType(mdata.getColumnType(column));
-                    coldef.add(cd);
+                    coldefWork.add(cd);
                 }
 
                 // Get all rows.
@@ -694,7 +701,6 @@ public class DataViewWindow extends TopComponent {
                 int rcounter = 0;
                 int limit = RootNode.getOption().getFetchLimit();
                 int step = RootNode.getOption().getFetchStep();
-                data.clear();
                 
                 String cancel = bundle.getString("DataViewCancelButton"); //NOI18N
                 String nextset = bundle.getString("DataViewNextFetchButton"); //NOI18N
@@ -720,7 +726,7 @@ public class DataViewWindow extends TopComponent {
                     Vector row = new Vector(cols);
                     for (int column = 1; column <= cols; column++)
                         row.add(rs.getObject(column));
-                    data.addElement(row);
+                    dataWork.addElement(row);
 
                     // Catch row count
                     if (++rcounter >= limit) {
@@ -751,8 +757,28 @@ public class DataViewWindow extends TopComponent {
                                 break;
                     }
                 }
-                rs.close();
-                fireTableChanged(null);
+                
+                // Replace model in the swing event thread
+                // Alternative is to lock on the instance and assign it.
+                final Vector assignData = dataWork;
+                final Vector assignColdef = coldefWork;
+                SwingUtilities.invokeAndWait(new Runnable(){
+                    public void run(){
+                        data = assignData;
+                        coldef = assignColdef;
+                        fireTableChanged(null);
+                    }
+                });
+                /*
+                synchronized(coldef){
+                    coldef = assignColdef;
+                }
+                synchronized(data){
+                    data = assignData;
+                }
+                 */
+                rs.close();               
+                //fireTableChanged(null);
             } else {
                 if (command.toLowerCase().startsWith("delete") || command.toLowerCase().startsWith("insert") || command.toLowerCase().startsWith("update")) //NOI18N
                     stat.executeUpdate(command);

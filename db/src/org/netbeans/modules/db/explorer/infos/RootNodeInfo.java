@@ -31,7 +31,14 @@ import org.netbeans.modules.db.explorer.nodes.*;
 
 public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOperations {
     static final long serialVersionUID =-8079386805046070315L;
-
+    
+    static RootNodeInfo rootInfo = null;
+    public static RootNodeInfo getInstance() throws DatabaseException {
+        if (rootInfo == null) {
+            rootInfo = (RootNodeInfo) DatabaseNodeInfo.createNodeInfo(null, "root"); //NOI18N
+        }
+        return rootInfo;
+    }
     public void initChildren(Vector children) throws DatabaseException {
         try {
             Vector cons = RootNode.getOption().getConnections();
@@ -39,12 +46,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
                 Enumeration en = cons.elements();
                 while(en.hasMoreElements()) {
                     DBConnection cinfo = (DBConnection)en.nextElement();
-                    ConnectionNodeInfo ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
-                    ninfo.setUser(cinfo.getUser());
-                    ninfo.setDatabase(cinfo.getDatabase());
-                    ninfo.setSchema(cinfo.getSchema());
-                    ninfo.setName(cinfo.getName());
-                    ninfo.setDatabaseConnection(cinfo);
+                    ConnectionNodeInfo ninfo = createConnectionNodeInfo(cinfo);
                     children.add(ninfo);
                 }
             }
@@ -65,10 +67,38 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         }
     }
 
+    private ConnectionNodeInfo createConnectionNodeInfo(DBConnection cinfo) throws DatabaseException {
+        ConnectionNodeInfo ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
+        ninfo.setUser(cinfo.getUser());
+        ninfo.setDatabase(cinfo.getDatabase());
+        ninfo.setSchema(cinfo.getSchema());
+        ninfo.setName(cinfo.getName());
+        ninfo.setDatabaseConnection(cinfo);
+        return ninfo;
+    }
+
     public void refreshChildren() throws DatabaseException {
         // refresh action is empty
     }
 
+    public void addDatabaseConnection(DatabaseConnection cinfo) {
+        try {
+            getChildren(); // force restore
+            Vector cons = RootNode.getOption().getConnections();
+            if (cons.contains(cinfo))
+                return;
+
+            DatabaseNode node = getNode();
+            DatabaseNodeChildren children = (DatabaseNodeChildren) node.getChildren();
+            ConnectionNodeInfo ninfo = createConnectionNodeInfo(cinfo);
+            cons.add(cinfo);
+            children.createSubnode(ninfo, true);
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            //throw new DatabaseException(e.getMessage());
+        }
+    }
+    
     public void addConnection(DBConnection cinfo) throws DatabaseException {
         getChildren(); // force restore
         Vector cons = RootNode.getOption().getConnections();

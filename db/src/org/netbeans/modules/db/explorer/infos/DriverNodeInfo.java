@@ -27,6 +27,7 @@ import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
+import org.openide.ErrorManager;
 
 public class DriverNodeInfo extends DatabaseNodeInfo {
         
@@ -64,30 +65,7 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
     }
 
     public void delete() throws IOException {
-        String name = getName();
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Services/JDBCDrivers"); //NOI18N
-        FileObject[] drivers = fo.getChildren();
-        JDBCDriverConvertor conv;
-        JDBCDriver drv;
-        
-        for (int i = 0; i < drivers.length; i++) {
-            conv = JDBCDriverConvertor.createProvider(drivers[i]);
-            try {
-                drv = (JDBCDriver) conv.instanceCreate();
-                if (drv.getName().equals(name)) {
-                    
-                    JDBCDriver dr = JDBCDriverManager.getDefault().getDriver(drv.getClassName())[0];
-                    JDBCDriverManager.getDefault().removeDriver(dr);
-                    
-                    DataObject d = DataObject.find(drivers[i]);
-                    d.delete();
-                }
-            } catch (IOException exc) {
-                //PENDING
-            } catch (ClassNotFoundException exc) {
-                //PENDING
-            }
-        }
+        JDBCDriverManager.getDefault().removeDriver(getJDBCDriver());
     }
     
     public String getIconBase() {
@@ -110,4 +88,12 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
         return false;
     }
     
+    private JDBCDriver getJDBCDriver() {
+        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDriver(getURL());
+        for (int i = 0; i < drvs.length; i++) {
+            if (drvs[i].getName().equals(getName()))
+                return drvs[i];
+        }
+        return null;
+    }
 }

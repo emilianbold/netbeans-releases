@@ -31,7 +31,7 @@ import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 public class DatabaseNode extends AbstractNode implements Node.Cookie {
     
     /** Cookie */
-    private DatabaseNodeInfo info;
+    protected DatabaseNodeInfo info;
 
     /** Context menu flags */
     private boolean writable = false;
@@ -83,6 +83,10 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
     public void setInfo(DatabaseNodeInfo nodeinfo)
     {
         info = (DatabaseNodeInfo)nodeinfo.clone();
+        processInfo();
+    }
+    
+    protected void processInfo() {
         super.setName(info.getName());
         setIconBase(info.getIconBase());
 

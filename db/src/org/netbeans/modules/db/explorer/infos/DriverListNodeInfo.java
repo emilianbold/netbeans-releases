@@ -28,22 +28,32 @@ import org.netbeans.modules.db.explorer.driver.JDBCDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.openide.ErrorManager;
 
 public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperations {
     static final long serialVersionUID =-7948529055260667590L;
     
     private JDBCDriverManager dm = JDBCDriverManager.getDefault();
-    
-    private final PropertyChangeListener connectionListener = new PropertyChangeListener() {
+    private final PropertyChangeListener driverListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent event) {
+            if (getNode() == null)
+                return;
             if (event.getPropertyName().equals("add") || event.getPropertyName().equals("remove")) { //NOI18N
-                //PENDING
-            }
+                try {
+                    refreshChildren();
+                } catch(DatabaseException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }       
         }
     };
-    
+
+    public DriverListNodeInfo() {
+        super();
+        dm.addPropertyChangeListener(driverListener);
+    }
+
     protected void initChildren(Vector children) throws DatabaseException {
-        dm.addPropertyChangeListener(connectionListener);
         JDBCDriver[] drvs = dm.getDrivers();
         boolean win = Utilities.isWindows();
         String file;

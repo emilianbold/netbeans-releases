@@ -26,6 +26,7 @@ import org.netbeans.modules.db.explorer.DatabaseOption;
 //import org.netbeans.modules.db.explorer.PointbasePlus;
 
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 
 /** Abstract class that can be used as super class of all data objects that
 * should contain some nodes. It provides methods for adding/removing
@@ -34,6 +35,7 @@ import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 public class RootNode extends DatabaseNode {
     /** Stores DBNode's connections info */
     private static DatabaseOption option = null;
+    private static RootNode rootNode = null;
 
     /** DDLFactory */
     SpecificationFactory sfactory;
@@ -45,7 +47,14 @@ public class RootNode extends DatabaseNode {
         return option;
     }
 
-    public RootNode() {
+    public static RootNode getInstance() {
+        if (rootNode == null) {
+            rootNode = new RootNode();
+        }
+        return rootNode;
+    }
+    
+    private RootNode() {
         setDisplayName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NDN_Databases")); //NOI18N
         try {
             sfactory = new SpecificationFactory();
@@ -56,7 +65,7 @@ public class RootNode extends DatabaseNode {
             //initialization listener for SAMPLE database option
 //            initSampleDatabaseListening();
             
-            DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(null, "root"); //NOI18N
+            DatabaseNodeInfo nfo = RootNodeInfo.getInstance();
             if (sfactory != null) nfo.setSpecificationFactory(sfactory);
             else throw new Exception(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_NoSpecificationFactory"));
 

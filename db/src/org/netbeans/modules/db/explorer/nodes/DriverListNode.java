@@ -13,12 +13,18 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class DriverListNode extends DatabaseNode {
     public DriverListNode() {
         setDisplayName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NDN_Drivers")); //NOI18N
+    }
+
+    public void setInfo(DatabaseNodeInfo nodeinfo) {
+        info = nodeinfo;
+        processInfo();
     }
     
     public String getShortDescription() {

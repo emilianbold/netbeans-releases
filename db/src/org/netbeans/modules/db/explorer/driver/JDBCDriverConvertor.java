@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -61,24 +61,24 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         fo = reg;
         return new JDBCDriverConvertor();
     }
-    
+
     public Lookup getEnvironment(DataObject obj) {
         return new JDBCDriverConvertor((XMLDataObject) obj).getLookup();
     }
-    
+
     InstanceContent cookies = new InstanceContent();
-    
+
     XMLDataObject holder;
     static FileObject fo;
-    
+
     Lookup lookup;
-    
+
     RequestProcessor.Task saveTask;
-    
+
     Reference refDriver = new WeakReference(null);
-    
+
     LinkedList keepAlive = new LinkedList();
-    
+
     private JDBCDriverConvertor(XMLDataObject object) {
         this.holder = object;
         cookies = new InstanceContent();
@@ -86,15 +86,15 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         lookup = new AbstractLookup(cookies);
         cookies.add(Node.class, this);
     }
-    
+
     Lookup getLookup() {
         return lookup;
     }
-    
+
     public Class instanceClass() {
         return JDBCDriver.class;
     }
-    
+
     public Object instanceCreate() throws java.io.IOException, ClassNotFoundException {
         synchronized (this) {
             Object o = refDriver.get();
@@ -126,15 +126,32 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
             return inst;
         }
     }
-    
+
     JDBCDriver createDriver(H handler) {
         URL[] urls;
         LinkedList urlList = new LinkedList();
         for (int i = 0; i < handler.urls.size(); i++)
             try {
-                urlList.add(new URL((String) handler.urls.get(i)));
+                // Java Studio support. Covert relative url's to absolute
+                String initialURL = (String) handler.urls.get(i);
+                String finalURL;
+                finalURL = initialURL;
+
+                if(initialURL.startsWith("RELATIVE:")) {
+                    // Use a different URL prefix based on the operating system
+                    if( System.getProperty("os.name").toUpperCase().lastIndexOf("WINDOWS") == -1 ) {   // For solaris, two slashes at the beginning causes malformed URL exception 
+                        finalURL = "file:" + System.getProperty("netbeans.home") + java.io.File.separator + initialURL.substring(9);
+                    } else {  // For windows.
+                        finalURL = "file:/" + System.getProperty("netbeans.home") + java.io.File.separator + initialURL.substring(9);
+                    }
+                }
+                    
+                urlList.add(new URL(finalURL));
+                //urlList.add(new URL((String) handler.urls.get(i)));
+                // end:  Java Studio support. Covert relative url's to absolute
+
             } catch (MalformedURLException exc) {
-                //PENDING
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             }
         urls = (URL[]) urlList.toArray(new URL[urlList.size()]);
         JDBCDriver d = new JDBCDriver(handler.name, handler.clazz, urls);
@@ -142,21 +159,21 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         d.addPropertyChangeListener(this);
         return d;
     }
-    
+
     public String instanceName() {
         return holder.getName();
     }
-    
+
     public boolean instanceOf(Class type) {
         return (type.isAssignableFrom(JDBCDriver.class));
     }
-    
+
     public FileObject instanceOrigin() {
         return holder.getPrimaryFile();
     }
-    
+
     static int DELAY = 2000;
-    
+
     public void propertyChange(PropertyChangeEvent evt) {
         synchronized (this) {
             if (saveTask == null)
@@ -167,10 +184,10 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         }
         saveTask.schedule(DELAY);
     }
-    
+
     public void run() {
         PropertyChangeEvent e;
-        
+
         synchronized (this) {
             e = (PropertyChangeEvent)keepAlive.removeFirst();
         }
@@ -181,11 +198,11 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
-    
+
     public Object convert(Object obj) {
         if (obj == Node.class) {
             Object drv;
-            
+
             try {
                 drv = instanceCreate();
             } catch (IOException ex) {
@@ -197,57 +214,57 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
                 ex.printStackTrace();
                 return null;
             }
-//            return new LookNode(drv, null, Looks.defaultSelector());
+            //            return new LookNode(drv, null, Looks.defaultSelector());
             return null;
         } else
             return null;
     }
-    
+
     public String displayName(Object obj) {
         return ((Class)obj).getName();
     }
-    
+
     public String id(Object obj) {
         return obj.toString();
     }
-    
+
     public Class type(Object obj) {
         return (Class)obj;
     }
-    
-//    public static DataObject create(JDBCDriver drv, DataFolder f, String idName) throws IOException {
+
+    //    public static DataObject create(JDBCDriver drv, DataFolder f, String idName) throws IOException {
     public static DataObject create(JDBCDriver drv) throws IOException {
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Services/JDBCDrivers");
         DataFolder df = DataFolder.findFolder(fo);
-        
-//        W w = new W(drv, df, drv.getName());
+
+        //        W w = new W(drv, df, drv.getName());
         String fileName = drv.getClassName().replace('.', '_'); //NOI18N
         W w = new W(drv, df, fileName);
         df.getPrimaryFile().getFileSystem().runAtomicAction(w);
         return w.holder;
     }
-    
+
     static class W implements FileSystem.AtomicAction {
         JDBCDriver instance;
         MultiDataObject holder;
         String name;
         DataFolder f;
-        
+
         W(JDBCDriver instance, MultiDataObject holder) {
             this.instance = instance;
             this.holder = holder;
         }
-        
+
         W(JDBCDriver instance, DataFolder f, String n) {
             this.instance = instance;
             this.name = n;
             this.f = f;
         }
-        
+
         public void run() throws java.io.IOException {
             FileLock lck;
             FileObject data;
-            
+
             if (holder != null) {
                 data = holder.getPrimaryEntry().getFile();
                 lck = holder.getPrimaryEntry().takeLock();
@@ -257,7 +274,7 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
                 data = folder.createData(fn, "xml"); //NOI18N
                 lck = data.lock();
             }
-            
+
             try {
                 OutputStream ostm = data.getOutputStream(lck);
                 PrintWriter writer = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
@@ -268,11 +285,11 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
             } finally {
                 lck.releaseLock();
             }
-            
+
             if (holder == null)
                 holder = (MultiDataObject)DataObject.find(data);
         }
-        
+
         void write(PrintWriter pw) throws IOException {
             pw.println("<?xml version='1.0'?>"); //NOI18N
             pw.println("<!DOCTYPE driver PUBLIC '-//NetBeans//DTD JDBC Driver 1.0//EN' 'http://www.netbeans.org/dtds/jdbc-driver-1_0.dtd'>"); //NOI18N
@@ -287,30 +304,53 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
             pw.println("</driver>"); //NOI18N
         }
     }
-    
+
     static final String ELEMENT_NAME = "name"; // NOI18N
     static final String ELEMENT_CLASS = "class"; // NOI18N
     static final String ELEMENT_URL = "url"; // NOI18N
     static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
-    
+
     static class H extends org.xml.sax.helpers.DefaultHandler {
         String name;
         String clazz;
         LinkedList urls = new LinkedList();
-        
-        public void startDocument () throws org.xml.sax.SAXException {
+
+        public void startDocument() throws org.xml.sax.SAXException {
         }
-        
-        public void endDocument () throws org.xml.sax.SAXException {
+
+        public void endDocument() throws org.xml.sax.SAXException {
         }
-        
-        public void startElement (String uri, String localName, String qName, org.xml.sax.Attributes attrs) throws org.xml.sax.SAXException {
+
+        public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes attrs) throws org.xml.sax.SAXException {
             if (ELEMENT_NAME.equals(qName))
                 name = attrs.getValue(ATTR_PROPERTY_VALUE);
             else if (ELEMENT_CLASS.equals(qName))
                 clazz = attrs.getValue(ATTR_PROPERTY_VALUE);
             else if (ELEMENT_URL.equals(qName))
                 urls.add(attrs.getValue(ATTR_PROPERTY_VALUE));
+        }
+    }
+
+    public static void remove(JDBCDriver drv) throws IOException {
+        String name = drv.getName();
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Services/JDBCDrivers"); //NOI18N
+        FileObject[] drivers = fo.getChildren();
+        JDBCDriverConvertor conv;
+
+        for (int i = 0; i < drivers.length; i++) {
+            conv = JDBCDriverConvertor.createProvider(drivers[i]);
+            try {
+                JDBCDriver driver = (JDBCDriver) conv.instanceCreate();
+                if (driver.getName().equals(name)) {
+                    DataObject d = DataObject.find(drivers[i]);
+                    d.delete();
+                    break;
+                }
+            } catch (IOException exc) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+            } catch (ClassNotFoundException exc) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+            }
         }
     }
 }

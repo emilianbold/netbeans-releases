@@ -174,6 +174,10 @@ public class ConnectPanel extends javax.swing.JPanel implements DocumentListener
     public String getPassword() {
         return String.valueOf(passwordField.getPassword());
     }
+	
+	public void showRememberPasswordOption(boolean flag) {
+		passwordCheckBox.setVisible(flag);
+	}
 
     public boolean rememberPassword() {
         return passwordCheckBox.isSelected();
