@@ -99,8 +99,8 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
     }
     
     private void updateButtons() {
-        removeFolder.setEnabled(sourceFolders.getSelectedRowCount()==1);
-        removeTestFolder.setEnabled(testFolders.getSelectedRowCount()==1);
+        removeFolder.setEnabled(sourceFolders.getSelectedRowCount()>0);
+        removeTestFolder.setEnabled(testFolders.getSelectedRowCount()>0);
         updateUpDownButtons();
     }
     
@@ -109,10 +109,14 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
     }
 
     private void updateUpDownButtons() {
-        upFolder.setEnabled(sourceFolders.getSelectedRow() > 0);
-        downFolder.setEnabled(sourceFolders.getSelectedRow() > -1 && sourceFolders.getSelectedRow() < sourceFoldersModel.getRowCount()-1);
-        upTestFolder.setEnabled(testFolders.getSelectedRow() > 0);
-        downTestFolder.setEnabled(testFolders.getSelectedRow() > -1 && testFolders.getSelectedRow() < testFoldersModel.getRowCount()-1);
+        int first = sourceFolders.getSelectionModel().getMinSelectionIndex();
+        int last = sourceFolders.getSelectionModel().getMaxSelectionIndex();
+        upFolder.setEnabled(first > 0);
+        downFolder.setEnabled(last > -1 && last < sourceFoldersModel.getRowCount()-1);
+        first = testFolders.getSelectionModel().getMinSelectionIndex();
+        last = testFolders.getSelectionModel().getMaxSelectionIndex();
+        upTestFolder.setEnabled(first > 0);
+        downTestFolder.setEnabled(last > -1 && last < testFoldersModel.getRowCount()-1);
     }
     
     private void updateSourceLevelCombo(String sourceLevelValue) {
@@ -454,44 +458,78 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
     }//GEN-END:initComponents
 
     private void downTestFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downTestFolderActionPerformed
-        int i = testFolders.getSelectedRow();
-        int fromIndex = calcRealSourceIndex(i, true);
-        model.moveSourceFolder(fromIndex, fromIndex+1);
-        testFoldersModel.fireTableDataChanged();
-        testFolders.getSelectionModel().setSelectionInterval(i+1, i+1);
+        int[] indeces = testFolders.getSelectedRows();
+        if (indeces.length == 0) {
+            return;
+        }        
+        for (int i=indeces.length-1; i>=0; i--) {
+            int fromIndex = calcRealSourceIndex(indeces[i], true);
+            model.moveSourceFolder(fromIndex, fromIndex+1);            
+        }
+        testFoldersModel.fireTableDataChanged();        
+        testFolders.getSelectionModel().clearSelection();
+        for (int i=0; i<indeces.length; i++) {
+            testFolders.getSelectionModel().addSelectionInterval (indeces[i]+1, indeces[i]+1);
+        }
     }//GEN-LAST:event_downTestFolderActionPerformed
 
     private void upTestFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upTestFolderActionPerformed
-        int i = testFolders.getSelectedRow();
-        int fromIndex = calcRealSourceIndex(i, true);
-        model.moveSourceFolder(fromIndex, fromIndex-1);
+        int[] indeces = testFolders.getSelectedRows();
+        if (indeces.length == 0) {
+            return;
+        }
+        for (int i=0; i < indeces.length; i++) {
+            int fromIndex = calcRealSourceIndex(indeces[i], true);
+            model.moveSourceFolder(fromIndex, fromIndex-1);
+        }        
         testFoldersModel.fireTableDataChanged();
-        testFolders.getSelectionModel().setSelectionInterval(i-1, i-1);
+        testFolders.getSelectionModel().clearSelection();
+        for (int i=0; i<indeces.length; i++) {
+            testFolders.getSelectionModel().addSelectionInterval (indeces[i]-1, indeces[i]-1);
+        }
     }//GEN-LAST:event_upTestFolderActionPerformed
 
     private void downFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downFolderActionPerformed
-        int i = sourceFolders.getSelectedRow();
-        int fromIndex = calcRealSourceIndex(i, false);
-        model.moveSourceFolder(fromIndex, fromIndex+1);
+        int[] indeces = sourceFolders.getSelectedRows();
+        if (indeces.length == 0) {
+            return;
+        }
+        for (int i=indeces.length-1; i>=0; i--) {
+            int fromIndex = calcRealSourceIndex(indeces[i], false);
+            model.moveSourceFolder(fromIndex, fromIndex+1);
+        }
         sourceFoldersModel.fireTableDataChanged();
-        sourceFolders.setRowSelectionInterval(i+1, i+1);
+        sourceFolders.getSelectionModel().clearSelection();
+        for (int i=0; i<indeces.length; i++) {
+            sourceFolders.getSelectionModel().addSelectionInterval (indeces[i]+1, indeces[i]+1);
+        }
     }//GEN-LAST:event_downFolderActionPerformed
 
     private void upFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upFolderActionPerformed
-        int i = sourceFolders.getSelectedRow();
-        int fromIndex = calcRealSourceIndex(i, false);
-        model.moveSourceFolder(fromIndex, fromIndex-1);
+        int[] indeces = sourceFolders.getSelectedRows();
+        if (indeces.length == 0) {
+            return;
+        }
+        for (int i=0; i < indeces.length; i++) {
+            int fromIndex = calcRealSourceIndex(indeces[i], false);
+            model.moveSourceFolder(fromIndex, fromIndex-1);
+        }        
         sourceFoldersModel.fireTableDataChanged();
-        sourceFolders.getSelectionModel().setSelectionInterval(i-1, i-1);
+        sourceFolders.getSelectionModel().clearSelection();
+        for (int i=0; i<indeces.length; i++) {
+            sourceFolders.getSelectionModel().addSelectionInterval (indeces[i]-1, indeces[i]-1);
+        }
     }//GEN-LAST:event_upFolderActionPerformed
 
     private void removeTestFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeTestFolderActionPerformed
-        int index = testFolders.getSelectedRow();
-        if (index == -1) {
+        int[] indeces = testFolders.getSelectedRows();
+        if (indeces.length == 0) {
             return;
         }
-        String location = getItem(index, true).location;
-        model.removeSourceFolder(calcRealSourceIndex(index, true));
+        for (int i = indeces.length-1; i>=0; i--) {
+            String location = getItem(indeces[i], true).location;
+            model.removeSourceFolder(calcRealSourceIndex(indeces[i], true));
+        }
         testFoldersModel.fireTableDataChanged();
         if (listener != null) {
             listener.stateChanged(null);
@@ -514,12 +552,14 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
     }//GEN-LAST:event_sourceLevelItemStateChanged
 
     private void removeFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeFolderActionPerformed
-        int index = sourceFolders.getSelectedRow();
-        if (index == -1) {
+        int[] indeces = sourceFolders.getSelectedRows();
+        if (indeces.length == 0) {
             return;
         }
-        String location = getItem(index, false).location;
-        model.removeSourceFolder(calcRealSourceIndex(index, false));
+        for (int i = indeces.length - 1; i>=0; i--) {
+            String location = getItem(indeces[i], false).location;
+            model.removeSourceFolder(calcRealSourceIndex(indeces[i], false));
+        }
         sourceFoldersModel.fireTableDataChanged();
         if (listener != null) {
             listener.stateChanged(null);
