@@ -27,6 +27,7 @@ import junit.framework.AssertionFailedError;
 public class Benchmark extends Assert implements Test {
     
     private String name;
+    private String className;
     private static final Object[] emptyObjectArray = new Object[0];
     private static final Class[] emptyClassArray = new Class[0];
     private boolean realRun = false;
@@ -54,6 +55,10 @@ public class Benchmark extends Assert implements Test {
     public Benchmark( String name, Object[] args ) {
         this.name = name;
         arguments = args; // should we clone it?
+	
+	String fullName = getClass().getName();
+	int idx = fullName.lastIndexOf( "." );
+	className = (idx >= 0) ? fullName.substring( idx+1 ) : fullName;
     }
     
     // things to override by the implementation of a particular Benchmark
@@ -211,7 +216,7 @@ public class Benchmark extends Assert implements Test {
             argument2String(argument, sb);
             String argString = sb.toString();
             if( argString.length() > 0 ) argString = "@" + argString;
-            System.out.println( name + argString +
+            System.out.println( className + ':'+ name + argString +
                 ": iter=" + iters + 
                 ", min=" + 1000000f*realMin + 
                 ", avg=" + 1000000f*avgTime +
