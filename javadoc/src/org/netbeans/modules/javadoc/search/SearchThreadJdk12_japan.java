@@ -7,26 +7,24 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.javadoc.search;
 
 import java.util.StringTokenizer;
-import java.util.ResourceBundle;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URL;
 
 import javax.swing.text.html.parser.ParserDelegator;
-import javax.swing.DefaultListModel;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.HTML;
 import javax.swing.text.MutableAttributeSet;
 
 import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
 /** This class implements the index search through documenation
@@ -35,7 +33,7 @@ import org.openide.filesystems.FileObject;
 
 class SearchThreadJdk12_japan extends IndexSearchThread {
 
-    private BufferedReader in;
+    private Reader in;
     private URL contextURL;
 
     private boolean stopSearch = false;
@@ -44,6 +42,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
     private int currentIndexNumber;
     private FileObject folder = null;
     private String JapanEncoding;
+    private final Object LOCK = new Object();
     
     public SearchThreadJdk12_japan(String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer, boolean caseSensitive, String JapanEncoding) {
 
@@ -90,9 +89,15 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
     }
 
     public void stopSearch() {
-        stopSearch = true;
+        Reader br;
+        synchronized (LOCK) {
+            stopSearch = true;
+            br = in;
+        }
+        
         try {
-            in.close();
+            if (br != null)
+                br.close();
         }
         catch ( java.io.IOException e ) {
             ErrorManager.getDefault().notify(e);
@@ -128,7 +133,12 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
             }
 
             try {    
-                in = new BufferedReader( new InputStreamReader( indexRoot.getInputStream (), JapanEncoding ));        
+                synchronized (LOCK) {
+                    if (stopSearch) {
+                        break;
+                    }
+                    in = new BufferedReader( new InputStreamReader( indexRoot.getInputStream (), JapanEncoding ));        
+                }
 		// System.out.println("Encoding: " + JapanEncoding);
                 pd.parse( in, sc = new SearchCallbackJdk12_japan( splitedIndex, caseSensitive ), true );
             }
@@ -143,7 +153,9 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
         while ( sc.badFile != 0 );
 
         try {
-            in.close();
+            if (in != null) {
+                in.close();
+            }
         }
         catch ( java.io.IOException e ) {
             // Do nothing

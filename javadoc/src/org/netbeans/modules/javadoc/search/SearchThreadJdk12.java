@@ -14,19 +14,17 @@
 package org.netbeans.modules.javadoc.search;
 
 import java.util.StringTokenizer;
-import java.util.ResourceBundle;
-import java.io.BufferedReader;
+import java.io.Reader;
 import java.io.InputStreamReader;
+import java.io.BufferedReader;
 import java.net.URL;
 
 import javax.swing.text.html.parser.ParserDelegator;
-import javax.swing.DefaultListModel;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.HTML;
 import javax.swing.text.MutableAttributeSet;
 
 import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
 /** This class implements the index search through documenation
@@ -35,7 +33,7 @@ import org.openide.filesystems.FileObject;
 
 class SearchThreadJdk12 extends IndexSearchThread {
 
-    private BufferedReader in;
+    private Reader in;
     private URL contextURL;
 
     private boolean stopSearch = false;
@@ -43,6 +41,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
     private boolean splitedIndex = false;
     private int currentIndexNumber;
     private FileObject folder = null;
+    private final Object LOCK = new Object();
     
     public SearchThreadJdk12 ( String toFind,
                                FileObject fo,
@@ -90,9 +89,15 @@ class SearchThreadJdk12 extends IndexSearchThread {
     }
 
     public void stopSearch() {
-        stopSearch = true;
+        Reader br;
+        synchronized (LOCK) {
+            stopSearch = true;
+            br = in;
+        }
+        
         try {
-            in.close();
+            if (br != null)
+                br.close();
         }
         catch ( java.io.IOException e ) {
             ErrorManager.getDefault().notify(e);
@@ -127,8 +132,13 @@ class SearchThreadJdk12 extends IndexSearchThread {
                 }
             }
 
-            try {    
-                in = new BufferedReader( new InputStreamReader( indexRoot.getInputStream () ));      
+            try {
+                synchronized (LOCK) {
+                    if (stopSearch) {
+                        break;
+                    }
+                    in = new BufferedReader( new InputStreamReader( indexRoot.getInputStream () ));
+                }
                 pd.parse( in, sc = new SearchCallbackJdk12( splitedIndex, caseSensitive ), true );
             }
             catch ( java.io.IOException e ) {
@@ -142,7 +152,9 @@ class SearchThreadJdk12 extends IndexSearchThread {
         while ( sc.badFile != 0 );
 
         try {
-            in.close();
+            if (in != null) {
+                in.close();
+            }
         }
         catch ( java.io.IOException e ) {
             // Do nothing
