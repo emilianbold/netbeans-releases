@@ -389,7 +389,22 @@ class WebActionProvider implements ActionProvider {
                         }
                     }
                 }
-            }            
+            }
+        } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
+            FileObject[] files = findJavaSources(context);
+            String path = null;
+            p = new Properties();
+            if (files != null) {
+                path = FileUtil.getRelativePath(project.getSourceDirectory(), files[0]);
+                targetNames = new String[] {"debug-fix"}; // NOI18N
+            } else {
+                return;
+            }
+            // Convert foo/FooTest.java -> foo/FooTest
+            if (path.endsWith(".java")) { // NOI18N
+                path = path.substring(0, path.length() - 5);
+            }
+            p.setProperty("fix.includes", path); // NOI18N
             
         //COMPILATION PART
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
