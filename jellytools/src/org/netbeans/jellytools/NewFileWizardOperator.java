@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -16,6 +16,8 @@ import javax.swing.JDialog;
 import org.netbeans.jellytools.actions.NewFileAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
 import javax.swing.tree.TreePath;
 
@@ -115,6 +117,20 @@ public class NewFileWizardOperator extends WizardOperator {
      * @param category name of the category to select
      */
     public void selectCategory(String category) {
+        // we need to wait until some node is selected because 'please, wait' node
+        // is shown before tree is initialized. Then we can change selection.
+        try {
+            new Waiter(new Waitable() {
+                public Object actionProduced(Object param) {
+                    return treeCategories().isSelectionEmpty() ? null: Boolean.TRUE;
+                }
+                public String getDescription() {
+                    return("Wait node is selected");
+                }
+            }).waitAction(null);
+        } catch (InterruptedException e) {
+            throw new JemmyException("Interrupted.", e);
+        }
         new Node(treeCategories(), category).select();
     }
     
