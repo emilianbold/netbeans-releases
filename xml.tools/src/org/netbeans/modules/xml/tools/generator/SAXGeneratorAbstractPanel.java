@@ -23,21 +23,20 @@ import org.openide.util.HelpCtx;
 import java.net.URL;
 
 /**
- * Base class of Generator Wizard panels. <code>updateModel</code>
+ * Base class of wizardable customizer panels. <code>updateModel</code>
  * and <code>initView</code> methods need to be implemented. They are called as user goes 
  * over wizard steps and it must (re)store current state.
  *
  * @author  Petr Kuzel
  * @version 
  */
-public abstract class SAXGeneratorAbstractPanel extends JPanel implements WizardDescriptor.Panel, Customizer {
+public abstract class SAXGeneratorAbstractPanel extends JPanel implements Customizer {
 
     /** Serial Version UID */
     private static final long serialVersionUID =5089896677680825691L;
     
-    private Vector listeners = new Vector(); 
-    private final ChangeEvent EVENT = new ChangeEvent(this);
-    private boolean valid = true;
+    // associated wizard step or null
+    private WizardStep step;
 
     /**
      * After a setObject() call contains current model driving wizard.
@@ -48,29 +47,110 @@ public abstract class SAXGeneratorAbstractPanel extends JPanel implements Wizard
     public SAXGeneratorAbstractPanel() {
     }
 
-    public java.awt.Component getComponent() {
-        return this;
+    public static final class WizardStep implements WizardDescriptor.Panel {
+
+        private SAXGeneratorAbstractPanel peer;
+        private Class peerClass;
+        private Object bean;
+        private Integer index;
+        
+        private Vector listeners = new Vector(); 
+        private final ChangeEvent EVENT = new ChangeEvent(this);
+        private boolean valid = true;
+        
+        /**
+         * Create wizard step that uses instance of passed class as its component.
+         */
+        public WizardStep(Class peerClass) {
+            if (SAXGeneratorAbstractPanel.class.isAssignableFrom(peerClass) == false) {
+                throw new IllegalArgumentException("SAXGeneratorAbstractPanel required. Got " + peerClass);
+            }
+            this.peerClass = peerClass;
+        }
+        
+        public java.awt.Component getComponent() {
+            return getPeer();
+        }
+        
+        private SAXGeneratorAbstractPanel getPeer() {
+            if (peer == null) {
+                try {
+                    // unfortunately constructor does not initialize this
+                    // object properly, client need to call setIndex and setBean
+                    if (bean == null) throw new IllegalStateException();
+                    if (index == null) throw new IllegalStateException();
+                    peer = (SAXGeneratorAbstractPanel) peerClass.newInstance();
+                    peer.step = this;
+                    peer.setObject(bean);
+                    peer.putClientProperty("WizardPanel_contentSelectedIndex", index);  // NOI18N
+                } catch (InstantiationException ex) {
+                    throw new IllegalStateException();
+                } catch (IllegalAccessException ex) {
+                    throw new IllegalStateException();
+                }
+            }
+            return peer;
+        }
+
+        void setBean(Object bean) {
+            this.bean = bean;
+        }
+        
+        void setIndex(int index) {
+            this.index = new Integer(index);
+        }
+        
+        public void readSettings(java.lang.Object p1) {
+            getPeer().updateView();
+        }
+        
+        /**
+         * Cunstruct help ctx from WizardPanel_helpURL property.
+         */
+        public HelpCtx getHelp() {
+            return new HelpCtx(getPeer().getClass());
+        }
+
+        public void addChangeListener(javax.swing.event.ChangeListener l) {
+            listeners.add(l);
+        }
+
+        public void storeSettings(java.lang.Object p1) {
+            getPeer().updateModel();
+        }
+
+        public boolean isValid() {
+            return valid;
+        }
+
+        void setValid(boolean valid) {
+
+            if (this.valid == valid) return;
+
+            this.valid = valid;
+
+            synchronized (listeners) {
+                Iterator it = listeners.iterator();
+                while (it.hasNext()) {
+                    ChangeListener next = (ChangeListener) it.next();
+                    next.stateChanged(EVENT);
+                }
+            }
+        }
+
+        public void removeChangeListener(javax.swing.event.ChangeListener l) {
+            listeners.remove(l);
+        }
     }
-    
-    public void readSettings(java.lang.Object p1) {
-        updateView();
-    }
-    
+        
+
     /**
-     * Cunstruct help ctx from WizardPanel_helpURL property.
+     * Update validity of associted wizard step or void.
      */
-    public final HelpCtx getHelp() {
-//        URL url = (URL) getClientProperty("WizardPanel_helpURL");
-//        if (url != null) {
-            return new HelpCtx(getClass());  // warning getClass(0 returns a subclass
-//        }
-//        return null;
+    protected final void setValid(boolean valid) {
+        if (step != null) step.setValid(valid);
     }
-    
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
-        listeners.add(l);
-    }
-    
+
     /**
      * User just leaved the panel, update model
      */
@@ -86,32 +166,6 @@ public abstract class SAXGeneratorAbstractPanel extends JPanel implements Wizard
      */
     protected abstract void updateView();
     
-    public void storeSettings(java.lang.Object p1) {
-        updateModel();
-    }
-    
-    public boolean isValid() {
-        return valid;
-    }
-
-    protected final void setValid(boolean valid) {
-        
-        if (this.valid == valid) return;
-        
-        this.valid = valid;
-        
-        synchronized (listeners) {
-            Iterator it = listeners.iterator();
-            while (it.hasNext()) {
-                ChangeListener next = (ChangeListener) it.next();
-                next.stateChanged(EVENT);
-            }
-        }
-    }
-    
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
-        listeners.remove(l);
-    }
     
     public void setObject(java.lang.Object peer) {
         if ( not(peer instanceof SAXGeneratorModel) ) {

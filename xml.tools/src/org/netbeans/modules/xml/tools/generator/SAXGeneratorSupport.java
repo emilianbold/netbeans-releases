@@ -185,21 +185,18 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             
             loadPrevious(folder);
             
-            // setup wizard panels
+            // initialize wizard panels
             
             final WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {
-                new SAXGeneratorVersionPanel(),
-                new SAXGeneratorMethodPanel(),
-                new SAXGeneratorParsletPanel(),
-                new SAXGeneratorFilePanel()
+                new SAXGeneratorAbstractPanel.WizardStep(SAXGeneratorVersionPanel.class),
+                new SAXGeneratorAbstractPanel.WizardStep(SAXGeneratorMethodPanel.class),
+                new SAXGeneratorAbstractPanel.WizardStep(SAXGeneratorParsletPanel.class),
+                new SAXGeneratorAbstractPanel.WizardStep(SAXGeneratorFilePanel.class)
             };
 
             for (int i = 0; i< panels.length; i++) {
-                ((Customizer)panels[i]).setObject(model);
-                ((JComponent)panels[i]).putClientProperty(
-                    "WizardPanel_contentSelectedIndex", // NOI18N
-                    new Integer(i)
-                );
+                ((SAXGeneratorAbstractPanel.WizardStep)panels[i]).setBean(model);
+                ((SAXGeneratorAbstractPanel.WizardStep)panels[i]).setIndex(i);
             }
 
             // setup wizard properties
