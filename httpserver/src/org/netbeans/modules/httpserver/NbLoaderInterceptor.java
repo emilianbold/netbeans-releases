@@ -16,7 +16,7 @@ package org.netbeans.modules.httpserver;
 import org.apache.tomcat.core.*;
 
 import org.openide.util.SharedClassObject;
-import org.openide.TopManager;
+import org.openide.util.Lookup;
 
 /** Interceptor which tells the server about the classloader to be used by the 
  *  server's servlet loaders.
@@ -31,7 +31,8 @@ public class NbLoaderInterceptor extends BaseInterceptor {
     private void setNbLoader( ContextManager cm ) throws TomcatException {
         HttpServerSettings op = (HttpServerSettings)SharedClassObject.findObject (HttpServerSettings.class, true);
         
-        cm.setParentClassLoader(TopManager.getDefault().systemClassLoader());
+	ClassLoader cl = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+        cm.setParentClassLoader(cl);
     }
     
     public void contextInit(Context ctx) throws TomcatException {

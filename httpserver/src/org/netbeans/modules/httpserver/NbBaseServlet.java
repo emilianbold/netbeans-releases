@@ -33,11 +33,12 @@ import org.openide.util.enum.AlterEnumeration;
 import org.openide.util.enum.EmptyEnumeration;
 import org.openide.util.enum.RemoveDuplicatesEnumeration;
 import org.openide.util.enum.SequenceEnumeration;
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 
 /** Base servlet for servlets which access NetBeans Open APIs
@@ -125,7 +126,8 @@ public abstract class NbBaseServlet extends HttpServlet {
         if (pathI.length() == 0) return false;
         if (pathI.charAt(0) == '/') pathI = pathI.substring(1);
         if (pathI.length() == 0) return false;
-        InputStream is = TopManager.getDefault().systemClassLoader().getResourceAsStream(pathI);
+	ClassLoader cl = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+        InputStream is = cl.getResourceAsStream(pathI);
         if (is == null) return false;
         
         try {
@@ -166,11 +168,11 @@ public abstract class NbBaseServlet extends HttpServlet {
         if (pathI == null) {
             return false;
         }
-        FileObject fo = TopManager.getDefault().getRepository().findResource(pathI);
+        FileObject fo = Repository.getDefault().findResource(pathI);
         if (fo == null) {
             // try with the trailing /
             if ((pathI.length() > 0) && (pathI.charAt(pathI.length() - 1) != '/'))
-                fo = TopManager.getDefault().getRepository().findResource(pathI + '/');
+                fo = Repository.getDefault ().findResource(pathI + '/');
         }
         if (fo == null) return false;
 
@@ -205,10 +207,8 @@ public abstract class NbBaseServlet extends HttpServlet {
 
     private void sendDirectory(HttpServletRequest request, HttpServletResponse response, FileObject file)
     throws IOException {
-        String base = file.getPackageName('/');
-
         response.setContentType("text/html"); // NOI18N
-        String title = base;
+        String title = file.getPath ();
         if (title.length() == 0)
             title = NbBundle.getBundle(NbBaseServlet.class).getString("LAB_REPOSITORY_ROOT");
 
@@ -229,7 +229,7 @@ public abstract class NbBaseServlet extends HttpServlet {
 
         DateFormat dfmt=DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
 
-        Iterator it = sortEnumeration (children (file.getPackageNameExt ('/', '.')),
+        Iterator it = sortEnumeration (children (file.getPath ()),
                                        new Comparator() {
 
                                            /** Implements ordering of FileObjects: directories first, alphabetically */
@@ -254,30 +254,18 @@ public abstract class NbBaseServlet extends HttpServlet {
         while (it.hasNext()) {
             FileObject fo = (FileObject)it.next();
             String name;
-            String form1;
-            String form2;
-            if (fo.isFolder ()) {
-                //name  = fo.getName ();
-                form1 = "<B>"; // NOI18N
-                form2 = "</B>"; // NOI18N
-            }
-            else {
-                //name = fo.getName () + "." + fo.getExt (); // NOI18N
-                form1 = ""; // NOI18N
-                form2 = ""; // NOI18N
-            }
-            if (fo.getExt().length() == 0) name = fo.getName ();
-            else                           name = fo.getName () + "." + fo.getExt (); // NOI18N
+            name = fo.getNameExt ();
 
             if (all.get (name) == null) {
                 all.put (name, name);
-                out.print ("<A HREF=\"" /*+ baseRelativeURL*/); // NOI18N
-                out.print (name/*fo.getPackageNameExt ('/', '.')*/);
-                if (fo.isFolder ()) out.println("/"); // NOI18N
-                out.print ("\">"); // NOI18N
-                out.print (form1 + name + form2);
-                out.print ("</A>"); // NOI18N
-                out.println ("<BR>"); // NOI18N
+		StringBuffer sb = new StringBuffer ("<A HREF=\"").append (name);
+		if (fo.isFolder ()) {
+		    sb.append ("/\"><B>").append (name).append ("</B></A><BR>"); // NOI18N
+		}
+		else {
+		    sb.append ("\">").append (name).append ("</A><BR>"); // NOI18N
+		}
+                out.print (sb.toString ());
             }
         }
         out.flush();
@@ -296,7 +284,7 @@ public abstract class NbBaseServlet extends HttpServlet {
     * @return enumeration of children (FileObjects)
     */
     private static Enumeration children (final String name) {
-        Enumeration en = TopManager.getDefault ().getRepository ().getFileSystems ();
+        Enumeration en = Repository.getDefault ().getFileSystems ();
         // only not hidden filesystems containing the folder are counted
         // creates enumeration of enumerations of FileObjects
         en = new AlterEnumeration (en) {

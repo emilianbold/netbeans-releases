@@ -24,8 +24,8 @@ import java.lang.reflect.InvocationTargetException;
 import org.openide.modules.ModuleInstall;
 import org.openide.execution.Executor;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 
@@ -42,8 +42,7 @@ import org.apache.tomcat.core.Context;
 import org.apache.tomcat.logging.TomcatLogger;
 import org.apache.tomcat.context.*;
 import org.apache.tomcat.service.PoolTcpConnector;
-import org.openide.util.SharedClassObject;
-import org.openide.util.RequestProcessor;
+import org.openide.util.*;
 
 /**
 * Module installation class for Http Server
@@ -213,7 +212,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         final EmbededTomcat tc=new EmbededTomcat();
         
         File wd = FileUtil.toFile (
-                      TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot());
+                      Repository.getDefault ().getDefaultFileSystem().getRoot());
         wd = new File(wd, "httpwork"); // NOI18N
         tc.setWorkDir(wd.getAbsolutePath());
         
@@ -284,13 +283,15 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
      *
      * PENDING: Better use listening on lookup changes
      */
-    private static class ContextReloader implements PropertyChangeListener, Runnable {
+    private static class ContextReloader implements LookupListener, Runnable {
         
         private ServletContext ide_ctx;
         
         private EmbededTomcat tc;
         
         private ContextManager cm;
+
+	private Lookup.Result res;
         
         public ContextReloader (EmbededTomcat tc, ContextManager cm, ServletContext ctx) {
             ide_ctx = ctx;
@@ -300,28 +301,30 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         
         /** Starts to listen on class loader changes */
         public void activate () {
-            TopManager tm = TopManager.getDefault();
-            tm.addPropertyChangeListener (this);
+            res = Lookup.getDefault().lookup(new Lookup.Template (ClassLoader.class));
+            res.addLookupListener (this);
         }
         
         /** Stops listening. */
         public void deactivate () {
-            TopManager tm = TopManager.getDefault();
-            tm.addPropertyChangeListener (this);
+	    if (res != null) {
+                res.removeLookupListener (this);
+	        res = null;
+	    }
         }
         
-        public void propertyChange (PropertyChangeEvent evt) {
-            if (!"systemClassLoader".equals (evt.getPropertyName ()))  // NOI18N
-                return;
-            
-            RequestProcessor.postRequest (this);
+        public void resultChanged (LookupEvent evt) {
+	    // XXX tracing
+
+            RequestProcessor.getDefault ().post (this);
         }
         
         public void run () {
-            cm.setParentClassLoader (TopManager.getDefault ().systemClassLoader ());
+	    ClassLoader cl = (ClassLoader)res.allInstances ().iterator ().next ();
+            cm.setParentClassLoader (cl);
             
             File wd = FileUtil.toFile (
-                          TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot());
+                          Repository.getDefault ().getDefaultFileSystem().getRoot());
             wd = new File(wd, "httpwork"); // NOI18N
             
             Enumeration e = cm.getContexts ();

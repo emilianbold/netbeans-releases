@@ -42,7 +42,7 @@ import org.openide.util.HttpServer;
 import org.openide.util.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 
 /** Options for http server
 *
@@ -193,12 +193,12 @@ public class HttpServerSettings extends SystemOption
         }
         else {
             currentRetries = 0;
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+            DialogDisplayer.getDefault ().notify(new NotifyDescriptor.Message(
                                                NbBundle.getBundle(HttpServerSettings.class).getString("MSG_HTTP_SERVER_START_FAIL"), // NOI18N
                                                NotifyDescriptor.Message.WARNING_MESSAGE));
             int p = getPort ();
             if (p < 1024 && inited && Utilities.isUnix()) {
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                DialogDisplayer.getDefault ().notify(new NotifyDescriptor.Message(
                                                NbBundle.getBundle(HttpServerSettings.class).getString("MSG_onlyRootOnUnix"), // NOI18N
                                                NotifyDescriptor.WARNING_MESSAGE));
             }
@@ -335,7 +335,7 @@ public class HttpServerSettings extends SystemOption
             setRunning(true);
             return new URL("http", getLocalHost(), getPort(), // NOI18N
                            getJavadocBaseURL() + mangle (fo.getFileSystem ().getSystemName ()) + "/" + // NOI18N
-                           fo.getPackageNameExt('/','.')); // NOI18N
+                           fo.getPath()); // NOI18N
         }
         catch (org.openide.filesystems.FileStateInvalidException ex) {
             throw new MalformedURLException ();
@@ -449,7 +449,7 @@ public class HttpServerSettings extends SystemOption
     public URL getRepositoryURL(FileObject fo) throws MalformedURLException, UnknownHostException {
         setRunning(true);
         return new URL("http", getLocalHost(), getPort(), // NOI18N
-                       getRepositoryBaseURL() + fo.getPackageNameExt('/','.')); // NOI18N
+                       getRepositoryBaseURL() + fo.getPath()); // NOI18N
     }
 
     /** Maps the repository root to a URL. This URL should serve a page from which repository objects are accessible. */
@@ -550,7 +550,7 @@ public class HttpServerSettings extends SystemOption
                 );
                 descriptor.setMessageType (NotifyDescriptor.QUESTION_MESSAGE);
                 // descriptor.setOptionsAlign (DialogDescriptor.BOTTOM_ALIGN);
-                final Dialog d  = TopManager.getDefault ().createDialog (descriptor);
+                final Dialog d  = DialogDisplayer.getDefault ().createDialog (descriptor);
                 d.setSize (580, 180);
                 d.show ();
 
@@ -714,7 +714,7 @@ public class HttpServerSettings extends SystemOption
             if (clash) {
                 org.openide.util.RequestProcessor.getDefault().post (new Runnable () {
                     public void run () {
-                        TopManager.getDefault ().notify (new NotifyDescriptor.Message (
+                        DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (
                             NbBundle.getMessage (HttpServerSettings.class, "MSG_MappingsConflict")));
                     }
                 });

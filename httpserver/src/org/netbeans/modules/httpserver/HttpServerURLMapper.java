@@ -22,12 +22,12 @@ import java.net.MalformedURLException;
 import java.util.StringTokenizer;
 
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 import org.openide.util.SharedClassObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.Repository;
 
 /** Implementation of a URLMapper which creates http URLs for fileobjects in the IDE.
  * Directs the requests for URLs to WrapperServlet.
@@ -105,7 +105,7 @@ public class HttpServerURLMapper extends URLMapper {
         try {
             String encodedFs = encodeFileSystemName(fileObject.getFileSystem());
 
-            String orig = fileObject.getPackageNameExt('/', '.');
+            String orig = fileObject.getPath ();
             StringTokenizer slashTok = new StringTokenizer(orig, "/", true); // NOI18N
             StringBuffer path = new StringBuffer();
             for ( ; slashTok.hasMoreTokens(); ) {
@@ -148,7 +148,7 @@ public class HttpServerURLMapper extends URLMapper {
 
     private static FileSystem decodeFileSystemName(String s) {
         String decoded = URLDecoder.decode(s);
-        return TopManager.getDefault().getRepository().findFileSystem(decoded);
+        return Repository.getDefault ().findFileSystem(decoded);
     }
 
     /** Returns string for localhost */

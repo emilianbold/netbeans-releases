@@ -21,7 +21,6 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.StringTokenizer;
 
-import org.openide.TopManager;
 import org.openide.util.SharedClassObject;
 
 /**

@@ -278,7 +278,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module html..."/>
     <ant dir="../html" target="netbeans"/>
   </target>
-  <target name="all-httpserver" depends="all-openide, all-httpserver/servletapi,all-openide/deprecated">
+  <target name="all-httpserver" depends="all-openide, all-httpserver/servletapi">
     <echo message="Building module httpserver..."/>
     <ant dir="../httpserver" target="netbeans"/>
   </target>
