@@ -83,8 +83,12 @@ class ActionFilterNode extends FilterNode {
 
     private ActionFilterNode (Node original, int mode, FileObject cpRoot, FileObject resource) {
         this (original, mode, cpRoot,
-            cpRoot == null ? original.getLookup() :
             new ProxyLookup(new Lookup[] {original.getLookup(),Lookups.singleton(new JavadocProvider(cpRoot,resource))}));
+    }
+
+    private ActionFilterNode (Node original, int mode) {
+        super (original, new ActionFilterChildren (original, mode, null));
+        this.mode = mode;
     }
 
     private ActionFilterNode (Node original, int mode, FileObject root, Lookup lkp) {
@@ -172,7 +176,7 @@ class ActionFilterNode extends FilterNode {
                     }
                 case MODE_FILE:
                 case MODE_FILE_CONTENT:
-                    return new Node[] {new ActionFilterNode ((Node)key, MODE_FILE_CONTENT,null,(FileObject)null)};
+                    return new Node[] {new ActionFilterNode ((Node)key, MODE_FILE_CONTENT)};
                 default:
                     assert false : "Unknown mode";  //NOI18N
                     return new Node[0];
