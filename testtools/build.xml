@@ -43,11 +43,18 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nbroot}/java/netbeans/modules/java.jar" />
         <pathelement location="${nbroot}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar" />
         <pathelement location="${nbroot}/ant/netbeans/modules/ant.jar" />
+	<fileset dir="${nbroot}/ant/external">
+	   <include name="ant*.jar"/>
+	</fileset>
         <pathelement location="${nbroot}/jemmy/jemmy.jar" />
         <pathelement location="${nbroot}/jellytools/jelly2-nb.jar" />
         <pathelement location="${nbroot}/jemmysupport/netbeans/modules/jemmysupport.jar" />
         <!-- Hopefully set up by nbbuild/build.xml: -->
         <pathelement location="${jdkhome}/lib/tools.jar"/>
+        <fileset dir="${nbroot}/libs/external">
+          <include name="xerces*.jar"/>
+          <include name="xml-apis*.jar"/>
+        </fileset>
       </classpath>
     </javac>
   </target>
