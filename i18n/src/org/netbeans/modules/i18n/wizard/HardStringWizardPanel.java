@@ -28,6 +28,8 @@ import java.awt.Insets;
 import java.util.EventObject;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.TreeMap;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -67,6 +69,17 @@ import org.openide.WizardDescriptor;
  */
 public class HardStringWizardPanel extends JPanel {
 
+    /** Column index of check box column. */
+    private static final int COLUMN_INDEX_CHECK = 0;
+    /** Column index of hard string column. */
+    private static final int COLUMN_INDEX_HARDSTRING = 1;
+    /** Column index of key column. */
+    private static final int COLUMN_INDEX_KEY = 2;
+    /** Column index of value column. */
+    private static final int COLUMN_INDEX_VALUE = 3;
+    /** Column index of custom column. */
+    private static final int COLUMN_INDEX_CUSTOM = 4;
+        
     /** Local copy of i18n wizard data. */
     private final Map sourceMap = new TreeMap(new SourceData.DataObjectComparator());
 
@@ -89,9 +102,9 @@ public class HardStringWizardPanel extends JPanel {
     /** Adds additional init of components. */
     private void postInitComponents() {
         sourceLabel.setLabelFor(sourceCombo);
-        sourceLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_Source").charAt(0));
+        sourceLabel.setDisplayedMnemonic(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Source").charAt(0));
         hardStringLabel.setLabelFor(hardStringTable);
-        hardStringLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_FoundStrings_Mnem").charAt(0));
+        hardStringLabel.setDisplayedMnemonic(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_FoundStrings_Mnem").charAt(0));
     }
 
     /** Getter for <code>resources</code> property. */
@@ -112,6 +125,18 @@ public class HardStringWizardPanel extends JPanel {
     private Map getStringMap() {
         SourceData sourceData = (SourceData)sourceMap.get(sourceCombo.getSelectedItem());
         return sourceData == null ? null : sourceData.getStringMap();
+    }
+    
+    /** Gets hard coded strings user wish to not proceed. */
+    private Set getRemovedStrings() {
+        SourceData sourceData = (SourceData)sourceMap.get(sourceCombo.getSelectedItem());
+        if(sourceData == null)
+            return null;
+        
+        if(sourceData.getRemovedStrings() == null)
+            sourceData.setRemovedStrings(new HashSet());
+        
+        return sourceData.getRemovedStrings();                    
     }
 
     /** Inits table component. */
@@ -141,13 +166,13 @@ public class HardStringWizardPanel extends JPanel {
 
                 I18nString i18nString = (I18nString)value;
 
-                if(column == 3)
+                if(column == COLUMN_INDEX_CUSTOM)
                     return dotButton;
                     
                 JLabel label = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
                 if(i18nString != null) {
-                    if(column == 1) {
+                    if(column == COLUMN_INDEX_KEY) {
                         label.setText(i18nString.getKey());
                     } else {
                         label.setText(i18nString.getValue());
@@ -170,9 +195,9 @@ public class HardStringWizardPanel extends JPanel {
 
                 I18nString i18nString = (I18nString)value;
                 
-                if(column == 1)
+                if(column == COLUMN_INDEX_KEY)
                     value = i18nString == null ? "" : i18nString.getKey(); // NOI18N
-                else if(column == 2)
+                else if(column == COLUMN_INDEX_VALUE)
                     value = i18nString == null ? "" : i18nString.getValue(); // NOI18N
                 else
                     value = ""; // NOI18N
@@ -181,10 +206,11 @@ public class HardStringWizardPanel extends JPanel {
             }
         });
         
-        hardStringTable.getColumnModel().getColumn(3).setCellEditor(new CustomizeCellEditor());
+        hardStringTable.getColumnModel().getColumn(COLUMN_INDEX_CUSTOM).setCellEditor(new CustomizeCellEditor());
 
-        // PENDING: Setting the size of column with customize button editor.
-        hardStringTable.getColumnModel().getColumn(3).setMaxWidth(30);
+        // PENDING: Setting the size of columns with check box and  customize button editor.
+        hardStringTable.getColumnModel().getColumn(COLUMN_INDEX_CHECK).setMaxWidth(30);
+        hardStringTable.getColumnModel().getColumn(COLUMN_INDEX_CUSTOM).setMaxWidth(30);
     }
     
     /** This method is called from within the constructor to
@@ -282,7 +308,7 @@ public class HardStringWizardPanel extends JPanel {
         
         /** Implements superclass abstract method. */
         public int getColumnCount() {
-            return 4;
+            return 5;
         }
         
         /** Implemenst superclass abstract method. */
@@ -296,9 +322,11 @@ public class HardStringWizardPanel extends JPanel {
             Map stringMap = getStringMap();
             
             if(stringMap == null)
-                return null; // NOI18N
+                return null;
             
-            if(columnIndex == 0) {
+            if(columnIndex == COLUMN_INDEX_CHECK) {
+                return new Boolean(!getRemovedStrings().contains(stringMap.keySet().toArray()[rowIndex]));
+            } else if(columnIndex == COLUMN_INDEX_HARDSTRING) {
                 return stringMap.keySet().toArray()[rowIndex];
             } else {
                 return stringMap.values().toArray()[rowIndex];
@@ -308,7 +336,7 @@ public class HardStringWizardPanel extends JPanel {
         /** Overrides superclass method.
          * @ return true for all columns but first */
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            if(columnIndex > 0)
+            if(columnIndex != COLUMN_INDEX_HARDSTRING)
                 return true;
             else
                 return false;
@@ -316,20 +344,39 @@ public class HardStringWizardPanel extends JPanel {
         
         /** Overrides superclass method. */
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
-            if(columnIndex > 0) {
-                I18nString i18nString = (I18nString)getStringMap().values().toArray()[rowIndex];
+            if(columnIndex == COLUMN_INDEX_HARDSTRING)
+                return;
+
+            Map stringMap = getStringMap();
+            
+            if(stringMap == null)
+                return;
+            
+            if(columnIndex == COLUMN_INDEX_CHECK && value instanceof Boolean) {
+                Object hardString = stringMap.keySet().toArray()[rowIndex];
                 
-                if(columnIndex == 1)
-                    i18nString.setKey(value.toString());
-                else if(columnIndex == 2)
-                    i18nString.setValue(value.toString());
+                Set removedStrings = getRemovedStrings();
+                
+                if(((Boolean)value).booleanValue())
+                    removedStrings.remove(hardString);
+                else
+                    removedStrings.add(hardString);
             }
+                
+            I18nString i18nString = (I18nString)stringMap.values().toArray()[rowIndex];
+
+            if(columnIndex == COLUMN_INDEX_KEY)
+                i18nString.setKey(value.toString());
+            else if(columnIndex == COLUMN_INDEX_VALUE)
+                i18nString.setValue(value.toString());
         }
         
         /** Overrides superclass method. 
          * @return DataObject.class */
         public Class getColumnClass(int columnIndex) {
-            if(columnIndex == 0)
+            if(columnIndex == COLUMN_INDEX_CHECK)
+                return Boolean.class;
+            else if(columnIndex == COLUMN_INDEX_HARDSTRING)
                 return HardCodedString.class;
             else
                 return I18nString.class;
@@ -337,12 +384,12 @@ public class HardStringWizardPanel extends JPanel {
 
         /** Overrides superclass method. */
         public String getColumnName(int column) {
-            if(column == 0)
-                return NbBundle.getBundle(getClass()).getString("LBL_HardString");
-            else if(column == 1)
-                return NbBundle.getBundle(getClass()).getString("LBL_Key");
-            else if(column == 2)
-                return NbBundle.getBundle(getClass()).getString("LBL_Value");
+            if(column == COLUMN_INDEX_HARDSTRING)
+                return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_HardString");
+            else if(column == COLUMN_INDEX_KEY)
+                return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Key");
+            else if(column == COLUMN_INDEX_VALUE)
+                return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Value");
             else 
                 return ""; // NOI18N
         }
@@ -463,7 +510,7 @@ public class HardStringWizardPanel extends JPanel {
                 index = new Integer(2);
             
             panel.putClientProperty("WizardPanel_contentSelectedIndex", index); // NOI18N
-            panel.setName(NbBundle.getBundle(getClass()).getString("TXT_ModifyStrings"));
+            panel.setName(NbBundle.getBundle(HardStringWizardPanel.class).getString("TXT_ModifyStrings"));
             panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);        
             panel.setLayout(new GridBagLayout());
             GridBagConstraints constraints = new GridBagConstraints();
@@ -518,7 +565,7 @@ public class HardStringWizardPanel extends JPanel {
         public void doLongTimeChanges() {
             // Replace panel.
             final ProgressWizardPanel progressPanel = new ProgressWizardPanel(true);
-            progressPanel.setMainText(NbBundle.getBundle(getClass()).getString("LBL_Internationalizing"));
+            progressPanel.setMainText(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Internationalizing"));
             progressPanel.setMainProgress(0);
             
             ((Container)getComponent()).remove(hardStringPanel);
@@ -547,16 +594,23 @@ public class HardStringWizardPanel extends JPanel {
 
                 // Get string map.
                 Map stringMap = sourceData.getStringMap();
+                
+                // Get removed strings.
+                Set removed = sourceData.getRemovedStrings();
 
                 // Do actual replacement.
                 Iterator it = stringMap.keySet().iterator();
 
-                progressPanel.setSubText(NbBundle.getBundle(getClass()).getString("LBL_Source")+" "+((DataObject)source).getPrimaryFile().getPackageName('.'));
+                progressPanel.setSubText(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Source")+" "+((DataObject)source).getPrimaryFile().getPackageName('.'));
 
                 for(int j=0; it.hasNext(); j++) {
                     HardCodedString hcString = (HardCodedString)it.next();
                     I18nString i18nString = (I18nString)stringMap.get(hcString);
 
+                    if(removed != null && removed.contains(hcString))
+                        // Don't proceed.
+                        continue;
+                    
                     // Put new property into bundle.
                     support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
 
@@ -576,9 +630,8 @@ public class HardStringWizardPanel extends JPanel {
         }
         
         /** Implements <code>ProgressMonitor</code> interface method. Does nothing. */
-        public void reset() {
-        }
-
+        public void reset() {}
+        
         /** Indicates if there were found some hardcoded strings in any of selected sources. 
          * @return true if at least one hard coded string was found. */
         private static boolean foundStrings(Map sourceMap) {

@@ -17,6 +17,7 @@ package org.netbeans.modules.i18n.wizard;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Set;
 
 import org.netbeans.modules.i18n.I18nSupport;
 
@@ -44,6 +45,9 @@ public class SourceData extends Object {
 
     /** Mapping found hard coded strings to i18n strings. */
     private Map stringMap;
+    
+    /** Hard coded strings user selected to non-proceed. */
+    private Set removedStrings;
 
     
     /** Constructor. */
@@ -78,6 +82,16 @@ public class SourceData extends Object {
     /** Setter for <code>stringMap</code> prtoperty. */
     public void setStringMap(Map stringMap) {
         this.stringMap = stringMap;
+    }
+    
+    /** Getter for <code>removedStrings</code> property. */
+    public Set getRemovedStrings() {
+        return removedStrings;
+    }
+    
+    /** Setter for <code>removedStrings</code> property. */
+    public void setRemovedStrings(Set removedStrings) {
+        this.removedStrings = removedStrings;
     }
 
     

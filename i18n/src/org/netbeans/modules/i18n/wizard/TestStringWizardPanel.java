@@ -26,8 +26,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.Insets;
 import java.util.EventObject;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -66,6 +68,15 @@ import org.openide.WizardDescriptor;
  * @see Panel
  */
 public class TestStringWizardPanel extends JPanel {
+    
+    /** Column index of check box column. */
+    private static final int COLUMN_INDEX_CHECK = 0;
+    /** Column index of hard string column. */
+    private static final int COLUMN_INDEX_HARDSTRING = 1;
+    /** Column index of key column. */
+    private static final int COLUMN_INDEX_KEY = 2;
+    /** Column index of value column. */
+    private static final int COLUMN_INDEX_VALUE = 3;
 
     /** Local copy of i18n wizard data. */
     private final Map sourceMap = new TreeMap(new SourceData.DataObjectComparator());
@@ -113,6 +124,18 @@ public class TestStringWizardPanel extends JPanel {
         return sourceData == null ? null : sourceData.getStringMap();
     }
 
+    /** Gets hard coded strings user wish to not proceed. */
+    private Set getRemovedStrings() {
+        SourceData sourceData = (SourceData)sourceMap.get(sourceCombo.getSelectedItem());
+        if(sourceData == null)
+            return null;
+        
+        if(sourceData.getRemovedStrings() == null)
+            sourceData.setRemovedStrings(new HashSet());
+        
+        return sourceData.getRemovedStrings();                    
+    }
+    
     /** Inits table component. */
     private void initTable() {
         hardStringTable.setDefaultRenderer(HardCodedString.class, new DefaultTableCellRenderer() {
@@ -140,13 +163,10 @@ public class TestStringWizardPanel extends JPanel {
 
                 I18nString i18nString = (I18nString)value;
 
-                if(column == 3)
-                    return dotButton;
-                    
                 JLabel label = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
                 if(i18nString != null) {
-                    if(column == 1) {
+                    if(column == COLUMN_INDEX_KEY) {
                         label.setText(i18nString.getKey());
                     } else {
                         label.setText(i18nString.getValue());
@@ -179,6 +199,9 @@ public class TestStringWizardPanel extends JPanel {
                 return super.getTableCellEditorComponent(table, value, isSelected, row, column);
             }
         });
+        
+        // PENDING: Setting the size of columns with check box and  customize button editor.
+        hardStringTable.getColumnModel().getColumn(COLUMN_INDEX_CHECK).setMaxWidth(30);
     }
     
     /** This method is called from within the constructor to
@@ -277,7 +300,7 @@ public class TestStringWizardPanel extends JPanel {
         
         /** Implements superclass abstract method. */
         public int getColumnCount() {
-            return 3;
+            return 4;
         }
         
         /** Implemenst superclass abstract method. */
@@ -291,9 +314,11 @@ public class TestStringWizardPanel extends JPanel {
             Map stringMap = getStringMap();
             
             if(stringMap == null)
-                return null; // NOI18N
+                return null;
             
-            if(columnIndex == 0) {
+            if(columnIndex == COLUMN_INDEX_CHECK) {
+                return new Boolean(!getRemovedStrings().contains(stringMap.keySet().toArray()[rowIndex]));
+            } else if(columnIndex == COLUMN_INDEX_HARDSTRING) {
                 return stringMap.keySet().toArray()[rowIndex];
             } else {
                 return stringMap.values().toArray()[rowIndex];
@@ -301,9 +326,9 @@ public class TestStringWizardPanel extends JPanel {
         }
         
         /** Overrides superclass method.
-         * @return false for all columns but the value column */
+         * @return false for all columns but the value and check box column */
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            if(columnIndex == 2)
+            if(columnIndex == COLUMN_INDEX_CHECK || columnIndex == COLUMN_INDEX_VALUE)
                 return true;
             else
                 return false;
@@ -311,20 +336,35 @@ public class TestStringWizardPanel extends JPanel {
         
         /** Overrides superclass method. */
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
-            if(columnIndex > 0) {
-                I18nString i18nString = (I18nString)getStringMap().values().toArray()[rowIndex];
+            Map stringMap = getStringMap();
+            
+            if(stringMap == null)
+                return;
+            
+            if(columnIndex == COLUMN_INDEX_CHECK && value instanceof Boolean) {
+                Object hardString = stringMap.keySet().toArray()[rowIndex];
                 
-                if(columnIndex == 1)
-                    i18nString.setKey(value.toString());
-                else if(columnIndex == 2)
-                    i18nString.setValue(value.toString());
+                Set removedStrings = getRemovedStrings();
+                
+                if(((Boolean)value).booleanValue())
+                    removedStrings.remove(hardString);
+                else
+                    removedStrings.add(hardString);
+            }
+            
+            if(columnIndex == COLUMN_INDEX_VALUE) {
+                I18nString i18nString = (I18nString)getStringMap().values().toArray()[rowIndex];
+
+                i18nString.setValue(value.toString());
             }
         }
         
         /** Overrides superclass method. 
          * @return DataObject.class */
         public Class getColumnClass(int columnIndex) {
-            if(columnIndex == 0)
+            if(columnIndex == COLUMN_INDEX_CHECK)
+                return Boolean.class;
+            else if(columnIndex == COLUMN_INDEX_HARDSTRING)
                 return HardCodedString.class;
             else
                 return I18nString.class;
@@ -332,12 +372,12 @@ public class TestStringWizardPanel extends JPanel {
 
         /** Overrides superclass method. */
         public String getColumnName(int column) {
-            if(column == 0)
-                return NbBundle.getBundle(TestStringWizardPanel.class).getString("LBL_I18nString");
-            else if(column == 1)
-                return NbBundle.getBundle(getClass()).getString("LBL_Key");
-            else if(column == 2)
-                return NbBundle.getBundle(getClass()).getString("LBL_Value");
+            if(column == COLUMN_INDEX_HARDSTRING)
+                return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_HardString");
+            else if(column == COLUMN_INDEX_KEY)
+                return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Key");
+            else if(column == COLUMN_INDEX_VALUE)
+                return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Value");
             else 
                 return ""; // NOI18N
         }
@@ -537,6 +577,9 @@ public class TestStringWizardPanel extends JPanel {
                 // Get string map.
                 Map stringMap = sourceData.getStringMap();
 
+                // Get removed strings.
+                Set removed = sourceData.getRemovedStrings();
+                
                 // Do actual replacement.
                 Iterator it = stringMap.keySet().iterator();
 
@@ -546,6 +589,10 @@ public class TestStringWizardPanel extends JPanel {
                     HardCodedString hcString = (HardCodedString)it.next();
                     I18nString i18nString = (I18nString)stringMap.get(hcString);
 
+                    if(removed != null && removed.contains(hcString))
+                        // Don't proceed.
+                        continue;
+                    
                     // Actually put missing property into bundle.
                     support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
 
