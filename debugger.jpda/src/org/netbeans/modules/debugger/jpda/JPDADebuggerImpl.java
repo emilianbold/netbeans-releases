@@ -47,6 +47,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
@@ -546,8 +547,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public void setRunning (VirtualMachine vm, Operator o) {
-        if (startVerbose)
+        if (startVerbose) {
             System.out.println("\nS JPDADebuggerImpl.setRunning ()");
+            JPDAUtils.printFeatures (vm);
+        }
         this.virtualMachine = vm;
         
         initGenericsSupport ();

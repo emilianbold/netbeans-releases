@@ -261,23 +261,18 @@ public class JPDAStart extends Task implements Runnable {
         Path sourcepath,
         Path bootclasspath
     ) {
-        ClassPath sourcePath = convertToSourcePath 
-           (project, classpath);
-        if (sourcepath != null)
-            sourcePath = ClassPathSupport.createProxyClassPath (
-                new ClassPath[] {
-                    sourcePath,
-                    convertToClassPath (project, sourcepath)
-                }
-            );
-//        sourcePath = ClassPathSupport.createProxyClassPath (
-//            new ClassPath[] {
-//                sourcePath,
-//                (bootclasspath == null) ? 
-//                    JavaPlatform.getDefault ().getSourceFolders () :
-//                    convertToSourcePath (project, bootclasspath)
-//            }
-//        );
+        ClassPath cp = convertToSourcePath (project, classpath);
+        ClassPath sp = convertToClassPath (project, sourcepath);
+        ClassPath bp = null;
+        if (bootclasspath == null)
+            bp = JavaPlatform.getDefault ().getSourceFolders ();
+            // if current platform is default one, bootclasspath is set to null
+        else
+            bp = convertToSourcePath (project, bootclasspath);
+        
+        ClassPath sourcePath = ClassPathSupport.createProxyClassPath (
+            new ClassPath[] {cp, sp, bp}
+        );
         if (startVerbose) {
             System.out.println("\nS Crete sourcepath: ***************");
             System.out.println ("    classpath : " + classpath);
@@ -289,7 +284,7 @@ public class JPDAStart extends Task implements Runnable {
     }
     
     static ClassPath convertToClassPath (Project project, Path path) {
-        String[] paths = path.list ();
+        String[] paths = path == null ? new String [0] : path.list ();
         List l = new ArrayList ();
         int i, k = paths.length;
         for (i = 0; i < k; i++) {
@@ -326,45 +321,62 @@ public class JPDAStart extends Task implements Runnable {
     static ClassPath convertToSourcePath (Project project, Path path) {
         String[] paths = path == null ? new String [0] : path.list ();
         List l = new ArrayList ();
-        List exist = new ArrayList ();
-        for (int i = 0; i < paths.length; i++) {
+        Set exist = new HashSet ();
+        int i, k = paths.length;
+        for (i = 0; i < k; i++) {
             URL u = null;
             try {
                 File f = FileUtil.normalizeFile (project.resolveFile (paths [i]));
                 if (!isValid (f, project)) {
                     continue;
                 }
-                String pathString = paths [i].toLowerCase ();
-                if (pathString.endsWith (".jar")) {
+                if (paths [i].toLowerCase ().endsWith (".jar") ||
+                    paths [i].toLowerCase ().endsWith (".zip")
+                )
                     u = new URL ("jar:" + f.toURI () + "!/");
-                } else if (pathString.endsWith (".zip")) {
-                    u = new URL ("jar:" + f.toURI () + "!/");
-                } else {
+                else
                     u = f.toURI ().toURL ();
-                }
             } catch (MalformedURLException e) {
                 ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
                 continue;
             }
-            FileObject fos[] = SourceForBinaryQuery.findSourceRoots (u).getRoots();
             if (startVerbose)
                 System.out.println("class: " + u);
-            if (fos.length > 0) {
+            try {
+                FileObject fos[] = SourceForBinaryQuery.findSourceRoots (u).getRoots();
+                int j, jj = fos.length;
+                for (j = 0; j < jj; j++) {
+                    if (fos.length > 0) {
+                        if (startVerbose)
+                            System.out.println("source : " + fos [j]);
+                        try {
+                            File file = FileUtil.toFile (fos [j]);
+                            if (file == null)
+                                file = FileUtil.toFile (FileUtil.getArchiveFile (fos [j]));
+                            if (file == null) {
+                                if (startVerbose)
+                                    System.out.println("not recognized!");
+                                continue;
+                            }
+                            if (file.getName ().toLowerCase ().endsWith (".zip") ||
+                                file.getName ().toLowerCase ().endsWith (".jar")
+                            )
+                                u = new URL ("jar:" + file.toURI () + "!/");
+                            else
+                                u = file.toURI ().toURL ();
+                        } catch (MalformedURLException e) {
+                            ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
+                            continue;
+                        }
+                        if (!exist.contains (u)) {
+                            l.add (ClassPathSupport.createResource (u));
+                            exist.add (u);
+                        }
+                    }
+                } // for
+            } catch (IllegalArgumentException ex) {
                 if (startVerbose)
-                    System.out.println("source : " + fos [0]);
-                try {
-                    File file = FileUtil.toFile(fos [0]);
-                    if (file == null) continue;
-    //                    u = FileUtil.toFile (fos [0]).toURI ().toURL ();
-                    u = file.toURI ().toURL ();
-                } catch (MalformedURLException e) {
-                    ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
-                    continue;
-                }
-                if (!exist.contains (u)) {
-                    l.add (ClassPathSupport.createResource (u));
-                    exist.add (u);
-                }
+                    System.out.println("illegal url!");
             }
         }
         return ClassPathSupport.createClassPath (l);

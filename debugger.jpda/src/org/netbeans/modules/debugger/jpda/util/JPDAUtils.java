@@ -19,6 +19,7 @@ import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.connect.Connector;
 import com.sun.jdi.request.EventRequestManager;
 
@@ -37,47 +38,26 @@ import java.util.Map;
 public class JPDAUtils {
 
 
-    /**
-     * Selects anonymous inner classes from a list of
-     * <A HREF="http://java.sun.com/j2se/1.3/docs/guide/jpda/jdi/com/sun/jdi/ReferenceType.html">reference type</A>s.
-     * @param  outerClazzName  qualified class name
-     * @param  refTypes  list of reference types to be filtered
-     * @return  list of reference types that are anonymous nested classes of the <CODE>outerClazzName</CODE>
-     * @exception  java.lang.IllegalArgumentException  either of the arguments is <TT>null</TT>
-     */
-    public static List anonymousInnerClasses(String outerClazzName, List refTypes) {
-        if (outerClazzName == null) {
-            throw new IllegalArgumentException("outerClazzName == null");       //NOI18N
-        }
-        if (refTypes == null) {
-            throw new IllegalArgumentException("refTypes == null");       //NOI18N
-        }
-        if (refTypes.isEmpty()) {
-            return refTypes;
-        }
-        if (outerClazzName.trim().length() == 0) {
-            return Collections.EMPTY_LIST;
-        }
-        String mandatoryPrefix = outerClazzName + '$';
-        int mandatoryPrefixLength = mandatoryPrefix.length();
-        List resultList = new ArrayList(refTypes.size());
-        for (Iterator i = refTypes.iterator(); i.hasNext(); ) {
-            ReferenceType refType = (ReferenceType)i.next();
-            String refTypeName = refType.name();
-            if ((refTypeName.length() > mandatoryPrefixLength)
-                && refTypeName.startsWith(mandatoryPrefix)
-                && (Character.isJavaIdentifierStart(refTypeName.charAt(mandatoryPrefixLength)) == false)) {
-                    resultList.add(refType);
-            }
-        }
-        if (resultList.isEmpty()) {
-            return Collections.EMPTY_LIST;
-        }
-        return resultList;
-    }
-
     // testing methods .........................................................................
 
+    public static void printFeatures (VirtualMachine virtualMachine) {
+        System.out.println ("canAddMethod " + virtualMachine.canAddMethod ());
+        //System.out.println ("canBeModified " + virtualMachine.canBeModified ());
+        System.out.println ("canGetBytecodes " + virtualMachine.canGetBytecodes ());
+        System.out.println ("canGetCurrentContendedMonitor " + virtualMachine.canGetCurrentContendedMonitor ());
+        System.out.println ("canGetMonitorInfo " + virtualMachine.canGetMonitorInfo ());
+        System.out.println ("canGetOwnedMonitorInfo " + virtualMachine.canGetOwnedMonitorInfo ());
+        System.out.println ("canGetSourceDebugExtension " + virtualMachine.canGetSourceDebugExtension ());
+        System.out.println ("canGetSyntheticAttribute " + virtualMachine.canGetSyntheticAttribute ());
+        System.out.println ("canPopFrames " + virtualMachine.canPopFrames ());
+        System.out.println ("canRedefineClasses " + virtualMachine.canRedefineClasses ());
+        System.out.println ("canRequestVMDeathEvent " + virtualMachine.canRequestVMDeathEvent ());
+        System.out.println ("canUnrestrictedlyRedefineClasses " + virtualMachine.canUnrestrictedlyRedefineClasses ());
+        System.out.println ("canUseInstanceFilters " + virtualMachine.canUseInstanceFilters ());
+        System.out.println ("canWatchFieldAccess " + virtualMachine.canWatchFieldAccess ());
+        System.out.println ("canWatchFieldModification " + virtualMachine.canWatchFieldModification ());
+    }
+   
     public static void showMethods (ReferenceType rt) {
         System.out.println ("  ============================================"); // NOI18N
         System.out.println ("  Methods for " + rt.name ()); // NOI18N
