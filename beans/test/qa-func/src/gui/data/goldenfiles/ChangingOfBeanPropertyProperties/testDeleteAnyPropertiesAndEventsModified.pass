@@ -1,8 +1,8 @@
 import java.beans.*;
-
-public class TestFile extends Object implements java.io.Serializable {
+import java.io.Serializable;
+public class TestFile extends Object implements Serializable {
     
-    private static final String PROP_SAMPLE_PROPERTY = "SampleProperty";
+    public static final String PROP_SAMPLE_PROPERTY = "sampleProperty";
     
     private String sampleProperty;
     
@@ -28,9 +28,8 @@ public class TestFile extends Object implements java.io.Serializable {
      */
     private javax.swing.event.EventListenerList listenerList =  null;
     
-    /** Creates new TestFile */
     public TestFile() {
-        propertySupport = new PropertyChangeSupport( this );
+        propertySupport = new PropertyChangeSupport(this);
     }
     
     public String getSampleProperty() {
