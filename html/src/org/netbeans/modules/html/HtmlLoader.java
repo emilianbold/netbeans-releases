@@ -76,13 +76,13 @@ public class HtmlLoader extends UniFileLoader {
   protected MultiDataObject createMultiObject (final FileObject primaryFile)
   throws DataObjectExistsException, IOException {
 
-    HtmlDataObject obj = new HtmlDataObject (primaryFile, this);
+    final HtmlDataObject obj = new HtmlDataObject (primaryFile, this);
     EditorSupport es = new EditorSupport (obj.getPrimaryEntry ());
     obj.getCookieSet ().add (es);
     obj.getCookieSet ().add (new ViewCookie () {
       public void view () {
         try {
-          TopManager.getDefault ().showUrl (primaryFile.getURL ());
+          TopManager.getDefault ().showUrl (obj.getPrimaryEntry ().getFile ().getURL ());
         } catch (FileStateInvalidException e) {
         }  
       }
@@ -93,6 +93,7 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  22   Gandalf   1.21        9/30/99  Jan Jancura     Bug 3921 & 3392
 *  21   Gandalf   1.20        8/9/99   Ian Formanek    HtmlDataObject is a 
 *       standalone class
 *  20   Gandalf   1.19        8/8/99   Ian Formanek    
