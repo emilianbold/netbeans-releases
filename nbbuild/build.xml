@@ -151,6 +151,10 @@ workspaceswitcher
     <echo message="Building module clazz..."/>
     <ant dir="../clazz" target="netbeans"/>
   </target>
+  <target name="all-db" depends="all-openide,all-openidex,all-form">
+    <echo message="Building module db..."/>
+    <ant dir="../db" target="netbeans"/>
+  </target>
   <target name="all-debuggercore" depends="all-openide">
     <echo message="Building module debuggercore..."/>
     <ant dir="../debuggercore" target="netbeans"/>
@@ -674,6 +678,8 @@ the ${netbeans.dest}/bin/ directory.
         <exclude name="performance/src/org/netbeans/performance/bde/generated/"/>
         <exclude name="vcsgeneric/src/org/netbeans/modules/vcs/advanced/config/layer-include*.xml"/>
         <exclude name="openide/test/unit/results/"/>
+        <exclude name="core/test/unit/src/org/netbeans/core/modules/jars/"/>
+        <exclude name="openide/api/doc/org/openide/filesystems/doc-files/resolverDocumentation.html"/>
       </fileset>
     </checklicense>
     <checklicense fragment="Copyright">
