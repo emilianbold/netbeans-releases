@@ -246,7 +246,7 @@ class DataFolderPanel extends TopComponent implements
             // create the folder
             final DataFolder newDf = (DataFolder)getPropertyValue();
             // TODO: this line does not work - because the Node is not there yet
-//            setTargetFolder(newDf);
+            setTargetFolder(newDf);
             updateDirectory ();
             updatePropertyEditor();
             enableCreateButton();
@@ -461,7 +461,7 @@ class DataFolderPanel extends TopComponent implements
             }
         }
 
-        if (match == null || match.length () == pref.length ()) {
+        if (match == null ) {  // why? || match.length () == pref.length ()) {
             return null;
         } else {
             return match.substring (pref.length ());
@@ -581,11 +581,17 @@ class DataFolderPanel extends TopComponent implements
 
         // first of all test the currently selected nod
         // for location of closest
-        java.util.Collection selected = new java.util.HashSet (
-                                            java.util.Arrays.asList (
-                                                packagesPanel.getExplorerManager().getSelectedNodes()
-                                            )
-                                        );
+        java.util.Collection selected = new java.util.HashSet ();
+        Node[] nodes = packagesPanel.getExplorerManager().getSelectedNodes();
+        for ( int i = 0; i < nodes.length; i++ ) {
+            Node n1 = nodes[i];
+            if ( n1.getParentNode() == null ) {
+                continue;
+            }
+            while ( n1.getParentNode().getParentNode() != null )
+                n1 = n1.getParentNode();
+            selected.add( n1 );
+        }
 
         // scan
         Node[] arr = rootNode.getChildren ().getNodes ();
@@ -611,11 +617,7 @@ class DataFolderPanel extends TopComponent implements
                                             null
                                         );
 
-                    if
-                    (
-                        closest == null || selected.contains (root
-                                                             ) && sugg != null
-                    ) {
+                    if ( ( closest == null || selected.contains (root) ) && sugg != null ) {
                         // if we can go on and there has been no suggestion o
                         // this is the current filesystem => go o
                         closest = ex;
