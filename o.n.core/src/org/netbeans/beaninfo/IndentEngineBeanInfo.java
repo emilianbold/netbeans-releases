@@ -39,8 +39,6 @@ public class IndentEngineBeanInfo extends SimpleBeanInfo {
         descr.setValue ("helpID", "editing.indentation"); // NOI18N
         
         descr.setValue("global", Boolean.TRUE); // NOI18N
-        descr.setValue ("SystemFileSystem.icon", // NOI18N
-            "nbresloc:/org/netbeans/core/resources/indentEngines.gif"); // NOI18N
     }
 
     public BeanDescriptor getBeanDescriptor () {
