@@ -351,10 +351,12 @@ public class JarClassLoader extends ProxyClassLoader {
 
     class JarSource extends Source {
         JarFile src;
+        private String resPrefix;
         
         public JarSource(JarFile file) throws MalformedURLException {
             super(new File(file.getName()).toURI().toURL());
             src = file;
+            resPrefix = "jar:" + new File(src.getName()).toURI() + "!/"; // NOI18N;
         }
 
         public Manifest getManifest() {
@@ -375,7 +377,7 @@ public class JarClassLoader extends ProxyClassLoader {
                 if (ze != null)
                     System.err.println("Loading " + name + " from " + src.getName()); // NOI18N
             }
-            return ze == null ? null : new URL("jar:" + new File(src.getName()).toURI() + "!/" + ze.getName()); // NOI18N
+            return ze == null ? null : new URL(resPrefix + ze.getName());
         }
         
         protected byte[] readClass(String name, String path) throws IOException {
