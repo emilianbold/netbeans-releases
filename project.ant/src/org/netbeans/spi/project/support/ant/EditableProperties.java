@@ -593,7 +593,12 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
                         continue;
                     }
                     String val = input.substring(x+1, x+5);
-                    output.append((char)Integer.parseInt(val, 16));
+                    try {
+                        output.append((char)Integer.parseInt(val, 16));
+                    } catch (NumberFormatException e) {
+                        // #46234: handle gracefully
+                        output.append(input.substring(x - 1, x + 5));
+                    }
                     x += 4;
                 } else {
                     if (ch == 't') ch = '\t';

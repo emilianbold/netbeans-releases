@@ -13,14 +13,21 @@
 
 package org.netbeans.spi.project.support.ant;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
-
 
 public class EditablePropertiesTest extends NbTestCase {
 
@@ -50,6 +57,8 @@ public class EditablePropertiesTest extends NbTestCase {
         content.put("keyG", "");
         content.put("keyH", "value#this is not comment");
         content.put("keyI", "incorrect end: \\u123");
+        // #46234: does not handle bad Unicode escapes well
+        content.put("keyJ", "malformed Unicode escape: \\uabyz");
         
         EditableProperties ep = loadTestProperties();
         
@@ -69,6 +78,21 @@ public class EditablePropertiesTest extends NbTestCase {
         }
         assertEquals("Number of items in property file", content.keySet().size(), count);
     }
+    
+    /* Doesn't work; java.util.Properties throws IAE for malformed Unicode escapes:
+    public void testJavaUtilPropertiesEquivalence() throws Exception {
+        Properties p = loadTestJavaUtilProperties();
+        EditableProperties ep = loadTestProperties();
+        Iterator it = p.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry entry = (Map.Entry) it.next();
+            String key = (String) entry.getKey();
+            String val = (String) entry.getValue();
+            assertEquals("right value for " + key, val, ep.getProperty(key));
+        }
+        assertEquals("right number of items", p.size(), ep.size());
+    }
+     */
 
     public void testSave() throws Exception {
         clearWorkDir();
@@ -353,18 +377,31 @@ public class EditablePropertiesTest extends NbTestCase {
         return EditablePropertiesTest.class.getResource("data/test.properties").getPath();
     }
     
-    private EditableProperties loadTestProperties() throws Exception {
+    private EditableProperties loadTestProperties() throws IOException {
         URL u = EditablePropertiesTest.class.getResource("data/test.properties");
+        EditableProperties ep = new EditableProperties();
         InputStream is = u.openStream();
-        EditableProperties ep;
         try {
-            ep = new EditableProperties();
             ep.load(is);
         } finally {
             is.close();
         }
         return ep;
     }
+    
+    /*
+    private Properties loadTestJavaUtilProperties() throws IOException {
+        URL u = EditablePropertiesTest.class.getResource("data/test.properties");
+        Properties p = new Properties();
+        InputStream is = u.openStream();
+        try {
+            p.load(is);
+        } finally {
+            is.close();
+        }
+        return p;
+    }
+     */
     
     private void saveProperties(EditableProperties ep, String path) throws Exception {
         OutputStream os = new FileOutputStream(path);
