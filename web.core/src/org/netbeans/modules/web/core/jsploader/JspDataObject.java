@@ -841,7 +841,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 new Runnable() {
                     public void run() {
                         updateServletEditor();
-                        JspDataObject.this.firePropertyChange0(PROP_SERVLET_DATAOBJECT, oldServlet, getServletDataObject());
+                        // Bugfix 31143: oldValue must be null, since if oldValue == newValue, no change will be fired
+                        JspDataObject.this.firePropertyChange0(PROP_SERVLET_DATAOBJECT, null, getServletDataObject());
                         // the state of some CookieActions may need to be updated
                         JspDataObject.this.firePropertyChange0(PROP_COOKIE, null, null);
                     }
