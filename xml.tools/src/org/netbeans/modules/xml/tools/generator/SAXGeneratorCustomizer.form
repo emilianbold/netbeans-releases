@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <SyntheticProperties>
+    <SyntheticProperty name="encoding" type="java.lang.String" value="UTF-8"/>
+  </SyntheticProperties>
+
+  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
+    <Property name="rows" type="int" value="2"/>
+    <Property name="columns" type="int" value="2"/>
+  </Layout>
+  <SubComponents>
+    <Container class="org.netbeans.modules.xml.generator.SAXGeneratorParsletPanel" name="sAXGeneratorParsletPanel1">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+    </Container>
+    <Container class="org.netbeans.modules.xml.generator.SAXGeneratorMethodPanel" name="sAXGeneratorMethodPanel1">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+    </Container>
+    <Container class="org.netbeans.modules.xml.generator.SAXGeneratorVersionPanel" name="sAXGeneratorVersionPanel1">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+    </Container>
+    <Container class="org.netbeans.modules.xml.generator.SAXGeneratorFilePanel" name="sAXGeneratorFilePanel1">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+    </Container>
+  </SubComponents>
+</Form>

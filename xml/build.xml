@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="xml" default="netbeans" basedir=".">
+
+  <property name="nbroot" location=".."/>
+  <property name="binroot" location="${nbroot}/../nbextra"/>
+
+  <property name="nbext" location="${nbroot}/nbbuild"/>
+  <taskdef name="for-each-submodule" classname="org.netbeans.nbbuild.ForEachSubmodule" classpath="${nbext}/nbantext.jar"/>
+  <property name="submodules" value="tax,catalog,core,tools,text-edit,tree-edit,css"/>
+
+
+  <target name="init">
+    <tstamp/>
+    <property name="buildnumber" value="${DSTAMP}-${TSTAMP}"/>
+    <echo message="buildnumber = ${buildnumber}"/>
+  </target>
+
+  <target name="compile">
+    <for-each-submodule submodules="${submodules}"/>
+  </target>
+
+  <target name="jars" depends="init,compile">
+    <for-each-submodule submodules="${submodules}"/>
+  </target>
+
+  <target name="release">
+    <for-each-submodule submodules="${submodules}"/>
+  </target>
+
+  <target name="javahelp">
+    <for-each-submodule submodules="${submodules}"/>
+  </target>
+
+  <target name="netbeans" depends="jars,release,javahelp"/>
+
+  <target name="nbm" depends="netbeans">
+    <for-each-submodule submodules="${submodules}"/>
+  </target>
+
+  <target name="clean">
+    <for-each-submodule submodules="${submodules}"/>
+  </target>
+
+  <target name="all" depends="clean,nbm" />
+
+  <target name="javadoc">
+    <for-each-submodule submodules="${submodules}"/>
+  </target>
+
+
+  <!-- Build xml module and all modules which is depend on. -->
+  <target name="all-xml" depends="all-openide,all-editor,clean,netbeans"/>
+
+  <!-- Targets to build IDE core -->
+  <target name="all-openide">
+    <echo message="Building Open APIs..."/>
+    <ant dir="${nbroot}/openide" target="clean"/>
+    <ant dir="${nbroot}/openide" target="netbeans"/>
+  </target>
+
+  <target name="all-core" depends="all-openide">
+    <echo message="Building IDE core implementation..."/>
+    <ant dir="${nbroot}/core" target="clean"/>
+    <ant dir="${nbroot}/core" target="netbeans"/>
+  </target>
+
+  <!-- Editor module. -->
+  <target name="all-editor" depends="all-openide,all-core">
+    <echo message="Building module editor..."/>
+    <ant dir="${nbroot}/editor" target="clean"/>
+    <ant dir="${nbroot}/editor" target="netbeans"/>
+  </target>
+
+</project>

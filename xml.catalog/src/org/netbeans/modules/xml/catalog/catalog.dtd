@@ -1,0 +1,41 @@
+<?xml encoding="UTF-8" ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+
+<!-- Created by pkuzel on June 12, 2000, 9:35 AM -->
+
+<!ELEMENT XMLCatalog (Map | Remap | Delegate | Extend | Base)+>
+
+<!ELEMENT Map EMPTY>
+<!ATTLIST Map
+  PublicId CDATA #REQUIRED
+  HRef CDATA #REQUIRED>
+
+<!ELEMENT Remap EMPTY>
+<!ATTLIST Remap
+  SystemId CDATA #REQUIRED
+  HRef CDATA #REQUIRED>
+
+<!ELEMENT Delegate EMPTY>
+<!ATTLIST Delegate
+  PublicId CDATA #REQUIRED
+  HRef CDATA #REQUIRED>
+
+<!ELEMENT Extend EMPTY>
+<!ATTLIST Extend
+  HRef CDATA #REQUIRED>
+
+<!ELEMENT Base EMPTY>
+<!ATTLIST Base
+  HRef CDATA #REQUIRED>

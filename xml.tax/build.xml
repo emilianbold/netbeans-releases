@@ -1,0 +1,183 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="xml" default="jars" basedir=".">
+
+  <property name="xmlroot" location=".."/>
+
+  <property name="nbroot" location="${xmlroot}/.."/>
+  <property name="binroot" location="${nbroot}/../nbextra"/>
+  <property name="nbext" location="${nbroot}/nbbuild"/>
+
+  <property name="parserimpl" value="release/modules/ext/xerces2.jar"/> <!-- parser implementation used internally by module -->
+
+  <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="storepass" value="?"/>
+
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
+  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
+
+
+  <target name="init">
+    <tstamp/>
+    <property name="buildnumber" value="${DSTAMP}-${TSTAMP}"/>
+    <echo message="buildnumber = ${buildnumber}"/>
+  </target>
+
+  <target name="compile">
+    <echo message="Compiling TAX library classes..."/>
+    <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <classpath>        
+        <pathelement location="${parserimpl}"/>
+      </classpath>
+    </javac>
+
+    <echo message="Compiling TAX module classes..."/>
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <classpath>        
+	<fileset dir="${nbroot}/openide/netbeans/lib">
+	  <include name="openide*.jar"/>
+	</fileset>
+        <pathelement location="libsrc"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="jars" depends="init,compile">
+    <mkdir dir="netbeans/modules/ext"/>
+    <jar jarfile="netbeans/modules/ext/tax.jar"
+    	 compress="false">
+      <fileset dir="libsrc" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+    </jar>
+
+    <mkdir dir="netbeans/modules/autoload"/>   
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <locjar jarfile="netbeans/modules/autoload/xml-tax.jar"
+            manifest="manifest-subst.mf"
+    	    compress="false">
+      <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+      <locale name="ja"/>
+    </locjar>
+  </target>
+
+  <target name="release">
+    <copy todir="netbeans">
+      <fileset dir="release"/>
+    </copy>
+  </target>
+
+  <target name="javahelp">
+    <!--mkdir dir="javahelp/org/netbeans/modules/xml/tax/docs/JavaHelpSearch"/>
+    <jhindexer basedir="javahelp/org/netbeans/modules/xml/tax/docs/"
+               db="javahelp/org/netbeans/modules/xml/tax/docs/JavaHelpSearch"
+               jhall="${binroot}/nbbuild/lib/jhall.jar">
+      <include name="**/*.html"/>
+      <exclude name="JavaHelpSearch/"/>
+      <exclude name="ja/"/>
+      <exclude name="credits.html"/>
+    </jhindexer>
+    <mkdir dir="javahelp/org/netbeans/modules/xml/tax/docs/ja/JavaHelpSearch"/>
+    <jhindexer basedir="javahelp/org/netbeans/modules/xml/tax/docs/ja/"
+               db="javahelp/org/netbeans/modules/xml/tax/docs/ja/JavaHelpSearch"
+               locale="ja"
+               jhall="${binroot}/nbbuild/lib/jhall.jar">
+      <include name="**/*.html"/>
+      <exclude name="JavaHelpSearch/"/>
+      <exclude name="credits.html"/>
+    </jhindexer>
+    <mkdir dir="netbeans/modules/docs"/>
+    <locjar jarfile="netbeans/modules/docs/xml-tax.jar"
+            compress="true">
+      <fileset dir="javahelp" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+      <locale name="ja"/>
+    </locjar-->
+  </target>
+
+  <target name="netbeans" depends="jars,release,javahelp"/>
+
+  <target name="nbm" depends="netbeans">
+    <delete dir="Info"/>
+    <makenbm file="../xml-tax.nbm"
+             topdir="."
+	     manifest="manifest-subst.mf"
+	     homepage="http://${homepage.base}/xml-tax.html"
+	     distribution="${dist.base}/xml-tax.nbm">
+      <license file="${license.file}"/>
+      <description>
+        The module contains Tree API for XML ("TAX") library. It allows tree manipulation of XML and DTD documents structure, including event, traversal and i/o support.
+      </description>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+    </makenbm>
+  </target>
+
+  <target name="clean">
+    <delete>
+      <fileset dir="libsrc">
+        <include name="**/*.class"/>
+      </fileset>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+      </fileset>
+    </delete>
+    <delete file="manifest-subst.mf"/>
+    <delete file="../xml-tax.nbm"/>
+    <delete dir="netbeans"/>
+    <delete dir="Info"/>
+    <delete dir="javadoc" />
+  </target>
+
+  <target name="all" depends="clean,nbm" />
+
+  <target name="javadoc">
+    <delete dir="javadoc" />
+    <mkdir dir="javadoc" />
+    <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.3/docs/api"/>
+    <property name="xml-docs-location" value="http://xml.apache.org/apiDocs"/>
+    <tstamp/>
+    <javadoc destdir="javadoc"
+             packagenames="org.netbeans.tax.*"
+             windowtitle="TAX - Tree API for XML"
+             doctitle="Tree API for XML"
+             use="true"
+             splitindex="true"
+             author="false"
+             version="false"
+             maxmemory="64m">
+      <sourcepath>
+        <pathelement location="libsrc"/>
+      </sourcepath>
+      <classpath>
+        <pathelement location="${parserimpl}"/>
+      </classpath>
+      <link href="${jdk-docs-location}"
+            offline="true"
+            packagelistLoc="${nbroot}/openide/api/doc"
+      />
+      <link href="${xml-docs-location}"
+            offline="true"
+            packagelistLoc="${nbroot}/openide/api/doc/org/openide/xml"
+      />
+    </javadoc>
+  </target>
+
+
+  <!-- Run tests. -->
+  <target name="test">
+    <ant dir="testbase" target="run"/>
+  </target>
+
+</project>

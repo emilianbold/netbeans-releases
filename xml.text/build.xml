@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="xml" default="netbeans" basedir=".">
+
+  <property name="xmlroot" location=".."/>
+  <property name="taxroot" location="../tax"/>
+  <property name="coreroot" location="../core"/>
+
+  <property name="nbroot" location="${xmlroot}/.."/>
+  <property name="binroot" location="${nbroot}/../nbextra"/>
+  <property name="nbext" location="${nbroot}/nbbuild"/>
+
+  <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="storepass" value="?"/>
+
+  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbroot}/nbbuild/nbantext.jar"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
+  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
+  <taskdef name="genjavadoc" classname="org.netbeans.nbbuild.GenerateJavadoc" classpath="${nbext}/nbantext.jar"/>
+
+
+  <target name="init">
+    <tstamp/>
+    <property name="buildnumber" value="${DSTAMP}-${TSTAMP}"/>
+    <echo message="buildnumber = ${buildnumber}"/>
+  </target>
+
+  <target name="xml-core.compile">
+    <ant dir="${coreroot}" target="compile"/>
+  </target>
+
+  <target name="compile" depends="xml-core.compile">
+    <echo message="Compiling XML text-edit module classes..."/>
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <classpath>        
+	<pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
+	<fileset dir="${nbroot}/openide/netbeans/lib">
+	  <include name="openide*.jar"/>
+	</fileset>
+	<pathelement location="${nbroot}/editor/netbeans/modules/ext/nb-editor.jar"/>
+	<pathelement location="${nbroot}/editor/netbeans/modules/editor.jar"/>
+        <pathelement location="${taxroot}/libsrc/"/>
+        <pathelement location="${coreroot}/src/"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="jars" depends="init,compile">
+    <mkdir dir="netbeans/modules"/>
+   
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <locjar jarfile="netbeans/modules/xml-text-edit.jar"
+            manifest="manifest-subst.mf"
+	    compress="false">
+      <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+      <locale name="ja"/>
+    </locjar>    
+  </target>
+
+  <target name="release">
+    <!--copy todir="netbeans">
+      <fileset dir="release"/>
+    </copy-->
+  </target>
+
+  <target name="javahelp">
+    <!--mkdir dir="javahelp/org/netbeans/modules/xml/text/docs/JavaHelpSearch"/>
+    <jhindexer basedir="javahelp/org/netbeans/modules/xml/text/docs/"
+               db="javahelp/org/netbeans/modules/xml/text/docs/JavaHelpSearch"
+               jhall="${binroot}/nbbuild/lib/jhall.jar">
+      <include name="**/*.html"/>
+      <exclude name="JavaHelpSearch/"/>
+      <exclude name="ja/"/>
+      <exclude name="credits.html"/>
+    </jhindexer>
+    <mkdir dir="javahelp/org/netbeans/modules/xml/text/docs/ja/JavaHelpSearch"/>
+    <jhindexer basedir="javahelp/org/netbeans/modules/xml/text/docs/ja/"
+               db="javahelp/org/netbeans/modules/xml/text/docs/ja/JavaHelpSearch"
+               locale="ja"
+               jhall="${binroot}/nbbuild/lib/jhall.jar">
+      <include name="**/*.html"/>
+      <exclude name="JavaHelpSearch/"/>
+      <exclude name="credits.html"/>
+    </jhindexer>
+    <mkdir dir="netbeans/modules/docs"/>
+    <locjar jarfile="netbeans/modules/docs/xml-text-edit.jar"
+            compress="true">
+      <fileset dir="javahelp" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+      <locale name="ja"/>
+    </locjar-->
+  </target>
+
+  <target name="netbeans" depends="jars,release,javahelp"/>
+
+  <target name="nbm" depends="netbeans">
+    <delete dir="Info"/>
+    <makenbm file="../xml-text-edit.nbm"
+             topdir="."
+	     manifest="manifest-subst.mf"
+	     homepage="http://${homepage.base}/xml-text-edit.html"
+	     distribution="${dist.base}/xml-text-edit.nbm">
+      <license file="${license.file}"/>
+      <description>
+        The module provides text editing capabilities. It adds syntax coloring, abbreviation support and simple indentation engine into text editing of XML and DTD documents.
+      </description>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+    </makenbm>
+  </target>
+
+  <target name="clean">
+    <delete>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+      </fileset>
+    </delete>
+    <delete file="manifest-subst.mf"/>
+    <delete file="../xml-text-edit.nbm"/>
+    <delete dir="netbeans"/>
+    <delete dir="Info"/>
+  </target>
+
+  <target name="all" depends="clean,nbm" />
+
+  <target name="javadoc">
+    <delete dir="javadoc" />
+    <mkdir dir="javadoc" />
+    <genjavadoc destdir="javadoc" modules="openide,xml/text-edit">
+      <topdir path="${nbroot}" />
+    </genjavadoc>
+  </target>
+
+
+  <!-- Run tests. -->
+  <target name="test">
+    <ant dir="testbase" target="run"/>
+  </target>
+
+</project>

@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+  <!-- register services with Lookup -->
+  
+  <folder name="Services">
+    <folder name="Hidden">
+      <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance" />
+      <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance" />
+      <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance" />
+
+      <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.instance" />
+
+      <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance" />
+      <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance" />
+      <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance" />
+    </folder>
+  </folder>
+
+  <!-- register actions to action pool -->
+  
+  <folder name="Actions">
+    <folder name="XML">
+      <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance" />
+      <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance" />
+      <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance" />
+
+      <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.instance" />
+
+      <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance" />
+      <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance" />
+      <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance" />
+    </folder>
+  </folder>
+
+  <!-- register entities with system entity resolver -->
+  
+  <folder name="xml">
+    <folder name="entities">
+        <folder name="XML_Module">
+            <file name="DTD_SAX_Bindings_1_0" url="nbres:/org/netbeans/modules/xml/tools/generator/sax-bindings.dtd"/>
+        </folder>
+    </folder>
+  </folder>
+
+</filesystem>

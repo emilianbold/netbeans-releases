@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+  <!-- register templates -->
+  
+  <folder name="Templates">
+    <folder name="XML">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
+      <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/XML.html" />
+      
+      <file name="XMLwithDTD.xml" url="templates/XMLwithDTD.xml.template">
+	<attr name="template" boolvalue="true" />
+	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
+	<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
+	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/XMLwithDTD.html" />
+      </file>
+      
+      <file name="XMLwithROOT.xml" url="templates/XMLwithROOT.xml.template">
+	<attr name="template" boolvalue="true" />
+	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
+	<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
+	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/XMLwithROOT.html" />
+      </file>
+      
+      <file name="emptyDTD.dtd" url="templates/emptyDTD.dtd.template">
+	<attr name="template" boolvalue="true" />
+	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
+	<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/dtdObject.gif" />
+	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/emptyDTD.html" />
+      </file>
+
+      <file name="StyleSheet.xml" url="templates/StyleSheet.xml.template">
+	<attr name="template" boolvalue="true" />
+	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
+	<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
+	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/StyleSheet.html" />
+      </file>
+
+      <!-- until we can bundle DTDs
+      <file name="xhtml.xml" url="templates/xhtml.xml.template">
+	<attr name="template" boolvalue="true" />
+	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
+	<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
+	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xhtml.html" />
+      </file>
+      -->
+
+    </folder>
+  </folder>
+  
+  <!-- register services with Lookup -->
+  
+  <folder name="Services">
+    <folder name="Hidden">
+
+      <!-- Comment reason: becuase of module separation and cleaning.
+      <file name="org.netbeans-modules-xml-cookies.xml">
+        <![CDATA[
+          <!DOCTYPE cookies PUBLIC "-//DTD apisupport cookie class list 1.0//EN" "http://www.netbeans.org/dtds/apisupport-cookie-classlist-1_0.dtd">
+          <catalog>
+            <class name="org.netbeans.modules.xml.core.cookies.CookieManagerCookie" />
+            <class name="org.netbeans.modules.xml.core.cookies.TreeDocumentCookie" />
+            <class name="org.netbeans.modules.xml.core.cookies.TreeEditorCookie" />
+          </catalog>
+        ]]>
+      </file>
+      -->
+
+    </folder>
+  </folder>
+
+  <!-- register actions to action pool -->
+  
+  <folder name="Actions">
+    <folder name="XML">
+      <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance" />
+      <file name="org-netbeans-modules-xml-core-actions-CollectDTDAction.instance" />
+    </folder>
+  </folder>
+  
+</filesystem>

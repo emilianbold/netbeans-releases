@@ -1,0 +1,69 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<HTML>
+<body>
+<h2>XML Entity Catalog SPI</h2>
+
+<p><b>Maintainer</b>: Petr Kuzel
+<p><b>Updated on</b>: 31st June 2001
+
+
+<h2>SPI Overview</h2>
+
+The SPI is very simple, there is only one mandatory interface
+to be implemented. Then the implementation must be integrated
+with IDE.
+
+
+<h2>SPI Implementator Guide</h2>
+
+<p>Every SPI implementation must implement interface
+{@link org.netbeans.modules.xml.catalog.spi.CatalogReader CatalogReader}
+allowing quering catalog for entries, refreshing its content and optionaly
+listening on its content.
+
+<p>An SPI implementation should implement following interfaces:
+<ul>
+<li>{@link org.netbeans.modules.xml.catalog.spi.CatalogDescriptor CatalogDescriptor} describing catalog instance
+<li>{@link org.netbeans.modules.xml.catalog.spi.CatalogWriter CatalogWriter} allowing to modify catalog entries
+<li>SAX's org.xml.sax.EntityResolver if it can resolve more complicated cases than public => system ID mappings
+</ul>
+
+
+<h3>NetBeans IDE Platform Integration</h3>
+
+An SPI implementation can register its availability using NetBeans <b>Lookup</b>.
+A module providing a new SPI implementation registers its avaiability using
+{@link org.netbeans.modules.xml.catalog.spi.CatalogProvider CatalogProvider}</b> 
+instance (declared at its XML Layer):
+
+<pre>
+  &lt;folder name="Services">
+    &lt;folder name="Hidden">
+      &lt;file name="my-company-netbeans-catalog-impl-MyProvider.instance" />
+    &lt;/filder>
+  &lt;/folder>
+</pre>
+
+Where <tt>my.company.netbeans.catalog.impl.MyProvider</tt> public no-arg constructor 
+class implements the <tt>CatalogProvider</tt> interface.
+
+<h3>Forte for Java 3.0 Specifics Feature</h3>
+
+If a catalog implements <tt>Serializable</tt> interface then
+its mounting point is <b>persistent</b> among IDE restarts. In such case it is
+highly recommended to explicitly declare <tt>serialVersionUID</tt> field.
+
+</body>
+</HTML>

@@ -1,0 +1,49 @@
+<?xml encoding="UTF-8" ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+
+<!-- Created by pkuzel on June 2, 2001, 9:51 PM -->
+
+<!-- 
+ PUBLIC "-//XML Module//DTD SAX Bindings 1.0//EN"
+ -->
+ 
+<!--- 
+  Root element of bindings.
+-->
+<!ELEMENT SAX-bindings (bind* | parslet*)* >
+<!ATTLIST SAX-bindings version CDATA #REQUIRED>
+
+<!--- 
+  One element binds to handling methods of given type.
+  These methods can get converted data (done by pasrlet).
+-->
+<!ELEMENT bind (attbind*)>
+<!ATTLIST bind element CDATA #REQUIRED>
+<!ATTLIST bind method  CDATA #REQUIRED>
+<!ATTLIST bind type    (DATA | CONTAINER | MIXED | EMPTY | IGNORE) #REQUIRED>
+<!ATTLIST bind parslet IDREF #IMPLIED>
+
+<!--- 
+  Parslet declaration. return attribute is
+  Java primitive type or fully classified class  
+-->
+<!ELEMENT parslet EMPTY>
+<!ATTLIST parslet parslet ID #REQUIRED>
+<!ATTLIST parslet return  CDATA #REQUIRED>
+
+<!--- 
+  Attribute binding placeholder - reserved name. 
+-->
+<!ELEMENT attbind EMPTY>

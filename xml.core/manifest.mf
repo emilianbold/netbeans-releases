@@ -1,0 +1,19 @@
+OpenIDE-Module: org.netbeans.modules.xml.core/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/core/resources/Bundle.properties
+OpenIDE-Module-Install: org/netbeans/modules/xml/core/CoreModuleInstall.class
+OpenIDE-Module-Layer: org/netbeans/modules/xml/core/resources/mf-layer.xml
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
+OpenIDE-Module-Specification-Version: 0.1
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.xml.tax/1 > 0.4
+Class-Path: docs/xml-core.jar
+
+Name: org/netbeans/modules/xml/core/XMLDataLoader.class
+OpenIDE-Module-Class: Loader
+
+Name: org/netbeans/modules/xml/core/DTDDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.netbeans.modules.text.TXTDataObject
+
+Name: org/netbeans/modules/xml/core/settings/CoreSettings.class
+OpenIDE-Module-Class: Option
