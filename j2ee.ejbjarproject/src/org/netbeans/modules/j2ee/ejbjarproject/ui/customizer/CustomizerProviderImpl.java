@@ -40,6 +40,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -218,13 +219,16 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         List servicesSettings = null;
         List serviceClientsSettings = null;
         EjbJarProvider ejbJarProvider = (EjbJarProvider)project.getLookup().lookup(EjbJarProvider.class);
-        WebServicesSupport servicesSupport = WebServicesSupport.getWebServicesSupport(ejbJarProvider.getMetaInf());
-        if (servicesSupport != null) {
-            servicesSettings = servicesSupport.getServices();
-        }
-        WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(ejbJarProvider.getMetaInf());
-        if (clientSupport != null) {
-            serviceClientsSettings = clientSupport.getServiceClients();
+        FileObject metaInf = ejbJarProvider.getMetaInf();
+        if (metaInf != null) {
+            WebServicesSupport servicesSupport = WebServicesSupport.getWebServicesSupport(metaInf);
+            if (servicesSupport != null) {
+                servicesSettings = servicesSupport.getServices();
+            }
+            WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(metaInf);
+            if (clientSupport != null) {
+                serviceClientsSettings = clientSupport.getServiceClients();
+            }
         }
         
         categories = new ProjectCustomizer.Category[] { 

@@ -51,6 +51,8 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     private AntProjectHelper helper;
     private Set versionListeners = null;
     
+    private long notificationTimeout = 0; // used to suppress repeating the same messages
+    
     EjbJarProvider(EjbJarProject project, AntProjectHelper helper) {
         this.project = project;
         this.helper = helper;
@@ -58,10 +60,7 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     
     public FileObject getDeploymentDescriptor() {
         FileObject metaInfFo = getMetaInf();
-        if (metaInfFo==null) {
-            DialogDisplayer.getDefault().notify(
-            new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarProject.class,"MSG_WebInfCorrupted"),
-            NotifyDescriptor.ERROR_MESSAGE));
+        if (metaInfFo == null) {
             return null;
         }
         return metaInfFo.getFileObject(FILE_DD);
@@ -76,7 +75,13 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     }
     
     public FileObject getMetaInf() {
-        return getFileObject(EjbJarProjectProperties.META_INF);
+        FileObject metaInf = getFileObject(EjbJarProjectProperties.META_INF);
+        if (metaInf == null) {
+            String path = helper.resolvePath(helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.META_INF));
+            showErrorMessage(NbBundle.getMessage(EjbJarProject.class,"MSG_MetaInf_Corrupted", project.getName(), path));
+            return null;
+        }
+        return metaInf;
     }
 
     public File getEnterpriseResourceDirectory() {
@@ -197,12 +202,9 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     public FileObject getDD() {
         FileObject metaInfFo = getMetaInf();
         if (metaInfFo==null) {
-            DialogDisplayer.getDefault().notify(
-            new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarProvider.class,"MSG_WebInfCorrupted"),
-            NotifyDescriptor.ERROR_MESSAGE));
             return null;
         }
-        return getMetaInf().getFileObject(WebServicesConstants.WEBSERVICES_DD, "xml");
+        return metaInfFo.getFileObject(WebServicesConstants.WEBSERVICES_DD, "xml"); // NOI18N
     }
     
     public org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor getEjbChanges(long timestamp) {
@@ -286,6 +288,15 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         }
         
         return roots; 
+    }
+    
+    private void showErrorMessage(String message) {
+        if(new Date().getTime() > notificationTimeout) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            // set timeout to suppress the same messages during next 20 seconds (feel free to adjust the timeout
+            // using more suitable value)
+            notificationTimeout = new Date().getTime() + 20000;
+        }
     }
     
     private static class IT implements Iterator {

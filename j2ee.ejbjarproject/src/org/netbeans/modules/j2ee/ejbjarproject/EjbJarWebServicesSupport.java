@@ -47,7 +47,6 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
@@ -55,6 +54,7 @@ import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 import java.lang.reflect.Modifier;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.src.ClassElement;
 import org.openide.src.FieldElement;
 import org.openide.src.Identifier;
@@ -199,9 +199,6 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     public FileObject getWebservicesDD() {
         FileObject metaInfFo = getMetaInf();
         if (metaInfFo==null) {
-            DialogDisplayer.getDefault().notify(
-            new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarProject.class,"MSG_WebInfCorrupted"),
-            NotifyDescriptor.ERROR_MESSAGE));
             return null;
         }
         return getMetaInf().getFileObject(WEBSERVICES_DD, "xml");
@@ -644,15 +641,13 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     }
     
     public FileObject getMetaInf() {
-        return getFileObject(EjbJarProjectProperties.META_INF);
+        EjbJarProvider provider = (EjbJarProvider)project.getLookup().lookup(EjbJarProvider.class);
+        return provider.getMetaInf();
     }
     
     public FileObject getDeploymentDescriptor() {
         FileObject metaInfFo = getMetaInf();
         if (metaInfFo==null) {
-            DialogDisplayer.getDefault().notify(
-            new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarProject.class,"MSG_MetaInfCorrupted"),
-            NotifyDescriptor.ERROR_MESSAGE));
             return null;
         }
         return metaInfFo.getFileObject(EjbJarProvider.FILE_DD);
