@@ -52,6 +52,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ThreadsTreeModel;
 import org.netbeans.modules.debugger.jpda.util.Executor;
+import org.netbeans.spi.debugger.ActionsProvider;
 
 
 /**
@@ -192,9 +193,13 @@ implements Executor {
     private StepIntoActionProvider stepIntoActionProvider;
     
     private StepIntoActionProvider getStepIntoActionProvider () {
-        if (stepIntoActionProvider == null)
-            stepIntoActionProvider = (StepIntoActionProvider) lookupProvider.
-                lookupFirst (StepIntoActionProvider.class);
+        if (stepIntoActionProvider == null) {
+            List l = lookupProvider.lookup (ActionsProvider.class);
+            int i, k = l.size ();
+            for (i = 0; i < k; i++)
+                if (l.get (i) instanceof StepIntoActionProvider)
+                    stepIntoActionProvider = (StepIntoActionProvider) l.get (i);
+        }
         return stepIntoActionProvider;
     }
 
