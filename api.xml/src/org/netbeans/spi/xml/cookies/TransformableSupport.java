@@ -37,7 +37,6 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamSource;
 
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 
 import org.netbeans.api.xml.cookies.*;
 import org.netbeans.api.xml.services.UserCatalog;
@@ -50,24 +49,20 @@ import org.netbeans.api.xml.services.UserCatalog;
  * @deprecated XML tools SPI candidate
  */
 public final class TransformableSupport implements TransformableCookie {
-    /** SAX feature: Perform namespace processing. */
-    private static final String SAX_FEATURES_NAMESPACES = "http://xml.org/sax/features/namespaces"; // NOI18N
 
-    // associated data object
-    private final DataObject dataObject;
+    // associated source
+    private final Source source;
     /** cached TransformerFactory instance. */
     private static TransformerFactory transformerFactory;
-    /** cached SAXParserFactory instance. */
-    private static SAXParserFactory saxParserFactory;
     
     
     /** 
      * Create new TransformableSupport for given data object.
-     * @param dataObject Supported data object.
+     * @param source Supported <code>Source</code>.
      */    
-    public TransformableSupport (DataObject dataObject) {
-        if (dataObject == null) throw new NullPointerException();
-        this.dataObject = dataObject;
+    public TransformableSupport (Source source) {
+        if (source == null) throw new NullPointerException();
+        this.source = source;
     }
 
     /**
@@ -87,8 +82,8 @@ public final class TransformableSupport implements TransformableCookie {
                 Util.THIS.debug ("   outputResult = " + outputResult.getSystemId());
             }
 
-            URL url = dataObject.getPrimaryFile().getURL();
-            Source xmlSource = createSource (url.toExternalForm());
+            
+            Source xmlSource = source;
 
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("   xmlSource = " + xmlSource.getSystemId());
 
@@ -164,16 +159,10 @@ public final class TransformableSupport implements TransformableCookie {
 
     private static URIResolver getURIResolver () {
         UserCatalog catalog = UserCatalog.getDefault();
-        URIResolver res = (catalog == null ? null : catalog.getURIResolver(null));
+        URIResolver res = (catalog == null ? null : catalog.getURIResolver());
         return res;
     }
 
-    private static EntityResolver getEntityResolver () {
-        UserCatalog catalog = UserCatalog.getDefault();
-        EntityResolver res = (catalog == null ? null : catalog.getEntityResolver(null));
-        return res;
-    }
-    
     private static TransformerFactory getTransformerFactory () {
         if ( transformerFactory == null ) {
             transformerFactory = TransformerFactory.newInstance();
@@ -188,39 +177,6 @@ public final class TransformableSupport implements TransformableCookie {
     }
 
 
-    private static SAXParserFactory getSAXParserFactory () throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
-        if ( saxParserFactory == null ) {
-            saxParserFactory = SAXParserFactory.newInstance();
-            saxParserFactory.setFeature (SAX_FEATURES_NAMESPACES, true);
-        }
-        return saxParserFactory;
-    }
-
-    /**
-     *
-     * @throws ParserConfigurationException if a parser cannot
-     *         be created which satisfies the requested configuration.
-     * @throws SAXException if a parser cannot be created which satisfies the requested configuration.
-     */
-    private static XMLReader newXMLReader () throws ParserConfigurationException, SAXException {
-        SAXParser parser = getSAXParserFactory().newSAXParser();
-        return parser.getXMLReader();
-    }
-
-
-    /**
-     *
-     * @throws ParserConfigurationException if a parser cannot
-     *         be created which satisfies the requested configuration.
-     * @throws SAXException if a parser cannot be created which satisfies the requested configuration.
-     */
-    private static Source createSource (String systemId) throws ParserConfigurationException, SAXException {
-        XMLReader reader = newXMLReader();
-        reader.setEntityResolver (getEntityResolver());
-        Source source = new SAXSource (reader, new InputSource (systemId));
-
-        return source;
-    }
 
 
     //

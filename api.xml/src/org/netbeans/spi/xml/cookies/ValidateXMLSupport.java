@@ -12,19 +12,20 @@
  */
 package org.netbeans.spi.xml.cookies;
 
-import org.openide.loaders.DataObject;
+import org.xml.sax.InputSource;
 
 import org.netbeans.api.xml.cookies.*;
 
 /**
  * <code>ValidateXMLCookie</code> implementation support simplifing cookie 
- * providers based on <code>DataObject</code>s representing XML documents
+ * providers based on <code>InputSource</code>s representing XML documents
  * and entities.
  * <p>
  * <b>Primary use case</b> in a DataObject subclass (which primary file is XML):
  * <pre>
  *   CookieSet cookies = getCookieSet();
- *   ValidateXMLSupport cookieImpl = new ValidateXMLSupport(this);
+ *   InputSource in = DataObjectAdapters.inputSource(this);
+ *   ValidateXMLSupport cookieImpl = new ValidateXMLSupport(in);
  *   cookies.add(cookieImpl);
  * </pre>
  * <p>
@@ -39,21 +40,12 @@ public class ValidateXMLSupport extends TestXMLSupport implements ValidateXMLCoo
             
     /** 
      * Create new ValidateXMLSupport for given data object. 
-     * @param dataObject Supported data object.
+     * @param inputSource Supported InputSource.
      */    
-    public ValidateXMLSupport(DataObject dataObject) {
-        super(dataObject);
+    public ValidateXMLSupport(InputSource inputSource) {
+        super(inputSource);
     }
     
-    /** 
-     * Create new ValidateXMLSupport for given data object.
-     * @param dataObject Supported data object.
-     * @param checkStrategy one of <code>CheckXMLSupport.*_MODE</code> constants
-     */    
-    private ValidateXMLSupport(DataObject dataObject, int checkStrategy) {
-        super(dataObject, checkStrategy);
-    }
-
     // inherit JavaDoc
     public boolean validateXML(CookieObserver l) {
         return super.validateXML(l);

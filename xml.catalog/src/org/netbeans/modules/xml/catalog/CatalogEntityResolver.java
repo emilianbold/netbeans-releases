@@ -41,7 +41,7 @@ public class CatalogEntityResolver extends UserCatalog implements EntityResolver
     public CatalogEntityResolver() {
     }
 
-    public EntityResolver getEntityResolver(Lookup ctx) {
+    public EntityResolver getEntityResolver() {
         return this;
     }
     
@@ -90,7 +90,7 @@ public class CatalogEntityResolver extends UserCatalog implements EntityResolver
     /**
      * Return all known public IDs.
      */
-    public Iterator getPublicIDs(Lookup ctx) {
+    public Iterator getPublicIDs() {
         
         IteratorIterator ret = new IteratorIterator();
         

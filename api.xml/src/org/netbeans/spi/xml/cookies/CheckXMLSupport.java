@@ -12,18 +12,19 @@
  */
 package org.netbeans.spi.xml.cookies;
 
-import org.openide.loaders.DataObject;
+import org.xml.sax.InputSource;
 
 import org.netbeans.api.xml.cookies.*;
 
 /**
  * <code>CheckXMLCookie</code> implementation support simplifing cookie providers
- * based on <code>DataObject</code>s representing XML documents and entities.
+ * based on <code>InputSource</code>s representing XML documents and entities.
  * <p>
  * <b>Primary use case</b> in a DataObject subclass (which primary file is XML):
  * <pre>
  *   CookieSet cookies = getCookieSet();
- *   CheckXMLSupport cookieImpl = new CheckXMLSupport(this);
+ *   InputSource in = DataObjectAdapters.inputSource(this);
+ *   CheckXMLSupport cookieImpl = new CheckXMLSupport(in);
  *   cookies.add(cookieImpl);
  * </pre>
  * <p>
@@ -55,19 +56,19 @@ public class CheckXMLSupport extends TestXMLSupport implements CheckXMLCookie {
     
     /** 
      * Create new CheckXMLSupport for given data object using DOCUMENT_MODE strategy.
-     * @param dataObject Supported data object.
+     * @param inputSource Supported data object.
      */    
-    public CheckXMLSupport(DataObject dataObject) {
-        super(dataObject);
+    public CheckXMLSupport(InputSource inputSource) {
+        super(inputSource);
     }
     
     /** 
      * Create new CheckXMLSupport for given data object.
-     * @param dataObject Supported data object.
+     * @param inputSource Supported data object.
      * @param strategy One of <code>*_MODE</code> constants.
      */    
-    public CheckXMLSupport(DataObject dataObject, int strategy) {
-        super(dataObject, strategy);
+    public CheckXMLSupport(InputSource inputSource, int strategy) {
+        super(inputSource, strategy);
     }
 
     // inherit JavaDoc

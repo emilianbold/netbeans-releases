@@ -51,33 +51,27 @@ public abstract class UserCatalog {
     
     /**
      * User's JAXP/TrAX <code>URIResolver</code>.
-     * @param ctx Service invocation context (e.g. used for locating its
-     * settings). <code>null</code>stays for IDE global context.
      * @return URIResolver or <code>null</code> if not supported.
      */
-    public URIResolver getURIResolver(Lookup ctx) {
+    public URIResolver getURIResolver() {
         return null;
     }
     
     /**
      * User's SAX <code>EntityResolver</code>.
-     * @param ctx Service invocation context (e.g. used for locating its
-     * settings). <code>null</code>stays for IDE global context.
      * @return EntityResolver or <code>null</code> if not supported.
      */
-    public EntityResolver getEntityResolver(Lookup ctx) {
+    public EntityResolver getEntityResolver() {
         return null;
     }
             
     /**
      * Read-only "sampled" iterator over all registered entity public IDs.
-     * @param ctx Service invocation context (e.g. used for locating its
-     * settings). <code>null</code>stays for IDE global context.
      * @return all known public IDs or <code>null</code> if not supported. 
      */
     // Svata suggested here a live collection, but he accepts this solution if it
     // is only for informational purposes. It is.
-    public Iterator getPublicIDs(Lookup ctx) {
+    public Iterator getPublicIDs() {
         return null;
     }
 }
