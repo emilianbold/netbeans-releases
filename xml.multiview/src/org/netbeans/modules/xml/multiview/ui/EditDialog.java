@@ -87,4 +87,33 @@ public abstract class EditDialog extends DialogDescriptor {
             return errorLabel;
         }
     }
+    
+    /** Useful DocumentListener class that can be added to the panel's text compoents */
+    public static class DocListener implements javax.swing.event.DocumentListener {
+        EditDialog dialog;
+        
+        public DocListener(EditDialog dialog) {
+            this.dialog=dialog;
+        }
+        /**
+         * Method from DocumentListener
+         */
+        public void changedUpdate(javax.swing.event.DocumentEvent evt) {
+            dialog.checkValues();
+        }
+
+        /**
+         * Method from DocumentListener
+         */
+        public void insertUpdate(javax.swing.event.DocumentEvent evt) {
+            dialog.checkValues();
+        }
+
+        /**
+         * Method from DocumentListener
+         */
+        public void removeUpdate(javax.swing.event.DocumentEvent evt) {
+            dialog.checkValues();
+        }
+    }
 }
