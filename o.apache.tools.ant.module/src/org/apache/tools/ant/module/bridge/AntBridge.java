@@ -359,6 +359,11 @@ public final class AntBridge {
         
     }
     
+    // XXX better would be to multiplex to the currently running Ant process, as
+    // determined by the current thread group
+    // Better still would be to let the execution engine handle it entirely,
+    // by creating a custom InputOutput: #1961
+    
     private static PrintStream origOut, origErr;
     
     /**
@@ -372,11 +377,11 @@ public final class AntBridge {
         if (origOut == null) {
             origOut = System.out;
             origErr = System.err;
-            System.setOut(out);
-            System.setErr(err);
         } else {
-            // Oh well, output may be sent to the wrong window...
+            // Oh well, old output may be sent to the wrong window...
         }
+        System.setOut(out);
+        System.setErr(err);
     }
     
     /**
@@ -386,6 +391,8 @@ public final class AntBridge {
         if (origOut != null) {
             System.setErr(origErr);
             System.setOut(origOut);
+            origOut = null;
+            origErr = null;
         } else {
             // Again, never mind.
         }
