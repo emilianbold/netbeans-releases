@@ -14,20 +14,17 @@
 package org.netbeans.core;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
 
 import org.openide.*;
-import org.openide.loaders.*;
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem; // override java.io.FileSystem
-import org.openide.util.NotImplementedException;
+import org.openide.loaders.DataFilter;
+import org.openide.loaders.DataFolder;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.core.windows.nodes.WorkspacePoolContext;
-import org.netbeans.core.execution.ExecutionEngine;
 
 /** Important places in the system.
 *
@@ -265,7 +262,9 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
             DataFolder df = DataFolder.findFolder(fo);
             return df;
         } catch (IOException ex) {
-            throw new InternalError ("Folder not found and cannot be created: " + name); // NOI18N
+            Error e = new InternalError ("Folder not found and cannot be created: " + name); // NOI18N
+            TopManager.getDefault ().getErrorManager ().annotate (e, ex);
+            throw e;
         }
     }
 }
