@@ -24,6 +24,8 @@ import java.util.*;
 import org.openide.*;
 import org.openide.util.NbBundle;
 import org.netbeans.editor.*;
+import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.editor.NbEditorKit;
 
 
 /**
@@ -51,6 +53,7 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
      */
     public void setValue( List l ) {
         kitClassName = (String)l.get( 0 );
+        
         Class kitClass = null;
         try {
             kitClass = Class.forName( kitClassName );
@@ -64,7 +67,10 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
 
         // Get all actions available in given kit, sort them and store their
         // ActionDescriptors. Prepare mapping for looking them up by their names.
-        Action[] actions = BaseKit.getKit( kitClass ).getActions();
+        Class actionKitClass = kitClass;
+        if( actionKitClass == BaseKit.class ) 
+            actionKitClass =  NbEditorKit.class; // Hack to get actions from higher-located kits too
+        Action[] actions = BaseKit.getKit( actionKitClass ).getActions();
 
         // Create our sorter, ActionDescriptors knows themselves how to sort
         TreeMap treeMap = new TreeMap( );
@@ -180,91 +186,90 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
     /**
      * Create our visual representation.
      */
-    private void initComponents () {//GEN-BEGIN:initComponents
-        actionsPanel = new javax.swing.JPanel ();
-        actionsScrollPane = new javax.swing.JScrollPane ();
-        actionsList = new javax.swing.JList ();
-        sequencesPanel = new javax.swing.JPanel ();
-        sequencesScrollPane = new javax.swing.JScrollPane ();
-        sequencesList = new javax.swing.JList ();
-        addSequenceButton = new javax.swing.JButton ();
-        removeSequenceButton = new javax.swing.JButton ();
-        setLayout (new javax.swing.BoxLayout (this, 1));
-        setBorder (new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
-
-        actionsPanel.setLayout (new javax.swing.BoxLayout (actionsPanel, 0));
-        actionsPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder( bundle.getString( "KBEP_Actions" ) ), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8) ) ));
-
-
-        actionsList.addListSelectionListener (new javax.swing.event.ListSelectionListener () {
-                                                  public void valueChanged (javax.swing.event.ListSelectionEvent evt) {
-                                                      actionsListValueChanged (evt);
-                                                  }
-                                              }
-                                             );
-
-        actionsScrollPane.setViewportView (actionsList);
-
-        actionsPanel.add (actionsScrollPane);
-
-
-        add (actionsPanel);
-
-        sequencesPanel.setLayout (new java.awt.GridBagLayout ());
+    private void initComponents() {//GEN-BEGIN:initComponents
+        actionsPanel = new javax.swing.JPanel();
+        actionsScrollPane = new javax.swing.JScrollPane();
+        actionsList = new javax.swing.JList();
+        sequencesPanel = new javax.swing.JPanel();
+        sequencesScrollPane = new javax.swing.JScrollPane();
+        sequencesList = new javax.swing.JList();
+        addSequenceButton = new javax.swing.JButton();
+        removeSequenceButton = new javax.swing.JButton();
+        setLayout(new javax.swing.BoxLayout(this, 1));
+        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+        
+        actionsPanel.setLayout(new javax.swing.BoxLayout(actionsPanel, 0));
+        actionsPanel.setBorder(new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder( bundle.getString( "KBEP_Actions" ) ), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8) ) ));
+        
+        
+          actionsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+                public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                    actionsListValueChanged(evt);
+                }
+            }
+            );
+            actionsScrollPane.setViewportView(actionsList);
+            
+            actionsPanel.add(actionsScrollPane);
+          
+          
+        add(actionsPanel);
+        
+        
+        sequencesPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
-        sequencesPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder( bundle.getString( "KBEP_Sequences" ) ), new javax.swing.border.EmptyBorder( new java.awt.Insets( 8, 8, 8, 8 ) ) ));
-
-
-        sequencesList.setCellRenderer (new KeySequenceCellRenderer());
-        sequencesList.addListSelectionListener (new javax.swing.event.ListSelectionListener () {
-                                                    public void valueChanged (javax.swing.event.ListSelectionEvent evt) {
-                                                        sequencesListValueChanged (evt);
-                                                    }
-                                                }
-                                               );
-
-        sequencesScrollPane.setViewportView (sequencesList);
-
-        gridBagConstraints1 = new java.awt.GridBagConstraints ();
-        gridBagConstraints1.gridheight = 3;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets (0, 0, 0, 8);
-        gridBagConstraints1.weightx = 1.0;
-        gridBagConstraints1.weighty = 1.0;
-        sequencesPanel.add (sequencesScrollPane, gridBagConstraints1);
-
-        addSequenceButton.setText (bundle.getString( "KBEP_Add" ));
-        addSequenceButton.setEnabled (false);
-        addSequenceButton.addActionListener (new java.awt.event.ActionListener () {
-                                                 public void actionPerformed (java.awt.event.ActionEvent evt) {
-                                                     addSequenceButtonActionPerformed (evt);
-                                                 }
-                                             }
-                                            );
-
-        gridBagConstraints1 = new java.awt.GridBagConstraints ();
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets (0, 0, 5, 0);
-        sequencesPanel.add (addSequenceButton, gridBagConstraints1);
-
-        removeSequenceButton.setText (bundle.getString( "KBEP_Remove" ));
-        removeSequenceButton.setEnabled (false);
-        removeSequenceButton.addActionListener (new java.awt.event.ActionListener () {
-                                                    public void actionPerformed (java.awt.event.ActionEvent evt) {
-                                                        removeSequenceButtonActionPerformed (evt);
-                                                    }
-                                                }
-                                               );
-
-        gridBagConstraints1 = new java.awt.GridBagConstraints ();
-        gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        sequencesPanel.add (removeSequenceButton, gridBagConstraints1);
-
-
-        add (sequencesPanel);
-
+        sequencesPanel.setBorder(new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder( bundle.getString( "KBEP_Sequences" ) ), new javax.swing.border.EmptyBorder( new java.awt.Insets( 8, 8, 8, 8 ) ) ));
+        
+        
+          sequencesList.setCellRenderer(new KeySequenceCellRenderer());
+            sequencesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+                public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                    sequencesListValueChanged(evt);
+                }
+            }
+            );
+            sequencesScrollPane.setViewportView(sequencesList);
+            
+            gridBagConstraints1 = new java.awt.GridBagConstraints();
+          gridBagConstraints1.gridheight = 3;
+          gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
+          gridBagConstraints1.insets = new java.awt.Insets(0, 0, 0, 8);
+          gridBagConstraints1.weightx = 1.0;
+          gridBagConstraints1.weighty = 1.0;
+          sequencesPanel.add(sequencesScrollPane, gridBagConstraints1);
+          
+          
+        addSequenceButton.setText(bundle.getString( "KBEP_Add" ));
+          addSequenceButton.setEnabled(false);
+          addSequenceButton.addActionListener(new java.awt.event.ActionListener() {
+              public void actionPerformed(java.awt.event.ActionEvent evt) {
+                  addSequenceButtonActionPerformed(evt);
+              }
+          }
+          );
+          gridBagConstraints1 = new java.awt.GridBagConstraints();
+          gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+          gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 0);
+          sequencesPanel.add(addSequenceButton, gridBagConstraints1);
+          
+          
+        removeSequenceButton.setText(bundle.getString( "KBEP_Remove" ));
+          removeSequenceButton.setEnabled(false);
+          removeSequenceButton.addActionListener(new java.awt.event.ActionListener() {
+              public void actionPerformed(java.awt.event.ActionEvent evt) {
+                  removeSequenceButtonActionPerformed(evt);
+              }
+          }
+          );
+          gridBagConstraints1 = new java.awt.GridBagConstraints();
+          gridBagConstraints1.gridx = 1;
+          gridBagConstraints1.gridy = 1;
+          gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+          sequencesPanel.add(removeSequenceButton, gridBagConstraints1);
+          
+          
+        add(sequencesPanel);
+        
     }//GEN-END:initComponents
 
     private void sequencesListValueChanged (javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_sequencesListValueChanged

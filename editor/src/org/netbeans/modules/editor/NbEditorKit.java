@@ -44,7 +44,7 @@ import org.openide.windows.TopComponent;
 * @version 1.00
 */
 
-public abstract class NbEditorKit extends ExtKit {
+public class NbEditorKit extends ExtKit {
 
     /** Shared suport for find and replace dialogs */
     private static NbFindDialogSupport nbFindDialogSupport;

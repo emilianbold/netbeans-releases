@@ -268,7 +268,9 @@ public class BaseOptions extends OptionSupport {
     }
 
     public void setKeyBindingList(List list) {
-        if( list.get( 0 ) instanceof Class || list.get( 0 ) instanceof String ) {
+        if( list.size() > 0 &&
+            ( list.get( 0 ) instanceof Class || list.get( 0 ) instanceof String )
+        ) {
             list.remove( 0 ); //remove kit class name
         }
         setSettingValue(SettingsNames.KEY_BINDING_LIST, list);
