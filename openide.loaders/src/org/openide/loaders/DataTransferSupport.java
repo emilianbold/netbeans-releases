@@ -112,27 +112,27 @@ abstract class DataTransferSupport {
         }
         /** Paste all DataObjects */
         public final Transferable paste () throws IOException {
-            if (javax.swing.SwingUtilities.isEventDispatchThread()) {
-	        RequestProcessor.getDefault().post(new Runnable() {
-		    public void run() {
-	                try {
-			    doPaste();
-	                } catch (IOException ioe) {
-	                    ErrorManager.getDefault().notify(ioe);
-	                }
-		    }
-		});
-	    } else {
-	        doPaste();
-	    }
+            if (javax.swing.SwingUtilities.isEventDispatchThread ()) {
+                RequestProcessor.getDefault ().post (new Runnable () {
+                    public void run () {
+                        try {
+                            doPaste ();
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault ().notify (ioe);
+                        }
+                    }
+                });
+            } else {
+                doPaste ();
+            }
             // clear clipboard or preserve content
             return cleanClipboard () ? ExTransferable.EMPTY : null;
         }
-	
-	private void doPaste() throws IOException {
+        
+        private void doPaste () throws IOException {
             for (int i = 0; i < objs.length; i++)
                 handlePaste (objs[i]);
-	}
+        }
 	
         public final void setDataObjects (DataObject objs []) {
             this.objs = objs;
