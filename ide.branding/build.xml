@@ -74,10 +74,14 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
   <target name="netbeans-extra" depends="release"/>
 
   <target name="release" depends="init">
-    <copy todir="${netbeans.dest.dir}/${cluster.dir}">
+    <copy todir="${netbeans.dest.dir}">
       <fileset dir="release">
+        <exclude name="netbeans.png"/>
+        <exclude name="shortcuts.pdf"/>
       </fileset>
     </copy>
+    <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="release/netbeans.png"/>
+    <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="release/shortcuts.pdf"/>
   </target>
   
   <target name="jars" depends="init">
