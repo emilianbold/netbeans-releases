@@ -220,11 +220,9 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
     }//GEN-LAST:event_tfLineNumberFocusLost
 
     private void cboxJspSourcePathFocusGained(java.awt.event.FocusEvent evt) {
-        System.err.println("focus gained");
     }
 
     private void cboxJspSourcePathFocusLost(java.awt.event.FocusEvent evt) {
-        System.err.println("focus lost");
     }
 
     private void fillLineNumber () {
