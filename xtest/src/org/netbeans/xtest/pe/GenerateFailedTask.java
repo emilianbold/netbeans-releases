@@ -79,6 +79,10 @@ public class GenerateFailedTask extends Task {
         // get the results report
         XTestResultsReport report = XTestResultsReport.loadFromFile(xtrFile);
         TestRun[] testRuns = report.xmlel_TestRun;
+        if(testRuns == null) {
+            log("No failed tests found.");
+            return;
+        }
         // find the last test run
         String lastTestRunID = "";
         int lastTestRunIDIndex = 0;

@@ -708,7 +708,7 @@ ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.s
     <!-- ================= -->
     <!-- Generate config with failed tests from the last test run. -->
     <target name="generateFailedConfig" description="Generates config of failed tests from last results">
-        <taskdef name="generateFailedConfig" classpath="${xtest.home}/src;${xtest.home}/lib/xerces.jar;${xtest.home}/lib/xml-apis.jar" 
+        <taskdef name="generateFailedConfig" classpath="${xtest.home}/lib/xtest.jar;${xtest.home}/lib/xerces.jar;${xtest.home}/lib/xml-apis.jar"
                  classname="org.netbeans.xtest.pe.GenerateFailedTask"/>
 	<generateFailedConfig inputDir="${xtest.results}" outputDir="."/>
     </target>
@@ -716,7 +716,7 @@ ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.s
     <!-- Generates config from tests excluded in given config or in all configs 
     find in input directory -->
     <target name="generateExcludedConfig">
-        <taskdef name="generateExcludedConfig" classpath="${xtest.home}/src;${xtest.home}/lib/xerces.jar;${xtest.home}/lib/xml-apis.jar" 
+        <taskdef name="generateExcludedConfig" classpath="${xtest.home}/lib/xtest.jar;${xtest.home}/lib/xerces.jar;${xtest.home}/lib/xml-apis.jar"
                  classname="org.netbeans.xtest.pe.GenerateExcludedTask"/>
         <property name="configFile" value="" />
 	<generateExcludedConfig inputDir="." outputDir="." configFile="${configFile}"/>

@@ -129,6 +129,7 @@ public class GenerateExcludedTask extends Task{
             File outputFile = new File(outputDir, excludedConfigFilename);
             // save new config file
             SerializeDOM.serializeToFile(XMLSerializer.toDOMDocument(mconfig), outputFile);
+            log("Output config file: "+outputFile);
         } else {
             log("No excluded test cases found.");
             return;
