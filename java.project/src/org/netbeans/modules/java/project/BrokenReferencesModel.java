@@ -15,19 +15,25 @@ package org.netbeans.modules.java.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractListModel;
 
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -206,6 +212,44 @@ public class BrokenReferencesModel extends AbstractListModel {
                 set.add(new OneReference(REF_TYPE_FILE, key, true));
             }
         }
+        
+        //Check for libbraries with broken classpath content
+        Set usedLibraries = new HashSet ();
+        Pattern libPattern = Pattern.compile("\\$\\{(lib.[-._a-zA-Z0-9]+.classpath)\\}"); //NOI18N
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        for (int i=0; i<ps.length; i++) { 
+            String propertyValue = ep.getProperty(ps[i]);
+            if (propertyValue != null) {
+                String[] vals = PropertyUtils.tokenizePath(propertyValue);
+                for (int j=0; j<vals.length; j++) {
+                    Matcher m = libPattern.matcher(vals[j]);
+                    if (m.matches()) {
+                        usedLibraries.add (m.group(1));
+                    }
+                }
+            }
+        }
+        for (Iterator lit = usedLibraries.iterator(); lit.hasNext(); ) {
+            String libraryRef = (String) lit.next ();
+            String libraryName = libraryRef.substring(5,libraryRef.length()-10);
+            Library lib = LibraryManager.getDefault().getLibrary (libraryName);
+            if (lib == null) {
+                set.add(new OneReference(REF_TYPE_LIBRARY, libraryRef, true));
+            }
+            else {
+                List/*<URL>*/ cp = lib.getContent("classpath");    //NOI18N
+                for (Iterator cpIt = cp.iterator(); cpIt.hasNext();) {
+                    URL url = (URL) cpIt.next();
+                    if ("jar".equals(url.getProtocol())) {   //NOI18N
+                        url = FileUtil.getArchiveFile (url);
+                    }
+                    if (URLMapper.findFileObject (url) == null) {
+                        set.add(new OneReference(REF_TYPE_LIBRARY, libraryRef, true));
+                    }
+                }
+            }
+        }
+        
         return set;
     }
     

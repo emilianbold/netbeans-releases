@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.java.j2seplatform.libraries;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.beans.Customizer;
 import java.io.File;
 import java.net.URL;
@@ -23,11 +25,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.event.*;
 import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 
@@ -74,6 +78,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
 
 
     private void postInitComponents () {
+        this.content.setCellRenderer(new ContentRenderer());
         this.upButton.setEnabled (false);
         this.downButton.setEnabled (false);
         this.removeButton.setEnabled (false);
@@ -432,5 +437,37 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     private javax.swing.JButton upButton;
     // End of variables declaration//GEN-END:variables
     private JButton addURLButton;
+    
+    private static class ContentRenderer extends DefaultListCellRenderer {
+                
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            String displayName = null;
+            Color color = null;
+            String toolTip = null;
+            
+            if (value instanceof URL) {
+                URL url = (URL) value;
+                displayName = url.toExternalForm();
+                if ("jar".equals(url.getProtocol())) {   //NOI18N
+                    url = FileUtil.getArchiveFile (url);
+                }
+                if (URLMapper.findFileObject (url) == null) {
+                    color = new Color (164,0,0);
+                    toolTip = NbBundle.getMessage (J2SEVolumeCustomizer.class,"TXT_BrokenFile");
+                }                
+            }
+            Component c = super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
+            if (c instanceof JComponent) {
+                if (color != null) {
+                    ((JComponent)c).setForeground (color);
+                }
+                if (toolTip != null) {
+                    ((JComponent)c).setToolTipText (toolTip);
+                }
+            }
+            return c;
+        }
+        
+    }
 
 }

@@ -49,7 +49,7 @@ class VolumeContentModel extends AbstractListModel/*<String>*/ {
     public Object getElementAt(int index) {
         if (index < 0 || index >= this.content.size())
             throw new IllegalArgumentException();
-        return ((URL)this.content.get (index)).toExternalForm();
+        return this.content.get (index);
     }
 
     public void addResource (URL resource) {
