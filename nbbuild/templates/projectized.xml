@@ -230,7 +230,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
         <mkdir dir="build"/>
-        <echo>License file = ${license.file}</echo>
         <makenbm file="build/${nbm}"
                  productdir="${netbeans.dest.dir}/${cluster.dir}"
                  module="${module.jar}"
