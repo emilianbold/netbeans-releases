@@ -61,7 +61,6 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
-import org.openide.util.WeakListener;
 import java.util.Iterator;
 import org.openide.text.Line;
 
