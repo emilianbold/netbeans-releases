@@ -799,7 +799,7 @@ public class MultiDataObject extends DataObject {
         MultiDataObject obj;
 
         if (loader != null) {
-            obj = DataObjectPool.createMultiObject (loader, fo);
+            obj = loader.createMultiObject (fo);
         } else {
             obj = (MultiDataObject)getLoader ().findDataObject (fo, RECOGNIZER);
         }

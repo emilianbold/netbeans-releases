@@ -97,30 +97,6 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         return ret;
     }
     
-    /** Calls into one loader. Setups security condition to allow DataObject ocnstructor
-     * to succeed.
-     */
-    public static MultiDataObject createMultiObject (MultiFileLoader loader, FileObject fo) 
-    throws java.io.IOException {
-        MultiDataObject ret;
-        
-        Object prev = FIND.get ();
-        try {
-            FIND.set (loader);
-            
-            ret = loader.createMultiObject (fo);
-        } finally {
-            FIND.set (prev);
-        }
-        
-        // notify it
-        if (ret != null) {
-            DataObjectPool.getPOOL().notifyCreation (ret);
-        }
-        
-        return ret;
-    }
-    
     /** Calls into FolderLoader. Setups security condition to allow DataObject ocnstructor
      * to succeed.
      */
