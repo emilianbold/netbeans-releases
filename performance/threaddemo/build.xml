@@ -52,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="build" depends="build-openide,build-looks">
-        <javac srcdir="src" destdir="src" debug="true">
+        <javac srcdir="src" destdir="src" debug="true" deprecation="true">
             <classpath refid="cp"/>
         </javac>
         <jar jarfile="threaddemo.jar" manifest="manifest.mf">
