@@ -197,7 +197,6 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
 
             JScrollPane scrollpane1 = new javax.swing.JScrollPane();
             scrollpane1.setViewportView(list);
-            scrollpane1.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 1;

@@ -35,6 +35,9 @@ class CategorySelector extends JPanel implements ExplorerManager.Provider {
         explorerManager.setRootContext(PaletteNode.getPaletteNode());
 
         ListView listView = new ListView();
+        // Issue 50703 - restore the default scroll pane's border
+        JScrollPane scrollPane = new JScrollPane();
+        listView.setBorder(scrollPane.getBorder());
         listView.getAccessibleContext().setAccessibleDescription(
             PaletteUtils.getBundleString("ACSD_CTL_PaletteCategories")); // NOI18N
         listView.setPopupAllowed(false);
@@ -48,7 +51,6 @@ class CategorySelector extends JPanel implements ExplorerManager.Provider {
         getAccessibleContext().setAccessibleDescription(
             PaletteUtils.getBundleString("ACSD_PaletteCategoriesSelector")); // NOI18N
 
-        setBorder(new javax.swing.border.EmptyBorder(12, 12, 0, 11));
         setLayout(new java.awt.BorderLayout(0, 5));
         add(categoryLabel, java.awt.BorderLayout.NORTH);
         add(listView, java.awt.BorderLayout.CENTER);
@@ -56,6 +58,7 @@ class CategorySelector extends JPanel implements ExplorerManager.Provider {
 
     public static String selectCategory() {
         CategorySelector selector = new CategorySelector();
+        selector.setBorder(new javax.swing.border.EmptyBorder(12, 12, 0, 11));
         DialogDescriptor dd = new DialogDescriptor(
             selector,
             PaletteUtils.getBundleString("CTL_SelectCategory_Title"), // NOI18N

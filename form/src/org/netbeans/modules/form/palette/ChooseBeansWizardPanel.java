@@ -208,7 +208,6 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
                 PaletteUtils.getBundleString("ACSD_CTL_SelectBeans")); // NOI18N
 
             JScrollPane scrollPane = new JScrollPane();
-            scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
             scrollPane.setViewportView(list);
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
