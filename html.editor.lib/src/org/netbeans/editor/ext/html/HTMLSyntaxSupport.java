@@ -251,7 +251,8 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         }
 
         if( isTag(item)) {
-            if( item.getTokenID() == HTMLTokenContext.TAG_OPEN)  return getNextElement( item.getOffset() );  // TAGO/ETAGO // NOI18N
+            if( item.getTokenID() == HTMLTokenContext.TAG_OPEN || 
+                    item.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL)  return getNextElement( item.getOffset() );  // TAGO/ETAGO // NOI18N
             else {
                 do { 
                     item = item.getPrevious();
@@ -399,7 +400,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         }
 
         String text = item.getImage();
-        if( id == HTMLTokenContext.TAG_CLOSE) {
+        if( id == HTMLTokenContext.TAG_CLOSE || id == HTMLTokenContext.TAG_CLOSE_SYMBOL) {
                 // endtag // NOI18N
                 String name = text;
                 item = item.getNext();
@@ -418,7 +419,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 }
             }
         
-        if( id == HTMLTokenContext.TAG_OPEN) {
+        if( id == HTMLTokenContext.TAG_OPEN || id == HTMLTokenContext.TAG_OPEN_SYMBOL) {
                 // starttag
                 String name = text;
                 ArrayList attrs = new ArrayList();
@@ -459,7 +460,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         if(elem == null) return result;
         
         for( ; elem != null; elem = elem.getPrevious() ) {
-            if( elem.getType() == SyntaxElement.TYPE_ENDTAG ) {
+            if( elem.getType() == SyntaxElement.TYPE_ENDTAG && elem.getText().endsWith(">") ) {
                 stack.push( ((SyntaxElement.Named)elem).getName().toUpperCase() );
             } else if( elem.getType() == SyntaxElement.TYPE_TAG ) {
                 DTD.Element tag = dtd.getElement( ((SyntaxElement.Tag)elem).getName().toUpperCase() );
@@ -521,7 +522,9 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         
     public static boolean isTag(TokenItem ti) {
         return (( ti.getTokenID() == HTMLTokenContext.TAG_OPEN ) ||
-                ( ti.getTokenID() == HTMLTokenContext.TAG_CLOSE ));
+                ( ti.getTokenID() == HTMLTokenContext.TAG_CLOSE ) ||
+                ( ti.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL) ||
+                ( ti.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL));
     }
     
 }

@@ -200,6 +200,9 @@ else System.err.println( "Inside token " + item.getTokenID() );
             } else if( id == HTMLTokenContext.TEXT && preText.endsWith( "</" ) ) { // NOI18N
                 len = 2;
                 l = sup.getPossibleEndTags( offset, "" );
+            } else if( id == HTMLTokenContext.TAG_OPEN_SYMBOL && preText.endsWith( "</" ) ) { // NOI18N
+                len = 2;
+                l = sup.getPossibleEndTags( offset, "" );
             } else if( id == HTMLTokenContext.TAG_CLOSE) { // NOI18N
                 len = offset - itemOffset;
                 l = sup.getPossibleEndTags( offset, preText);
