@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+
+<html>
+<head>
+<meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+
+
+<title>Setting Up the HTTP Monitor</title>
+<meta 
+http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link 
+rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+
+<h2>Setting Up the HTTP Monitor</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+
+<p><b>To display the HTTP Monitor:</b>
+<ul><li>Choose Window <img src="../images/arrow.gif" alt="and choosing">&nbsp;HTTP 
+Monitor (Ctrl+7) from the main menu.</p></li></ul>
+
+<table cellpadding="3" cellspacing="0" border="0">
+  <tr valign="top"> 
+    <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+    <td> The HTTP Monitor appears by default when you run a web application.
+      If the HTTP Monitor does not display or if it does not show the HTTP 
+      request records for a running web 
+      module, ensure that it is enabled as described below.</td>
+  </tr>
+</table>
+<p>
+<b>To enable the HTTP Monitor for a web server managed by a plugin
+that is bundled with the IDE:</b>
+<ol><li>Right-click your web server'a node in the Runtime window's
+Server Registry node.</li>
+<li>Choose Properties.</li>
+<li>Select the Enable HTTP Monitor checkbox.</p></ol>
+<table cellpadding="3" cellspacing="0" border="0">
+  <tr valign="top"> 
+    <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+    <td>By default, the HTTP Monitor is enabled.</td>
+  </tr>
+</table>
+<b>To enable the HTTP Monitor for all non-bundled web servers:</b>
+<ol>
+  <li>Copy <i>IDE-install-directory</i><tt>/modules/schema2beans.jar</tt> and 
+    <i>IDE-install-directory</i><tt>/modules/ext/httpmonitor.jar</tt> to your 
+    web module's <tt>WEB-INF/lib</tt> directory.</li>
+  <li>Add the filter declaration that is appropriate for your servlet's version to 
+    the top of your web module's <tt>WEB-INF/web.xml</tt> file. Filters and filter 
+    mapping entries must come first in a deployment descriptor.
+	<ul>
+	<li>Servlet 2.4 Filter Declaration:
+	    <pre>
+  &lt;filter&gt;
+    &lt;filter-name&gt;HTTPMonitorFilter&lt;/filter-name&gt;
+    &lt;filter-class&gt;org.netbeans.modules.web.monitor.server.MonitorFilter&lt;/filter-class&gt;
+    &lt;init-param&gt;
+      &lt;param-name&gt;netbeans.monitor.ide&lt;/param-name&gt;
+      &lt;param-value&gt;<i>name-of-host-that-runs-IDE</i>:<i>port-of-internal-HTTP-server</i>
+      &lt;/param-value&gt;
+    &lt;/init-param&gt;
+  &lt;/filter&gt;
+  &lt;filter-mapping&gt;
+    &lt;filter-name&gt;HTTPMonitorFilter&lt;/filter-name&gt;
+    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+    &lt;dispatcher&gt;REQUEST&lt;/dispatcher&gt;
+    &lt;dispatcher&gt;FORWARD&lt;/dispatcher&gt;
+    &lt;dispatcher&gt;INCLUDE&lt;/dispatcher&gt;
+    &lt;dispatcher&gt;ERROR&lt;/dispatcher&gt;
+  &lt;/filter-mapping&gt;
+	  </pre>
+	  </li>
+	<li>Servlet 2.3 Filter Declaration:
+	    <pre>
+  &lt;filter&gt;
+    &lt;filter-name&gt;HTTPMonitorFilter&lt;/filter-name&gt;
+    &lt;filter-class&gt;org.netbeans.modules.web.monitor.server.MonitorFilter&lt;/filter-class&gt;
+    &lt;init-param&gt;
+      &lt;param-name&gt;netbeans.monitor.ide&lt;/param-name&gt;
+      &lt;param-value&gt;<i>name-of-host-that-runs-IDE</i>:<i>port-of-internal-HTTP-server</i>
+      &lt;/param-value&gt;
+    &lt;/init-param&gt;
+  &lt;/filter&gt;
+  &lt;filter-mapping&gt;
+    &lt;filter-name&gt;HTTPMonitorFilter&lt;/filter-name&gt;
+    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+  &lt;/filter-mapping&gt;
+	  </pre>
+	  </li>
+	  
+	  </ul>
+  </li>
+  <li>
+ You can have more than one IDE monitoring the data 
+      records from a web module by adding a second <tt>init-param</tt> entry as 
+      follows: 
+      <pre>
+  &lt;init-param&gt;
+  &lt;param-name&gt;netbeans.monitor.register&lt;/param-name&gt;
+  &lt;param-value&gt;
+  <i>other-IDE-host</i>:<i>other-HTTP-server-port</i>,
+  <i>another-IDE-host</i>:<i>another-HTTP-server-port</i>&lt;/param-value&gt;
+  &lt;/init-param&gt;
+</pre>
+      </li>
+  </tr>
+  </ol>
+</table>
+<table>
+  <tr> 
+    <td valign="top"><img src="../images/warn.gif" alt="Tip"></td>
+    <td valign=top align=left> 
+        When you deploy the web module to a production server, remember to remove 
+        the jar files from your <tt>WEB-INF/lib</tt> directory and remove 
+        the filter and filter mapping declarations from the web module's deployment 
+        descriptor.
+</td>
+</tr>
+</table>
+
+<hr>
+<small><a href="../credits.html">Legal Notices</a> 
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+</small></body></html>
