@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
       <file name="Servlet.java" url="templates/Servlet.template">
           <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Servlet.html"/>
-          <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ServletIterator"/>
+          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createServletIterator"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
           <attr name="org.netbeans.modules.web.IsServletFile" boolvalue="true"/>
       </file>
@@ -66,13 +66,13 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="template" boolvalue="true"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/SimpleFilter.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.FilterIterator"/>
+            <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createFilterIterator"/>            
         </file>        
         <file name="AdvancedFilter.java" url="templates/AdvancedFilter.template">
             <attr name="template" boolvalue="true"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/AdvancedFilter.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.FilterIterator"/>            
+            <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createFilterIterator"/>            
         </file>        
       </folder>
       
