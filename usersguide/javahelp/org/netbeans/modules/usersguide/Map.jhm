@@ -55,7 +55,6 @@
 <mapID target="filesystems.hiding" url="filesystems/filesystems_hiding.html" />
 <mapID target="filesystems.backup" url="filesystems/filesystems_backup.html" />
 
-<mapID target="objects.clipboard-ops" url="objects/objects_clipboard-ops.html" />
 <mapID target="objects.file-extensions" url="objects/objects_file-extensions.html" />
 <mapID target="objects.icons" url="objects/objects_icons.html" />
 <mapID target="objects.opening" url="objects/objects_opening.html" />
@@ -329,7 +328,6 @@
 <mapID target="editing.formatting" url="editing/formatting.html" />
 <mapID target="editing.tabs" url="editing/tabs.html" />
 <mapID target="editing.linenumbers" url="editing/linenumbers.html" />
-<mapID target="editing.annotations" url="editing/annotations.html" />
 <mapID target="editing.imageview" url="editing/imageview.html" />
 <mapID target="editing.codecompletion" url="editing/codecompletion/intro.html" />
 <mapID target="editing.completing-exp" url="editing/codecompletion/completing-exp.html" />

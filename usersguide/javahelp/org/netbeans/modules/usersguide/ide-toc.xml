@@ -40,7 +40,6 @@
     <tocitem text="Opening a File in the IDE" target="objects.opening" />
     <tocitem text="Creating or Deleting a Java Package" target="objects.packages" />
     <tocitem text="Properties Window" target="objects.properties" />
-    <tocitem text="Cut, Copy, Paste, and Delete Commands" target="objects.clipboard-ops" />
     <tocitem text="Saving Work" target="objects.saving" />
     <tocitem text="File Searches" >
       <tocitem text="About" target="search" />
@@ -117,7 +116,6 @@
     <tocitem text="Pair Completion, Smart Enter, and Smart Semicolons" target="editor.smart-brackets"/>
     <tocitem text="Displaying Line Numbers" target="editing.linenumbers"/>
     <tocitem text="Scanning for TODOs in Source Code" target="editing.tasks"/>
-    <tocitem text="Using Annotations" target="editing.annotations"/>
     <tocitem text="Viewing and Zooming an Image" target="editing.imageview"/>
     <tocitem text="Using Code Completion" >
       <tocitem text="About" target="editing.codecompletion" />
