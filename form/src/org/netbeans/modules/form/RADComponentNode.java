@@ -24,7 +24,10 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.datatransfer.NewType;
+
 import com.netbeans.developer.modules.loaders.form.actions.*;
+import com.netbeans.developer.modules.loaders.form.palette.PaletteItem;
+import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 
 import java.awt.Image;
 import java.awt.datatransfer.*;
@@ -556,10 +559,10 @@ static final long serialVersionUID =3851021533468196849L;
           // [PENDING - how about adding visual container to non-visuals?]
           pasteManager.addVisualComponent ((RADVisualComponent)copyComponent, (RADVisualContainer)component, null);
           pasteManager.getFormTopComponent ().validate();
-          pasteManager.fireFormChange ();
+          pasteManager.fireCodeChange ();
         } else {
           pasteManager.addNonVisualComponent (copyComponent, null);
-          pasteManager.fireFormChange ();
+          pasteManager.fireCodeChange ();
         }
         return null;
       } else {        
@@ -569,10 +572,10 @@ static final long serialVersionUID =3851021533468196849L;
         if (radComponent instanceof RADVisualComponent) {
           pasteManager.addVisualComponent ((RADVisualComponent)radComponent, (RADVisualContainer)component, null);
           pasteManager.getFormTopComponent ().validate();
-          pasteManager.fireFormChange ();
+          pasteManager.fireCodeChange ();
         } else {
           pasteManager.addNonVisualComponent (radComponent, null);
-          pasteManager.fireFormChange ();
+          pasteManager.fireCodeChange ();
         }
         
         // put copy flavor as the new one, as the first instance was used already
@@ -609,20 +612,20 @@ static final long serialVersionUID =3851021533468196849L;
 
       if (java.awt.Component.class.isAssignableFrom (instanceClass)) {
         RADVisualComponent newRADVisualComponent;
-
-//        DesignLayout dl = FormEditor.findDesignLayout (instanceClass);
-/*        if (addItem.isContainer() && (dl != null)) {
+        PaletteItem addItem = new PaletteItem (instanceClass);
+        DesignLayout dl = FormEditor.findDesignLayout (addItem);
+        if (addItem.isContainer() && (dl != null)) {
           newRADVisualComponent = new RADVisualContainer();
-          newRADVisualComponent.initialize (FormManager2.this);
-          newRADVisualComponent.setComponent (instanceClass); // [PENDING - how about serialized prototypes and using createInstance on the PaletteItem]
+          newRADVisualComponent.initialize (component.getFormManager ());
+          newRADVisualComponent.setInstance (pasteInstance);
           ((RADVisualContainer)newRADVisualComponent).initSubComponents (new RADComponent[0]);
           ((RADVisualContainer)newRADVisualComponent).setDesignLayout (dl);
         }
-        else { */
+        else {
           newRADVisualComponent = new RADVisualComponent();
           newRADVisualComponent.initialize (component.getFormManager ());
           newRADVisualComponent.setInstance (pasteInstance);
-//        }
+        }
           
         component.getFormManager ().addVisualComponent (newRADVisualComponent, (RADVisualContainer)component, null);
 
@@ -631,57 +634,28 @@ static final long serialVersionUID =3851021533468196849L;
         FormEditor.defaultComponentInit (newRADVisualComponent);
         component.getFormManager ().selectComponent (newRADVisualComponent, false);
         component.getFormManager ().getFormTopComponent ().validate();
-        component.getFormManager ().fireFormChange ();
+        component.getFormManager ().fireCodeChange ();
       } else { // non-visual component
         RADComponent newRADComponent = new RADComponent();
         newRADComponent.initialize (component.getFormManager ());
         newRADComponent.setInstance (pasteInstance);
         component.getFormManager ().addNonVisualComponent (newRADComponent, null);
         component.getFormManager ().selectComponent (newRADComponent, false);
-        component.getFormManager ().fireFormChange ();
+        component.getFormManager ().fireCodeChange ();
       }
       // preserve clipboard
       return null;
     }
     
   }
-/*
-        private static void convertComponent (RADNode node, RADComponent comp) {
-          Map origChanged = node.changedValues;
-          BeanInfo bi = comp.getBeanInfo ();
-          PropertyDescriptor[] pds = bi.getPropertyDescriptors ();
-          for (Iterator it = origChanged.keySet ().iterator (); it.hasNext (); ) {
-            Object key = it.next ();
-            for (int i = 0; i < pds.length; i++) {
-              if (key.equals (pds[i].getName ())) {
-                try {
-                  comp.restorePropertyValue (pds[i], origChanged.get (key));
-                } catch (IllegalArgumentException e) {
-                  // [PENDING]
-                } catch (IllegalAccessException e) {
-                  // [PENDING]
-                } catch (java.lang.reflect.InvocationTargetException e) {
-                  // [PENDING]
-                }
-                break;
-              }
-            }
-          }
-
-          Hashtable eventHandlers = node.eventHandlers;
-          comp.initDeserializedEvents (eventHandlers);
-
-          // process constraints on visual components
-          if (node instanceof RADVisualNode) {
-            HashMap map = ((RADVisualNode)node).constraints;
-            ((RADVisualComponent)comp).initConstraints (map);
-          }
-        }
-*/
 }
 
 /*
  * Log
+ *  39   Gandalf   1.38        9/29/99  Ian Formanek    codeChanged added to 
+ *       FormListener, Fixed bug 4098 - Containers added to form using 
+ *       Copy/Paste (not from Component Palette) cannot be used as containers in
+ *       the form.
  *  38   Gandalf   1.37        9/22/99  Ian Formanek    Fixed bug 3977 - When I 
  *       paste ConnectionSource into a form from DBExplorer and then I want 
  *       delete the ConnectionSource, exception throws (see description)
