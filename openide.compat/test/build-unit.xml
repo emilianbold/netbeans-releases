@@ -175,6 +175,8 @@ Microsystems, Inc. All Rights Reserved.
 	     <pathelement location="../../compiler/src"/>
 	     <pathelement location="../../execution/src"/>
 	     <pathelement location="../../io/src"/>
+	     <pathelement location="../../windows/src"/>
+             <pathelement location="../../text/src"/>
 	     <pathelement location="../src"/>
 	</path>
     </target>

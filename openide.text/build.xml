@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
         <taskdef name="preprocess" classname="org.netbeans.nbbuild.Preprocess" classpath="${nbroot}/nbbuild/nbantext.jar"/>
         
         <mkdir dir="gensrc" />
-        <preprocess srcdir="src" destdir="gensrc" >
+        <preprocess srcdir="../src" destdir="gensrc" >
             <switch name="compat.loaders_32143" on="true" />
             
             <include name="org/openide/text/Line.java" />
