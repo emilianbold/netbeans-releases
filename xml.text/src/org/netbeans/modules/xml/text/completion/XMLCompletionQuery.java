@@ -55,7 +55,7 @@ import org.openide.TopManager;
  * @author Petr Nejedly
  * @author Sandeep Randhawa
  * @author Petr Kuzel
- * @author Asgeir Orn Asgeirsson
+ * @author asgeir@dimonsoftware.com
  * @version 1.01
  */
 
@@ -92,13 +92,10 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         if( sup == null ) return null;// No SyntaxSupport for us, no hint for user
         
         try {
-            System.out.println("+++ About to create SyntaxQueryHelper");
             SyntaxQueryHelper helper = new SyntaxQueryHelper(sup, offset);
-            System.out.println("+++ Created SyntaxQueryHelper");
 
             // completion request originates from area covered by DOM, 
             if (helper.getCompletionType() != SyntaxQueryHelper.COMPLETION_TYPE_DTD) {
-            System.out.println("+++ Find list for type: " + helper.getCompletionType());
                 List list = null;
                 switch (helper.getCompletionType()) {
                     case SyntaxQueryHelper.COMPLETION_TYPE_ATTRIBUTE:
@@ -108,7 +105,6 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                         list = queryValues(helper, doc, sup);
                         break;
                     case SyntaxQueryHelper.COMPLETION_TYPE_ELEMENT:
-            System.out.println("+++ queryElements");
                         list = queryElements(helper, doc, sup);
                         break;
                     case SyntaxQueryHelper.COMPLETION_TYPE_ENTITY:
@@ -118,7 +114,6 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                         list = queryNotations(helper, doc, sup);
                         break;
                 }
-            System.out.println("+++ list: " + list);
                 
                  if (list != null && list.isEmpty() == false) {
                     String debugMsg = Boolean.getBoolean("netbeans.debug.xml") ? " " + helper.getOffset() + "-" + helper.getEraseCount() : "";
