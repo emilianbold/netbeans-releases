@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
     <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
-    <property name="submodules" value="api, tax, core, catalog, tools, text-edit, tree-edit, css, xsl, schema"/>
+    <property name="submodules" value="api, core, tax, catalog, tools, text-edit, tree-edit, css, xsl, schema"/>
 
     <property name="build.compiler.debug" value="on"/>
 
@@ -29,6 +29,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="compile">
+        <!-- There is dependency prpblem core dependes on tax/lib and tax depends on core! -->
+        <for-each locations="tax/lib"/>
         <for-each locations="${submodules}"/>
     </target>
 
