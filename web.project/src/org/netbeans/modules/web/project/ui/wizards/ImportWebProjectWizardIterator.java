@@ -39,6 +39,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 
 import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.NbBundle;
@@ -79,7 +80,11 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         FileObject javaRoot = guessJavaRoot (wmFO);
         FileObject docBase = guessDocBase (wmFO);
         FileObject libFolder = guessLibrariesFolder (wmFO);
-        WebProjectGenerator.importProject (dirF, codename, displayName, wmFO, javaRoot, docBase, libFolder, WizardProperties.J2EE_14_LEVEL); //PENDING detect spec level
+        String buildfile = GeneratedFilesHelper.BUILD_XML_PATH;
+        if (new File (dirF, GeneratedFilesHelper.BUILD_XML_PATH).exists ()) {
+            buildfile = "nbbuild.xml";
+        }
+        WebProjectGenerator.importProject (dirF, codename, displayName, wmFO, javaRoot, docBase, libFolder, WizardProperties.J2EE_14_LEVEL, buildfile); //PENDING detect spec level
         FileObject dir = FileUtil.toFileObject (dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
         // Returning set of DataObject of project diretory. 

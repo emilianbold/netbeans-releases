@@ -140,6 +140,11 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         //TODO: should not be ignored!
     }
     
+    String getBuildXmlName () {
+        String storedName = helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.BUILD_FILE);
+        return storedName == null ? GeneratedFilesHelper.BUILD_XML_PATH : storedName;
+    }
+    
     // Package private methods -------------------------------------------------
     
     ProjectWebModule getWebModule () {
@@ -236,7 +241,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                 WebProject.class.getResource("resources/build-impl.xsl"),
                 false);
             genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_XML_PATH,
+                getBuildXmlName (),
                 WebProject.class.getResource("resources/build.xsl"),
                 false);
         }
@@ -304,7 +309,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                     WebProject.class.getResource("resources/build-impl.xsl"),
                     true);
                 genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_XML_PATH,
+                    getBuildXmlName (),
                     WebProject.class.getResource("resources/build.xsl"),
                     true);
             } catch (IOException e) {

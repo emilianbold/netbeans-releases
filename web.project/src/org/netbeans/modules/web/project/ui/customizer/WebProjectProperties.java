@@ -66,6 +66,7 @@ public class WebProjectProperties {
     // Properties stored in the PROJECT.PROPERTIES    
     /** root of external web module sources (full path), ".." if the sources are within project folder */
     public static final String SOURCE_ROOT = "source.root";
+    public static final String BUILD_FILE = "buildfile";
     public static final String LIBRARIES_DIR = "lib.dir";
     public static final String DIST_DIR = "dist.dir";
     public static final String DIST_WAR = "dist.war";
@@ -124,6 +125,7 @@ public class WebProjectProperties {
         new PropertyDescriptor( J2EE_PLATFORM, PROJECT, STRING_PARSER ),
                 
         new PropertyDescriptor( SOURCE_ROOT, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( BUILD_FILE, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( LIBRARIES_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_WAR, PROJECT, STRING_PARSER ),
