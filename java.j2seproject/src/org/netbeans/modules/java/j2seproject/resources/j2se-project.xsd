@@ -21,7 +21,6 @@ Microsystems, Inc. All Rights Reserved.
                 <xsd:element name="minimum-ant-version" minOccurs="0">
                     <xsd:simpleType>
                         <xsd:restriction base="xsd:NMTOKEN">
-                            <xsd:enumeration value="1.5"/>
                             <xsd:enumeration value="1.6"/>
                         </xsd:restriction>
                     </xsd:simpleType>
