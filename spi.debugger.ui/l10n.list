@@ -4,6 +4,6 @@ debuggercore/src/org/netbeans/modules/debugger/support/actions/Bundle.properties
 debuggercore/src/org/netbeans/modules/debugger/support/nodes/Bundle.properties
 debuggercore/src/org/netbeans/modules/debugger/support/java/Bundle.properties
 debuggercore/src/org/netbeans/modules/debugger/support/java/nodes/Bundle.properties
-debuggermultisession/src/org/netbeans/modules/debugger/multisession/Bundle.properties
-debuggermultisession/src/org/netbeans/modules/debugger/multisession/actions/Bundle.properties
-debuggermultisession/src/org/netbeans/modules/debugger/multisession/nodes/Bundle.properties
+debuggercore/src/org/netbeans/modules/debugger/multisession/Bundle.properties
+debuggercore/src/org/netbeans/modules/debugger/multisession/actions/Bundle.properties
+debuggercore/src/org/netbeans/modules/debugger/multisession/nodes/Bundle.properties
