@@ -530,9 +530,9 @@ public final class XSLGrammarQuery implements GrammarQuery{
         QueueEnumeration list = new QueueEnumeration();
 
         if (resultGrammarQuery != null) {
-            Enumeration enum = resultGrammarQuery.queryAttributes(ctx);
-            while(enum.hasMoreElements()) {
-                GrammarResult resNode = (GrammarResult)enum.nextElement();
+            Enumeration enum2 = resultGrammarQuery.queryAttributes(ctx);
+            while(enum2.hasMoreElements()) {
+                GrammarResult resNode = (GrammarResult)enum2.nextElement();
                 if (!possibleAttributes.contains(resNode.getNodeName())) {
                     list.put(resNode);
                 }
@@ -831,13 +831,13 @@ public final class XSLGrammarQuery implements GrammarQuery{
     }
 
     /**
-     * @param enum the Enumeration which the element should be added to
+     * @param enumX the Enumeration which the element should be added to
      * @param elements a set containing strings which should be added (with prefix) to the enum or <code>null</null>
      * @param namespacePrefix a prefix at the form "xsl:" which should be added in front
      *          of the names in the elements.
      * @param startWith Elements should only be added to enum if they start with this string
      */
-    private static void addXslElementsToEnum(QueueEnumeration enum, Set elements, String namespacePrefix, String startWith) {
+    private static void addXslElementsToEnum(QueueEnumeration enumX, Set elements, String namespacePrefix, String startWith) {
         if (elements == null) return;
         if (startWith.startsWith(namespacePrefix) || namespacePrefix.startsWith(startWith)) {
             Iterator it = elements.iterator();
@@ -846,19 +846,19 @@ public final class XSLGrammarQuery implements GrammarQuery{
                 if (next != resultElements) {
                     String nextText = namespacePrefix + (String)next;
                     if (nextText.startsWith(startWith)) {
-                        enum.put(new MyElement(nextText));
+                        enumX.put(new MyElement(nextText));
                     }
                 }
             }
         }
     }
 
-    private static void addItemsToEnum(QueueEnumeration enum, Set set, String startWith, String prefix) {
+    private static void addItemsToEnum(QueueEnumeration enumX, Set set, String startWith, String prefix) {
         Iterator it = set.iterator();
         while ( it.hasNext()) {
             String nextText = (String)it.next();
             if (nextText.startsWith(startWith)) {
-                enum.put(new MyText(prefix + nextText));
+                enumX.put(new MyText(prefix + nextText));
             }
         }
     }
