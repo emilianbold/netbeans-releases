@@ -1,3 +1,4 @@
+Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.xml.tools/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/tools/resources/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/xml/tools/ToolsModuleInstall.class

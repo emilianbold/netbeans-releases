@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.apache.tools.ant.module/2
 OpenIDE-Module-Localizing-Bundle: org/apache/tools/ant/module/Bundle.properties
-OpenIDE-Module-Specification-Version: 2.16
+OpenIDE-Module-Specification-Version: 2.17
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Public-Packages: org.apache.tools.ant.module.api.*, org.apache.tools.ant.module.spi.*, org.apache.tools.ant.*, org.apache.tools.ant.filters.**, org.apache.tools.ant.helper.**, org.apache.tools.ant.input.**, org.apache.tools.ant.listener.**, org.apache.tools.ant.taskdefs.**, org.apache.tools.ant.types.**, org.apache.tools.ant.util.**, org.apache.tools.bzip2.**, org.apache.tools.mail.**, org.apache.tools.tar.**, org.apache.tools.zip.**
 OpenIDE-Module-Install: org/apache/tools/ant/module/AntModule.class

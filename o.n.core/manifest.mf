@@ -1,5 +1,6 @@
+Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.core/1
-OpenIDE-Module-Specification-Version: 1.12
+OpenIDE-Module-Specification-Version: 1.13
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.35
 OpenIDE-Module-Localizing-Bundle: org/netbeans/core/Bundle.properties
