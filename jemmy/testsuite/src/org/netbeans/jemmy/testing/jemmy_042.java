@@ -49,6 +49,7 @@ public class jemmy_042 extends JemmyTest {
             mbo.showMenuItem("menu1|submenu11", "|");
             mbo.showMenuItem("menu0|submenu01|item01", "|");
             mbo.showMenuItem("menu1|submenu11|item11", "|");
+            mbo.closeSubmenus();
 
             new JComboBoxOperator(wino, 0).selectItem(3);
             new JComboBoxOperator(wino, 1).selectItem(3);

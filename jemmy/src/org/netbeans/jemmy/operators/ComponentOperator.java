@@ -968,6 +968,17 @@ public class ComponentOperator extends Operator
             });
     }
 
+    public void waitComponentShowing(final boolean visibility) {
+	waitState(new ComponentChooser() {
+                public boolean checkComponent(Component comp) {
+                    return(isShowing() == visibility);
+                }
+                public String getDescription() {
+                    return("Component is " + (visibility ? "" : " not ") + "showing");
+                }
+            });
+    }
+
     /**
      * Returns information about component.
      */

@@ -38,7 +38,7 @@ public class jemmy_034 extends JemmyTest {
 	}
 
 	qt.lock();
-	doSleep(2000);
+	doSleep(3000);
 	qt.unlock();
 	
 	if(!qt.wasLockingExpired()) {

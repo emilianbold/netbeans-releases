@@ -81,6 +81,7 @@ public class DefaultJMenuDriver extends LightSupportiveDriver implements MenuDri
     private Object push(ComponentOperator oper, JMenuBar menuBar, 
                         PathChooser chooser, int depth, boolean pressMouse) {
         try {
+            oper.waitComponentVisible(true);
             oper.waitComponentEnabled();
         } catch(InterruptedException e) {
             throw(new JemmyException("Interrupted!", e));
@@ -90,7 +91,7 @@ public class DefaultJMenuDriver extends LightSupportiveDriver implements MenuDri
 	if(depth > chooser.getDepth() - 1) {
             if(oper instanceof JMenuOperator &&
                menuBar != null && isMenuBarSelected(menuBar)) {
-                mDriver.enterMouse(oper);
+                //mDriver.enterMouse(oper);
             } else {
                 DriverManager.getButtonDriver(oper).push(oper);
             }

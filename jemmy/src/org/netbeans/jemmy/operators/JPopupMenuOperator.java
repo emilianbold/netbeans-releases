@@ -257,12 +257,12 @@ implements Outputable, Timeoutable {
 	return(waitJPopupMenu(new ComponentChooser() {
 		public boolean checkComponent(Component comp) {
 		    if(comp instanceof JPopupMenu) {
-			ComponentSearcher searcher = new ComponentSearcher((Container)comp);
-			searcher.setOutput(JemmyProperties.getCurrentOutput().createErrorOutput());
-			return(searcher.findComponent(new JMenuItemOperator.
-						      JMenuItemByLabelFinder(menuItemText,
-									     Operator.getDefaultStringComparator())) != 
-			       null);
+ 			ComponentSearcher searcher = new ComponentSearcher((Container)comp);
+ 			searcher.setOutput(JemmyProperties.getCurrentOutput().createErrorOutput());
+ 			return(searcher.findComponent(new JMenuItemOperator.
+ 						      JMenuItemByLabelFinder(menuItemText,
+ 									     Operator.getDefaultStringComparator())) != 
+ 			       null);
 		    } else {
 			return(false);
 		    }
@@ -285,6 +285,7 @@ implements Outputable, Timeoutable {
     public static JPopupMenu callPopup(final ComponentOperator oper, int x, int y, int mouseButton) {
 	oper.makeComponentVisible();
 	oper.clickForPopup(x, y, mouseButton);
+        oper.getTimeouts().sleep("JMenuOperator.WaitBeforePopupTimeout");
 	return(waitJPopupMenu(waitJPopupWindow(new ComponentChooser() {
                 public boolean checkComponent(Component cmp) {
                     Component invoker = ((JPopupMenu)cmp).getInvoker();

@@ -144,16 +144,25 @@ public class DefaultDriverInstaller extends ArrayDriverInstaller {
             try {
                 return((LightDriver)new ClassReference("org.netbeans.jemmy.drivers.scrolling.JSpinnerDriver").
                        newInstance(null, null));
+            } catch(ClassNotFoundException e) {
+                JemmyProperties.getCurrentOutput().
+                    printErrLine("ATTENTION! you are using Jemmy built by Java earlier then 1.4, under " +
+                                 "Java 1.4. \nImpossible to create JSpinnerDriver");
+                return(createEmptyDriver());
             } catch(Exception e) {
                 throw(new JemmyException("Impossible to create JSpinnerDriver although java version is " +
                                          System.getProperty("java.version"),
                                          e));
             }
         } else {
-            return(new LightDriver() {
-                    public String[] getSupported() {
-                        return(new String[] {Object.class.getName()});
-                    }});
+            return(createEmptyDriver());
         }
+    }
+
+    private static LightDriver createEmptyDriver() {
+        return(new LightDriver() {
+                public String[] getSupported() {
+                    return(new String[] {Object.class.getName()});
+                }});
     }
 }

@@ -1091,8 +1091,12 @@ public class JTreeOperator extends JComponentOperator
      */
     public Point getPointToClick(int row) {
 	Rectangle rect = getRowBounds(row);
-	return(new Point((int)(rect.getX() + rect.getWidth() / 2),
-			 (int)(rect.getY() + rect.getHeight() / 2)));
+        if(rect != null) {
+            return(new Point((int)(rect.getX() + rect.getWidth() / 2),
+                             (int)(rect.getY() + rect.getHeight() / 2)));
+        } else {
+            throw(new NoSuchPathException(row));
+        }
     }
 
     /** 
