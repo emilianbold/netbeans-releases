@@ -29,12 +29,18 @@ import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.ext.ExtSettingsNames;
 
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.FormatterIndentEngine;
+import org.netbeans.modules.editor.IndentEngineFormatter;
+
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
+import org.openide.text.IndentEngine;
 
 /**
 * Options for the base editor kit
@@ -68,6 +74,7 @@ public class BaseOptions extends OptionSupport {
     public static final String FONT_SIZE_PROP = "fontSize"; // NOI18N
     public static final String HIGHLIGHT_CARET_ROW_PROP = "highlightCaretRow"; // NOI18N
     public static final String HIGHLIGHT_MATCHING_BRACKET_PROP = "highlightMatchingBracket"; // NOI18N
+    public static final String INDENT_ENGINE_PROP = "indentEngine"; // NOI18N
     public static final String KEY_BINDING_LIST_PROP = "keyBindingList"; // NOI18N
     public static final String LINE_HEIGHT_CORRECTION_PROP = "lineHeightCorrection"; // NOI18N
     public static final String LINE_NUMBER_MARGIN_PROP = "lineNumberMargin"; // NOI18N
@@ -97,6 +104,7 @@ public class BaseOptions extends OptionSupport {
         FONT_SIZE_PROP,
         HIGHLIGHT_CARET_ROW_PROP,
         HIGHLIGHT_MATCHING_BRACKET_PROP,
+        INDENT_ENGINE_PROP,
         KEY_BINDING_LIST_PROP,
         LINE_HEIGHT_CORRECTION_PROP,
         LINE_NUMBER_MARGIN_PROP,
@@ -112,7 +120,6 @@ public class BaseOptions extends OptionSupport {
         TEXT_LIMIT_LINE_VISIBLE_PROP,
         TEXT_LIMIT_WIDTH_PROP
     };
-
 
     static final long serialVersionUID =-5469192431366914841L;
 
@@ -135,16 +142,21 @@ public class BaseOptions extends OptionSupport {
         setSettingInteger(SettingsNames.TAB_SIZE, tabSize);
     }
 
-    public boolean getExpandTabs() {
+/*    public boolean getExpandTabs() {
         return getSettingBoolean(SettingsNames.EXPAND_TABS);
     }
+    [Mila] Moved to IndentEngine
+*/
+
     public void setExpandTabs(boolean expandTabs) {
         setSettingBoolean(SettingsNames.EXPAND_TABS, expandTabs);
     }
 
-    public int getSpacesPerTab() {
+/*    public int getSpacesPerTab() {
         return getSettingInteger(SettingsNames.SPACES_PER_TAB);
     }
+    [Mila] Moved to IndentEngine
+*/
     public void setSpacesPerTab(int i){
         setSettingInteger(SettingsNames.SPACES_PER_TAB, i);
     }
@@ -432,6 +444,57 @@ public class BaseOptions extends OptionSupport {
 
     public void setHighlightCaretRow(boolean highlight) {
         setSettingBoolean(ExtSettingsNames.HIGHLIGHT_CARET_ROW, highlight);
+    }
+
+/*    public IndentEngine getIndentEngine() {
+        IndentEngine.Handle handle = (IndentEngine.Handle)getProperty(INDENT_ENGINE_PROP);
+        if (handle == null) {
+            return null;
+        } else {
+            return (IndentEngine)handle.getServiceType();
+        }
+    }
+
+    public void setIndentEngine(IndentEngine eng) {
+        putProperty(INDENT_ENGINE_PROP,
+            (eng != null) ? new IndentEngine.Handle(eng) : null,
+            true
+        );
+
+        // Assign a formatter to the Settings
+        Formatter f = null;
+        if (eng != null) {
+            if (eng instanceof FormatterIndentEngine) {
+                f = ((FormatterIndentEngine)eng).getFormatter();
+
+            } else { // generic indent engine
+                f = new IndentEngineFormatter(getKitClass(), eng);
+            }
+
+        }
+        Settings.setValue(getKitClass(), NbEditorDocument.FORMATTER, f);
+    }
+*/
+
+    public IndentEngine getIndentEngine() {
+        return (IndentEngine)getProperty(INDENT_ENGINE_PROP);
+    }
+
+    public void setIndentEngine(IndentEngine eng) {
+        putProperty(INDENT_ENGINE_PROP, eng, true);
+
+        // Assign a formatter to the Settings
+        Formatter f = null;
+        if (eng != null) {
+            if (eng instanceof FormatterIndentEngine) {
+                f = ((FormatterIndentEngine)eng).getFormatter();
+
+            } else { // generic indent engine
+                f = new IndentEngineFormatter(getKitClass(), eng);
+            }
+
+        }
+        Settings.setValue(getKitClass(), NbEditorDocument.FORMATTER, f);
     }
 
 }
