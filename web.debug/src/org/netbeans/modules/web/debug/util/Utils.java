@@ -107,8 +107,37 @@ public class Utils {
         if (fo == null) {
             return "";
         }
-        if (!fo.getMIMEType().equals(JspLoader.JSP_MIME_TYPE)) return "";        
+        if (!fo.getMIMEType().equals(JspLoader.JSP_MIME_TYPE)) return "";
         return fo.getPath();
+    }
+
+    public static String getCurrentContextRoot() {
+        FileObject fo = getCurrentFileObject();
+        String ctx = "";
+        DataObject data = null;
+        
+        if (fo == null) {
+            return ctx;
+        }
+        if (!fo.getMIMEType().equals(JspLoader.JSP_MIME_TYPE)) {
+            return ctx;
+        }
+        
+        try {
+            data = DataObject.find(fo);
+        } catch (Exception excep) {
+            // don't care
+        }
+        
+        if ((data instanceof JspDataObject) && (data!=null)) {
+            data = ((JspDataObject)data).getModule();
+        }
+        
+        if ((data instanceof WebContextObject) && (data!=null)) {
+            ctx = ((WebContextObject)data).getContextPath();
+        }
+        
+        return ctx;
     }
 
     public static FileObject getCurrentFileObject() {
@@ -121,8 +150,9 @@ public class Utils {
         DataObject dO = null;
         if (dO == null) dO = (DataObject) n.getCookie (DataObject.class);
         if (dO == null) return null;
-        if (dO instanceof org.openide.loaders.DataShadow)
+        if (dO instanceof org.openide.loaders.DataShadow) {
             dO = ((org.openide.loaders.DataShadow) dO).getOriginal ();
+        }
         FileObject fo = dO.getPrimaryFile();
         getEM().log("Utils.getCurrentObject - returning: " + fo);
         return fo;
