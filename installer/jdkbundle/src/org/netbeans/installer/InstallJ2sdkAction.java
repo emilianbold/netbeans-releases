@@ -72,8 +72,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         ProductService pservice = (ProductService)getService(ProductService.NAME);
         String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
         instDirPath = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation")); */
-	j2seInstallDir = (String) System.getProperties().get("j2seInstallDir");
-        origJ2SEInstallDir = j2seInstallDir;
+        origJ2SEInstallDir = (String) System.getProperties().get("j2seInstallDir");
         tempDir = resolveString("$J(temp.dir)");
         logEvent(this, Log.DBG,"Tempdir: " + tempDir);
         
@@ -95,7 +94,9 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             init(support);
             installMode = INSTALL;
             if (!Util.isWindowsOS()) {
-                j2seInstallDir = j2seInstallDir + File.separator + defaultSubdir;
+                j2seInstallDir = origJ2SEInstallDir + File.separator + defaultSubdir;
+            } else {
+                j2seInstallDir = origJ2SEInstallDir;
             }
             
             String uninstDir  = origJ2SEInstallDir + File.separator + "_uninst";
@@ -329,14 +330,19 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
      * @see com.installshield.product.RequiredBytesTable
      */
     public RequiredBytesTable getRequiredBytes() throws ProductException {
+        //#48948: We must set dirs here because init() is not run yet when getRequiredBytes
+        //is called.
+        origJ2SEInstallDir = (String) System.getProperties().get("j2seInstallDir");
+        tempDir = resolveString("$J(temp.dir)");
         
         RequiredBytesTable req = new RequiredBytesTable();
 	//  String imageDirPath = getProductTree().getInstallLocation(this);
 	// logEvent(this, Log.DBG,"imageDirPath -> " + imageDirPath);
         req.addBytes(origJ2SEInstallDir, getCheckSum());
+        logEvent(this, Log.DBG, "origJ2SEInstallDir: " + origJ2SEInstallDir);
+        logEvent(this, Log.DBG, "tempDir: " + tempDir);
 	logEvent(this, Log.DBG, "Total size = " + req.getTotalBytes());
-        //Thread.dumpStack();
-
+        
         if (Util.isWindowsNT() || Util.isWindows98()) {
             //TMP dir is by default on system disk and we are unable to change it #48281
 	    //The j2se base image directory goes in the system drive and also cache of installer
@@ -345,6 +351,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             //when it is checked here bundled JVM is already present in TMP so only about
             //additional 50MB is necessary ie.130MB+50MB=180MB at system dir.
 	    String sysDir = new String( (new Character(getWinSystemDrive())).toString().concat(":\\"));
+            logEvent(this, Log.DBG, "sysDir: " + sysDir);
 	    req.addBytes(sysDir, 180000000L);
         } else if (Util.isWindowsOS()) {
 	    //The j2se base image directory goes in the system drive and also cache of installer
@@ -353,10 +360,13 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             //when it is checked here bundled JVM is already present in TMP so only about
             //additional 50MB is necessary
 	    String sysDir = new String( (new Character(getWinSystemDrive())).toString().concat(":\\"));
+            logEvent(this, Log.DBG, "sysDir: " + sysDir);
 	    req.addBytes(sysDir, 130000000L);
+            
             req.addBytes(tempDir, 50000000L);
 	}
 	logEvent(this, Log.DBG, "Total (not necessarily on one disk when tempdir is redirected) Mbytes = " + (req.getTotalBytes()>>20));
+        logEvent(this, Log.DBG, "RequiredBytesTable: " + req);
         return req;
     }
 
@@ -366,7 +376,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             String sysLib=resolveString("$D(lib)"); // Resolve system library directory 
             logEvent(this, Log.DBG, "System Library directory is "+sysLib); 
             sysDrive=sysLib.charAt(0); // Resolve system drive letter
-            logEvent(this, Log.DBG, " Found system drive is: " + String.valueOf(sysDrive));
+            logEvent(this, Log.DBG, "Found system drive is: " + String.valueOf(sysDrive));
         } catch(Exception ex) {
             Util.logStackTrace(this,ex);
             return 'C';
