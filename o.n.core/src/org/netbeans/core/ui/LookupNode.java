@@ -128,7 +128,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
     * templates folder.
     */
     protected String root () {
-        return "Services";
+        return "Services"; // NOI18N
     }
 
     /** Finds a prefix for templates.

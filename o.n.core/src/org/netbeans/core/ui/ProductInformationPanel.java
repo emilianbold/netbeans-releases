@@ -389,7 +389,7 @@ public class ProductInformationPanel extends JPanel {
     }
 
     private String getProductInformationTitle () {
-        return NbBundle.getBundle("org.netbeans.core.ui.Bundle",
+        return NbBundle.getBundle("org.netbeans.core.ui.Bundle", // NOI18N
                                    Locale.getDefault(),
                                    ProductInformationPanel.class.getClassLoader()
                 ).getString("LBL_ProductInformation");
@@ -397,7 +397,7 @@ public class ProductInformationPanel extends JPanel {
 
     private String getProductVersionValue () {
         return new MessageFormat(
-                NbBundle.getBundle("org.netbeans.core.Bundle",
+                NbBundle.getBundle("org.netbeans.core.Bundle", // NOI18N
                                    Locale.getDefault(),
                                    TopLogging.class.getClassLoader()
                 ).getString("currentVersion")
@@ -408,7 +408,7 @@ public class ProductInformationPanel extends JPanel {
 
     private String getIDEVersioningValue () {
         return new MessageFormat(
-                NbBundle.getBundle("org.netbeans.core.ui.Bundle",
+                NbBundle.getBundle("org.netbeans.core.ui.Bundle", // NOI18N
                                    Locale.getDefault(),
                                    ProductInformationPanel.class.getClassLoader()
                 ).getString("Format_IdeVersioning_Value")
@@ -421,7 +421,7 @@ public class ProductInformationPanel extends JPanel {
 
     private String getOperatingSystemValue () {
         return new MessageFormat(
-                NbBundle.getBundle("org.netbeans.core.ui.Bundle",
+                NbBundle.getBundle("org.netbeans.core.ui.Bundle", // NOI18N
                                    Locale.getDefault(),
                                    ProductInformationPanel.class.getClassLoader()
                 ).getString("Format_OperatingSystem_Value")
