@@ -181,6 +181,9 @@ PropertyChangeListener {
             getCurrentSession ().getCurrentLanguage ();
         String methodName = t.getMethodName ();
         if (methodName.equals ("")) methodName = "?";
+        // replace $ by \$
+        methodName = dollarEscapePattern.matcher (methodName).replaceAll 
+            ("\\\\\\$");
         printText = methodNamePattern.matcher (printText).replaceAll 
             (methodName);
         
