@@ -655,6 +655,8 @@ class HandleLayer extends JPanel
     }
 
     private int getSelectionResizable(Point p, Component comp) {
+        if (comp == null) return 0;
+
         Rectangle bounds = comp.getBounds();
         bounds.x = 0;
         bounds.y = 0;
@@ -805,6 +807,7 @@ class HandleLayer extends JPanel
                     draggingCanceled = false;
                 }
                 else if (prevLeftMousePoint != null
+                         && e.getClickCount() == 1
                          && prevLeftMousePoint.distance(e.getPoint()) <= 2
                          && !e.isShiftDown()
                          && !e.isControlDown()
@@ -813,22 +816,6 @@ class HandleLayer extends JPanel
                         getMetaComponentAt(e.getPoint(), COMP_SELECTED));
                 }
 
-/*                    else {
-                    ComponentPalette palette = ComponentPalette.getDefault();
-                    if (palette.getMode() == PaletteAction.MODE_SELECTION) {
-                        boolean ctrl = e.isControlDown() && !e.isAltDown();
-                        boolean alt = e.isAltDown() && !e.isControlDown();
-
-                        int selMode = ctrl ? COMP_UNDER_SELECTED :
-                            (alt ? COMP_ABOVE_SELECTED : COMP_DEEPEST);
-
-                        RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(), selMode);
-
-                        if (!e.isShiftDown() && hitMetaComp != null) {
-                            formDesigner.setSelectedComponent(hitMetaComp);
-                        }
-                    }
-                } */
                 prevLeftMousePoint = lastLeftMousePoint;
                 lastLeftMousePoint = null;
                 e.consume();
