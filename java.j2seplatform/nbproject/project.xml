@@ -83,6 +83,12 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages/>
+            <extra-compilation-unit>
+                <package-root>probesrc</package-root>
+                <classpath/>
+                <built-to>build/probe/classes</built-to>
+                <built-to>${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/org-netbeans-modules-java-j2seplatform-probe.jar</built-to>
+            </extra-compilation-unit>
         </data>
     </configuration>
 </project>
