@@ -915,7 +915,9 @@
    <mapID target="org.netbeans.modules.editor.java.JCProviderPanel" url="pending.html" />
    <mapID target="org.netbeans.editor.ext.JCView" url="pending.html" />
 
-   <mapID target="org.openide.loaders.TemplateWizard1" url="objects/objects_new.html" />
+   <mapID target="org.openide.loaders.TemplateWizard1.Mount" url="filesystems/filesystems_mounting.html" />
+
+   <mapID target="org.openide.loaders.TemplateWizard1.Templates" url="objects/objects_new.html" />
    <mapID target="org.openide.loaders.TemplateWizard2" url="objects/objects_new.html" />
    <mapID target="org.openide.loaders.ClassNamePanel" url="objects/objects_new.html" />
 
