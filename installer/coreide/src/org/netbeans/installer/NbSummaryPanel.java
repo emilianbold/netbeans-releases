@@ -120,8 +120,15 @@ public class NbSummaryPanel extends TextDisplayPanel
             String sep = fileService.getSeparator();
             String file = installDir + sep + "_uninst" + sep + "install.log";
             int ret = fileService.deleteFile(file);
+            
+            file = installDir + sep + "_uninst" + sep + "storagebuilder";
+            if (fileService.fileExists(file)) {
+                fileService.deleteDirectory(file);
+            }
+            
             file = installDir + sep + "_uninst";
             ret = fileService.deleteDirectory(file);
+            
             ret = fileService.deleteDirectory(installDir);
         } catch (ServiceException ex) {
             //Nothing to do. Ignore.
