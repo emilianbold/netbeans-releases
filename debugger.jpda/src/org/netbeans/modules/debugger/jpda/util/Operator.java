@@ -61,28 +61,27 @@ public class Operator {
      *                    (may be <TT>null</TT>)
     */
     public Operator (
-        VirtualMachine virtualMachine,
+        EventQueue eventQueue,
         Executor starter,
         Runnable finalizer
     ) {
-        if (virtualMachine == null) 
+        if (eventQueue == null) 
             throw new NullPointerException ();
-        final Object[] params = new Object[] {virtualMachine, starter, finalizer};
+        final Object[] params = new Object[] {eventQueue, starter, finalizer};
         thread = new Thread (new Runnable () {
         public void run () {
-            VirtualMachine virtualMachine = (VirtualMachine) params [0];
+            EventQueue eventQueue = (EventQueue) params [0];
             Executor starter = (Executor) params [1];
             Runnable finalizer = (Runnable) params [2];
             params [0] = null;
             params [1] = null;
             params [2] = null;
             
-             EventQueue queue = virtualMachine.eventQueue ();
              try {
                  for (;;) {
-                     EventSet set = queue.remove ();
+                     EventSet eventSet = eventQueue.remove ();
                      boolean resume = true, startEventOnly = true;
-                     EventIterator i = set.eventIterator ();
+                     EventIterator i = eventSet.eventIterator ();
                      while (i.hasNext ()) {
                          Event e = i.nextEvent ();
                          if ((e instanceof VMDeathEvent) ||
@@ -96,7 +95,7 @@ public class Operator {
                              //S ystem.out.println ("EVENT: " + e); // NOI18N
                              //S ystem.out.println ("Operator end2"); // NOI18N
                              finalizer = null;
-                             virtualMachine = null;
+                             eventQueue = null;
                              starter = null;
                              return;
                          }
@@ -136,7 +135,7 @@ public class Operator {
                      if (verbose)
                          System.out.println("JDI resume " + (resume && (!startEventOnly)));
                      if (resume && (!startEventOnly))
-                         virtualMachine.resume ();
+                         eventSet.resume ();
                  }// for
              } catch (VMDisconnectedException e) {   
              } catch (InterruptedException e) {
@@ -146,7 +145,7 @@ public class Operator {
              if (finalizer != null) finalizer.run ();
              //S ystem.out.println ("Operator end"); // NOI18N
              finalizer = null;
-             virtualMachine = null;
+             eventQueue = null;
              starter = null;
          }
      }, "Debugger operator thread"); // NOI18N

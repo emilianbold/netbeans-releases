@@ -99,14 +99,7 @@ public class StartActionProvider extends ActionsProvider {
         VirtualMachine virtualMachine
     ) {
         return new Operator (
-            virtualMachine,
-//            null,
-//            new Executor () {
-//                public boolean exec (com.sun.jdi.event.Event event) {
-//                    debuggerImpl.setRunning ();
-//                    return true; // resume
-//                }
-//            },
+            virtualMachine.eventQueue (),
             null,
             new Runnable () {
                 public void run () {

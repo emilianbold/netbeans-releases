@@ -66,7 +66,7 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
                 null,
                 ((ClassPrepareEvent) event).thread (),
                 ((ClassPrepareEvent) event).referenceType (),
-                null
+                ((ClassPrepareEvent) event).referenceType ().classObject ()
             ) :
             perform (
                 null,

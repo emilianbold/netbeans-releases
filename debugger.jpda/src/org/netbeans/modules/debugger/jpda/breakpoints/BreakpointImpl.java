@@ -125,32 +125,31 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         ReferenceType referenceType,
         Value value
     ) {
-        if ((condition == null) || condition.equals (""))
+        boolean resume;
+        if ((condition == null) || condition.equals ("")) {
+            JPDABreakpointEvent e = new JPDABreakpointEvent (
+                getBreakpoint (),
+                JPDABreakpointEvent.CONDITION_NONE,
+                debugger.getThread (thread), 
+                referenceType, 
+                debugger.getVariable (value)
+            );
             getDebugger ().fireBreakpointEvent (
                 getBreakpoint (),
-                new JPDABreakpointEvent (
-                    getBreakpoint (),
-                    JPDABreakpointEvent.CONDITION_NONE,
-                    debugger.getThread (thread), 
-                    referenceType, 
-                    debugger.getVariable (value)
-                )
+                e
             );
-        else {
-            boolean result = evaluateCondition (
+            resume = e.getResume ();
+        } else {
+            resume = evaluateCondition (
                 condition, 
                 thread,
                 referenceType,
                 value
             );
-            if (!result) return true; // resume
         }
-        
-        if (breakpoint.getSuspend () == JPDABreakpoint.SUSPEND_NONE)
-            return true; // resume
-
-        getDebugger ().setStoppedState (thread);
-        return false; 
+        if (!resume)
+            getDebugger ().setStoppedState (thread);
+        return resume; 
     }
 
     private boolean evaluateCondition (
@@ -163,63 +162,84 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
             StackFrame sf = thread.frame (0);
             try {
                 boolean result = evaluateConditionIn (condition, sf);
+                JPDABreakpointEvent ev = new JPDABreakpointEvent (
+                    getBreakpoint (),
+                    result ? 
+                        JPDABreakpointEvent.CONDITION_TRUE : 
+                        JPDABreakpointEvent.CONDITION_FALSE,
+                    debugger.getThread (thread), 
+                    referenceType, 
+                    debugger.getVariable (value)
+                );
                 getDebugger ().fireBreakpointEvent (
                     getBreakpoint (),
-                    new JPDABreakpointEvent (
-                        getBreakpoint (),
-                        result ? 
-                            JPDABreakpointEvent.CONDITION_TRUE : 
-                            JPDABreakpointEvent.CONDITION_FALSE,
-                        debugger.getThread (thread), 
-                        referenceType, 
-                        debugger.getVariable (value)
-                    )
+                    ev
                 );
-                return result;
+                            
+                // condition true => stop here (do not resume)
+                // condition false => resume
+                return !result || ev.getResume ();
             } catch (ParseException ex) {
+                JPDABreakpointEvent ev = new JPDABreakpointEvent (
+                    getBreakpoint (),
+                    ex,
+                    debugger.getThread (thread), 
+                    referenceType, 
+                    debugger.getVariable (value)
+                );
                 getDebugger ().fireBreakpointEvent (
                     getBreakpoint (),
-                    new JPDABreakpointEvent (
-                        getBreakpoint (),
-                        ex,
-                        debugger.getThread (thread), 
-                        referenceType, 
-                        debugger.getVariable (value)
-                    )
+                    ev
                 );
+                return ev.getResume ();
             } catch (InvalidExpressionException ex) {
+                JPDABreakpointEvent ev = new JPDABreakpointEvent (
+                    getBreakpoint (),
+                    ex,
+                    debugger.getThread (thread), 
+                    referenceType, 
+                    debugger.getVariable (value)
+                );
                 getDebugger ().fireBreakpointEvent (
                     getBreakpoint (),
-                    new JPDABreakpointEvent (
-                        getBreakpoint (),
-                        ex,
-                        debugger.getThread (thread), 
-                        referenceType, 
-                        debugger.getVariable (value)
-                    )
+                    ev
                 );
+                return ev.getResume ();
             }
         } catch (IncompatibleThreadStateException ex) {
             // should not occurre
             ex.printStackTrace ();
         }
-        return true;
+        // some error occured during evaluation of expression => do not resume
+        return false; // do not resume
     }
 
+    /**
+     * Evaluates given condition. Returns value of condition evaluation. 
+     * Returns true othervise (bad expression).
+     */
     private boolean evaluateConditionIn (
         String condExpr, 
         StackFrame frame
     ) throws ParseException, InvalidExpressionException {
-        if (condExpr.length () == 0) return true;
-        if (compiledCondition == null || !compiledCondition.getExpression().equals(condExpr)) {
-            compiledCondition = Expression.parse(condExpr, Expression.LANGUAGE_JAVA_1_5);
+        // 1) compile expression
+        if ( compiledCondition == null || 
+             !compiledCondition.getExpression ().equals (condExpr)
+        )
+            compiledCondition = Expression.parse (
+                condExpr, 
+                Expression.LANGUAGE_JAVA_1_5
+            );
+        
+        // 2) evaluate expression
+        com.sun.jdi.Value value = getDebugger ().evaluateIn (
+            compiledCondition, 
+            frame
+        );
+        try {
+            return ((com.sun.jdi.BooleanValue) value).booleanValue ();
+        } catch (ClassCastException e) {
+            throw new InvalidExpressionException (e);
         }
-        if (compiledCondition != null) {
-            com.sun.jdi.Value value = getDebugger().evaluateIn(compiledCondition, frame);
-            if (value instanceof com.sun.jdi.BooleanValue) {
-                return ((com.sun.jdi.BooleanValue) value).booleanValue();
-            }
-        }
-        return true;
     }
 }

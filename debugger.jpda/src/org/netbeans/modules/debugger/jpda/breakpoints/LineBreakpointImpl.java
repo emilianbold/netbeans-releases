@@ -19,6 +19,7 @@ import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.BreakpointEvent;
+import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
 
@@ -126,7 +127,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             return perform (
                 breakpoint.getCondition (),
                 ((BreakpointEvent) event).thread (),
-                null,
+                ((LocatableEvent) event).location ().declaringType (),
                 null
             );
         return super.exec (event);

@@ -19,8 +19,11 @@ import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.ModificationWatchpointEvent;
 import com.sun.jdi.event.WatchpointEvent;
+import com.sun.jdi.event.LocatableEvent;
+import com.sun.jdi.event.AccessWatchpointEvent;
 import com.sun.jdi.request.AccessWatchpointRequest;
 import com.sun.jdi.request.ModificationWatchpointRequest;
+
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
@@ -82,15 +85,15 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
             return perform (
                 breakpoint.getCondition (),
                 ((WatchpointEvent) event).thread (),
-                null,
+                ((LocatableEvent) event).location ().declaringType (),
                 ((ModificationWatchpointEvent) event).valueToBe ()
             );
-        if (event instanceof WatchpointEvent)
+        if (event instanceof AccessWatchpointEvent)
             return perform (
                 breakpoint.getCondition (),
                 ((WatchpointEvent) event).thread (),
-                null,
-                null
+                ((LocatableEvent) event).location ().declaringType (),
+                ((AccessWatchpointEvent) event).valueCurrent ()
             );
         return super.exec (event);
     }
