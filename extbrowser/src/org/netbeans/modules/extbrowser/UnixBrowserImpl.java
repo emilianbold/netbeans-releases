@@ -154,7 +154,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                     if (p.waitFor () != 0) {
                         tm.notify (
                             new NotifyDescriptor.Message (
-                            NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd }),
+                            NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd.getProcessName () }),
                             NotifyDescriptor.Message.WARNING_MESSAGE)
                         );
                         return;
@@ -181,7 +181,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 if (p.waitFor () != 0) {
                     tm.notify (
                         new NotifyDescriptor.Message (
-                        NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd }),
+                        NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd.getProcessName () }),
                         NotifyDescriptor.Message.WARNING_MESSAGE)
                     );
                     return;
@@ -198,7 +198,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             // occurs when executable is not found or not executable
             tm.notify (
                 new NotifyDescriptor.Message (
-                NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd }),
+                NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd.getProcessName () }),
                 NotifyDescriptor.Message.WARNING_MESSAGE)
             );
         }
