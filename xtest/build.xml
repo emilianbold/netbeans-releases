@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="xtest" default="netbeans" basedir=".">
+
+  <target name="compile">
+    <javac srcdir="src" destdir="src">
+      <classpath>
+        <fileset dir="${netbeans.test.home}/lib">
+          <include name="**/*.jar" />
+        </fileset>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="jars" depends="compile">
+    <mkdir dir="lib"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <jar jarfile="lib/xtest.jar"
+            manifest="manifest-subst.mf"
+            basedir="src"
+            compress="false">
+    </jar>
+    excludesfile="standard-jar-excludes.txt"
+  </target>
+
+  <target name="netbeans" depends="jars"/>
+
+  <target name="clean">
+    <delete>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+      </fileset>
+    </delete>
+    <delete file="manifest-subst.mf"/>
+    <delete file="lib/xtest.jar"/>
+    <delete dir="Info"/>
+  </target>
+
+</project>
