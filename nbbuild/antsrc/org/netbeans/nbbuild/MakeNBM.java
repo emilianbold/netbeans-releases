@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.jar.*;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Location;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.taskdefs.Java;
@@ -62,7 +63,7 @@ public class MakeNBM extends Task {
 			is.close ();
 		    }
 		} catch (IOException ioe) {
-		    throw new BuildException ("Exception reading blurb from " + file, ioe, location);
+		    throw new BuildException ("Exception reading blurb from " + file, ioe, getLocation0 ());
 		}
 	    }
 	    return text.toString ();
@@ -79,6 +80,10 @@ public class MakeNBM extends Task {
 	    if (lmod > mostRecentInput) mostRecentInput = lmod;
 	    name = file.getName ();
 	}
+    }
+    // Javac 1.2 workaround:
+    private Location getLocation0 () {
+	return location;
     }
 
     public static class Signature {
