@@ -114,6 +114,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
         N[] arr = { new N ("1"), new N ("2"), new N ("3") };
         
         top.setActivatedNodes (arr);
+        assertEquals ("Three nodes there", 3, top.getActivatedNodes ().length);
         
         L l = new L ();
         Lookup.Result res = lookup.lookup (new Lookup.Template (org.openide.cookies.OpenCookie.class));
@@ -148,6 +149,8 @@ public class TopComponentGetLookupTest extends NbTestCase {
     public void testNodesAreInTheLookupAndNothingIsFiredBeforeFirstQuery () {
         AbstractNode n1 = new AbstractNode (org.openide.nodes.Children.LEAF, Lookup.EMPTY);
         top.setActivatedNodes(new org.openide.nodes.Node[] { n1 });
+        assertEquals ("One node there", 1, top.getActivatedNodes ().length);
+        assertEquals ("Is the right now", n1, top.getActivatedNodes ()[0]);
         
         Lookup.Result res = lookup.lookup (new Lookup.Template (org.openide.nodes.Node.class));
         L l = new L ();
@@ -172,7 +175,6 @@ public class TopComponentGetLookupTest extends NbTestCase {
         assertNull ("Not present in its lookup", n2.getLookup ().lookup (n2.getClass ()));
         
         top.setActivatedNodes (new AbstractNode[] { n1 });
-        
         assertEquals ("But node is in the lookup", n1, lookup.lookup (n1.getClass ()));
         
         assertEquals ("One item there", 1, res.allInstances ().size ());
@@ -181,6 +183,9 @@ public class TopComponentGetLookupTest extends NbTestCase {
         res.addLookupListener(listener);
         
         top.setActivatedNodes (new AbstractNode[] { n2 });
+        assertEquals ("One node there", 1, top.getActivatedNodes ().length);
+        assertEquals ("n2", n2, top.getActivatedNodes ()[0]);
+        
         listener.check ("Node changed", 1);
         
         java.util.Collection addedByTCLookup = res.allInstances ();
@@ -226,6 +231,8 @@ public class TopComponentGetLookupTest extends NbTestCase {
         );
         
         top.setActivatedNodes(new org.openide.nodes.Node[] { ac });
+        assertEquals ("One node there", 1, top.getActivatedNodes ().length);
+        assertEquals ("It is the ac one", ac, top.getActivatedNodes ()[0]);
         ic.add (obj);
         
         L listener = new L ();
@@ -245,6 +252,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
         listener.check ("One change", 1);
         
         top.setActivatedNodes (new N[0]);
+        assertEquals("The nodes are empty", 0, top.getActivatedNodes ().length);
         listener.checkAtLeast ("There should be no change, but there is one now, improve if possible", 1);
 
         cnt.queries = 0;
