@@ -384,6 +384,21 @@ public class BaseOptions extends OptionSupport {
 
     public void setColoringMap(Map coloringMap) {
         if (coloringMap != null) {
+            if (inReadExternal) {
+                /* Fix of #11115
+                 * The better place would be in upgradeOptions()
+                 * which was attempted originally. However the normal
+                 * behavior of setColoringMap() destroys the colorings
+                 * if they are not upgraded immediately. Therefore
+                 * the readExternalColoringMap approach was attempted.
+                 * However there was an NPE in
+                 * properties.syntax.EditorSettingsCopy.updateColors
+                 * at line 235 the keyColoring was null.
+                 * Therefore the patch appears here.
+                 */
+                coloringMap = UpgradeOptions.patchColorings(getKitClass(), coloringMap);
+            }
+
             coloringMap.remove(null); // remove kit class
             SettingsUtil.setColoringMap( getKitClass(), coloringMap, false );
             
