@@ -14,20 +14,13 @@ package org.netbeans.modules.java.j2seproject.classpath;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
