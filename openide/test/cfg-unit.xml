@@ -150,9 +150,13 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- originally part of ide mode -->
                 <include name="org/openide/explorer/propertysheet/DefaultPropertyModelTest.class"/>
                 <include name="org/openide/explorer/propertysheet/PropertySheetTest.class"/>
+
                 <include name="org/openide/explorer/view/*.class"/>
                 <!-- the ListViews excluded because of issue #29423 -->
                 <exclude name="org/openide/explorer/view/ListViewTest.class"/>
+		<!-- following test was excluded because of issues #51040, #51041 --> 
+                <exclude name="org/openide/explorer/view/TreeView48993Test.class"/>
+
                 <include name="org/openide/util/UtilProgressCursorTest.class"/>
                 <!-- excluded, a problem in infrastructure, the component is not showed -->
                 <exclude name="org/openide/explorer/view/DefaultActionTest.class"/>
