@@ -94,6 +94,9 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../netbeans/modules/autoload/j2eeserver.jar"/>
         <pathelement location="${nbroot}/debuggercore/api/netbeans/modules/autoload/debugger-api.jar"/>
         <pathelement location="${nbroot}/schema2beans/rt/netbeans/modules/autoload/schema2beans.jar"/>
+        <pathelement location="${nbroot}/nbbuild/netbeans/lib/openide.jar"/>
+        <pathelement location="${nbroot}/nbbuild/netbeans/lib/openide-loaders.jar"/>
+        <pathelement location="${nbroot}/debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/> <!-- XXX -->
 
         <fileset dir="../external">
             <include name="*.jar"/>

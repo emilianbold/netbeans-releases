@@ -120,6 +120,9 @@ public class ServerExecutorTest extends NbTestCase {
         
         public void startClient() {
         }
+        public void startClient(String clientURL) {
+            
+        }
         
         String name;
         public String getName() {

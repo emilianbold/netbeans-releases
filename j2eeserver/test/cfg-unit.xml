@@ -8,6 +8,7 @@
  		<testset dir="unit/src">
 			<patternset>
 				<include name="**/*.class"/>
+				<exclude name="**/impl/**/*.class"/>
 				<exclude name="**/data/**"/>
  			</patternset>
  		</testset>
