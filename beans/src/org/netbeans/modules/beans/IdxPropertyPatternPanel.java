@@ -511,25 +511,26 @@ public final class IdxPropertyPatternPanel extends javax.swing.JPanel
     private void protectControls() {
         Result result = getResult();
 
-        fieldCheckBox.setEnabled( !forInterface );
+        final boolean forClass = !forInterface;
+        fieldCheckBox.setEnabled( forClass );
 
         returnCheckBox.setEnabled(
                   ( result.mode == PropertyPattern.READ_WRITE ||
                     result.mode == PropertyPattern.READ_ONLY ) &&
-                  result.withField && !forInterface );
+                  result.withField && forClass );
 
         setCheckBox.setEnabled(
             ( result.mode == PropertyPattern.READ_WRITE ||
               result.mode == PropertyPattern.WRITE_ONLY ) &&
-            result.withField && !forInterface );
+            result.withField && forClass );
 
-        supportCheckBox.setEnabled( ( result.bound || result.constrained ) && !forInterface );
+        supportCheckBox.setEnabled( ( result.bound || result.constrained ) && forClass );
 
-        niGetterCheckBox.setEnabled( !forInterface );
-        niSetterCheckBox.setEnabled( !forInterface );
-
-        niReturnCheckBox.setEnabled( fieldCheckBox.isSelected() && result.niGetter && !forInterface );
-        niSetCheckBox.setEnabled( fieldCheckBox.isSelected() && result.niSetter && !forInterface );
+        niReturnCheckBox.setEnabled( fieldCheckBox.isSelected() && result.niGetter && forClass );
+        niSetCheckBox.setEnabled( fieldCheckBox.isSelected() && result.niSetter && forClass );
+        
+        boundCheckBox.setEnabled(forClass);
+        constrainedCheckBox.setEnabled(forClass);
     }
 
     void setDialog( Dialog dialog ) {
@@ -539,6 +540,9 @@ public final class IdxPropertyPatternPanel extends javax.swing.JPanel
     void setForInterface( boolean forInterface ) {
         this.forInterface = forInterface;
         protectControls();
+        fieldCheckBox.setSelected(!forInterface);
+        returnCheckBox.setSelected(!forInterface);
+        setCheckBox.setSelected(!forInterface);
     }
 
     void setGroupNode( PatternGroupNode groupNode ) {

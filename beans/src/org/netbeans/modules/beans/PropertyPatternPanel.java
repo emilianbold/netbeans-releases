@@ -404,19 +404,23 @@ public final class PropertyPatternPanel extends javax.swing.JPanel
         Result result = getResult();
 
 
-        fieldCheckBox.setEnabled( !forInterface );
+        final boolean forClass = !forInterface;
+        fieldCheckBox.setEnabled( forClass );
 
         returnCheckBox.setEnabled(
                   ( result.mode == PropertyPattern.READ_WRITE ||
                     result.mode == PropertyPattern.READ_ONLY ) &&
-                  result.withField && !forInterface );
+                  result.withField && forClass );
 
         setCheckBox.setEnabled(
             ( result.mode == PropertyPattern.READ_WRITE ||
               result.mode == PropertyPattern.WRITE_ONLY ) &&
-            result.withField && !forInterface );
+            result.withField && forClass );
 
-        supportCheckBox.setEnabled( (result.bound || result.constrained) && !forInterface );
+        supportCheckBox.setEnabled( (result.bound || result.constrained) && forClass );
+        
+        boundCheckBox.setEnabled(forClass);
+        constrainedCheckBox.setEnabled(forClass);
     }
 
 
@@ -428,6 +432,9 @@ public final class PropertyPatternPanel extends javax.swing.JPanel
     void setForInterface( boolean forInterface ) {
         this.forInterface = forInterface;
         protectControls();
+        fieldCheckBox.setSelected(!forInterface);
+        returnCheckBox.setSelected(!forInterface);
+        setCheckBox.setSelected(!forInterface);
     }
 
     void setGroupNode( PatternGroupNode groupNode ) {
