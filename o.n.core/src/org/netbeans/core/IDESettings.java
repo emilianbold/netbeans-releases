@@ -335,11 +335,7 @@ public class IDESettings extends SystemOption {
                 return item == null ? null : (HtmlBrowser.Factory)item.getInstance ();
             }
 
-            //
-            // Old legacy style
-            //
-                
-                
+            // the browser is not set yet - find the first one
             if (obj == null || "".equals (obj)) {
                 Lookup.Result res = Lookup.getDefault ().lookup (new Lookup.Template (HtmlBrowser.Factory.class));
                 java.util.Iterator it = res.allInstances ().iterator ();
@@ -379,24 +375,6 @@ public class IDESettings extends SystemOption {
                 }
                 return null;
             }
-
-            if (obj instanceof Node.Handle) {
-                Node.Handle hdl = (Node.Handle) obj;
-                Node n = hdl.getNode ();
-                InstanceCookie ic = (InstanceCookie) n.getCookie (InstanceCookie.class);
-                if (ic != null) {
-                    Object o = ic.instanceCreate ();
-                    return (HtmlBrowser.Factory)o;
-                }
-            }
-        }
-        catch (java.io.IOException ex) {
-            // handle is invalid or instanceCreate failed - uninstalled module
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
-        }
-        catch (ClassNotFoundException ex) {
-            // instanceCreate failed - uninstalled module
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
         }
         catch (Exception ex) {
             ErrorManager.getDefault ().notify (ex);
@@ -411,7 +389,6 @@ public class IDESettings extends SystemOption {
      * @param brow prefered browser capable of providing implementation
      */
     public void setWWWBrowser(HtmlBrowser.Factory brow) {
-        // Node.Handle is stored to refer to registered browser
         try {
             if (brow == null) {
                 putProperty(PROP_WWWBROWSER, "", true);    
@@ -425,39 +402,6 @@ public class IDESettings extends SystemOption {
                 // strange
                 ErrorManager.getDefault().log ("IDESettings: Cannot find browser in lookup");// NOI18N
                 putProperty (PROP_WWWBROWSER, "", true);
-            }
-            
-
-            // 
-            // now the backward compatibility: actually only monitor uses this
-            // 
-            
-            FileObject fo = Repository.getDefault ()
-                .getDefaultFileSystem ().findResource ("Services/Browsers");   // NOI18N
-            DataFolder folder = DataFolder.findFolder (fo);
-            DataObject [] dobjs = folder.getChildren ();
-            for (int i = 0; i<dobjs.length; i++) {
-                Object o = null;
-                try {
-                    InstanceCookie ic = (InstanceCookie)dobjs[i].getCookie (InstanceCookie.class);
-                    if (ic != null)
-                        o = ic.instanceCreate ();
-                }
-                // exceptions are thrown if module is uninstalled 
-                // we still need to remove default_browser mark in such case
-                catch (java.io.IOException ex) {}
-                catch (ClassNotFoundException ex) {}
-                
-                if (o != null && o.equals (brow)) {
-                    // mark this object so it can be found by modules (utilities, open URL in new window)
-                    dobjs[i].getPrimaryFile ().setAttribute ("DEFAULT_BROWSER", Boolean.TRUE); // NOI18N
-                }
-                else {
-                    // unset default browser attribute in other browsers
-                    Object attr = dobjs[i].getPrimaryFile ().getAttribute ("DEFAULT_BROWSER"); // NOI18N
-                    if ((attr != null) && (attr instanceof Boolean))
-                        dobjs[i].getPrimaryFile ().setAttribute ("DEFAULT_BROWSER", Boolean.FALSE); // NOI18N
-                }
             }
         }
         catch (Exception ex) {
