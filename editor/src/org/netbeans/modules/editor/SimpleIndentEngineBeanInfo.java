@@ -31,7 +31,6 @@ public class SimpleIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
     private BeanDescriptor beanDescriptor;
 
     public SimpleIndentEngineBeanInfo() {
-        super("/org/netbeans/modules/editor/resources/simpleIndentEngine");
     }
 
     public BeanDescriptor getBeanDescriptor () {

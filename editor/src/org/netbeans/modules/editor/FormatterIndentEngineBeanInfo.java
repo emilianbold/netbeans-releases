@@ -40,6 +40,10 @@ public abstract class FormatterIndentEngineBeanInfo extends SimpleBeanInfo {
 
     private String[] propertyNames;
 
+    public FormatterIndentEngineBeanInfo() {
+        this(null);
+    }
+
     public FormatterIndentEngineBeanInfo(String iconPrefix) {
         this.iconPrefix = iconPrefix;
     }
@@ -177,16 +181,23 @@ public abstract class FormatterIndentEngineBeanInfo extends SimpleBeanInfo {
             }
         }
     }
+    
+    private String getValidIconPrefix() {
+        return (iconPrefix != null) ? iconPrefix
+            : "/org/netbeans/modules/editor/resources/indentEngine";
+    }
 
     public Image getIcon(int type) {
         if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-            if (icon == null)
-                icon = loadImage(iconPrefix + ".gif"); // NOI18N
+            if (icon == null) {
+                icon = loadImage(getValidIconPrefix() + ".gif"); // NOI18N
+            }
             return icon;
 
         } else {
-            if (icon32 == null)
-                icon32 = loadImage(iconPrefix + "32.gif"); // NOI18N
+            if (icon32 == null) {
+                icon32 = loadImage(getValidIconPrefix() + "32.gif"); // NOI18N
+            }
             return icon32;
         }
     }
