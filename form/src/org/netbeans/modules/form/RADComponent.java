@@ -598,9 +598,11 @@ public class RADComponent {
                                     continue;
                                 }
                                 // adding event handler
-                                formManager.getEventsManager().addEventHandler(event, handlerName);
-                                EventsManager.EventHandler handler =(EventsManager.EventHandler) event.getHandlers().get(event.getHandlers().size() -1);
-                                formManager.fireEventAdded(RADComponent.this, handler);
+                                if (formManager.getEventsManager().addEventHandler(event, handlerName)) {
+                                    EventsManager.EventHandler handler =(EventsManager.EventHandler) event.getHandlers().get(event.getHandlers().size() -1);
+                                    formManager.fireEventAdded(RADComponent.this, handler);
+                                }
+                                else return;
                             }
                         }
                         String newSelectedHandler = ""; // NOI18N
@@ -1322,6 +1324,7 @@ public class RADComponent {
                   event.getName(),
                   event.getName());
             this.event = event;
+            setShortDescription(event.getListenerMethod().getDeclaringClass().getName());
         }
 
         /** Returns property editor for this property.

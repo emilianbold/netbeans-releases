@@ -70,6 +70,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
     public static final String ATTR_PROPERTY_PRE_CODE = "preCode"; // NOI18N
     public static final String ATTR_PROPERTY_POST_CODE = "postCode"; // NOI18N
     public static final String ATTR_EVENT_NAME = "event"; // NOI18N
+    public static final String ATTR_EVENT_LISTENER = "listener"; // NOI18N
+    public static final String ATTR_EVENT_PARAMS = "parameters"; // NOI18N
     public static final String ATTR_EVENT_HANDLER = "handler"; // NOI18N
     public static final String ATTR_AUX_NAME = "name"; // NOI18N
     public static final String ATTR_AUX_VALUE = "value"; // NOI18N
@@ -353,9 +355,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     if (XML_PROPERTIES.equals(componentNode.getNodeName())) {
                         loadProperties(componentNode, comp);
                     } else if (XML_EVENTS.equals(componentNode.getNodeName())) {
-                        Hashtable events = loadEvents(componentNode);
+                        Collection events = loadEvents(componentNode);
                         if (events != null) {
-                            comp.initDeserializedEvents(events);
+                            comp.getEventsList().initEvents(events);
                         }
 
                     } else if (XML_AUX_VALUES.equals(componentNode.getNodeName())) {
@@ -624,24 +626,27 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
-    private Hashtable loadEvents(org.w3c.dom.Node node) {
-        Hashtable eventsTable = new Hashtable(20);
-
+    private Collection loadEvents(org.w3c.dom.Node node) {
         org.w3c.dom.NodeList children = node.getChildNodes();
         if (children != null) {
-            for (int i = 0; i < children.getLength(); i++) {
+            ArrayList events = new ArrayList();
+
+            for (int i=0, n=children.getLength(); i < n; i++) {
                 if (children.item(i).getNodeType() == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
 
                 if (XML_EVENT.equals(children.item(i).getNodeName())) {
                     String eventName = findAttribute(children.item(i), ATTR_EVENT_NAME);
-                    String handlerName = findAttribute(children.item(i), ATTR_EVENT_HANDLER);
-                    if ((eventName != null) &&(handlerName != null)) { // [PENDING - error check]
-                        eventsTable.put(eventName, handlerName);
+                    String eventListener = findAttribute(children.item(i), ATTR_EVENT_LISTENER);
+                    String paramTypes = findAttribute(children.item(i), ATTR_EVENT_PARAMS);
+                    String eventHandlers = findAttribute(children.item(i), ATTR_EVENT_HANDLER);
+                    if (eventName != null && eventHandlers != null) { // [PENDING - error check]
+                        events.add(new EventsList.EventInfo(eventName,eventListener,paramTypes,eventHandlers));
                     }
                 }
             }
+            return events;
         }
-        return eventsTable;
+        return null;
     }
 
     private HashMap loadAuxValues(org.w3c.dom.Node node) {
@@ -978,10 +983,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         // 2. Events
-        if (component.getEventsList().getEventNames().size() > 0) {
+        Collection events = component.getEventsList().getEventsInfo();
+        if (events.size() > 0) {
             buf.append("\n"); // NOI18N
             buf.append(indent); addElementOpen(buf, XML_EVENTS);
-            saveEvents(component.getEventsList().getEventNames(), buf, indent + ONE_INDENT);
+            saveEvents(events, buf, indent + ONE_INDENT);
             buf.append(indent); addElementClose(buf, XML_EVENTS);
         }
 
@@ -1150,10 +1156,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
-    private void saveEvents(Hashtable events, StringBuffer buf, String indent) {
-        for (Iterator it = events.keySet().iterator(); it.hasNext();) {
-            String eventName =(String)it.next();
-            String handlerName =(String)events.get(eventName);
+    private void saveEvents(Collection events, StringBuffer buf, String indent) {
+        Iterator it=events.iterator();
+        while (it.hasNext()) {
+            EventsList.EventInfo eventInfo = (EventsList.EventInfo)it.next();
 
             buf.append(indent);
             addLeafElementOpenAttr(
@@ -1161,11 +1167,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 XML_EVENT,
                 new String[] {
                     ATTR_EVENT_NAME,
+                    ATTR_EVENT_LISTENER,
+                    ATTR_EVENT_PARAMS,
                     ATTR_EVENT_HANDLER
                 },
                 new String[] {
-                    eventName,
-                    handlerName,
+                    eventInfo.eventName,
+                    eventInfo.eventListener,
+                    eventInfo.paramTypes,
+                    eventInfo.eventHandlers
                 }
                 );
         }
