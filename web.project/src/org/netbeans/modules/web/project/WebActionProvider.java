@@ -514,8 +514,12 @@ class WebActionProvider implements ActionProvider {
                                     clientDCP.append(serverProject.getProjectDirectory().getPath() + "/" + dcp + ":");
                                 }
                                 String wdd = serverHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
-                                if (wdd != null)
+                                if (wdd != null) {
+                                    //remove beginning colon ':'
+                                    if (wdd.charAt(0) == ':')
+                                        wdd = wdd.substring(1, wdd.length());
                                     clientWDD.append(serverProject.getProjectDirectory().getPath() + "/" + wdd + ":");
+                                }
                             }
                         }
                     }
