@@ -30,7 +30,7 @@ public interface LibraryProvider {
     public static final String PROP_LIBRARIES = "libraries";        //NOI18N
 
     /**
-     * Returns libraries prvided by the implemented provider.
+     * Returns libraries provided by the implemented provider.
      * @return LibraryImplementation[] never return null, may return empty array.
      */
     public LibraryImplementation[] getLibraries();
