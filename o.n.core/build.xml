@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- XXX move to bootstrap/build.xml -->  
   <target name="boot">
-    <javac srcdir="bootstrap/src" destdir="bootstrap/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}"/>
+    <javac srcdir="bootstrap/src" destdir="bootstrap/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4"/>
     <mkdir dir="netbeans/lib/ext" />
     <jar jarfile="netbeans/lib/ext/boot.jar"
             basedir="bootstrap/src"

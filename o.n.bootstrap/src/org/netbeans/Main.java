@@ -16,8 +16,6 @@ package org.netbeans;
 import java.io.File;
 import java.util.*;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.jar.JarFile;
 import java.security.*;
 
@@ -25,9 +23,11 @@ import java.security.*;
  * @author Jaroslav Tulach, Jesse Glick
  */
 public class Main extends Object {
+    
     /** Starts the IDE.
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     * @throws Exception for lots of reasons
+     */
     public static void main (String args[]) throws Exception {
         ArrayList list = new ArrayList ();
 
@@ -91,8 +91,31 @@ public class Main extends Object {
         // Note that ModuleManager.updateContextClassLoaders will later change
         // the loader on this and other threads to be MM.SystemClassLoader anyway.
         Thread.currentThread().setContextClassLoader (loader);
+        
+        
+        //
+        // Evaluate command line interfaces and lock the user directory
+        //
+        
+        CLIHandler.Status result = CLIHandler.initialize(args, loader, false, true);
+        int res = result.getExitCode();
+        if (res == -1) {
+            // Connected to another running NB instance and succeeded in making a call.
+            System.exit(0);
+        } else if (res != 0) {
+            // Some CLIHandler refused the invocation
+            System.exit(res);
+        }
 
         m.invoke (null, new Object[] { args });
+    }
+    
+    /**
+     * Call when the system is up and running, to complete handling of
+     * delayed command-line options like -open FILE.
+     */
+    public static void finishInitialization() {
+        CLIHandler.finishInitialization();
     }
     
     private static final class BootClassLoader extends JarClassLoader {

@@ -23,7 +23,6 @@ import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -35,13 +34,11 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.loaders.*;
 import org.openide.actions.*;
 import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem;
 import org.openide.windows.*;
 import org.openide.explorer.*;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
-import org.openide.util.Utilities;
 import org.openide.util.io.*;
 import org.openide.nodes.*;
 
@@ -81,13 +78,13 @@ public class NonGui extends NbTopManager implements Runnable {
 
     /** The flag whether to create the log - can be set via -nologging
     * command line option */
-    private static boolean noLogging = false;
+    protected static boolean noLogging = false;
 
     /** The flag whether to show the Splash screen on the startup */
-    protected  static boolean noSplash = false;
+    protected static boolean noSplash = false;
 
     /** The Class that logs the IDE events to a log file */
-    private static TopLogging logger;
+    protected static TopLogging logger;
 
     /** Getter for home directory. */
     protected static String getHomeDir () {
@@ -161,134 +158,6 @@ public class NonGui extends NbTopManager implements Runnable {
         return true;
     }
 
-    protected static void showHelp() {
-        System.err.println(getString("TEXT_help"));
-    }
-
-    public static void parseCommandLine(String[] args) {
-        boolean specifiedBranding = false;
-
-        // let's go through the command line
-        for(int i = 0; i < args.length; i++)
-        {
-            if (args[i].equalsIgnoreCase("-nogui")) { // NOI18N
-                System.getProperties().put (
-                    "org.openide.TopManager", // NOI18N
-                    "org.netbeans.core.NonGui" // NOI18N
-                );
-            } else if (args[i].equalsIgnoreCase("-nosplash")) // NOI18N
-                noSplash = true;
-            else if (args[i].equalsIgnoreCase("-noinfo")) { // NOI18N
-                // obsolete switch, ignore
-            }
-            else if (args[i].equalsIgnoreCase("-nologging")) // NOI18N
-                noLogging = true;
-            /* not supported:
-            else if (args[i].equalsIgnoreCase("-nosysclipboard")) // NOI18N
-                noSysClipboard = true;
-            else if (args[i].equalsIgnoreCase("-system")) { // NOI18N
-                systemDir = args[++i];
-            }
-            */
-            else if (args[i].equalsIgnoreCase("-ui")) { // NOI18N
-                try {
-                    uiClass = Class.forName(args[++i]);
-                } catch(ArrayIndexOutOfBoundsException e) {
-                    System.err.println(getString("ERR_UIExpected"));
-                } catch (ClassNotFoundException e2) {
-                    System.err.println(getString("ERR_UINotFound"));
-                }
-            } else if (args[i].equalsIgnoreCase("-fontsize")) { // NOI18N
-                try {
-                    uiFontSize = Integer.parseInt (args[++i]);
-                } catch(ArrayIndexOutOfBoundsException e) {
-                    System.err.println(getString("ERR_FontSizeExpected"));
-                } catch (NumberFormatException e2) {
-                    System.err.println(getString("ERR_BadFontSize"));
-                }
-
-            } else if (args[i].equalsIgnoreCase("-locale")) { // NOI18N
-                String localeParam = args[++i];
-                String language;
-                String country = ""; // NOI18N
-                String variant = ""; // NOI18N
-                int index1 = localeParam.indexOf(":"); // NOI18N
-                if (index1 == -1)
-                    language = localeParam;
-                else {
-                    language = localeParam.substring(0, index1);
-                    int index2 = localeParam.indexOf(":", index1+1); // NOI18N
-                    if (index2 != -1) {
-                        country = localeParam.substring(index1+1, index2);
-                        variant = localeParam.substring(index2+1);
-                    }
-                    else
-                        country = localeParam.substring(index1+1);
-                }
-                java.util.Locale.setDefault(new java.util.Locale(language, country, variant));
-            } else if (args[i].equalsIgnoreCase ("-branding")) { // NOI18N
-                String branding = args[++i];
-                if (branding.equals ("-")) branding = null; // NOI18N
-                try {
-                    NbBundle.setBranding (branding);
-                } catch (IllegalArgumentException iae) {
-                    iae.printStackTrace ();
-                }
-                specifiedBranding = true;
-            }
-            else if (args[i].equalsIgnoreCase("-?") || args[i].equalsIgnoreCase("-help")) { // NOI18N
-                showHelp();
-                doExit(2);
-            }
-            else {
-                // XXX should use a format
-                System.err.println(getString("ERR_UnknownOption")+": "+args[i]);
-                showHelp();
-                doExit(2);
-            }
-        }
-
-        if (! specifiedBranding) {
-            // Read default branding from file "lib/branding" in installation.
-            File branding = new File(new File(getHomeDir(), "lib"), "branding"); // NOI18N
-            if (branding.exists ()) {
-                try {
-                    InputStream is = new FileInputStream (branding);
-                    try {
-                        BufferedReader rd = new BufferedReader (new InputStreamReader (is));
-                        String line = rd.readLine ();
-                        if (line == null || line.equals ("")) // NOI18N
-                            throw new IOException ("empty branding file"); // NOI18N
-                        if (rd.readLine () != null)
-                            throw new IOException ("branding file more than one line"); // NOI18N
-                        line = line.trim ();
-                        if (line.equals ("-")) line = null; // NOI18N
-                        try {
-                            NbBundle.setBranding (line);
-                        } catch (IllegalArgumentException iae) {
-                            iae.printStackTrace ();
-                        }
-                    } finally {
-                        is.close ();
-                    }
-                } catch (IOException ioe) {
-                    ioe.printStackTrace ();
-                }
-            }
-        }
-
-        if (!noLogging) {
-            try {
-                logger = new TopLogging(getSystemDir());
-            } catch (IOException e) {
-                System.err.println("Cannot create log file. Logging disabled."); // NOI18N
-                e.printStackTrace ();
-            }
-        }
-        StartLog.logProgress ("TopLogging initialized"); // NOI18N
-        
-    }
-    
     /** Lazily loads classes */ // #9951
     private static final Class getKlass(String cls) {
         try {
@@ -568,6 +437,9 @@ public class NonGui extends NbTopManager implements Runnable {
         java.net.Authenticator.setDefault (new NbAuthenticator ());
         StartLog.logProgress ("Security managers installed"); // NOI18N
         Main.incrementSplashProgressBar();
+        
+        org.netbeans.Main.finishInitialization();
+        StartLog.logProgress("Ran any delayed command-line options"); // NOI18N
     }
 
 
