@@ -7,15 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans.beaninfo;
 
-import java.util.ResourceBundle;
 import java.lang.reflect.InvocationTargetException;
-import java.io.File;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import javax.swing.Action;
@@ -26,7 +24,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -417,10 +414,6 @@ public final class BiNode extends AbstractNode {
         ((Children.Array)getChildren()).add( subnodes );
 
     }
-
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (BiNode.class);
-    }
    
     /** refresh icons after get from introspection change */
     public void iconChange(){
@@ -465,10 +458,6 @@ public final class BiNode extends AbstractNode {
             setSheet(sheet);
 
             getCookieSet().add ( this );
-        }
-
-        public HelpCtx getHelpCtx () {
-            return new HelpCtx (SubNode.class);
         }
         
         public java.awt.Image getIcon( int type ){

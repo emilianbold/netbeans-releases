@@ -7,14 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans;
 
 import org.openide.options.SystemOption;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** Options for setting properties of generating property patterns from fields
@@ -51,13 +50,6 @@ public class PropertyActionSettings extends SystemOption {
      */
     public String displayName () {
         return NbBundle.getMessage(PropertyActionSettings.class, "PROP_Option_Menu");
-    }
-
-    /** Return HelpCtx key
-     * @return HelpCtx
-     */
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (PropertyActionSettings.class);
     }
 
     /** Default instance of this system option, for the convenience of associated classes.

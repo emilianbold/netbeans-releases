@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -52,7 +52,7 @@ public class BiIncludeAllAction extends NodeAction  {
     * @return the help context for this action
     */
     public HelpCtx getHelpCtx () {
-        return new HelpCtx (BiIncludeAllAction.class);
+        return HelpCtx.DEFAULT_HELP;
     }
 
     protected boolean enable( Node[] activatedNodes ) {

@@ -67,7 +67,7 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
     * @return the help context for this action
     */
     public HelpCtx getHelpCtx () {
-        return new HelpCtx (GenerateBeanInfoAction.class);
+        return HelpCtx.DEFAULT_HELP;
     }
 
     protected boolean enable( Node[] activatedNodes ) {
@@ -109,7 +109,6 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
                               NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
                               NotifyDescriptor.OK_OPTION,                           // Default
                               DialogDescriptor.BOTTOM_ALIGN,                        // Align
-                              //new HelpCtx (GenerateBeanInfoAction.class.getName () + ".dialog"), // Help // NOI18N
                               new HelpCtx (BiPanel.BEANINFO_HELP), // Help // NOI18N                              
                               null );
 

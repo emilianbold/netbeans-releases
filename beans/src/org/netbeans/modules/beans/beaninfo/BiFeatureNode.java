@@ -19,7 +19,6 @@ import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
 
 import org.openide.util.actions.SystemAction;
-import org.openide.util.HelpCtx;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
@@ -104,10 +103,6 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
         init ();
     }
 
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (BiFeatureNode.class);
-    }
-    
     public java.awt.Image getIcon( int type ){        
         if( biFeature instanceof BiFeature.Descriptor  && biAnalyser.isNullDescriptor() ) {
             //setIconBase( biFeature.getIconBase(true));
