@@ -117,9 +117,12 @@ public interface MultiViewElement {
     
 
     /**
+     * Use the passed in callback instance for manipulating the enclosing multiview component, keep the instance around
+     * during lifecycle of the component if you want to automatically switch to this component etc.
      * The enclosing window enviroment attaches the callback right after creating 
-     * the element from the description. Same applies for deserialization of MultiViewTopComponent.
-     * Implementors shall not attempt to serialize the passed instance.
+     * the element from the description.
+     * Same applies for deserialization of MultiViewTopComponent, thus MultiViewElement 
+     * implementors shall not attempt to serialize the passed instance.
      */ 
     void setMultiViewCallback (MultiViewElementCallback callback);
     
