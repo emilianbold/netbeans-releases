@@ -21,6 +21,8 @@ import java.util.Collections;
 
 /**
  * The class simplifies use of an option button group to show/set value of an item
+ *
+ * @author pfiala
  */
 public abstract class ItemOptionHelper implements ActionListener {
 

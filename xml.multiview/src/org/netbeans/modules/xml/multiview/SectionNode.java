@@ -13,32 +13,36 @@
 
 package org.netbeans.modules.xml.multiview;
 
+import org.netbeans.modules.xml.multiview.ui.BoxPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.netbeans.modules.xml.multiview.ui.SectionPanel;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
-import org.netbeans.modules.xml.multiview.ui.BoxPanel;
-import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.netbeans.modules.xml.multiview.ui.InnerPanelFactory;
-import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
+
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Iterator;
 
 /**
  * @author pfiala
  */
-public class SectionNode extends AbstractNode implements InnerPanelFactory {
+public class SectionNode extends AbstractNode {
 
     protected final Object key;
     private boolean expanded = false;
     private SectionNodePanel sectionPanel = null;
-    private String iconBase;
+    private final String iconBase;
+    private final SectionNodeView sectionNodeView;
+    private final List allChildren = new LinkedList();
 
-    public SectionNode(boolean isLeaf, Object key, String title, String iconBase) {
-        this(isLeaf ? Children.LEAF : new Children.Array(), key, title, iconBase);
+    public SectionNode(SectionNodeView sectionNodeView, boolean isLeaf, Object key, String title, String iconBase) {
+        this(sectionNodeView, isLeaf ? Children.LEAF : new Children.Array(), key, title, iconBase);
     }
 
-    public SectionNode(Object key, String title, String iconBase) {
-        this(false, key, title, iconBase);
+    public SectionNode(SectionNodeView sectionNodeView, Object key, String title, String iconBase) {
+        this(sectionNodeView, false, key, title, iconBase);
     }
 
     /**
@@ -48,20 +52,19 @@ public class SectionNode extends AbstractNode implements InnerPanelFactory {
      * @param key
      * @param title
      */
-    protected SectionNode(Children children, Object key, String title, String iconBase) {
+    protected SectionNode(SectionNodeView sectionNodeView, Children children, Object key, String title,
+            String iconBase) {
         super(children);
+        this.sectionNodeView = sectionNodeView;
         this.key = key;
         super.setDisplayName(title);
         super.setIconBase(iconBase);
         this.iconBase = iconBase;
+        sectionNodeView.registerNode(this);
     }
 
-    public SectionNodeView getSectionView() {
-        if(key instanceof SectionNodeView) {
-            return (SectionNodeView) key;
-        } else {
-            return ((SectionNode) getParentNode()).getSectionView();
-        }
+    public SectionNodeView getSectionNodeView() {
+        return sectionNodeView;
     }
 
     public Object getKey() {
@@ -69,22 +72,29 @@ public class SectionNode extends AbstractNode implements InnerPanelFactory {
     }
 
     public void addChild(SectionNode node) {
-        getChildren().add(new Node[]{node});
+        allChildren.add(node);
+        if(!(node instanceof SectionInnerNode)) {
+            getChildren().add(new Node[]{node});
+        }
     }
 
     public SectionInnerPanel createInnerPanel() {
         Children children = getChildren();
-        if(children.getNodesCount() == 0) {
+        if (children.getNodesCount() == 0) {
             return createNodeInnerPanel();
         } else {
-            BoxPanel boxPanel = new BoxPanel(getSectionView());
+            BoxPanel boxPanel = new BoxPanel(sectionNodeView);
             SectionInnerPanel nodeInnerPanel = createNodeInnerPanel();
-            if(nodeInnerPanel != null) {
+            if (nodeInnerPanel != null) {
                 boxPanel.add(nodeInnerPanel);
             }
-            Node[] nodes = children.getNodes();
-            for (int i = 0; i < nodes.length; i++) {
-                boxPanel.add(((SectionNode) nodes[i]).getSectionNodePanel());
+            for (Iterator it = allChildren.iterator(); it.hasNext();) {
+                SectionNode sectionNode = (SectionNode) it.next();
+                if (sectionNode instanceof SectionInnerNode) {
+                    boxPanel.add(sectionNode.createInnerPanel());
+                } else {
+                    boxPanel.add(sectionNode.getSectionNodePanel());
+                }
             }
             return boxPanel;
         }
@@ -107,21 +117,27 @@ public class SectionNode extends AbstractNode implements InnerPanelFactory {
     }
 
     public SectionNodePanel getSectionNodePanel() {
-        if(sectionPanel == null) {
+        if (sectionPanel == null) {
             sectionPanel = new SectionNodePanel(this);
+            //sectionNodeView.mapSection(this, sectionPanel);
         }
         return sectionPanel;
     }
 
-    public SectionInnerPanel createInnerPanel(Object key) {
-        if(key == this) {
-            return createInnerPanel();
-        } else {
-            return null;
-        }
-    }
-
     public String getIconBase() {
         return iconBase;
+    }
+
+    public boolean equals(Object obj) {
+        if (getClass() == obj.getClass()) {
+            if (key.equals(((SectionNode) obj).key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int hashCode() {
+        return key.hashCode();
     }
 }

@@ -27,7 +27,7 @@ import javax.swing.*;
 public class SectionNodePanel extends SectionPanel {
 
     public SectionNodePanel(SectionNode node) {
-        super(node.getSectionView(), node, node.getDisplayName(), node.getKey());
+        super(node.getSectionNodeView(), node, node.getDisplayName(), node);
         if(node.getKey() instanceof SectionView) {
             setExpandedViewMode();
         } else if(node.isExpanded()) {
@@ -61,7 +61,7 @@ public class SectionNodePanel extends SectionPanel {
         SectionInnerPanel innerPanel = ((SectionNode) getNode()).createInnerPanel();
         if (innerPanel == null) {
             SectionNode node = (SectionNode) getNode();
-            innerPanel = new BoxPanel(node.getSectionView());
+            innerPanel = new BoxPanel(node.getSectionNodeView());
         }
         return innerPanel;
     }
@@ -71,6 +71,8 @@ public class SectionNodePanel extends SectionPanel {
         if(parentNode instanceof SectionNode) {
             ((SectionNode)parentNode).getSectionNodePanel().open();
         }
-        super.open();
+        if (getInnerPanel() == null) {
+            super.open();
+        }
     }
 }
