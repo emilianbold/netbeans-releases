@@ -140,7 +140,7 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
     }
     
     public String name() {
-        return superclassPanelCurrent ? "Ahoj" : delegateIterator.name();
+        return superclassPanelCurrent ? "" : delegateIterator.name(); // NOI18N
     }
     
     public void removeChangeListener(ChangeListener l) {
