@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="tomcatj2ee" default="netbeans" basedir=".">
+<!-- 
+  <property name="nbm_alias" value="nb_ide"/>
+-->
+  
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="license.file" value="../../nbbuild/standard-nbm-license.txt"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="nb_root" location="../.."/>
+  <property name="j2eeserver_root" location="../../../f4j_all/j2eeserver/dublin"/>
+  <property name="j2eeserver_jars" location="${j2eeserver_root}/netbeans/modules/autoload"/>
+  <property name="nbext" location="${nb_root}/nbbuild"/>
+  <property name="binroot" location="../../../nbextra"/>
+  <property name="tomcat5_dir" location="src/org/netbeans/modules/tomcat/tomcat5"/>
+	
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
+  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
+  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nb_root}/nbbuild/nbantext.jar"/>
+
+  <!-- Check if it is neceseary to rebuild beans for Tomcat 4.0-->
+  <target name="dd2beans_init">
+        <mkdir dir="${tomcat5_dir}/config"/>
+        <uptodate property="dd.generation.uptodate" targetfile="${tomcat5_dir}/config/TomcatConfig.java">
+          <srcfiles dir="${tomcat5_dir}/resources"
+                    includes="tomcat5_config.*"/>
+        </uptodate>
+   </target>
+
+   <target name="dd2beans_gen" depends="dd2beans_init" unless="dd.generation.uptodate">
+     <antcall target="clean-ddgen-src"/>
+     <echo message="generating bean graph for Tomcat 5 configuration file" />
+     <java classname="org.netbeans.modules.schema2beans.GenBeans" fork="yes">	
+     	<classpath>
+	  <pathelement path="${binroot}/core/release/lib/ext/crimson.jar" />
+          <pathelement path="${binroot}/core/release/lib/ext/xml-apis.jar" />
+	  <pathelement path="${nb_root}/logger/netbeans/lib/ext/logger.jar" />
+	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" />
+	  <fileset dir = "${nb_root}/openide">
+		<include name="netbeans/lib/openide*.jar"/>
+	  </fileset>
+	</classpath>
+	<arg line= "-f ${tomcat5_dir}/resources/tomcat5_config.dtd" />
+	<arg line= "-mdd ${tomcat5_dir}/resources/tomcat5_config.mdd" />
+	<arg line= "-p org.netbeans.modules.tomcat.tomcat5.config" />
+	<arg line= "-r src" />
+     </java>
+  </target>
+  
+  <target name="compile" depends="dd2beans_gen">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <classpath>
+        <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
+	<pathelement location="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar"/>
+	<pathelement location="${j2eeserver_jars}/j2eetools.jar"/>
+        <pathelement location="${j2eeserver_jars}/ext/jsr88javax.jar"/>
+        <fileset dir="${nb_root}/openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
+      </classpath>
+    </javac>
+  </target>
+  
+  <target name="jars" depends="compile">
+    <mkdir dir="netbeans/modules"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <locjar jarfile="netbeans/modules/tomcat5.jar"
+            manifest="manifest-subst.mf"
+            basedir="src"
+	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
+	    compress="false">
+      <locale name="ja"/>
+    </locjar>
+  </target>
+
+  <target name="netbeans" depends="jars">
+    <genlist targetname="nbm" outputfiledir="../nbbuild/netbeans"/>
+  </target>
+
+  <target name="nbm" depends="jars">
+    <makenbm file="tomcat5.nbm"
+             topdir="."
+             module="netbeans/modules/tomcat5.jar"
+	     homepage="http://text.${homepage.base}/"
+	     distribution="http://${dist.base}/tomcat5.nbm">
+      <license file="${license.file}"/>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+    </makenbm>
+  </target>
+
+  <target name="clean">
+    <antcall target="clean-ddgen-src"/>  
+    <delete>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+        <include name="**/*.jar"/>
+      </fileset>
+    </delete>
+    <delete file="manifest-subst.mf"/>
+    <delete file="tomcat5.nbm"/>
+    <delete dir="netbeans"/>
+    <delete dir="Info"/>
+  </target>
+
+  <target name="clean-ddgen-src">
+        <delete>
+            <fileset dir="${tomcat5_dir}/config">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${tomcat5_dir}/config"/>
+  </target>
+  
+  <!-- This target will only work *inside* the IDE! -->
+  <target depends="jars" description="Test the module inside the running IDE." name="test">
+    <nbinstaller action="reinstall" module="netbeans/modules/tomcat5.jar"/>
+  </target>
+
+</project>
