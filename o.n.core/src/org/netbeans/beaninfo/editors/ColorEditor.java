@@ -570,7 +570,7 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
       if (VALUE_PALETTE.equals (type)) {
         String id = attributes.getNamedItem (ATTR_ID).getNodeValue ();
         String palette = attributes.getNamedItem (ATTR_PALETTE).getNodeValue (); 
-        setValue (new SuperColor (id, Integer.parseInt (palette), new Color (Integer.parseInt (red), Integer.parseInt (green), Integer.parseInt (blue))));
+        setValue (new SuperColor (id, Integer.parseInt (palette), new Color (Integer.parseInt (red, 16), Integer.parseInt (green, 16), Integer.parseInt (blue, 16))));
       } else {
         setValue (new SuperColor (new Color (Integer.parseInt (red), Integer.parseInt (green), Integer.parseInt (blue))));
       }
@@ -601,6 +601,7 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
 
 /*
  * Log
+ *  15   Gandalf   1.14        7/13/99  Ian Formanek    Fixed readFromXML
  *  14   Gandalf   1.13        7/12/99  Ian Formanek    Implements 
  *       XMLPropertyEditor
  *  13   Gandalf   1.12        7/8/99   Jesse Glick     Context help.
