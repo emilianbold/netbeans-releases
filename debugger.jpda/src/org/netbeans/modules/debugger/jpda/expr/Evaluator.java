@@ -676,7 +676,7 @@ public class Evaluator implements JavaParserVisitor {
             String typeOrVariable = identifier.substring(0, identifier.lastIndexOf('.'));
             Value variable = null;
             try {
-                variable = evaluateVariable(new Identifier(true, frame.thisObject(), typeOrVariable));
+                variable = evaluateVariable(new Identifier(true, frame.thisObject(), frame.location().declaringType(), typeOrVariable));
             } catch (EvaluationException e) {
                 // not a variable
             }
