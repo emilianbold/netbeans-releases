@@ -92,7 +92,7 @@ public class AddIndexDialog {
             cbx_uq = new JCheckBox(bundle.getString("Unique"));
             cbx_uq.setMnemonic(bundle.getString("Unique_Mnemonic").charAt(0));
             cbx_uq.setToolTipText(bundle.getString("ACS_UniqueA11yDesc"));
-            label.setLabelFor(cbx_uq);
+            label_uq.setLabelFor(cbx_uq);
             layout.setConstraints(cbx_uq, con);
             pane.add(cbx_uq);
 
