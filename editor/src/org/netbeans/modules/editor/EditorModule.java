@@ -15,7 +15,9 @@ package com.netbeans.developer.modules.text;
 
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
+import com.netbeans.editor.BaseKit;
 import com.netbeans.editor.view.DialogSupport;
+import com.netbeans.editor.ext.ExtSettings;
 import com.netbeans.ide.modules.ModuleInstall;
 
 /**
@@ -28,7 +30,8 @@ public class EditorModule implements ModuleInstall {
   /** Kit replacements that will be installed into JEditorPane */
   KitInfo[] replacements = new KitInfo[] {
     new KitInfo("text/plain", "com.netbeans.developer.modules.text.NbEditorPlainKit"),
-    new KitInfo("text/x-java", "com.netbeans.developer.modules.text.NbEditorJavaKit")
+    new KitInfo("text/x-java", "com.netbeans.developer.modules.text.NbEditorJavaKit"),
+    new KitInfo("text/x-idl", "com.netbeans.developer.modules.text.NbEditorIDLKit")
   };
 
   /** Module installed for the first time. */
@@ -39,8 +42,13 @@ public class EditorModule implements ModuleInstall {
   /** Module installed again. */
   public void restored () {
 
+    // initial initializations
     DialogSupport.init();
     DialogSupport.setDialogCreator(new NbDialogCreator());
+    ExtSettings.init();
+
+    // preload some classes for faster editor opening
+    BaseKit.getKit(NbEditorJavaKit.class).createDefaultDocument();
 
     for (int i = 0; i < replacements.length; i++) {
       // install new kit
@@ -81,6 +89,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  12   Gandalf   1.11        6/1/99   Miloslav Metelka 
  *  11   Gandalf   1.10        5/5/99   Miloslav Metelka 
  *  10   Gandalf   1.9         4/23/99  Miloslav Metelka Differrent document 
  *       constructor
