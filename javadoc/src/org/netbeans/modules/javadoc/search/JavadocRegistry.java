@@ -68,7 +68,7 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
     private ArrayList listeners;
     private Set/*<JavadocForBinaryQuery.Result>*/ results = new HashSet ();
     private Set/*ClassPath*/ classpaths = new HashSet ();
-    private Set /*<FileObject*/ roots;
+    private FileObject[] roots;
     
     /** Creates a new instance of JavadocRegistry */
     private JavadocRegistry() {
@@ -85,13 +85,23 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
 
     /** Returns Array of the Javadoc Index roots
      */
-    public synchronized FileObject[] getDocRoots() {
-        if (this.roots == null) {
-            readRoots();
+    public FileObject[] getDocRoots() {
+        synchronized (this) {
+            if (this.roots != null) {
+                return this.roots;
+            }
+        }        
+        //XXX must be called out of synchronized block to prevent
+        // deadlock. throwCache is called under the ProjectManager.mutex
+        // write lock and Project's SFBQI requires the ProjectManager.mutex readLock
+        Set s = readRoots();
+        synchronized (this) {
+            if (this.roots == null) {
+                this.roots = new FileObject[ s.size() ];
+                s.toArray( this.roots );
+            }
+            return this.roots;
         }
-        FileObject[] result = new FileObject[ roots.size() ];
-        roots.toArray( result );
-        return result;
     }
     
     
@@ -109,9 +119,9 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
         
     // Private methods ---------------------------------------------------------
     
-    private void readRoots() {
+    private Set readRoots() {
         assert this.classpaths.size() == 0 & this.results.size () == 0 : "Illegal state of object!";
-        this.roots = new HashSet ();
+        Set roots = new HashSet ();
         List paths = new LinkedList();
         paths.addAll( this.regs.getPaths( ClassPath.COMPILE ) );        
         paths.addAll( this.regs.getPaths( ClassPath.BOOT ) );
@@ -136,11 +146,11 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
                     if (fo != null) {                        
                         roots.add(fo);
                     }
-                }
-                                    
+                }                                    
             }
         }
         //System.out.println("roots=" + roots);
+        return roots;
     }
 
     public void pathsAdded(GlobalPathRegistryEvent event) {
