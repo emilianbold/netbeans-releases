@@ -46,5 +46,17 @@ public class Installer extends ModuleInstall {
     public void uninstalled() {
         searchInstaller.uninstalled();
     }
+    
+    /**
+     */
+    public void close() {
+        searchInstaller.close();
+    }
+    
+    /**
+     */
+    public boolean closing() {
+        return searchInstaller.closing();
+    }
 
 }
