@@ -434,39 +434,6 @@ public class NonGui extends NbTopManager implements Runnable {
         StartLog.logProgress ("Repository initialized"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
-        // 8. Advance Policy
-
-        java.security.Policy.getPolicy().getPermissions(new java.security.CodeSource(null, null)).implies(new java.security.AllPermission());
-
-        // set security manager
-
-        org.netbeans.core.execution.TopSecurityManager secman =
-            new org.netbeans.core.execution.TopSecurityManager();
-
-        // XXX(-trung) workaround for IBM JDK 1.3 Linux bug in
-        // java.net.URLClassLoader.findClass().  The IBM implementation of this
-        // method is not reentrant. The problem happens when findClass()
-        // indirectly calls methods of TopSecurityManager for the first time.
-        // This may trigger other classes to be loaded, thus findClass() is
-        // re-entered.
-        //
-        // We try to force dependent classes of TopSecurityManager to be loaded
-        // before setting it as system's SecurityManager
-        
-        try {
-            secman.checkRead("xxx"); // NOI18N
-        }
-        catch (Throwable ex) {
-            // ignore
-        }
-        
-        System.setSecurityManager(secman);
-
-        // install java.net.Authenticator
-        java.net.Authenticator.setDefault (new NbAuthenticator ());
-        StartLog.logProgress ("Security managers installed"); // NOI18N
-
-        // -----------------------------------------------------------------------------------------------------
         // Upgrade
         try {
             if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
@@ -522,9 +489,6 @@ public class NonGui extends NbTopManager implements Runnable {
         LoaderPoolNode.installationFinished ();
         StartLog.logProgress ("LoaderPool notified"); // NOI18N
 
-        startFolder (getDefault ().getPlaces ().folders ().startup ());
-        StartLog.logProgress ("StartFolder content started"); // NOI18N
-
         // -----------------------------------------------------------------------------------------------------
         // 15. Install new modules
         ModuleInstaller.autoLoadModules ();
@@ -548,13 +512,51 @@ public class NonGui extends NbTopManager implements Runnable {
         // wait until mounting really occurs
         automount.waitFinished ();
         StartLog.logProgress ("Automounter done"); // NOI18N
-        
+
         //---------------------------------------------------------------------------------------------------------
         // initialize main window AFTER the setup wizard is finished
 
         initializeMainWindow ();
         StartLog.logProgress ("Main window initialized"); // NOI18N
         StartLog.logEnd ("TopManager initialization (org.netbeans.core.NonGui.run())"); //NOI18N
+
+        // -----------------------------------------------------------------------------------------------------
+        // 8. Advance Policy
+
+        java.security.Policy.getPolicy().getPermissions(new java.security.CodeSource(null, null)).implies(new java.security.AllPermission());
+
+        // set security manager
+
+        org.netbeans.core.execution.TopSecurityManager secman =
+            new org.netbeans.core.execution.TopSecurityManager();
+
+        // XXX(-trung) workaround for IBM JDK 1.3 Linux bug in
+        // java.net.URLClassLoader.findClass().  The IBM implementation of this
+        // method is not reentrant. The problem happens when findClass()
+        // indirectly calls methods of TopSecurityManager for the first time.
+        // This may trigger other classes to be loaded, thus findClass() is
+        // re-entered.
+        //
+        // We try to force dependent classes of TopSecurityManager to be loaded
+        // before setting it as system's SecurityManager
+        
+        try {
+            secman.checkRead("xxx"); // NOI18N
+        }
+        catch (Throwable ex) {
+            // ignore
+        }
+        
+        System.setSecurityManager(secman);
+
+        // install java.net.Authenticator
+        java.net.Authenticator.setDefault (new NbAuthenticator ());
+        StartLog.logProgress ("Security managers installed"); // NOI18N
+
+        // run classes int Startup folder
+        
+        startFolder (getDefault ().getPlaces ().folders ().startup ());
+        StartLog.logProgress ("StartFolder content started"); // NOI18N
     }
 
 
