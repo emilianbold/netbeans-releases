@@ -26,6 +26,7 @@ help\
             for the context node in addition to the web module node-->
 	<mapID target="tomcat_context_node" url="tomcat/tomcat_context_node.html" />
 	<mapID target="tomcat_edit_config" url="tomcat/tomcat_edit_config.html" />
+	<mapID target="tomcat_admin_access" url="tomcat/tomcat_admin_access.html" />
         <mapID target="tomcat_edit_tomcatuser" url="tomcat/tomcat_edit_tomcatuser.html" />
 	<mapID target="tomcat_internal" url="tomcat/tomcat_internal.html" />
 	<mapID target="tomcat_setup_tdcp" url="tomcat/tomcat_setup_tdcp.html" />

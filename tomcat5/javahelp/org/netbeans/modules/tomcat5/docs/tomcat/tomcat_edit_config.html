@@ -9,13 +9,13 @@
 <meta name="lastupdated" content="4Feb04">
 <!-- p1 -->
 
-<title>Customizing the Tomcat Configuration File</title>
+<title>Configuring the server.xml File</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Customizing the Tomcat Configuration File</h2>
+<h2>Configuring the server.xml File</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
@@ -43,43 +43,9 @@
   <tt>server.xml</tt> file that is in the <i>base-dir</i><tt>/conf</tt> directory.</p>
 
 <p>You can edit the <tt>server.xml</tt> file that is in the <i>base-dir</i><tt>/conf</tt> directory
-   by using the Tomcat Admin tool or the Source Editor. It is recommended that only advanced users
+   by using the <a href="tomcat_admin_access.html">Tomcat Web Server Administration Tool</a> or the Source Editor. It is recommended that only advanced users
    edit the <tt>server.xml</tt> file in the Source Editor.</p>
 
-<p><b>To access the Tomcat Admin tool:</b>
-<ol>
-  <li>In the Runtime window, expand the Servers node and the Tomcat 5 Servers 
-    node.</li>
-<li>If the text to the right of the Tomcat instance node does not end with "[running]",
-start the server by right-clicking the Tomcat instance node and choosing Start/Stop Server.
-Click Start Server.</li>
-  <li>Expand the Web Applications node. Right-click the node for the <tt>/admin</tt> 
-    context and choose Open in Browser. The Tomcat Web Server Administration Tool 
-    opens in the IDE's default web browser.</li>
-<li>Type a User Name and Password for a Tomcat user to whom the "admin" role has been assigned. Click login.
-The "Tomcat Web Server Administration Tool" (the Admin tool) should open
-in the IDE's default web browser.
-
-<table>
-  <tr> 
-    <td valign="top"><img src="../images/warn.gif" width="16" height="16"></td>
-    <td valign=top align=left><p>If the Admin tool does not
-open, or if you don't have a user name or password, check the <tt>tomcat-users.xml</tt> file
-in Tomcat's base directory. To identify the location of this directory, right-click
-the Tomcat Web Server instance node in the Runtime window and select Properties.
-In the Properties dialog box, the Base Directory property points to 
-Tomcat's base directory.</p><p>In the <tt>tomcat-users.xml</tt> file in Tomcat's base
- directory, check 
-that a role called "admin" exists and that the role is assigned
-to a user. If necessary, define the "admin" role, assign the "admin" role to a user, save the file,
-and, using the Runtime tab, stop and restart the Tomcat instance.</p></td>
-  </tr>
-</table>
-
-</li>
-<li>Make your changes. For example, <a href="tomcat_setup_tdcp.html ">set up a Tomcat database connection pool</a>.</li>
-<li>Click Save. Then click Commit Changes. Then click Log Out.</li>
-</ol>
 <p><b>To edit the server.xml file in the Source Editor:</b>
 <table>
   <tbody><tr> 
