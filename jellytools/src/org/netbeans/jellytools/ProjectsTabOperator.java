@@ -16,6 +16,7 @@ package org.netbeans.jellytools;
 import java.awt.Component;
 import java.awt.Container;
 import javax.swing.JComponent;
+import org.netbeans.jellytools.actions.ProjectViewAction;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.ContainerOperator;
@@ -42,6 +43,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 public class ProjectsTabOperator extends TopComponentOperator {
     
     static final String PROJECT_CAPTION = Bundle.getStringTrimmed("org.netbeans.modules.projects.Bundle", "CTL_ProjectDesktop_name");
+    private static final ProjectViewAction viewAction = new ProjectViewAction();
     
     private JTreeOperator _tree;
     
@@ -55,6 +57,13 @@ public class ProjectsTabOperator extends TopComponentOperator {
      * @param contOper parent Container */    
     public ProjectsTabOperator(ContainerOperator contOper) {
         super(contOper, PROJECT_CAPTION);
+    }
+
+    /** invokes ProjectsTab and returns new instance of ProjectsTabOperator
+     * @return new instance of ProjectsTabOperator */    
+    public static ProjectsTabOperator invoke() {
+        viewAction.perform();
+        return new ProjectsTabOperator();
     }
     
     /** Getter for Projects JTreeOperator

@@ -16,6 +16,7 @@ package org.netbeans.jellytools;
 import java.awt.Component;
 import java.awt.Container;
 import javax.swing.JComponent;
+import org.netbeans.jellytools.actions.RuntimeViewAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.ContainerOperator;
@@ -41,6 +42,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 public class RuntimeTabOperator extends TopComponentOperator {
 
     static final String RUNTIME_CAPTION = Bundle.getString("org.netbeans.core.Bundle", "UI/Runtime");
+    private static final RuntimeViewAction viewAction = new RuntimeViewAction();
     
     private JTreeOperator _tree;
     
@@ -54,6 +56,13 @@ public class RuntimeTabOperator extends TopComponentOperator {
      * @param contOper parent Container */    
     public RuntimeTabOperator(ContainerOperator contOper) {
         super(contOper, RUNTIME_CAPTION);
+    }
+
+    /** invokes RuntimeTab and returns new instance of RuntimeTabOperator
+     * @return new instance of RuntimeTabOperator */    
+    public static RuntimeTabOperator invoke() {
+        viewAction.perform();
+        return new RuntimeTabOperator();
     }
     
     /** getter for Runtime JTreeOperator
