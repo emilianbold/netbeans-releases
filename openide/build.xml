@@ -777,4 +777,15 @@ With comments and questions mail nbdev@netbeans.org mailing list.
 
     </target>
 
+    <target name="apichanges-check" description="Check syntax of API changes list. Requires Ant 1.4!">
+        <xmlvalidate file="api/doc/changes/apichanges.xml" failonerror="true"/>
+    </target>
+    <target name="apichanges-generate" description="Regenerate HTML from XML API changes list.">
+        <!-- Ant 1.3 and 1.4 disagree on style attribute. -->
+        <!-- 1.3: treated as a name relative to XML file. -->
+        <!-- 1.4: treated as a filename consistent with normal Ant usage. -->
+        <!-- Be safe and give the absolute path here. -->
+        <style in="api/doc/changes/apichanges.xml" out="www/apichanges.html" destdir="www" style="${basedir}/api/doc/changes/apichanges.xsl"/>
+    </target>
+
 </project>
