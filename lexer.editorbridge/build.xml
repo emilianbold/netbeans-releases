@@ -86,9 +86,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="clean">
-<!--    <delete dir="javadoc"/> -->
-<!--    <delete dir="LexerAPIs"/> -->
-<!--    <delete file="LexerAPIs.zip"/> -->
+    <delete dir="javadoc"/>
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
@@ -96,9 +94,8 @@ Microsystems, Inc. All Rights Reserved.
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="lexer-editorbridge.nbm"/>
-<!--    <delete dir="netbeans"/> -->
+    <delete dir="netbeans"/>
     <delete dir="Info"/>
-<!--    <delete dir="tmp" /> -->
   </target>
 
 </project>
