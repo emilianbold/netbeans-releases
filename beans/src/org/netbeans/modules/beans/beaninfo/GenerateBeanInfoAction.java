@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.beans.beaninfo;
 
 import java.util.ResourceBundle;
+import javax.swing.SwingUtilities;
 
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
@@ -21,6 +22,8 @@ import org.openide.TopManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 import org.openide.util.actions.NodeAction;
 import org.openide.src.ClassElement;
 
@@ -81,32 +84,16 @@ static final long serialVersionUID =-4937492476805017833L;
   * This default implementation calls the assigned actionPerformer if it
   * is not null otherwise the action is ignored.
   */
-  public void performAction ( Node[] nodes ) {
+  public void performAction ( final Node[] nodes ) {
      
     if ( nodes.length < 1 )
       return;
 
-    // Get pattern analyser & bean info and create BiAnalyser & BiNode
-  
-    PatternAnalyser pa = (PatternAnalyser)nodes[0].getCookie( PatternAnalyser.class );
-    ClassElement superClass = BiSuperClass.createForClassElement( pa.getClassElement() );
-    
-    
-    //org.openide.src.MethodElement m[] = superClass.getMethods();
-    
-    ClassElement theClass = pa.getClassElement();
-    pa = new PatternAnalyser( superClass );
-    pa.analyzeAll();
-    
-
-    BiAnalyser bia = new BiAnalyser( pa, theClass );
-    Node biNode = new BiNode( bia );
-
     // Open the diaog for bean info generation
 
-    BiPanel biPanel;
+    final BiPanel biPanel;
 
-    DialogDescriptor dd = new DialogDescriptor( (biPanel = new BiPanel( biNode )),
+    DialogDescriptor dd = new DialogDescriptor( (biPanel = new BiPanel()),
       bundle.getString( "CTL_TITLE_GenerateBeanInfo"),     // Title
       true,                                                 // Modal
       NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
@@ -116,45 +103,70 @@ static final long serialVersionUID =-4937492476805017833L;
       null );
      
     biDialog = TopManager.getDefault().createDialog( dd );
-    biDialog.show ();
-    biPanel.expandAll();
 
-    if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
-     
-      bia.regenerateSource();
+    // Get pattern analyser & bean info and create BiAnalyser & BiNode
+    
+    final BiAnalyserReference biaReference = new BiAnalyserReference();
       
-      /*
-      BeanInfoSource bis = new BeanInfoSource( pa.getClassElement(), pa );
+    final Task analyseTask = new Task( new Runnable() {
+      public void run() {
+        PatternAnalyser pa = (PatternAnalyser)nodes[0].getCookie( PatternAnalyser.class );  
 
-      bis.open();
-      bis.regenerateProperties();
-      //bis.regenerateEvents();
-      */
+        ClassElement superClass = BiSuperClass.createForClassElement( pa.getClassElement() );
+        ClassElement theClass = pa.getClassElement();
+
+        pa = new PatternAnalyser( superClass );
+        pa.analyzeAll();
+        
+        BiAnalyser bia = new BiAnalyser( pa, theClass );
+        final Node biNode = new BiNode( bia );
+
+        javax.swing.SwingUtilities.invokeLater( new Runnable() {
+          public void run() {
+            biPanel.setContext( biNode );
+            biPanel.expandAll();
+          }
+        } );
+        
+        biaReference.setReference( bia );
+      }
+    } );
+    
+    RequestProcessor.postRequest( analyseTask );
+    
+    biDialog.show ();   
+
+    if ( biaReference.getReference() != null && dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
+      
+      Task task = new Task( new Runnable() {
+        public void run () {
+          analyseTask.waitFinished();
+          biaReference.getReference().regenerateSource();
+        }
+      } );
+      RequestProcessor.postRequest( task );
     }
 
+  }
+
+  private static class BiAnalyserReference {
+    private BiAnalyser analyser = null;
+    
+    private void setReference( BiAnalyser analyser ) {
+      this.analyser = analyser;
     }
-
-  public static void main( String[] args ) {
     
-    ClassElement ce = ClassElement.forName( "btest.BeanTest" );
-    PatternAnalyser pa  =  (PatternAnalyser)ce.getCookie( PatternAnalyser.class );
+    private BiAnalyser getReference() {
+      return analyser;
+    }
     
-    
-    //performAction()
   }
-  
-    
-  /*
-  public void actionPerformed(final java.awt.event.ActionEvent evt ) {
-
-    biDialog.setVisible( false );
-    biDialog.dispose();
-  }
-  */
 }
 
 /*
  * Log
+ *  4    Gandalf   1.3         8/18/99  Petr Hrebejk    BeanInfo analyse moved 
+ *       to separate thread
  *  3    Gandalf   1.2         8/9/99   Ian Formanek    Generated Serial Version
  *       UID
  *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 

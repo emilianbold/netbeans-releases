@@ -243,11 +243,15 @@ public class BiAnalyser extends Object implements Node.Cookie {
       
     }
 
-    bis.open();
-    regenerateProperties();
-    regenerateEvents();
-    regenerateIcons();
-    regenerateDefaultIdx();
+    javax.swing.SwingUtilities.invokeLater( new Runnable() {
+      public void run() {
+        bis.open();
+        regenerateProperties();
+        regenerateEvents();
+        regenerateIcons();
+        regenerateDefaultIdx();
+      }
+  } );
   }
 
   /** Regenerates the property section of BeanInfo */
@@ -615,6 +619,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
 }
 /* 
  * Log
+ *  7    Gandalf   1.6         8/18/99  Petr Hrebejk    BeanInfo analyse moved 
+ *       to separate thread
  *  6    Gandalf   1.5         8/9/99   Petr Hrebejk    BeanInfo for no 
  *       propertes & no events selected
  *  5    Gandalf   1.4         8/5/99   Petr Hrebejk    BeanInfo for Beans with 

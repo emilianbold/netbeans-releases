@@ -44,6 +44,7 @@ public final class BiNode extends AbstractNode {
 
   private static String ICON_BASE = "/com/netbeans/developer/modules/beans/resources/beanInfo";
   private static String ICON_BASE_PATTERNS = "/com/netbeans/developer/modules/beans/resources/patternGroup";
+  private static String WAIT_ICON_BASE = "/org/openide/resources/src/wait";
 
   private static String PROP_NULL_PROPERTIES = "nullProperties";
   private static String PROP_NULL_EVENTS = "nullEvents";
@@ -334,11 +335,27 @@ public final class BiNode extends AbstractNode {
     }
 
   }
+
+  // Inner Class ---------------------------------------------------------------
+
+  static class Wait extends AbstractNode {
+
+    Wait () {
+
+      super( Children.LEAF );
+      setDisplayName( NbBundle.getBundle( BiNode.class ).getString( "CTL_NODE_Wait" ) );
+      setIconBase( WAIT_ICON_BASE );
+
+    }
+  }
+
 }
 
 
 /*
  * Log
+ *  2    Gandalf   1.1         8/18/99  Petr Hrebejk    BeanInfo analyse moved 
+ *       to separate thread
  *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    
  * $
  */

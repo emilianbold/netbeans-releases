@@ -48,9 +48,12 @@ public class BiPanel extends ExplorerPanel  {
  private PropertySheetView psv;
  private BeanTreeView btv;
   
-static final long serialVersionUID =4088175782441275332L;
-  BiPanel( Node biNode ) {
-   createContent( biNode );
+ static final long serialVersionUID =4088175782441275332L;
+
+ BiPanel( ) {
+   Node waitNode = new BiNode.Wait();
+
+   createContent( waitNode );
  }
  
  private void createContent ( Node biNode ) {
@@ -78,9 +81,6 @@ static final long serialVersionUID =4088175782441275332L;
     setLayout (new BorderLayout());
     add (BorderLayout.CENTER, sp);
     
-    //sets our icon
-    //setIcon ( new javax.swing.ImageIcon (BiPanel.class.getResource ("/com/netbeans/developer/modules/loaders/java/patterns/resources/beanInfo.gif")) );
-    //setMode (Mode.DEBUGGER);
   }
 
   public java.awt.Dimension getPreferredSize () {
@@ -96,10 +96,17 @@ static final long serialVersionUID =4088175782441275332L;
     return em.getSelectedNodes();
   }
 
+  void setContext( Node node ) {
+    em.setRootContext ( node );
+    em.setExploredContext( node );
+  }
+
 }
 
 /*
  * Log
+ *  3    Gandalf   1.2         8/18/99  Petr Hrebejk    BeanInfo analyse moved 
+ *       to separate thread
  *  2    Gandalf   1.1         8/9/99   Ian Formanek    Generated Serial Version
  *       UID
  *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    
