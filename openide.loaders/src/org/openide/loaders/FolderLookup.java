@@ -449,8 +449,10 @@ public class FolderLookup extends FolderInstance {
             try {
                 return clazz.isAssignableFrom (ic.instanceClass ());
             } catch (ClassNotFoundException ex) {
+                ErrorManager.getDefault().annotate(ex, ErrorManager.UNKNOWN, "Bad file: " + fo, null, null, null); // NOI18N
                 exception (ex);
             } catch (IOException ex) {
+                ErrorManager.getDefault().annotate(ex, ErrorManager.UNKNOWN, "Bad file: " + fo, null, null, null); // NOI18N
                 exception (ex);
             }
             return false;
