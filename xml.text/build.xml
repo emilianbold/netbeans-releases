@@ -74,10 +74,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jars" depends="init,compile">
-        <mkdir dir="netbeans/modules/eager"/>
+        <mkdir dir="netbeans/modules"/>
 
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/modules/eager/xml-text-edit.jar"
+        <locjar jarfile="netbeans/modules/xml-text-edit.jar"
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
@@ -131,7 +131,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="Info"/>
         <makenbm file="../xml-text-edit-${release}.nbm"
                  topdir="."
-                 module="netbeans/modules/eager/xml-text-edit.jar"
+                 module="netbeans/modules/xml-text-edit.jar"
                  homepage="http://${homepage.base}/text-edit/"
                  distribution="${dist.base}/xml-text-edit-${release}.nbm">
             <license file="${license.file}"/>
