@@ -98,8 +98,10 @@ public class ScrollPopupMenu extends JPopupMenu {
                 popWin.getContentPane().remove(scrollPane);
                 scrollPane = null;
             }
-            popWin.getContentPane().add(this, BorderLayout.CENTER);
-            popWin.pack();
+            popWin.getContentPane().setLayout(null);
+            popWin.getContentPane().add(this);
+            setBounds(0,0, prefSize.width, prefSize.height);
+            popWin.setSize(prefSize.width, prefSize.height);
         }
         else {
             if (scrollPane == null) {
