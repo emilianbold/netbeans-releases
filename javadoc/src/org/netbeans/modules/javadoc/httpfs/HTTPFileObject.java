@@ -248,7 +248,9 @@ class HTTPFileObject extends FileObject implements Runnable {
      *
      *	@param requestMethod The request method to use when opening this connection.
      *
-     *	@throws IOException If there was an error opening the connection
+     *	@return Connection object to this URL.
+     *
+     *	@throws IOException If there was an error opening the connection.
      *
      *	@since 1.0
      */
@@ -277,7 +279,9 @@ class HTTPFileObject extends FileObject implements Runnable {
     /**
      *	Obtains a connection to the web server for this file with the "GET" method.
      *
-     *	@throws IOException If there was an error opening the connection
+     *	@return Connection object to this URL.
+     *
+     *	@throws IOException If there was an error opening the connection.
      *
      *	@since 1.0
      */
@@ -291,7 +295,7 @@ class HTTPFileObject extends FileObject implements Runnable {
      *	Given a connection to a file on a web server, reads the attributes for this
      *	file that can be found in its HTTP headers.
      *
-     *	@param fileConnection Connection to the web server
+     *	@param fileConnection Connection to the web server.
      *
      *	@since 1.0
      */
@@ -317,6 +321,11 @@ class HTTPFileObject extends FileObject implements Runnable {
     
     /**
      *	Returns the file system that owns this file.
+     *
+     *	@return Parent filesystem.
+     *
+     *	@throws FileStateInvalidException If the parent of this file object is
+     *		not known.
      *
      *	@since 1.0
      */
@@ -481,6 +490,8 @@ class HTTPFileObject extends FileObject implements Runnable {
      *	Called by NetBeans to lock this file.  Always returns FileLock.NONE for this
      *	read-only file system.
      *
+     *	@reuturn FileLock.NONE.
+     *
      *	@throws IOException If there was an error locking this file.
      *
      *	@since 1.0
@@ -534,7 +545,7 @@ class HTTPFileObject extends FileObject implements Runnable {
     
     
     /**
-     *	Called by NetBeans to create rename a file.  Always throws an
+     *	Called by NetBeans to rename a file.  Always throws an
      *	{@link IOException} for this read-only file system.
      *
      *	@param lock The lock on this file.
@@ -556,7 +567,7 @@ class HTTPFileObject extends FileObject implements Runnable {
     
     
     /**
-     *	Called by NetBeans to create delete this file.  Always throws an
+     *	Called by NetBeans to delete this file.  Always throws an
      *	{@link IOException} for this read-only file system.
      *
      *	@param lock The lock on this file.
@@ -577,7 +588,7 @@ class HTTPFileObject extends FileObject implements Runnable {
      *	@param isImportant Flags whether this file is important or not.
      *
      *	@since 1.0
-    */
+     */
     public void setImportant( boolean isImportant ) {
         // File system is read-only - ignore this call
     }
@@ -604,6 +615,8 @@ class HTTPFileObject extends FileObject implements Runnable {
      *
      *	@param attributeName The name of the attribute whose value should be returned.
      *
+     *	@return Value of the attribute, or null if not found.
+     *
      *	@since 1.0
      */
     public Object getAttribute( String attributeName ) {
@@ -620,7 +633,7 @@ class HTTPFileObject extends FileObject implements Runnable {
      *	{@link IOException} for this read-only file system.
      *
      *	@param attributeName The name of the attribute to change.
-     *	@param newValue the new value for this attribute
+     *	@param newValue the new value for this attribute.
      *
      *	@throws IOException If there was an error setting this attribute.
      *
@@ -652,6 +665,8 @@ class HTTPFileObject extends FileObject implements Runnable {
      *
      *	@param fileName The name of the file to return.
      *	@param extension The extension of the file to return.
+     *
+     *	@return File object in this filesystem, or null of not found.
      *
      *	@since 1.0
      */
@@ -688,6 +703,8 @@ class HTTPFileObject extends FileObject implements Runnable {
      *	throws an {@link IOException} for this read-only file system.
      *
      *	@param lock The lock on this file.
+     *
+     *	@return InputStream to this file.
      *
      *	@since 1.0
      */
@@ -778,6 +795,8 @@ class HTTPFileObject extends FileObject implements Runnable {
      *
      *  @param newChildFileName The name of the new file object to add.
      *
+     *	@return Whether the named file was found on the web server or not.
+     *
      *  @since 1.0
      */
     private boolean addOptionalChild( String newChildFileName ) {        
@@ -831,6 +850,8 @@ class HTTPFileObject extends FileObject implements Runnable {
      *
      *	@param fullFileName The full name of the file to return.
      *
+     *	@return Child file object, or null if not found.
+     *
      *	@since 1.0
      */
     HTTPFileObject child( String fullFileName ) {
@@ -849,6 +870,8 @@ class HTTPFileObject extends FileObject implements Runnable {
      *  @param readPackageContents Flag to specify whether the package contents
      *      should be read if not know.
      *
+     *	@return Child file object, or null if not found.
+     *
      *	@since 1.0
      */
     private HTTPFileObject child( String fullFileName, boolean readPackageContents ) {
@@ -865,6 +888,8 @@ class HTTPFileObject extends FileObject implements Runnable {
      *
      *  @param readPackageContents Flags whether this package's contents should be
      *      read if unknown.
+     *
+     *  @return Hashtale of child file objects for this file.
      *
      *  @since 1.0
      */
@@ -1011,7 +1036,7 @@ class HTTPFileObject extends FileObject implements Runnable {
                 
                 packageDirectory.addChild( packageDirectory.uriStem + packagePart + "/" );  //NOI18N
             }
-            packageDirectory = packageDirectory.child( packagePart );            
+            packageDirectory = packageDirectory.child( packagePart, false );            
         }
         // flag this directory as containing class files
         packageDirectory.makePackage( );

@@ -41,12 +41,11 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
      */
     public static final String  PROP_URL = "URL";   //NOI18N
     private static final long   serialVersionUID = 200104;
-    // TODO: I'd like to use this as the default, but there is no package-list available!
-    // private static final String DEFAULT_URL = "http://www.netbeans.org/download/apis/"; // NO I18N
-    private static final String DEFAULT_URL = "http://java.sun.com/j2se/1.3/docs/api/"; // NO I18N
+    // Default URL to use for a new filesystem
+    private static final String DEFAULT_URL = "http://www.netbeans.org/download/apis/"; // NO I18N
     
     
-    // URL to the Javadocs, do not keep it
+    // URL to the Javadocs
     transient URL               baseURL;
     // Root file object for the mounted filesystem
     transient HTTPFileObject    rootFileObject;
@@ -120,6 +119,8 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
      *
      *	@since 1.0
      *
+     *	@return URL name for this filesystem.
+     *
      *	@see #setURL(URL)
      */
     public String getURL( ) {
@@ -134,9 +135,8 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
      *
      *	@param newURL The URL this file system should use.
      *
-     *	@throws PropertyVetoException If the bean cannot find the "package-list" file
-     *			at this URL, if the URL doesn't point to a web site, or if some other
-     *			property listener vetos this change.
+     *	@throws IOException If the URL doesn't point to a web site, or if some
+     *      other property listener vetos this change.
      *
      *	@since 1.0
      *
@@ -188,24 +188,31 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
     }
     
     
-    public void vetoableChange( PropertyChangeEvent URLChangeEvent ) throws PropertyVetoException {
+    /**
+     *	Verifies that the URL given to this filesystem is valid.
+     *
+     *	@param urlChangeEvent Change request for the URL property.
+     *
+     *	@since 1.0
+     */
+    public void vetoableChange( PropertyChangeEvent urlChangeEvent ) throws PropertyVetoException {
 
         // New URL
         URL newURL;
 
 
         // If the property change event is this object's URL property,
-        if( URLChangeEvent.getSource( ) == this && URLChangeEvent.getPropertyName( ).equals( PROP_URL ) ) {
+        if( urlChangeEvent.getSource( ) == this && urlChangeEvent.getPropertyName( ).equals( PROP_URL ) ) {
 
             // Test the URL format
             try {
 
-                newURL = new URL( (String)URLChangeEvent.getNewValue( ) );
+                newURL = new URL( (String)urlChangeEvent.getNewValue( ) );
 
             }
             catch( MalformedURLException mlfEx ){
 
-                throw new PropertyVetoException( mlfEx.toString( ), URLChangeEvent );
+                throw new PropertyVetoException( mlfEx.toString( ), urlChangeEvent );
 
             }
         
@@ -213,14 +220,14 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
             if( !newURL.getProtocol( ).equals( "http" ) && !newURL.getProtocol( ).equals( "https" ) ) { //NOI18N
                 
                 // Reject this URL
-                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_NotHTTPProtocol" ), URLChangeEvent );    //NOI18N
+                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_NotHTTPProtocol" ), urlChangeEvent );    //NOI18N
                 
             }
             // If this URL doesn't point to a directory,
             if( !newURL.toExternalForm( ).endsWith( "/" ) ){    // NO I18N
 
                 // Reject this URL
-                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_NotDirectory" ), URLChangeEvent );    //NOI18N
+                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_NotDirectory" ), urlChangeEvent );    //NOI18N
 
             }
             
@@ -230,6 +237,8 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
     
     /**
      *	Returns the root directory for the Javadocs.
+     *
+     *	@return Root file object of this filesystem.
      *
      *	@since 1.0
      */
@@ -243,6 +252,8 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
     /**
      *	Provides the name of this file system to be displayed to the user, which is the
      *	URL of the Javadocs.
+     *
+     *	@return Name to display in the IDE for this filesystem.
      *
      *	@since 1.0
      */
@@ -258,6 +269,8 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
      *	found.
      *
      *	@param resourceName The path of the file under the URL to return.
+     *
+     *	@return File object in this filesystem, or null if not found.
      *
      *	@since 1.0
      */
@@ -286,6 +299,8 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
     /**
      *	Always returns "true" for this read-only file system.
      *
+     *	@return True.
+     *
      *	@since 1.0
      */
     public boolean isReadOnly( ) {
@@ -297,6 +312,8 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
     /**
      *	Returns the list of actions that can be performed against the files in this
      *	file system.
+     *
+     *	@return Array of SystemActions that can be performed on this filesystem.
      *
      *	@since 1.0
      */
