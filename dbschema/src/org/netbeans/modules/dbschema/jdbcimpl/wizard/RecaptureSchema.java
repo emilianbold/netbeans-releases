@@ -55,7 +55,7 @@ public class RecaptureSchema {
 
     public void start() throws ClassNotFoundException, SQLException {
         final DBschemaDataObject dobj = (DBschemaDataObject)dbSchemaNode.getCookie(DBschemaDataObject.class);
-        SchemaElement elem = dobj.getSchema();
+        final SchemaElement elem = dobj.getSchema();
         //elem.
         //ConnectionProvider cp = new ConnectionProvider(elem.getDriver(), elem.getUrl(), elem.getUsername(), null);
         if (debug) {
@@ -176,7 +176,8 @@ public class RecaptureSchema {
                         
                         sei.propertySupport.addPropertyChangeListener(listener);
                         final SchemaElement se = new SchemaElement(sei);
-                        se.setName(DBIdentifier.create(dbIdentName));
+                        //se.setName(DBIdentifier.create(dbIdentName));
+                        se.setName(elem.getName());
                         
                         sei.initTables(c, tables, views, false);
 
@@ -204,7 +205,7 @@ public class RecaptureSchema {
                             SchemaElement.addToCache(se);
                             dobj.setSchemaElementImpl(sei);
                             dobj.setSchema(se);
-                            
+
                             pf.setMessage(bundle.getString("SchemaSaved")); //NOI18N
                             StatusDisplayer.getDefault().setStatusText(bundle.getString("SchemaSaved")); //NOI18N
                             
