@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
