@@ -1,4 +1,15 @@
 #!/bin/sh
+#                 Sun Public License Notice
+# 
+# The contents of this file are subject to the Sun Public License
+# Version 1.0 (the "License"). You may not use this file except in
+# compliance with the License. A copy of the License is available at
+# http://www.sun.com/
+# 
+# The Original Code is NetBeans. The Initial Developer of the Original
+# Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+# Microsystems, Inc. All Rights Reserved.
+
 # Build and test NetBeans from scratch, assuming Linux.
 # Mostly just calls Ant, but sets up some other things to make it more convenient.
 # See: http://www.netbeans.org/community/guidelines/commit.html
@@ -16,6 +27,13 @@
 # nbjdk=/opt/java/j2se/1.3
 # JDK 1.3 installation directory. (Full JDK, not just JRE.)
 # YOU MUST TEST WITH 1.3 TO ENSURE YOU ARE NOT USING 1.4-SPECIFIC CALLS
+#
+# nbtestjdk=/opt/java/j2se/1.4
+# JDK installation directory for use when running (but not building!) test suites.
+# By default, same as nbjdk. However you may wish to run tests with a
+# different VM. jglick has had problems with the validation test suite
+# under JDK 1.3 with the embedded X server - the JRE sends invalid X requests
+# and kills the tests prematurely. JDK 1.4 is fine.
 #
 # ant=/opt/ant-1.4.1/bin/ant
 # Ant 1.4.1 installation directory. 1.5.x is not yet officially supported.
@@ -68,6 +86,11 @@ fi
 if [ -z "$nbjdk" ]
 then
     nbjdk=$(cd $(dirname $(which java))/..; pwd)
+fi
+
+if [ -z "$nbtestjdk" ]
+then
+    nbtestjdk=$nbjdk
 fi
 
 if [ -z "$ant" ]
@@ -140,12 +163,14 @@ then
     fi
 fi
 
+antcmd="nice $ant -emacs $scramblerflag"
+
 if [ $doclean = yes ]
 then
     cleantarget=real-clean
 fi
-echo "Building and trying NetBeans..." 1>&2
-nice $ant -emacs -f $sources/nbbuild/build.xml $scramblerflag $cleantarget nozip-check
+echo "----------BUILDING AND TRYING NETBEANS----------" 1>&2
+$antcmd -f $sources/nbbuild/build.xml $cleantarget nozip-check
 status=$?
 if [ $status != 0 ]
 then
@@ -164,20 +189,39 @@ if [ $testedmodule != none ]
 then
     if [ $doclean = yes ]
     then
-        testcleantarget=cleantests
+        echo "----------CLEANING AND BUILDING TESTS----------" 1>&2
+        $antcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb realclean
+        if [ $testedmodule = full ]
+        then
+            $antcmd -f $sources/xtest/instance/build.xml realclean
+        elif [ $testedmodule != validate ]
+        then
+            $antcmd -f $sources/$testedmodule/test/build.xml realclean
+        fi
+        $antcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb buildtests
+        if [ $testedmodule = full ]
+        then
+            $antcmd -f $sources/xtest/instance/build.xml buildtests
+        elif [ $testedmodule != validate ]
+        then
+            $antcmd -f $sources/$testedmodule/test/build.xml buildtests
+        fi
     fi
-    echo "Running validation tests" 1>&2
-    nice $ant -emacs -f $sources/nbbuild/build.xml $scramblerflag commitValidation
+    export JAVA_HOME=$nbtestjdk
+    export PATH=$nbtestjdk/bin:$PATH
+    echo "----------RUNNING TESTS----------" 1>&2
+    # Always run validation suite.
+    $antcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb runtests
     browse $sources/xtest/instance/results/index.html
     if [ $testedmodule = full ]
     then
-        # Run full test suite.
-        nice $ant -emacs -f $sources/xtest/instance/build.xml $scramblerflag $testcleantarget runtests
+        # Run full developer test suite.
+        $antcmd -f $sources/xtest/instance/build.xml runtests
         browse $sources/xtest/instance/results/index.html
     elif [ $testedmodule != validate ]
     then
         # Run full suite for one module.
-        nice $ant -emacs -f $sources/$testedmodule/test/build.xml $scramblerflag $testcleantarget runtests
+        $antcmd -f $sources/$testedmodule/test/build.xml runtests
         browse $sources/$testedmodule/test/results/index.html
     fi
 fi
