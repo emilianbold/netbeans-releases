@@ -60,9 +60,9 @@ Microsystems, Inc. All Rights Reserved.
     <property name="installer.basename" value="NetBeans-dev-${buildnumber}"/>
   </target>
 
-  <target name="build-linux" depends="init, compile, create-statefile">
-    <copy file="scripts/as-unix-install.template" tofile="build/scripts/_uninst/as-unix-install.template"/>
-    <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/_uninst/as-unix-uninstall.template"/>
+  <target name="build-linux" depends="init, clean-build, compile, create-statefile">
+    <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
+    <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="as-linux.xml" />
       <arg value="-build" />
@@ -79,13 +79,12 @@ Microsystems, Inc. All Rights Reserved.
         <path refid="ismp.cp"/>
       </classpath>
     </java>
-    <delete dir="build/scripts"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
   </target>
 
-  <target name="build-solaris-sparc" depends="init, compile, create-statefile">
-    <copy file="scripts/as-unix-install.template" tofile="build/scripts/_uninst/as-unix-install.template"/>
-    <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/_uninst/as-unix-uninstall.template"/>
+  <target name="build-solaris-sparc" depends="init, clean-build, compile, create-statefile">
+    <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
+    <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="as-solaris-sparc.xml" />
       <arg value="-build" />
@@ -102,13 +101,12 @@ Microsystems, Inc. All Rights Reserved.
         <path refid="ismp.cp"/>
       </classpath>
     </java>
-    <delete dir="build/scripts"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
   </target>
 
-  <target name="build-solaris-x86" depends="init, compile, create-statefile">
-    <copy file="scripts/as-unix-install.template" tofile="build/scripts/_uninst/as-unix-install.template"/>
-    <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/_uninst/as-unix-uninstall.template"/>
+  <target name="build-solaris-x86" depends="init, clean-build, compile, create-statefile">
+    <copy file="scripts/as-unix-install.template" tofile="build/scripts/as-unix-install.template"/>
+    <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="as-solaris-x86.xml" />
       <arg value="-build" />
@@ -125,11 +123,10 @@ Microsystems, Inc. All Rights Reserved.
         <path refid="ismp.cp"/>
       </classpath>
     </java>
-    <delete dir="build/scripts"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
 
-  <target name="build-windows" depends="init, compile, create-statefile">
+  <target name="build-windows" depends="init, clean-build, compile, create-statefile">
     <copy file="scripts/as-win-install.template" tofile="build/scripts/_uninst/as-win-install.template"/>
     <copy file="scripts/as-win-uninstall.template" tofile="build/scripts/_uninst/as-win-uninstall.template"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
@@ -148,7 +145,6 @@ Microsystems, Inc. All Rights Reserved.
         <path refid="ismp.cp"/>
       </classpath>
     </java>
-    <delete dir="build/scripts"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
   </target>
  
@@ -187,14 +183,18 @@ Microsystems, Inc. All Rights Reserved.
     </java>
   </target>
   
-  <target name="clean" depends="init" description="Clean all build products and temp/backup files.">
+  <!-- Delete build dir -->
+  <target name="clean-build" depends="init" description="Delete build directory.">
+    <delete dir="build"/>
+  </target>
+
+  <target name="clean" depends="init, clean-build" description="Clean all build products and temp/backup files.">
     <delete>
       <fileset dir=".">
         <include name="**/*~"/>
       </fileset>
     </delete>
     <delete dir="dist"/>
-    <delete dir="build"/>
   </target>
   
   <target name="ismp" depends="init, compile" description="launch ISMP IDE">
@@ -202,12 +202,12 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="create-statefile" description="Create statefile for AS installer">
-    <mkdir dir="build/scripts/_uninst"/>
+    <mkdir dir="build/scripts"/>
     <exec os="Linux SunOS" executable="scripts/make_statefile.sh" failonerror="true">
-      <arg line="-statefile build/scripts/_uninst/statefile -asinstaller ${as.installer} -password adminadmin -storeauth"/>
+      <arg line="-statefile build/scripts/statefile -asinstaller ${as.installer} -password adminadmin -storeauth"/>
     </exec>
     <!-- Debug output statefile to console -->
-    <loadfile property="file.content" srcFile="build/scripts/_uninst/statefile" failonerror="false"/>
+    <loadfile property="file.content" srcFile="build/scripts/statefile" failonerror="false"/>
     <echo message="Content of generated statefile:"/>
     <echo message="${file.content}"/>
     <!-- End of debug -->
