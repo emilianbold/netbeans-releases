@@ -26,11 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     </javac>
   </target>
 
-  <target name="tojar">
-    <tojar srcdir="src" unpackeddir="tojar"/>
-  </target>
-
-  <target name="jars" depends="compile,tojar">
+  <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>

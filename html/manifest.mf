@@ -1,6 +1,7 @@
 OpenIDE-Module: org.netbeans.modules.html/1
 OpenIDE-Module-Name: HTML
 OpenIDE-Module-Install: org/netbeans/modules/html/HtmlModule.class
+OpenIDE-Module-Layer: org/netbeans/modules/html/mf-layer.xml
 OpenIDE-Module-Specification-Version: 1.6
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 
