@@ -20,6 +20,15 @@
     <taskdef name="createmodulexml"
          classname="org.netbeans.nbbuild.CreateModuleXML"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="locjar"
+         classname="org.netbeans.nbbuild.LocalizedJar"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="locjhindexer"
+         classname="org.netbeans.nbbuild.LocJHIndexer"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="locmakenbm"
+         classname="org.netbeans.nbbuild.LocMakeNBM"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <property name="tasks-already-set" value="true"/>
   </target>
   
