@@ -48,6 +48,13 @@
   };
 
 // ****************************************************
+// Apache Derby Embedded JDBC Driver
+// ****************************************************
+  "Apache Derby Embedded JDBC Driver" = {
+    DriverName = "Apache Derby Embedded JDBC Driver";
+  };
+
+// ****************************************************
 // InstantDB JDBC Driver
 // ****************************************************
   "InstantDB JDBC Driver" = {

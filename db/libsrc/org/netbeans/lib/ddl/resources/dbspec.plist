@@ -790,6 +790,52 @@
 
 //  ********************************************************************************
 //
+//  Apache Derby
+//
+//  ********************************************************************************/
+
+  "Apache Derby" = {
+    DatabaseProductName = "Apache Derby";
+    DatabaseProductVersion = 10;
+    TriggerEventListDelimiter = ", ";
+    TypeMap = {
+      java.sql.Types.BIGINT = LONGINT;
+      java.sql.Types.BINARY = BIT;
+      java.sql.Types.BIT = BOOLEAN;
+      java.sql.Types.CHAR = CHAR;
+      java.sql.Types.DATE = DATE;
+      java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.DOUBLE = "DOUBLE PRECISION";
+      java.sql.Types.REAL = FLOAT;
+      java.sql.Types.INTEGER = INTEGER;
+      java.sql.Types.LONGVARBINARY = "LONG VARBINARY";
+      java.sql.Types.LONGVARCHAR = "LONG VARCHAR";
+      java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.REAL = REAL;
+      java.sql.Types.SMALLINT = SMALLINT;
+      java.sql.Types.TIME = TIME;
+      java.sql.Types.TIMESTAMP = TIMESTAMP;
+      java.sql.Types.TINYINT = TINYINT;
+      java.sql.Types.VARCHAR = VARCHAR;
+    };
+//    ProcedureArgumentMap = {
+//      IN = IN;
+//      OUT = OUT;
+//      INOUT = INOUT;
+//    };
+//    TriggerEventMap = {
+//      INSERT = INSERT;
+//      UPDATE = UPDATE;
+//      DELETE = DELETE;
+//    };
+    SizelessTypes = (BOOLEAN,DATE,INT,"LONG VARCHAR","LONG VARBINARY",LONGINT,SMALLINT,TIME,TIMESTAMP,TINYINT);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
+    CharacterTypes = (CHAR,VARCHAR);
+
+  };
+
+//  ********************************************************************************
+//
 //  Microsoft SQL Server
 //
 //  ********************************************************************************/
