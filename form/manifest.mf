@@ -5,7 +5,7 @@ OpenIDE-Module-Specification-Version: 1.13
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/netbeans/modules/form/FormEditorModule.class
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1, org.netbeans.api.java/1, org.openide.src > 1.0, org.openide.compiler > 1.0, org.openide.execution > 1.0, org.openide.io > 1.0
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.14
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.15
 OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine, org.openide.execution.ExecutionEngine, org.openide.modules.InstalledFileLocator
 OpenIDE-Module-Layer: org/netbeans/modules/form/resources/layer.xml
 Class-Path: ext/AbsoluteLayout.jar
