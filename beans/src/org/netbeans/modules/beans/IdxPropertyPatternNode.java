@@ -143,13 +143,44 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
 
                    /** Define property editor for this property. */
                    public PropertyEditor getPropertyEditor () {
-                       return new org.openide.explorer.propertysheet.editors.TypeEditor();
+                       return new PropertyTypeEditor();
                    }
                };
     }
 
+    protected Node.Property createTypeProperty(boolean canW) {
+        return new PatternPropertySupport(PROP_TYPE, Type.class, canW) {
+
+                   /** Gets the value */
+
+                   public Object getValue () {
+                       return ((PropertyPattern)pattern).getType();
+                   }
+
+                   /** Sets the value */
+                   public void setValue(Object val) throws IllegalArgumentException,
+                       IllegalAccessException, InvocationTargetException {
+                       super.setValue(val);
+                       if (!(val instanceof Type))
+                           throw new IllegalArgumentException();
 
 
+                       try {
+                           pattern.patternAnalyser.setIgnore( true );
+                           ((PropertyPattern)pattern).setType((Type)val);
+                           pattern.patternAnalyser.setIgnore( false );
+                       }
+                       catch (SourceException e) {
+                           throw new InvocationTargetException(e);
+                       }
+
+                   }
+
+                   public PropertyEditor getPropertyEditor () {
+                       return new IdxPropertyTypeEditor();
+                   }
+               };
+    }
 
 
     /** Create a property for the getter method.

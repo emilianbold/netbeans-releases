@@ -76,6 +76,9 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
             return false;
         else {
             PatternAnalyser pa = (PatternAnalyser)activatedNodes[0].getCookie( PatternAnalyser.class );
+            if (pa == null) {
+                return false;
+            }
             ClassElement theClass = pa.getClassElement();
             return !theClass.isInner();
         }
