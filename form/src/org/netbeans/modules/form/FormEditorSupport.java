@@ -315,6 +315,8 @@ public class FormEditorSupport extends JavaEditor
                 if (annotations != null) {
                     for (int i=0; i < annotations.length; i++) {
                         int s = annotations[i].getSeverity();
+                        if (s == ErrorManager.UNKNOWN)
+                            s = ErrorManager.EXCEPTION;
                         if (s > severity)
                             severity = s;
                     }
