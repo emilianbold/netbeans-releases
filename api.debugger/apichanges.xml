@@ -138,6 +138,23 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
+    <change>
+        <api name="DebuggerCoreAPI"/>
+        <summary>final modifier removed from ActionsProviderSupport.isEnabled.</summary>
+        <date day="23" month="11" year="2004"/>
+        <version major="1" minor="3"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Compatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Having final modifier for this method can be too obstructive in some cases. I had a problem writing tests.
+            </p>
+        </description>
+    </change>
 
 </changes>
 
