@@ -63,7 +63,7 @@ public class KeyNode extends AbstractNode {
         super (Children.LEAF);
         this.struct = struct;
         this.itemKey = itemKey;
-        super.setName (itemKey);
+        super.setName (UtilConvert.unicodesToChars(itemKey));
         setDefaultAction(SystemAction.get(OpenAction.class));
         setActions(
             new SystemAction[] {
@@ -141,6 +141,7 @@ public class KeyNode extends AbstractNode {
     */
     public void setName (String name) {
         String oldKey = itemKey;
+        name = UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(name));
         itemKey = name;
         if (!struct.renameItem(oldKey, name)) {
             itemKey = oldKey;
