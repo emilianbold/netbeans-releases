@@ -206,6 +206,9 @@ public class TargetExecutor implements Runnable {
             TopManager.getDefault ().saveAll ();
         }
         
+        // see the method body for description of this workaround
+        regexpLibraryWorkaroundForAnt151();
+        
         //System.out.println("run #2: " + this); // NOI18N
         Project project = null;
 
@@ -332,4 +335,41 @@ public class TargetExecutor implements Runnable {
             }, 1000); // a bit later; the target can finish first!
     }
 
+    // See #29245 for more details. Relevant only for Ant 1.5.1
+    // It checks for presence of misc regexp classes and if some is found
+    // and system property "ant.regexp.regexpimpl" is not set then it
+    // sets this property. 
+    private boolean workarounded = false;
+    private void regexpLibraryWorkaroundForAnt151() {
+        if (workarounded) {
+            return;
+        } else {
+            workarounded = true;
+        }
+        if (System.getProperty("ant.regexp.regexpimpl") != null) {
+            return;
+        }
+        
+        try {
+            Class.forName("java.util.regex.Matcher");
+            System.setProperty("ant.regexp.regexpimpl", "org.apache.tools.ant.util.regexp.Jdk14RegexpRegexp");
+            return;
+        } catch (Throwable t) {
+        }
+        
+        try {
+            Class.forName("org.apache.oro.text.regex.Pattern");
+            System.setProperty("ant.regexp.regexpimpl", "org.apache.tools.ant.util.regexp.JakartaOroRegexp");
+            return;
+        } catch (Throwable t) {
+        }
+        
+        try {
+            Class.forName("org.apache.regexp.RE");
+            System.setProperty("ant.regexp.regexpimpl", "org.apache.tools.ant.util.regexp.JakartaRegexpRegexp");
+            return;
+        } catch (Throwable t) {
+        }
+   }
+    
 }
