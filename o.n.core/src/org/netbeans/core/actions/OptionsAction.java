@@ -62,6 +62,8 @@ public class OptionsAction extends CallableSystemAction {
     /** Options panel. Uses singleton pattern. */
     public static final class OptionsPanel extends NbMainExplorer.SettingsTab {
 
+        public static final String HELP_ID = "configure"; // NOI18N 
+
         /** Singleton instance of options panel */
         private static OptionsPanel singleton;
         /** Formatted title of this view */
@@ -70,6 +72,10 @@ public class OptionsAction extends CallableSystemAction {
         public OptionsPanel () {
             super();
             setRootContext(TopManager.getDefault().getPlaces().nodes().session());
+        }
+        
+        public HelpCtx getHelpCtx () {
+            return new HelpCtx (HELP_ID);
         }
 
         /** Accessor to the singleron instance */
