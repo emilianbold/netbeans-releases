@@ -283,23 +283,23 @@ public class EditorOperator extends TopComponentOperator {
     }
     
     /** Selects whole line specified by its number. Caret will stand at the
-     * end of line.
+     * next available line.
      * @param lineNumber number of line (beggining from 1)
      */
     public void select(int lineNumber) {
         int lineOffset = getLineOffset(lineNumber);
         setCaretPosition(lineOffset);
-        txtEditorPane().moveCaretPosition(lineOffset+getText(lineNumber).length()-1);
+        txtEditorPane().moveCaretPosition(lineOffset+getText(lineNumber).length());
     }
     
     /** Selects text between line1 and line2 (both are included). Caret will
-     * stand at the end of the finish line.
+     * stand behing the selection (at the next line if available).
      * @param line1 number of line where to begin (beggining from 1)
      * @param line2 number of line where to finish (beggining from 1)
      */
     public void select(int line1, int line2) {
         setCaretPosition(getLineOffset(line1));
-        txtEditorPane().moveCaretPosition(getLineOffset(line2)+getText(line2).length()-1);
+        txtEditorPane().moveCaretPosition(getLineOffset(line2)+getText(line2).length());
     }
     
     /** Selects text in specified line on position defined by column1

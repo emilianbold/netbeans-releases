@@ -612,7 +612,8 @@ public class Action {
         /** returns String representation of shortcut
          * @return String representation of shortcut */        
         public String toString() {
-            return KeyEvent.getKeyModifiersText(getKeyModifiers())+"-"+KeyEvent.getKeyText(getKeyCode());
+            String s=KeyEvent.getKeyModifiersText(getKeyModifiers());
+            return s+(s.length()>0?"+":"")+KeyEvent.getKeyText(getKeyCode());
         }
     }
 }
