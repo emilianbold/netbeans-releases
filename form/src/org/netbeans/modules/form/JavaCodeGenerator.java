@@ -462,12 +462,13 @@ public class JavaCodeGenerator extends CodeGenerator {
     Object genType = comp.getAuxValue (AUX_CODE_GENERATION);
     if ((genType == null) || VALUE_GENERATE_CODE.equals (genType)) {
       // not serialized ==>> save
-      RADComponent.RADProperty[] props = FormEditor.sortChangedProperties (comp.getChangedProperties (), comp.getBeanInfo ().getPropertyDescriptors ());
-      for (int i = 0; i < props.length; i++) {
+      Map changedProps = comp.getChangedProperties ();
+      for (Iterator it = changedProps.keySet ().iterator (); it.hasNext ();) {
+        RADComponent.RADProperty rprop = (RADComponent.RADProperty)it.next ();
   /*      if (desc instanceof IndexedPropertyDescriptor) { // [PENDING]
-          generateIndexedPropertySetter (comp, props[i], initCodeWriter);
+          generateIndexedPropertySetter (comp, rprop, initCodeWriter);
         } else { */
-          generatePropertySetter (comp, props[i], initCodeWriter);
+          generatePropertySetter (comp, rprop, initCodeWriter);
   //      }
       }
     }
@@ -1237,6 +1238,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  50   Gandalf   1.49        9/17/99  Ian Formanek    Fixed last change
  *  49   Gandalf   1.48        9/17/99  Ian Formanek    Fixed bug 1825 - 
  *       Property sheets are not synchronized and bug 2038 - Opening form marks 
  *       Java source code as modified (*) in Editor.
