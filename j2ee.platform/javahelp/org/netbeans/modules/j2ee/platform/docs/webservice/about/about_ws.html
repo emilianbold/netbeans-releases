@@ -10,13 +10,12 @@ Use is subject to license terms.  *-->
 <body bgcolor="#FFFFFF">
 <h2>About Web Services</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>Web services are distributed application components that conform to
-standards that make them externally available. They solve the problem of
-integrating diverse computer applications that have been developed independently
-and run on a variety of software and hardware platforms. The proliferation of
-distributed environments has created a need for an enterprise to be able to publish all
-or part of the functionality of an application to other applications over an open
-network.</p>
+<p>Web services are distributed application components that conform to standards 
+  that make them externally available. They solve the problem of integrating diverse 
+  computer applications that have been developed independently and run on a variety 
+  of software and hardware platforms. The proliferation of distributed environments 
+  has created a need for an enterprise to be able to expose all or part of the 
+  functionality of an application to other applications over an open network.</p>
 <p>Web services come in two styles, document-style and RPC-style:	
 <ul><li><b>Document-style.</b> The client interacts with the web service using 
   documents that are meant to be processed as complete entities. These documents 
@@ -48,8 +47,7 @@ are not expected.</li>
   <p>If the following statements are true for your application, you should
 probably create a RPC-style web service:</p>
 <ul>
-<li>The web service client requires an immediate response. For example, the 
-client and the web service work in a back-and-forth, conversational style.</li>
+	<li>The web service client requires an immediate response, in a synchronous  fashion.</li>
 <li>The web service is process-oriented, not data-oriented.</li>
 </ul></li></ul>
 <h3>Web Services in the IDE</h3>
@@ -61,8 +59,8 @@ the Ant build script. After you finish development,
 you can finetune your web service using settings for building a <a href="../build/compile_wsdl.html">web service from a WSDL file</a>,
 a <a href="../build/compile_doc.html">document-style web service</a>, or a <a href="../build/compile_rpc.html">RPC-style web service</a>.
   Then, when you
-  build the web service, the <a href="../build/about_wscompile.html"><tt>wscompile</tt> tool</a> is called
-  to compile it.</p>
+  build the web service, the <a href="../build/about_wscompile.html"><tt>wscompile</tt> tool</a> 
+  is called to generate the web service artifacts required for deployment.</p>
 <table cellpadding="3" cellspacing="0" border="0">
 <tr valign="top"> 
 <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>

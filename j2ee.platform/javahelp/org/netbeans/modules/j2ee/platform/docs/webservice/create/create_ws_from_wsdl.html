@@ -44,13 +44,13 @@ and choose New <img src="../../images/arrow.gif" alt="and choose" >&nbsp;Web Ser
 	
 <li>A new WSDL file is created. The abstract portion is copied from the original file, 
 while the concrete portion is "normalized" from the original.
-For example, a <a href="../build/about_wsdl.html#binding">binding element</a> is created if it did
-not exist in the WSDL file. Also, the <a href="../build/about_wsdl.html#binding">service element</a> is created to be compatible with
+For example, a <a href="../build/about_wsdl.html#binding">SOAP binding element</a> is created if it did
+not exist in the WSDL file. Also, the <a href="../build/about_wsdl.html#abstract">service element</a> is created to be compatible with
 binding, and receives the web service name that you specified in the wizard, replacing the service element 
 in the original WSDL file.</li>
 <li>It creates the Service Endpoint Interface (the "interface"), which declares the web service's operations. 
-In the IDE, the interface is identified by the suffix "SEI". For example, if you named your 
-web service <tt>CalculatorWS</tt>, its interface is named <tt>CalculatorWSSEI</tt>.
+In the IDE, the interface class is named after the name of the 
+<a href="../build/about_wsdl.html#portType">portType element</a> defined in the WSDL.
 The IDE automatically populates the interface with a declaration for each web service operation
  from the WSDL file.</li>
  <li>It creates the class for the implementation of the interface. The operations found
