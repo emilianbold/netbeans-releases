@@ -13,8 +13,10 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashSet;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.config.*;
@@ -219,6 +221,13 @@ public abstract class J2eeModuleProvider {
      * Returns all configuration files known to this J2EE Module.
      */
     public final FileObject[] getConfigurationFiles() {
+        return getConfigurationFiles(false);
+    }
+
+    public final FileObject[] getConfigurationFiles(boolean refresh) {
+        if (refresh) {
+            fcl = null;
+        }
         addFCL();
         return ConfigSupportImpl.getConfigurationFiles(this);
     }
@@ -240,60 +249,84 @@ public abstract class J2eeModuleProvider {
             }
         }
     }
+    
     private FCL fcl = null;
     private void addFCL() {
         //already listen
         if (fcl != null)
             return;
-        
+        fcl = new FCL();
+    }
+    
+    private File[] getAllServerConfigurationFiles() {
         //locate the root to listen to
         Collection servers = ServerRegistry.getInstance().getServers();
+        ArrayList result = new ArrayList();
         for (Iterator i=servers.iterator(); i.hasNext();) {
             Server s = (Server) i.next();
             String[] paths = s.getDeploymentPlanFiles(getJ2eeModule().getModuleType());
             if (paths == null || paths.length < 1)
                 continue;
-            File relativePath = new File(paths[0]);
-            String fname = relativePath.getName();
-            File fullPath = getDeploymentConfigurationFile(fname);
-            File rel = new File(fullPath.getName());
-            fullPath = fullPath.getParentFile();
-            while(fullPath.getParentFile() != null) {
-                rel = new File(fullPath.getName(), rel.getPath());
-                if (rel.equals(relativePath)) {
-                    FileObject root = FileUtil.toFileObject(fullPath);
-                    FCL fcl = new FCL();
-                    root.addFileChangeListener(fcl);
-                    return;
-                }
-                fullPath = fullPath.getParentFile();
-            }
+            
+            result.addAll(Arrays.asList(paths));
         }
+        return (File[]) result.toArray(new File[result.size()]);
     }
 
     private final class FCL implements FileChangeListener {
-        public void fileFolderCreated(FileEvent e) {
-            FileObject fo = e.getFile();
-            Enumeration en = fo.getChildren(true);
-            while(en.hasMoreElements()) {
-                FileObject child = (FileObject) en.nextElement();
-                String name = fo.getNameExt();
-                if (ServerRegistry.getInstance().isConfigFileName(name, getJ2eeModule().getModuleType())) {
-                    fireConfigurationFilesChanged(true, fo);
-                }
+        HashSet listenedFOs = new HashSet();
+        public FCL() {
+            startListening();
+        }
+        private synchronized void startListening() {
+            File[] targets = getAllServerConfigurationFiles();
+            for (int i=0; i<targets.length; i++) {
+                startListening(targets[i]);
             }
+        }
+        public synchronized void stopListening() {
+            for (Iterator i=listenedFOs.iterator(); i.hasNext();) {
+                FileObject fo = (FileObject) i.next();
+                fo.removeFileChangeListener(this);
+            }
+        }
+        private void startListening(File target) {
+            FileObject targetFO = FileUtil.toFileObject(target);
+            while (targetFO == null) {
+                target = target.getParentFile();
+                if (target == null)
+                    return;
+                targetFO = FileUtil.toFileObject(target);
+            }
+            if (! listenedFOs.contains(targetFO)) {
+                targetFO.addFileChangeListener(this);
+                listenedFOs.add(targetFO);
+            }
+        }
+        private boolean isConfigFileName(String name) {
+            return ServerRegistry.getInstance().isConfigFileName(name, getJ2eeModule().getModuleType());
+        }
+        public void fileFolderCreated(FileEvent e) {
+            startListening();
         }
         public void fileDeleted(FileEvent e) {
             FileObject fo = e.getFile();
-            String name = fo.getNameExt();
-            if (ServerRegistry.getInstance().isConfigFileName(name, (ModuleType) getJ2eeModule().getModuleType())) {
+            if (isConfigFileName(fo.getNameExt())) {
+                synchronized(listenedFOs) {
+                    listenedFOs.remove(fo);
+                    fo.removeFileChangeListener(this);
+                }
                 fireConfigurationFilesChanged(false, fo);
             }
         }
         public void fileDataCreated(FileEvent e) {
             FileObject fo = e.getFile();
             String name = fo.getNameExt();
-            if (ServerRegistry.getInstance().isConfigFileName(name, (ModuleType) getJ2eeModule().getModuleType())) {
+            if (isConfigFileName(fo.getNameExt())) {
+                synchronized(listenedFOs) {
+                    listenedFOs.add(fo);
+                    fo.addFileChangeListener(this);
+                }
                 fireConfigurationFilesChanged(true, fo);
             }
         }
