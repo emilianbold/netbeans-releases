@@ -15,6 +15,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../../nbbuild/default.xml"/>
 
+    <!-- XXX this is a mess; can probably just revert to rev. 1.11 -->
+
     <target name="init" depends="default.init">
         <patternset id="module.product.files">
             <include name="${nb.modules.dir}/org-netbeans-modules-debugger-jpda-ant.jar"/>
