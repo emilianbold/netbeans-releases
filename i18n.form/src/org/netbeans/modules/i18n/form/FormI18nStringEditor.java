@@ -148,7 +148,7 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
     /** Overrides superclass method.
      * @return <code>ResourceBundlePanel</code> fed with <code>FormI18nString</code> value. */
     public Component getCustomEditor() {
-        return new CustomEditor(new FormI18nString((FormI18nString)getValue()), getProject());
+        return new CustomEditor(new FormI18nString((FormI18nString)getValue()), getProject(), sourceDataObject.getPrimaryFile());
     }
     
     private Project getProject() {
@@ -428,8 +428,8 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
         private final ResourceBundle bundle;
         
         /** Constructor. */
-        public CustomEditor(I18nString i18nString, Project project) {
-            super(i18nString.getSupport().getPropertyPanel(), false, project);
+        public CustomEditor(I18nString i18nString, Project project, FileObject file) {
+            super(i18nString.getSupport().getPropertyPanel(), false, project, file);
             bundle = NbBundle.getBundle(FormI18nStringEditor.class);
             setI18nString(i18nString);
             

@@ -154,7 +154,7 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
     /** Overrides superclass method.
      * @return <code>ResourceBundlePanel</code> fed with <code>FormI18nMnemonic</code> value. */
     public Component getCustomEditor() {
-        return new CustomEditor(new FormI18nMnemonic((FormI18nMnemonic)getValue()), getProject());
+        return new CustomEditor(new FormI18nMnemonic((FormI18nMnemonic)getValue()), getProject(), sourceDataObject.getPrimaryFile());
     }
     
     /** Overrides superclass method. 
@@ -418,8 +418,8 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
         private final ResourceBundle bundle;
         
         /** Constructor. */
-        public CustomEditor(I18nString i18nString, Project project) {
-            super(i18nString.getSupport().getPropertyPanel(), false, project);
+        public CustomEditor(I18nString i18nString, Project project, FileObject file) {
+            super(i18nString.getSupport().getPropertyPanel(), false, project, file);
             setI18nString(i18nString);
             bundle = NbBundle.getBundle(FormI18nMnemonicEditor.class);
             HelpCtx.setHelpIDString(this, I18nUtil.HELP_ID_FORMED);

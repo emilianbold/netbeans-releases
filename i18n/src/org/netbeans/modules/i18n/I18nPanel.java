@@ -59,6 +59,8 @@ public class I18nPanel extends JPanel {
     static final long serialVersionUID =-6982482491017390786L;
 
     private Project project;
+
+    private FileObject file;
     
     static final long ALL_BUTTONS = 0xffffff;
     static final long NO_BUTTONS = 0x0;
@@ -70,16 +72,27 @@ public class I18nPanel extends JPanel {
 
 
     
-    /** Creates new I18nPanel. */
-    public I18nPanel(PropertyPanel propertyPanel, Project project) {
-        this(propertyPanel, true, project);
+    /** 
+     * Creates new I18nPanel.  In order to correctly localize
+     * classpath for property bundle chooser, the dialog must know the
+     * project and a file to choose the bundle for.
+     * @param propertyPanel panel for customizing i18n strings 
+     * @param project the Project to choose bundles from
+     * @param file the FileObject to choose bundles for
+     */
+    public I18nPanel(PropertyPanel propertyPanel, Project project, FileObject file) {
+        this(propertyPanel, true, project, file);
     }
 
     /** Creates i18n panel.
      * @param propertyPanel panel for customizing i18n strings 
-     * @param withButtons if panel with replace, skip ect. buttons should be added */
-    public I18nPanel(PropertyPanel propertyPanel, boolean withButtons, Project project) {
+     * @param withButtons if panel with replace, skip ect. buttons should be added 
+     * @param project the Project to choose bundles from
+     * @param file the FileObject to choose bundles for
+     */
+    public I18nPanel(PropertyPanel propertyPanel, boolean withButtons, Project project, FileObject file) {
         this.project = project;
+        this.file = file;
         this.propertyPanel = propertyPanel;   
 
         // Init bundle.
@@ -247,7 +260,7 @@ public class I18nPanel extends JPanel {
     
     /** Creates <code>ResourcePanel</code>. */
     private JPanel createResourcePanel() {
-        return new ResourcePanel(project);
+        return new ResourcePanel(project, file);
     }
     
     private void initAccessibility() {

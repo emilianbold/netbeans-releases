@@ -282,7 +282,7 @@ public class I18nManager {
         if(i18nPanel == null) {
             
             // Create i18n panel.
-            i18nPanel = new I18nPanel(support.getPropertyPanel(), project);
+            i18nPanel = new I18nPanel(support.getPropertyPanel(), project, sourceDataObject.getPrimaryFile() );
 
             // Helper final.
             final I18nPanel panel = i18nPanel;
@@ -309,11 +309,12 @@ public class I18nManager {
             // Reset weak reference.
             i18nPanelWRef = new WeakReference(i18nPanel);
 
+        } else {
+            i18nPanel.setProject(project);
+            i18nPanel.setFile(sourceDataObject.getPrimaryFile());
         }
 
         // Set default i18n string.
-        i18nPanel.setProject(project);
-        i18nPanel.setFile(sourceDataObject.getPrimaryFile());
         i18nPanel.setI18nString(support.getDefaultI18nString());
         i18nPanel.setDefaultResource(sourceDataObject);
 
