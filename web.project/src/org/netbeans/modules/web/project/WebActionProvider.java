@@ -27,6 +27,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -141,7 +142,7 @@ class WebActionProvider implements ActionProvider {
     }
     
     private FileObject findBuildXml() {
-        return project.getProjectDirectory().getFileObject(project.getBuildXmlName ());
+        return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
     }
     
     public String[] getSupportedActions() {
@@ -431,7 +432,19 @@ class WebActionProvider implements ActionProvider {
                     return;
                 }
             }
-        } else {
+            
+        //TEST PART
+        } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
+            FileObject[] files = findTestSourcesForSources(context);
+            p = new Properties();
+            targetNames = setupTestSingle(p, files);
+        } 
+        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
+            FileObject[] files = findTestSourcesForSources(context);
+            p = new Properties();
+            targetNames = setupDebugTestSingle(p, files);
+        } 
+        else {
             p = null;
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
@@ -444,6 +457,23 @@ class WebActionProvider implements ActionProvider {
         catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
+    }
+
+    private String[] setupTestSingle(Properties p, FileObject[] files) {
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        FileObject root = getRoot(testSrcPath, files[0]);
+        p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        return new String[] {"test-single"}; // NOI18N
+    }
+
+    private String[] setupDebugTestSingle(Properties p, FileObject[] files) {
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        FileObject root = getRoot(testSrcPath, files[0]);
+        String path = FileUtil.getRelativePath(root, files[0]);
+        // Convert foo/FooTest.java -> foo.FooTest
+        p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
+        return new String[] {"debug-test"}; // NOI18N
     }
 
     /* Deletes translated class/java file to force recompilation of the page with all includes
@@ -645,20 +675,19 @@ class WebActionProvider implements ActionProvider {
     }
     
     public boolean isActionEnabled( String command, Lookup context ) {
-        
         if ( findBuildXml() == null ) {
             return false;
         }
         if ( command.equals( COMMAND_DEBUG_SINGLE ) ) {
             return findJavaSources(context) != null || findJsps(context) != null || findHtml(context) != null;
         }
-        if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
+        else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return findJavaSourcesAndPackages( context ) != null || findJsps (context) != null;
         }
-        if ( command.equals( COMMAND_VERIFY ) ) {
+        else if ( command.equals( COMMAND_VERIFY ) ) {
             return project.getWebModule().hasVerifierSupport();
         }
-        if ( command.equals( COMMAND_RUN_SINGLE ) ) {
+        else if ( command.equals( COMMAND_RUN_SINGLE ) ) {
             // test for jsps
             FileObject files [] = findJsps (context);
             if (files != null && files.length >0) return true;
@@ -680,6 +709,13 @@ class WebActionProvider implements ActionProvider {
                 } else return true; /* because of java main classes, otherwise we would return false */
             } else return false;
         }
+        else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
+            return findTestSourcesForSources(context) != null;
+        }
+        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
+            FileObject[] files = findTestSourcesForSources(context);
+            return files != null && files.length == 1;
+        }
         else {
             // other actions are global
             return true;
@@ -690,6 +726,8 @@ class WebActionProvider implements ActionProvider {
     
     // Private methods -----------------------------------------------------
     
+    private static final String SUBST = "Test.java"; // NOI18N
+
     /*
      * copied from ActionUtils and reworked so that it checks for mimeType of files, and DOES NOT include files with suffix 'suffix'
      */
@@ -912,5 +950,56 @@ class WebActionProvider implements ActionProvider {
             if (servlet!=null) return true;
             else return false;
         } catch (IOException ex) {return false;}  
-    }   
+    }
+    
+    /** Find tests corresponding to selected sources.
+     */
+    private FileObject[] findTestSourcesForSources(Lookup context) {
+        FileObject[] sourceFiles = findSources(context);
+        if (sourceFiles == null) {
+            return null;
+        }
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        if (testSrcPath.length == 0) {
+            return null;
+        }
+        FileObject[] srcPath = project.getSourceRoots().getRoots();
+        FileObject srcDir = getRoot(srcPath, sourceFiles[0]);
+        for (int i=0; i<testSrcPath.length; i++) {
+            FileObject[] files2 = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcPath[i], SUBST, true);
+            if (files2 != null) {
+                return files2;
+            }
+        }
+        return null;
+    }      
+
+    private FileObject getRoot (FileObject[] roots, FileObject file) {
+        FileObject srcDir = null;
+        for (int i=0; i< roots.length; i++) {
+            if (FileUtil.isParentOf(roots[i],file)) {
+                srcDir = roots[i];
+                break;
+            }
+        }
+        return srcDir;
+    }
+
+    /** Find selected sources, the sources has to be under single source root,
+     *  @param context the lookup in which files should be found
+     */
+    private FileObject[] findSources(Lookup context) {
+        FileObject[] srcPath = project.getSourceRoots().getRoots();
+        for (int i=0; i< srcPath.length; i++) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcPath[i], ".java", true); // NOI18N
+            if (files != null) {
+                return files;
+            }
+        }
+        return null;
+    }
+
+    
+    
+    
 }
