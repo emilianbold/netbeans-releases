@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Services">
             <folder name="SearchType">
                 <attr name="helpID" stringvalue="org.openidex.search.SearchType"/>
-
+                <!--
                 <file name="org-netbeans-modules-search-FullTextType.settings" url="../search/FullTextType.settings">
                     <attr name="template" boolvalue="true"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.search.Bundle"/>
@@ -50,6 +50,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.search.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/openidex/search/res/find.gif"/>
                 </file>
+                -->
             </folder> <!-- SearchType -->
         </folder> <!-- Services -->
     </folder> <!-- Templates -->
