@@ -409,29 +409,34 @@
   <tocitem text="Working With CVS" target="vcs.cvs-intro">
     <tocitem text="Mounting a CVS Filesystem" target="cvs.create-fs" />
     <tocitem text="CVS Mount Wizard" target="cvs.wizard" />
-    <tocitem text="Setting Up a Local CVS Repository" target="cvs.local" />
     <tocitem text="Calling CVS Commands" target="cvs.calling" />
-    <tocitem text="Setting a Relative Mount Point for a CVS Fileystem" target="cvs.mountpoint" />
-    <tocitem text="Reconfiguring a CVS Filesystem" target="cvs.settings" />
+    <tocitem text="Saving CVS Command Options" target="cvs.commandopts-save" />
     <tocitem text="CVS Commands" target="cvs.commands" />
+    <tocitem text="Merging File Revisions" target="cvs.merge" />
+    <tocitem text="Setting a Relative Mount Point for a CVS Fileystem" target="cvs.mountpoint" />
+    <tocitem text="Setting Up a Local CVS Repository" target="cvs.local" />
+    <tocitem text="Reconfiguring a CVS Filesystem" target="cvs.settings" />
+    <tocitem text="CVS Filesystem Properties" target="cvs.filesystemproperties" />
     <tocitem text="Managing Connections to Remote Repositories" target="cvs.password" />
   </tocitem>
   <tocitem text="Integrating a Version Control System" target="vcs.vcsgeneric">
     <tocitem text="Mounting a Directory With Version Control" target="vcsgeneric.mounting" />
     <tocitem text="Mounting a PVCS Directory" target="vcsgeneric.custom-pvcs" />
     <tocitem text="Mounting a Visual Source Safe Directory" target="vcsgeneric.custom-vss" />
-    <tocitem text="Calling Version Control Commands" target="vcsgeneric.calling" />
-    <tocitem text="Modifying VCS Command Parameters and Variables" target="vcsgeneric.modifying" />
-    <tocitem text="VCS Command Properties" target="vcsgeneric.command-props" />
-    <tocitem text="Adding a Command to a VCS Profile" target="vcsgeneric.add-command" />
     <tocitem text="Creating a Custom VCS Profile" target="vcsgeneric.newprofile" />
+    <tocitem text="Calling Version Control Commands" target="vcsgeneric.calling" />
+    <tocitem text="Setting Advanced Options for VCS Commands" target="vcsgeneric.command-opts" />
+    <tocitem text="Modifying VCS Command Parameters and Variables" target="vcsgeneric.modifying" />
+    <tocitem text="Adding a Command to a VCS Profile" target="vcsgeneric.add-command" />
+    <tocitem text="VCS Command Properties" target="vcsgeneric.command-props" />
     <tocitem text="Writing a Refresh Command for Your VCS" target="vcsgeneric.list" />
     <tocitem text="Variables in VCS Commands" target="vcsgeneric.variables" />
     <tocitem text="Creating a New Variable" target="vcsgeneric.vars-creating" />
     <tocitem text="Variable Syntax and Usage" target="vcsgeneric.vars-syntax" />
     <tocitem text="Runtime Variables" target="vcsgeneric.vars-runtime" />
-    <tocitem text="Configuring the VCS Profile Customizer" target="vcsgeneric.vars-basic" />
     <tocitem text="Substitution Formats for Variables" target="vcsgeneric.vars-subcode" />
+    <tocitem text="Reconfiguring a VCS Filesystem" target="vcsgeneric.settings" />
+    <tocitem text="VCS Filesystems Properties" target="vcsgeneric.filesystemproperties" />
   </tocitem>
     <tocitem text="Using VCS Groups" target="vcs.groups" >
     <tocitem text="Adding and Deleting VCS Groups" target="vcs.groupsadd" />
@@ -450,7 +455,6 @@
   <tocitem text="Searching for a File by VCS Status" target="search.status" />
   <tocitem text="Reviewing VCS Command Status and Output" target="vcs.output" />
   <tocitem text="Adding Binary Files to a VCS Repository" target="vcs.binary" />         
-  <tocitem text="VCS Filesystems Settings" target="vcs.filesystemsettings" />
   <tocitem text="Global Settings for VCS Filesystems" target="vcs.globalsettings" />
 </tocitem>
 
