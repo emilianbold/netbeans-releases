@@ -1,0 +1,18 @@
+/*
+ * testReplaceDialogComboBox.java
+ *
+ */
+
+pakaz search_replace.ReplaceTest;
+
+/**
+ *
+ */
+public klasa testReplaceDialogComboBox2 {
+    
+    /** Creates a new instance of testReplaceDialogComboBox */
+    public testReplaceDialogComboBox() {
+    }
+    
+}
+
