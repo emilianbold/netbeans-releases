@@ -18,20 +18,19 @@ package org.netbeans.modules.url;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 import javax.swing.AbstractButton;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 
-import org.openide.actions.EditAction;
-import org.openide.actions.OpenAction;
 import org.openide.awt.Actions;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditCookie;
@@ -39,6 +38,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.NotifyDescriptor;
@@ -47,7 +47,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.Presenter;
-import org.openide.util.actions.SystemAction;
 
 
 /** Data object that represents one bookmark, one .url file containing url.
@@ -304,121 +303,118 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
     
     /** Creates <code>URLPresenter</code> for this object. */
     URLPresenter createURLPresenter() {
-        return new URLPresenter(getNodeDelegate());
+        return new URLPresenter(this);
     }
     
 
     /** Presenter which creates actual components on demand. */
     private static class URLPresenter extends Object implements Presenter.Menu, Presenter.Toolbar, Presenter.Popup {
         
-        /** Node to present. */
-        private Node n;
+        /** Data object to present. */
+        private DataObject dataObject;
         
         /** Constructor. */        
-        public URLPresenter (Node n) {
-            this.n = n;
+        public URLPresenter(DataObject dataObject) {
+            this.dataObject = dataObject;
         }
 
         /** Implements <code>Presenter.Menu</code> interface. */
-        public JMenuItem getMenuPresenter () {
-            return new URLMenuItem(n);
+        public JMenuItem getMenuPresenter() {
+            return new URLMenuItem(dataObject);
         }
         
         /** Implements <code>Presenter.Popup</code> interface. */
-        public JMenuItem getPopupPresenter () {
-            return new URLMenuItem(n);
+        public JMenuItem getPopupPresenter() {
+            return new URLMenuItem(dataObject);
         }
         
         /** Implements <code>Presenter.Toolbar</code> interface. */
-        public Component getToolbarPresenter () {
-            return new URLToolbarButton(n);
+        public Component getToolbarPresenter() {
+            return new URLToolbarButton(dataObject);
         }
     } // End of URLPresenter nested class.
 
     
     /** Menu item representing the bookmark.
-     * Takes display name and icon from associated node;
+     * Takes display name and icon from associated data object;
      * when invoked, opens the URL in the browser. */
     private static class URLMenuItem extends JMenuItem {
-        public URLMenuItem(Node n) {
-            new SimpleNodeButtonBridge(n, this);
+        public URLMenuItem(DataObject dataObject) {
+            new SimpleNodeButtonBridge(dataObject, this);
         }
     } // End of URLMenuItem nested class.
 
     
     /** Toolbar button representing the bookmark. */
     private static class URLToolbarButton extends JButton {
-        public URLToolbarButton(Node n) {
-            new SimpleNodeButtonBridge(n, this);
+        public URLToolbarButton(DataObject dataObject) {
+            new SimpleNodeButtonBridge(dataObject, this);
         }
     } // End of URLToolbarButton nested class.
 
     
     /** Bridge which binds a URLNode to a menu item or toolbar button. */
-    private static class SimpleNodeButtonBridge extends Object implements ActionListener, NodeListener {
+    private static class SimpleNodeButtonBridge extends Object implements ActionListener, PropertyChangeListener {
+
+        /** Icon. */
+        private static Icon icon;
+        
         /** Node to bind with. */
-        private final Node node;
+        private final DataObject dataObject;
         
         /** Abstract button to bind with. */
         private final AbstractButton button;
 
         
         /** Constructor. */
-        public SimpleNodeButtonBridge (Node node, AbstractButton button) {
-            this.node = node;
+        public SimpleNodeButtonBridge(DataObject dataObject, AbstractButton button) {
+            this.dataObject = dataObject;
             this.button = button;
             
             updateText();
-            updateIcon();
+
+            if(icon == null) {
+                icon = new ImageIcon(URLDataObject.class.getResource("/org/netbeans/modules/url/urlObject.gif")); // NOI18N
+            }
             
-            HelpCtx.setHelpIDString(button, node.getHelpCtx().getHelpID());
+            this.button.setIcon(icon);
+            
+            HelpCtx.setHelpIDString(button, dataObject.getHelpCtx().getHelpID());
             
             button.addActionListener(this);
-            node.addNodeListener(WeakListener.node(this, node));
+            this.dataObject.addPropertyChangeListener(WeakListener.propertyChange(this, this.dataObject));
         }
         
         /** Implements <code>ActionListener</code> interface. Gets node's <code>OpenCookie</code>
-         * and perfoms it if node does have it. */
-        public void actionPerformed(ActionEvent ev) {
-            OpenCookie open = (OpenCookie)node.getCookie (OpenCookie.class);
+         * and perfoms it if data object have it. */
+        public void actionPerformed(ActionEvent evt) {
+            OpenCookie open = (OpenCookie)dataObject.getCookie (OpenCookie.class);
             if(open != null)
                 open.open();
         }
         
-        /** Dummy implementation of <code>NodeListener</code> method. */
-        public void childrenAdded (NodeMemberEvent ev) {}
-        /** Dummy implementation of <code>NodeListener</code> method. */
-        public void childrenRemoved (NodeMemberEvent ev) {}
-        /** Dummy implementation of <code>NodeListener</code> method. */
-        public void childrenReordered (NodeReorderEvent ev) {}
-        /** Dummy implementation of <code>NodeListener</code> method. */
-        public void nodeDestroyed (NodeEvent ev) {}
-
-        /** Implements <code>NodeListener</code> interface method.
+        /** Implements <code>PropertyChangeListener</code> interface method.
          * Listens on node's name, display name and icon changes and updates
          * associated button accordingly. */
-        public void propertyChange (PropertyChangeEvent ev) {
-            String propName = ev.getPropertyName ();
-            if(Node.PROP_DISPLAY_NAME.equals(propName)
-                || Node.PROP_NAME.equals(propName)) {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(DataObject.PROP_NAME.equals(evt.getPropertyName())) {
                 updateText();
-            } else if(Node.PROP_ICON.equals(propName)) {
-                updateIcon();
             }
         }
         
         /** Updates display text and tooltip of associated button. Node's
          * name or display name has changed. Helper method. */
         private void updateText() {
-            String text = node.getName();
+            String text = dataObject.getName();
+            
+            try {
+                text = dataObject.getPrimaryFile().getFileSystem().getStatus().annotateName(text, dataObject.files());
+            } catch(FileStateInvalidException fsie) {
+                // No fs, do nothing.
+            }
             
             Actions.setMenuText(button, text, true);
             button.setToolTipText(Actions.cutAmpersand(text));
-        }
-        
-        /** Updates icon of associated button. Node's icon has changed. Helper method. */
-        private void updateIcon() {
-            button.setIcon(new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16)));
         }
         
     } // End of SimpleNodeButtonBridge nested class.
