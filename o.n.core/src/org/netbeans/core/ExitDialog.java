@@ -688,16 +688,16 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
     
     /** Renderer used in list box of exit dialog
      */
-    private static class ExitDlgListCellRenderer extends JLabel implements ListCellRenderer {
+    private class ExitDlgListCellRenderer extends JLabel implements ListCellRenderer {
         /** generated Serialized Version UID */
         static final long serialVersionUID = 1877692790854373689L;
 
-        protected static Border hasFocusBorder;
-        protected static Border noFocusBorder;
+        protected Border hasFocusBorder;
+        protected Border noFocusBorder;
 
         public ExitDlgListCellRenderer() {
-            setOpaque(true);
-            setBorder(noFocusBorder);
+            this.setOpaque(true);
+            this.setBorder(noFocusBorder);
             hasFocusBorder = new LineBorder(UIManager.getColor("List.focusCellHighlight")); // NOI18N
             noFocusBorder = new EmptyBorder(1, 1, 1, 1);
         }
@@ -708,24 +708,30 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                 boolean isSelected,      // is the cell selected
                 boolean cellHasFocus)    // the list and the cell have the focus
         {
-            if (!(value instanceof DataObject)) return this;
+            DataObject obj = (DataObject)value;
+            if (!obj.isValid()) {
+                // #17059: it might be invalid already.
+                listModel.removeElement(obj);
+                setText("");
+                return this;
+            }
 
-            Node node = ((DataObject)value).getNodeDelegate();
+            Node node = obj.getNodeDelegate();
 
             ImageIcon icon = new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16));
             super.setIcon(icon);
 
             setText(node.getDisplayName());
             if (isSelected){
-                setBackground(UIManager.getColor("List.selectionBackground")); // NOI18N
-                setForeground(UIManager.getColor("List.selectionForeground")); // NOI18N
+                this.setBackground(UIManager.getColor("List.selectionBackground")); // NOI18N
+                this.setForeground(UIManager.getColor("List.selectionForeground")); // NOI18N
             }
             else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
+                this.setBackground(list.getBackground());
+                this.setForeground(list.getForeground());
             }
 
-            setBorder(cellHasFocus ? hasFocusBorder : noFocusBorder);
+            this.setBorder(cellHasFocus ? hasFocusBorder : noFocusBorder);
 
             return this;
         }
