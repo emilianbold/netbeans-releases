@@ -15,27 +15,27 @@ package org.netbeans.modules.projectimport.eclipse.wizard;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.swing.AbstractCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
-import javax.swing.ListSelectionModel;
+import javax.swing.JTable;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableColumn;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.projectimport.ProjectImporterException;
 import org.netbeans.modules.projectimport.eclipse.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.Workspace;
 import org.netbeans.modules.projectimport.eclipse.WorkspaceFactory;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,22 +61,10 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
     private Set requiredProjects;
     
     private class ProjectTableModel extends AbstractTableModel {
-        static final int COLUMN_CHECKBOX = 0;
-        static final int COLUMN_PROJECT = 1;
-        static final int NUMBER_OF_COLUMNS = 2;
-        
         public Object getValueAt(int rowIndex, int columnIndex) {
             EclipseProject project = projects[rowIndex];
-            if (columnIndex == COLUMN_CHECKBOX) {
-                return Boolean.valueOf(
-                        selectedProjects.contains(project) ||
-                        requiredProjects.contains(project));
-            } else {
-                return (project.hasJavaNature() ?
-                    project.getName() :
-                    // TODO there has to be clear specification about non-java projects
-                    project.getName() + " (non-java project)");
-            }
+            return Boolean.valueOf(selectedProjects.contains(project) ||
+                    requiredProjects.contains(project));
         }
         
         public int getRowCount() {
@@ -84,31 +72,28 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         }
         
         public int getColumnCount() {
-            return NUMBER_OF_COLUMNS;
+            return 1;
         }
         
         public Class getColumnClass(int columnIndex) {
-            return (columnIndex == COLUMN_CHECKBOX) ? Boolean.class : String.class;
+            return Boolean.class;
         }
         
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return (columnIndex == COLUMN_CHECKBOX
-                    && projects[rowIndex].hasJavaNature() &&
+            return (projects[rowIndex].hasJavaNature() &&
                     !requiredProjects.contains(projects[rowIndex]));
         }
         
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            if (columnIndex == COLUMN_CHECKBOX) {
-                EclipseProject project = projects[rowIndex];
-                if (((Boolean) aValue).booleanValue()) {
-                    selectedProjects.add(project);
-                } else {
-                    selectedProjects.remove(project);
-                }
-                solveDependencies();
-                fireTableDataChanged();
-                updateValidity();
+            EclipseProject project = projects[rowIndex];
+            if (((Boolean) aValue).booleanValue()) {
+                selectedProjects.add(project);
+            } else {
+                selectedProjects.remove(project);
             }
+            solveDependencies();
+            fireTableDataChanged();
+            updateValidity();
         }
     }
     
@@ -120,7 +105,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
             return;
         }
         String parent = destination.getText();
-        for (Iterator it = requiredProjects.iterator(); it.hasNext(); ) {
+        for (Iterator it = allProjects().iterator(); it.hasNext(); ) {
             EclipseProject prj = (EclipseProject) it.next();
             String destDir = parent + "/" + prj.getName();
             if (new File(destDir).exists()) {
@@ -132,20 +117,54 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         setErrorMessage(null);
     }
     
-    private class ProjectCellRenderer extends DefaultTableCellRenderer {
-        public Component getTableCellRendererComponent(
-                javax.swing.JTable table, Object value, boolean isSelected,
-                boolean hasFocus, int row, int column) {
-            Component c = super.getTableCellRendererComponent(table, value,
-                    isSelected, hasFocus, row, column);
+    /** Returns both selected and required projects */
+    private Collection allProjects() {
+        Collection all = new HashSet(selectedProjects);
+        all.addAll(requiredProjects);
+        return all;
+    }
+    
+    /** Rendererer for projects */
+    private class ProjectCellRenderer extends JCheckBox
+            implements TableCellRenderer {
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
             EclipseProject project = projects[row];
+            setBackground(Color.WHITE);
+            setText(project.getName());
+            setSelected(selectedProjects.contains(project) ||
+                    requiredProjects.contains(project));
             if (project.hasJavaNature() && !requiredProjects.contains(project)) {
-                c.setEnabled(true);
+                setEnabled(true);
             } else {
                 // required and non-java project are disabled
-                c.setEnabled(false);
+                setEnabled(false);
             }
-            return c;
+            return this;
+        }
+    }
+    
+    private class ProjectCellEditor extends AbstractCellEditor
+            implements TableCellEditor {
+        
+        private JCheckBox checkBox;
+        
+        public Object getCellEditorValue() {
+            return Boolean.valueOf(checkBox.isSelected());
+        }
+        
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                boolean isSelected, int row, int column) {
+            EclipseProject project = projects[row];
+            checkBox = new JCheckBox(project.getName(),
+                    ((Boolean) value).booleanValue());
+            checkBox.setBackground(Color.WHITE);
+            checkBox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent ev) {
+                    fireEditingStopped();
+                }
+            });
+            return checkBox;
         }
     }
     
@@ -153,12 +172,10 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         requiredProjects.clear();
         for (Iterator it = selectedProjects.iterator(); it.hasNext(); ) {
             EclipseProject project = (EclipseProject) it.next();
-            //            requiredProjects.add(project);
             requiredProjects.addAll(project.getProjects());
         }
     }
     
-    private static final int COL_CHECKBOX_WIDTH = 26;
     private ProjectTableModel model = new ProjectTableModel();
     private String workspaceDir;
     
@@ -173,37 +190,13 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
             public void changedUpdate(DocumentEvent e) {}
         });
         updateValidity();
-        setPreferredSize(new java.awt.Dimension(500, 380));
     }
     
     private void init() {
         projectTable.setModel(model);
-        projectTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         projectTable.setTableHeader(null);
-        projectTable.setSelectionBackground(projectTable.getSelectionBackground());
-        projectTable.setSelectionForeground(projectTable.getSelectionForeground());
-        projectTable.setDefaultRenderer(Object.class, new ProjectCellRenderer());
-        //        projectTable.setDefaultRenderer(Boolean.class, new ProjectCellRenderer());
-        TableColumn checkboxCol = projectTable.getColumnModel().getColumn(0);
-        checkboxCol.setMinWidth(COL_CHECKBOX_WIDTH);
-        checkboxCol.setMaxWidth(COL_CHECKBOX_WIDTH);
-        
-        ListSelectionModel rowSM = projectTable.getSelectionModel();
-        rowSM.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                //Ignore extra messages.
-                if (e.getValueIsAdjusting()) return;
-                
-                ListSelectionModel lsm =
-                        (ListSelectionModel)e.getSource();
-                if (!lsm.isSelectionEmpty()) {
-                    int selectedRow = lsm.getMinSelectionIndex();
-                    Object o = projectTable.getValueAt(
-                            projectTable.getSelectedRow(),
-                            ProjectTableModel.COLUMN_PROJECT);
-                }
-            }
-        });
+        projectTable.setDefaultRenderer(Boolean.class, new ProjectCellRenderer());
+        projectTable.setDefaultEditor(Boolean.class, new ProjectCellEditor());
         destination.setText(System.getProperty("user.home"));
     }
     
@@ -238,9 +231,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
      * required and selected projects)
      */
     int getNumberOfImportedProject() {
-        Collection all = new HashSet(selectedProjects);
-        all.addAll(requiredProjects);
-        return all.size();
+        return allProjects().size();
     }
     
     /**
@@ -262,7 +253,6 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
         choosePanel = new javax.swing.JPanel();
         destination = new javax.swing.JTextField();
         chooseDestButton = new javax.swing.JButton();
@@ -271,8 +261,6 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         projectListLabel = new javax.swing.JLabel();
         projectTableSP = new javax.swing.JScrollPane();
         projectTable = new javax.swing.JTable();
-
-        jLabel1.setText("jLabel1");
 
         setLayout(new java.awt.BorderLayout(0, 24));
 
@@ -312,14 +300,12 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         projectPanel.setLayout(new java.awt.GridBagLayout());
 
         projectListLabel.setText(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "CTL_ProjectSelectionStep"));
-        projectListLabel.setAutoscrolls(true);
         projectListLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         projectPanel.add(projectListLabel, gridBagConstraints);
 
         projectTable.setShowHorizontalLines(false);
@@ -330,8 +316,8 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         projectPanel.add(projectTableSP, gridBagConstraints);
 
         add(projectPanel, java.awt.BorderLayout.CENTER);
@@ -352,7 +338,6 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
     private javax.swing.JButton chooseDestButton;
     private javax.swing.JPanel choosePanel;
     private javax.swing.JTextField destination;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel prjLocationLBL;
     private javax.swing.JLabel projectListLabel;
     private javax.swing.JPanel projectPanel;

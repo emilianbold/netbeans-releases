@@ -57,6 +57,7 @@ abstract class ImporterWizardPanel extends JPanel
         putClientProperty("WizardPanel_contentData", new String[] {
             WORKSPACE_LOCATION_STEP, PROJECT_SELECTION_STEP
         });
+        setPreferredSize(new java.awt.Dimension(500, 380));
     }
     
     /**
