@@ -247,7 +247,7 @@ public class ResultModel implements NodeAcceptor, TaskListener
         listeners.add(lis);
     }
 
-    public void removeChangedListener(ChangeListener lis) {
+    public void removeChangeListener(ChangeListener lis) {
         listeners.remove(lis);
     }
 
