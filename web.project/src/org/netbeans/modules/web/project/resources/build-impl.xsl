@@ -307,9 +307,14 @@ is divided into following sections:
                             <jvmarg value="-Xnoagent"/>
                             <jvmarg value="-Djava.compiler=none"/>
                             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
+                            <jvmarg line="${{runmain.jvmargs}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
+                            <syspropertyset>
+                                <propertyref prefix="run-sys-prop."/>
+                                <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                            </syspropertyset>
                             <arg line="@{{args}}"/>
                         </java>
                     </sequential>
@@ -548,21 +553,39 @@ is divided into following sections:
         <nbbrowse url="${{client.url}}"/>
     </target>
 
-    <target name="pre-debug-fix">
+    <target name="-debug-start-debugger">
+        <xsl:attribute name="if">netbeans.home</xsl:attribute>
+        <xsl:attribute name="depends">init</xsl:attribute>
+        <webproject:nbjpdastart/>
+    </target>
+
+    <target name="-debug-start-debuggee-single">
+        <xsl:attribute name="if">netbeans.home</xsl:attribute>
+        <xsl:attribute name="depends">init,compile-single</xsl:attribute>
+        <fail unless="debug.class">Must select one file in the IDE or set debug.class</fail>
+        <webproject:debug classname="${{debug.class}}"/>
+    </target>
+
+    <target name="debug-single-main">
+        <xsl:attribute name="if">netbeans.home</xsl:attribute>
+        <xsl:attribute name="depends">init,compile-single,-debug-start-debugger,-debug-start-debuggee-single</xsl:attribute>
+    </target>
+
+    <target name="-pre-debug-fix">
         <xsl:attribute name="depends">init</xsl:attribute>
         <fail unless="fix.includes">Must set fix.includes</fail>
         <property name="javac.includes" value="${{fix.includes}}.java"/>
     </target>
 
-    <target name="do-debug-fix">
+    <target name="-do-debug-fix">
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
-        <xsl:attribute name="depends">init,pre-debug-fix,compile-single</xsl:attribute>
+        <xsl:attribute name="depends">init,-pre-debug-fix,compile-single</xsl:attribute>
         <webproject:nbjpdareload xmlns:webproject="http://www.netbeans.org/ns/j2se-project/1"/>
     </target>
 
     <target name="debug-fix">
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
-        <xsl:attribute name="depends">init,pre-debug-fix,do-debug-fix</xsl:attribute>
+        <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix</xsl:attribute>
     </target>
     
             <xsl:comment>

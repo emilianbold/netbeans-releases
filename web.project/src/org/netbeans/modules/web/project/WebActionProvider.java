@@ -123,6 +123,7 @@ class WebActionProvider implements ActionProvider {
             commands.put(COMMAND_RUN_SINGLE, new String[] {"run"}); // NOI18N
             commands.put(WebProjectConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
             commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
+            // the target name is debug, except for Java files with main method, where it is debug-single-main
             commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug"}); // NOI18N
             commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
             commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
@@ -301,8 +302,8 @@ class WebActionProvider implements ActionProvider {
 //                p.setProperty("client.urlPart", project.getWebModule().getUrl());
             } else { //COMMAND_DEBUG_SINGLE
                 FileObject[] files = findJsps( context );
-                // debug jsp
                 if ((files != null) && (files.length>0)) {
+                    // debug jsp
                     try {
                         // possibly compile the JSP, if we are not compiling all of them
                         String raw = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.COMPILE_JSPS);
@@ -321,34 +322,56 @@ class WebActionProvider implements ActionProvider {
                         ErrorManager.getDefault ().notify (e);
                         return;
                     }
-                // debug servlet
                 } else {
+                    // debug Java
+                    // debug servlet
                     FileObject[] javaFiles = findJavaSources(context);
-                    FileObject servlet = javaFiles[0];
-                    String executionUri = (String)servlet.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI);
-                    if (executionUri!=null) {
-                        p.setProperty("client.urlPart", executionUri); //NOI18N
-                    } else {
-                        WebModule webModule = WebModule.getWebModule(servlet);
-                        String[] urlPatterns = SetExecutionUriAction.getServletMappings(webModule,servlet);
-                        if (urlPatterns!=null && urlPatterns.length>0) {
-                            ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,null,true);
-                            DialogDescriptor desc = new DialogDescriptor(uriPanel,
-                                NbBundle.getMessage (SetExecutionUriAction.class, "TTL_setServletExecutionUri"));
-                            Object res = DialogDisplayer.getDefault().notify(desc);
-                            if (res.equals(NotifyDescriptor.YES_OPTION)) {
-                                p.setProperty("client.urlPart", uriPanel.getServletUri()); //NOI18N
-                                try {
-                                    servlet.setAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI,uriPanel.getServletUri());
-                                } catch (IOException ex){}
-                            } else return;
-                        } else {
-                            String mes = java.text.MessageFormat.format (
-                                    NbBundle.getMessage (SetExecutionUriAction.class, "TXT_missingServletMappings"),
-                                    new Object [] {servlet.getName()});
-                            NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
-                            DialogDisplayer.getDefault().notify(desc);
-                            return;
+                    if ((javaFiles != null) && (javaFiles.length>0)) {
+                        FileObject javaFile = javaFiles[0];
+
+                        if (hasMainMethod(javaFile)) {
+                            // debug Java with Main method
+                            String clazz = FileUtil.getRelativePath(project.getSourceDirectory(), javaFile);
+                            p = new Properties();
+                            p.setProperty("javac.includes", clazz); // NOI18N
+                            // Convert foo/FooTest.java -> foo.FooTest
+                            if (clazz.endsWith(".java")) { // NOI18N
+                                clazz = clazz.substring(0, clazz.length() - 5);
+                            }
+                            clazz = clazz.replace('/','.');
+
+                            p.setProperty("debug.class", clazz); // NOI18N
+                            targetNames = new String [] {"debug-single-main"};
+                        }
+                        else {
+                            // run servlet
+                            // PENDING - what about servlets with main method? servlet should take precedence
+                            String executionUri = (String)javaFile.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI);
+                            if (executionUri!=null) {
+                                p.setProperty("client.urlPart", executionUri); //NOI18N
+                            } else {
+                                WebModule webModule = WebModule.getWebModule(javaFile);
+                                String[] urlPatterns = SetExecutionUriAction.getServletMappings(webModule,javaFile);
+                                if (urlPatterns!=null && urlPatterns.length>0) {
+                                    ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,null,true);
+                                    DialogDescriptor desc = new DialogDescriptor(uriPanel,
+                                        NbBundle.getMessage (SetExecutionUriAction.class, "TTL_setServletExecutionUri"));
+                                    Object res = DialogDisplayer.getDefault().notify(desc);
+                                    if (res.equals(NotifyDescriptor.YES_OPTION)) {
+                                        p.setProperty("client.urlPart", uriPanel.getServletUri()); //NOI18N
+                                        try {
+                                            javaFile.setAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI,uriPanel.getServletUri());
+                                        } catch (IOException ex){}
+                                    } else return;
+                                } else {
+                                    String mes = java.text.MessageFormat.format (
+                                            NbBundle.getMessage (SetExecutionUriAction.class, "TXT_missingServletMappings"),
+                                            new Object [] {javaFile.getName()});
+                                    NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
+                                    DialogDisplayer.getDefault().notify(desc);
+                                    return;
+                                }
+                            }
                         }
                     }
                 }
