@@ -180,28 +180,12 @@ public class TargetExecutor implements Runnable {
             if (buildFile == null) {
                 throw new BuildException (NbBundle.getMessage (TargetExecutor.class, "EXC_non_local_proj_file"));
             }
-            // --> HACK
-            // Workaround for parts of the system (e.g. focus callback) that set system
-            // properties to non-String values. Throws ClassCastException from Project.init()
-            // in Ant 1.3 (not in dev versions after 1.3). So remove them temporarily and then
-            // put them right back.
-            Map weirdoProps = new HashMap (); // Map<String,Object>
-            removeWeirdoProps (weirdoProps);
-            try {
-                project = new Project ();
-                try {
-                    project.init ();
-                } catch (ClassCastException cce) {
-                    // Race condition. Retry (once only tho, avoid inf loops).
-                    AntModule.err.log ("ClassCastException from Project.init: " + cce.getMessage ());
-                    removeWeirdoProps (weirdoProps);
-                    project = new Project ();
-                    project.init ();
-                }
-            } finally {
-                System.getProperties ().putAll (weirdoProps);
-                weirdoProps = null; // make sure GC'able quickly
-            }
+            project = new Project ();
+            // If ClassCastException is thrown from the following
+            // line, it is probably a symptom of a core bug (#10260 I
+            // think, or #11920). But this should no longer happen
+            // with Ant 1.4 which itself works around such problems.
+            project.init ();
             Iterator defs = DefinitionRegistry.getDefs ("task").entrySet ().iterator (); // NOI18N
             while (defs.hasNext ()) {
                 Map.Entry entry = (Map.Entry) defs.next ();
@@ -284,25 +268,6 @@ public class TargetExecutor implements Runnable {
                     custom.scanProject (p2);
                 }
             }, 1000); // a bit later; the target can finish first!
-    }
-
-    // HACK; see above
-    private void removeWeirdoProps (Map weirdoProps) {
-        Iterator propit = System.getProperties ().entrySet ().iterator ();
-        while (propit.hasNext ()) {
-            Map.Entry entry = (Map.Entry) propit.next ();
-            if (! (entry.getValue () instanceof String)) {
-                weirdoProps.put (entry.getKey (), entry.getValue ());
-                propit.remove ();
-            }
-        }
-        if (! weirdoProps.isEmpty ()) {
-            AntModule.err.log ("Removed weirdo props from System.properties: " + weirdoProps);
-            String sampleKey = (String) weirdoProps.keySet ().iterator ().next ();
-            if (System.getProperties ().get (sampleKey) != null) {
-                AntModule.err.log ("...but it did not work on " + sampleKey);
-            }
-        }
     }
 
 }
