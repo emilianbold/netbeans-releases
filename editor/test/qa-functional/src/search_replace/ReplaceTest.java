@@ -44,7 +44,7 @@ public class ReplaceTest extends EditorTestCase {
         try {
             EditorOperator editor = getDefaultSampleEditorOperator();
             JEditorPaneOperator txtOper = editor.txtEditorPane();
-            
+                        
             // open replace and close
             new ReplaceAction().perform();
             txtOper.pushKey(KeyEvent.VK_ESCAPE);
@@ -79,6 +79,13 @@ public class ReplaceTest extends EditorTestCase {
             editor.select(13, 14, 41);
             new ReplaceAction().perform();
             Replace replace = new Replace();
+            
+            // check only selected checkboxes
+            uncheckAll();
+            replace.cbHighlightSearch().doClick();
+            replace.cbIncrementalSearch().doClick();
+            replace.cbWrapSearch().doClick();
+            
             String text = replace.cboFindWhat().getTextField().getText();
             // compare
             assertEquals(text, "testReplaceSelectionRepeated");
@@ -105,6 +112,9 @@ public class ReplaceTest extends EditorTestCase {
             waitForLabel("'testReplaceSelectionRepeated' found at 2:4; End of document reached. "
                     +"Continuing search from beginning.");
         
+            ref(editor.getText());
+            compareReferenceFiles();
+            
         } finally {
             closeFileWithDiscard();
         }
@@ -122,6 +132,13 @@ public class ReplaceTest extends EditorTestCase {
             editor.setCaretPosition(1,1);
             new ReplaceAction().perform();
             Replace replace = new Replace();
+            
+            // check only selected checkboxes
+            uncheckAll();
+            replace.cbHighlightSearch().doClick();
+            replace.cbIncrementalSearch().doClick();
+            replace.cbWrapSearch().doClick();
+            
             replace.cboFindWhat().clearText();
             replace.cboFindWhat().typeText("package");
             replace.cboReplaceWith().clearText();
@@ -163,10 +180,105 @@ public class ReplaceTest extends EditorTestCase {
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);
             replace.close();
             
+            ref(editor.getText());
+            compareReferenceFiles();
         
         } finally {
             closeFileWithDiscard();
         }
+    }
+
+    /**
+     * TC4 - Replace Match Case
+     */
+    public void testReplaceMatchCase() {
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+            EditorOperator editor = getDefaultSampleEditorOperator();
+            
+            editor.setCaretPosition(1,1);
+            new ReplaceAction().perform();
+            Replace replace = new Replace();
+            
+            // check only selected checkboxes
+            uncheckAll();
+            replace.cbMatchCase().doClick();
+            
+            replace.cboFindWhat().clearText();
+            replace.cboFindWhat().typeText("testCase");
+            replace.cboReplaceWith().clearText();
+            replace.cboReplaceWith().typeText("xxxxXxxx");
+            replace.replace();
+            // check status bar
+            waitForLabel("'testCase' found at 21:12");
+
+            replace.replace();
+            // check status bar
+            waitForLabel("'testCase' found at 24:12");
+
+            replace.replace();
+            // check status bar
+            waitForLabel("'testCase' not found");            
+            
+            replace.close();
+
+            ref(editor.getText());
+            compareReferenceFiles();
+            
+        } finally {
+            closeFileWithDiscard();
+        }
+    }
+    
+    /**
+     * TC5 - Replace All
+     */
+    public void testReplaceAll() {
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+            EditorOperator editor = getDefaultSampleEditorOperator();
+            
+            editor.setCaretPosition(1,1);
+            new ReplaceAction().perform();
+            Replace replace = new Replace();
+            
+            // check only selected checkboxes
+            uncheckAll();
+            
+            replace.cboFindWhat().clearText();
+            replace.cboFindWhat().typeText("testWord");
+            replace.cboReplaceWith().clearText();
+            replace.cboReplaceWith().typeText("xxxxXxxx");
+            replace.replaceAll();
+            // check status bar
+            waitForLabel("14 of 14 items replaced");
+
+            replace.close();
+
+            ref(editor.getText());
+            compareReferenceFiles();
+            
+        } finally {
+            closeFileWithDiscard();
+        }
+    }
+    
+    /**     
+     * Unchecks all checkboxes in find dialog.
+     */
+    public void uncheckAll() {
+        Replace replace = new Replace();
+        replace.cbBackwardSearch().setSelected(false);
+        replace.cbSearchSelection().setSelected(false);
+        replace.cbHighlightSearch().setSelected(false);
+        replace.cbIncrementalSearch().setSelected(false);
+        replace.cbMatchCase().setSelected(false);
+        replace.cbMatchWholeWordsOnly().setSelected(false);
+        replace.cbRegularExpressions().setSelected(false);
+        replace.cbSmartCase().setSelected(false);
+        replace.cbWrapSearch().setSelected(false);        
     }
     
     /**
