@@ -43,9 +43,6 @@ import org.openide.TopManager;
 */
 public class HttpServerSettings extends SystemOption implements HttpServer.Impl {
   
-  /** generated Serialized Version UID */
-//  static final long serialVersionUID = -2930037136839837001L;
-  
   private static final int MAX_START_RETRIES = 5;
   private static int currentRetries = 0;
                  
@@ -86,7 +83,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   private static Properties mappedServlets = new Properties();
 
   /** http settings */
-  public final static HttpServerSettings OPTIONS = new HttpServerSettings();
+  public static HttpServerSettings OPTIONS;
                                       
   /** last used servlet name */                                    
   private static int lastUsedName = 0;
@@ -96,8 +93,21 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   /** Used to remember the state of the running property during the deserialization */                                      
   private boolean pendingRunning = true;
 
-static final long serialVersionUID =7387407495740535307L;
+  static final long serialVersionUID =7387407495740535307L;
+  
   public HttpServerSettings() {
+    // set the writer
+    com.mortbay.Base.Log.instance()._out = new NullWriter();
+
+    if (OPTIONS == null) {
+      OPTIONS = this;  
+      // register the server
+      try {
+        org.openide.util.HttpServer.registerServer(OPTIONS);
+      }
+      catch (SecurityException e) {}
+    }  
+    
   }
 
   /** human presentable name */
@@ -429,6 +439,8 @@ static final long serialVersionUID =7387407495740535307L;
 
 /*
  * Log
+ *  17   Gandalf   1.16        8/17/99  Petr Jiricka    Fixed startup of the 
+ *       server during the first IDE start
  *  16   Gandalf   1.15        8/9/99   Ian Formanek    Generated Serial Version
  *       UID
  *  15   Gandalf   1.14        8/9/99   Petr Jiricka    Fixed bug with multiple 
