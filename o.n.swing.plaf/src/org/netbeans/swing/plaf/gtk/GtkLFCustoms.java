@@ -99,9 +99,9 @@ public class GtkLFCustoms extends LFCustoms {
             "gtkColorsFailover", new UIDefaults.ProxyLazyValue("org.netbeans.swing.plaf.gtk.GtkLFCustoms$ChicletDefaults"), //NOI18N
 
             //UI Delegates for the tab control
-            EDITOR_TAB_DISPLAYER_UI, blueprint ? "org.netbeans.swing.tabcontrol.plaf.GtkEditorTabDisplayerUI" :
+            EDITOR_TAB_DISPLAYER_UI, /* blueprint ? "org.netbeans.swing.tabcontrol.plaf.GtkEditorTabDisplayerUI" : */
                 "org.netbeans.swing.tabcontrol.plaf.WinClassicEditorTabDisplayerUI", //NOI18N
-            VIEW_TAB_DISPLAYER_UI, blueprint ? "org.netbeans.swing.tabcontrol.plaf.GtkViewTabDisplayerUI" :
+            VIEW_TAB_DISPLAYER_UI, /* blueprint ? "org.netbeans.swing.tabcontrol.plaf.GtkViewTabDisplayerUI" : */
                 "org.netbeans.swing.tabcontrol.plaf.WinClassicViewTabDisplayerUI", //NOI18N
             SLIDING_TAB_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.SlidingTabDisplayerButtonUI", //NOI18N
 
