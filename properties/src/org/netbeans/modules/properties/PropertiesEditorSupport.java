@@ -446,7 +446,7 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
 
   /** Cloneable top component to hold the editor kit.
   */
-  static class PropertiesEditor extends EditorSupport.Editor {
+  public static class PropertiesEditor extends EditorSupport.Editor {
                                           
     /** Holds the file being edited */                                                                   
     protected transient PropertiesFileEntry entry;
@@ -779,6 +779,8 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     * @param b char to write.
     */
     public void write(int b) throws IOException {
+      if (b == '\r')
+        return;
       if (b == '\n') {
         switch (newLineType) {
         case NEW_LINE_R:
