@@ -406,6 +406,10 @@ public class JavaCodeGenerator extends CodeGenerator {
     Integer generationType = (Integer)comp.getAuxValue (AUX_CODE_GENERATION);
     if (comp.hasHiddenState () || ((generationType != null) && (generationType.equals (VALUE_SERIALIZE)))) {
       String serializeTo = (String)comp.getAuxValue (AUX_SERIALIZE_TO);
+      if (serializeTo == null) {
+        serializeTo = getDefaultSerializedName (comp);
+        comp.setAuxValue (AUX_SERIALIZE_TO, serializeTo);
+      }
       initCodeWriter.write ("try {\n");
       initCodeWriter.write (comp.getName ());
       initCodeWriter.write (" = (");
@@ -1198,6 +1202,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  44   Gandalf   1.43        8/10/99  Ian Formanek    Fixed problem with 
+ *       adding hidden-state components
  *  43   Gandalf   1.42        8/1/99   Ian Formanek    NodePropertyEditor 
  *       employed
  *  42   Gandalf   1.41        7/27/99  Ian Formanek    Fixed bug 2638 - Undo in
