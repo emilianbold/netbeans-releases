@@ -119,6 +119,18 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
 	doInitialize();	
     }
     
+    /** Overridden to set focusable to false for any AbstractButton
+     * subclasses which are added */
+    protected void addImpl(Component c, Object constraints, int idx) {
+        //issue 39896, after opening dialog from toolbar button, focus
+        //remains on toolbar button.  Does not create an accessibility issue - 
+        //all standard toolbar buttons are also available via the keyboard
+        if (c instanceof AbstractButton) {
+            c.setFocusable(false);
+        }
+        super.addImpl (c, constraints, idx);
+    }
+    
     /**
      * Create a new <code>Toolbar</code>.
      * @param name a <code>String</code> containing the associated name
