@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -167,8 +167,7 @@ public class ClassPathUiSupport {
     }
     
     public static int[] addLibraries( DefaultListModel listModel, int[] indices, Library[] libraries, Set/*<Library>*/ alreadyIncludedLibs, boolean includeInDeployment ) {
-        
-        int lastIndex = indices == null || indices.length == 0 ? -1 : indices[indices.length - 1];
+        int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         for (int i = 0, j=1; i < libraries.length; i++) {
             if (!alreadyIncludedLibs.contains(libraries[i])) {
                 listModel.add( lastIndex + j++, ClassPathSupport.Item.create( libraries[i], null, includeInDeployment ) );
@@ -188,8 +187,7 @@ public class ClassPathUiSupport {
     }
 
     public static int[] addJarFiles( DefaultListModel listModel, int[] indices, File files[], boolean includeInDeployment ) {
-        
-        int lastIndex = indices == null || indices.length == 0 ? -1 : indices[indices.length - 1];
+        int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         int[] indexes = new int[files.length];
         for( int i = 0; i < files.length; i++ ) {
             int current = lastIndex + 1 + i;
@@ -207,8 +205,7 @@ public class ClassPathUiSupport {
     }
     
     public static int[] addArtifacts( DefaultListModel listModel, int[] indices, AntArtifactChooser.ArtifactItem artifactItems[], boolean includeInDeployment ) {
-        
-        int lastIndex = indices == null || indices.length == 0 ? -1 : indices[indices.length - 1];
+        int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         int[] indexes = new int[artifactItems.length];
         for( int i = 0; i < artifactItems.length; i++ ) {
             int current = lastIndex + 1 + i;
