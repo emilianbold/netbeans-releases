@@ -41,7 +41,7 @@ public abstract class XMLBean {
 
     
     public final static String[] XMLBEAN_PACKAGES = {"org.netbeans.xtest.pe.xmlbeans",
-                                                     "org.netbeans.xtest.pe.server.xmlbeans"};
+                                                     "org.netbeans.xtest.pes.xmlbeans"};
     public final static String XMLBEAN_ATT_PREFIX = "xmlat_";
     public final static String XMLBEAN_ELEM_PREFIX = "xmlel_";
     public final static String XMLBEAN_FILE_SUFFIX = ".xml";
