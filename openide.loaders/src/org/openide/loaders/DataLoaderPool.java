@@ -899,9 +899,9 @@ static final class FolderLoader extends UniFileLoader {
             return new SystemAction[] {
                     SystemAction.get (org.openide.actions.NewTemplateAction.class),
                     null,
-                    SystemAction.get (org.openide.actions.OpenLocalExplorerAction.class),
-                    SystemAction.get (org.openide.actions.FindAction.class),
+                    // SystemAction.get (org.openide.actions.OpenLocalExplorerAction.class),
                     SystemAction.get (org.openide.actions.FileSystemAction.class),
+                    SystemAction.get (org.openide.actions.FindAction.class),                    
                     null,
                     SystemAction.get (org.openide.actions.CutAction.class),
                     SystemAction.get (org.openide.actions.CopyAction.class),
