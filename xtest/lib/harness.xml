@@ -115,11 +115,9 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="runtestsfromdist">
         <ant antfile="build.xml" target="runtests">
-            <property name="xtest.basedir" value="dist"/>
             <property name="xtest.source.location" value="ide"/>            
             <property name="xtest.distexec" value="true"/>
             <property name="xtest.nobuildxtest" value="true"/>
-            <property name="netbeans.home" location="${netbeans.home}"/>
         </ant>
     </target>
     
@@ -168,7 +166,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ======= -->
     
     <!-- helper can be executed only by target executor -->
-    <target name="runtest-helper">
+    <target name="runtest-helper" depends="setup-xtest_build">
         <echo message="Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
         <ant dir="${xtest.basedir}/${xtest.module}/test" target="runtests">
             <property name="xtest.testtype" value="${xtest.testtype}"/>
@@ -180,6 +178,10 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="${xtest.basedir}/${xtest.module}/test/results/${xtest.testtype}/"/>
         </copy>
         -->
+    </target>
+    
+    <target name="setup-xtest_build" if="xtest.distexec">
+        <property name="xtest.build" location="${xtest.distdir}/${xtest.module}/test"/>
     </target>
 
     <!-- helper can be executed only by target executor -->
