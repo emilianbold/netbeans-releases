@@ -267,11 +267,17 @@ public class CreateTableDialog {
 
                               cbuff.add(cmd);
                               if (icmd.getColumns().size()>0) cbuff.add(icmd);
+
+                              //execute DDL command
                               cbuff.execute();
 
-                              // dialog is closed after successfully create table
-                              dialog.setVisible(false);
-                              dialog.dispose();
+                              // was execution of commands with or without exception?
+                              if(!cbuff.wasException()) {
+                                  // dialog is closed after successfully create table
+                                  dialog.setVisible(false);
+                                  dialog.dispose();
+                              }
+                              //dialog is not closed after unsuccessfully create table
 
                           } catch (Exception e) {
                               e.printStackTrace();
