@@ -134,7 +134,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
         resultSet.add(dir);
         AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
         ReferenceHelper refHelper = new ReferenceHelper(h, aux, h.getStandardPropertyEvaluator());
-        EarProjectProperties epp = new EarProjectProperties((EarProject) p, h, refHelper, new EarProjectType());
+        EarProjectProperties epp = new EarProjectProperties((EarProject) p, refHelper, new EarProjectType());
         if (null != warName) {
             File webAppDir = new File(dirF, name+"-war"); // NOI18N
             h = WebProjectGenerator.createProject(FileUtil.normalizeFile(webAppDir),

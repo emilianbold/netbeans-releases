@@ -16,6 +16,7 @@ Microsystems, Inc. All Rights Reserved.
                 xmlns:p="http://www.netbeans.org/ns/project/1"
                 xmlns:xalan="http://xml.apache.org/xslt"
                 xmlns:ear="http://www.netbeans.org/ns/j2ee-earproject/1"
+                xmlns:ear2="http://www.netbeans.org/ns/j2ee-earproject/2"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 exclude-result-prefixes="xalan p ear projdeps">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
@@ -38,7 +39,7 @@ is divided into following sections:
 
 ]]></xsl:comment>
 
-        <xsl:variable name="name" select="/p:project/p:configuration/ear:data/ear:name"/>
+        <xsl:variable name="name" select="/p:project/p:configuration/ear2:data/ear2:name"/>
         <project name="{$name}-impl">
             <xsl:attribute name="default">build</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
@@ -81,7 +82,7 @@ is divided into following sections:
 
             <target name="do-init">
                 <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project</xsl:attribute>
-                <xsl:if test="/p:project/p:configuration/ear:data/ear:explicit-platform">
+                <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
                     <!--Setting java and javac default location -->
                     <property name="platforms.${{platform.active}}.javac" value="${{platform.home}}/bin/javac"/>
                     <property name="platforms.${{platform.active}}.java" value="${{platform.home}}/bin/java"/>
@@ -105,7 +106,7 @@ is divided into following sections:
                 <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
                 <property name="default.javac.source" value="1.4"/>
                 <property name="default.javac.target" value="1.4"/>
-                <xsl:if test="/p:project/p:configuration/ear:data/ear:use-manifest">
+                <xsl:if test="/p:project/p:configuration/ear2:data/ear2:use-manifest">
                     <fail unless="manifest.file">Must set manifest.file</fail>
                 </xsl:if>
                 <condition property="no.javadoc.preview">
@@ -176,7 +177,7 @@ is divided into following sections:
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
                             <xsl:attribute name="source">${javac.source}</xsl:attribute>
                             <xsl:attribute name="target">${javac.target}</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/ear:data/ear:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
                                 <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
                             </xsl:if>
@@ -207,7 +208,7 @@ is divided into following sections:
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
-                            <xsl:if test="/p:project/p:configuration/ear:data/ear:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
                                 <bootclasspath>
                                     <path path="${{platform.bootcp}}"/>
                                 </bootclasspath>
@@ -248,7 +249,7 @@ is divided into following sections:
                     </attribute>
                     <sequential>
                         <java fork="true" classname="@{{classname}}">
-                            <xsl:if test="/p:project/p:configuration/ear:data/ear:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                                 <bootclasspath>
                                     <path path="${{platform.bootcp}}"/>
@@ -309,17 +310,45 @@ is divided into following sections:
             <target name="do-compile">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
                 <earproject:javac xmlns:earproject="http://www.netbeans.org/ns/j2ee-earproject/1"/>
-<!--                 <copy todir="${{build.classes.dir}}">
-                    <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
-                </copy> -->
+                
                 <copy todir="${{build.dir}}/META-INF">
                   <fileset dir="${{meta.inf}}"/>
                 </copy>
-                <xsl:for-each select="/p:project/p:configuration/ear:data/ear:web-module-additional-libraries/ear:library[ear:path-in-war]">
-                    <xsl:variable name="copyto" select=" ear:path-in-war"/>
-                    <xsl:variable name="libfile" select="ear:file"/>
-                    <copyfiles todir="${{build.dir}}/{$copyto}" files="{$libfile}"/>
+                
+                <xsl:for-each select="/p:project/p:configuration/ear2:data/ear2:web-module-additional-libraries/ear2:library[ear2:path-in-war]">
+                    <xsl:variable name="copyto" select=" ear2:path-in-war"/>
+                    <xsl:if test="//ear2:web-module-additional-libraries/ear2:library[@files]">
+                      <xsl:if test="@files &gt; 1">
+                        <xsl:call-template name="copyIterateFiles">
+                            <xsl:with-param name="files" select="@files"/>
+                            <xsl:with-param name="target" select="concat('${build.dir}/',$copyto)"/>
+                            <xsl:with-param name="libfile" select="ear2:file"/>
+                        </xsl:call-template>
+                      </xsl:if>
+                      <xsl:if test="@files = 1">
+                            <xsl:variable name="target" select="concat('${build.dir}/',$copyto)"/>
+                            <xsl:variable name="libfile" select="ear2:file"/>
+                            <copy file="{$libfile}" todir="{$target}"/>
+                      </xsl:if>
+                    </xsl:if>
+                    <xsl:if test="//ear2:web-module-additional-libraries/ear2:library[@dirs]">
+                      <xsl:if test="@dirs &gt; 1">
+                        <xsl:call-template name="copyIterateDirs">
+                            <xsl:with-param name="files" select="@dirs"/>
+                            <xsl:with-param name="target" select="concat('${build.dir}/',$copyto)"/>
+                            <xsl:with-param name="libfile" select="ear2:file"/>
+                        </xsl:call-template>
+                      </xsl:if>
+                      <xsl:if test="@dirs = 1">
+                            <xsl:variable name="target" select="concat('${build.dir}/',$copyto)"/>
+                            <xsl:variable name="libfile" select="ear2:file"/>
+                            <copy todir="{$target}">
+                                <fileset dir="{$libfile}" includes="**/*"/>
+                            </copy>
+                      </xsl:if>
+                    </xsl:if>
                 </xsl:for-each>
+                
             </target>
 
             <target name="post-compile">
@@ -442,7 +471,7 @@ is divided into following sections:
             <sourcepath>
                 <path path="${{web.docbase.dir}}"/>
             </sourcepath>
-            <xsl:if test="/p:project/p:configuration/ear:data/ear:explicit-platform">
+            <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
             <bootclasspath>
                 <path path="${{platform.bootcp}}"/>
             </bootclasspath>
@@ -494,7 +523,7 @@ is divided into following sections:
                     <sourcepath>
                         <pathelement location="${{src.dir}}"/>
                     </sourcepath>
-                    <xsl:if test="/p:project/p:configuration/ear:data/ear:explicit-platform">
+                    <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
                         <bootclasspath>
                             <path path="${{platform.bootcp}}"/>
                         </bootclasspath>
@@ -597,4 +626,39 @@ to simulate
         </target>
     </xsl:template>
 
+            <xsl:template name="copyIterateFiles" >
+            <xsl:param name="files" />
+            <xsl:param name="target"/>
+            <xsl:param name="libfile"/>
+            <xsl:if test="$files &gt; 0">
+                <xsl:variable name="fileNo" select="$files+(-1)"/>
+                <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libfile.',$files,'}')"/>
+                <copy file="{$lib}" todir="{$target}"/>
+                <xsl:call-template name="copyIterateFiles">
+                    <xsl:with-param name="files" select="$fileNo"/>
+                    <xsl:with-param name="target" select="$target"/>
+                    <xsl:with-param name="libfile" select="$libfile"/>
+                </xsl:call-template>
+            </xsl:if>
+        </xsl:template>
+            
+        <xsl:template name="copyIterateDirs" >
+            <xsl:param name="files" />
+            <xsl:param name="target"/>
+            <xsl:param name="libfile"/>
+            <xsl:if test="$files &gt; 0">
+                <xsl:variable name="fileNo" select="$files+(-1)"/>
+                <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libdir.',$files,'}')"/>
+                <copy todir="{$target}">
+                    <fileset dir="{$lib}" includes="**/*"/>
+                </copy>
+                <xsl:call-template name="copyIterateDirs">
+                    <xsl:with-param name="files" select="$fileNo"/>
+                    <xsl:with-param name="target" select="$target"/>
+                    <xsl:with-param name="libfile" select="$libfile"/>
+                </xsl:call-template>
+            </xsl:if>
+        </xsl:template>
+    
+    
 </xsl:stylesheet>

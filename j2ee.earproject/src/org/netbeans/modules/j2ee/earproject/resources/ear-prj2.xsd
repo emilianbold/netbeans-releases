@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.netbeans.org/ns/j2ee-earproject/2"
+            xmlns="http://www.netbeans.org/ns/j2ee-earproject/2"
+            elementFormDefault="qualified">
+    <xsd:element name="data">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="name" type="xsd:token"/>
+                <xsd:element name="minimum-ant-version" minOccurs="0">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:NMTOKEN">
+                            <xsd:enumeration value="1.5"/>
+                            <xsd:enumeration value="1.6"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:element>
+                <xsd:element name="use-manifest" minOccurs="0"/>
+                <xsd:element name="explicit-platform" minOccurs="0"/>
+                <xsd:element name="web-module-libraries" type="ejbModuleLibrariesType"/>
+                <xsd:element name="web-module-additional-libraries" type="ejbModuleAdditionalLibrariesType"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:complexType name="ejbModuleLibrariesType">
+        <xsd:sequence>
+            <xsd:element name="library" type="ejbModuleLibraryType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="files" use="optional" type="xsd:integer"/>
+        <xsd:attribute name="dirs" use="optional" type="xsd:integer"/>
+    </xsd:complexType>
+    
+    <xsd:complexType name="ejbModuleAdditionalLibrariesType">
+        <xsd:sequence>
+            <xsd:element name="library" type="ejbModuleAdditionalLibraryType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="files" use="optional" type="xsd:integer"/>
+        <xsd:attribute name="dirs" use="optional" type="xsd:integer"/>
+    </xsd:complexType>
+    
+    <xsd:complexType name="ejbModuleLibraryType">
+        <xsd:sequence>
+            <xsd:element name="file" type="xsd:NCName"/>
+            <xsd:element name="path-in-war" type="pathType" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="ejbModuleAdditionalLibraryType">
+        <xsd:sequence>
+            <xsd:element name="file" type="xsd:NCName"/>
+            <xsd:element name="path-in-war" type="pathType" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:simpleType name="pathType">
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value="[a-z0-9_.\-][a-z0-9_.\-]*(/[a-z0-9_.\-][a-z0-9_.\-]*)*"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>

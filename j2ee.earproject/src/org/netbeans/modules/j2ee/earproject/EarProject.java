@@ -115,6 +115,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
     private final Ear ear;
 //    private FileObject libFolder = null;
     private AntBasedProjectType abpt;
+    private final UpdateHelper updateHelper;
     
     EarProject(final AntProjectHelper helper, AntBasedProjectType abpt) throws IOException {
         this.helper = helper;
@@ -125,10 +126,15 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
         genFilesHelper = new GeneratedFilesHelper(helper);
         appModule = new ProjectEar (this); // , helper);
         ear = EjbJarFactory.createEar(appModule);
+        updateHelper = new UpdateHelper (this, this.helper, aux, this.genFilesHelper, UpdateHelper.createDefaultNotifier());
         lookup = createLookup(aux);
 //        helper.addAntProjectListener(this);
     }
 
+    public UpdateHelper getUpdateHelper() {
+        return updateHelper;
+    }
+    
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
@@ -184,8 +190,8 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
             spp,
             new ProjectEarProvider (),
             appModule, //implements J2eeModuleProvider
-            new J2eeArchiveActionProvider( this, helper, refHelper, abpt),
-            new LogicalViewProvider(this, helper, evaluator (), spp, refHelper, abpt),
+            new J2eeArchiveActionProvider( this, updateHelper, refHelper, abpt),
+            new LogicalViewProvider(this, updateHelper, evaluator (), spp, refHelper, abpt),
             new MyIconBaseProvider(),
             new EarCustomizerProvider( this, helper, refHelper, abpt ),
             new ClassPathProviderImpl(helper, evaluator()),
@@ -457,7 +463,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
             try {
                 //Check libraries and add them to classpath automatically
                 String libFolderName = helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.LIBRARIES_DIR);
-                EarProjectProperties wpp = new EarProjectProperties (EarProject.this, helper, refHelper,abpt);
+                EarProjectProperties wpp = new EarProjectProperties (EarProject.this, updateHelper, eval, refHelper,abpt);
                 getAppModule().setModules(wpp.getModuleMap());
                 if (libFolderName != null && new File (libFolderName).isDirectory ()) {
                     List cpItems = (List) wpp.get (EarProjectProperties.JAVAC_CLASSPATH);
@@ -641,6 +647,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
         return  helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_PLATFORM);
     }
     public ArchiveProjectProperties getProjectProperties() {
-        return new EarProjectProperties(this, helper,refHelper, abpt);
+        return new EarProjectProperties(this, updateHelper,eval, refHelper, abpt);
     }
+    
 }

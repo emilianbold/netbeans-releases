@@ -15,6 +15,7 @@ package org.netbeans.modules.j2ee.earproject;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveProjectProperties;
 
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
@@ -234,8 +235,10 @@ public class EarProjectGenerator {
         }
             AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
             ReferenceHelper refHelper = new ReferenceHelper(h, aux, h.getStandardPropertyEvaluator ());
-            EarProjectProperties epp = new EarProjectProperties((EarProject) p, h, refHelper, new EarProjectType());
-        // detect the j2ee blueprint sub projects....
+            //the project has to be earproject!
+            EarProjectProperties epp = new EarProjectProperties((EarProject)p, refHelper, new EarProjectType());
+        
+            // detect the j2ee blueprint sub projects....
         // get the children
         
         FileObject[] children = appRootFO.getChildren();
@@ -341,7 +344,7 @@ public class EarProjectGenerator {
         minant.appendChild(doc.createTextNode("1.6")); // NOI18N
         data.appendChild(minant);
         
-        Element wmLibs = doc.createElementNS (EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "web-module-libraries"); //NOI18N
+        Element wmLibs = doc.createElementNS (EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, ArchiveProjectProperties.TAG_WEB_MODULE_LIBRARIES); //NOI18N
         
 //        if (J2eeProjectConstants.J2EE_14_LEVEL.equals(j2eeLevel)) {
 //            Element servletLib = doc.createElementNS (EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "library"); //NOI18N
@@ -366,7 +369,7 @@ public class EarProjectGenerator {
         
         data.appendChild (wmLibs);
         
-        Element addLibs = doc.createElementNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "web-module-additional-libraries"); //NOI18N
+        Element addLibs = doc.createElementNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, ArchiveProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES); //NOI18N
         data.appendChild(addLibs);
         
         h.putPrimaryConfigurationData(data, true);

@@ -26,7 +26,7 @@ public final class EarProjectType implements AntBasedProjectType {
     
     public static final String TYPE = "org.netbeans.modules.j2ee.earproject";
     private static final String PROJECT_CONFIGURATION_NAME = "data";
-    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-earproject/1";
+    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-earproject/2";
     private static final String PRIVATE_CONFIGURATION_NAME = "data";
     private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-earproject-private/1";
     
@@ -40,7 +40,7 @@ public final class EarProjectType implements AntBasedProjectType {
     public Project createProject(AntProjectHelper helper) throws IOException {
         if (null == helper)
             throw new IllegalArgumentException("helper");
-        return new EarProject(helper,this);
+        return new EarProject(helper, this);
     }
 
     public String getPrimaryConfigurationDataElementName(boolean shared) {
