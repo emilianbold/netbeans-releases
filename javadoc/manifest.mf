@@ -1,5 +1,5 @@
 Netbeans-Module: Version 1.00
-Netbeans-Module-Name: Javadoc Module
+Netbeans-Module-Name: JavaDoc Module
 Netbeans-Module-Install: com/netbeans/developer/modules/javadoc/JavadocModule.class
 
 Name: com/netbeans/developer/modules/javadoc/settings/DocumentationSettings.class
