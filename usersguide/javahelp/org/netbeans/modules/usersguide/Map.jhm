@@ -256,122 +256,27 @@
 <mapID target="org.netbeans.modules.css.CSSObject"     url="xml/cssnodes.html" />
 
 
-<!-- New debug IDs -->
+<!-- debug IDs -->
 
 <mapID target="debug.process" url="debug/debug_process.html" />
 <mapID target="debug.quickref" url="debug/debug_quickref.html" />
 <mapID target="debug.local" url="debug/debug_local.html" />
 <mapID target="debug.finish" url="debug/debug_finish.html" />
 <mapID target="debug.context" url="debug/debug_context.html" />
+<mapID target="debug.fix.watch" url="debug/debug_fix_watch.html" />
+<mapID target="debug.new.watch" url="debug/debug_new_watch.html" />
+<mapID target="debug.pop" url="debug/debug_pop.html" />
+<mapID target="debug.callstack" url="debug/debug_callstack.html" />
+<mapID target="debug.variables" url="debug/debug_variables.html" />
+<mapID target="breakpoint.about" url="debug/breakpoint_about.html" />
+<mapID target="breakpoint.group" url="debug/breakpoint_group.html" />
+<mapID target="breakpoint.setting" url="debug/breakpoint_setting.html" />
+<mapID target="debug.fix" url="debug/debug_fix.html" />
+<mapID target="debug.threads" url="debug/debug_threads.html" />
+<mapID target="debug.source" url="debug/debug_source.html" />
+<mapID target="debug.step" url="debug/debug_step.html" />
 
-<!-- End new debug IDs -->
-
-<mapID target="debug.toolbar" url="debug/environment/toolbar.html" />
-<mapID target="debug.menu" url="debug/environment/debug_menu.html" />
-<mapID target="debug.output.window" url="debug/environment/debug_output.html" />
-<mapID target="debug.window.all" url="debug/environment/debug_window.html" />
-<mapID target="debug.window.sessions" url="debug/environment/sessions_view.html" />
-<mapID target="debug.window.breakpoints" url="debug/environment/breakpoints_view.html" />
-<mapID target="debug.window.allinone" url="debug/environment/allinone_view.html" />
-<mapID target="debug.window.threads" url="debug/environment/threads_view.html" />
-<mapID target="debug.window.callstack" url="debug/environment/callstack_view.html" />
-<mapID target="debug.window.classes" url="debug/environment/classes_view.html" />
-<mapID target="debug.window.watches" url="debug/environment/watches_view.html" />
-<mapID target="debug.window.variables" url="debug/environment/variables_view.html" />
-<mapID target="debug.source.editor" url="debug/environment/debug_sourceeditor.html" />
-<mapID target="debug.options" url="debug/environment/options.html" />
-<mapID target="debug.java.options" url="debug/environment/java_options.html" />
-<mapID target="debug.view.customize" url="debug/environment/customize_views.html" />
-
-<mapID target="debug.sessions.jump" url="debug/sessions/sessions.html" />
-<!--mapped to from jsp/jsp_debug.html in the jspie help set-->
-
-<mapID target="debug.attach" url="debug/sessions/attach.html" />
-<mapID target="debug.sessions.finishsession" url="debug/sessions/finishsession.html" />
-<mapID target="debug.sessions.64bit" url="debug/sessions/64bit_jvm_debug.html" />
-<mapID target="debug.current-context" url="debug/environment/context.html" />
-
-<mapID target="debug.attachvm.window" url="debug/environment/attachvm_window.html" />
-
-<mapID target="debug.breakpoint" url="debug/breakpoint/breakpoint_set.html" />
-<!--mapped to from jsp/jsp_debug.html in the jspie help set-->
-
-<mapID target="debug.breakpoint.java" url="debug/breakpoint/breakpoint_java.html" />
-<mapID target="debug.breakpoint.line" url="debug/breakpoint/breakpoint_line.html" />
-<mapID target="debug.breakpoint.method" url="debug/breakpoint/breakpoint_method.html" />
-<mapID target="debug.breakpoint.thread" url="debug/breakpoint/breakpoint_thread.html" />
-<mapID target="debug.breakpoint.variable" url="debug/breakpoint/breakpoint_variable.html" />
-<mapID target="debug.breakpoint.exception" url="debug/breakpoint/breakpoint_exception.html" />
-<mapID target="debug.breakpoint.class" url="debug/breakpoint/breakpoint_class.html" />
-<mapID target="debug.breakpoint.condition" url="debug/breakpoint/breakpoint_condition.html" />
-<mapID target="debug.breakpoint.message" url="debug/breakpoint/print_text.html" />
-
-<mapID target="debug.breakpoint.group" url="debug/breakpoint/group.html" />
-
-<mapID target="debug.breakpoint.properties" url="debug/breakpoint/breakpoint_properties.html" />
-<!--mapped to from jsp/jsp_debug.html in the jspie help set-->
-
-<mapID target="debug.breakpoint.source" url="debug/breakpoint/breakpoint_source.html" />
-<mapID target="debug.breakpoint.enable" url="debug/breakpoint/breakpoint_enable.html" />
-<mapID target="debug.breakpoint.remove" url="debug/breakpoint/breakpoint_remove.html" />
-<mapID target="debug.add.breakpoint" url="debug/breakpoint/breakpoint_window.html" />
-
-<mapID target="debug.running.cursor" url="debug/running/running_cursor.html" />
-<mapID target="debug.running.resume" url="debug/running/running_resume.html" />
-<mapID target="debug.running.pause" url="debug/running/pause.html" />
-
-<mapID target="debug.step" url="debug/running/stepping.html" />
-<!--mapped to from jsp/jsp_debug.html in the jspie help set-->
-
-<mapID target="debug.variables.jump" url="debug/variables/variables_jump.html" />
-<!--mapped to from jsp/jsp_debug.html in the jspie help set-->
-
-<mapID target="debug.variables.value" url="debug/variables/value.html" />
-<mapID target="debug.watch" url="debug/watches/watch.html" />
-<mapID target="debug.watch.fix" url="debug/watches/fix.html" />
-<mapID target="debug.watch.delete" url="debug/watches/delete_watch.html" />
-<mapID target="debug.watch.window" url="debug/watches/watch_window.html" />
-
-<mapID target="debug.callstack.callingmethod" url="debug/callstack/calling_method.html" />
-<mapID target="debug.callstack.pop" url="debug/callstack/pop.html" />
-
-<mapID target="debug.fix" url="debug/fix/fix.html" />
-<!--mapped to from jsp/jsp_debug.html in the jspie help set-->
-
-<mapID target="debug.fix.alert" url="debug/fix/old_stack_call.html" />
-
-<mapID target="debug.threads.jump" url="debug/threads/threads_jump.html" />
-<mapID target="debug.threads.suspend" url="debug/threads/suspend.html" />
-<mapID target="debug.threads.change" url="debug/threads/change.html" />
-<mapID target="debug.threads.source" url="debug/threads/source.html" />
-
-<mapID target="debug.debugger.jump" url="debug/debugger/debugger_jump.html" />
-<mapID target="debug.debugger.default" url="debug/debugger/default.html" />
-<mapID target="debug.debugger.applet" url="debug/debugger/applet.html" />
-<mapID target="debug.debugger.j2ee" url="debug/debugger/j2ee_debugger.html" />
-<mapID target="debug.debugger.project_default" url="debug/debugger/project_default.html" />
-<mapID target="debug.service.new" url="debug/debugger/new.html" />
-<mapID target="debug.service.remove" url="debug/debugger/remove.html" />
-<mapID target="debug.debugger.bootclasspath" url="debug/debugger/bootclasspath.html" />
-<mapID target="debug.debugger.window" url="debug/environment/debug_window.html" />
-
-
-<mapID target="debug.properties.class" url="debug/properties/classes_properties.html" />
-<mapID target="debug.properties.class.field" url="debug/properties/classes_field_properties.html" />
-<mapID target="debug.properties.class.method" url="debug/properties/classes_method_properties.html" />
-<mapID target="debug.properties.class_constructor" url="debug/properties/classes_cons_properties.html" />
-<mapID target="debug.properties.breakpoint.line" url="debug/properties/brkpt_line.html" />
-<mapID target="debug.properties.breakpoint.exception" url="debug/properties/brkpt_exception.html" />
-<mapID target="debug.properties.breakpoint.class" url="debug/properties/brkpt_class.html" />
-<mapID target="debug.properties.breakpoint.thread" url="debug/properties/brkpt_thread.html" />
-<mapID target="debug.properties.breakpoint.variable" url="debug/properties/brkpt_variable.html" />
-<mapID target="debug.properties.breakpoint.method" url="debug/properties/brkpt_method.html" />
-<mapID target="debug.properties.callstack" url="debug/properties/callstack_properties.html" />
-<mapID target="debug.properties.debug_node" url="debug/properties/debug_node_properties.html" />
-<mapID target="debug.properties.session" url="debug/properties/session_properties.html" />
-<mapID target="debug.properties.watch" url="debug/properties/watches_properties.html" />
-<mapID target="debug.properties.thread" url="debug/properties/threads_properties.html" />
-<mapID target="debug.properties.variable" url="debug/properties/locals_properties.html" />
+<!-- Javadoc IDs -->
 
 <mapID target="javadoc.add" url="javadoc/javadoc_add.html" />
 <mapID target="javadoc.jdk" url="javadoc/javadoc_jdk.html" />

@@ -240,19 +240,34 @@
     <tocitem text="About Debugging Java Applications" target="tbd"/>
     <tocitem text="Working with Debugging" target="debug.process"/>
     <tocitem text="Debugging Tasks: Quick Reference" target="tbd"/>
-    <tocitem text="Starting a Local Debugging Session" target="debug.local"/>
-    <tocitem text="Attaching to a Java VM" target="tbd" />
-    <tocitem text="Debugging on a 64-Bit Java VM" target="tbd" />
-    <tocitem text="Stepping Through Your Program" target="debug.step" />
-    <tocitem text="Fixing and Continuing" target="debug.fix"></tocitem>
-    <tocitem text="Finishing a Session" target="debug.finish" />
-    <tocitem text="Source Editor Debugging Features" target="tbd"></tocitem>
     <tocitem text="Current Context in the Debugger" target="debug.context"></tocitem>
-    <tocitem text="Setting Breakpoints" target="tbd"/>
-    <tocitem text="Debugging Threads in the IDE" target="tbd"/>
-    <tocitem text="Using the Call Stack" target="tbd"/>
-    <tocitem text="Variables and Expressions in the IDE" target="tbd" />
-    <tocitem text="Creating a Watch" target="tbd" />
+    <tocitem text="Attaching Source Code to Java Class Libraries" target="debug.source"></tocitem>
+    <tocitem text="Setting Breakpoints">
+      <tocitem text="Breakpoints in the IDE" target="breakpoint.about"/>
+      <tocitem text="Setting a Java Breakpoint" target="breakpoint.setting"/>
+      <tocitem text="Organizing Breakpoints Into a Group" target="breakpoint.group"/>
+    </tocitem>
+    <tocitem text="Debugging Sessions">
+      <tocitem text="Starting a Local Debugging Session" target="debug.local"/>
+      <tocitem text="Attaching to a Java VM" target="tbd" />
+      <tocitem text="Debugging on a 64-Bit Java VM" target="tbd" />
+      <tocitem text="Stepping Through Your Program" target="debug.step" />
+      <tocitem text="Fixing and Continuing" target="debug.fix"></tocitem>
+      <tocitem text="Finishing a Session" target="debug.finish" />
+    </tocitem>
+    <tocitem text="Viewing Program Information">
+      <tocitem text="Variables and Expressions in the IDE" target="debug.variables" />
+      <tocitem text="Creating a Watch" target="debug.new.watch"/>
+      <tocitem text="Creating a Fixed Watch" target="debug.fix.watch"/>
+      <tocitem text="Debugging Threads in the IDE" target="debug.threads"/>
+      <tocitem text="Using the Call Stack" target="debug.callstack"/>
+      <tocitem text="Popping a Call From the Call Stack" target="debug.pop"/>
+    </tocitem>
+    <tocitem text="Debugging Freeform Projects">
+      <tocitem text="About Debugging Freeform Projects" target="tbd"/>
+      <tocitem text="Writing a Debug Target for a Freeform Project" target="tbd"/>
+      <tocitem text="Debugging Single Files in a Freeform Project" target="tbd"/>
+    </tocitem>
   </tocitem>
 
   <tocitem text="Designing Java GUIs">
