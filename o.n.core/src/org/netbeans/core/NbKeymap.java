@@ -13,6 +13,7 @@
 
 package org.netbeans.core;
 
+import java.awt.event.KeyEvent;
 import java.util.*;
 import javax.swing.event.*;
 import javax.swing.Action;
@@ -24,7 +25,7 @@ import org.openide.util.Mutex;
 *
 * @author Dafe Simonek
 */
-public final class NbKeymap extends Observable implements Keymap {
+public final class NbKeymap extends Observable implements Keymap, Comparator {
     /** Name of this keymap */
     String name;
     /** Parent keymap */
@@ -148,10 +149,21 @@ public final class NbKeymap extends Observable implements Keymap {
         Mutex.EVENT.writeAccess(new Runnable() {
             public void run() {
                 KeyStroke[] keystrokes = getKeyStrokesForAction(a);
+                Arrays.sort (keystrokes, NbKeymap.this);
                 a.putValue(Action.ACCELERATOR_KEY, keystrokes.length > 0 ? keystrokes[0] : null);
             }
         });
     }
+    
+    public int compare(Object o1, Object o2) {
+        //#47024 and 32733 - "Find" should not be shown as an accelerator,
+        //nor should "Backspace" for Delete.  Solution:  The shorter text wins.
+        KeyStroke k1 = (KeyStroke) o1;
+        KeyStroke k2 = (KeyStroke) o2;
+        return KeyEvent.getKeyText(k1.getKeyCode()).length() - 
+            KeyEvent.getKeyText(k2.getKeyCode()).length();
+    }
+    
     
     public void addActionForKeyStroke(KeyStroke key, Action a) {
         // Update reverse binding for old action too (#30455):
