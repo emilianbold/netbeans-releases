@@ -15,7 +15,6 @@ package org.netbeans.modules.form.editors2;
 
 import javax.swing.*;
 import org.netbeans.modules.form.editors.StringArrayEditor;
-import org.netbeans.modules.form.FormDesignValue;
 
 /** A simple property editor for ComboBoxModel.
  *
@@ -24,19 +23,19 @@ import org.netbeans.modules.form.FormDesignValue;
 
 public class ComboBoxModelEditor extends StringArrayEditor {
 
-    private NbComboBoxModel comboModel = null;
+    private ComboBoxModel comboModel = null;
 
     public void setValue(Object val) {
-        if (val instanceof NbComboBoxModel) {
-            comboModel = (NbComboBoxModel)val;
-            super.setValue(comboModel.data);
+        if (val instanceof ComboBoxModel) {
+            comboModel = (ComboBoxModel) val;
+            super.setValue(getDataFromModel(comboModel));
         }
         else if (val instanceof String[]) {
-            comboModel = new NbComboBoxModel((String[])val);
-            super.setValue(comboModel.data);
+            comboModel = getModelForData((String[])val);
+            super.setValue(val);
         }
         else {
-            comboModel = new NbComboBoxModel(new String[0]);
+            comboModel = getModelForData(new String[0]);
             super.setValue(null);
         }
     }
@@ -46,7 +45,7 @@ public class ComboBoxModelEditor extends StringArrayEditor {
     }
 
     public void setStringArray(String[] value) {
-        comboModel = new NbComboBoxModel(value);
+        comboModel = getModelForData(value);
         super.setValue(value);
     }
 
@@ -65,29 +64,11 @@ public class ComboBoxModelEditor extends StringArrayEditor {
         return buf.toString();
     }
 
+    static String[] getDataFromModel(ComboBoxModel model) {
+        return ListModelEditor.getDataFromModel(model);
+    }
 
-    public static class NbComboBoxModel implements FormDesignValue {
-        private String[] data;
-        private DefaultComboBoxModel model;
-
-        public NbComboBoxModel(String[] data) {
-            this.data = data;
-            model = new DefaultComboBoxModel(data);
-        }
-
-        /** Returns description of the design value. Useful when
-         * design value is not provided.
-         */
-        public String getDescription() {
-            return "ComboBoxModel"; // NOI18N
-        }
-        
-        /** Provides a value which should be used during design-time
-         * as the real value of a property on the JList instance.
-         * @return the real property value to be used during design-time
-         */
-        public Object getDesignValue() {
-            return model;
-        }
+    static ComboBoxModel getModelForData(String[] data) {
+        return new DefaultComboBoxModel(data);
     }
 }

@@ -15,7 +15,6 @@ package org.netbeans.modules.form.editors2;
 
 import javax.swing.*;
 import org.netbeans.modules.form.editors.StringArrayEditor;
-import org.netbeans.modules.form.FormDesignValue;
 
 /** A simple property editor for ListModel.
  *
@@ -24,19 +23,19 @@ import org.netbeans.modules.form.FormDesignValue;
 
 public class ListModelEditor extends StringArrayEditor {
 
-    private NbListModel listModel = null;
+    private ListModel listModel = null;
 
     public void setValue(Object val) {
-        if (val instanceof NbListModel) {
-            listModel = (NbListModel)val;
-            super.setValue(listModel.data);
+        if (val instanceof ListModel) {
+            listModel = (ListModel) val;
+            super.setValue(getDataFromModel(listModel));
         }
         else if (val instanceof String[]) {
-            listModel = new NbListModel((String[])val);
-            super.setValue(listModel.data);
+            listModel = getModelForData((String[])val);
+            super.setValue(val);
         }
         else {
-            listModel = new NbListModel(new String[0]);
+            listModel = getModelForData(new String[0]);
             super.setValue(null);
         }
     }
@@ -46,7 +45,7 @@ public class ListModelEditor extends StringArrayEditor {
     }
 
     public void setStringArray(String[] value) {
-        listModel = new NbListModel(value);
+        listModel = getModelForData(value);
         super.setValue(value);
     }
 
@@ -68,31 +67,19 @@ public class ListModelEditor extends StringArrayEditor {
         return buf.toString();
     }
 
-
-    public static class NbListModel implements FormDesignValue{
-        private String[] data;
-        private DefaultListModel model;
-
-        public NbListModel(String[] data) {
-            this.data = data;
-            model = new DefaultListModel();
-            for (int i=0; i < data.length; i++)
-                model.addElement(data[i]);
+    static String[] getDataFromModel(ListModel model) {
+        String[] data = new String[model.getSize()];
+        for (int i=0; i < data.length; i++) {
+            Object obj = model.getElementAt(i);
+            data[i] = obj instanceof String ? (String) obj : ""; // NOI18N
         }
+        return data;
+    }
 
-        /** Returns description of the design value. Useful when
-         * design value is not provided.
-         */
-        public String getDescription() {
-            return "ListModel"; // NOI18N
-        }
-        
-        /** Provides a value which should be used during design-time
-         * as the real value of a property on the JList instance.
-         * @return the real property value to be used during design-time
-         */
-        public Object getDesignValue() {
-            return model;
-        }
+    static ListModel getModelForData(String[] data) {
+        DefaultListModel model = new DefaultListModel();
+        for (int i=0; i < data.length; i++)
+            model.addElement(data[i]);
+        return model;
     }
 }
