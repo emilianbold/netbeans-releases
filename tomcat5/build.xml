@@ -27,27 +27,8 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nb_root}/nbbuild/nbantext.jar"/>
-  <target name="s2binit">
-	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
-	  <classpath>
-		<pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
-		<pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
-		<pathelement path="${nb_root}/schema2beans/anttask/s2banttask.jar"/>
-	  </classpath>
-	</taskdef>
-  </target>
-  
-  <target name="dd2beans_gen" depends="s2binit">
-      <echo message="generating bean graph for Tomcat 5 configuration file" />
-	<schema2beans schema="${tomcat5_dir}/resources/tomcat5_context.dtd"
-	  mddFile="tomcat5.mdd"
-	  package="org.netbeans.modules.tomcat5.config"
-	  rootDir="src"/>
-  </target>
-  
-  <target name="compile" depends="dd2beans_gen">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath>
+
+  <path id="cp">
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
         <!--
         <pathelement location="${nb_root}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/>
@@ -68,7 +49,29 @@ Microsystems, Inc. All Rights Reserved.
           <include name="xml-apis*.jar"/>
           <include name="xerces*.jar"/>
         </fileset>
-      </classpath>
+  </path>
+  
+  <target name="s2binit">
+	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+	  <classpath>
+		<pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
+		<pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
+		<pathelement path="${nb_root}/schema2beans/anttask/s2banttask.jar"/>
+	  </classpath>
+	</taskdef>
+  </target>
+  
+  <target name="dd2beans_gen" depends="s2binit">
+      <echo message="generating bean graph for Tomcat 5 configuration file" />
+	<schema2beans schema="${tomcat5_dir}/resources/tomcat5_context.dtd"
+	  mddFile="tomcat5.mdd"
+	  package="org.netbeans.modules.tomcat5.config"
+	  rootDir="src"/>
+  </target>
+  
+  <target name="compile" depends="dd2beans_gen">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <classpath refid="cp"/>
     </javac>
   </target>
   
@@ -100,6 +103,23 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
+    <target name="javadoc" description="Build Javadoc.">
+        <!-- Ant 1.4 bug workaround: <property refid="..."/> does not work inside <ant> -->
+        <property name="_cp" refid="cp"/>
+        <ant dir="../../nbbuild/javadoctools" antfile="template.xml" target="javadoc">
+            <property name="javadoc.base" location="."/>
+            <property name="javadoc.name" value="Tomcat5PluginAPI"/>
+            <property name="javadoc.title" value="Tomcat 5 Plugin API"/>
+            <property name="javadoc.packages" value="org.netbeans.modules.tomcat5,org.netbeans.modules.tomcat5.ide,org.netbeans.modules.tomcat5.nodes,org.netbeans.modules.tomcat5.progress"/>
+            <property name="javadoc.classpath" value="${_cp}"/>
+            <!--
+            <property name="javadoc.arch" location="../arch/arch-tomcatint-tomcat5.xml"/>
+            <property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>
+            <property name="javadoc.docfiles" location="api/doc"/>
+            -->
+        </ant>
+    </target>
+  
   <target name="clean">
     <antcall target="clean-ddgen-src"/>  
     <delete>
@@ -112,6 +132,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="tomcat5.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
+    <delete dir="javadoc"/>
   </target>
 
   <target name="clean-ddgen-check">
