@@ -3434,7 +3434,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     check-dependencies,
     check-implementation-dependencies,
     check-cluster-dependencies,
-    check-cluster-implementation-dependencies"
+    check-cluster-implementation-dependencies,
+    check-clusters-content"
   />
   
   <!-- JST: One day also add 
