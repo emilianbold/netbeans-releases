@@ -14,16 +14,7 @@
 package org.netbeans.modules.xsl.grammar;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Hashtable;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import javax.swing.Icon;
 import org.apache.xpath.XPathAPI;
 
@@ -119,10 +110,12 @@ public class XSLGrammarQuery implements GrammarQuery{
     private String lastDoctypePublic;
     
     // we cannot parse SGML DTD for HTML, let emulate it by XHTML DTD
-    private final static String XHTML_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Transitional//EN";
+    private final static String XHTML_PUBLIC_ID =
+            System.getProperty("netbeans.xsl.html.public", "-//W3C//DTD XHTML 1.0 Transitional//EN");
 
     // we cannot parse SGML DTD for HTML, let emulate it by XHTML DTD
-    private final static String XHTML_SYSTEM_ID = "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd";
+    private final static String XHTML_SYSTEM_ID =
+            System.getProperty("netbeans.xsl.html.system", "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
     
     
     /** Folder which stores instances of custom external XSL customizers */
@@ -573,6 +566,23 @@ public class XSLGrammarQuery implements GrammarQuery{
                 if (xpathAttrName != null && xpathAttrName.equals(attr.getNodeName())) {
                     // This is an XSLT element which should contain XPathExpression
                     isXPath = true;
+                }
+
+                // consult awailable public IDs with users catalog
+                if ("output".equals(key)) {                             // NOI18N
+                    if ("doctype-public".equals(attr.getName())) {      // NOI18N
+                        UserCatalog catalog = UserCatalog.getDefault();
+                        if (catalog == null) return EmptyEnumeration.EMPTY;
+                        QueueEnumeration en = new QueueEnumeration();
+                        Iterator it = catalog.getPublicIDs();
+                        while (it.hasNext()) {
+                            String next = (String) it.next();
+                            if (next != null && next.startsWith(prefix)) {
+                                en.put(new  MyText(next));
+                            }
+                        }
+                        return en;
+                    }
                 }
             }
             
