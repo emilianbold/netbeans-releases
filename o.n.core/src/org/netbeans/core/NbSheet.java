@@ -14,7 +14,7 @@
 
 package org.netbeans.core;
 
-import org.openide.util.WeakListeners;import org.openide.util.WeakListeners;
+import org.openide.util.WeakListeners;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
