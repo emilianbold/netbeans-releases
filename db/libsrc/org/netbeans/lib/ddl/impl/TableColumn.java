@@ -198,7 +198,7 @@ public class TableColumn extends AbstractTableColumn implements Serializable, Ta
                 Object zrus = col_e.nextElement();
                 Hashtable col = (Hashtable)zrus;
                 boolean inscomma = col_e.hasMoreElements();
-                cols = cols + col.get("name")+(inscomma ? coldelim : "" );
+                cols = cols + cmd.quote((String) col.get("name")) + (inscomma ? coldelim : "" ); //NOI18N
             }
             args.put("constraint.columns", cols); // NOI18N
         }
