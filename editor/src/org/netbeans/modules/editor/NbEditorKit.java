@@ -151,21 +151,25 @@ public class NbEditorKit extends ExtKit {
         static final long serialVersionUID =-8623762627678464181L;
 
         protected JPopupMenu buildPopupMenu(JTextComponent target) {        
+            // XXX 
             // Force running of pending delayed frame activation requests
             // before node menu is constructed.
             // This is hack because of the bug #7794
             // Please see org.netbeans.core.windows.frames.DefaultContainerImpl$2 for details
             // This hack has been also used for showing popup on explorer nodes, see
             // org.openide.nodes.NodeOp.findContextMenu()
+            javax.swing.JFrame main = (javax.swing.JFrame)TopManager.getDefault().
+                                      getWindowManager().getMainWindow();
+            javax.swing.JComponent mainContentPane = (javax.swing.JComponent)main.getContentPane();
             Object pendingNodeActivator =
-                System.getProperties().remove("hack.pendingNodeActivator"); // NOI18N
+                mainContentPane.getClientProperty("hack.pendingNodeActivator"); // NOI18N
+            mainContentPane.putClientProperty("hack.pendingNodeActivator", null); // NOI18N
             if ( pendingNodeActivator instanceof Runnable) {
                 ((Runnable)pendingNodeActivator).run();
             }
 
             // to make keyboard navigation (Up/Down keys) inside popup work, we
             // must use JPopupMenuPlus instead of JPopupMenu
-            
             JPopupMenu popup = super.buildPopupMenu(target);
             if (popup instanceof org.openide.awt.JPopupMenuPlus)
                 return popup;
