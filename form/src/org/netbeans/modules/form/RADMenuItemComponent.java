@@ -168,6 +168,14 @@ public class RADMenuItemComponent extends RADComponent {
         }
         return null;
     }
+    
+    static void freeMenu(FormManager2 manager, Object awtMenu) {
+        DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.get(manager);
+        if (dtm != null) {
+            dtm.removeDesignTime(awtMenu);
+        }
+    }
+    
     // -----------------------------------------------------------------------------
     // Inner classes
     static class DesignTimeMenus {
@@ -214,6 +222,10 @@ public class RADMenuItemComponent extends RADComponent {
                 copyMenuProperties(awtMenu, swingMenu);
             }
             return swingMenu;
+        }
+        
+        void removeDesignTime(Object awtMenu) {
+            designTimeMenus.remove(awtMenu);
         }
 
         // copy all aplicable properties into swing equivalent of awt component
