@@ -7,14 +7,14 @@ public class TestFile extends Object implements java.io.Serializable {
     
     private PropertyChangeSupport propertySupport;
     
-    /** Holds value of property nonIndexProperty. */
-    private String nonIndexProperty;
+    /** Holds value of property _nonIndexProperty. */
+    private String _nonIndexProperty;
     
     /** Utility field used by constrained properties. */
     private java.beans.VetoableChangeSupport vetoableChangeSupport =  new java.beans.VetoableChangeSupport(this);
     
-    /** Holds value of property indexProperty. */
-    private String[] indexProperty;
+    /** Holds value of property _indexProperty. */
+    private String[] _indexProperty;
     
     /** Utility field holding the ActionListener. */
     private transient java.awt.event.ActionListener actionListener =  null;
@@ -51,6 +51,7 @@ public class TestFile extends Object implements java.io.Serializable {
     
     /** Adds a VetoableChangeListener to the listener list.
      * @param l The listener to add.
+     *
      */
     public void addVetoableChangeListener(java.beans.VetoableChangeListener l) {
         vetoableChangeSupport.addVetoableChangeListener(l);
@@ -58,6 +59,7 @@ public class TestFile extends Object implements java.io.Serializable {
     
     /** Removes a VetoableChangeListener from the listener list.
      * @param l The listener to remove.
+     *
      */
     public void removeVetoableChangeListener(java.beans.VetoableChangeListener l) {
         vetoableChangeSupport.removeVetoableChangeListener(l);
@@ -65,36 +67,40 @@ public class TestFile extends Object implements java.io.Serializable {
     
     /** Getter for property nonIndexProperty.
      * @return Value of property nonIndexProperty.
+     *
      */
     public String getNonIndexProperty() {
-        return this.nonIndexProperty;
+        return _nonIndexProperty;
     }
     
     /** Setter for property nonIndexProperty.
      * @param nonIndexProperty New value of property nonIndexProperty.
      *
      * @throws PropertyVetoException
+     *
      */
     public void setNonIndexProperty(String nonIndexProperty) throws java.beans.PropertyVetoException {
-        String oldNonIndexProperty = this.nonIndexProperty;
+        String oldNonIndexProperty = _nonIndexProperty;
         vetoableChangeSupport.fireVetoableChange("nonIndexProperty", oldNonIndexProperty, nonIndexProperty);
-        this.nonIndexProperty = nonIndexProperty;
+        _nonIndexProperty = nonIndexProperty;
         propertySupport.firePropertyChange("nonIndexProperty", oldNonIndexProperty, nonIndexProperty);
     }
     
     /** Indexed getter for property indexProperty.
      * @param index Index of the property.
      * @return Value of the property at <CODE>index</CODE>.
+     *
      */
     public String getIndexProperty(int index) {
-        return this.indexProperty[index];
+        return _indexProperty[index];
     }
     
     /** Getter for property indexProperty.
      * @return Value of property indexProperty.
+     *
      */
     public String[] getIndexProperty() {
-        return this.indexProperty;
+        return _indexProperty;
     }
     
     /** Indexed setter for property indexProperty.
@@ -102,15 +108,16 @@ public class TestFile extends Object implements java.io.Serializable {
      * @param indexProperty New value of the property at <CODE>index</CODE>.
      *
      * @throws PropertyVetoException
+     *
      */
     public void setIndexProperty(int index, String indexProperty) throws java.beans.PropertyVetoException {
-        String oldIndexProperty = this.indexProperty[index];
-        this.indexProperty[index] = indexProperty;
+        String oldIndexProperty = _indexProperty[index];
+        _indexProperty[index] = indexProperty;
         try {
             vetoableChangeSupport.fireVetoableChange("indexProperty", null, null );
         }
         catch(java.beans.PropertyVetoException vetoException ) {
-            this.indexProperty[index] = oldIndexProperty;
+            _indexProperty[index] = oldIndexProperty;
             throw vetoException;
         }
         propertySupport.firePropertyChange("indexProperty", null, null );
@@ -120,16 +127,18 @@ public class TestFile extends Object implements java.io.Serializable {
      * @param indexProperty New value of property indexProperty.
      *
      * @throws PropertyVetoException
+     *
      */
     public void setIndexProperty(String[] indexProperty) throws java.beans.PropertyVetoException {
-        String[] oldIndexProperty = this.indexProperty;
+        String[] oldIndexProperty = _indexProperty;
         vetoableChangeSupport.fireVetoableChange("indexProperty", oldIndexProperty, indexProperty);
-        this.indexProperty = indexProperty;
+        _indexProperty = indexProperty;
         propertySupport.firePropertyChange("indexProperty", oldIndexProperty, indexProperty);
     }
     
     /** Registers ActionListener to receive events.
      * @param listener The listener to register.
+     *
      */
     public synchronized void addActionListener(java.awt.event.ActionListener listener) throws java.util.TooManyListenersException {
         if (actionListener != null) {
@@ -140,6 +149,7 @@ public class TestFile extends Object implements java.io.Serializable {
     
     /** Removes ActionListener from the list of listeners.
      * @param listener The listener to remove.
+     *
      */
     public synchronized void removeActionListener(java.awt.event.ActionListener listener) {
         actionListener = null;
@@ -148,14 +158,16 @@ public class TestFile extends Object implements java.io.Serializable {
     /** Notifies the registered listener about the event.
      *
      * @param event The event to be fired
+     *
      */
-    private void fireActionListenerActionPerformed(java.awt.event.ActionEvent event) {
+    private void fireActionListenerActionPerformed(ActionEvent event) {
         if (actionListener == null) return;
         actionListener.actionPerformed(event);
     }
     
     /** Registers ContainerListener to receive events.
      * @param listener The listener to register.
+     *
      */
     public synchronized void addContainerListener(java.awt.event.ContainerListener listener) {
         if (containerListenerList == null ) {
@@ -166,6 +178,7 @@ public class TestFile extends Object implements java.io.Serializable {
     
     /** Removes ContainerListener from the list of listeners.
      * @param listener The listener to remove.
+     *
      */
     public synchronized void removeContainerListener(java.awt.event.ContainerListener listener) {
         if (containerListenerList != null ) {
@@ -176,23 +189,9 @@ public class TestFile extends Object implements java.io.Serializable {
     /** Notifies all registered listeners about the event.
      *
      * @param event The event to be fired
-     */
-    private void fireContainerListenerComponentRemoved(java.awt.event.ContainerEvent event) {
-        java.util.ArrayList list;
-        synchronized (this) {
-            if (containerListenerList == null) return;
-            list = (java.util.ArrayList)containerListenerList.clone();
-        }
-        for (int i = 0; i < list.size(); i++) {
-            ((java.awt.event.ContainerListener)list.get(i)).componentRemoved(event);
-        }
-    }
-    
-    /** Notifies all registered listeners about the event.
      *
-     * @param event The event to be fired
      */
-    private void fireContainerListenerComponentAdded(java.awt.event.ContainerEvent event) {
+    private void fireContainerListenerComponentAdded(ContainerEvent event) {
         java.util.ArrayList list;
         synchronized (this) {
             if (containerListenerList == null) return;
@@ -203,8 +202,25 @@ public class TestFile extends Object implements java.io.Serializable {
         }
     }
     
+    /** Notifies all registered listeners about the event.
+     *
+     * @param event The event to be fired
+     *
+     */
+    private void fireContainerListenerComponentRemoved(ContainerEvent event) {
+        java.util.ArrayList list;
+        synchronized (this) {
+            if (containerListenerList == null) return;
+            list = (java.util.ArrayList)containerListenerList.clone();
+        }
+        for (int i = 0; i < list.size(); i++) {
+            ((java.awt.event.ContainerListener)list.get(i)).componentRemoved(event);
+        }
+    }
+    
     /** Registers FocusListener to receive events.
      * @param listener The listener to register.
+     *
      */
     public synchronized void addFocusListener(java.awt.event.FocusListener listener) {
         if (listenerList == null ) {
@@ -215,6 +231,7 @@ public class TestFile extends Object implements java.io.Serializable {
     
     /** Removes FocusListener from the list of listeners.
      * @param listener The listener to remove.
+     *
      */
     public synchronized void removeFocusListener(java.awt.event.FocusListener listener) {
         listenerList.remove(java.awt.event.FocusListener.class, listener);
@@ -223,8 +240,9 @@ public class TestFile extends Object implements java.io.Serializable {
     /** Notifies all registered listeners about the event.
      *
      * @param event The event to be fired
+     *
      */
-    private void fireFocusListenerFocusGained(java.awt.event.FocusEvent event) {
+    private void fireFocusListenerFocusGained(FocusEvent event) {
         if (listenerList == null) return;
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {
@@ -237,8 +255,9 @@ public class TestFile extends Object implements java.io.Serializable {
     /** Notifies all registered listeners about the event.
      *
      * @param event The event to be fired
+     *
      */
-    private void fireFocusListenerFocusLost(java.awt.event.FocusEvent event) {
+    private void fireFocusListenerFocusLost(FocusEvent event) {
         if (listenerList == null) return;
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length-2; i>=0; i-=2) {

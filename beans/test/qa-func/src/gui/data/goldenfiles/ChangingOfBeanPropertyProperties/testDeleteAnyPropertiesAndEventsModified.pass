@@ -80,6 +80,21 @@ public class TestFile extends Object implements java.io.Serializable {
      *
      * @param event The event to be fired
      */
+    private void fireContainerListenerComponentAdded(java.awt.event.ContainerEvent event) {
+        java.util.ArrayList list;
+        synchronized (this) {
+            if (containerListenerList == null) return;
+            list = (java.util.ArrayList)containerListenerList.clone();
+        }
+        for (int i = 0; i < list.size(); i++) {
+            ((java.awt.event.ContainerListener)list.get(i)).componentAdded(event);
+        }
+    }
+    
+    /** Notifies all registered listeners about the event.
+     *
+     * @param event The event to be fired
+     */
     private void fireContainerListenerComponentRemoved(java.awt.event.ContainerEvent event) {
         java.util.ArrayList list;
         synchronized (this) {
@@ -95,14 +110,13 @@ public class TestFile extends Object implements java.io.Serializable {
      *
      * @param event The event to be fired
      */
-    private void fireContainerListenerComponentAdded(java.awt.event.ContainerEvent event) {
-        java.util.ArrayList list;
-        synchronized (this) {
-            if (containerListenerList == null) return;
-            list = (java.util.ArrayList)containerListenerList.clone();
-        }
-        for (int i = 0; i < list.size(); i++) {
-            ((java.awt.event.ContainerListener)list.get(i)).componentAdded(event);
+    private void fireFocusListenerFocusGained(java.awt.event.FocusEvent event) {
+        if (listenerList == null) return;
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==java.awt.event.FocusListener.class) {
+                ((java.awt.event.FocusListener)listeners[i+1]).focusGained(event);
+            }
         }
     }
     

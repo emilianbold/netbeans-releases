@@ -9,6 +9,7 @@ public class TestFile {
     
     /** Getter for property initialName.
      * @return Value of property initialName.
+     *
      */
     public requiredType getRequiredName() {
         return _requiredName;
@@ -16,6 +17,7 @@ public class TestFile {
     
     /** Setter for property initialName.
      * @param initialName New value of property initialName.
+     *
      */
     public void setRequiredName(requiredType requiredName) {
         _requiredName = requiredName;
