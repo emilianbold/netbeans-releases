@@ -26,14 +26,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-openfile-OpenFileAction.instance">
             <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/modules/openfile/info-OpenFileAction.html" />
         </file>
-        <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/docs-tutorial-link.url" boolvalue="true" />
-        <file name="docs-tutorial-link.url">
-            <![CDATA[nbdocs:/Tutorial/index.htm]]>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webHelpLink.gif"/>
-            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/modules/url/info-docs-tutorial-link.html"/>
-        </file>
-        <attr name="docs-tutorial-link.url/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true" />
+        <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true" />
     </folder>
     <folder name="Templates">
         <folder name="Other">
@@ -105,15 +98,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-search-RepositorySearchAction.instance"/>
         </folder>
         <folder name="Help">
-            <attr name="Separator1[javax-swing-JSeparator].instance/docs-tutorial-link.url" boolvalue="true"/>
-            <file name="docs-tutorial-link.url">
-                <![CDATA[nbdocs:/Tutorial/index.htm]]>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webHelpLink.gif"/>
-            </file>
-            <attr name="docs-tutorial-link.url/utilities-sep-1[javax-swing-JSeparator].instance" boolvalue="true"/>
-            <file name="utilities-sep-1[javax-swing-JSeparator].instance"/>
-            <attr name="utilities-sep-1[javax-swing-JSeparator].instance/netbeans-web-link.url" boolvalue="true"/>
+            <attr name="Separator1[javax-swing-JSeparator].instance/netbeans-web-link.url" boolvalue="true"/>
             <file name="netbeans-web-link.url">
                 <![CDATA[http://www.netbeans.org/]]>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
