@@ -22,6 +22,7 @@
         <tocitem text="Viewing the Tomcat Server in the IDE" target="tomcat_top_node" />
         <tocitem text="Setting a Web Module Context for the Tomcat Server" target="tomcat_context_add" />
 	<tocitem text="Starting and Stopping a Tomcat Server" target="tomcat_start" />
+	<tocitem text="Configuring Tomcat Manager Application Access" target="tomcat_configure_tomcatuser" />
 	<tocitem text="Reconfiguring a Tomcat Server" target="tomcat_edit_config" />
 	<tocitem text="Customizing a Tomcat Server" target="tomcat_internal_props"/>
 	<tocitem text="Adding a Tomcat Server" target="tomcat_addinstall" />

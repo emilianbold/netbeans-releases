@@ -24,6 +24,7 @@ help\
 	<mapID target="tomcat_addinstall" url="tomcat/tomcat_addinstall.html" />
 	<mapID target="tomcat_context_add" url="tomcat/tomcat_context_add.html" />
 	<mapID target="tomcat_context_delete" url="tomcat/tomcat_context_delete.html" />
+        <mapID target="tomcat_configure_tomcatuser" url="tomcat/tomcat_edit_tomcatuser.html" />
         <!-- context node is a kludge until we can get a map id
             for the context node in addition to the web module node-->
 	<mapID target="tomcat_context_node" url="tomcat/tomcat_context_node.html" />
@@ -54,9 +55,8 @@ help\
            url="tomcat/tomcat_internal_props.html" />
 	<mapID target="org.netbeans.modules.tomcat5.nodes.TomcatFactoryNode" 
 	   url="tomcat/tomcat_top_node.html" />
-
         <mapID target="org.netbeans.core.NbAuthenticator.getPasswordAuthentication" 
-		url="/org/netbeans/modules/usersguide/pending.html" />
+		url="tomcat/tomcat_edit_tomcatuser.html" />
 
 
  		
