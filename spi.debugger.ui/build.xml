@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
   <property name="binroot" location="../../nbextra" />
 
-  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/> 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
   
