@@ -23,6 +23,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 
@@ -117,18 +119,19 @@ class PropertiesParser {
     /** Parses .properties file and creates <code>PropertiesStruture</code>. */
     private PropertiesStructure parseFileMain(PropertiesReader in) throws IOException {
 
-        ArrayMapList aml = new ArrayMapList();
+        Map items = new HashMap();
         
-        while (true) {
-            Element.ItemElem elem = readNextElem(in);
-            if(elem == null)
+        while(true) {
+            Element.ItemElem element = readNextElem(in);
+            if(element == null)
                 break;
             else {
                 // add at the end of the list
-                aml.add(elem.getKey(), elem);
+                items.put(element.getKey(), element);
             }
         }
-        return new PropertiesStructure(createBiasBounds(0, in.position), aml);
+        
+        return new PropertiesStructure(createBiasBounds(0, in.position), items);
     }
 
     /**

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.openide.util.WeakListener;
@@ -29,7 +30,8 @@ import org.openide.util.WeakListener;
 /** 
  * Structure of bundle of .properties files. Provides structure of entries (which each corresponds
  * to one .properties file) for one <code>PropertiesDataObject</code>.
- * <p>This structure provides support for sorting <code>entries</code> and fast mapping of integers to <code>entries</code>.
+ * <p>
+ * This structure provides support for sorting <code>entries</code> and fast mapping of integers to <code>entries</code>.
  *
  * @author Petr Jiricka
  */
@@ -82,7 +84,7 @@ public class BundleStructure extends Object {
      * @return n-th ntry or null if index is out of bounds */
     public PropertiesFileEntry getNthEntry(int i) {
         if (entries == null)
-            throw new InternalError(getClass().getName() + " - Entries not initialized"); // NOI18N
+            throw new IllegalStateException("Resource Bundles: Entries not initialized"); // NOI18N
 
         try {
             return entries[i];
@@ -96,7 +98,7 @@ public class BundleStructure extends Object {
      */
     public int getEntryIndexByFileName(String fileName) {
         if(entries == null)
-            throw new InternalError(getClass().getName() + " - Entries not initialized"); // NOI18N
+            throw new IllegalStateException("Resource Bundles: Entries not initialized"); // NOI18N
             
         for (int i = 0; i < getEntryCount(); i++) {
             if (entries[i].getFile().getName().equals(fileName))
@@ -117,7 +119,7 @@ public class BundleStructure extends Object {
     /** Retrieves number of all entries */
     public int getEntryCount() {
         if(entries == null)
-            throw new InternalError(getClass().getName() +" - Entries not initialized"); // NOI18N
+            throw new IllegalStateException("Resource Bundles: Entries not initialized"); // NOI18N
 
         return entries.length;
     }
@@ -125,7 +127,7 @@ public class BundleStructure extends Object {
     /** Retrieves all keys in bundle. */
     public String[] getKeys() {
         if (keyList == null)
-            throw new InternalError(getClass().getName() +" - KeyList not initialized"); // NOI18N
+            throw new IllegalStateException("Resource Bundles: KeyList not initialized"); // NOI18N
         
         Object keyArray[] = keyList.toArray();
         String stringArray[] = new String[keyArray.length];
@@ -137,7 +139,7 @@ public class BundleStructure extends Object {
     /** Retrieves n-th key from the list, indexed from 0. */
     public String getNthKey(int keyIndex) {
         if (keyList == null)
-            throw new InternalError(getClass().getName() +" - KeyList not initialized"); // NOI18N
+            throw new IllegalStateException("Resource Bundles: KeyList not initialized"); // NOI18N
         
         if ((keyIndex >= keyList.size()) || (keyIndex < 0))
             return null;
@@ -172,7 +174,7 @@ public class BundleStructure extends Object {
         if (keyList != null)
             return keyList.size();
         else
-            throw new InternalError(getClass().getName() +" - KeyList not initialized"); // NOI18N
+            throw new IllegalStateException("Resource Bundles: KeyList not initialized"); // NOI18N
     }
     
     /** Sorts the keylist according the values of entry which index is given to this method.
@@ -241,11 +243,15 @@ public class BundleStructure extends Object {
         for (int index = 0; index < getEntryCount(); index++) {
             PropertiesFileEntry entry = getNthEntry(index);
             PropertiesStructure ps = entry.getHandler().getStructure();
-            if (ps != null) {
-                for (Iterator it = ps.nonEmptyItems(); it.hasNext(); ) {
-                    String key = ((Element.ItemElem)it.next()).getKey();  
-                    if(!(keyList.contains(key)))
-                        keyList.add(key);
+            if(ps != null) {
+                for(Iterator it = ps.allItems(); it.hasNext(); ) {
+                    Element.ItemElem item = (Element.ItemElem)it.next();
+                    if(item == null)
+                        continue;
+                    
+                    String key = item.getKey();
+                    if(key != null && !(keyList.contains(key)) )
+                        keyList.add(item.getKey());
                 }
             }
         }
@@ -299,8 +305,7 @@ public class BundleStructure extends Object {
     /** One file in the bundle has changed, carries information about what particular items have changed.
      * Fires changes for a bundle or a file according to the changes in the keys.
      */
-    void oneFileChanged(StructHandler handler, ArrayMapList itemsChanged,
-                        ArrayMapList itemsAdded, ArrayMapList itemsDeleted) {
+    void oneFileChanged(StructHandler handler, Map itemsChanged, Map itemsAdded, Map itemsDeleted) {
         // PENDING - events should be finer
         // find out whether global key table has changed
         // should use a faster algorithm of building the keyset
@@ -369,16 +374,15 @@ public class BundleStructure extends Object {
                 
                 str1 = item1.getValue();
                 str2 = item2.getValue();
-
-                if(str1 == null) {
-                    if(str2 == null)
-                        return 0;
-                    else
-                        return ascending ? 1 : -1;
-                } else
-                    if(str2 == null)
-                        return ascending ? -1 : 1;
             }
+
+            if(str1 == null) {
+                if(str2 == null)
+                    return 0;
+                else
+                    return ascending ? 1 : -1;
+            } else if(str2 == null)
+                return ascending ? -1 : 1;
             
             int res = str1.compareToIgnoreCase(str2);
 

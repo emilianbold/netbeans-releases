@@ -17,21 +17,23 @@ package org.netbeans.modules.properties;
 
 import java.io.*;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.HashMap;
 import javax.swing.text.BadLocationException;
 
 import org.openide.text.PositionBounds;
 
 
-/** General abstract structure for properties files, in its use similar to source hierarchy.
-*   Interoperates with Document, PropertiesTableModel, Nodes and other display-specific models
-*   Implementations of the model interfaces generally reference this structure.
-*
-* @author Petr Jiricka
-*/
+/** 
+ * Element structure for one .properties file tightly 
+ * bound with that file's document.
+ *
+ * @author Petr Jiricka
+ */
 public class PropertiesStructure extends Element {
 
-    /** Holds individual items - Element.ItemElem */
-    private ArrayMapList items;
+    /** Map of <code>Element.KeyElem</code> to <code>Element.ItemElem</code>. */
+    private Map items;
 
     /** If active, contains link to its handler (parent) */
     private StructHandler handler;
@@ -41,55 +43,55 @@ public class PropertiesStructure extends Element {
     
     
     /** Constructs a new PropertiesStructure for the given bounds and items. */
-    public PropertiesStructure(PositionBounds bounds, ArrayMapList items) {
+    public PropertiesStructure(PositionBounds bounds, Map items) {
         super(bounds);
         // set this structure as a parent for all elements
-        for (Iterator it = items.iterator(); it.hasNext(); )
+        for(Iterator it = items.values().iterator(); it.hasNext();)
             ((Element.ItemElem)it.next()).setParent(this);
         this.items = items;
     }
 
     
     /** Updates the current structure by the new structure obtained by reparsing the document.
-    * Looks for changes between the structures and according to them calls update methods.
-    */
+     * Looks for changes between the structures and according to them calls update methods.
+     */
     public void update(PropertiesStructure struct) {
         synchronized(getParent()) {
             boolean structChanged = false;
             Element.ItemElem curItem;
             Element.ItemElem oldItem;
 
-            ArrayMapList new_items = struct.items;
-            ArrayMapList changed  = new ArrayMapList();
-            ArrayMapList inserted = new ArrayMapList();
-            ArrayMapList deleted  = new ArrayMapList();
+            Map new_items = struct.items;
+            Map changed  = new HashMap();
+            Map inserted = new HashMap();
+            Map deleted  = new HashMap();
 
-            for (Iterator it = new_items.iterator(); it.hasNext(); ) {
+            for(Iterator it = new_items.values().iterator(); it.hasNext(); ) {
                 curItem = (Element.ItemElem)it.next();
                 curItem.setParent(this);
                 oldItem = getItem(curItem.getKey());
                 if (oldItem == null) {
-                    inserted.add(curItem.getKey(), curItem);
+                    inserted.put(curItem.getKey(), curItem);
                 } else {
                     if (!curItem.equals(oldItem))
-                        changed.add(curItem.getKey(), curItem);
+                        changed.put(curItem.getKey(), curItem);
                     items.remove(oldItem.getKey());
                 }
             }
 
             deleted = items;
-            if ((deleted.size() > 0) || (inserted.size() > 0))
+            if((deleted.size() > 0) || (inserted.size() > 0))
                 structChanged = true;
 
             // assign the new structure
             items = new_items;
 
             // notification
-            if (structChanged)
+            if(structChanged)
                 structureChanged(changed, inserted, deleted);
             else {
                 // notify about changes in all items
-                for (Iterator it = changed.iterator(); it.hasNext(); )
+                for (Iterator it = changed.values().iterator(); it.hasNext(); )
                     itemChanged((Element.ItemElem)it.next());
             }
         }
@@ -103,8 +105,8 @@ public class PropertiesStructure extends Element {
     /** Gets parent for this properties structure. 
      * @return <code>StructureHandler</code> instance. */
     public StructHandler getParent() {
-        if (handler == null)
-            throw new InternalError();
+        if(handler == null)
+            throw new IllegalStateException();
         return handler;
     }
 
@@ -113,39 +115,31 @@ public class PropertiesStructure extends Element {
         return ((PropertiesDataObject)getParent().getEntry().getDataObject()).getBundleStructure();
     }
 
-    /** Get a string representation of the element for printing.
-    * @return the string
-    */
+    /** Prints all structure to document.
+     * @return the structure dump */
     public String printString() {
         StringBuffer sb = new StringBuffer();
         Element.ItemElem item;
-        for (Iterator it = items.iterator(); it.hasNext(); ) {
+        for (Iterator it = items.values().iterator(); it.hasNext(); ) {
             item = (Element.ItemElem)it.next();
             sb.append(item.printString());
         }
+        
         return sb.toString();
     }
 
-    /** Get a value string of the element.
-    * @return the string
-    */
+    /** Overrides superclass method.
+     * @return the formatted structure dump */
     public String toString() {
         StringBuffer sb = new StringBuffer();
         Element.ItemElem item;
-        for (Iterator it = items.iterator(); it.hasNext(); ) {
+        for(Iterator it = items.values().iterator(); it.hasNext(); ) {
             item = (Element.ItemElem)it.next();
             sb.append(item.toString());
             sb.append("- - -\n"); // NOI18N
         }
+        
         return sb.toString();
-    }
-
-    /** Adds an item to the end, should be only used by the parser (no notification)
-    *  Used by the update actions.
-    */
-    public void parserAddItem(Element.ItemElem item) {
-        item.setParent(this);
-        items.add(item.getKey(), item);
     }
 
     /** Retrieves an item by key (property name) or null if does not exist. */
@@ -154,8 +148,8 @@ public class PropertiesStructure extends Element {
     }
 
     /** Renames an item.
-    * @return true if the item has been renamed successfully, false if another item with the same name exists.
-    */                         
+     * @return true if the item has been renamed successfully, false if another item with the same name exists.
+     */                         
     public boolean renameItem(String oldKey, String newKey) {
         synchronized(getParent()) {
             Element.ItemElem item = getItem(newKey);
@@ -172,8 +166,7 @@ public class PropertiesStructure extends Element {
     }
 
     /** Deletes an item from the structure, if exists.
-    * @return true if the item has been deleted successfully, false if it didn't exist.
-    */                         
+     * @return <code>true<code> if the item has been deleted successfully, <code>false</code> otherwise */
     public boolean deleteItem(String key) {
         synchronized(getParent()) {
             Element.ItemElem item = getItem(key);
@@ -194,8 +187,7 @@ public class PropertiesStructure extends Element {
     }
 
     /** Adds an item to the end of the file, or before the terminating comment, if exists.
-    * @return true if the item has been added successfully, false if another item with the same name exists.
-    */                         
+     * @return <code>true</code> if the item has been added successfully, <code>false</code> otherwise */
     public boolean addItem(String key, String value, String comment) {
         Element.ItemElem item = getItem(key);
         if (item != null)
@@ -224,12 +216,13 @@ public class PropertiesStructure extends Element {
         }
     }
 
-    /** @return <code>PositionBounds</code> after which a new item may be inserted by insertAfter method 
+    /** Gets suitable positon for inserting of next item into document.
+     * @return <code>PositionBounds</code> after which a new item may be inserted by insertAfter method 
      * @see org.openide.text.PositionBounds#insertAfter */
     private PositionBounds getSuitablePositionBoundsForInsert() {
         Element.ItemElem e = null;
         
-        for(Iterator it = items.iterator(); it.hasNext();)
+        for(Iterator it = items.values().iterator(); it.hasNext();)
             e = (Element.ItemElem)it.next();
         
         if (e == null)
@@ -240,61 +233,9 @@ public class PropertiesStructure extends Element {
         }
     }
 
-    /** Returns an iterator iterating through items which have non-null key.
-    * The method was changed since its creation and now should be named
-    * nonNullItems to better fit the functionality.
-    */
-    public Iterator nonEmptyItems() {
-        return new Iterator() {
-            /** Iterator which relies on the list's iterator. */
-            private Iterator innerIt;
-               
-            /** Next non-empty element in the underlying iterator. */
-            private Element.ItemElem nextElem;
-            
-            {
-                innerIt = items.iterator();
-                fetchNext();
-            }
-            
-            /** Fetches internally the next non-empty element */
-            private void fetchNext() {
-                do {
-                    if (innerIt.hasNext())
-                        nextElem = (Element.ItemElem)innerIt.next();
-                    else
-                        nextElem = null;
-                }
-                // Key can be an empty string (!).
-                while (nextElem != null && nextElem.getKeyElem() == null);
-            }
-            
-            /** Implements <code>Iterator</code> interface method.
-             * @return true if has next element */
-            public boolean hasNext() {
-                return nextElem != null;
-            }
-
-            /** Implements <code>Iterator</code> interface method.
-             * Gets next element. */
-            public Object next() {
-                Object ne = nextElem;
-                
-                fetchNext();
-                return ne;
-            }
-            
-            /** Implements <code>Iterator</code> interface method.
-             * Throws <code>UnsupportedOperationException</code>. */
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
-    }
-
     /** Returns iterator thropugh all items, including empty ones */
     public Iterator allItems() {
-        return items.iterator();
+        return items.values().iterator();
     }
 
     /** Notification that the given item has changed (its value or comment) */
@@ -307,34 +248,33 @@ public class PropertiesStructure extends Element {
         getParentBundleStructure().oneFileChanged(getParent());
     }
 
-    /** Notification that the structure has changed (items have been added or deleted,
-    * also includes changing an item's key). */
-    void structureChanged(ArrayMapList changed, ArrayMapList inserted, ArrayMapList deleted) {
+    /** Notification that the structure has changed (items have been added or
+     * deleted, also includes changing an item's key). */
+    void structureChanged(Map changed, Map inserted, Map deleted) {
         getParentBundleStructure().oneFileChanged(getParent(), changed, inserted, deleted);
     }
 
     /** Notification that an item's key has changed. Subcase of structureChanged().
-    * Think twice when using this - don't I need to reparse all files ?
-    */
+     * Think twice when using this - don't I need to reparse all files ? */
     void itemKeyChanged(String oldKey, Element.ItemElem newElem) {
         // structural change information - watch: there may be two properties of the same name !
         // maybe this is unnecessary
-        ArrayMapList changed  = new ArrayMapList();
-        ArrayMapList inserted = new ArrayMapList();
-        ArrayMapList deleted  = new ArrayMapList();
+        Map changed  = new HashMap();
+        Map inserted = new HashMap();
+        Map deleted  = new HashMap();
 
         // old key
         Element.ItemElem item = getItem(oldKey);
-        if (item == null)
+        if(item == null)
             // old key deleted
-            deleted.add(oldKey, new Element.ItemElem( null, new Element.KeyElem(null, oldKey),
-                        new Element.ValueElem(null, "") , new Element.CommentElem(null, "")));
+            deleted.put(oldKey, new Element.ItemElem( null, new Element.KeyElem(null, oldKey),
+                new Element.ValueElem(null, "") , new Element.CommentElem(null, "")));
         else
             // old key changed
-            changed.add(item.getKey(), item);
+            changed.put(item.getKey(), item);
 
         // new key
-        inserted.add(newElem.getKey(), newElem);
+        inserted.put(newElem.getKey(), newElem);
 
         structureChanged(changed, inserted, deleted);
     }

@@ -125,7 +125,7 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
     public FileObject rename (String name) throws IOException {
     
         if (!getFile().getName().startsWith(basicName))
-            throw new InternalError("Never happens - error in Properties loader / rename"); // NOI18N
+            throw new IllegalStateException("Resource Bundles: error in Properties loader/rename."); // NOI18N
 
         FileObject fo = super.rename(name + getFile().getName().substring(basicName.length()));
         basicName = name;
@@ -141,7 +141,7 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
     public FileObject renameEntry (String name) throws IOException {
 
         if (!getFile().getName().startsWith(basicName))
-            throw new InternalError("Never happens - error in Properties loader / rename"); // NOI18N
+            throw new IllegalStateException("Resource Bundles: error in Properties loader / rename"); // NOI18N
 
         if (basicName.equals(getFile().getName())) {
             // primary entry - can not rename
@@ -163,8 +163,9 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
     /** Creates from template. Overrides superclass method. */
     public FileObject createFromTemplate (FileObject folder, String name) throws IOException {
         ResourceBundle bundle = NbBundle.getBundle (PropertiesFileEntry.class);
-        if (! getFile ().getName ().startsWith (basicName))
-            throw new InternalError("Never happens - error in Properties createFromTemplate"); // NOI18N
+        if (!getFile().getName().startsWith(basicName))
+            throw new IllegalStateException("Resource Bundles: error in Properties createFromTemplate"); // NOI18N
+        
         String suffix = getFile ().getName ().substring (basicName.length ());
         String nuename = name + suffix;
         String ext = getFile ().getExt ();
@@ -309,9 +310,10 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
             TreeSet keys = new TreeSet(new KeyComparator());
             PropertiesStructure propStructure = getHandler().getStructure();
             if(propStructure != null) {
-                for(Iterator iterator = propStructure.nonEmptyItems(); iterator.hasNext(); ) {
+                for(Iterator iterator = propStructure.allItems(); iterator.hasNext(); ) {
                     Element.ItemElem item = (Element.ItemElem)iterator.next();
-                    keys.add(item.getKey());
+                    if(item != null && item.getKey() != null)
+                        keys.add(item.getKey());
                 }
             }
             
