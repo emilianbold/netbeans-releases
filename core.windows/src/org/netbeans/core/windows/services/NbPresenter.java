@@ -776,6 +776,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
     /** Shows the dialog, used in method show so no inner class is needed.
      */
     private void superShow() {
+        assert SwingUtilities.isEventDispatchThread () : "Invoked super.show() in AWT event thread."; // NOI18N
         super.show();
     }
     
