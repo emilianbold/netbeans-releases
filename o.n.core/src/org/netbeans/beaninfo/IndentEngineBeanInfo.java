@@ -38,7 +38,7 @@ public class IndentEngineBeanInfo extends SimpleBeanInfo {
         descr.setShortDescription (bundle.getString ("HINT_IndentEngine"));
         descr.setValue ("helpID", org.openide.text.IndentEngine.class.getName ()); // NOI18N
         
-        descr.setValue("global", Boolean.TRUE);
+        descr.setValue("global", Boolean.TRUE); // NOI18N
     }
 
     public BeanDescriptor getBeanDescriptor () {
