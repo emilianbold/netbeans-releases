@@ -13,11 +13,8 @@
 
 package org.netbeans.core.windows.view.ui;
 
-import java.awt.AWTEvent;
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -42,10 +39,13 @@ import org.openide.windows.WindowManager;
  *
  * @author mkrauskopf
  */
-public final class KeyboardPopupSwitcher implements AWTEventListener {
+public final class KeyboardPopupSwitcher {
     
     /** Number of milliseconds to show popup if interruption didn't happen. */
     private static final int TIME_TO_SHOW = 200;
+    
+    /** Singleton */
+    private static KeyboardPopupSwitcher instance;
     
     /**
      * Reference to the popup object currently showing the default instance, if
@@ -93,7 +93,43 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
     /** Indicates whether an item to be selected is previous or next one. */
     private boolean fwd = true;
     
-    private static AWTEventListener interruper = new Interrupter();
+    /** 
+     * Tries to process given <code>KeyEvent</code> and returns true is event
+     * was successfully processed/consumed.
+     */
+    public static boolean processShortcut(KeyEvent kev) {
+        boolean isCtrlTab = kev.getKeyCode() == KeyEvent.VK_TAB &&
+                kev.getModifiers() == InputEvent.CTRL_MASK;
+        boolean isCtrlShiftTab = kev.getKeyCode() == KeyEvent.VK_TAB &&
+                kev.getModifiers() == (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK);
+        if (KeyboardPopupSwitcher.isShown()) {
+            assert instance != null;
+            instance.processKeyEvent(kev);
+            // be sure that events is not processed further when popup is shown
+            kev.consume();
+            return true;
+        }
+        if ((isCtrlTab || isCtrlShiftTab)) { // && !KeyboardPopupSwitcher.isShown()
+            if (KeyboardPopupSwitcher.isAlive()) {
+                KeyboardPopupSwitcher.processInterruption(kev);
+            } else {
+                AbstractAction rva = new RecentViewListAction();
+                rva.actionPerformed(new ActionEvent(kev.getSource(),
+                        ActionEvent.ACTION_PERFORMED, "C-TAB"));
+                return true;
+            }
+            // consume all ctrl-(shift)-tab to avoid confusion about
+            // Ctrl-Tab events since those events are dedicated to document
+            // switching only
+            kev.consume();
+            return true;
+        }
+        if (kev.getKeyCode() == KeyEvent.VK_CONTROL && KeyboardPopupSwitcher.isAlive()) {
+            KeyboardPopupSwitcher.processInterruption(kev);
+            return true;
+        }
+        return false;
+    }
     
     /**
      * Creates and shows the popup with given <code>items</code>. When user
@@ -117,62 +153,10 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
         KeyboardPopupSwitcher.items = items;
         KeyboardPopupSwitcher.releaseKey = releaseKey;
         KeyboardPopupSwitcher.triggerKey = triggerKey;
-        attachInterrupter();
         invokerTimer = new Timer(TIME_TO_SHOW, new PopupInvoker());
         invokerTimer.setRepeats(false);
         invokerTimer.start();
         invokerTimerRunning = true;
-    }
-    
-    /**
-     * Prevents showing a popup if an user relelase the <code>releaseKey</code>
-     * in time specified by <code>invokerTimer</code> (which is 200ms by
-     * default).
-     */
-    private static class Interrupter implements AWTEventListener {
-        public void eventDispatched(AWTEvent ev) {
-            if (ev.getID() != KeyEvent.KEY_RELEASED && invokerTimerRunning) {
-                return;
-            }
-            KeyEvent kev = ((KeyEvent) ev);
-            int keyCode = kev.getKeyCode();
-            if (keyCode == releaseKey) {
-                // if an user releases Ctrl-Tab before the time to show
-                // popup expires, don't show the popup at all and switch to
-                // the last used document immediately
-                cleanupInterrupter();
-                hits = 0;
-                AbstractAction rva = new RecentViewListAction();
-                rva.actionPerformed(new ActionEvent(ev.getSource(),
-                        ActionEvent.ACTION_PERFORMED,
-                        "immediately")); // NOI18N
-                kev.consume();
-            } else if (keyCode == triggerKey
-                    && kev.getModifiers() == InputEvent.CTRL_MASK) {
-                // count number of trigger key hits before popup is shown
-                hits++;
-                kev.consume();
-                if (hits > 1) {
-                    cleanupInterrupter();
-                    KeyboardPopupSwitcher switcher = new KeyboardPopupSwitcher(hits);
-                    switcher.showPopup();
-                }
-            }
-        }
-    }
-    
-    /**
-     * Prevent attaching of more than one <code>interruper</code>
-     * AWTEventListener.
-     */
-    private static boolean isIntAttached;
-    
-    private static void attachInterrupter() {
-        if (!isIntAttached) {
-            Toolkit.getDefaultToolkit().addAWTEventListener(interruper,
-                    AWTEvent.KEY_EVENT_MASK);
-            isIntAttached = true;
-        }
     }
     
     /** Stop invoker timer and dettach interrupter listener. */
@@ -180,10 +164,6 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
         invokerTimerRunning = false;
         if (invokerTimer != null) {
             invokerTimer.stop();
-        }
-        if (isIntAttached) {
-            Toolkit.getDefaultToolkit().removeAWTEventListener(interruper);
-            isIntAttached = false;
         }
     }
     
@@ -195,8 +175,8 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
         public void actionPerformed(ActionEvent e) {
             if (invokerTimerRunning) {
                 cleanupInterrupter();
-                KeyboardPopupSwitcher switcher = new KeyboardPopupSwitcher(hits);
-                switcher.showPopup();
+                instance = new KeyboardPopupSwitcher(hits);
+                instance.showPopup();
             }
         }
     }
@@ -208,6 +188,16 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
      */
     public static boolean isShown() {
         return shown;
+    }
+    
+    /**
+     * Indicate whether a popup will be or is shown. <em>Will be</em> means
+     * that a popup was already triggered by first Ctrl-Tab but TIME_TO_SHOW
+     * wasn't expires yet. <em>Is shown</em> means that a popup is really
+     * already shown on the screen.
+     */
+    private static boolean isAlive() {
+        return invokerTimerRunning || shown;
     }
     
     /**
@@ -232,8 +222,6 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
     
     private void showPopup() {
         if (!isShown()) {
-            Toolkit.getDefaultToolkit().addAWTEventListener(this,
-                    AWTEvent.KEY_EVENT_MASK);
             popup = PopupFactory.getSharedInstance().getPopup(
                     WindowManager.getDefault().getMainWindow(), pTable, x, y);
             popup.show();
@@ -241,14 +229,45 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
         }
     }
     
-    // XXX Have a look how is the key events handled in JPopupMenu+its UI,
-    // There should be used probably another mechanism then AWTEventListener
-    // -> input and action map, if possible.
-    public void eventDispatched(AWTEvent ev) {
-        int code;
-        switch (ev.getID()) {
+    /**
+     * Prevents showing a popup if a user releases the <code>releaseKey</code>
+     * in time specified by <code>invokerTimer</code> (which is 200ms by
+     * default).
+     */
+    private static void processInterruption(KeyEvent kev) {
+        if (kev.getID() != KeyEvent.KEY_RELEASED && invokerTimerRunning) {
+            return;
+        }
+        int keyCode = kev.getKeyCode();
+        if (keyCode == releaseKey) {
+            // if an user releases Ctrl-Tab before the time to show
+            // popup expires, don't show the popup at all and switch to
+            // the last used document immediately
+            cleanupInterrupter();
+            hits = 0;
+            AbstractAction rva = new RecentViewListAction();
+            rva.actionPerformed(new ActionEvent(kev.getSource(),
+                    ActionEvent.ACTION_PERFORMED,
+                    "immediately")); // NOI18N
+            kev.consume();
+        } else if (keyCode == triggerKey
+                && kev.getModifiers() == InputEvent.CTRL_MASK) {
+            // count number of trigger key hits before popup is shown
+            hits++;
+            kev.consume();
+            if (hits > 1) {
+                cleanupInterrupter();
+                instance = new KeyboardPopupSwitcher(hits);
+                instance.showPopup();
+            }
+        }
+    }
+    
+    /** Handles given <code>KeyEvent</code>. */
+    private void processKeyEvent(KeyEvent kev) {
+        switch (kev.getID()) {
             case KeyEvent.KEY_RELEASED:
-                code = ((KeyEvent) ev).getKeyCode();
+                int code = kev.getKeyCode();
                 if (code == reverseKey) {
                     fwd = true;
                 } else if (code == triggerKey) {
@@ -292,11 +311,12 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
                 } else if (code == releaseKey) {
                     performSwitching();
                 }
-                ((KeyEvent) ev).consume();
+                kev.consume();
                 break;
             case KeyEvent.KEY_PRESSED:
-                if (((KeyEvent) ev).getKeyCode() == reverseKey) {
+                if (kev.getKeyCode() == reverseKey) {
                     fwd = false;
+                    kev.consume();
                 }
                 break;
         }
@@ -353,7 +373,6 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
             toHide.hide();
             shown = false;
             hits = 0;
-            Toolkit.getDefaultToolkit().removeAWTEventListener(KeyboardPopupSwitcher.this);
         }
     }
 }

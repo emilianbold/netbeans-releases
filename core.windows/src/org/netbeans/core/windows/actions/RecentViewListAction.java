@@ -62,7 +62,6 @@ public final class RecentViewListAction extends AbstractAction
             return;
         }
         
-        // XXX Show dialog only if the action was invoked by shortcut (not from menu).
         if(!"immediately".equals(evt.getActionCommand()) && // NOI18N
                 !(evt.getSource() instanceof javax.swing.JMenuItem)) {
             // #46800: fetch key directly from action command

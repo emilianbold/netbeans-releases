@@ -173,15 +173,7 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
             // otherwise Swing will use these keys as focus traversals, which 
             // means that TopComponent which contains focusCycleRoot inside itself
             // will grab these shortcuts, which is not desirable 
-            boolean isCtrlTab = ev.getKeyCode() == KeyEvent.VK_TAB &&
-                                ev.getModifiers() == InputEvent.CTRL_MASK;
-            boolean isCtrlShiftTab = ev.getKeyCode() == KeyEvent.VK_TAB &&
-                ev.getModifiers() == (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK);
-            if ((isCtrlTab || isCtrlShiftTab) && !KeyboardPopupSwitcher.isShown()) {
-                return processShortcut(ev);
-            }
-        
-            return false;
+            return KeyboardPopupSwitcher.processShortcut(ev);
         }
 
         if (!wasPopupDisplayed
