@@ -15,6 +15,7 @@ package org.netbeans.modules.xml.dtd.grammar;
 
 import java.io.*;
 import java.util.*;
+import java.util.StringTokenizer;
 
 import org.xml.sax.*;
 import org.xml.sax.ext.*;
@@ -102,7 +103,7 @@ public class DTDParser {
      */
     private class Handler extends DefaultHandler implements DeclHandler {
 
-        private Map attrs, elements, models;
+        private Map attrs, elements, models, enums;
         private Set notations, entities, anys;
         private DTDGrammar dtd;
         
@@ -113,7 +114,8 @@ public class DTDParser {
             notations = new TreeSet();
             entities = new TreeSet();
             anys = new HashSet();
-            dtd = new DTDGrammar(elements, models,attrs, entities, notations);
+            enums = new HashMap();
+            dtd = new DTDGrammar(elements, models, attrs, enums, entities, notations);
         }
 
         /**
@@ -166,7 +168,18 @@ public class DTDParser {
                 set = new TreeSet();
                 attrs.put(eName, set);
             }             
-            set.add(aName);            
+            set.add(aName);
+            
+            // if enumeration type place into enumeration map new entry
+            if (type != null && type.startsWith("(")) {
+                StringTokenizer tokenizer = new StringTokenizer(type, "()|", false);
+                List tokens = new ArrayList(7);
+                while (tokenizer.hasMoreTokens()) {
+                    tokens.add(tokenizer.nextToken());
+                }
+                enums.put(eName + " " + aName, tokens);
+            }
+            
         }
         
         public void internalEntityDecl(String name, String value) throws SAXException {

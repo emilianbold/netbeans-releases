@@ -117,7 +117,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                 
                  if (list != null && list.isEmpty() == false) {
                     String debugMsg = Boolean.getBoolean("netbeans.debug.xml") ? " " + helper.getOffset() + "-" + helper.getEraseCount() : "";
-                    String title = Util.THIS.getString("MSG_result", new Object[] {helper.getPreText()}) + debugMsg;
+                    String title = Util.THIS.getString("MSG_result", helper.getPreText()) + debugMsg;
                     return new CompletionQuery.DefaultResult( component, title, list, helper.getOffset() - helper.getEraseCount(), helper.getEraseCount() );
                 } else {
                     

@@ -30,7 +30,7 @@ class ValueResultItem extends XMLResultItem {
     }
     
     public ValueResultItem(GrammarResult res) {
-        super(res.getNodeName());
+        super(res.getNodeValue());
         foreground = Color.magenta;
         selectionForeground = Color.magenta.darker();
     }

@@ -140,4 +140,8 @@ class XMLResultItem implements CompletionQuery.ResultItem {
     public final String getItemText() {
         return displayText;
     }
+    
+    public String toString() {
+        return getItemText();
+    }
 }

@@ -239,5 +239,44 @@ public abstract class AbstractNode implements Node {
         throw new UOException();
     }
     
+   
+    // Bonus Text implementation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    public void insertData(int offset, String arg) throws DOMException {
+        throw new ROException();
+    }
+    
+    public void replaceData(int offset, int count, String arg) throws DOMException {
+        throw new ROException();
+    }
+
+    public void setData(String data) throws DOMException {
+        throw new ROException();
+    }
+
+    public Text splitText(int offset) throws DOMException {
+        throw new ROException();
+    }
+
+    public String substringData(int offset, int count) throws DOMException {
+        throw new UOException();
+    }
+    
+    public void appendData(String arg) throws DOMException {
+        throw new ROException();        
+    }
+
+    public void deleteData(int offset, int count) throws DOMException {
+        throw new ROException();        
+    }
+
+    public String getData() throws DOMException {
+        throw new UOException();        
+    }
+
+    public int getLength() {
+        throw new UOException();
+    }    
+
     
 }

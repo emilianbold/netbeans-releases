@@ -39,14 +39,18 @@ public class DTDGrammar implements GrammarQuery {
     // this map is filled asynchronously as it takes some time
     Map contentModels;
     
+    // Map<elementname + " " + attributename, List<String>>
+    Map attrEnumerations;
+    
     Set entities, notations;
     
     /** Creates new DTDGrammar */
-    DTDGrammar(Map elementDecls, Map contentModels, Map attrDecls, Set entities, Set notations) {
+    DTDGrammar(Map elementDecls, Map contentModels, Map attrDecls, Map enums, Set entities, Set notations) {
         this.elementDecls = elementDecls;
         this.attrDecls = attrDecls;
         this.entities = entities;
         this.notations = notations;
+        this.attrEnumerations = enums;
         this.contentModels = contentModels;
     }
 
@@ -188,7 +192,30 @@ public class DTDGrammar implements GrammarQuery {
      *        Every list member represents one possibility.
      */
     public Enumeration queryValues(HintContext ctx) {
-        return EmptyEnumeration.EMPTY;        
+        if (attrEnumerations.isEmpty()) return EmptyEnumeration.EMPTY;
+        
+        if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
+            String attributeName = ctx.getNodeName();
+            Element element = ((Attr)ctx).getOwnerElement();
+            if (element == null) return EmptyEnumeration.EMPTY;
+            
+            String elementName = element.getNodeName();
+            String key = elementName + " " + attributeName;
+            List values = (List) attrEnumerations.get(key);
+            if (values == null) return EmptyEnumeration.EMPTY;
+            
+            String prefix = ctx.getCurrentPrefix();
+            QueueEnumeration en = new QueueEnumeration();
+            Iterator it = values.iterator();
+            while (it.hasNext()) {
+                String next = (String) it.next();
+                if (next.startsWith(prefix)) {
+                    en.put(new MyText(next));
+                }
+            }
+            return en;
+        }
+        return EmptyEnumeration.EMPTY;
     }
     
     public java.awt.Component getCustomizer(HintContext ctx) {
@@ -369,4 +396,29 @@ public class DTDGrammar implements GrammarQuery {
                         
     }
     
+    private static class MyText extends AbstractResultNode implements Text {
+        
+        private String data;
+        
+        MyText(String data) {
+            this.data = data;
+        }
+        
+        public short getNodeType() {
+            return Node.TEXT_NODE;
+        }
+
+        public String getNodeValue() {
+            return getData();
+        }
+        
+        public String getData() throws DOMException {
+            return data;
+        }
+
+        public int getLength() {
+            return data == null ? -1 : data.length();
+        }    
+    }
+        
 }

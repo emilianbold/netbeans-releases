@@ -124,7 +124,8 @@ public class SyntaxQueryHelper {
             case XMLDefaultTokenContext.VALUE_ID:
                 erase = preText.length();
                 if (erase > 0 && (preText.charAt(0) == '\'' || preText.charAt(0) == '"')) {
-                    erase--; // Because of attribute values
+                    // Because of attribute values, preText is adjusted in initContext
+                    erase--;
                 } else
                 break;
         }
@@ -277,7 +278,11 @@ public class SyntaxQueryHelper {
                             curAttrNode = attr;
                         }
                     }
-                
+
+                    // eliminate "'",'"' delimiters
+                    if (preText.length() > 0) {
+                        preText = preText.substring(1);
+                    }
                     if (curAttrNode != null) {
                         ctx.init(curAttrNode, preText);
                     } else {
