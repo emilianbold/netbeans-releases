@@ -92,27 +92,14 @@ public class OpenFile extends Object {
         em.log ("OpenFile.open: " + fileName);
 
         final File f = new File (fileName);
-
-        em.log ("    file: " + f);
-        em.log ("    file.exists: " + f.exists());
-        em.log ("    file.isFile: " + f.isFile());
-
-        if ( f.exists() && f.isFile() ) {
-            RequestProcessor.postRequest
-                (new Runnable () {
-                        public void run () {
-                            open (f, false, null, -1, -1);
-                        }
-                    }, 10000 //!!! Waiting for IDE initialization
-                 );
-        } else {
-            new Thread (new Runnable () {
+        RequestProcessor.postRequest
+            (new Runnable () {
                     public void run () {
-                        TopManager.getDefault().notify (new NotifyDescriptor.Message (SettingsBeanInfo.getString ("MSG_fileNotFound", fileName)));
+                        open (f, false, null, -1, -1);
                     }
-                }).start ();
-        }
-    }    
+                }, 10000 //!!! Waiting for IDE initialization
+             );
+    }
 
     
     /** Open the file either by calling {@link OpenCookie} ({@link ViewCookie}), or by
@@ -124,7 +111,22 @@ public class OpenFile extends Object {
      * @param port port to send reply to, valid only if wait set
      * @param line line number to try to open to (starting at zero), or <code>-1</code> to ignore
      */
-    static void open(File file, final boolean wait, InetAddress address, int port, int line) {
+    static void open (final File file, final boolean wait, InetAddress address, int port, int line) {
+        em.log ("    file: " + file);
+        em.log ("    file.exists: " + file.exists());
+        em.log ("    file.isFile: " + file.isFile());
+
+        if ( ( file.exists() == false ) ||
+             ( file.isFile() == false ) ) {
+            new Thread (new Runnable () {
+                    public void run () {
+                        TopManager.getDefault().notify (new NotifyDescriptor.Message
+                            (SettingsBeanInfo.getString ("MSG_fileNotFound", file.toString())));
+                    }
+                }).start();
+            return;
+        }
+
         FileObject fileObject = find(file);
 
         if(fileObject == null) 
