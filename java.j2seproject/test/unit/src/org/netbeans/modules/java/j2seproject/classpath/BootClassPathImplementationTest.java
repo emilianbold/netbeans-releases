@@ -17,6 +17,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -41,13 +42,12 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 
 /**
- * Tests for BootClassPathImplementation
- *
+ * Tests for {@link BootClassPathImplementation}.
  * @author Tomas Zezula
  */
 public class BootClassPathImplementationTest extends NbTestCase {
     
-    public BootClassPathImplementationTest(java.lang.String testName) {
+    public BootClassPathImplementationTest(String testName) {
         super(testName);
     }
     
@@ -205,11 +205,11 @@ public class BootClassPathImplementationTest extends NbTestCase {
             return this.properties;
         }
 
-        public java.util.List getJavadocFolders() {
+        public List getJavadocFolders() {
             return null;
         }
 
-        public java.util.Collection getInstallFolders() {
+        public Collection getInstallFolders() {
             return null;
         }
 
