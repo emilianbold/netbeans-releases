@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -102,28 +102,25 @@ public class J2SEProjectGenerator {
                     props.put(propName,srcReference);
                     h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
                 }                 
-                if (testFolders.length > 0) {
-                    for (int i=0; i<testFolders.length; i++) {
-                        if (!testFolders[i].exists()) {
-                            testFolders[i].mkdirs();
-                        }
-
-                        String name = testFolders[i].getName();
-                        String propName = "test." + name + ".dir";    //NOI18N
-                        int rootIndex = 1;
-                        EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        while (props.containsKey(propName)) {
-                            rootIndex++;
-                            propName = "test." + name + rootIndex + ".dir";   //NOI18N
-                        }
-                        String testReference = refHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
-                        Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                        root.setAttribute ("id",propName);   //NOI18N
-                        testRoots.appendChild(root);
-                        props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
-                        props.put(propName,testReference);
-                        h.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                for (int i = 0; i < testFolders.length; i++) {
+                    if (!testFolders[i].exists()) {
+                        testFolders[i].mkdirs();
                     }
+                    String name = testFolders[i].getName();
+                    String propName = "test." + name + ".dir"; // NOI18N
+                    int rootIndex = 1;
+                    EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    while (props.containsKey(propName)) {
+                        rootIndex++;
+                        propName = "test." + name + rootIndex + ".dir"; // NOI18N
+                    }
+                    String testReference = refHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
+                    Element root = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); // NOI18N
+                    root.setAttribute("id", propName); // NOI18N
+                    testRoots.appendChild(root);
+                    props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
+                    props.put(propName, testReference);
+                    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                 }
                 h.putPrimaryConfigurationData(data,true);
                 ProjectManager.getDefault().saveProject (p);
