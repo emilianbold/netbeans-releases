@@ -28,6 +28,7 @@ import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.project.TestUtil;
 import org.openide.util.lookup.Lookups;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -236,6 +237,10 @@ public class JavaPlatformManagerTest extends NbTestCase {
         
         public String getVendor() {
             return "Me";
+        }
+
+        public FileObject findTool(String name) {
+            return null;
         }
         
     }
