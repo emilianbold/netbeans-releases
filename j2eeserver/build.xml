@@ -292,9 +292,8 @@ symbols and copy jar file(s)">
       </classpath>
     </javadoc>
     <copy todir="J2EEServerAPIs">
-            <fileset dir="api/doc/">
+            <fileset dir="www/jsr88/">
               <include name="*.html"/>
-              <exclude name="overview.html"/> 
             </fileset>
     </copy>
     <copy todir="J2EEServerAPIs">
