@@ -13,27 +13,29 @@
 
 package org.netbeans.modules.web.debug.actions;
 
-import java.awt.event.ActionEvent;
-import java.beans.*;
-import java.util.*;
-import javax.swing.*;
-
-import org.netbeans.api.debugger.*;
-import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerListener;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.Watch;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.debugger.*;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.*;
-
 import org.openide.windows.TopComponent;
-
-import org.netbeans.modules.web.debug.util.*;
 import org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint;
+import org.netbeans.modules.web.debug.util.Utils;
+import org.netbeans.spi.debugger.ActionsProviderSupport;
 
 /**
 *
-* @author Martin Grebac
+* @author Martin Grebac, Libor Kotouc
 */
 public class JspRunToCursorActionProvider extends ActionsProviderSupport {
     
@@ -57,17 +59,10 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
     }
     
     public void doAction (Object action) {
+        
         // 1) set breakpoint
-        if (breakpoint != null) {
-            DebuggerManager.getDebuggerManager().removeBreakpoint(breakpoint);
-            breakpoint = null;
-        }
-        breakpoint = JspLineBreakpoint.create (
-            editorContext.getCurrentURL(),
-            editorContext.getCurrentLineNumber()
-        );
-        breakpoint.setHidden(true);
-        DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
+        removeBreakpoint();
+        createBreakpoint();
         
         // 2) start debugging of project
         ((ActionProvider) MainProjectManager.getDefault().
@@ -81,12 +76,8 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
     
     private boolean shouldBeEnabled () {
 
-        if (!Utils.isJsp(editorContext.getCurrentURL()) &&
-            !Utils.isTag(editorContext.getCurrentURL())
-           ) 
-        {
+        if (!Utils.isJsp(editorContext.getCurrentURL()))
             return false;
-        }
         
         // check if current project supports this action
         Project p = MainProjectManager.getDefault ().getMainProject ();
@@ -113,22 +104,42 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
                 p.getLookup ()
             );
     }
+
+    private void createBreakpoint() {
+        breakpoint = JspLineBreakpoint.create (
+            editorContext.getCurrentURL (),
+            editorContext.getCurrentLineNumber ()
+        );
+        breakpoint.setHidden (true);
+        DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
+    }
+    
+    private void removeBreakpoint() {
+        if (breakpoint != null) {
+            DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
+            breakpoint = null;
+        }
+    }
     
     private class Listener implements PropertyChangeListener, DebuggerManagerListener {
         public void propertyChange (PropertyChangeEvent e) {
-            if ((e == null) || (TopComponent.Registry.PROP_OPENED.equals(e.getPropertyName()))) {
+            if ((e == null) || (TopComponent.Registry.PROP_OPENED.equals(e.getPropertyName())))
+                return;
+            if (e.getPropertyName () == JPDADebugger.PROP_STATE) {
+                int state = ((Integer) e.getNewValue ()).intValue ();
+                if (state == JPDADebugger.STATE_DISCONNECTED || state == JPDADebugger.STATE_STOPPED)
+                    removeBreakpoint ();
                 return;
             }
+
             setEnabled (
                 ActionsManager.ACTION_RUN_TO_CURSOR,
                 shouldBeEnabled ()
             );
         }
+        
         public void sessionRemoved (Session session) {
-            if (breakpoint != null) {
-                DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
-                breakpoint = null;
-            }
+            removeBreakpoint();
         }
         
         public void breakpointAdded (Breakpoint breakpoint) {}
@@ -140,7 +151,26 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
         public void sessionAdded (Session session) {}
         public void watchAdded (Watch watch) {}
         public void watchRemoved (Watch watch) {}
-        public void engineAdded (DebuggerEngine engine) {}
-        public void engineRemoved (DebuggerEngine engine) {}
+
+        public void engineAdded (DebuggerEngine engine) {
+            JPDADebugger debugger = (JPDADebugger) engine.lookupFirst 
+                (null, JPDADebugger.class);
+            if (debugger == null) return;
+            debugger.addPropertyChangeListener (
+                JPDADebugger.PROP_STATE,
+                this
+            );
+        }
+        
+        public void engineRemoved (DebuggerEngine engine) {
+            JPDADebugger debugger = (JPDADebugger) engine.lookupFirst 
+                (null, JPDADebugger.class);
+            if (debugger == null) return;
+            debugger.removePropertyChangeListener (
+                JPDADebugger.PROP_STATE,
+                this
+            );
+        }
+
     }
 }
