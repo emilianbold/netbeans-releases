@@ -78,7 +78,7 @@
     </Component>
     <Component class="javax.swing.JRadioButton" name="protectedRadio">
       <Properties>
-        <Property name="mnemonic" type="int" value="101"/>
+        <Property name="mnemonic" type="int" value="111"/>
         <Property name="text" type="java.lang.String" value=" protected"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>

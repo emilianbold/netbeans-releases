@@ -223,7 +223,7 @@ public class JavaReplacePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(privateRadio, gridBagConstraints);
 
-        protectedRadio.setMnemonic('e');
+        protectedRadio.setMnemonic('o');
         protectedRadio.setText(" protected");
         protectedRadio.setEnabled(false);
         protectedRadio.addActionListener(new java.awt.event.ActionListener() {
@@ -551,22 +551,22 @@ public class JavaReplacePanel extends JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel identifierLabel;
     private javax.swing.JCheckBox staticCheck;
-    private javax.swing.JTextField identifierTextField;
-    private javax.swing.JLabel initLabel;
-    private javax.swing.JCheckBox transientCheck;
     private javax.swing.JRadioButton defaultRadio;
+    private javax.swing.JRadioButton privateRadio;
     private javax.swing.JTextField fieldTextField;
+    private javax.swing.JCheckBox finalCheck;
+    private javax.swing.JRadioButton protectedRadio;
+    private javax.swing.JTextField identifierTextField;
     private javax.swing.JButton initButton;
-    private javax.swing.JRadioButton publicRadio;
+    private javax.swing.JCheckBox transientCheck;
+    private javax.swing.JTextField initTextField;
+    private javax.swing.JLabel fieldLabel;
     private javax.swing.JLabel modifiersLabel;
     private javax.swing.JCheckBox generateCheck;
-    private javax.swing.JCheckBox finalCheck;
-    private javax.swing.JRadioButton privateRadio;
-    private javax.swing.JLabel fieldLabel;
-    private javax.swing.JTextField initTextField;
-    private javax.swing.JRadioButton protectedRadio;
+    private javax.swing.JRadioButton publicRadio;
+    private javax.swing.JLabel identifierLabel;
+    private javax.swing.JLabel initLabel;
     // End of variables declaration//GEN-END:variables
 
     /** Helper method. Enables/disables all componnent in field panel. */
