@@ -63,6 +63,12 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="ant-misc-*.zip"/>
             </fileset>
         </unzip>
+        <chmod perm="ugo+x">
+            <fileset dir="${netbeans.dest.dir}/${cluster.dir}/ant/bin">
+                <exclude name="*.cmd"/>
+                <exclude name="*.bat"/>
+            </fileset>
+        </chmod>
     </target>
 
     <target name="netbeans-extra" depends="jar-bridge,release"/>
