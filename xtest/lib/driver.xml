@@ -357,16 +357,23 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="install-nbms-2" if="xtest.execute_actions.install-ide">
      <for list="${ide.nbm.list}" delimiters="," property="xtest.nbmfile">
-       <antcall target="install-one-nbm"/>
+       <antcall target="install-one-nbm-from-zip"/>
+       <antcall target="install-one-nbm-from-dir"/>
      </for> 
      <delete dir="${ide.nbm.temp}"/>
   </target>
   
-  <target name="install-one-nbm">
-     <echo message="Installing nbm ${xtest.nbmfile}"/>
+  <target name="install-one-nbm-from-zip" if="ide.nbm.zipfile" unless="ide.nbm.dir">
+     <echo message="Installing nbm ${xtest.nbmfile} from zip ${ide.nbm.zipfile}"/>
      <unzip2 src="${ide.nbm.zipfile}" dest="${ide.nbm.temp}" files="${xtest.nbmfile}"/>   
      <unzip2 src="${ide.nbm.temp}/${xtest.nbmfile}" files="netbeans" shift="true" dest="${ide.home}"/> 
   </target>
+
+  <target name="install-one-nbm-from-dir" if="ide.nbm.dir" unless="ide.nbm.zipfile">
+     <echo message="Installing nbm ${xtest.nbmfile} from dir ${ide.nbm.dir}"/>
+     <unzip2 src="${ide.nbm.dir}/${xtest.nbmfile}" files="netbeans" shift="true" dest="${ide.home}"/> 
+  </target>
+
   
   <!-- ======== -->
   <!-- Cleaning -->
