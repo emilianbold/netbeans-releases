@@ -959,7 +959,9 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         public void updateStatusDetail() {
             if (isCanceled()) return;
             if (!jdkDir.exists()) {
-                mos.setStatusDetail(resolveString("$L(org.netbeans.installer.Bundle,ProgressPanel.prepareMessage)"));
+                String desc = resolveString("$L(org.netbeans.installer.Bundle,ProgressPanel.prepareMessage,"
+                + "$L(org.netbeans.installer.Bundle,JDK.shortName))");
+                mos.setStatusDetail(desc);
                 logEvent(this, Log.DBG,"StatusDetailThread-> " + lastPathShown + " NOT created yet");
                 return;
             }
