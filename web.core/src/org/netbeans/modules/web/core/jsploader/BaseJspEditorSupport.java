@@ -218,11 +218,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     /** Notify about the editor closing.
      */
     protected void notifyClose() {
-        TagLibParseSupport sup = (TagLibParseSupport)getDataObject().getCookie(TagLibParseSupport.class);
-        if (sup != null) {
-            sup.prepare();
-        }
-        //parsedHook = null;
+        ;
     }
     
     /** Notify that parsing task has been finished; some dependent data may now
