@@ -17,6 +17,19 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Properties -->
     <property name="perf.home" value="../../../performance"/>
 
+    <!-- ClassPath for platform performance tests compilation -->
+    <path id="performance.pt.cpath">
+	<pathelement location="../../../xtest/lib/junit.jar"/>
+	<pathelement location="../../lib/performance.jar"/>
+    </path>
+
+    <!-- ClassPath for platform performance tests running -->
+    <path id="performance.pt.rpath">
+	<pathelement location="../../../xtest/lib/junit.jar"/>
+	<pathelement location="../../lib/performance.jar"/>
+	<pathelement location="lib/tests.jar"/>
+    </path>
+
     <!-- Task definitions -->
     <target name="init">
     </target>
@@ -24,9 +37,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- test compilation & packaging -->
     <target name="compile" depends="init">
         <javac destdir="src" srcdir="src">
-            <classpath>
-                <pathelement location="../../src"/>
-            </classpath>
+            <classpath refid="performance.pt.cpath"/>
         </javac>
     </target>
 
@@ -38,42 +49,55 @@ Microsystems, Inc. All Rights Reserved.
 		jarfile="lib/tests.jar"/>
     </target>
     
+    <!-- Temporal way for spawning tests before I write ant task for spawning -->
     <target name="test">
 	<mkdir dir="report"/>
-	<antcall target="test-listappend"/>
+	<antcall target="test-lists"/>
 	<antcall target="test-exceptionconstruct"/>
 	<antcall target="test-runnablemethod"/>
     </target>
 
-    <!-- Temporal way for spawning tests before I write ant task for spawning -->
-
-    <target depends="jars" name="test-listappend">
+    <target depends="jars" name="test-lists">
 	<java	fork="yes"
-		output="report/listappend.txt"
-		classname="org.netbeans.performance.collections.ListAppend"
-		classpath="lib/tests.jar:../../../performance/lib/performance.jar">
-	    <jvmarg value="-Dperf.runs=3"/>
-	    <jvmarg value="-Dperf.presenter=org.netbeans.performance.TextPresenter"/>
+		output="report/list-arraylist.txt"
+		classname="org.netbeans.performance.collections.ListTestArrayList">
+	    <classpath refid="performance.pt.rpath"/>
+	</java>
+	<java	fork="yes"
+		output="report/list-arraylistn.txt"
+		classname="org.netbeans.performance.collections.ListTestArrayListForN">
+	    <classpath refid="performance.pt.rpath"/>
+	</java>
+	<java	fork="yes"
+		output="report/list-vector.txt"
+		classname="org.netbeans.performance.collections.ListTestVector">
+	    <classpath refid="performance.pt.rpath"/>
+	</java>
+	<java	fork="yes"
+		output="report/list-vectorn.txt"
+		classname="org.netbeans.performance.collections.ListTestVectorForN">
+	    <classpath refid="performance.pt.rpath"/>
+	</java>
+	<java	fork="yes"
+		output="report/list-linkedlist.txt"
+		classname="org.netbeans.performance.collections.ListTestLinkedList">
+	    <classpath refid="performance.pt.rpath"/>
 	</java>
     </target>
 
     <target depends="jars" name="test-exceptionconstruct">
 	<java	fork="yes"
 		output="report/exceptionconstruct.txt"
-		classname="org.netbeans.performance.platform.ExceptionConstruct"
-		classpath="lib/tests.jar:../../../performance/lib/performance.jar">
-	    <jvmarg value="-Dperf.runs=3"/>
-	    <jvmarg value="-Dperf.presenter=org.netbeans.performance.TextPresenter"/>
+		classname="org.netbeans.performance.platform.ExceptionConstruct">
+	    <classpath refid="performance.pt.rpath"/>
 	</java>
     </target>
 
     <target depends="jars" name="test-runnablemethod">
 	<java	fork="yes"
 		output="report/runnablemethod.txt"
-		classname="org.netbeans.performance.platform.RunnableMethod"
-		classpath="lib/tests.jar:../../../performance/lib/performance.jar">
-	    <jvmarg value="-Dperf.runs=3"/>
-	    <jvmarg value="-Dperf.presenter=org.netbeans.performance.TextPresenter"/>
+		classname="org.netbeans.performance.platform.RunnableMethod">
+	    <classpath refid="performance.pt.rpath"/>
 	</java>
     </target>
 
