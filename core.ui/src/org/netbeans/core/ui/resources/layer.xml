@@ -20,6 +20,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <filesystem>
 
+    <folder name="WarmUp">
+        <file name="org-netbeans-core-ui-MenuWarmUpTask.instance"/>
+    </folder>
     <folder name="Actions" >
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         
