@@ -237,8 +237,12 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
             super.hierarchyChanged (e);
             if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
                 if (displayer.isShowing()) {
-                    tabState.setActive (displayer.isActive());
-                    makeTabVisible (selectionModel.getSelectedIndex());
+                    //#47850 - for some reason, uninstall can be called on the Ui class, before this gets processed.
+                    // check for null values just to be sure.
+                    if (tabState != null && selectionModel != null) {
+                        tabState.setActive (displayer.isActive());
+                        makeTabVisible (selectionModel.getSelectedIndex());
+                    }
                 }
             }
         }
