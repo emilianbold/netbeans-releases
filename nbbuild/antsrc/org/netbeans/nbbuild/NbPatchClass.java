@@ -94,8 +94,6 @@ public class NbPatchClass extends MatchingTask {
             throw new BuildException ("Attribute targetdir must be specified");
         }
 
-        addFileset(fileset);
-        
         boolean fs_empty = true;
         for (int i=0; i<filesets.size() && fs_empty; i++) {
             FileSet n = (FileSet) filesets.elementAt(i);
@@ -155,7 +153,7 @@ public class NbPatchClass extends MatchingTask {
                 for (int k=0; k <files.length; k++) {
                     File n_file = new File(bdir, files[k]);
                     JarFile jar;
-                    log("Checking jarfile " + n_file, Project.MSG_VERBOSE);
+                    log("Checking classes in jarfile " + n_file, Project.MSG_VERBOSE);
 
                     try {
                         jar = new JarFile (n_file);
@@ -170,7 +168,7 @@ public class NbPatchClass extends MatchingTask {
                         String entryname = e.getName();
                         if (!entryname.endsWith(".class")) { //NOI18N
                             // resource, skip
-                            log("Skipping resource " + entryname, Project.MSG_DEBUG);
+                            log("Skipping record (probably directory or resource) " + entryname, Project.MSG_DEBUG);
                             continue;
                         }
                         String name = entryname.substring(0, entryname.length() - 6).replace('/', '.');
