@@ -98,6 +98,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="settingsapis" description="Create Settings API documentation.">
         <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
         <property name="openide-docs-location" value="http://www.netbeans.org/download/apis"/>
+        <property name="openide.package-list.loc" location="${nbroot}/openide/OpenAPIs"/>
         <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 2002 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
         <echo message="Build Settings API documentation..."/>
         <delete dir="SettingsAPIs"/>
@@ -127,6 +128,10 @@ Microsystems, Inc. All Rights Reserved.
             <link href="${jdk-docs-location}"
                   offline="true"
                   packagelistLoc="${nb_all}/openide/api/doc"
+            />
+            <link href="${openide-docs-location}"
+                  offline="true"
+                  packagelistLoc="${openide.package-list.loc}"
             />
         </javadoc>
         <replace dir="SettingsAPIs" token="@FOOTER@" value="${apis-footer}">

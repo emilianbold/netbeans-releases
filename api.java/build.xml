@@ -28,6 +28,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- External documentation referenced from the API -->
   <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
   <property name="openide-docs-location" value="http://www.netbeans.org/download/apis"/>
+  <property name="openide.package-list.loc" location="doc/external/openide"/>
 
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
@@ -112,7 +113,7 @@ Microsystems, Inc. All Rights Reserved.
 	/>	
 	<link href="${openide-docs-location}"
 	    offline="true"
-	    packagelistLoc="doc/external/openide"
+	    packagelistLoc="${openide.package-list.loc}"
 	/>	
     </javadoc>
     <copy todir="JavaSupportAPIs">

@@ -88,6 +88,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="diff-apis" description="Create Diff API documentation.">
     <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.3/docs/api"/>
     <property name="openide-docs-location" value="http://www.netbeans.org/download/apis/"/>
+    <property name="openide.package-list.loc" location="api/doc/openide"/>
     <echo message="Build Diff API documentation..."/>
     <delete dir="DiffAPIs"/>
     <mkdir dir="DiffAPIs"/>
@@ -118,7 +119,7 @@ Microsystems, Inc. All Rights Reserved.
       />
       <link href="${openide-docs-location}"
             offline="true"
-            packagelistLoc="api/doc/openide"
+            packagelistLoc="${openide.package-list.loc}"
       />
     </javadoc>
     <zip zipfile="DiffAPIs.zip" basedir="DiffAPIs"/>

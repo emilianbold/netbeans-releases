@@ -129,6 +129,8 @@ Microsystems, Inc. All Rights Reserved.
         <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
         <property name="sax-docs-location" value="http://www.saxproject.org/apidoc"/>
         <property name="openide-docs-location" value="http://www.netbeans.org/download/apis"/>
+        <property name="openide.package-list.loc" location="doc/external/openide"/>
+        <property name="sax.package-list.loc" location="doc/external/sax"/>
         
         <javadoc destdir="XML-APIs"
                  packagenames="org.netbeans.api.xml.*,org.netbeans.spi.xml.*"
@@ -155,11 +157,11 @@ Microsystems, Inc. All Rights Reserved.
             />
             <link href="${sax-docs-location}"
                   offline="true"
-                  packagelistLoc="doc/external/sax"
+                  packagelistLoc="${sax.package-list.loc}"
             />
             <link href="${openide-docs-location}"
                   offline="true"
-                  packagelistLoc="doc/external/openide"
+                  packagelistLoc="${openide.package-list.loc}"
             />            
         </javadoc>                
         <copy todir="XML-APIs/doc-files/">
