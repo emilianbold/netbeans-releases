@@ -31,12 +31,13 @@ rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 <ul><li>Choose Window <img src="../images/arrow.gif" alt="and choosing">&nbsp;HTTP 
 Monitor (Ctrl+7) from the main menu.</p></li></ul>
 
-<b>To enable the HTTP Monitor for a bundled web server:</b>
+<b>To enable the HTTP Monitor for web servers that are started from the IDE:</b>
 <ol><li>Right-click your web server's node in the Runtime window's
 Server Registry node.</li>
 <li>Choose Properties.</li>
-<li>Select the Enable HTTP Monitor checkbox.</p></ol>
-<b>To enable the HTTP Monitor for an external web server:</b>
+<li>Select the Enable HTTP Monitor checkbox.</li>
+<li>If the web server is running, stop and restart it.</li></ol>
+<b>To enable the HTTP Monitor for web servers that are started outside the IDE:</b>
 <ol>
   <li>Copy <i>IDE-install-directory</i><tt>/modules/org-netbeans-modules-schema2beans.jar</tt> and 
     <i>IDE-install-directory</i><tt>/modules/ext/org-netbeans-modules-web-httpmonitor.jar</tt> to your 
@@ -112,7 +113,27 @@ To monitor the data records from a web module using more than one
 </td>
 </tr>
 </table>
+<table>
 
+  <tr> 
+
+    <th colspan=2 align=left><a name="seealso">See Also</a></th>
+
+  </tr>
+
+  <tr> 
+
+    <td width="23"></td>
+
+<td><a href="ctx_monitorintro.html">About the HTTP Monitor</a><br>
+<a href="process.html">Working with the HTTP Monitor</a><br>
+<a href="view.html">Analyzing Session Data</a><br>
+<a href="store.html">Saving HTTP Request Records</a><br>
+<a href="resend.html">Replaying HTTP Requests</a><br>
+</td>
+  </tr>
+
+</table>
 <hr>
 <small><a href="../credits.html">Legal Notices</a> 
 <table cellpadding="20" border="0"> 
