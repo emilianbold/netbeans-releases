@@ -135,11 +135,11 @@ public final class LoaderPoolNode extends AbstractNode {
   */
   static synchronized void setNotifications (boolean notify) {
     if (!notify) {
-      notifications++;
+      notifications = 1;
     } else {
       int n = notifications;
       notifications = 0;
-      if (n == 1) {
+      if (n > 1) {
         update ();
       }
     }
@@ -208,6 +208,9 @@ public final class LoaderPoolNode extends AbstractNode {
       loaderPool.superFireChangeEvent(
         new ChangeEvent(loaderPool)
       );
+    } else {
+      // remember that there should be notifications
+      notifications++;
     }
   }
 
@@ -554,6 +557,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  19   Gandalf   1.18        5/11/99  Jaroslav Tulach ToolbarPool changed to 
+*       look better in Open API
 *  18   Gandalf   1.17        5/9/99   Ian Formanek    Fixed bug 1655 - Renaming
 *       of top level nodes is not persistent (removed the possibility to 
 *       rename).
