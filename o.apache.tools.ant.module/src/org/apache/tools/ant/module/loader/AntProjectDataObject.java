@@ -44,7 +44,6 @@ public class AntProjectDataObject extends MultiDataObject implements PropertyCha
             MultiDataObject.Entry pe = getPrimaryEntry ();
             cookies.add (new AntActionInstance (proj));
         }
-        cookies.add(AntTemplateIterator.DEFAULT);
         addPropertyChangeListener (this);
     }
     
