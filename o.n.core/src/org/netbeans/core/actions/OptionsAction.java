@@ -156,6 +156,10 @@ public class OptionsAction extends CallableSystemAction {
             return TopComponent.PERSISTENCE_ALWAYS;
         }
         
+        protected String preferredID () {
+            return "options"; //NOI18N
+        }
+        
         // #37673 It was requested to update helpCtx according to node selection in explorer.
         public void propertyChange(PropertyChangeEvent evt) {
             if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
