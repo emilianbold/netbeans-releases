@@ -27,8 +27,6 @@ import org.openide.util.Lookup;
  * It has to provide GUI presentation so user can have the possibility to
  * set/modify criteria.
  * It performs search according to that.
- * And additionaly could provide feature of dynamic change of result for cases 
- * the original nodes were changed the way it affect the result of search.
  *
  * @author  Peter Zavadsky
  */
@@ -93,11 +91,7 @@ public abstract class SearchType extends ServiceType implements Cloneable {
     }
 
     /**
-     * Prepares search object. Dummy implementation. Gives a chance to subclasses to 
-     * provide changes for dynamic changes on search objects.
-     * Typically it has to add some listener at the object and in the case some change
-     * which could lead to a change of the search result should fire 
-     * PROP_OBJECT_CHANGED property change.
+     * Prepares search object. Dummy implementation.
      */
     protected void prepareSearchObject(Object searchObject) {}
     

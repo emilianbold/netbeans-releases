@@ -102,9 +102,6 @@ public class ResultModel implements TaskListener {
     /** Search group this result shows search results for. */
     private SearchGroup searchGroup;
 
-    /** Listener on search group to reflect dynamically changes on search objects. */
-    private PropertyChangeListener propListener;
-
     /** Contains optional finnish message often reason why finished. */
     private String finishMessage;
 
@@ -262,29 +259,6 @@ public class ResultModel implements TaskListener {
         task.removeTaskListener(this);
         root.setDisplayName(getRootDisplayName());
         fireChange();
-        
-        registerListening();
-    }
-
-    /** Registers listening on search group to reflect dynamically changes
-     * made on search/found objects to reflect result of the original search. */
-    private void registerListening() {
-
-        // XXX this listening should be done at root directly
-
-        searchGroup.addPropertyChangeListener(WeakListeners.propertyChange(propListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(SearchGroup.PROP_RESULT.equals(evt.getPropertyName())) {
-                    if(evt.getNewValue() == null) {
-                        // Old object to remove.
-                        root.removeFoundObject(evt.getOldValue());
-                    } else {
-                        // New object to add.
-                        root.addFoundObject(evt.getNewValue());
-                    }
-                }
-            }
-        }, searchGroup));
     }
 
     /** Gets display name for root node. Utilitty method. */

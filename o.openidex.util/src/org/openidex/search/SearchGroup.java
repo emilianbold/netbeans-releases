@@ -153,52 +153,11 @@ public abstract class SearchGroup extends Object {
     }
 
     /**
-     * Prepares search. Set listerners to individual search types.
-     * If some of the underlying search types fires SearchType.PROP_OBJECT property change,
-     * the object is examined again and if could affect a result it is fired PROP_RESULT
-     * property change.
+     * Prepares search.
      */
     protected void prepareSearch() {
-        for (int i = 0; i < searchTypes.length; i++) {
-            searchTypes[i].addPropertyChangeListener(
-                WeakListeners.propertyChange(getSearchTypeListener(), searchTypes[i])
-            );
-        }
     }
 
-    /**
-     * Gets listener which listens on all search types if some searched object was changed
-     * the way it should reflect search result.
-     */
-    private synchronized PropertyChangeListener getSearchTypeListener() {
-        if (propListener == null) {
-            propListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (SearchType.PROP_OBJECT_CHANGED.equals(evt.getPropertyName())) {
-                        Object searchObject = evt.getNewValue();
-                        for (int i = 0; i < searchTypes.length; i++) {
-                            if (!searchTypes[i].testObject(searchObject)) {
-                                // Search object didn't satisfied the criteria.
-                                if (resultObjects.remove(searchObject)) {
-                                    firePropertyChange(PROP_RESULT, searchObject, null);
-                                }
-
-                                return;
-                            }
-                        }
-
-                        // Search object satisfied the criteria.
-                        if (resultObjects.add(searchObject)) {
-                            firePropertyChange(PROP_RESULT, null, searchObject);
-                        }
-                    }
-                }
-            };
-        }
-        
-        return propListener;
-    }
-    
     /**
      * Provides actual search. The subclasses implementating this method should scan the node system
      * specified by <code>searchRoots</code>, extract search objects from them, add them
@@ -235,8 +194,7 @@ public abstract class SearchGroup extends Object {
         }
 
         /*
-         * Give chance to provide additional things to have possibility
-         * to listen on changes on object to provide dynamic search result.
+         * Give chance to provide additional things.
          */
         for (int i = 0; i < searchTypes.length; i++) {
             searchTypes[i].prepareSearchObject(searchObject);
