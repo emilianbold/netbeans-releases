@@ -537,7 +537,6 @@
 <mapID target="ant.editing" url="ant/editing.html" />
 <mapID target="ant.props" url="ant/ant-props.html" />
 <mapID target="ant.advance" url="ant/adv-comp-exec.html" />
-<mapID target="ant.compiling" url="ant/compiling.html" />
 <mapID target="ant.compwith" url="ant/compwith.html" />
 <mapID target="ant.running" url="ant/running.html" />
 <mapID target="ant.settings" url="ant/settings.html" />

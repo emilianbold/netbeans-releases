@@ -468,7 +468,6 @@
   <tocitem text="Editing Ant Scripts" target="ant.editing" />
   <tocitem text="Setting Properties in Ant Scripts" target="ant.props" />
   <tocitem text="Advanced Compilation and Execution Support" target="ant.advance">
-    <tocitem text="Compiling Ant Scripts" target="ant.compiling" />
     <tocitem text="Compiling Files With Ant" target="ant.compwith" />
     <tocitem text="Running Ant Scripts" target="ant.running" />
   </tocitem>
