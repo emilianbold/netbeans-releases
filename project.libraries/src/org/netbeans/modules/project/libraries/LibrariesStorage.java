@@ -296,7 +296,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                 // The code is provided by LibraryType implementator and can fire events -> may cause deadlocks
                 try {
                     provider.libraryCreated (impl);
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     String message = NbBundle.getMessage(LibrariesStorage.class,"MSG_libraryCreatedError");
                     ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(e,message));
                 }
@@ -323,14 +323,14 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
         if (impl != null) {
             LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
             if (provider == null) {
-                ErrorManager.getDefault().log("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryDeleted(), the library type provider is unknown.");  //NOI18N
+                ErrorManager.getDefault().log("LibrariesStorage: Cannot invoke LibraryTypeProvider.libraryDeleted(), the library type provider is unknown.");  //NOI18N
             }
             else {
                 //Has to be called outside the synchronized block,
                 // The code is provided by LibraryType implementator and can fire events -> may cause deadlocks
                 try {
                     provider.libraryDeleted (impl);
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     String message = NbBundle.getMessage(LibrariesStorage.class,"MSG_libraryDeletedError");
                     ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(e,message));
                 }
