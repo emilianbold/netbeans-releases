@@ -57,7 +57,7 @@ import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
- * Represents one plain J2SE project.
+ * Represents one plain Web project.
  * @author Jesse Glick, et al.
  */
 final class WebProject implements Project, AntProjectListener {
@@ -108,7 +108,7 @@ final class WebProject implements Project, AntProjectListener {
             spp,
             webModule,
             J2eeModuleProvider.createJ2eeProjectMarker (webModule),
-            new J2SEActionProvider( this, helper ),
+            new WebActionProvider( this, helper ),
             new J2SEPhysicalViewProvider(this, helper, spp),
             new J2SECustomizerProvider( this, helper, refHelper ),
             new ClassPathProviderImpl(helper),
