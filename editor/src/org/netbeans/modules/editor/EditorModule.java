@@ -24,7 +24,7 @@ import com.netbeans.editor.BaseDocument;
 import com.netbeans.editor.BaseKit;
 import com.netbeans.editor.Settings;
 import com.netbeans.editor.ext.JavaKit;
-import com.netbeans.editor.Indent;
+import com.netbeans.editor.Formatter;
 import com.netbeans.editor.view.DialogSupport;
 import com.netbeans.editor.ext.ExtSettings;
 import org.openide.modules.ModuleInstall;
@@ -68,7 +68,7 @@ public class EditorModule implements ModuleInstall {
 
   private static void registerIndents() {
     IndentEngine.register(MIME_JAVA,
-        new FilterIndentEngine(Indent.getIndent(JavaKit.class)));
+        new FilterIndentEngine(Formatter.getFormatter(JavaKit.class)));
   }
 
   /** Module installed for the first time. */
@@ -86,6 +86,7 @@ public class EditorModule implements ModuleInstall {
     DialogSupport.init();
     DialogSupport.setDialogCreator(new NbDialogCreator());
     ExtSettings.init(rootDir.getAbsolutePath() + File.separator + DB_DIR);
+    KitSupport.init();
 
     // preload some classes for faster editor opening
     BaseKit.getKit(NbEditorJavaKit.class).createDefaultDocument();
@@ -127,22 +128,22 @@ public class EditorModule implements ModuleInstall {
 
   static class FilterIndentEngine extends IndentEngine {
 
-    Indent indent;
+    Formatter formatter;
 
-    FilterIndentEngine(Indent indent) { 
-      this.indent = indent;
+    FilterIndentEngine(Formatter formatter) { 
+      this.formatter = formatter;
     }
 
     public int indentLine (Document doc, int offset) {
-      return indent.indentLine((BaseDocument)doc, offset);
+      return formatter.indentLine((BaseDocument)doc, offset);
     }
     
     public int indentNewLine (Document doc, int offset) {
-      return indent.indentNewLine((BaseDocument)doc, offset);
+      return formatter.indentNewLine((BaseDocument)doc, offset);
     }
     
     public Writer createWriter (Document doc, int offset, Writer writer) {
-      return indent.createWriter((BaseDocument)doc, offset, writer);
+      return formatter.createWriter((BaseDocument)doc, offset, writer);
     }
 
   }
@@ -151,6 +152,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  17   Gandalf   1.16        7/9/99   Miloslav Metelka 
  *  16   Gandalf   1.15        6/9/99   Miloslav Metelka 
  *  15   Gandalf   1.14        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

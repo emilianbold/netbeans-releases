@@ -13,9 +13,12 @@
 
 package com.netbeans.developer.modules.text;
 
+import java.awt.Component;
 import javax.swing.text.AttributeSet;
+import javax.swing.JEditorPane;
 import com.netbeans.editor.GuardedDocument;
 import com.netbeans.editor.Syntax;
+import com.netbeans.editor.Utilities;
 import org.openide.text.NbDocument;
 
 /** 
@@ -27,7 +30,7 @@ import org.openide.text.NbDocument;
 
 public class NbEditorDocument extends GuardedDocument
 implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
-NbDocument.Printable {
+NbDocument.Printable, NbDocument.CustomEditor {
 
   PrintSupport printSupport;
 
@@ -71,10 +74,15 @@ NbDocument.Printable {
     return getPrintSupport().createPrintIterators();
   }
   
+  public Component createEditor(JEditorPane j) {
+    return Utilities.getExtUI(j).getExtComponent();
+  }
+
 }
 
 /*
  * Log
+ *  8    Gandalf   1.7         7/9/99   Miloslav Metelka 
  *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  6    Gandalf   1.5         5/7/99   Miloslav Metelka improved setChar.Attr.()
