@@ -16,15 +16,14 @@ package com.netbeans.developer.modules.loaders.form;
 import java.awt.*;
 import java.beans.*;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.lang.reflect.Method;
 import javax.swing.JComponent;
 
-import com.netbeans.developer.impl.IDESettings;
 import org.openide.util.Utilities;
 import org.openide.util.io.*;
-//import com.netbeans.developer.modules.loaders.form.layouts.*;
-//import com.netbeans.developer.modules.loaders.form.layouts.support.*;
 import com.netbeans.developer.modules.loaders.form.util.*;
 
 /** A class that contains utility methods for the formeditor.
@@ -37,9 +36,6 @@ public class FormUtils extends Object {
 // Static variables
   
   private static final boolean debug = (System.getProperty ("netbeans.debug.form") != null);
-
-  /** The IDESettings - useed for output details level */
-  private static final IDESettings ideSettings = new IDESettings ();
 
   /** The list of all well-known heavyweight components */
   private static Class[] heavyweightComponents;
@@ -294,10 +290,73 @@ public class FormUtils extends Object {
     }
   }
   
+  /** A utility method which looks for the first common ancestor of the 
+  * classes specified. The ancestor is either one of the two classes, if one of them extends the other
+  * or their first superclass which is common to both.
+  * @param cl1 the first class
+  * @param cl2 the first class
+  * @return class which is superclass of both classes provided, or null if the first common superclass is java.lang.Object]
+  */
+  public Class findCommonAncestor (Class cl1, Class cl2) {
+    // handle direct inheritance
+    if (cl1.isAssignableFrom (cl2)) return cl1; // cl2 is subclass of cl1
+    if (cl2.isAssignableFrom (cl1)) return cl2; // cl1 is subclass of cl2
+
+    ArrayList cl1Ancestors = new ArrayList (8);
+    ArrayList cl2Ancestors = new ArrayList (8);
+    Class cl1An = cl1.getSuperclass ();
+    Class cl2An = cl2.getSuperclass ();
+    while (cl1An != null) {
+      cl1Ancestors.add (cl1An);
+      cl1An = cl1An.getSuperclass ();
+    }
+    while (cl2An != null) {
+      cl2Ancestors.add (cl2An);
+      cl2An = cl2An.getSuperclass ();
+    }
+    if (cl2Ancestors.size () > cl1Ancestors.size ()) {
+      ArrayList temp = cl1Ancestors;
+      cl1Ancestors = cl2Ancestors;
+      cl2Ancestors = temp;
+    }
+    // cl1Ancestors is now the longer stack of classes, 
+    // i.e. it must contain the first common superclass
+    Class foundClass = null;
+    for (Iterator it = cl1Ancestors.iterator (); it.hasNext ();) {
+      Object o = it.next ();
+      if (cl2Ancestors.contains (o)) {
+        foundClass = (Class)o;
+        break;
+      }
+    }
+    if (foundClass.equals (Object.class)) {
+      foundClass = null; // if Object is the first common superclass, null is returned
+    }
+    return foundClass;
+  }  
+
+  /** A utility method which looks for the first common ancestor of the 
+  * classes specified. The ancestor is either one of the two classes, if one of them extends the other
+  * or their first superclass which is common to both.
+  * The stopClass parameter can be used to limit the superclass to be found to be instance
+  * @param cl1 the first class
+  * @param cl2 the first class
+  * @param stopClass a class to limit the results to, i.e. a result returned is either subclass of the stopClass or null. 
+  *                  If the stopClass is null, the result is not limited to any particular class
+  * @return class which is superclass of both classes provided, or null if the first common superclass is not inmstance of stopClass]
+  */
+  public Class findCommonAncestor (Class cl1, Class cl2, Class stopClass) {
+    Class cl = findCommonAncestor (cl1, cl2);
+    if (stopClass == null) return cl;
+    if ((cl == null) || (!(stopClass.isAssignableFrom (cl)))) return null;
+    return cl;
+  }  
 }
 
 /*
  * Log
+ *  18   Gandalf   1.17        9/17/99  Ian Formanek    Removed obsoleted code, 
+ *       findCommonAncestor method added
  *  17   Gandalf   1.16        7/27/99  Ian Formanek    getAdapterForListener ->
  *       BeanSupport
  *  16   Gandalf   1.15        7/19/99  Ian Formanek    pack () in test mode
