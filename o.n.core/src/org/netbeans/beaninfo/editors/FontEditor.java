@@ -118,6 +118,10 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
     public void paintValue (Graphics g, Rectangle rectangle) {
         Font f = g.getFont ();
+        
+        // Fix of 21713, set default value
+        if ( font == null ) setValue( null );
+        
         FontMetrics fm = g.getFontMetrics (font);
         g.setFont (font);
         g.drawString (fontName,
