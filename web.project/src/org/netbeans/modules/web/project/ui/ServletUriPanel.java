@@ -55,6 +55,7 @@ public class ServletUriPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServletUriPanel.class, "A11Y_desc_setServletURI"));
         jComboBox1.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
