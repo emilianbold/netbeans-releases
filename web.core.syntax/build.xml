@@ -97,9 +97,27 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="netbeans"/>
   </target>
 
+  <target name="real-clean" depends="clean">
+    <delete dir="reload"/>
+  </target>
+  
+  <target name="test-build" depends="compile">
+    <mkdir dir="reload"/>
+    <property name="buildnumber" value="testing"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <locjar jarfile="reload/jsp-syntax.jar"
+            manifest="manifest-subst.mf"
+            basedir="src"
+	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
+	    compress="false">
+      <include name="org/netbeans/modules/web/core/syntax/"/>
+      <locale name="ja"/>
+    </locjar>
+  </target>
   <!-- This target will only work *inside* the IDE! -->
-  <target depends="jars" description="Test the module inside the running IDE." name= "test">
-    <nbinstaller action="reinstall" module="netbeans/modules/eager/jsp-syntax.jar"/>
+  <target name="test" depends="test-build" description="Test module inside running IDE.">
+    <nbinstaller module="reload/jsp-syntax.jar" action="reinstall"/>
   </target>
 
 </project>
