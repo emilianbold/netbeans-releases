@@ -157,7 +157,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building java/srcmodel..."/>
     <ant dir="../java/srcmodel" target="netbeans"/>
   </target>
-  <target name="all-core" depends="all-openide,all-openide/deprecated">
+  <target name="all-core" depends="all-openide">
     <echo message="Building IDE core implementation..."/>
     <ant dir="../core" target="netbeans"/>
   </target>
@@ -232,7 +232,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module applet..."/>
     <ant dir="../applet" target="netbeans"/>
   </target>
-  <target name="all-autoupdate" depends="all-openide,all-core,all-openide/deprecated">
+  <target name="all-autoupdate" depends="all-openide,all-core">
     <echo message="Building module autoupdate..."/>
     <ant dir="../autoupdate" target="netbeans"/>
   </target>
