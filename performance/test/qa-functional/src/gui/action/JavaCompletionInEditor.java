@@ -17,7 +17,7 @@ import java.awt.Component;
 
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
-import org.netbeans.modules.editor.options.JavaOptions;
+import org.netbeans.modules.java.editor.options.JavaOptions;
 import org.netbeans.modules.java.settings.JavaSettings;
 
 import org.netbeans.jellytools.MainWindowOperator;
