@@ -73,7 +73,7 @@ public class PropertyType_Icon extends PropertyEditorsTest {
     }
 
     public void testCustomizerOkClasspath() {
-        propertyValue_L = "Classpath: /gui/propertyEditors/data/ColorPreview.gif";
+        propertyValue_L = "Classpath: /gui/propertyeditors/data/ColorPreview.gif";
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
@@ -118,6 +118,7 @@ public class PropertyType_Icon extends PropertyEditorsTest {
     public void setCustomizerValue() {
         IconCustomizer customizer = new IconCustomizer(propertyCustomizer);
         customizer.setValue(propertyValue_L);
+	org.netbeans.test.oo.gui.jam.JamUtilities.waitEventQueueEmpty(1000);
     }
     
     public void verifyPropertyValue(boolean expectation) {

@@ -66,7 +66,7 @@ public class PropertyType_Filesystem extends PropertyEditorsTest {
     
     public void testCustomizerAddDirectory() {
         propertyValue_L = ADDDIRECTORY + FS_Data_path;
-        propertyValueExpectation_L = FS_Data_path;
+        propertyValueExpectation_L = getOSDependentFilesystem(FS_Data_path);
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
@@ -128,6 +128,17 @@ public class PropertyType_Filesystem extends PropertyEditorsTest {
         
         return str;
     }
+    
+    private String getOSDependentFilesystem(String path) {
+        String os = System.getProperty("os.name");
+        System.err.println("Os name = {"+os+"}");
+        
+        if(os.indexOf("Win")!=-1)
+            return path.replace('\\','/');
+        
+        return path;
+    }
+    
     
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line

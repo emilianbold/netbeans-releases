@@ -102,7 +102,7 @@ public abstract class PropertyEditorsTest extends NbTestCase {
             propertyInitialValue = getValue(propertyName);
             openAndGetPropertyCustomizer(propertyName);
             setCustomizerValue();
-            JamUtilities.waitEventQueueEmpty(500);
+            //JamUtilities.waitEventQueueEmpty(500);
             propertyCustomizer.ok();
             err.println("=========================== Trying to set value by customizer-ok {name="+propertyName+" / value="+propertyValue+"} - finished.");
             verifyPropertyValue(expectance);
@@ -287,6 +287,7 @@ public abstract class PropertyEditorsTest extends NbTestCase {
         // select Other Components | PropertyEditorsBean
         err.println("=========================== Trying to find Other Components | " +beanName+".");
         componentInspector.selectNode("Other Components"+componentInspector.delim+beanName,false);
+        JamUtilities.waitEventQueueEmpty(500);  // must wait, because sometimes properties tab isn't updated immediately after selection node 
         componentInspector.switchToPropertiesTab();
         err.println("=========================== Trying to find Other Components | " +beanName+" - finished.");
         

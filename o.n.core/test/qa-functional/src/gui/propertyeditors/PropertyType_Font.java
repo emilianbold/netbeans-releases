@@ -53,28 +53,28 @@ public class PropertyType_Font extends PropertyEditorsTest {
     }
     
     public void testCustomizerOk() {
-        propertyValue_L = "Arial, 10, Bold";
+        propertyValue_L = "Monospaced, 10, Bold";
         propertyValueExpectation_L = "["+propertyValue_L+"]";
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerOkUnknownSize() {
-        propertyValue_L = "Arial, 13, Bold";
+        propertyValue_L = "Monospaced, 13, Bold";
         propertyValueExpectation_L = "["+propertyValue_L+"]";
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerCancel(){
-        propertyValue_L = "Arial, 100, Bold";
+        propertyValue_L = "Monospaced, 100, Bold";
         propertyValueExpectation_L = "["+propertyValue_L+"]";
         waitDialog = false;
         setByCustomizerCancel(propertyName_L, false);
     }
     
     public void testCustomizerInvalid(){
-        propertyValue_L = "Arial, xx, Bold Italic";
+        propertyValue_L = "Monospaced, xx, Bold Italic";
         propertyValueExpectation_L = "["+propertyValue_L+"]";
         waitDialog = false;
         lastTest = true;

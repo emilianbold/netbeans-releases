@@ -42,6 +42,8 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
     private static String FS_Data_path;
     private static String FS_Data_path_data_jar;
     
+    private static String delim;
+    
     /** Creates a new instance of PropertyType_NbClassPath */
     public PropertyType_NbClassPath(String testName) {
         super(testName);
@@ -59,9 +61,19 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
         FS_Data_path = path.substring(0,path.lastIndexOf(System.getProperty("file.separator")));
         FS_Data_path_data_jar = FS_Data_path + System.getProperty("file.separator") + "data.jar";
         
+        String os = System.getProperty("os.name");
+        System.err.println("Os name = {"+os+"}");
+        
+        if(os.indexOf("Win")!=-1)
+            delim = ";";
+        else
+            delim = ":";
+           
+        System.err.println("delim={"+delim+"}");
+        
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new PropertyType_NbClassPath("testByInPlace"));
-        suite.addTest(new PropertyType_NbClassPath("testCustomizerCancel"));
+        suite.addTest(new PropertyType_NbClassPath("testCustomizerCancel")); 
         suite.addTest(new PropertyType_NbClassPath("testCustomizerAddDirectory"));
         suite.addTest(new PropertyType_NbClassPath("testCustomizerRemove"));
         suite.addTest(new PropertyType_NbClassPath("testCustomizerUp"));
@@ -75,14 +87,14 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
     
     public void testCustomizerAddDirectory() {
         propertyValue_L = ADDDIRECTORY + FS_Data_path;
-        propertyValueExpectation_L =  "one.jar:two.zip:" + FS_Data_path;
+        propertyValueExpectation_L =  "one.jar"+delim+"two.zip" + delim + FS_Data_path;
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerAddJar() {
         propertyValue_L = ADDJAR + FS_Data_path_data_jar;
-        propertyValueExpectation_L = "two.zip:one.jar:"+ FS_Data_path_data_jar;
+        propertyValueExpectation_L = "two.zip"+delim+"one.jar"+ delim + FS_Data_path_data_jar;
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
@@ -90,7 +102,7 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
     public void testCustomizerRemove() {
         propertyValue_L = REMOVE + FS_Data_path;
         //propertyValueExpectation_L = "one.jar:two.zip:" + FS_Data_path_data_jar;
-        propertyValueExpectation_L = "one.jar:two.zip";
+        propertyValueExpectation_L = "one.jar"+delim+"two.zip";
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
@@ -98,7 +110,7 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
     public void testCustomizerUp() {
         propertyValue_L = UP + "two.zip";
         //propertyValueExpectation_L = "two.zip:one.jar:" + FS_Data_path_data_jar;
-        propertyValueExpectation_L = "two.zip:one.jar";
+        propertyValueExpectation_L = "two.zip"+delim+"one.jar";
         waitDialog = false;
         lastTest = true;
         setByCustomizerOk(propertyName_L, true);
@@ -106,7 +118,7 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
     
     public void testCustomizerDown() {
         propertyValue_L = DOWN + "one.jar";
-        propertyValueExpectation_L = "two.zip:" + FS_Data_path_data_jar + ":one.jar" ;
+        propertyValueExpectation_L = "two.zip" + delim + FS_Data_path_data_jar + delim + "one.jar" ;
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
@@ -119,7 +131,7 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
     }
     
     public void testByInPlace(){
-        propertyValue_L = "one.jar:two.zip";
+        propertyValue_L = "one.jar"+delim+"two.zip";
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;
         setByInPlace(propertyName_L, propertyValue_L, true);
