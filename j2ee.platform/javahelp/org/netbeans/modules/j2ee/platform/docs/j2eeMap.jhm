@@ -81,8 +81,9 @@
 	<mapID target="about_web_service" url="web/webservice/about_jwsd.html" />
 	<mapID target="about_web_service_client" url="web/webserviceclient/about_websvc_client.html" />
 	<mapID target="create_ws" url="web/webservice/create_ws.html" />
+	<mapID target="create_ws_customize" url="web/webservice/create_ws_customize.html" />
 	<mapID target="add_ws_operation" url="web/webservice/add_ws_operation.html" />
-	<mapID target="add_ws_to_registry" url="web/webservice/add_ws_to_registry.html" />
+	<mapID target="add_soap_message" url="web/webservice/add_soap_message.html" />
 	<mapID target="test_ws" url="web/webservice/test_ws.html" />
 	<mapID target="run_ws" url="web/webservice/run_ws.html" />	
 	<mapID target="create_wsc" url="web/webserviceclient/create_wsc.html" />
