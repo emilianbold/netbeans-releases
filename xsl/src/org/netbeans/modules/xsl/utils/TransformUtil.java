@@ -241,12 +241,12 @@ public class TransformUtil {
                     ProtectionDomain domain = transformer.getClass().getProtectionDomain();
                     CodeSource codeSource = domain.getCodeSource();
                     if (codeSource == null) {
-                        notifier.receive(new CookieMessage(Util.THIS.getString("BK000")));
+                        notifier.receive(new CookieMessage(Util.THIS.getString("BK000", transformer.getClass().getName())));
                     } else {
                         URL location = codeSource.getLocation();
-                        notifier.receive(new CookieMessage(Util.THIS.getString("BK001", location)));
+                        notifier.receive(new CookieMessage(Util.THIS.getString("BK001", location, transformer.getClass().getName())));
                     }
-                                        
+
                     Proxy proxy = new Proxy (notifier);
                     transformer.setErrorListener (proxy);
                 }
