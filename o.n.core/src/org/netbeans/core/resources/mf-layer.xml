@@ -840,6 +840,13 @@ SystemFileSystem
 
   </folder>
 
+  <!-- Lines marked as erroneous: -->
+  <folder name="Editors">
+    <folder name="AnnotationTypes">
+      <file name="org-netbeans-core-compiler-error.xml" url="error-annotation.xml"/>
+    </folder>
+  </folder>
+
   <!-- For debugging only, comment out if desired: -->
   <file name="debug-sfs-structure[org-netbeans-core-projects-SystemFileSystem$StructureNode].instance"/>
 
