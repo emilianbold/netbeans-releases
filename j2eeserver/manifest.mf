@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.j2eeserver/1
 OpenIDE-Module-Display-Category: J2EE Support
 OpenIDE-Module-Install: org/netbeans/modules/j2ee/IntegrationModule.class
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.2
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Name: J2EE Server Registry
 OpenIDE-Module-Module-Dependencies: org.openidex.util/1,org.netbeans.modules.debugger.jpda/1
