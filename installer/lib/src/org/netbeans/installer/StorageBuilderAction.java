@@ -322,7 +322,6 @@ public class StorageBuilderAction extends ProductAction {
     
     public void startProgress() {
         progressThread = new ProgressThread();
-        progressThread.setPriority(Thread.MIN_PRIORITY);
         progressThread.start();
     }
     
