@@ -368,8 +368,11 @@ class SearchThreadJdk12 extends IndexSearchThread {
             }
             else if ( where == IN_DESCRIPTION_SUFFIX ) {
                 currentDii.setRemark( currentDii.getRemark() + new String( data ));
-                currentDii.setDeclaringClass(new String( data ).trim());
-                insertDocIndexItem( currentDii );
+                String declaringClass = new String( data ).trim();
+                if( !(".".equals(declaringClass))){
+                    currentDii.setDeclaringClass(declaringClass);
+                    insertDocIndexItem( currentDii );
+                }
             }
             else
                 where = IN_BALAST;

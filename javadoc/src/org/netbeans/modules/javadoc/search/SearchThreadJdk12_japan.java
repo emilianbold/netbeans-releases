@@ -371,23 +371,26 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                 boolean isStatic = false;
                 String text = new String ( data );
                 currentDii.setRemark( currentDii.getRemark() + text);
-                currentDii.setDeclaringClass(new String( text ).trim());
-                
-                // System.out.println("Data: " + text );
-                text = text.toUpperCase();
-                
-                // System.out.println("Data: " + text );
-                text = text.toUpperCase();
-                if( text.indexOf( STR_STATIC ) != -1 )
-                    isStatic = true;
-                
-                if( text.indexOf ( STR_CONSTRUCTOR_JA ) != -1 )
-                    currentDii.setIconIndex (DocSearchIcons.ICON_CONSTRUCTOR );
-                else if( text.indexOf ( STR_METHOD_JA ) != -1 )
-                    currentDii.setIconIndex ( isStatic ? DocSearchIcons.ICON_METHOD_ST : DocSearchIcons.ICON_METHOD );
-                else if( text.indexOf ( STR_VARIABLE_JA ) != -1 )
-                    currentDii.setIconIndex ( isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE );
-                insertDocIndexItem( currentDii );
+                String declaringClass = new String( data ).trim();
+                if( !(".".equals(declaringClass))){
+                    currentDii.setDeclaringClass(declaringClass);
+
+                    // System.out.println("Data: " + text );
+                    text = text.toUpperCase();
+
+                    // System.out.println("Data: " + text );
+                    text = text.toUpperCase();
+                    if( text.indexOf( STR_STATIC ) != -1 )
+                        isStatic = true;
+
+                    if( text.indexOf ( STR_CONSTRUCTOR_JA ) != -1 )
+                        currentDii.setIconIndex (DocSearchIcons.ICON_CONSTRUCTOR );
+                    else if( text.indexOf ( STR_METHOD_JA ) != -1 )
+                        currentDii.setIconIndex ( isStatic ? DocSearchIcons.ICON_METHOD_ST : DocSearchIcons.ICON_METHOD );
+                    else if( text.indexOf ( STR_VARIABLE_JA ) != -1 )
+                        currentDii.setIconIndex ( isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE );
+                    insertDocIndexItem( currentDii );
+                }
             }
             else
                 where = IN_BALAST;

@@ -42,6 +42,7 @@ public abstract class IndexSearchThread extends Thread  {
     private int tokens=0;
 
     private String lastAdd ="";
+    private String lastDeclaring="";
     /** This method must terminate the process of searching */
     abstract void stopSearch();
 
@@ -107,10 +108,15 @@ public abstract class IndexSearchThread extends Thread  {
         
         if( tokens < 2 ){
             if( diiField.startsWith( lastField ) ){
-                if( !lastAdd.equals( diiField ) ){
-                    ddiConsumer.addDocIndexItem ( dii );//System.out.println("Field " + diiField + " icon " + dii.getIconIndex() + " remark " + dii.getRemark());
+                //System.out.println("------");
+                //System.out.println("Field: " + diiField + " last field: " + lastAdd + " declaring " + diiDeclaringClass + " package " + diiPackage);
+                if( !lastAdd.equals( diiField ) || !lastDeclaring.equals( diiDeclaringClass )){
+                    //System.out.println("ADDED");
+                    ddiConsumer.addDocIndexItem ( dii );
                     lastAdd = diiField;
+                    lastDeclaring = diiDeclaringClass;
                 }
+                //System.out.println("------");                
             }
             else if( diiDeclaringClass.startsWith( lastField ) && dii.getIconIndex() == DocSearchIcons.ICON_CLASS ) {
                 if( !lastAdd.equals( diiDeclaringClass ) ){
