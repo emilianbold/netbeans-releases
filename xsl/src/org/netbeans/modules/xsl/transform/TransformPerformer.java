@@ -23,6 +23,7 @@ import java.net.UnknownHostException;
 import java.awt.Dialog;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyVetoException;
 
 import org.xml.sax.*;
 import javax.xml.parsers.*;
@@ -54,6 +55,7 @@ import org.netbeans.modules.xsl.ui.TransformPanel;
 import org.netbeans.modules.xsl.settings.TransformHistory;
 import org.netbeans.modules.xsl.actions.TransformAction;
 import org.netbeans.modules.xsl.utils.TransformUtil;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * Handle workflow of transformation action, gather UI info and
@@ -330,7 +332,7 @@ public class TransformPerformer {
             OutputStream outputStream = null;
             FileLock fileLock = null;
             try {
-                fileLock = resultFO.lock();
+                fileLock = resultFO.lock();               
                 outputStream = resultFO.getOutputStream(fileLock);
                 
                 Result outputResult = new StreamResult(outputStream); // throws IOException, FileStateInvalidException
@@ -344,6 +346,16 @@ public class TransformPerformer {
                 String xslName = data.getXSL();
                 TransformPerformer.this.getCookieObserver().message(Util.THIS.getString("MSG_transformation_1", xmlName, xslName));
                 TransformUtil.transform(xmlSource, transformableCookie, xslSource, outputResult, TransformPerformer.this.getCookieObserver()); // throws TransformerException
+                
+                // revalidate DataObject associated with possibly partially written file #28079
+                try {
+                    DataObject dataObject = DataObject.find(resultFO);
+                    dataObject.setValid(false);
+                } catch (DataObjectNotFoundException dnf) {
+                    throw new IllegalStateException();
+                } catch (PropertyVetoException pve) {
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot invalidate " + resultFO);
+                }
                 
                 if ( data.getProcessOutput() == TransformHistory.APPLY_DEFAULT_ACTION ) {
                     GuiUtil.performDefaultAction(resultFO);
