@@ -16,7 +16,7 @@
 need to configure the IDE with your proxy settings.</p>
 <p><b>To configure the IDE to use an HTTP proxy:</b></p>
 <ol>
-<li>From the main window, choose Tools <img src="../images/arrow.gif"> Options.</li>
+<li>From the main window, choose Tools <img src="../images/arrow.gif" alt="and choose"> Options.</li>
 <li>Expand the IDE Configuration node, and then expand the System node.
 </li>
 <li>Select the System Settings Node.</li>
@@ -48,7 +48,8 @@ when running on a UNIX or LINUX machine:</b></p>
 <li>Change directory to your <i>IDE_installation</i><code>/bin</code> directory.</li>
 <li>Create a new shell script file.</li>
 <li>Open the new shell file in a text editor and enter the line 
-<p><code>runide.sh -J-DsocksProxyHost=</code><i>SOCKS-SERVER</i> -DsocksProxyPort=1080</code></p><p>
+<p><code>runide.sh -J-DsocksProxyHost=</code><i>SOCKS-SERVER</i> <code>-DsocksProxyPort=1080</code></p>
+<p>
 where <i>SOCKS-SERVER</i> is the host name of your SOCKS proxy.
 </p></li>
 <li>Save the shell script and close it.</li>
@@ -65,7 +66,6 @@ where <i>SOCKS-SERVER</i> is the host name of your SOCKS proxy.
 <td width="23"></td>
 <td>
 <a href="httpserver-options.html">Configuring HTTP Server Options</a>
-<br>
 </td></tr>
 </table>
 <hr>
