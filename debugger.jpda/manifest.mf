@@ -4,7 +4,5 @@ OpenIDE-Module-Install: org/netbeans/modules/debugger/jpda/JPDADebuggerModule.cl
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.debugger.core/1 > 1.1.4
 OpenIDE-Module-Description: org.netbeans.modules.debugger.jpda.docs.HelpSet
 OpenIDE-Module-Specification-Version: 1.5
-OpenIDE-Module-Implementation-Version: 1.5
-
-
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 

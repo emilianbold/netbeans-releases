@@ -14,29 +14,37 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="usersguide" default="nbm" basedir=".">
   <target name="compile">
-    <javac srcdir="src"
-           destdir="src"
-           classpath="../openide/netbeans/lib/openide.jar"/>
+    <javac srcdir="src" destdir="src">
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+      </classpath>
+    </javac>
   </target>
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copyfile src="manifest.mf" dest="manifest-subst.mf" filtering="on"/>
     <jar jarfile="netbeans/modules/usersguide.jar"
-         manifest="manifest.mf"
+         manifest="manifest-subst.mf"
          basedir="src"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
   <target name="release">
-    <copydir src="release"
-             dest="netbeans"/>
+    <copydir src="release" dest="netbeans"/>
   </target>
   <target name="javahelp">
-    <copydir src="javahelp"
-             dest="netbeans/docs"/>
+    <copydir src="javahelp" dest="netbeans/docs">
+      <!-- Temporary files, or preprocessing scripts: -->
+      <exclude name="**/check-anchors.pl"/>
+      <exclude name="**/context-help.jhm"/>
+      <exclude name="**/create-helpset-files.pl"/>
+      <exclude name="**/forte4j_help_fcs.jhm"/>
+      <exclude name="**/usergdix.xml"/>
+      <exclude name="**/usergdto.xml"/>
+    </copydir>
   </target>
   <target name="nbm" depends="jars,release,javahelp">
-    <zip zipfile="usersguide.nbm"
-         includes="netbeans/"
-	 basedir="."/>
+    <zip zipfile="usersguide.nbm" includes="netbeans/" basedir="."/>
   </target>
 </project>

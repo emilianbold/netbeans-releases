@@ -12,6 +12,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
+<!-- ToDo: target to build API documentation...would be used by API Support -->
 <project name="openide" default="nbm" basedir=".">
   <target name="compile">
     <available property="jdk13proxies" classname="java.lang.reflect.Proxy"/>
@@ -26,7 +27,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/lib"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copyfile src="manifest.mf" dest="manifest-subst.mf" filtering="on"/>
     <jar jarfile="netbeans/lib/openide.jar"
+         manifest="manifest-subst.mf"
          basedir="src"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>

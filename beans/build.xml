@@ -38,8 +38,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   <target name="jars" depends="compile,tojar">
     <mkdir dir="netbeans/modules"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copyfile src="manifest.mf" dest="manifest-subst.mf" filtering="on"/>
     <jar jarfile="netbeans/modules/beans.jar"
-         manifest="manifest.mf"
+         manifest="manifest-subst.mf"
          basedir="src"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
