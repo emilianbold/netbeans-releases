@@ -217,23 +217,19 @@ public final class CatalogSettings implements Externalizable {
         
         ArrayList list = new ArrayList();
         
-try_next_provider:
         while (it.hasNext()) {
             Object next = it.next();
-            
             // provider test
-            
+            boolean add = false;
             for (int i=0; i<providerClasses.length; i++) {
-                
-                if (providerClasses[i].isAssignableFrom(next.getClass()) == false)
-                    break try_next_provider;
+                if (providerClasses[i].isAssignableFrom(next.getClass())) {
+                    add = true;
+                    break;
+                }
             }
-            
             // add passed
-            
-            list.add(next);
+            if (add) list.add(next);
         }
-        
         return list.iterator();
     }    
 
