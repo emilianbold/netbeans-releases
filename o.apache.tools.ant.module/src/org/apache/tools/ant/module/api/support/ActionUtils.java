@@ -98,6 +98,7 @@ public final class ActionUtils {
         }
         List/*<FileObject>*/ files = new ArrayList();
         Iterator it = context.lookup(new Lookup.Template(DataObject.class)).allInstances().iterator();
+        // XXX this should perhaps also check for FileObject's...
         while (it.hasNext()) {
             DataObject d = (DataObject)it.next();
             FileObject f = d.getPrimaryFile();
