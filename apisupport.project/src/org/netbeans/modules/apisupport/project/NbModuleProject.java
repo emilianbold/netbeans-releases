@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
@@ -25,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.jar.Manifest;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
@@ -54,7 +53,7 @@ import org.w3c.dom.NodeList;
  */
 final class NbModuleProject implements Project {
     
-    private static final Icon NB_PROJECT_ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/apisupport/project/resources/module.gif" ) ); // NOI18N
+    private static final Image NB_PROJECT_ICON = Utilities.loadImage( "org/netbeans/modules/apisupport/project/resources/module.gif" ); // NOI18N
     
     private static final URL BUILD_XSL = NbModuleProject.class.getResource("resources/build.xsl");
     private static final URL BUILD_IMPL_XSL = NbModuleProject.class.getResource("resources/build-impl.xsl");
@@ -160,7 +159,7 @@ final class NbModuleProject implements Project {
         return displayName;
     }
     
-    public Icon getIcon() {
+    public Image getIcon() {
         return NB_PROJECT_ICON;
     }
     
