@@ -171,7 +171,7 @@ public class OpenFileAction extends CallableSystemAction {
                 return;
             }
             for (int i = 0; i < files.length; i++) {
-                OpenFile.getDefault().open(files[i].getPath());
+                OpenFile.getDefault().openFile(files[i].getPath());
             }
             currDir = chooser.getCurrentDirectory();
         } finally {
