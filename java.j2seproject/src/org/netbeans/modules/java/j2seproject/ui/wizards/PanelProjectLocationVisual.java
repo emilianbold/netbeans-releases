@@ -1,13 +1,18 @@
 /*
- * PanelProjectLocationVisual.java
+ *                 Sun Public License Notice
  *
- * Created on March 9, 2004, 1:46 PM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.text.MessageFormat;
 import javax.swing.JFileChooser;
@@ -21,18 +26,17 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  phrebejk
+ * @author  Petr Hrebejk
  */
+
 public class PanelProjectLocationVisual extends javax.swing.JPanel implements DocumentListener {
     
     public static final String PROP_PROJECT_NAME = "projectName";      //NOI18N
     
     private PanelConfigureProject panel;
-    private PropertyChangeSupport support;
         
     /** Creates new form PanelProjectLocationVisual */
     public PanelProjectLocationVisual( PanelConfigureProject panel ) {
-        this.support = new PropertyChangeSupport (this);
         initComponents();
         this.panel = panel;
         // Register listener on the textFields to make the automatic updates
@@ -43,14 +47,6 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
     
     public String getProjectName () {
         return this.projectNameTextField.getText ();
-    }
-    
-    public void addPropertyChangeListener (PropertyChangeListener listener) {
-        this.support.addPropertyChangeListener (listener);
-    }
-    
-    public void removePropertyChangeListener (PropertyChangeListener listener) {
-        this.support.removePropertyChangeListener (listener);
     }
     
     /** This method is called from within the constructor to
@@ -255,21 +251,21 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
     public void changedUpdate( DocumentEvent e ) {
         updateTexts( e );
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
-            this.support.firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
+            firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
     }
     
     public void insertUpdate( DocumentEvent e ) {
         updateTexts( e );
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
-            this.support.firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
+            firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
     }
     
     public void removeUpdate( DocumentEvent e ) {
         updateTexts( e );
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
-            this.support.firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
+            firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
     }
     
