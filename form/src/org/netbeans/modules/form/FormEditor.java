@@ -79,6 +79,11 @@ final public class FormEditor extends Object {
   /** The default percents of the splitting of the ComponentInspector */
   public static final int DEFAULT_INSPECTOR_PERCENTS = 30;
 
+  /** The default width of the form window */
+  public static final int DEFAULT_FORM_WIDTH = 300;
+  /** The default height of the form window */
+  public static final int DEFAULT_FORM_HEIGHT = 200;
+
   static ExplorerActions actions = new ExplorerActions ();  
   
 // ---------------------------------------------------
@@ -606,6 +611,8 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  23   Gandalf   1.22        6/25/99  Ian Formanek    Constants for default 
+ *       form size
  *  22   Gandalf   1.21        6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  21   Gandalf   1.20        6/22/99  Ian Formanek    employed DEFAULT_HELP
  *  20   Gandalf   1.19        6/9/99   Ian Formanek    ---- Package Change To 
