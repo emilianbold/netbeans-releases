@@ -16,6 +16,8 @@ package org.netbeans;
 import java.util.*;
 import java.net.URL;
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * A class loader that has multiple parents and uses them for loading
@@ -489,13 +491,22 @@ public class ProxyClassLoader extends ClassLoader {
         c = loadInOrder(name, fileName, pkg);
 
         if (c != null) {
-            final ClassLoader owner2 = c.getClassLoader(); // who got it?
+            final ClassLoader owner2 = getClassClassLoader(c);
             domainsByPackage.put(pkg, owner2);
         }
         return c;
     }
-    
-    
+
+    // #29844 run as privileged as it may get called by loadClassInternal() used
+    // during class resolving by JVM with arbitrary ProtectionDomain context stack
+    private static ClassLoader getClassClassLoader(final Class c) {
+        return (ClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                return c.getClassLoader(); // who got it?
+            }
+        });
+    }
+
     private final Class loadInOrder( String name, String fileName, String pkg ) throws ClassNotFoundException {
         ClassNotFoundException cached = null;
         for (int i = 0; i < parents.length; i++) {
@@ -507,7 +518,7 @@ public class ProxyClassLoader extends ClassLoader {
                 // pcl might have have c in its already-loaded classes even though
                 // it was not the defining class loader. In that case, if pcl was
                 // not transitive (should not expose its own parents), reject this.
-                if (c != null && (pcl.transitive || c.getClassLoader() == pcl)) return c;
+                if (c != null && (pcl.transitive || getClassClassLoader(c) == pcl)) return c;
 	    } else {
                 // The following is an optimization, it should not affect semantics:
                 boolean skip = false;
