@@ -24,17 +24,18 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
     /** Array of property descriptors. */
     private static PropertyDescriptor[] desc;
 
+    static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
+
     static {
         try {
 
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle");
             desc = new PropertyDescriptor[] {
 
                        // Basic properties: 65 items
 
                        new PropertyDescriptor(DefaultAdaptor.PROP_PROCEDURES_ARE_CALLABLE, DefaultAdaptor.class),
                        new PropertyDescriptor(DefaultAdaptor.PROP_TABLES_ARE_SELECTABLE, DefaultAdaptor.class),
-                       new PropertyDescriptor(DefaultAdaptor.PROP_READONLY, DefaultAdaptor.class, "getreadOnly", "setreadOnly"),
+                       new PropertyDescriptor(DefaultAdaptor.PROP_READONLY, DefaultAdaptor.class, "getreadOnly", "setreadOnly"), // NOI18N
                        new PropertyDescriptor(DefaultAdaptor.PROP_LOCAL_FILES, DefaultAdaptor.class),
                        new PropertyDescriptor(DefaultAdaptor.PROP_FILE_PER_TABLE, DefaultAdaptor.class),
                        new PropertyDescriptor(DefaultAdaptor.PROP_MIXEDCASE_IDENTIFIERS, DefaultAdaptor.class),
@@ -68,7 +69,7 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
                        new PropertyDescriptor(DefaultAdaptor.PROP_OUTER_JOINS, DefaultAdaptor.class),
                        new PropertyDescriptor(DefaultAdaptor.PROP_FULL_OUTER_JOINS, DefaultAdaptor.class),
                        new PropertyDescriptor(DefaultAdaptor.PROP_LIMITED_OUTER_JOINS, DefaultAdaptor.class),
-                       new PropertyDescriptor(DefaultAdaptor.PROP_CATALOG_AT_START, DefaultAdaptor.class, "getcatalogAtStart", "setcatalogAtStart"),
+                       new PropertyDescriptor(DefaultAdaptor.PROP_CATALOG_AT_START, DefaultAdaptor.class, "getcatalogAtStart", "setcatalogAtStart"), // NOI18N
                        new PropertyDescriptor(DefaultAdaptor.PROP_SCHEMAS_IN_DML, DefaultAdaptor.class),
                        new PropertyDescriptor(DefaultAdaptor.PROP_SCHEMAS_IN_PROCEDURE_CALL, DefaultAdaptor.class),
                        new PropertyDescriptor(DefaultAdaptor.PROP_SCHEMAS_IN_TABLE_DEFINITION, DefaultAdaptor.class),
@@ -186,7 +187,7 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
 
             for (int i = 0; i < desc.length; i++) {
                 try {
-                    String name = "PROP_"+desc[i].getName();
+                    String name = "PROP_"+desc[i].getName(); // NOI18N
                     if (i>109) desc[i].setDisplayName(bundle.getString(name));
                     if (i<65) desc[i].setPropertyEditorClass(BooleanEditor.class);
                     if (i<110) desc[i].setExpert(true);
@@ -212,7 +213,9 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
         {
             super (
                 new int[] {	DefaultAdaptor.NOT_SET, DefaultAdaptor.YES, DefaultAdaptor.NO },
-                new String[] { "Not set", "Yes", "No" }
+                new String[] { bundle.getString("NotSet"), 
+                               bundle.getString("Yes"),
+                               bundle.getString("No") }
             );
         }
     }

@@ -13,6 +13,9 @@
 
 package org.netbeans.lib.ddl.impl;
 
+import java.text.MessageFormat;
+import org.openide.util.NbBundle;
+
 import java.text.ParseException;
 import java.util.*;
 import org.netbeans.lib.ddl.*;
@@ -28,6 +31,8 @@ public class ColumnCommand extends AbstractCommand
     /** Column */
     private TableColumn column;
 
+    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
+    
     static final long serialVersionUID =-4554975764392047624L;
     /** Creates specification of command
     * @param type Type of column
@@ -39,19 +44,22 @@ public class ColumnCommand extends AbstractCommand
     {
         Map gprops = (Map)getSpecification().getProperties();
         Map props = (Map)getSpecification().getCommandProperties(cmd);
-        Map bindmap = (Map)props.get("Binding");
+        Map bindmap = (Map)props.get("Binding"); // NOI18N
         String tname = (String)bindmap.get(type);
         if (tname != null) {
             Map typemap = (Map)gprops.get(tname);
-            if (typemap == null) throw new InstantiationException("unable to locate binded object "+tname);
-            Class typeclass = Class.forName((String)typemap.get("Class"));
-            String format = (String)typemap.get("Format");
+            if (typemap == null) throw new InstantiationException(
+                                                MessageFormat.format(bundle.getString("EXC_UnableLocateObject"), // NOI18N
+                                                    new String[] {tname}));
+            Class typeclass = Class.forName((String)typemap.get("Class")); // NOI18N
+            String format = (String)typemap.get("Format"); // NOI18N
             column = (TableColumn)typeclass.newInstance();
             column.setObjectName(name);
             column.setObjectType(type);
             column.setColumnName(name);
             column.setFormat(format);
-        } else throw new InstantiationException("unable to locate type "+type+" in table: "+bindmap);
+        } else throw new InstantiationException(MessageFormat.format(bundle.getString("EXC_UnableLocateType"), // NOI18N
+                                                    new String[] {type, bindmap.toString() }));
 
         return column;
     }
@@ -74,7 +82,7 @@ public class ColumnCommand extends AbstractCommand
     throws DDLException
     {
         Map args = super.getCommandProperties();
-        args.put("column", column.getCommand(this));
+        args.put("column", column.getCommand(this)); // NOI18N
         return args;
     }
 }

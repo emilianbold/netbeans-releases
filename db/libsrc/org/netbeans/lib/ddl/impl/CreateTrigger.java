@@ -14,6 +14,9 @@
 package org.netbeans.lib.ddl.impl;
 
 import java.util.*;
+import java.text.MessageFormat;
+
+import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 
@@ -51,13 +54,15 @@ public class CreateTrigger extends AbstractCommand implements CreateTriggerComma
     public static String getTimingName(int code)
     {
         switch (code) {
-        case BEFORE: return "BEFORE";
-        case AFTER: return "AFTER";
+        case BEFORE: return "BEFORE"; // NOI18N
+        case AFTER: return "AFTER"; // NOI18N
         }
 
         return null;
     }
 
+    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
+    
     static final long serialVersionUID =-2217362040968396712L;
     public CreateTrigger()
     {
@@ -145,20 +150,26 @@ public class CreateTrigger extends AbstractCommand implements CreateTriggerComma
         try {
             Map gprops = (Map)getSpecification().getProperties();
             Map props = (Map)getSpecification().getCommandProperties(Specification.CREATE_TRIGGER);
-            Map bindmap = (Map)props.get("Binding");
-            String tname = (String)bindmap.get("EVENT");
+            Map bindmap = (Map)props.get("Binding"); // NOI18N
+            String tname = (String)bindmap.get("EVENT"); // NOI18N
             if (tname != null) {
                 Map typemap = (Map)gprops.get(tname);
-                if (typemap == null) throw new InstantiationException("unable to locate binded object "+tname);
-                Class typeclass = Class.forName((String)typemap.get("Class"));
-                String format = (String)typemap.get("Format");
+                if (typemap == null) throw new InstantiationException(
+                    MessageFormat.format(
+                        bundle.getString("EXC_UnableLocateObject"), // NOI18N
+                        new String[] {tname}));
+                Class typeclass = Class.forName((String)typemap.get("Class")); // NOI18N
+                String format = (String)typemap.get("Format"); // NOI18N
                 TriggerEvent evt = (TriggerEvent)typeclass.newInstance();
-                Map temap = (Map)props.get("TriggerEventMap");
+                Map temap = (Map)props.get("TriggerEventMap"); // NOI18N
                 evt.setName(TriggerEvent.getName(when));
                 evt.setColumn(columnname);
                 evt.setFormat(format);
                 return (TriggerEvent)evt;
-            } else throw new InstantiationException("unable to locate type EVENT in table: "+bindmap);
+            } else throw new InstantiationException(
+                    MessageFormat.format(
+                        bundle.getString("EXC_UnableLocateType"), // NOI18N
+                        new String[] {"EVENT", bindmap.toString() })); // NOI18N
         } catch (Exception e) {
             throw new DDLException(e.getMessage());
         }
@@ -181,7 +192,7 @@ public class CreateTrigger extends AbstractCommand implements CreateTriggerComma
     throws DDLException
     {
         Map props = (Map)getSpecification().getProperties();
-        String evs = "", argdelim = (String)props.get("TriggerEventListDelimiter");
+        String evs = "", argdelim = (String)props.get("TriggerEventListDelimiter"); // NOI18N
         Map cmdprops = super.getCommandProperties();
 
         Enumeration col_e = events.elements();
@@ -191,12 +202,12 @@ public class CreateTrigger extends AbstractCommand implements CreateTriggerComma
             evs = evs + evt.getCommand(this)+(inscomma ? argdelim : "");
         }
 
-        cmdprops.put("trigger.events", evs);
-        cmdprops.put("trigger.condition", cond);
-        cmdprops.put("trigger.timing", getTimingName(timing));
-        cmdprops.put("table.name", table);
-        cmdprops.put("trigger.body", body);
-        if (eachrow) cmdprops.put("each.row", "");
+        cmdprops.put("trigger.events", evs); // NOI18N
+        cmdprops.put("trigger.condition", cond); // NOI18N
+        cmdprops.put("trigger.timing", getTimingName(timing)); // NOI18N
+        cmdprops.put("table.name", table); // NOI18N
+        cmdprops.put("trigger.body", body); // NOI18N
+        if (eachrow) cmdprops.put("each.row", ""); // NOI18N
         return cmdprops;
     }
 }

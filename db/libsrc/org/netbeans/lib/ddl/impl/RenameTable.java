@@ -29,7 +29,7 @@ public class RenameTable extends AbstractCommand
     private String newname;
 
     /** Command name */
-    public static final String NEW_NAME = "object.newname";
+    public static final String NEW_NAME = "object.newname"; // NOI18N
 
     static final long serialVersionUID =-4410972392441335153L;
 

@@ -48,7 +48,7 @@ public class RenameView extends AbstractCommand
     throws DDLException
     {
         Map args = super.getCommandProperties();
-        args.put("object.newname", newname);
+        args.put("object.newname", newname); // NOI18N
         return args;
     }
 }

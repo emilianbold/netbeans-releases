@@ -46,7 +46,7 @@ public class RenameColumn extends ColumnCommand
     throws DDLException
     {
         Map args = super.getCommandProperties();
-        args.put("column.newname", newname);
+        args.put("column.newname", newname); // NOI18N
         return args;
     }
 }

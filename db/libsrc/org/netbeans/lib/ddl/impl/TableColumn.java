@@ -28,23 +28,23 @@ public class TableColumn extends AbstractTableColumn
             implements Serializable, TableColumnDescriptor, CheckConstraintDescriptor
 {
     /** String constant for column type */
-    public static final String COLUMN = "COLUMN";
+    public static final String COLUMN = "COLUMN"; // NOI18N
     /** String constant for column check */
-    public static final String CHECK = "CHECK";
+    public static final String CHECK = "CHECK"; // NOI18N
     /** String constant for unique column type */
-    public static final String UNIQUE = "UNIQUE";
+    public static final String UNIQUE = "UNIQUE"; // NOI18N
     /** String constant for primary key */
-    public static final String PRIMARY_KEY = "PRIMARY_KEY";
+    public static final String PRIMARY_KEY = "PRIMARY_KEY"; // NOI18N
     /** String constant for foreign key */
-    public static final String FOREIGN_KEY = "FOREIGN_KEY";
+    public static final String FOREIGN_KEY = "FOREIGN_KEY"; // NOI18N
     /** String constant for check constraint */
-    public static final String CHECK_CONSTRAINT = "CHECK_CONSTRAINT";
+    public static final String CHECK_CONSTRAINT = "CHECK_CONSTRAINT"; // NOI18N
     /** String constant for unique constraint */
-    public static final String UNIQUE_CONSTRAINT = "UNIQUE_CONSTRAINT";
+    public static final String UNIQUE_CONSTRAINT = "UNIQUE_CONSTRAINT"; // NOI18N
     /** String constant for primary key constraint */
-    public static final String PRIMARY_KEY_CONSTRAINT = "PRIMARY_KEY_CONSTRAINT";
+    public static final String PRIMARY_KEY_CONSTRAINT = "PRIMARY_KEY_CONSTRAINT"; // NOI18N
     /** String constant for foreign key constraint */
-    public static final String FOREIGN_KEY_CONSTRAINT = "FOREIGN_KEY_CONSTRAINT";
+    public static final String FOREIGN_KEY_CONSTRAINT = "FOREIGN_KEY_CONSTRAINT"; // NOI18N
 
     /** Column type */
     int type;
@@ -161,25 +161,25 @@ public class TableColumn extends AbstractTableColumn
         DatabaseSpecification spec = cmd.getSpecification();
         Map args = super.getColumnProperties(cmd);
         String stype = spec.getType(type);
-        Vector decimaltypes = (Vector)spec.getProperties().get("DecimalTypes");
-        Vector charactertypes = (Vector)spec.getProperties().get("CharacterTypes");
-        String strdelim = (String)spec.getProperties().get("StringDelimiter");
-        Vector sizelesstypes = (Vector)spec.getProperties().get("SizelessTypes");
+        Vector decimaltypes = (Vector)spec.getProperties().get("DecimalTypes"); // NOI18N
+        Vector charactertypes = (Vector)spec.getProperties().get("CharacterTypes"); // NOI18N
+        String strdelim = (String)spec.getProperties().get("StringDelimiter"); // NOI18N
+        Vector sizelesstypes = (Vector)spec.getProperties().get("SizelessTypes"); // NOI18N
 
         // Decimal size for sizeless type
         if (sizelesstypes != null && size > 0) {
             if (!sizelesstypes.contains(stype)) {
-                if (size > 0) args.put("column.size", new Integer(size));
-                if (decsize > 0) args.put("column.decsize", new Integer(decsize));
+                if (size > 0) args.put("column.size", new Integer(size)); // NOI18N
+                if (decsize > 0) args.put("column.decsize", new Integer(decsize)); // NOI18N
             }
         }
 
         String qdefval = defval;
         if (charactertypes.contains(spec.getType(type))) qdefval = strdelim+defval+strdelim;
-        args.put("column.type", spec.getType(type));
-        if (!nullable) args.put("column.notnull", "");
-        if (defval != null) args.put("default.value", qdefval);
-        if (checke != null) args.put("check.condition", checke);
+        args.put("column.type", spec.getType(type)); // NOI18N
+        if (!nullable) args.put("column.notnull", ""); // NOI18N
+        if (defval != null) args.put("default.value", qdefval); // NOI18N
+        if (checke != null) args.put("check.condition", checke); // NOI18N
         return args;
     }
 

@@ -14,6 +14,9 @@
 package org.netbeans.lib.ddl.impl;
 
 import java.util.*;
+import java.text.MessageFormat;
+
+import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 
@@ -35,6 +38,8 @@ public class CreateProcedure extends AbstractCommand implements ProcedureDescrip
 
     /** Arguments */
     private Vector args;
+
+    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
 
     static final long serialVersionUID =1316633286943440734L;
     public CreateProcedure()
@@ -94,20 +99,26 @@ public class CreateProcedure extends AbstractCommand implements ProcedureDescrip
         try {
             Map gprops = (Map)getSpecification().getProperties();
             Map props = (Map)getSpecification().getCommandProperties(Specification.CREATE_PROCEDURE);
-            Map bindmap = (Map)props.get("Binding");
-            String tname = (String)bindmap.get("ARGUMENT");
+            Map bindmap = (Map)props.get("Binding"); // NOI18N
+            String tname = (String)bindmap.get("ARGUMENT"); // NOI18N
             if (tname != null) {
                 Map typemap = (Map)gprops.get(tname);
-                if (typemap == null) throw new InstantiationException("unable to locate binded object "+tname);
-                Class typeclass = Class.forName((String)typemap.get("Class"));
-                String format = (String)typemap.get("Format");
+                if (typemap == null) throw new InstantiationException(
+                    MessageFormat.format(
+                        bundle.getString("EXC_UnableLocateObject"), // NOI18N
+                        new String[] {tname}));
+                Class typeclass = Class.forName((String)typemap.get("Class")); // NOI18N
+                String format = (String)typemap.get("Format"); // NOI18N
                 ProcedureArgument arg = (ProcedureArgument)typeclass.newInstance();
                 arg.setName(name);
                 arg.setType(type);
                 arg.setDataType(datatype);
                 arg.setFormat(format);
                 return (Argument)arg;
-            } else throw new InstantiationException("unable to locate type "+type+" in table: "+bindmap);
+            } else throw new InstantiationException(
+                        MessageFormat.format(
+                            bundle.getString("EXC_UnableLocateType"), // NOI18N
+                            new String[] {String.valueOf(type), bindmap.toString() }));
         } catch (Exception e) {
             throw new DDLException(e.getMessage());
         }
@@ -124,7 +135,7 @@ public class CreateProcedure extends AbstractCommand implements ProcedureDescrip
     throws DDLException
     {
         Map props = (Map)getSpecification().getProperties();
-        String cols = "", argdelim = (String)props.get("ArgumentListDelimiter");
+        String cols = "", argdelim = (String)props.get("ArgumentListDelimiter"); // NOI18N
         Map cmdprops = super.getCommandProperties();
 
         Enumeration col_e = args.elements();
@@ -134,8 +145,8 @@ public class CreateProcedure extends AbstractCommand implements ProcedureDescrip
             cols = cols + arg.getCommand(this)+(inscomma ? argdelim : "");
         }
 
-        cmdprops.put("arguments", cols);
-        cmdprops.put("body", body);
+        cmdprops.put("arguments", cols); // NOI18N
+        cmdprops.put("body", body); // NOI18N
         return cmdprops;
     }
 }

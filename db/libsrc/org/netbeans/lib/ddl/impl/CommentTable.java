@@ -37,7 +37,7 @@ public class CommentTable extends AbstractCommand
 
     public void setComment(String comm)
     {
-        String delim = (String)getSpecification().getProperties().get("StringDelimiter");
+        String delim = (String)getSpecification().getProperties().get("StringDelimiter"); // NOI18N
         if (!(comm.startsWith(delim))) comment = delim+comm+delim;
         else comment = comm;
     }
@@ -46,7 +46,7 @@ public class CommentTable extends AbstractCommand
     throws DDLException
     {
         Map args = super.getCommandProperties();
-        args.put("comment", comment);
+        args.put("comment", comment); // NOI18N
         return args;
     }
 }

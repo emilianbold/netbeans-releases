@@ -16,6 +16,7 @@ package org.netbeans.lib.ddl.impl;
 import java.util.*;
 import java.sql.*;
 import java.text.ParseException;
+import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.util.*;
 
@@ -41,13 +42,15 @@ public class ProcedureArgument implements Argument
     /** Additional properties */
     private Map addprops;
 
+    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
+    
     public static String getArgumentTypeName(int type)
     {
         String typename = null;
         switch (type) {
-        case java.sql.DatabaseMetaData.procedureColumnIn: typename = "IN"; break;
-        case java.sql.DatabaseMetaData.procedureColumnOut: typename = "OUT"; break;
-        case java.sql.DatabaseMetaData.procedureColumnInOut: typename = "INOUT"; break;
+        case java.sql.DatabaseMetaData.procedureColumnIn: typename = "IN"; break; // NOI18N
+        case java.sql.DatabaseMetaData.procedureColumnOut: typename = "OUT"; break; // NOI18N
+        case java.sql.DatabaseMetaData.procedureColumnInOut: typename = "INOUT"; break; // NOI18N
         }
 
         return typename;
@@ -135,11 +138,11 @@ public class ProcedureArgument implements Argument
     {
         HashMap args = new HashMap();
         DatabaseSpecification spec = cmd.getSpecification();
-        Map typemap = (Map)spec.getProperties().get("ProcedureArgumentMap");
+        Map typemap = (Map)spec.getProperties().get("ProcedureArgumentMap"); // NOI18N
         String typename = (String)typemap.get(getArgumentTypeName(type));
-        args.put("argument.name", name);
-        args.put("argument.type", typename);
-        args.put("argument.datatype", spec.getType(dtype));
+        args.put("argument.name", name); // NOI18N
+        args.put("argument.type", typename); // NOI18N
+        args.put("argument.datatype", spec.getType(dtype)); // NOI18N
         return args;
     }
 
@@ -150,7 +153,7 @@ public class ProcedureArgument implements Argument
     throws DDLException
     {
         Map cprops;
-        if (format == null) throw new DDLException("no format specified");
+        if (format == null) throw new DDLException(bundle.getString("EXC_NoFormatSpec")); // NOI18N
         try {
             cprops = getColumnProperties(cmd);
             return CommandFormatter.format(format, cprops);

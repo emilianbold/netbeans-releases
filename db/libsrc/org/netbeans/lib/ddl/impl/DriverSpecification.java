@@ -52,11 +52,11 @@ public class DriverSpecification {
     }
 
     private String getCatalog() {
-        return (String) desc.get("get_Catalog");
+        return (String) desc.get("get_Catalog"); // NOI18N
     }
 
     private String getSchema() {
-        return (String) desc.get("get_Schema");
+        return (String) desc.get("get_Schema"); // NOI18N
     }
 
     public void getTables(String catalog, DatabaseMetaData dmd, String tableNamePattern, String[] types) {
@@ -75,19 +75,19 @@ public class DriverSpecification {
             }
 
         try {
-            if (!getCatalog().equals("true"))
+            if (!getCatalog().equals("true")) // NOI18N
                 catalog = null;
-            if (getSchema().equals("true"))
+            if (getSchema().equals("true")) // NOI18N
                 if (isMSSQLSaUser(dmd))
-                    schemaPattern = "dbo";
+                    schemaPattern = "dbo"; // NOI18N
                 else
                     schemaPattern = dmd.getUserName().trim();
-            if ((tableNamePattern == null) && (!desc.get("getTables_TableNamePattern").equals("null")))
-                tableNamePattern = (String) desc.get("getTables_TableNamePattern");
-            if (desc.get("getTables_Types").equals("null"))
+            if ((tableNamePattern == null) && (!desc.get("getTables_TableNamePattern").equals("null"))) // NOI18N
+                tableNamePattern = (String) desc.get("getTables_TableNamePattern"); // NOI18N
+            if (desc.get("getTables_Types").equals("null")) // NOI18N
                 types = null;
 
-            if (!desc.get("DriverName").equals("DefaultDriver")) {
+            if (!desc.get("DriverName").equals("DefaultDriver")) { // NOI18N
                 rs = dmd.getTables(catalog, schemaPattern, tableNamePattern, types);
                 return;
             }
@@ -133,17 +133,17 @@ public class DriverSpecification {
         String schemaPattern = null;
 
         try {
-            if (!getCatalog().equals("true"))
+            if (!getCatalog().equals("true")) // NOI18N
                 catalog = null;
-            if (getSchema().equals("true"))
+            if (getSchema().equals("true")) // NOI18N
                 if (isMSSQLSaUser(dmd))
-                    schemaPattern = "dbo";
+                    schemaPattern = "dbo"; // NOI18N
                 else
                     schemaPattern = dmd.getUserName().trim();
-            if ((procedureNamePattern == null) && (!desc.get("getProcedures_ProcedureNamePattern").equals("null")))
-                procedureNamePattern = (String) desc.get("getProcedures_ProcedureNamePattern");
+            if ((procedureNamePattern == null) && (!desc.get("getProcedures_ProcedureNamePattern").equals("null"))) // NOI18N
+                procedureNamePattern = (String) desc.get("getProcedures_ProcedureNamePattern"); // NOI18N
 
-            if (!desc.get("DriverName").equals("DefaultDriver")) {
+            if (!desc.get("DriverName").equals("DefaultDriver")) { // NOI18N
                 rs = dmd.getProcedures(catalog, schemaPattern, procedureNamePattern);
                 return;
             }
@@ -200,15 +200,15 @@ public class DriverSpecification {
         }
 
         try {
-            if (!getCatalog().equals("true"))
+            if (!getCatalog().equals("true")) // NOI18N
                 catalog = null;
-            if (getSchema().equals("true"))
+            if (getSchema().equals("true")) // NOI18N
                 if (isMSSQLSaUser(dmd))
-                    schema = "dbo";
+                    schema = "dbo"; // NOI18N
                 else
                     schema = dmd.getUserName().trim();
 
-            if (!desc.get("DriverName").equals("DefaultDriver")) {
+            if (!desc.get("DriverName").equals("DefaultDriver")) { // NOI18N
                 rs = dmd.getPrimaryKeys(catalog, schema, table);
                 return;
             }
@@ -269,19 +269,19 @@ public class DriverSpecification {
         try {
             jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
 
-            if (!getCatalog().equals("true"))
+            if (!getCatalog().equals("true")) // NOI18N
                 catalog = null;
-            if (getSchema().equals("true"))
+            if (getSchema().equals("true")) // NOI18N
                 if (isMSSQLSaUser(dmd))
-                    schema = "dbo";
+                    schema = "dbo"; // NOI18N
                 else
                     schema = dmd.getUserName().trim();
-            if (desc.get("getIndexInfo_Unique").equals("false"))
+            if (desc.get("getIndexInfo_Unique").equals("false")) // NOI18N
                 unique = false;
-            if (desc.get("getIndexInfo_Approximate").equals("true"))
+            if (desc.get("getIndexInfo_Approximate").equals("true")) // NOI18N
                 approximate = true;
 
-            if (!desc.get("DriverName").equals("DefaultDriver")) {
+            if (!desc.get("DriverName").equals("DefaultDriver")) { // NOI18N
                 rs = dmd.getIndexInfo(catalog, schema, table, unique, approximate);
                 if (jdbcOdbcBridge) rsTemp = dmd.getIndexInfo(catalog, schema, table, unique, approximate);
                 return;
@@ -348,15 +348,15 @@ public class DriverSpecification {
         try {
             jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
 
-            if (!getCatalog().equals("true"))
+            if (!getCatalog().equals("true")) // NOI18N
                 catalog = null;
-            if (getSchema().equals("true"))
+            if (getSchema().equals("true")) // NOI18N
                 if (isMSSQLSaUser(dmd))
-                    schemaPattern = "dbo";
+                    schemaPattern = "dbo"; // NOI18N
                 else
                     schemaPattern = dmd.getUserName().trim();
 
-            if (!desc.get("DriverName").equals("DefaultDriver")) {
+            if (!desc.get("DriverName").equals("DefaultDriver")) { // NOI18N
                 rs = dmd.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
                 if (jdbcOdbcBridge) rsTemp = dmd.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
                 return;
@@ -409,17 +409,17 @@ public class DriverSpecification {
         String schemaPattern = null;
 
         try {
-            if (!getCatalog().equals("true"))
+            if (!getCatalog().equals("true")) // NOI18N
                 catalog = null;
-            if (getSchema().equals("true"))
+            if (getSchema().equals("true")) // NOI18N
                 if (isMSSQLSaUser(dmd))
-                    schemaPattern = "dbo";
+                    schemaPattern = "dbo"; // NOI18N
                 else
                     schemaPattern = dmd.getUserName().trim();
-            if ((columnNamePattern == null) && (!desc.get("getProcedureColumns_ColumnNamePattern").equals("null")))
-                columnNamePattern = (String) desc.get("getProcedureColumns_ColumnNamePattern");
+            if ((columnNamePattern == null) && (!desc.get("getProcedureColumns_ColumnNamePattern").equals("null"))) // NOI18N
+                columnNamePattern = (String) desc.get("getProcedureColumns_ColumnNamePattern"); // NOI18N
 
-            if (!desc.get("DriverName").equals("DefaultDriver")) {
+            if (!desc.get("DriverName").equals("DefaultDriver")) { // NOI18N
                 rs = dmd.getProcedureColumns(catalog, schemaPattern, procedureNamePattern, columnNamePattern);
                 return;
             }
@@ -476,15 +476,15 @@ public class DriverSpecification {
         }
 
         try {
-            if (!getCatalog().equals("true"))
+            if (!getCatalog().equals("true")) // NOI18N
                 catalog = null;
-            if (getSchema().equals("true"))
+            if (getSchema().equals("true")) // NOI18N
                 if (isMSSQLSaUser(dmd))
-                    schema = "dbo";
+                    schema = "dbo"; // NOI18N
                 else
                     schema = dmd.getUserName().trim();
 
-            if (!desc.get("DriverName").equals("DefaultDriver")) {
+            if (!desc.get("DriverName").equals("DefaultDriver")) { // NOI18N
                 rs = dmd.getExportedKeys(catalog, schema, table);
                 return;
             }
@@ -541,15 +541,15 @@ public class DriverSpecification {
         }
 
         try {
-            if (!getCatalog().equals("true"))
+            if (!getCatalog().equals("true")) // NOI18N
                 catalog = null;
-            if (getSchema().equals("true"))
+            if (getSchema().equals("true")) // NOI18N
                 if (isMSSQLSaUser(dmd))
-                    schema = "dbo";
+                    schema = "dbo"; // NOI18N
                 else
                     schema = dmd.getUserName().trim();
 
-            if (!desc.get("DriverName").equals("DefaultDriver")) {
+            if (!desc.get("DriverName").equals("DefaultDriver")) { // NOI18N
                 rs = dmd.getImportedKeys(catalog, schema, table);
                 return;
             }
@@ -602,7 +602,7 @@ public class DriverSpecification {
     
     public boolean areViewsSupported(DatabaseMetaData dmd) {
         try {
-            if (dmd.getDatabaseProductName().trim().equals("PointBase"))
+            if (dmd.getDatabaseProductName().trim().equals("PointBase")) // NOI18N
                 return false;
             else
                 return true;
@@ -616,17 +616,17 @@ public class DriverSpecification {
         try {
             String user = dmd.getUserName().trim();
             
-            if (dmd.getDatabaseProductName().trim().equals("Microsoft SQL Server") && user.equals("sa")) {
+            if (dmd.getDatabaseProductName().trim().equals("Microsoft SQL Server") && user.equals("sa")) { // NOI18N
                 LinkedList schemas = new LinkedList();
                 ResultSet rs = dmd.getSchemas();
                 
                 while (rs.next())
-                    schemas.add(rs.getString("TABLE_SCHEM").trim());
+                    schemas.add(rs.getString("TABLE_SCHEM").trim()); // NOI18N
                 
                 if (schemas.contains(user))
                     return false;
                 
-                if (schemas.contains("dbo"))
+                if (schemas.contains("dbo")) // NOI18N
                     return true;
             }
             

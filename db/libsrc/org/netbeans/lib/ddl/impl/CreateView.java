@@ -44,7 +44,7 @@ public class CreateView extends AbstractCommand
     throws DDLException
     {
         Map args = super.getCommandProperties();
-        args.put("query", query);
+        args.put("query", query); // NOI18N
         return args;
     }
 }

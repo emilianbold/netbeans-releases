@@ -44,7 +44,7 @@ public class AddColumn extends ColumnListCommand
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         TableColumn col = specifyColumn(TableColumn.UNIQUE, name, Specification.ADD_COLUMN);
-        col.setObjectName(name+"_UQ");
+        col.setObjectName(name+"_UQ"); // NOI18N
         return col;
     }
 
@@ -52,7 +52,7 @@ public class AddColumn extends ColumnListCommand
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY, name, Specification.ADD_COLUMN);
-        col.setObjectName(name+"_PK");
+        col.setObjectName(name+"_PK"); // NOI18N
         return col;
     }
 
@@ -60,7 +60,7 @@ public class AddColumn extends ColumnListCommand
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         TableColumn col = specifyColumn(TableColumn.CHECK, name, Specification.ADD_COLUMN);
-        col.setObjectName(name+"_CH");
+        col.setObjectName(name+"_CH"); // NOI18N
         col.setCheckCondition(expression);
         return col;
     }
@@ -69,7 +69,7 @@ public class AddColumn extends ColumnListCommand
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         TableColumn col = specifyColumn(TableColumn.CHECK_CONSTRAINT, name, Specification.ADD_COLUMN);
-        col.setObjectName(name+"_CH");
+        col.setObjectName(name+"_CH"); // NOI18N
         col.setCheckCondition(expression);
         return col;
     }

@@ -47,7 +47,7 @@ public class CreateFunction extends CreateProcedure implements FunctionDescripto
     throws DDLException
     {
         Map cmdprops = super.getCommandProperties();
-        cmdprops.put("return.type", getSpecification().getType(rarg));
+        cmdprops.put("return.type", getSpecification().getType(rarg)); // NOI18N
         return cmdprops;
     }
 }

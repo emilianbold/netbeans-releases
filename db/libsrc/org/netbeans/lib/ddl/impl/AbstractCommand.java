@@ -18,6 +18,7 @@ import java.sql.*;
 import java.io.Serializable;
 import java.text.ParseException;
 import org.openide.*;
+import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.util.*;
 import org.openide.windows.OutputWriter;
@@ -43,6 +44,8 @@ public class AbstractCommand
     /** Additional properties */
     private Map addprops;
 
+    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
+    
     static final long serialVersionUID =-560515030304320086L;
     /** Returns specification (DatabaseSpecification) for this command */
     public DatabaseSpecification getSpecification()
@@ -123,9 +126,9 @@ public class AbstractCommand
         HashMap args = new HashMap();
         if (addprops != null) args.putAll(addprops);
         String oname = getObjectName();
-        if (oname != null) args.put("object.name", getObjectName());
-        else throw new DDLException("unknown object name");
-        args.put("object.owner", getObjectOwner());
+        if (oname != null) args.put("object.name", getObjectName()); // NOI18N
+        else throw new DDLException(bundle.getString("EXC_Unknown")); // NOI18N
+        args.put("object.owner", getObjectOwner()); // NOI18N
         return args;
     }
 
@@ -147,7 +150,7 @@ public class AbstractCommand
             fcmd = getCommand();
         } catch (Exception e) {
             //			e.printStackTrace();
-            throw new DDLException("Unable to format a command:\n" + format + "\n" + e.getMessage());
+            throw new DDLException(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage()); // NOI18N
         }
 
         //		System.out.println(fcmd);
@@ -180,7 +183,7 @@ public class AbstractCommand
             //			e.printStackTrace();
             if (opened && fcon != null)
                 spec.closeJDBCConnection();
-            throw new DDLException("Unable to execute a command:\n" + fcmd + "\n" + e.getMessage());
+            throw new DDLException(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage()); // NOI18N
         }
         if (opened) spec.closeJDBCConnection();
     }
@@ -196,7 +199,7 @@ public class AbstractCommand
     throws DDLException
     {
         if (format == null)
-            throw new DDLException("No format specified");
+            throw new DDLException(bundle.getString("EXC_NoFormatSpec")); // NOI18N
         try {
             Map props = getCommandProperties();
             return CommandFormatter.format(format, props);

@@ -14,6 +14,9 @@
 package org.netbeans.lib.ddl.impl;
 
 import java.text.ParseException;
+import java.text.MessageFormat;
+
+import org.openide.util.NbBundle;
 import java.util.*;
 import org.netbeans.lib.ddl.*;
 
@@ -28,6 +31,8 @@ public class ColumnListCommand extends AbstractCommand
 {
     /** Used columns */
     private Vector columns;
+
+    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
 
     static final long serialVersionUID =3646663278680222131L;
     /** Constructor */
@@ -53,22 +58,27 @@ public class ColumnListCommand extends AbstractCommand
         TableColumn column;
         Map gprops = (Map)getSpecification().getProperties();
         Map props = (Map)getSpecification().getCommandProperties(cmd);
-        Map bindmap = (Map)props.get("Binding");
+        Map bindmap = (Map)props.get("Binding"); // NOI18N
         String tname = (String)bindmap.get(type);
         if (tname != null) {
             Map typemap = (Map)gprops.get(tname);
             if (typemap != null) {
-                Class typeclass = Class.forName((String)typemap.get("Class"));
-                String format = (String)typemap.get("Format");
+                Class typeclass = Class.forName((String)typemap.get("Class")); // NOI18N
+                String format = (String)typemap.get("Format"); // NOI18N
                 column = (TableColumn)typeclass.newInstance();
                 column.setObjectName(name);
                 column.setObjectType(type);
                 column.setColumnName(name);
                 column.setFormat(format);
                 columns.add(column);
-            } else throw new InstantiationException("can't locate binded type "+tname+" in: "+props.keySet());
-        } else throw new InstantiationException("can't bind type "+type+", table: "+bindmap);
-
+            } else throw new InstantiationException(
+                    MessageFormat.format(
+                        bundle.getString("EXC_UnableLocateType"), // NOI18N
+                        new String[] {tname, props.keySet().toString() } ));
+        } else throw new InstantiationException(
+                    MessageFormat.format(
+                        bundle.getString("EXC_UnableToBind"), // NOI18N
+                        new String[] {type, bindmap.toString() } ));
         return column;
     }
 
@@ -80,8 +90,8 @@ public class ColumnListCommand extends AbstractCommand
     throws DDLException
     {
         Map props = (Map)getSpecification().getProperties();
-        String cols = (String)props.get("ColumnListHeader");
-        String coldelim = (String)props.get("ColumnListDelimiter");
+        String cols = (String)props.get("ColumnListHeader"); // NOI18N
+        String coldelim = (String)props.get("ColumnListDelimiter"); // NOI18N
         Map args = super.getCommandProperties();
 
         // Construct string
@@ -93,7 +103,7 @@ public class ColumnListCommand extends AbstractCommand
             cols = cols + col.getCommand(this)+(inscomma ? coldelim : "");
         }
 
-        args.put("columns", cols);
+        args.put("columns", cols); // NOI18N
         return args;
     }
 

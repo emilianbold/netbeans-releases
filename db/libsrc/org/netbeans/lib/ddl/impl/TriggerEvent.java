@@ -15,6 +15,7 @@ package org.netbeans.lib.ddl.impl;
 
 import java.util.*;
 import java.sql.*;
+import org.openide.util.NbBundle;
 import java.text.ParseException;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.util.*;
@@ -32,13 +33,15 @@ public class TriggerEvent
     public static final int UPDATE = 2;
     public static final int DELETE = 3;
 
+    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
+    
     /** Converts code into string representation */
     public static String getName(int code)
     {
         switch (code) {
-        case INSERT: return "INSERT";
-        case UPDATE: return "UPDATE";
-        case DELETE: return "DELETE";
+        case INSERT: return "INSERT"; // NOI18N
+        case UPDATE: return "UPDATE"; // NOI18N
+        case DELETE: return "DELETE"; // NOI18N
         }
 
         return null;
@@ -99,8 +102,8 @@ public class TriggerEvent
     throws DDLException
     {
         HashMap args = new HashMap();
-        args.put("event.name", name);
-        args.put("event.column", col);
+        args.put("event.name", name); // NOI18N
+        args.put("event.column", col); // NOI18N
         return args;
     }
 
@@ -111,7 +114,7 @@ public class TriggerEvent
     throws DDLException
     {
         Map cprops;
-        if (format == null) throw new DDLException("no format specified");
+        if (format == null) throw new DDLException(bundle.getString("EXC_NoFormatSpec"));
         try {
             cprops = getColumnProperties(cmd);
             return CommandFormatter.format(format, cprops);

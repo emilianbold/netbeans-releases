@@ -15,6 +15,7 @@ package org.netbeans.lib.ddl.impl;
 
 import java.util.*;
 import java.sql.*;
+import org.openide.util.NbBundle;
 import java.text.ParseException;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.util.*;
@@ -45,6 +46,8 @@ public class AbstractTableColumn
     /** Referenced column */
     String refcol;
 
+    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
+    
     static final long serialVersionUID =-5128289937199572117L;
     /** Returns name of object */
     public String getObjectName()
@@ -148,13 +151,13 @@ public class AbstractTableColumn
         String cname = getColumnName();
 
         if (addprops != null) args.putAll(addprops);
-        if (oname != null) args.put("object.name", oname);
-        else throw new DDLException("unknown object name");
-        if (cname != null) args.put("column.name", cname);
-        else throw new DDLException("unknown column name");
+        if (oname != null) args.put("object.name", oname); // NOI18N
+        else throw new DDLException(bundle.getString("EXC_Unknown")); // NOI18N
+        if (cname != null) args.put("column.name", cname); // NOI18N
+        else throw new DDLException(bundle.getString("EXC_Unknown")); // NOI18N
 
-        if (reftab != null) args.put("fkobject.name", reftab);
-        if (refcol != null) args.put("fkcolumn.name", refcol);
+        if (reftab != null) args.put("fkobject.name", reftab); // NOI18N
+        if (refcol != null) args.put("fkcolumn.name", refcol); // NOI18N
         return args;
     }
 
@@ -168,7 +171,7 @@ public class AbstractTableColumn
     throws DDLException
     {
         Map cprops;
-        if (format == null) throw new DDLException("no format specified");
+        if (format == null) throw new DDLException(bundle.getString("EXC_NoFormatSpec"));
         try {
             cprops = getColumnProperties(cmd);
             return CommandFormatter.format(format, cprops);

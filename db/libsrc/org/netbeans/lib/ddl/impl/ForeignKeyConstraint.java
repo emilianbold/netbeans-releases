@@ -67,8 +67,8 @@ public class ForeignKeyConstraint extends AbstractTableColumn implements Foreign
     throws DDLException
     {
         Map args = super.getColumnProperties(cmd);
-        args.put("fkobject.name", tname);
-        args.put("fkcolumn.name", cname);
+        args.put("fkobject.name", tname); // NOI18N
+        args.put("fkcolumn.name", cname); // NOI18N
         return args;
     }
 }

@@ -44,7 +44,7 @@ public class CreateTable extends ColumnListCommand
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         TableColumn col = specifyColumn(TableColumn.UNIQUE, name, Specification.CREATE_TABLE);
-        col.setObjectName(name+"_UQ");
+        col.setObjectName(name+"_UQ"); // NOI18N
         return col;
     }
 
@@ -52,7 +52,7 @@ public class CreateTable extends ColumnListCommand
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY, name, Specification.CREATE_TABLE);
-        col.setObjectName(name+"_PK");
+        col.setObjectName(name+"_PK"); // NOI18N
         return col;
     }
 
@@ -60,7 +60,7 @@ public class CreateTable extends ColumnListCommand
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         TableColumn col = specifyColumn(TableColumn.FOREIGN_KEY, name, Specification.CREATE_TABLE);
-        col.setObjectName(name+"_FK");
+        col.setObjectName(name+"_FK"); // NOI18N
         col.setReferencedTableName(rtablename);
         col.setReferencedColumnName(rcolumnname);
         return col;
@@ -70,7 +70,7 @@ public class CreateTable extends ColumnListCommand
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         TableColumn col = specifyColumn(TableColumn.CHECK, name, Specification.CREATE_TABLE);
-        col.setObjectName(name+"_CH");
+        col.setObjectName(name+"_CH"); // NOI18N
         col.setCheckCondition(expression);
         return col;
     }
@@ -79,7 +79,7 @@ public class CreateTable extends ColumnListCommand
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         TableColumn col = specifyColumn(TableColumn.UNIQUE_CONSTRAINT, columnname, Specification.CREATE_TABLE);
-        col.setObjectName(columnname+"_UQ");
+        col.setObjectName(columnname+"_UQ"); // NOI18N
         return col;
     }
 
@@ -87,7 +87,7 @@ public class CreateTable extends ColumnListCommand
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         TableColumn col = specifyColumn(TableColumn.CHECK_CONSTRAINT, name, Specification.CREATE_TABLE);
-        col.setObjectName(name+"_CH");
+        col.setObjectName(name+"_CH"); // NOI18N
         col.setCheckCondition(expression);
         return col;
     }
@@ -96,7 +96,7 @@ public class CreateTable extends ColumnListCommand
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY_CONSTRAINT, columnname, Specification.CREATE_TABLE);
-        col.setObjectName(columnname+"_PK");
+        col.setObjectName(columnname+"_PK"); // NOI18N
         return col;
     }
 
@@ -104,7 +104,7 @@ public class CreateTable extends ColumnListCommand
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         TableColumn col = specifyColumn(TableColumn.FOREIGN_KEY_CONSTRAINT, columnname, Specification.CREATE_TABLE);
-        col.setObjectName(columnname+"_FK");
+        col.setObjectName(columnname+"_FK"); // NOI18N
         col.setReferencedTableName(rtablename);
         col.setReferencedColumnName(rcolumnname);
         return col;
