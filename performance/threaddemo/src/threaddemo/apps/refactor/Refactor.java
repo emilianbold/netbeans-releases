@@ -74,16 +74,16 @@ public class Refactor {
         dialog.show();
         new Thread(new Runnable() {
             public void run() {
-                Iterator/*<Map.Entry<Phadhail,DomProvider>>*/ it = data.entrySet().iterator();
+                final Iterator/*<Map.Entry<Phadhail,DomProvider>>*/ it = data.entrySet().iterator();
                 while (it.hasNext() && !cancelled[0]) {
                     Map.Entry e = (Map.Entry)it.next();
-                    // Avoid keeping a reference to the old data, since we have
-                    // cached DomProvider's and such heavyweight stuff open on them:
-                    it.remove();
                     final Phadhail ph = (Phadhail)e.getKey();
                     final DomProvider p = (DomProvider)e.getValue();
                     ph.mutex().readAccess(new Mutex.Action() {
                         public Object run() {
+                            // Avoid keeping a reference to the old data, since we have
+                            // cached DomProvider's and such heavyweight stuff open on them:
+                            it.remove(); // do from inside mutex - calls Phadhail.hashCode
                             final String path = ph.getPath();
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
