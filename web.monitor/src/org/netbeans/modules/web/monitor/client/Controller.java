@@ -830,18 +830,20 @@ class Controller  {
                         fileObject = saveDir.getFileObject(id, "xml");
                         saveBeans.remove(id);
                     }
-                    // delete the file
-                    FileLock lock = null;
-                    try {
-                        lock = fileObject.lock();
-                        fileObject.delete(lock);
-                    } catch(FileAlreadyLockedException falex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, falex);
-                    } catch(IOException IOex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, IOex);
-                    } finally { 
-                        if(lock != null) {
-                            lock.releaseLock();
+                    if (fileObject != null) {
+                        // delete the file
+                        FileLock lock = null;
+                        try {
+                            lock = fileObject.lock();
+                            fileObject.delete(lock);
+                        } catch(FileAlreadyLockedException falex) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, falex);
+                        } catch(IOException IOex) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, IOex);
+                        } finally { 
+                            if(lock != null) {
+                                lock.releaseLock();
+                            }
                         }
                     }
                     // update the progress monitor if needed
