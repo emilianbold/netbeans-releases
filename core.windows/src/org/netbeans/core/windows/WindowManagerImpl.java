@@ -199,7 +199,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     public TopComponent findTopComponent(String tcID) {
         assertEventDispatchThreadWeak();
         
-        return PersistenceManager.getDefault().getTopComponentForID(tcID);
+        return getTopComponentForID(tcID);
     }
     
     /** Adds listener.
