@@ -81,7 +81,7 @@ public class JspAndServletSettings extends JellyTestCase {
     private void testSystemValue(String newVal) {
 	OptionsOperator oo = OptionsOperator.invoke();
 	String dae = Bundle.getString("org.netbeans.core.Bundle", "UI/Services/DebuggingAndExecuting");
-	String sett = Bundle.getString("org.netbeans.modules.web.core.Bundle","Services/org-netbeans-modules-web-core-ServletSettings.settings");
+	String sett = Bundle.getString("org.netbeans.modules.web.core.Bundle","Services/JSP_Servlet/org-netbeans-modules-web-core-ServletSettings.settings");
 	oo.selectOption(dae + iSep + sett);
 	PropertySheetOperator pso = PropertySheetOperator.invoke();
         PropertySheetTabOperator psto = new PropertySheetTabOperator(pso);

@@ -71,6 +71,8 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                  <include name="**/using/Using.class"/>
+		 <exclude name="**/using/Using.class/testEBCLIeInPath"/>
+		 <exclude name="**/using/Using.class/testEBCLIeFullPath"/>
             </patternset>
        </testset>
     </testbag>

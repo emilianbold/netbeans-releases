@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
                  example: <property name="xtest.ide.commandline.suffix" value="-J-Dxtest.useclassloader=org.openidex.util"/>
           -->
         <!--property name="scratchpad" location="work/scratchpad"/-->
-        <property name="xtest.ide.commandline.suffix" value="-J-Dextbrowser.workdir=${scratchpad} -J-Dextbrowser.mountcount=2 -J-Dextbrowser.default=ns7"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Dextbrowser.workdir=${scratchpad} -J-Dextbrowser.mountcount=2 -J-Dextbrowser.default=ns6"/>
   	<property name="xtest.extra.ide.mounts" value="${scratchpad}/wm1;${scratchpad}/wmForExecution"/>
         <!-- =========================== -->
         <!-- Setting avanced classpathes -->

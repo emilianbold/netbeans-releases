@@ -193,7 +193,7 @@ public class BrowserUtils {
             System.out.println("##########\nThis test must be extended for Windows platform\n#######");
 	    return null;
         }else {
-	    paths = new String[] {"/usr/bin/netscape6","/usr/local/bin/netscape6","/bin/netscape6"};
+	    paths = new String[] {"/usr/local/netscape6/netscape","/usr/bin/netscape6","/usr/local/bin/netscape6","/bin/netscape6"};
 	}
 	for(int i=0;i<paths.length;i++) {
 	    if((new File(paths[i])).exists()) {
@@ -269,7 +269,7 @@ public class BrowserUtils {
 	    if(userAgent.indexOf("Netscape/7")!=-1) {
 		return NETSCAPE7;
 	    }
-	    if(userAgent.indexOf("Netscape/6")!=-1) {
+	    if(userAgent.indexOf("Netscape6/6")!=-1) {
 		return NETSCAPE6;
 	    }
 	}
