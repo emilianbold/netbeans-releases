@@ -64,10 +64,30 @@ Microsystems, Inc. All Rights Reserved.
     <target name="all" depends="runtests"/>
     
     <!-- This target builds tests -->
-    <target name="buildtests" depends="prepare-compile-classpath">
+    <target name="buildtests">
+       <path id="compile.jarmode.classpath">        
+	    <pathelement location="../netbeans/modules/autoload/openidex.jar"/>
+	        <fileset dir="../../openide/netbeans/lib">
+                    <include name="openide*.jar"/>
+                </fileset>
+       </path>
+       <path id="compile.srcmode.classpath">        
+	        <pathelement location="../src"/>
+	        <fileset dir="../../openide/netbeans/lib">
+                    <include name="openide*.jar"/>
+                </fileset>
+       </path>
+       <path id="compile.idemode.classpath">        
+	        <pathelement location="${netbeans.home}/modules/autoload/openidex.jar"/>
+	        <fileset dir="${netbeans.home}/lib">
+                    <include name="openide*.jar"/>
+                </fileset>
+       </path>
+       <property name="compile.jarmode.classpath" refid="compile.jarmode.classpath"/>
+       <property name="compile.srcmode.classpath" refid="compile.srcmode.classpath"/>
+       <property name="compile.idemode.classpath" refid="compile.idemode.classpath"/>
        <!-- This calls common build process. -->
        <!-- You can write your own is you need something special -->
-       <property name="compiletest.classpath" refid="compiletest.classpath"/>
        <ant dir="." antfile="${xtest.general.antfile}"
              target="buildtests">
            <property name="compile.srcdir" value="unit/src"/>
@@ -105,12 +125,35 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes standalone tests -->
-    <target name="runcodetest" depends="prepare-codetest-classpath">
-        <path id="codetest.complete.classpath">
-          <path refid="codetest.classpath"/>
-          <pathelement path="${tbag.classpath}"/>
-        </path>
-        <property name="codetest.classpath" refid="codetest.complete.classpath"/>
+    <target name="runcodetest">
+        <path id="codetest.jarmode.classpath">
+	        <pathelement location="../netbeans/modules/autoload/openidex.jar"/>
+	        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+	        <fileset dir="../../core/netbeans/lib">
+            		<include name="core.jar"/>
+            		<include name="ext/*.jar"/>
+        	</fileset>
+    	</path>
+    	<path id="codetest.srcmode.classpath">
+	        <pathelement location="../src"/>
+	        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+	        <fileset dir="../../core/netbeans/lib">
+            		<include name="core.jar"/>
+            		<include name="ext/*.jar"/>
+        	</fileset>
+    	</path>
+    	<path id="codetest.idemode.classpath">
+	        <pathelement location="${netbeans.home}/modules/autoload/openidex.jar"/>
+	        <pathelement location="${netbeans.home}/lib/openide.jar"/>
+          	<fileset dir="${netbeans.home}/lib">
+	            	<include name="core.jar"/>
+            		<include name="ext/*.jar"/>
+	    	</fileset>
+    	</path>
+        <property name="codetest.jarmode.classpath" refid="codetest.jarmode.classpath"/>
+        <property name="codetest.srcmode.classpath" refid="codetest.srcmode.classpath"/>
+        <property name="codetest.idemode.classpath" refid="codetest.idemode.classpath"/>
+        <property name="codetest.classpath" value="${tbag.classpath}"/>
         <ant dir="." antfile="${xtest.general.antfile}"
              target="test">
            <property name="xtest.exectype" value="code"/>
@@ -138,78 +181,6 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
     </target>
 
-   <!-- ========================================================== -->
-   <!-- ========================================================== -->
-
-    <target name="which-classpath">
-        <!-- this "switch" will decide how to create classpath for code tests -->
-        <condition property="jarcode.classpath">
-            <equals arg1="${xtest.code.classpath}" arg2="jar"/>
-        </condition>
-        <condition property="srccode.classpath">
-            <equals arg1="${xtest.code.classpath}" arg2="src"/>
-        </condition>
-        <condition property="idecode.classpath">
-            <equals arg1="${xtest.code.classpath}" arg2="ide"/>
-        </condition>
-    </target>
-
-    <!-- ========================= -->
-    <!-- Classpath for compilation -->
-    <!-- ========================= -->
-    
-    <target name="prepare-compile-classpath"
-         depends="jarcompile-classpath,srccompile-classpath,idecompile-classpath"/>
-    
-    <target name="jarcompile-classpath" depends="init,which-classpath" if="jarcode.classpath">
-        <echo message="Using jars classpath for compilation."/>
-    	<!-- this classpath will be used for compiling tests against jars -->
-	<path id="compiletest.classpath">        
-	    <pathelement location="../netbeans/modules/autoload/openidex.jar"/>
-	        <fileset dir="../../openide/netbeans/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
-	    <pathelement path="${junit.path}"/>
-	    <pathelement path="${xerces.path}"/>
-	</path>
-    </target>
-        
-    <target name="srccompile-classpath" depends="init,which-classpath" if="srccode.classpath">
-        <echo message="Using srcs classpath for compilation."/>
-    	<!-- this classpath will be used for compiling tests against sources -->
-    	<path id="compiletest.classpath">        
-	        <pathelement location="../src"/>
-	        <fileset dir="../../openide/netbeans/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
-	        <pathelement path="${junit.path}"/>
-		<pathelement path="${xerces.path}"/>
-	</path>
-    </target>
-    
-    <target name="idecompile-classpath" depends="init,which-classpath" if="idecode.classpath">
-        <echo message="Using IDE classpath for compilation."/>
-    	<!-- this classpath will be used for compiling tests against installed IDE -->
-    	<path id="compiletest.classpath">        
-	        <pathelement location="${netbeans.home}/modules/autoload/openidex.jar"/>
-	        <fileset dir="${netbeans.home}/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
-	        <pathelement path="${junit.path}"/>
-		<pathelement path="${xerces.path}"/>
-   	</path>
-    </target>
-    
-    <!-- ================================== -->
-    <!-- Classpath for execution code tests -->
-    <!-- ================================== -->
-    
-    <target name="prepare-codetest-classpath" 
-            depends="jartest-classpath,srctest-classpath,idetest-classpath"/>
-    
-    <target name="jartest-classpath" depends="which-classpath" if="jarcode.classpath">
-        <echo message="Using jars classpath."/>
-        <!-- this classpath will be used for executing tests against jars -->
 	<path id="codetest.classpath">
 	        <pathelement location="../netbeans/modules/autoload/openidex.jar"/>
 	        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
@@ -218,11 +189,6 @@ Microsystems, Inc. All Rights Reserved.
             		<include name="ext/*.jar"/>
         	</fileset>
     	</path>
-    </target>
-        
-    <target name="srctest-classpath" depends="which-classpath" if="srccode.classpath">
-        <echo message="Using srcs classpath."/>
-        <!-- this classpath will be used for executing tests against sources -->
     	<path id="codetest.classpath">
 	        <pathelement location="../src"/>
 	        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
@@ -231,11 +197,6 @@ Microsystems, Inc. All Rights Reserved.
             		<include name="ext/*.jar"/>
         	</fileset>
     	</path>
-    </target>
-    
-    <target name="idetest-classpath" depends="which-classpath" if="idecode.classpath">
-        <echo message="Using IDE classpath."/>
-        <!-- this classpath will be used for executing tests against installed IDE -->
     	<path id="codetest.classpath">
 	        <pathelement location="${netbeans.home}/modules/autoload/openidex.jar"/>
 	        <pathelement location="${netbeans.home}/lib/openide.jar"/>
@@ -244,7 +205,6 @@ Microsystems, Inc. All Rights Reserved.
             		<include name="ext/*.jar"/>
 	    	</fileset>
     	</path>
-    </target>
     
 </project>
 

@@ -100,12 +100,35 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes standalone tests -->
-    <target name="runcodetest" depends="prepare-codetest-classpath">
-        <path id="codetest.complete.classpath">
-          <path refid="codetest.classpath"/>
-          <pathelement path="${tbag.classpath}"/>
-        </path>
-        <property name="codetest.classpath" refid="codetest.complete.classpath"/>
+    <target name="runcodetest">
+        <path id="codetest.jarmode.classpath">
+        	<fileset dir="../netbeans/lib">
+            		<include name="core.jar"/>
+            		<include name="ext/*.jar"/>
+        	</fileset>
+        	<pathelement location="../../openide/netbeans/lib/openide.jar"/>
+    	</path>
+    	<path id="codetest.srcmode.classpath">
+        <!-- Working sources should take precedence over core.jar: -->
+           	<pathelement location="../src"/>
+        	<fileset dir="../netbeans/lib">
+              	    <!-- But loading core.jar means its manifest is available to module system: -->
+           	    <include name="core.jar"/>
+           	    <include name="ext/*.jar"/>
+        	</fileset>
+           	<pathelement location="../../openide/netbeans/lib/openide.jar"/>
+    	</path>
+    	<path id="codetest.idemode.classpath">
+        	<fileset dir="${netbeans.home}/lib">
+            		<include name="core.jar"/>
+            		<include name="ext/*.jar"/>
+        	</fileset>
+        	<pathelement location="${netbeans.home}/lib/openide.jar"/>        
+    	</path>
+	<property name="codetest.classpath" value="${tbag.classpath}"/>
+        <property name="codetest.jarmode.classpath" refid="codetest.jarmode.classpath"/>
+        <property name="codetest.srcmode.classpath" refid="codetest.srcmode.classpath"/>
+        <property name="codetest.idemode.classpath" refid="codetest.idemode.classpath"/>
         <ant dir="." antfile="${xtest.general.antfile}"
              target="test">
            <property name="xtest.exectype" value="code"/>
@@ -234,52 +257,6 @@ Microsystems, Inc. All Rights Reserved.
                 </fileset>
 	        <pathelement path="${junit.path}"/>
 		<pathelement path="${xerces.path}"/>
-    	</path>
-    </target>
-    
-    <!-- ================================== -->
-    <!-- Classpath for execution code tests -->
-    <!-- ================================== -->
-    
-    <target name="prepare-codetest-classpath" 
-            depends="jartest-classpath,srctest-classpath,idetest-classpath"/>
-    
-    <target name="jartest-classpath" depends="which-classpath" if="jarcode.classpath">
-        <echo message="Using jars classpath."/>
-        <!-- this classpath will be used for executing tests against jars -->
-	<path id="codetest.classpath">
-        	<fileset dir="../netbeans/lib">
-            		<include name="core.jar"/>
-            		<include name="ext/*.jar"/>
-        	</fileset>
-        	<pathelement location="../../openide/netbeans/lib/openide.jar"/>
-    	</path>
-    </target>
-        
-    <target name="srctest-classpath" depends="which-classpath" if="srccode.classpath">
-        <echo message="Using srcs classpath."/>
-        <!-- this classpath will be used for executing tests against sources -->
-    	<path id="codetest.classpath">
-        <!-- Working sources should take precedence over core.jar: -->
-           <pathelement location="../src"/>
-        	<fileset dir="../netbeans/lib">
-              	    <!-- But loading core.jar means its manifest is available to module system: -->
-           	    <include name="core.jar"/>
-           	    <include name="ext/*.jar"/>
-        	</fileset>
-           <pathelement location="../../openide/netbeans/lib/openide.jar"/>
-    	</path>
-    </target>
-    
-    <target name="idetest-classpath" depends="which-classpath" if="idecode.classpath">
-        <echo message="Using IDE classpath."/>
-        <!-- this classpath will be used for executing tests against installed IDE -->
-    	<path id="codetest.classpath">
-        	<fileset dir="${netbeans.home}/lib">
-            		<include name="core.jar"/>
-            		<include name="ext/*.jar"/>
-        	</fileset>
-        	<pathelement location="${netbeans.home}/lib/openide.jar"/>        
     	</path>
     </target>
     
