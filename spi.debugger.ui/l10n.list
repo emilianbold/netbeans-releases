@@ -1,0 +1,4 @@
+debuggercore/src/org/netbeans/modules/debugger/delegator/Bundle.properties
+debuggercore/src/org/netbeans/modules/debugger/support/Bundle.properties
+debuggercore/src/org/netbeans/modules/debugger/support/actions/Bundle.properties
+debuggercore/src/org/netbeans/modules/debugger/support/nodes/Bundle.properties

@@ -1,0 +1,7 @@
+beans/src/org/netbeans/modules/beans/Bundle.properties
+beans/src/org/netbeans/modules/beans/beaninfo/Bundle.properties
+beans/src/org/netbeans/modules/beans/resources/BeanInfo.html
+beans/src/org/netbeans/modules/beans/resources/Bean.html
+beans/src/org/netbeans/modules/beans/resources/PropertyEditor.html
+beans/src/org/netbeans/modules/beans/resources/Beans.html
+beans/src/org/netbeans/modules/beans/resources/Customizer.html

@@ -1,0 +1,6 @@
+utilities/src/org/netbeans/modules/group/Bundle.properties
+utilities/src/org/netbeans/modules/openfile/Bundle.properties
+utilities/src/org/netbeans/modules/search/res/Bundle.properties
+utilities/src/org/netbeans/modules/url/Bundle.properties
+utilities/src/org/netbeans/modules/group/resources/TemplateHelp.html
+utilities/src/org/netbeans/modules/url/TemplateHelp.html
