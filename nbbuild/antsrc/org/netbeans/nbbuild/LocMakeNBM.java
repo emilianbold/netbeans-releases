@@ -14,6 +14,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.* ;
+import java.net.MalformedURLException;
 import java.util.* ;
 
 import org.apache.tools.ant.* ;
@@ -171,10 +172,20 @@ public class LocMakeNBM extends Task {
 
     makenbm.setModInfo( modInfo) ;
     makenbm.setLangCode( locale) ;
+    String fname = getLocalizedFileName( locale);
     makenbm.setFile( new File( getProject().getBaseDir().getAbsolutePath() + 
-			       File.separator + getLocalizedFileName( locale))) ;
+			       File.separator + fname)) ;
     makenbm.setTopdir( topDir) ;
     makenbm.setIsStandardInclude( false) ;
+    String distbase = getProject().getProperty("dist.base");
+    if (distbase != null) {
+        try {
+            int idx = fname.lastIndexOf('/');
+            makenbm.setDistribution(distbase + "/" + fname.substring(idx + 1));
+        } catch (MalformedURLException e) {
+            throw new BuildException(e, getLocation());
+        }
+    }
     licenseFile = getLicenseFile( locale) ;
     if( licenseFile != null) {
       MakeLNBM.Blurb blurb = makenbm.createLicense() ;
