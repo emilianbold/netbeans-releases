@@ -21,6 +21,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.execution.ProcessExecutor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
 /** Extension to JSR88 that enables starting of Tomcat.
@@ -65,9 +67,11 @@ public final class StartTomcat implements StartServer
         if (tm.isConnected ())
             return null;
         String uri = tm.getUri ();
-        StringTokenizer stok = new StringTokenizer (uri, "@");
-        String home = stok.nextToken ();
-        String base = stok.hasMoreTokens ()? stok.nextToken (): home;
+        String home = tm.getCatalinaHome ();
+        String base = tm.getCatalinaBase ();
+        if (base == null) {
+            base = home;
+        }
         
         InstalledFileLocator ifl = InstalledFileLocator.getDefault ();
         File homeDir = new File (home);
@@ -77,8 +81,10 @@ public final class StartTomcat implements StartServer
         
         File baseDir = new File (base);
         if (!baseDir.isAbsolute ()) {
-            baseDir = ifl.locate (base, null, false);
-            // PENDING if it doesn't exist yet create it and then start
+            File baseDir2 = ifl.locate (base, null, false);
+            if (baseDir2 == null) {
+                baseDir = createBaseDir (baseDir, homeDir);
+            }
         }
         // XXX check for null's
         
@@ -110,6 +116,54 @@ public final class StartTomcat implements StartServer
     
     public void stopDebugging (Target target) {
         throw new RuntimeException ("Tomcat debugging not supported yet");    // NOI18N
+    }
+    
+    /** Initializes base dir for use with Tomcat 5.0.x. 
+     *  @param baseDir directory for base dir.
+     *  @param homeDir directory to copy config files from.
+     *  @return File with absolute path for created dir.
+     */
+    private File createBaseDir (File baseDir, File homeDir) {
+        System.out.println("createBaseDir "+baseDir+", "+homeDir);
+        if (!baseDir.isAbsolute ()) {
+            baseDir = new File(System.getProperty("netbeans.user")+System.getProperty("file.separator")+baseDir);
+        }
+        try {
+            baseDir.mkdir ();
+            // create directories
+            String [] subdirs = new String [] { "conf", "logs", "work", "temp" /*, "webapps"*/ };
+            for (int i = 0; i<subdirs.length; i++) {
+                new File (baseDir, subdirs[i]).mkdir ();
+            }
+            // copy config files
+            File confDir = new File (baseDir, "conf");
+            String [] files = new String [] { 
+                "catalina", 
+                "catalina", 
+                "web", 
+            };
+            String [] exts = new String [] { 
+                "policy", 
+                "properties", 
+                "xml", 
+            };
+            FileObject [] homeFO = FileUtil.fromFile (new File (homeDir, "conf"));
+            FileObject [] baseFO = FileUtil.fromFile (confDir);
+            if (homeFO.length == 0 || baseFO.length == 0) {
+                throw new IllegalStateException ("Cannot create base dir");
+            }       
+            for (int i = 0; i<files.length; i++) {
+                FileUtil.copyFile (homeFO[0].getFileObject (files[i], exts[i]), baseFO[0], files[i], exts[i]);
+            }
+            // modify server.xml
+            // modify tomcat-users.xml
+            throw new RuntimeException("todo");
+        }
+        catch (java.io.IOException ioe) {
+            System.err.println("!!! createBaseDir failed");
+            ioe.printStackTrace ();
+            throw new IllegalStateException ("Cannot create base dir");
+        }
     }
     
     /** Format that provides value usefull for Tomcat execution. 

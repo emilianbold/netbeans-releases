@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     <!--
     The disconnected-string element contains the String parameter to DeploymentFactory.getDisconnectedDeploymentManager()
     -->
-    <disconnected-string>tomcat:jakarta-tomcat-5.0.1</disconnected-string>
+    <disconnected-string>tomcat:jakarta-tomcat-5.0.2</disconnected-string>
     
     <!--
     The finder-ui must be a class-name for a dialog that is shown when the Find Server action

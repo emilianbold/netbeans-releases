@@ -64,17 +64,39 @@ public class TomcatManager implements DeploymentManager {
     private String catalinaBase;
     
     /** Creates an instance of connected TomcatManager */
-    public TomcatManager (String uri, String uname, String passwd) {
+    public TomcatManager (boolean conn, String uri, String uname, String passwd) {
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
             TomcatFactory.getEM ().log ("Creating connected TomcatManager uri="+uri+", uname="+uname);
         }
-        this.connected = true;
-        this.uri = uri;
+        this.connected = conn;
+        
+        int uriOffset = uri.indexOf ("http:");  // NOI18N
+        if (uriOffset > 0) {
+            System.out.println("pasing home & base");
+            // parse home and base attrs
+            final String home = "home=";
+            final String base = ":base=";
+            String attrs = uri.substring (0, uriOffset);
+            int homeOffset = uri.indexOf (home) + home.length ();
+            int baseOffset = uri.indexOf (base, homeOffset);
+            if (homeOffset >= home.length ()) {
+                System.out.println("have home");
+                if (baseOffset > 0) {
+            System.out.println("have base");
+                    catalinaHome = uri.substring (homeOffset, baseOffset);
+                    catalinaBase = uri.substring (baseOffset + base.length (),uriOffset-1);
+                }
+                else {
+                    catalinaHome = uri.substring (homeOffset,uriOffset-1);
+                }
+            }
+        }
+        this.uri = uri.substring (uriOffset);
         username = uname;
         password = passwd;
     }
     
-    /** Creates an instance of disconnected TomcatManager */
+    /** Creates an instance of disconnected TomcatManager * /
     public TomcatManager (String catHome, String catBase) {
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
             TomcatFactory.getEM ().log ("Creating discconnected TomcatManager home="+catHome+", base="+catBase);
@@ -83,11 +105,28 @@ public class TomcatManager implements DeploymentManager {
         this.catalinaHome = catHome;
         this.catalinaBase = catBase;
     }
+     */
     
     /** Returns URI.
      */
     public String getUri () {
-        return connected? uri: catalinaHome+"@"+catalinaBase;   // NOI18N
+        return ((catalinaHome != null)? "home="+catalinaHome + ":": "") +// NOI18N
+            ((catalinaBase != null)? "base="+catalinaHome + ":": "") +   // NOI18N
+            uri;
+    }
+    
+    /** Returns catalinaHome.
+     * @return catalinaHome or <CODE>null</CODE> when not specified.
+     */
+    public String getCatalinaHome () {
+        return catalinaHome;
+    }
+    
+    /** Returns catalinaBase.
+     * @return catalinaBase or <CODE>null</CODE> when not specified.
+     */
+    public String getCatalinaBase () {
+        return catalinaBase;
     }
     
     /** Returns username.

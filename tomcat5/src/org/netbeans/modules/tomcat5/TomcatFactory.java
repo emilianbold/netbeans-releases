@@ -22,6 +22,11 @@ import org.openide.util.NbBundle;
 /** Factory capable to create DeploymentManager that can deploy to 
  * Tomcat 5.
  *
+ * Tomcat URI has following format: 
+ * <CODE>tomcat:[home=&lt;home_path&gt;:[base=&lt;base_path&gt;:]]&lt;manager_app_url&gt;</CODE>
+ * where paths values will be used as CATALINA_HOME and CATALINA_BASE properties and manager_app_url
+ * denotes URL of manager application configured on this server and has to start with <CODE>http:</CODE>.
+ *
  * @author  Radim Kubacki
  */
 public class TomcatFactory implements DeploymentFactory {
@@ -36,7 +41,7 @@ public class TomcatFactory implements DeploymentFactory {
      */
     public static synchronized TomcatFactory create() {
         if (instance == null) {
-            if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("Creating TomcatFactory");
+            if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("Creating TomcatFactory"); // NOI18N
             instance = new TomcatFactory ();
             javax.enterprise.deploy.shared.factories.DeploymentFactoryManager
                 .getInstance ().registerDeploymentFactory (instance);
@@ -58,7 +63,7 @@ public class TomcatFactory implements DeploymentFactory {
         if (!handlesURI (uri)) {
             throw new DeploymentManagerCreationException ("Invalid URI");
         }
-        return new TomcatManager (uri.substring (tomcatUriPrefix.length ()), uname, passwd);
+        return new TomcatManager (true, uri.substring (tomcatUriPrefix.length ()), uname, passwd);
     }
     
     public DeploymentManager getDisconnectedDeploymentManager(String uri) 
@@ -68,7 +73,7 @@ public class TomcatFactory implements DeploymentFactory {
         }
         // PENDING parse to get home and base dirs
         
-        return new TomcatManager (uri.substring (tomcatUriPrefix.length ()), null);    // PENDING
+        return new TomcatManager (false, uri.substring (tomcatUriPrefix.length ()), null, null);    // PENDING
     }
     
     public String getDisplayName() {
@@ -80,7 +85,7 @@ public class TomcatFactory implements DeploymentFactory {
     }
     
     public boolean handlesURI(String str) {
-        return str != null && str.startsWith (tomcatUriPrefix);
+        return str != null && str.startsWith (tomcatUriPrefix) && str.indexOf ("http:", tomcatUriPrefix.length ()) >= 0;
     }
     
 }
