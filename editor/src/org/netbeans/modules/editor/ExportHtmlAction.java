@@ -174,7 +174,7 @@ public class ExportHtmlAction extends CookieAction {
             }
         }
         else {
-            ErrorManager.getDefault().log (NbBundle.getMessage(ExportHtmlAction.class,"MSG_DocError."));
+            ErrorManager.getDefault().log (NbBundle.getMessage(ExportHtmlAction.class,"MSG_DocError"));
         }
     }
 
