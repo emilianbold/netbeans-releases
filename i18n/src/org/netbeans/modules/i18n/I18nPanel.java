@@ -171,12 +171,12 @@ public class I18nPanel extends JPanel {
     }
     
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("ACS_I18nPanel"));        
-        skipButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("ACS_CTL_SkipButton"));        
-        cancelButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("ACS_CTL_CancelButton"));        
-        replaceButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("ACS_CTL_ReplaceButton"));        
-        infoButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("ACS_CTL_InfoButton"));        
-        helpButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("ACS_CTL_HelpButton"));        
+        this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_I18nPanel"));        
+        skipButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CTL_SkipButton"));        
+        cancelButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CTL_CancelButton"));        
+        replaceButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CTL_ReplaceButton"));        
+        infoButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CTL_InfoButton"));        
+        helpButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CTL_HelpButton"));        
     }
     
     /** This method is called from within the constructor to
@@ -221,24 +221,24 @@ public class I18nPanel extends JPanel {
 
         buttonsPanel.setLayout(new java.awt.GridLayout(1, 5, 5, 0));
 
-        replaceButton.setMnemonic((java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_ReplaceButton_Mnem")).charAt(0));
-        replaceButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_ReplaceButton"));
+        replaceButton.setMnemonic(Util.getChar("CTL_ReplaceButton_Mnem"));
+        replaceButton.setText(bundle.getString("CTL_ReplaceButton"));
         buttonsPanel.add(replaceButton);
 
-        skipButton.setMnemonic((java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_SkipButton_Mnem")).charAt(0));
-        skipButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_SkipButton"));
+        skipButton.setMnemonic(Util.getChar("CTL_SkipButton_Mnem"));
+        skipButton.setText(bundle.getString("CTL_SkipButton"));
         buttonsPanel.add(skipButton);
 
-        infoButton.setMnemonic((java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_InfoButton_Mnem")).charAt(0));
-        infoButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_InfoButton"));
+        infoButton.setMnemonic(Util.getChar("CTL_InfoButton_Mnem"));
+        infoButton.setText(bundle.getString("CTL_InfoButton"));
         buttonsPanel.add(infoButton);
 
         cancelButton.setMnemonic(Util.getChar("CTL_CloseButton_mne"));
-        cancelButton.setText(Util.getString("CTL_CloseButton"));
+        cancelButton.setText(bundle.getString("CTL_CloseButton"));
         buttonsPanel.add(cancelButton);
 
-        helpButton.setMnemonic((java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_HelpButton_Mnem")).charAt(0) );
-        helpButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_HelpButton"));
+        helpButton.setMnemonic(Util.getChar("CTL_HelpButton_Mnem"));
+        helpButton.setText(bundle.getString("CTL_HelpButton"));
         helpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpButtonActionPerformed(evt);
@@ -268,15 +268,15 @@ public class I18nPanel extends JPanel {
   }//GEN-LAST:event_helpButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton infoButton;
+    private javax.swing.JButton skipButton;
+    private javax.swing.JPanel buttonsPanel;
+    private javax.swing.JButton replaceButton;
     private javax.swing.JPanel propertyPanel;
     private javax.swing.JPanel resourcePanel;
-    private javax.swing.JButton helpButton;
-    private javax.swing.JButton skipButton;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JButton replaceButton;
-    private javax.swing.JPanel buttonsPanel;
     private javax.swing.JPanel fillPanel;
-    private javax.swing.JButton infoButton;
+    private javax.swing.JButton helpButton;
     // End of variables declaration//GEN-END:variables
 
 }
