@@ -16,6 +16,7 @@ package org.netbeans.modules.project.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
+import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
@@ -109,8 +110,11 @@ public final class NewFileWizard extends TemplateWizard {
     public void setTitle (String ignore) {}
     
     protected WizardDescriptor.Panel createTemplateChooser () {
-        return new TemplateChooserPanel( getCurrentProject () /*, recommendedTypes */ );
-
+        WizardDescriptor.Panel panel = new TemplateChooserPanel( getCurrentProject () /*, recommendedTypes */ );
+        JComponent jc = (JComponent)panel.getComponent ();
+        jc.getAccessibleContext ().setAccessibleName (NbBundle.getBundle (NewProjectWizard.class).getString ("ACSN_NewFileWizard")); // NOI18N
+        jc.getAccessibleContext ().setAccessibleDescription (NbBundle.getBundle (NewProjectWizard.class).getString ("ACSD_NewFileWizard")); // NOI18N
+        return panel;
     }        
 
     protected WizardDescriptor.Panel createTargetChooser () {

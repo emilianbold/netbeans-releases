@@ -172,10 +172,13 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "MNE_TemplateChooserPanelGUI_jLabel1").charAt(0));
+        jLabel1.setLabelFor(projectsComboBox);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_jLabel1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 13, 0);
         add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "ACSN_jLabel1"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "ACSD_jLabel1"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
