@@ -690,7 +690,12 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
             if (sc != null && sc.equals(this)) {
                 entry.getCookieSet().remove(this);
             }
-            ((PropertiesDataObject)entry.getDataObject()).updateModificationStatus();
+            
+            RequestProcessor.postRequest(new Runnable() {
+                public void run() {
+                    ((PropertiesDataObject)entry.getDataObject()).updateModificationStatus();
+                }
+            });
         }
             
         /** Called from the <code>EnvironmnetListener</code>
