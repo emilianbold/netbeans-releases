@@ -145,30 +145,35 @@ public class AllOptionsFolder{
     
     /** Returns list of installed Options. Values = options classes */
     public List getInstalledOptions(){
-        List retList = new ArrayList();
+        
         // first XMLized options
-        FileObject mainFolderFO = TopManager.getDefault().getRepository().getDefaultFileSystem().
-        findResource(AllOptionsFolder.FOLDER+"/text"); //NOI18N
-        if (mainFolderFO != null){
-            DataFolder mainFolder = DataFolder.findFolder(mainFolderFO);
-            if (mainFolder != null){
-                DataObject subFolders[] = mainFolder.getChildren();
-                for (int i=0; i<subFolders.length; i++){
-                    if (!(subFolders[i] instanceof DataFolder)) continue;
-                    DataFolder subFolder = (DataFolder) subFolders[i];
-                    FileObject optionInstance = TopManager.getDefault().getRepository().getDefaultFileSystem().
-                    findResource(subFolder.getPrimaryFile().getPackageName('/')+"/"+AllOptionsFolder.OPTION_FILE_NAME);
-                    if (optionInstance == null) continue;
-                    try{
-                        DataObject optionDO = DataObject.find(optionInstance);
-                        if (optionDO == null) continue;
-                        InstanceCookie ic = (InstanceCookie)optionDO.getCookie(InstanceCookie.class);
-                        if (ic == null) continue;
-                        BaseOptions bo = AllOptionsFolder.getDefault().getBO(ic);
-                        if (bo == null) continue;
-                        retList.add(bo.getClass());
-                    }catch(DataObjectNotFoundException donf){
-                        donf.printStackTrace();
+        
+        List retList = new ArrayList();
+        String[] MIMES = new String[] {"text", "application"};  //#25246 application/xml-dtd
+        for (int in = 0; in<MIMES.length; in++) {
+            FileObject mainFolderFO = TopManager.getDefault().getRepository().getDefaultFileSystem().
+            findResource(AllOptionsFolder.FOLDER+"/" + MIMES[in]); //NOI18N
+            if (mainFolderFO != null){
+                DataFolder mainFolder = DataFolder.findFolder(mainFolderFO);
+                if (mainFolder != null){
+                    DataObject subFolders[] = mainFolder.getChildren();
+                    for (int i=0; i<subFolders.length; i++){
+                        if (!(subFolders[i] instanceof DataFolder)) continue;
+                        DataFolder subFolder = (DataFolder) subFolders[i];
+                        FileObject optionInstance = TopManager.getDefault().getRepository().getDefaultFileSystem().
+                        findResource(subFolder.getPrimaryFile().getPackageName('/')+"/"+AllOptionsFolder.OPTION_FILE_NAME);
+                        if (optionInstance == null) continue;
+                        try{
+                            DataObject optionDO = DataObject.find(optionInstance);
+                            if (optionDO == null) continue;
+                            InstanceCookie ic = (InstanceCookie)optionDO.getCookie(InstanceCookie.class);
+                            if (ic == null) continue;
+                            BaseOptions bo = AllOptionsFolder.getDefault().getBO(ic);
+                            if (bo == null) continue;
+                            retList.add(bo.getClass());
+                        }catch(DataObjectNotFoundException donf){
+                            donf.printStackTrace();
+                        }
                     }
                 }
             }
