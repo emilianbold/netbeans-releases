@@ -1170,6 +1170,7 @@
    <!--Mount Filesystem Dialogue-->
    <mapID target="org.netbeans.beaninfo.editors.FileEditor" url="pending.html" />
    <!--Property Viewer: Working Directory (File) dialogue; Project | Settings | Filesystems Settings | (mounted CVS client)| Working Directory-->
+   <mapID target="org.netbeans.modules.jarpackager.JarDataObject" url="jarpackager/jarpackager.html" />
    <mapID target="org.netbeans.modules.jarpackager.DataObjectListEditor" url="jarpackager/jarpackager_contentpane.html" />
    <!--Property Editor: Contents(Jar Content) dialogue; In Explorer, select a JAR Contents object | Properties | Contents-->
    <mapID target="org.netbeans.modules.jarpackager.FilterEditor" url="jarpackager/jarpackager_filter.html" />
