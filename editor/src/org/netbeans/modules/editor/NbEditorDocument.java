@@ -41,6 +41,7 @@ import org.netbeans.editor.Mark;
 import org.netbeans.editor.Annotations;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.WeakHashMap;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.AnnotationDesc;
@@ -73,7 +74,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
 
     /** Map of [Annotation, AnnotationDesc] */
     private HashMap annoMap;
-
+    
     public NbEditorDocument(Class kitClass) {
         super(kitClass);
         addStyleToLayerMapping(NbDocument.BREAKPOINT_STYLE_NAME,
@@ -154,7 +155,6 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
         return (f != null) ? f : super.getFormatter();
     }
 
-
     /** Add annotation to the document. For annotation of whole line
      * the length parameter can be ignored (specify value -1).
      * @param startPos position which represent begining 
@@ -163,10 +163,31 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
      * the whole line will be annotated
      * @param annotation annotation which is attached to this text */
     public void addAnnotation(Position startPos, int length, Annotation annotation) {
-        if (annotation.getAnnotationType() != null) {
-            AnnotationDesc a = new AnnotationDescDelegate(this, startPos, length, annotation);
-            annoMap.put(annotation, a);
-            getAnnotations().addAnnotation(a);
+        // partial fix of #33165 - read-locking of the document added
+        // BTW should only be invoked in EQ - see NbDocument.addAnnotation()
+        readLock();
+        try {
+            // Recreate annotation's position to make sure it's in this doc at a valid offset
+            int docLen = getLength();
+            int offset = startPos.getOffset();
+            offset = Math.min(offset, docLen);
+            try {
+                startPos = createPosition(offset);
+            } catch (BadLocationException e) {
+                startPos = null; // should never happen
+            }
+            
+            if (annoMap.get(annotation) != null) { // already added before
+                throw new IllegalStateException("Annotation " + annotation // NOI18N
+                    + " already added"); // NOI18N
+            }
+            if (annotation.getAnnotationType() != null) {
+                AnnotationDesc a = new AnnotationDescDelegate(this, startPos, length, annotation);
+                annoMap.put(annotation, a);
+                getAnnotations().addAnnotation(a);
+            }
+        } finally {
+            readUnlock();
         }
     }
 
@@ -177,20 +198,27 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
             return; // can't do more as the rest of stacktrace is in openide and ant
         }
 
-        if (annotation.getAnnotationType() != null) {
-            AnnotationDescDelegate a = (AnnotationDescDelegate)annoMap.get(annotation);
-            try {
-                a.detachListeners();
-            } catch (NullPointerException ex) {
-                ErrorManager.getDefault().annotate(ex, ErrorManager.INFORMATIONAL, 
-                    "Editor module received request to remove annotation which does not exist in the document. "+
-                    "Cause of this error is either in OpenIDE module or in module which originated the annotation. "+
-                    "Annotation class = "+annotation, null, null, null);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                return;
+        // partial fix of #33165 - read-locking of the document added
+        // BTW should only be invoked in EQ - see NbDocument.removeAnnotation()
+        readLock();
+        try {
+            if (annotation.getAnnotationType() != null) {
+                AnnotationDescDelegate a = (AnnotationDescDelegate)annoMap.get(annotation);
+                try {
+                    a.detachListeners();
+                } catch (NullPointerException ex) {
+                    ErrorManager.getDefault().annotate(ex, ErrorManager.INFORMATIONAL, 
+                        "Editor module received request to remove annotation which does not exist in the document. "+
+                        "Cause of this error is either in OpenIDE module or in module which originated the annotation. "+
+                        "Annotation class = "+annotation, null, null, null);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    return;
+                }
+                getAnnotations().removeAnnotation(a);
+                annoMap.remove(annotation);
             }
-            getAnnotations().removeAnnotation(a);
-            annoMap.remove(annotation);
+        } finally {
+            readUnlock();
         }
     }
 

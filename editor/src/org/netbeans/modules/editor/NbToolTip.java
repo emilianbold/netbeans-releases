@@ -14,6 +14,7 @@
 package org.netbeans.modules.editor;
 
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
@@ -156,29 +157,45 @@ public class NbToolTip extends FileChangeAdapter {
                 if (tts != null) {
                     BaseDocument doc = Utilities.getDocument(target);
                     if (doc != null) {
-                        int offset = target.viewToModel(tts.getLastMouseEvent().getPoint());
-                        if (offset >= 0) {
-                            try {
-                                int line = Utilities.getLineOffset(doc, offset);
-                                int col = offset - Utilities.getRowStart(target, offset);
+                        DataObject dob = NbEditorUtilities.getDataObject(doc);
+                        if (dob != null) {
+                            EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
+                            if (ec != null) {
+                                StyledDocument openedDoc;
+                                try {
+                                    openedDoc = ec.openDocument();
+                                } catch (IOException e) {
+                                    openedDoc = null; // should return in next if stmt
+                                }
 
-                                DataObject dob = NbEditorUtilities.getDataObject(doc);
-                                if (dob != null) {
-                                    EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
-                                    if (ec != null) {
-                                        Line.Set ls = ec.getLineSet();
-                                        if (ls != null) {
-                                            Line l = ls.getCurrent(line);
-                                            if (l != null) {
-                                                Line.Part lp = l.createPart(col, 0);
-                                                if (lp != null) {
-                                                    new Request(annos, lp, tts).run();
+                                if (openedDoc != doc) { // doc has changed in meantime
+                                    return;
+                                }
+
+                                // partial fix of #33165 - read-locking of the document added
+                                doc.readLock();
+                                try {
+                                    int offset = target.viewToModel(tts.getLastMouseEvent().getPoint());
+                                    if (offset >= 0) {
+                                        try {
+                                            int line = Utilities.getLineOffset(doc, offset);
+                                            int col = offset - Utilities.getRowStart(target, offset);
+                                            Line.Set ls = ec.getLineSet();
+                                            if (ls != null) {
+                                                Line l = ls.getCurrent(line);
+                                                if (l != null) {
+                                                    Line.Part lp = l.createPart(col, 0);
+                                                    if (lp != null) {
+                                                        new Request(annos, lp, tts).run();
+                                                    }
                                                 }
                                             }
+                                        } catch (BadLocationException e) {
                                         }
                                     }
+                                } finally {
+                                    doc.readUnlock();
                                 }
-                            } catch (BadLocationException e) {
                             }
                         }
                     }
