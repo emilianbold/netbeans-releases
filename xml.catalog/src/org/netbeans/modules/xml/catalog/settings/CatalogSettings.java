@@ -15,20 +15,55 @@ package org.netbeans.modules.xml.catalog.settings;
 import java.io.*;
 import java.util.*;
 import java.beans.*;
+import org.netbeans.modules.xml.catalog.lib.IteratorIterator;
 
 import org.openide.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.io.NbMarshalledObject;
 
 import org.netbeans.modules.xml.catalog.spi.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
+import org.openide.util.lookup.Lookups;
 
 
 /** 
- * An externalizable pool holding mounted catalogs at per project basics.
+ * The pool holding mounted catalogs both at per project basics
+ * and at at global basics. Project scope catalogs are always considered a higher
+ * priority ones.
  * <p>
+ * Global scope catalogs are intended to be used by semantics modules for
+ * which one can assume that if an user enabled such module then the user
+ * really wants to have enabled module catalog. It can be done declarativelly
+ * at module layer as <code>InstanceCookie</code> providers of {@link CatalogReader}:
+ * <pre>
+ * <filesystem>
+ * <folder name="Plugins"><folder name="XML"><folder name="UserCatalogs">
+ *   <file name="org-mycompany-mymodule-MyCatalog.instance">
+ *      <attr name="instanceCreate" 
+ *            methodValue="org.mycompany.mymodule.MyCatalog.createSingleton"/>
+ *      <attr name="instanceOf" 
+ *            stringValue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+ *   </file>
+ * </folder></folder></folder>
+ * </filesystem>
+ * </pre>
+ * <p>
+ * Project scope settings are currently only accesible by this class <coda>addCatalog</code>
+ * and <code>removeCatalog</code> methods. It's persistent for <code>Serializable</code>
+ * implementations.
+ *
+ * @deprecated Modules are highly suggested to use declarative registrations
+ * of global catalogs. Project scope catalogs should be managed by user via UI only.
+ *
  * @thread implementation is thread safe
  *
  * @author  Petr Kuzel
@@ -42,15 +77,22 @@ public final class CatalogSettings implements Externalizable {
 
     /** Identifies property holding mounted catalogs */
     public static final String PROP_MOUNTED_CATALOGS = "catalogs"; // NOI18N
-    
+
+    // folder at SFS holding global registrations
+    private static final String REGISTRATIONS = "Plugins/XML/UserCatalogs";
+
     /** 
      * Project has changed. You MUST switch to new settings instance. 
      * It is fired at the old instance.
-     * @deprecated It is hack for NetBeans 3.3 lacking project system
+     * @deprecated It is hack for NetBeans 3.X lacking project system
      */
     public static final String PROP_PRJ_INSTANCE = "cat-prj-in";
     
-    private Set mountedCatalogs = new HashSet();
+    // cached instance
+    private static Lookup userCatalogLookup;
+
+    // ordered set of mounted catalogs
+    private List mountedCatalogs = new ArrayList(5);
 
     private PropertyChangeSupport listeners = null; 
 
@@ -109,14 +151,16 @@ public final class CatalogSettings implements Externalizable {
     }
     
     /** 
-     * Register a mounted catalog.
+     * Register mounted catalog at project scope level.
      * @param provider to be registered. Must not be null.
      */
     public final void addCatalog(CatalogReader provider) {
         synchronized (this) {
             if (provider == null)
                 throw new IllegalArgumentException("null provider not permited"); // NOI18N
-            mountedCatalogs.add(provider);
+            if (mountedCatalogs.contains(provider) == false) {
+                mountedCatalogs.add(provider);
+            }   
         }
         firePropertyChange(PROP_MOUNTED_CATALOGS, null, null);
         
@@ -131,7 +175,7 @@ public final class CatalogSettings implements Externalizable {
     }
     
     /** 
-     * Deregister provider represented by given class. 
+     * Deregister given catalog at project scope level. 
      */
     public final void removeCatalog(CatalogReader provider) {
         synchronized (this) {
@@ -139,7 +183,7 @@ public final class CatalogSettings implements Externalizable {
         }
         firePropertyChange(PROP_MOUNTED_CATALOGS, null, null);
         
-        // add listener to the catalog
+        // remove listener to the catalog
         try {
             provider.removeCatalogListener(catalogListener);
         } catch (UnsupportedOperationException ex) {
@@ -160,7 +204,14 @@ public final class CatalogSettings implements Externalizable {
      */
     public final synchronized Iterator getCatalogs(Class[] providerClasses) {
 
-        Iterator it = mountedCatalogs.iterator();
+        // compose global registrations and local(project) registrations
+        IteratorIterator it = new IteratorIterator();                       
+        it.add(mountedCatalogs.iterator());
+        
+        Lookup.Template template = new Lookup.Template(CatalogReader.class);
+        Lookup.Result result = getUserCatalogsLookup().lookup(template);
+        it.add(result.allInstances().iterator());
+        
         if (providerClasses == null)
             return it;
         
@@ -186,6 +237,25 @@ try_next_provider:
         return list.iterator();
     }    
 
+    /**
+     * Provide Lookup containing registered module catalogs.
+     */
+    private static Lookup getUserCatalogsLookup() {
+        if (userCatalogLookup == null) {
+            FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+            FileObject folder = sfs.findResource(REGISTRATIONS);
+            // do not cache any module providing it can be enabled at any time
+            if (folder == null) return Lookups.fixed(new Object[0]);
+            try {
+                DataFolder dataFolder = (DataFolder) DataObject.find(folder);
+                userCatalogLookup = new FolderLookup(dataFolder).getLookup();
+            } catch (DataObjectNotFoundException ex) {
+                throw new IllegalStateException("There must be DataFolder for " + folder + "!");
+            }
+        }
+        return userCatalogLookup;
+    }
+    
     // ~~~~~~~~~~~~~~~~~~~~~~ listeners ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     
@@ -224,8 +294,11 @@ try_next_provider:
 
             String catalogClass = (String) in.readObject();  //IN class name
             NbMarshalledObject marshaled = (NbMarshalledObject) in.readObject(); //IN marshalled object
-            try {                
-                mountedCatalogs.add(marshaled.get());
+            try {              
+                Object unmarshaled = marshaled.get();
+                if (mountedCatalogs.contains(unmarshaled) == false) {
+                    mountedCatalogs.add(unmarshaled);
+                }
             } catch (ClassNotFoundException ex) {
                 //ignore probably missing provider class
                 emgr().annotate(ex, Util.THIS.getString("EXC_deserialization_failed", catalogClass));
@@ -289,10 +362,7 @@ try_next_provider:
         
     /** Lazy initialized error manager. */
     private ErrorManager emgr() {
-        if (err == null) {
-            err = TopManager.getDefault().getErrorManager();
-        }
-        return err;
+        return ErrorManager.getDefault();
     }
     
 
@@ -300,13 +370,10 @@ try_next_provider:
      * For debugging purposes only.
      */
     public String toString() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("CatalogSettings:");
-        Iterator it = mountedCatalogs.iterator();
-        while (it.hasNext()) {
-            buf.append(", " + it.next());
-        }
-        return buf.toString();
+        Lookup.Template template = new Lookup.Template(CatalogReader.class);
+        Lookup.Result result = getUserCatalogsLookup().lookup(template);        
+        return "CatalogSettings[ global-scope: " + result.allInstances() + 
+            ", project-scope: " + mountedCatalogs + " ]";
     }        
     
     
