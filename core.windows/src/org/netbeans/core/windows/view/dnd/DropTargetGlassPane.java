@@ -123,7 +123,11 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
             Shape s = droppable.getIndicationForLocation (
                 SwingUtilities.convertPoint(this, p, c));
             
-            dragRepaintManager.setShapeAndTarget(s, c);
+            EnhancedDragPainter painter = null;
+            if (droppable instanceof EnhancedDragPainter) {
+                painter = (EnhancedDragPainter)droppable;
+            }
+            dragRepaintManager.setShapeAndTarget(s, c, painter);
         } else {
             dragRepaintManager.eraseLastIndication(null);
         }
@@ -183,7 +187,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         this.droppable = null;
         
         if (dragRepaintManager != null) {
-            dragRepaintManager.setShapeAndTarget(null, null);
+            dragRepaintManager.setShapeAndTarget(null, null, null);
         }
         setDragLocation(null);
     }
@@ -375,6 +379,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     private static class DragRepaintManager {
         private Shape shape = null;
         private Component lastDropComponent;
+        private EnhancedDragPainter lastEnhanced;
         DropTargetGlassPane pane;
         private Graphics2D g = null;
         
@@ -402,51 +407,70 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         
         public void clear() {
             lastDropComponent = null;
+            lastEnhanced = null;
         }
         
-        public void setShapeAndTarget (Shape s, Component c) {
+        public void setShapeAndTarget (Shape s, Component c, EnhancedDragPainter enh) {
             Shape old = shape;
             if (old != null && s != null) {
                 if (!shape.equals(s)) {
                     shape = s;
-                    shapeChange (old, shape, c);
+                    shapeChange (old, shape, c, enh);
                 }
             } else if ((old == null) != (s == null)) {
                 shape = s;
-                shapeChange (old, s, c);
+                shapeChange (old, s, c, enh);
             } 
         }
         
         public void paintCurrentIndication (Graphics2D g) {
-            if (g == null) {
-                g = getGraphics();
-            }
             if (shape != null) {
-                paintShapeOnGlassPane (shape, g, false);
+                paintShapeOnGlassPane (shape, g);
             }
         }
         
         public void eraseLastIndication (Graphics2D g) {
-            if (g == null) {
-                g = getGraphics();
-            }
             if (shape == null) {
                 return;
             }
-            paintShapeOnGlassPane (shape, g, true);
+            eraseShape(g);
         }
         
-        private void shapeChange (Shape old, Shape nue, Component c) {
+        private void shapeChange (Shape old, Shape nue, Component c, EnhancedDragPainter enhanced) {
             if (old != null) {
-                paintShapeOnGlassPane (old, g, true);
+                eraseShape(g);
             }
             lastDropComponent = c;
+            lastEnhanced = enhanced;
             if (nue != null) {
-                paintShapeOnGlassPane (nue, g, false);
+                paintShapeOnGlassPane (nue, g);
             }
         }
         
-        private void paintShapeOnGlassPane (Shape s, Graphics2D g, boolean erasing) {
+        private void eraseShape(Graphics2D g) {
+            if (g == null) {
+                g = getGraphics();
+            }
+            if (g == null) {
+                return;
+            }
+            pane.setGuidedPaint(true);
+            try {
+                JComponent toPaint;
+                toPaint = (JComponent) ((JComponent)lastDropComponent).getRootPane();
+                toPaint.paint (g);
+                //Clear the clip - at least on OS-X not doing so can interfere
+                //with pending paint events, even though it shouldn't
+                g.setClip (null);
+            } finally {
+                pane.setGuidedPaint(false);
+            }
+            if (isHardwareDoubleBuffer) {
+                Toolkit.getDefaultToolkit().sync();
+            }
+        }
+        
+        private void paintShapeOnGlassPane (Shape s, Graphics2D g) {
             if (g == null) {
                 g = getGraphics();
             }
@@ -458,19 +482,14 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
                 JComponent toPaint;
                 //If we are erasing, we want to paint the root pane so any 
                 //pixels outside the bounds of the component are repainted
-                if (erasing) {
-                    toPaint = (JComponent) ((JComponent)lastDropComponent).getRootPane();
-                } else {
-                    toPaint = (JComponent) lastDropComponent;
+                toPaint = (JComponent) lastDropComponent;
+                // only set the clip when really want to paint it, not when erasing..
+                if (lastEnhanced != null) {
+                    lastEnhanced.additionalDragPaint(g);
                 }
-                if (erasing) {
-                    toPaint.paint (g);
-                } else {
-                    // only set the clip when really want to paint it, not when erasing..
-                    Shape clip = getClipForIndication (s, true, lastDropComponent);
-                    g.setClip (clip);
-                    paintShape (s, g);
-                }
+                Shape clip = getClipForIndication (s, true, lastDropComponent);
+                g.setClip (clip);
+                paintShape (s, g);
 
                 //Clear the clip - at least on OS-X not doing so can interfere
                 //with pending paint events, even though it shouldn't
@@ -484,9 +503,6 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         }
         
         private void paintShape (Shape s, Graphics2D g) {
-            if (g == null) {
-                g = getGraphics();
-            }
             Color oldColor = g.getColor();
             Stroke oldStroke = g.getStroke();
             

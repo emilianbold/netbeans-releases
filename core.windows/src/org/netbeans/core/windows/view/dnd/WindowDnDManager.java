@@ -782,12 +782,12 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 TopComponentDroppable droppable 
                         = windowDnDManager.findDroppableFromScreen(windowDnDManager.getFloatingFrames(), location, kind, windowDnDManager.startingTransfer);
                 
-                    // was probably forgotten to set the lastdrop target, was causing strange repaint side effects when 2 frames overlapped.
-                    JComponent cp = (JComponent)droppable.getDropComponent();
-                    Component glass = cp.getRootPane().getGlassPane();
-                    if (glass instanceof DropTargetGlassPane) {
-                        windowDnDManager.setLastDropTarget((DropTargetGlassPane)glass);
-                    }
+                // was probably forgotten to set the lastdrop target, was causing strange repaint side effects when 2 frames overlapped.
+                JComponent cp = (JComponent)droppable.getDropComponent();
+                Component glass = cp.getRootPane().getGlassPane();
+                if (glass instanceof DropTargetGlassPane) {
+                    windowDnDManager.setLastDropTarget((DropTargetGlassPane)glass);
+                }
                 Point p = new Point(location);
                 SwingUtilities.convertPointFromScreen(p, droppable.getDropComponent());
                 if(droppable.canDrop(windowDnDManager.startingTransfer, p)) {
@@ -930,6 +930,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             return kind == Constants.MODE_KIND_VIEW || kind == Constants.MODE_KIND_SLIDING;
         }
 
+
     } // End of class CenterPanelDroppable.
     
     
@@ -976,22 +977,25 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             
             return kind == Constants.MODE_KIND_VIEW || kind == Constants.MODE_KIND_SLIDING;
         }
+
     } // End of class FreeAreaDroppable.
     
     /**
      * droppable for the sliding bars, both inside and outside of the main window.
      *
      */
-    private static class CenterSlidingDroppable implements TopComponentDroppable {
+    private static class CenterSlidingDroppable implements TopComponentDroppable, EnhancedDragPainter {
         
         private ViewAccessor accesor;
         private TopComponentDroppable original;
         private String side;
+        JPanel pan;
         public CenterSlidingDroppable(ViewAccessor viewAccesor, TopComponentDroppable slidingBarDelegate,
                                       String side) {
             original = slidingBarDelegate;
             accesor = viewAccesor;
             this.side = side;
+            pan = new JPanel();
         }
         
         public boolean canDrop(TopComponent transfer, Point location) {
@@ -1011,16 +1015,19 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         }
 
         public Shape getIndicationForLocation(Point location) {
-            
             Shape toReturn = original.getIndicationForLocation(location);
-            Rectangle rect = toReturn.getBounds();
-            if (rect.width < 10 || rect.height < 10) {
+            Rectangle dim = original.getDropComponent().getBounds();
+            if (dim.width < 10 || dim.height < 10) {
+                Rectangle rect = toReturn.getBounds();
                 if (Constants.LEFT.equals(side)) {
-                    toReturn = new Rectangle(0, 0, Math.max(rect.width, 20), Math.max(rect.height, 20));
+                    toReturn = new Rectangle(0, 0, Math.max(rect.width, Constants.DROP_AREA_SIZE), 
+                                                   Math.max(rect.height, Constants.DROP_AREA_SIZE));
                 } else if (Constants.RIGHT.equals(side)) {
-                    toReturn = new Rectangle(-20, 0, Math.max(rect.width, 20), Math.max(rect.height, 20));
+                    toReturn = new Rectangle(- Constants.DROP_AREA_SIZE, 0, Math.max(rect.width, Constants.DROP_AREA_SIZE), 
+                                                                           Math.max(rect.height, Constants.DROP_AREA_SIZE));
                 } else if (Constants.BOTTOM.equals(side)) {
-                    toReturn = new Rectangle(0, -20, Math.max(rect.width, 20), Math.max(rect.height, 20));
+                    toReturn = new Rectangle(0, - Constants.DROP_AREA_SIZE, Math.max(rect.width, Constants.DROP_AREA_SIZE), 
+                                                                           Math.max(rect.height, Constants.DROP_AREA_SIZE));
                 }
             }
             return toReturn;
@@ -1062,6 +1069,43 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
         public boolean supportsKind(int kind, TopComponent transfer) {
             return original.supportsKind(kind, transfer);
+        }
+
+        public void additionalDragPaint(Graphics2D g) {
+            Rectangle dim = original.getDropComponent().getBounds();
+            if (dim.width > 10 && dim.height > 10) {
+                return;
+            }
+            Component glassPane = ((JComponent)original.getDropComponent()).getRootPane().getGlassPane();
+            Point leftTop = SwingUtilities.convertPoint(original.getDropComponent(), 0, 0, glassPane);
+            Point firstDivider;
+            Point secondDevider;
+                    
+            if (Constants.RIGHT.equals(side)) {
+                leftTop = new Point(leftTop.x - 24, leftTop.y);
+                firstDivider = new Point(leftTop);
+                secondDevider = new Point(leftTop.x, leftTop.y + dim.height);
+            }
+            else if (Constants.BOTTOM.equals(side)) {
+                leftTop = new Point(0, leftTop.y - 24);
+                firstDivider = new Point(leftTop);
+                secondDevider = new Point(leftTop.x + glassPane.getBounds().width, leftTop.y);
+            } else {
+                firstDivider = new Point(leftTop.x + 25, leftTop.y);
+                secondDevider = new Point(leftTop.x + 25, leftTop.y + dim.height);
+            }
+            Rectangle rect = new Rectangle(leftTop.x, leftTop.y, Math.max(25, dim.width), Math.max(25, dim.height));
+            if (Constants.BOTTOM.equals(side)) {
+                // for bottom has special hack to use the whole width
+                rect.width = glassPane.getBounds().width;
+            }
+            
+            Color col = g.getColor();
+            g.setColor(pan.getBackground());
+            g.fill(rect);
+            g.setColor(pan.getBackground().darker());
+            g.drawLine(firstDivider.x, firstDivider.y, secondDevider.x, secondDevider.y);
+            g.setColor(col);
         }
         
     }

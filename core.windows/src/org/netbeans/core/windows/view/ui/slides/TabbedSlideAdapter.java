@@ -315,12 +315,12 @@ public final class TabbedSlideAdapter implements Tabbed {
                 }
                 return rect;
             }
-        } else {
-            // make the slidebar bigger?? how..
-        }
-        //shall it ever get here?
+        } 
         Rectangle rect = slideBar.getBounds();
-        return new Rectangle(0, 0, rect.width, rect.height);
+        if (sbdm.getOrientation() == SlideBarDataModel.SOUTH) {
+            return new Rectangle(10, 0, 50, 20);
+        }
+        return new Rectangle(0, 10, 20, 50);
     }
     
     public Image createImageOfTab(int tabIndex) {
