@@ -341,8 +341,6 @@ public class TestUtil {
         do {
             ret = "p" + i++;
         } while (usedNames.contains(ret));
-        usedNames.add(ret);
-
         return ret;
     }
 
@@ -351,6 +349,8 @@ public class TestUtil {
         if (name == null || name.length()==0 || usedNames.contains(name)) {
             name = createNewName(order, usedNames);
         } 
+        usedNames.add(name);
+
         
         Parameter ret =
             pkg.getParameter().
