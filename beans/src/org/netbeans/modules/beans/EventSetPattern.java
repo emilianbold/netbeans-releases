@@ -224,7 +224,6 @@ public class EventSetPattern extends Pattern {
         Identifier[] nexs = new Identifier[exs.length -1];
         int found = 0;
         for( int i = 0; i < exs.length; i++ ) {
-          //System.out.println ( exs[i] + " == " + tooMany + " : " + exs[i].compareTo( tooMany, false ) + " : " + i );
           if ( !exs[i].compareTo( tooMany, false ) )
             nexs[i-found] = exs[i];
           else
@@ -257,14 +256,19 @@ public class EventSetPattern extends Pattern {
     if ( newType.compareTo(type, true))
       return;
     
-    try {
+    //try {
     
-      if (!java.util.EventListener.class.isAssignableFrom( newType.toClass() ) ) {
+      //if (!java.util.EventListener.class.isAssignableFrom( newType.toClass() ) ) {
+      if ( !PatternAnalyser.isSubclass( 
+          ClassElement.forName( newType.getClassName().getFullName() ),
+          ClassElement.forName( "java.util.EventListener" ) ) ) {
+ 
         TopManager.getDefault().notify(
           new NotifyDescriptor.Message(PatternNode.bundle.getString("MSG_InvalidListenerInterface"),
                                        NotifyDescriptor.ERROR_MESSAGE) );
         return;
         }
+     /*
     }
     catch ( java.lang.ClassNotFoundException ex ) {
       TopManager.getDefault().notify(
@@ -273,7 +277,7 @@ public class EventSetPattern extends Pattern {
           
       return;
     }
-        
+       */ 
     MethodParameter[] params = addListenerMethod.getParameters();
     if ( params.length > 0 ) {
       params[0].setType( newType );
@@ -513,7 +517,7 @@ public class EventSetPattern extends Pattern {
         findEventSetType();
       }
       catch ( java.beans.IntrospectionException e ) {
-        //System.out.println("Bad property copy " + e );
+        // Nothing happens
       }
       isUnicast = testUnicast();
       name = findEventSetName();
@@ -527,6 +531,8 @@ public class EventSetPattern extends Pattern {
 
 /* 
  * Log
+ *  8    Gandalf   1.7         8/2/99   Petr Hrebejk    EventSetNode chilfren & 
+ *       EventSets types with src. code fixed
  *  7    Gandalf   1.6         7/29/99  Petr Hrebejk    Fix - change 
  *       ReadOnly/WriteOnly to ReadWrite mode diddn't registered the added 
  *       methods properly

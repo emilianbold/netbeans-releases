@@ -41,7 +41,7 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
   */
   public EventSetPatternNode( EventSetPattern pattern, boolean writeable) {
     //super(pattern, Children.LEAF, writeable);
-    super(pattern, new ClassChildren( pattern.getTypeElement() ), writeable);
+    super(pattern, new PatternChildren( org.openide.src.nodes.DefaultFactory.READ_ONLY, pattern.getTypeElement(), false ), writeable);
     superSetName( pattern.getName() );
     }
   
@@ -154,7 +154,7 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
    */
 
   public Node cloneNode() {
-    return new EventSetPatternNode((EventSetPattern)pattern, writeable);
+    return new EventSetPatternNode((EventSetPattern)pattern, writeable );
   }
 
   
@@ -273,6 +273,8 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
 
 /*
 * Log
+*  4    Gandalf   1.3         8/2/99   Petr Hrebejk    EventSetNode chilfren & 
+*       EventSets types with src. code fixed
 *  3    Gandalf   1.2         7/26/99  Petr Hrebejk    Better implementation of 
 *       patterns resolving
 *  2    Gandalf   1.1         7/8/99   Jesse Glick     Context help.

@@ -32,7 +32,7 @@ import org.openide.src.MethodElement;
 import org.openide.src.FieldElement;
 import org.openide.src.MethodParameter;
 import org.openide.src.Type;
-
+import org.openide.src.Identifier;
 
 /** Analyses the ClassElement trying to find source code patterns i.e.
  * properties or event sets;
@@ -160,7 +160,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
     
     while (keys.hasMoreElements()) {
       String compound = (String) keys.nextElement();
-      // Skip any "add" which dosn't have a matching remove
+      // Skip any "add" which doesn't have a matching remove
       if (removes.get (compound) == null ) {
         continue;
       }
@@ -178,16 +178,21 @@ public class PatternAnalyser extends Object implements Node.Cookie {
       Type argType = addMethod.getParameters()[0].getType();
 
       // Check if the argument is a subtype of EventListener
-      try {
+      //try {
         //if (!Introspector.isSubclass( argType.toClass(), java.util.EventListener.class ) ) {
-        if (!java.util.EventListener.class.isAssignableFrom( argType.toClass() ) ) {
+        //if (!java.util.EventListener.class.isAssignableFrom( argType.toClass() ) ) {
+        if ( !isSubclass( 
+          ClassElement.forName( argType.getClassName().getFullName() ),
+          ClassElement.forName( "java.util.EventListener" ) ) )
           continue;
+      /*
         }
       }
       catch ( java.lang.ClassNotFoundException ex ) {
         continue;
       }
-      
+      */
+
       EventSetPattern esp; 
       
       try {
@@ -415,6 +420,35 @@ public class PatternAnalyser extends Object implements Node.Cookie {
     eventSetPatterns.put( key, composite );
   }
 
+  static boolean isSubclass(ClassElement a, ClassElement b) {
+	
+    if (a == null || b == null) {
+      return false;
+    }
+
+    if (a.getName().compareTo( b.getName(), false ) ) {
+      return true;
+    }
+    
+	  for ( ClassElement x = a; 
+          x != null; 
+          x = x.getSuperclass() == null ? null : ClassElement.forName( x.getSuperclass().getFullName() )  ){
+	    if (x.getName().compareTo( b.getName(), false ) ) {	
+	      return true;
+	    }
+	    if (b.isInterface()) {
+		    Identifier interfaces[] = x.getInterfaces();
+		    for (int i = 0; i < interfaces.length; i++) {
+          ClassElement interfaceElement = ClassElement.forName( interfaces[i].getFullName() );
+		      if (isSubclass(interfaceElement, b)) {
+			      return true;
+		      }
+		    }
+	    }
+	  }
+    return false;
+  }
+
   // Inner Classes --- comparators for patterns -------------------------------------------------
   
   
@@ -512,6 +546,8 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
 /* 
  * Log
+ *  7    Gandalf   1.6         8/2/99   Petr Hrebejk    EventSetNode chilfren & 
+ *       EventSets types with src. code fixed
  *  6    Gandalf   1.5         7/29/99  Petr Hrebejk    Fix - change 
  *       ReadOnly/WriteOnly to ReadWrite mode diddn't registered the added 
  *       methods properly
