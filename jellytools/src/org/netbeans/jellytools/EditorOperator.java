@@ -26,7 +26,6 @@ import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.jellytools.actions.SaveAction;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
@@ -775,11 +774,14 @@ public class EditorOperator extends TopComponentOperator {
 	} catch(InterruptedException e) {}
     }
         
-    /** Performs save action with optional verification. */    
+    /** Saves content of this Editor by API. If it is not applicable or content 
+     * is not modified, it does nothing.
+     */
     public void save() {
-        new SaveAction().perform(this);
-        if (getVerification())
+        super.save();
+        if (getVerification()) {
             waitModified(false);
+        }
     }
 
     /** Performs verification by accessing all sub-components */    
