@@ -13,6 +13,7 @@
 
 package com.netbeans.developer.impl;
 
+import java.io.*;
 import java.util.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -24,6 +25,7 @@ import javax.swing.event.ChangeListener;
 
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
+import org.openide.loaders.InstanceSupport;
 import org.openide.modules.ManifestSection;
 import org.openide.TopManager;
 import org.openide.actions.*;
@@ -33,6 +35,7 @@ import org.openide.util.enum.ArrayEnumeration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.io.NbMarshalledObject;
 import org.openide.actions.ReorderAction;
 
 
@@ -55,8 +58,6 @@ public final class LoaderPoolNode extends AbstractNode {
   /** The only instance of the NbLoaderPool class in the system.
   * This value is returned from the getNbLoaderPool() static method */
   private static LoaderPoolNode.NbLoaderPool loaderPool;
-
-  private static SystemAction [] staticActions;
 
   private static LoaderChildren myChildren = new LoaderChildren ();
 
@@ -82,6 +83,7 @@ public final class LoaderPoolNode extends AbstractNode {
     setIconBase(LOADER_POOL_ICON_BASE);
 
     getCookieSet ().add (new Index ());
+    getCookieSet ().add (new InstanceSupport.Instance (getNbLoaderPool ()));
   }
 
   public HelpCtx getHelpCtx () {
@@ -95,6 +97,8 @@ public final class LoaderPoolNode extends AbstractNode {
   */
   public SystemAction[] createActions () {
     return new SystemAction[] {
+      SystemAction.get(CustomizeBeanAction.class),
+      null,
       SystemAction.get(ReorderAction.class),
       null,
       SystemAction.get(ToolsAction.class),
@@ -161,7 +165,70 @@ public final class LoaderPoolNode extends AbstractNode {
     
     update ();
   }
+  
+  /** Stores all the objects into stream.
+  * @param oos object output stream to write to
+  */
+  private static synchronized void writePool (ObjectOutputStream oos) 
+  throws IOException {
+    Iterator it = loaders.iterator ();
+    
+    while (it.hasNext ()) {
+      DataLoader l = (DataLoader)it.next ();
 
+      NbMarshalledObject obj;
+      try {
+        obj = new NbMarshalledObject (l);
+      } catch (IOException ex) {
+        TopManager.getDefault ().notifyException (ex);
+        obj = null;
+      }
+      
+      if (obj != null) {
+        oos.writeObject (obj);
+      }
+    }
+    oos.writeObject (null);
+  }
+
+  /** Reads loader from the input stream.
+  * @param ois object input stream to read from
+  */
+  private static synchronized void readPool (ObjectInputStream ois) 
+  throws IOException, ClassNotFoundException {
+    HashSet classes = new HashSet ();
+    LinkedList l = new LinkedList ();
+    
+    for (;;) {
+      NbMarshalledObject obj = (NbMarshalledObject)ois.readObject ();
+      if (obj == null) {
+        break;
+      }
+      
+      try {
+        DataLoader loader = (DataLoader)obj.get ();
+        l.add (loader);
+        classes.add (loader.getClass ());
+      } catch (IOException ex) {
+        TopManager.getDefault ().notifyException (ex);
+      } catch (ClassNotFoundException ex) {
+        TopManager.getDefault ().notifyException (ex);
+      }
+    }
+    
+
+    Iterator it = loaders.iterator ();
+    while (it.hasNext ()) {
+      DataLoader loader = (DataLoader)it.next ();
+      if (!classes.contains (loader.getClass ())) {
+        l.add (loader);
+      }
+    }
+    
+    loaders = l;
+    update ();
+  }
+  
   
   /** Adds new loader when previous and following are specified.
   * If the loader cannot find the right position it adds it to the latest
@@ -408,9 +475,6 @@ public final class LoaderPoolNode extends AbstractNode {
 
   /** Node representing one loader in Loader Pool */
   private static class LoaderPoolItemNode extends BeanNode {
-    /** Set of actions for all loader nodes */
-    private static SystemAction[] loaderActions;
-
     /**
     * Constructs LoaderPoolItemNode for specified DataLoader.
     *
@@ -426,16 +490,14 @@ public final class LoaderPoolNode extends AbstractNode {
     *
     * @return array of system actions that should be in popup menu
     */
-    public SystemAction[] getActions () {
-      if (loaderActions == null)
-        loaderActions = new SystemAction[] {
-          SystemAction.get(MoveUpAction.class),
-          SystemAction.get(MoveDownAction.class),
-          null,
-          SystemAction.get(ToolsAction.class),
-          SystemAction.get(PropertiesAction.class),
-        };
-      return loaderActions;
+    public SystemAction[] createActions () {
+      return new SystemAction[] {
+        SystemAction.get(MoveUpAction.class),
+        SystemAction.get(MoveDownAction.class),
+        null,
+        SystemAction.get(ToolsAction.class),
+        SystemAction.get(PropertiesAction.class),
+      };
     }
 
     /** @return true
@@ -505,7 +567,6 @@ public final class LoaderPoolNode extends AbstractNode {
   */
   public static final class NbLoaderPool extends DataLoaderPool 
   implements PropertyChangeListener {
-    
     /** Enumerates all loaders. Loaders are taken from children
     * structure of LoaderPoolNode. */
     protected Enumeration loaders () {
@@ -544,7 +605,26 @@ public final class LoaderPoolNode extends AbstractNode {
       super.fireChangeEvent(che);
 //      System.out.println ("Loaders Change event fired....");
     }
+    
+    
+    /** Write the object.
+    */
+    private void writeObject (ObjectOutputStream oos) throws IOException {
+      LoaderPoolNode.writePool (oos);
+    }
 
+    /** Reads the object.
+    */
+    private void readObject (ObjectInputStream ois) 
+    throws IOException, ClassNotFoundException {
+      LoaderPoolNode.readPool (ois);
+    }
+    
+    /** Replaces the pool with default instance.
+    */
+    private Object readResolve () {
+      return getNbLoaderPool ();      
+    }
   } // end of NbLoaderPool
 
   /** Index support for reordering of file system pool.
@@ -594,6 +674,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  26   Gandalf   1.25        9/30/99  Jaroslav Tulach DataLoader is now 
+*       serializable.
 *  25   Gandalf   1.24        9/28/99  Jaroslav Tulach Changes in loader pool 
 *       are reflected in repository.
 *  24   Gandalf   1.23        8/30/99  Jaroslav Tulach Notification of change of
