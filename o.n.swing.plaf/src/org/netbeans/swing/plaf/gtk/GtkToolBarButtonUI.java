@@ -1,7 +1,14 @@
 /*
- * AquaToolBarButtonUI.java
- *
- * Created on January 17, 2004, 1:54 PM
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.swing.plaf.gtk;
@@ -13,7 +20,7 @@ import javax.swing.plaf.ButtonUI;
 import javax.swing.plaf.basic.BasicButtonListener;
 import java.awt.*;
 
-/** A finder-style aqua toolbar button UI
+/** A GTK-style toolbar button UI
  *
  * @author  Tim Boudreau
  */

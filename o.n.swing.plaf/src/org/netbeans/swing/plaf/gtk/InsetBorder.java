@@ -10,11 +10,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * InsetBorder.java
- *
- * Created on May 5, 2004, 8:11 PM
- */
 
 package org.netbeans.swing.plaf.gtk;
 

@@ -10,11 +10,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * GTKColor.java
- *
- * Created on April 7, 2004, 1:01 AM
- */
 
 package org.netbeans.swing.plaf.gtk;
 
