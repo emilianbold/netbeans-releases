@@ -15,6 +15,7 @@ package org.netbeans.modules.editor;
 
 import java.beans.*;
 import java.awt.Image;
+import java.lang.reflect.Method;
 import java.util.ResourceBundle;
 
 import org.openide.util.HelpCtx;
@@ -44,33 +45,85 @@ public abstract class FormatterIndentEngineBeanInfo extends SimpleBeanInfo {
 
     public PropertyDescriptor[] getPropertyDescriptors() {
         if (propertyDescriptors == null) {
-            propertyDescriptors = createPropertyDescriptors();
+            String[] propNames = getPropertyNames();
+            PropertyDescriptor[] pds = new PropertyDescriptor[propNames.length];
+
+            for (int i = 0; i < propNames.length; i++) {
+                pds[i] = createPropertyDescriptor(propNames[i]);
+                // Set display-name and short-description
+                pds[i].setDisplayName(getString("PROP_indentEngine_" + propNames[i])); // NOI18N
+                pds[i].setShortDescription(getString("HINT_indentEngine_" + propNames[i])); // NOI18N
+
+            }
+
+            propertyDescriptors = pds; // now the array are inited
+
+            // Now various properties of the descriptors can be updated
+            updatePropertyDescriptors();
         }
+
         return propertyDescriptors;
     }
 
-    protected PropertyDescriptor[] createPropertyDescriptors() {
-        String[] propNames = getPropertyNames();
-        PropertyDescriptor[] pd;
+    /** Create property descriptor for a particular property-name. */
+    protected PropertyDescriptor createPropertyDescriptor(String propName) {
+        PropertyDescriptor pd;
         try {
-            pd = new PropertyDescriptor[propNames.length];
-
-            for (int i = 0; i < propNames.length; i++) {
-                pd[i] = new PropertyDescriptor(propNames[i], getBeanClass());
-
-                pd[i].setDisplayName(getString(
-                        "PROP_indentEngine_" + propNames[i])); // NOI18N
-
-                pd[i].setShortDescription(getString(
-                        "HINT_indentEngine_" + propNames[i])); // NOI18N
-            }
+            pd = new PropertyDescriptor(propName, getBeanClass());
 
         } catch (IntrospectionException e) {
-            e.printStackTrace();
-            pd = new PropertyDescriptor[0];
+            try {
+                // Create property without read/write methods
+                pd = new PropertyDescriptor(propName, null, null);
+            } catch (IntrospectionException e2) {
+                throw new IllegalStateException("Invalid property name=" + propName);
+            }
+
+            // Try a simple search for get/set methods - just by name
+            // Successor can customize it if necessary
+            String cap = capitalize(propName);
+            Method m = findMethod("get" + cap);
+            if (m != null) {
+                try {
+                    pd.setReadMethod(m);
+                } catch (IntrospectionException e2) {
+                }
+            }
+            m = findMethod("set" + cap);
+            if (m != null) {
+                try {
+                    pd.setWriteMethod(m);
+                } catch (IntrospectionException e2) {
+                }
+            }
         }
 
         return pd;
+    }
+
+    protected void updatePropertyDescriptors() {
+    }
+
+    private Method findMethod(String name) {
+        try {
+            Method[] ma = getBeanClass().getDeclaredMethods();
+            for (int i = 0; i < ma.length; i++) {
+                if (name.equals(ma[i].getName())) {
+                    return ma[i];
+                }
+            }
+        } catch (SecurityException e) {
+        }
+        return null;
+    }
+
+    private static String capitalize(String s) {
+	if (s.length() == 0) {
+ 	    return s;
+	}
+	char chars[] = s.toCharArray();
+	chars[0] = Character.toUpperCase(chars[0]);
+	return new String(chars);
     }
 
     protected abstract Class getBeanClass();
@@ -83,7 +136,10 @@ public abstract class FormatterIndentEngineBeanInfo extends SimpleBeanInfo {
     }
 
     protected String[] createPropertyNames() {
-        return new String[0];
+        return new String[] {
+            FormatterIndentEngine.EXPAND_TABS_PROP,
+            FormatterIndentEngine.SPACES_PER_TAB_PROP
+        };
     }
 
     protected PropertyDescriptor getPropertyDescriptor(String propertyName) {
@@ -142,7 +198,7 @@ public abstract class FormatterIndentEngineBeanInfo extends SimpleBeanInfo {
      * @return localized string
      */
     protected String getString(String key) {
-        return key;
+        return NbBundle.getBundle(FormatterIndentEngineBeanInfo.class).getString(key);
     }
 
 }
