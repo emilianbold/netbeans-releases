@@ -108,11 +108,14 @@ public class DatabaseNodeChildren extends Children.Array {
                 }
 
                 setCh(children);
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
+                
+// Jesse's tweak caused a problem in the dbschema module wizard - commented out till new solution is found
+                
+//                SwingUtilities.invokeLater(new Runnable() {
+//                    public void run() {
                         propertySupport.firePropertyChange("finished", null, null); //NOI18N
-                    }
-                });
+//                    }
+//                });
             }
         }, 0);
 
