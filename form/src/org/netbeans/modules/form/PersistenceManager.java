@@ -69,24 +69,24 @@ public abstract class PersistenceManager {
     // ------------
     // static registry [provisional only]
 
-    private static java.util.List managers = new java.util.ArrayList(5);
-    private static java.util.List managersByName = new java.util.ArrayList();
+    private static List managers;
+    private static List managersByName;
 
     public static void registerManager(PersistenceManager manager) {
-        managers.add(manager);
+        getManagersList().add(manager);
     }
 
     public static void unregisterManager(PersistenceManager manager) {
-        managers.remove(manager);
+        getManagersList().remove(manager);
     }
 
     static void registerManager(String managerClassName) {
-        managersByName.add(managerClassName);
+        getManagersNamesList().add(managerClassName);
     }
 
     public static Iterator getManagers() {
         ClassLoader classLoader = null;
-        Iterator iter = managersByName.iterator();
+        Iterator iter = getManagersNamesList().iterator();
         while (iter.hasNext()) { // create managers registered by name
             if (classLoader == null)
                 classLoader = TopManager.getDefault().currentClassLoader();
@@ -94,7 +94,7 @@ public abstract class PersistenceManager {
             try {
                 PersistenceManager manager = (PersistenceManager)
                     classLoader.loadClass(pmClassName).newInstance();
-                managers.add(manager);
+                getManagersList().add(manager);
             }
             catch (Exception ex1) {
                 notifyError(ex1, pmClassName);
@@ -103,9 +103,23 @@ public abstract class PersistenceManager {
                 notifyError(ex2, pmClassName);
             }
         }
-        managersByName.clear(); // [is it OK to lose unsuccessful managers?]
+        getManagersNamesList().clear(); // [is it OK to lose unsuccessful managers?]
 
-        return managers.iterator();
+        return getManagersList().iterator();
+    }
+
+    private static List getManagersList() {
+        if (managers == null) {
+            managers = new ArrayList();
+            managers.add(new GandalfPersistenceManager());
+        }
+        return managers;
+    }
+
+    private static List getManagersNamesList() {
+        if (managersByName == null)
+            managersByName = new ArrayList();
+        return managersByName;
     }
 
     private static void notifyError(Throwable th, String pmClassName) {

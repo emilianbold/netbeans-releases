@@ -86,10 +86,6 @@ public class FormEditorModule extends ModuleInstall
         BeanInstaller.autoLoadBeans();
         timerBeanHack();
         
-        // register standard persistence managers
-        PersistenceManager.registerManager(
-            "org.netbeans.modules.form.GandalfPersistenceManager"); // NOI18N
-
         FormPropertyEditorManager.registerEditor(
             javax.swing.KeyStroke.class,
             org.netbeans.modules.form.editors.KeyStrokeEditor.class);
