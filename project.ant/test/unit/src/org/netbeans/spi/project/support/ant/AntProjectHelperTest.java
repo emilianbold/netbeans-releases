@@ -426,9 +426,14 @@ public class AntProjectHelperTest extends NbTestCase {
         assertNotNull("project.properties still exists", props);
         assertEquals("project.properties now contains testprop", "testval", props.getProperty("testprop"));
         // #42147: changes made on disk should fire changes to AntProjectListener, not just to the PropertyEvaluator
-        TestUtil.createFileFromContent(null, h.getProjectDirectory(), AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws Exception {
+                TestUtil.createFileFromContent(null, h.getProjectDirectory(), AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                return null;
+            }
+        });
         evs = l.events();
-        assertEquals("touching project.properties fires on event", 1, evs.length);
+        assertEquals("touching project.properties fires one event", 1, evs.length);
         assertEquals("correct helper", h, evs[0].getHelper());
         assertEquals("correct path", AntProjectHelper.PROJECT_PROPERTIES_PATH, evs[0].getPath());
         assertFalse("unexpected change", evs[0].isExpected());
@@ -486,7 +491,12 @@ public class AntProjectHelperTest extends NbTestCase {
         nue = Util.findElement(data, "misc", "urn:test:shared");
         assertNotNull("<misc/> now on disk", nue);
         // #42147: changes made on disk should result in firing of an AntProjectEvent
-        TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/project-modified.xml"), projdir, AntProjectHelper.PROJECT_XML_PATH);
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws Exception {
+                TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/project-modified.xml"), projdir, AntProjectHelper.PROJECT_XML_PATH);
+                return null;
+            }
+        });
         evs = l.events();
         assertEquals("writing project.xml on disk fires one event", 1, evs.length);
         assertEquals("correct helper", h, evs[0].getHelper());
