@@ -574,7 +574,7 @@ implements Serializable, DataObject.Container {
         if (f.equals(this)) {
             throw (IOException) ErrorManager.getDefault().annotate(
                 new IOException("Error Copying File or Folder"), //NOI18N
-                NbBundle.getMessage(getClass(), "EXC_CannotCopyTheSame", getName()) //NOI18N
+                NbBundle.getMessage(DataFolder.class, "EXC_CannotCopyTheSame", getName()) //NOI18N
             );
         } else {
             DataFolder testFolder = f.getFolder();
@@ -582,7 +582,7 @@ implements Serializable, DataObject.Container {
                 if (testFolder.equals(this)) {
                     throw (IOException) ErrorManager.getDefault().annotate(
                         new IOException("Error Copying File or Folder"), //NOI18N
-                        NbBundle.getMessage(getClass(), "EXC_CannotCopySubfolder", getName()) //NOI18N
+                        NbBundle.getMessage(DataFolder.class, "EXC_CannotCopySubfolder", getName()) //NOI18N
                     );
                 }
                 testFolder = testFolder.getFolder();
@@ -612,7 +612,7 @@ implements Serializable, DataObject.Container {
                 fsDisplayName = "";//NOI18N
             }
             
-            String   message = NbBundle.getMessage(getClass(), "EXC_CannotDelete", //NOI18N
+            String   message = NbBundle.getMessage(DataFolder.class, "EXC_CannotDelete", //NOI18N
             fo.getPath(), fsDisplayName);
             
             ErrorManager.getDefault().annotate(iex, message);//NOI18N
