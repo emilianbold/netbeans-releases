@@ -71,8 +71,8 @@ public class EventCustomEditor extends javax.swing.JPanel {
     gridBagConstraints1.weighty = 1.0;
     add (jScrollPane1, gridBagConstraints1);
 
-    addButton.setText ("Add");
     addButton.setLabel ("Add...");
+    addButton.setText ("Add");
     addButton.addActionListener (new java.awt.event.ActionListener () {
       public void actionPerformed (java.awt.event.ActionEvent evt) {
         addButtonActionPerformed (evt);
@@ -108,8 +108,8 @@ public class EventCustomEditor extends javax.swing.JPanel {
     gridBagConstraints1.weightx = 0.1;
     add (removeButton, gridBagConstraints1);
 
-    editButton.setText ("Rename");
     editButton.setLabel ("Edit...");
+    editButton.setText ("Rename");
     editButton.addActionListener (new java.awt.event.ActionListener () {
       public void actionPerformed (java.awt.event.ActionEvent evt) {
         editButtonActionPerformed (evt);
@@ -147,11 +147,16 @@ private void editButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-F
   for (int i=0, n=handlers.length; i<n; i++) {
     nd.setInputText((String)handlers[i]);
     if (TopManager.getDefault().notify(nd).equals (NotifyDescriptor.OK_OPTION)) {
-      changes.getRenamedOldNames ().add (handlers[i]);
-      changes.getRenamedNewNames ().add (nd.getInputText());
-      int pos = handlersModel.indexOf(handlers[i]);
-      handlersModel.remove(pos);
-      handlersModel.add(pos, nd.getInputText());
+      if (org.openide.util.Utilities.isJavaIdentifier (nd.getInputText())) {
+        changes.getRenamedOldNames ().add (handlers[i]);
+        changes.getRenamedNewNames ().add (nd.getInputText());
+        int pos = handlersModel.indexOf(handlers[i]);
+        handlersModel.remove(pos);
+        handlersModel.add(pos, nd.getInputText());
+      } else {
+         NotifyDescriptor.Message msg = new NotifyDescriptor.Message ("Handler name is not valid java identifier !", NotifyDescriptor.WARNING_MESSAGE);
+         TopManager.getDefault().notify(msg);
+      }
     }
   }  
   }//GEN-LAST:event_editButtonActionPerformed
@@ -169,8 +174,13 @@ private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FI
 // Add your handling code here:
   NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine ("New Handler Name:", "Add Handler");
   if (TopManager.getDefault().notify(nd).equals (NotifyDescriptor.OK_OPTION)) {
-    changes.getAdded ().add (nd.getInputText());
-    handlersModel.addElement(nd.getInputText());
+    if (org.openide.util.Utilities.isJavaIdentifier (nd.getInputText())) {
+      changes.getAdded ().add (nd.getInputText());
+      handlersModel.addElement(nd.getInputText());
+    } else {
+       NotifyDescriptor.Message msg = new NotifyDescriptor.Message ("Handler name is not valid java identifier !", NotifyDescriptor.WARNING_MESSAGE);
+       TopManager.getDefault().notify(msg);
+    }
   }  
   }//GEN-LAST:event_addButtonActionPerformed
 

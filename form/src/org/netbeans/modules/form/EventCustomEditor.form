@@ -7,13 +7,13 @@
     </Property>
   </Properties>
   <SyntheticProperties>
-    <SyntheticProperty name="formSize" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,0,-56,0,0,1,44"/>
-    <SyntheticProperty name="formPosition" value="-84,-19,0,5,115,114,0,14,106,97,118,97,46,97,119,116,46,80,111,105,110,116,-74,-60,-118,114,52,126,-56,38,2,0,2,73,0,1,120,73,0,1,121,120,112,0,0,0,0,0,0,0,0"/>
-    <SyntheticProperty name="formSizePolicy" value="-84,-19,0,5,115,114,0,17,106,97,118,97,46,108,97,110,103,46,73,110,116,101,103,101,114,18,-30,-96,-92,-9,-127,-121,56,2,0,1,73,0,5,118,97,108,117,101,120,114,0,16,106,97,118,97,46,108,97,110,103,46,78,117,109,98,101,114,-122,-84,-107,29,11,-108,-32,-117,2,0,0,120,112,0,0,0,2"/>
-    <SyntheticProperty name="generatePosition" value="-84,-19,0,5,115,114,0,17,106,97,118,97,46,108,97,110,103,46,66,111,111,108,101,97,110,-51,32,114,-128,-43,-100,-6,-18,2,0,1,90,0,5,118,97,108,117,101,120,112,1"/>
-    <SyntheticProperty name="generateSize" value="-84,-19,0,5,115,114,0,17,106,97,118,97,46,108,97,110,103,46,66,111,111,108,101,97,110,-51,32,114,-128,-43,-100,-6,-18,2,0,1,90,0,5,118,97,108,117,101,120,112,1"/>
-    <SyntheticProperty name="generateCenter" value="-84,-19,0,5,115,114,0,17,106,97,118,97,46,108,97,110,103,46,66,111,111,108,101,97,110,-51,32,114,-128,-43,-100,-6,-18,2,0,1,90,0,5,118,97,108,117,101,120,112,1"/>
-    <SyntheticProperty name="encoding" value="-84,-19,0,5,116,0,10,73,83,79,45,56,56,53,57,45,49"/>
+    <SyntheticProperty name="formSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,0,-56,0,0,1,44"/>
+    <SyntheticProperty name="formPosition" type="java.awt.Point" value="-84,-19,0,5,115,114,0,14,106,97,118,97,46,97,119,116,46,80,111,105,110,116,-74,-60,-118,114,52,126,-56,38,2,0,2,73,0,1,120,73,0,1,121,120,112,0,0,0,0,0,0,0,0"/>
+    <SyntheticProperty name="formSizePolicy" type="int" value="2"/>
+    <SyntheticProperty name="generatePosition" type="boolean" value="true"/>
+    <SyntheticProperty name="generateSize" type="boolean" value="true"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="true"/>
+    <SyntheticProperty name="encoding" type="java.lang.String" value="ISO-8859-1"/>
   </SyntheticProperties>
 
   <Layout class="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout"/>
@@ -34,10 +34,10 @@
           </Events>
 
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodePre" value="-84,-19,0,5,116,0,-85,86,101,99,116,111,114,32,104,32,61,32,101,118,101,110,116,80,114,111,112,101,114,116,121,46,101,118,101,110,116,46,103,101,116,72,97,110,100,108,101,114,115,32,40,41,59,10,102,111,114,32,40,105,110,116,32,105,61,48,44,32,110,61,104,46,115,105,122,101,32,40,41,59,32,105,60,110,59,32,105,43,43,41,32,123,10,32,32,104,97,110,100,108,101,114,115,77,111,100,101,108,46,97,100,100,69,108,101,109,101,110,116,32,40,40,40,69,118,101,110,116,115,77,97,110,97,103,101,114,46,69,118,101,110,116,72,97,110,100,108,101,114,41,32,40,104,46,103,101,116,32,40,105,41,41,41,46,103,101,116,78,97,109,101,32,40,41,41,59,10,125"/>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" value="-84,-19,0,5,116,0,0"/>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" value="-84,-19,0,5,116,0,0"/>
-            <AuxValue name="JavaCodeGenerator_CreateCodePost" value="-84,-19,0,5,116,0,38,104,97,110,100,108,101,114,115,76,105,115,116,46,115,101,116,77,111,100,101,108,32,40,104,97,110,100,108,101,114,115,77,111,100,101,108,41,59"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value="Vector h = eventProperty.event.getHandlers ();&#xa;for (int i=0, n=h.size (); i&lt;n; i++) {&#xa;  handlersModel.addElement (((EventsManager.EventHandler) (h.get (i))).getName ());&#xa;}"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value=""/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value=""/>
+            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="handlersList.setModel (handlersModel);"/>
           </AuxValues>
           <Constraints>
           </Constraints>
@@ -46,8 +46,8 @@
     </Container>
     <Component class="javax.swing.JButton" name="addButton">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="com.netbeans.developer.editors.StringEditor" value="Add"/>
         <Property name="label" type="java.lang.String" editor="com.netbeans.developer.editors.StringEditor" value="Add..."/>
+        <Property name="text" type="java.lang.String" editor="com.netbeans.developer.editors.StringEditor" value="Add"/>
       </Properties>
 
       <Events>
@@ -75,8 +75,8 @@
     </Component>
     <Component class="javax.swing.JButton" name="editButton">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="com.netbeans.developer.editors.StringEditor" value="Rename"/>
         <Property name="label" type="java.lang.String" editor="com.netbeans.developer.editors.StringEditor" value="Edit..."/>
+        <Property name="text" type="java.lang.String" editor="com.netbeans.developer.editors.StringEditor" value="Rename"/>
       </Properties>
 
       <Events>
