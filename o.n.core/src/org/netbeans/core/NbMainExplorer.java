@@ -234,6 +234,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     sheetSwitcher.addItemListener (this);
     result.add (sheetSwitcher);
     result.setBorder(new EmptyBorder(2, 0, 2, 2));
+    result.setFloatable (false);
     return result;
   }
 
@@ -436,6 +437,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  18   Gandalf   1.17        7/16/99  Ian Formanek    Fixed bug #1800 - You can
+*       drag off the explorer toolbar. 
 *  17   Gandalf   1.16        7/15/99  Ian Formanek    Swapped Global and 
 *       Project settings tabs
 *  16   Gandalf   1.15        7/13/99  Ian Formanek    New MainExplorer tabs 
