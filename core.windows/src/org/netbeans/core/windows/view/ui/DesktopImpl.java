@@ -302,12 +302,20 @@ public final class DesktopImpl {
             if (result.width < MIN_EDITOR_ALIGN_THICK) {
                 result.width = splitRootRect.width / 3;
             }
+            if (result.width > editorBounds.width) {
+                // make sure we are not bigger than the current window..
+                result.width = editorBounds.width - (editorBounds.width / 10);
+            }
         } else if (Constants.RIGHT.equals(side)) {
             int rightLimit = layeredPane.getBounds().x + layeredPane.getBounds().width - Math.max(viewRect.width, viewPreferred.width);
 //            result.x = (rightLimit - (editorBounds.x + editorBounds.width) < MIN_EDITOR_ALIGN_THICK)
 //                        ? rightLimit - splitRootRect.width / 3 : editorBounds.x + editorBounds.width - 6;
             result.x = (view.getSlideBounds().width < MIN_EDITOR_ALIGN_THICK)
                         ? rightLimit - splitRootRect.width / 3 : rightLimit - view.getSlideBounds().width;
+            if (result.x < 0) {
+                // make sure we are not bigger than the current window..
+                result.x = editorBounds.width / 10;
+            }
             result.y = 0;
             result.height = splitRootRect.height;
             result.width = rightLimit - result.x;
@@ -317,6 +325,10 @@ public final class DesktopImpl {
             result.x = splitRootRect.x;
             result.y = (view.getSlideBounds().height < MIN_EDITOR_ALIGN_THICK)
                         ? lowerLimit - splitRootRect.height / 3 : lowerLimit - view.getSlideBounds().height;
+            if (result.y < 0) {
+                // make sure we are not bigger than the current window..
+                result.y = editorBounds.width / 10;
+            }
             result.height = lowerLimit - result.y;
             result.width = splitRootRect.width;
         }
