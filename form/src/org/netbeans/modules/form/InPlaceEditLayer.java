@@ -93,7 +93,18 @@ class InPlaceEditLayer extends JPanel
             editingTextComp = (JTextComponent)editedComp;
             oldText = editingTextComp.getText();
             editingTextComp.setText(editedText);
-            editingTextComp.setRequestFocusEnabled(true); // it's ugly...
+
+            // enable focus on component in component layer [it's a bit ugly...]
+            try {
+                java.lang.reflect.Method m =
+                    editingTextComp.getClass().getMethod("setFocusable", // NOI18N
+                                                 new Class[] { Boolean.TYPE });
+                // JDK 1.4
+                m.invoke(editingTextComp, new Object[] { Boolean.TRUE });
+            }
+            catch (Exception ex) { // JDK 1.3
+                editingTextComp.setRequestFocusEnabled(true);
+            }
         }
         else throw new IllegalArgumentException();
 
@@ -135,7 +146,18 @@ class InPlaceEditLayer extends JPanel
         }
         else if (!isLayerEditing()) {
             editingTextComp.setText(oldText);
-            editingTextComp.setRequestFocusEnabled(false); // it's ugly...
+
+            // disable focus on component in component layer [it's a bit ugly...]
+            try {
+                java.lang.reflect.Method m =
+                    editingTextComp.getClass().getMethod("setFocusable", // NOI18N
+                                                 new Class[] { Boolean.TYPE });
+                // JDK 1.4
+                m.invoke(editingTextComp, new Object[] { Boolean.FALSE });
+            }
+            catch (Exception ex) { // JDK 1.3
+                editingTextComp.setRequestFocusEnabled(false);
+            }
         }
 
         editingTextComp.removeKeyListener(compKeyListener);
