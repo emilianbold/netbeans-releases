@@ -110,7 +110,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="set-buildnumber" unless="buildnumber">
     <tstamp>
-    	<format property="buildnumber" pattern="yyyyMMddHHmm"/>
+    	<format property="buildnumber" pattern="yyMMdd"/>
     </tstamp>
   </target>
 
