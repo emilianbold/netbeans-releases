@@ -112,17 +112,30 @@ public class Bundle {
         return java.text.MessageFormat.format(getString(bundle, key), params);
     }
     
+    /** Gets string from bundle and formats it. It removes '&' from it and 
+     * cuts parameters like {0} from the end if any.
+     * @param bundle path to bundle (e.g. "org.netbeans.core.Bundle")
+     * @param key key of requested string
+     * @param params parameter to be formatted
+     * @return string from bundle in current locale. Char '&' is removed.
+     */
+    public static String getStringTrimmed(String bundle, String key, Object[] params) {
+        return trim(getString(getBundle(bundle), key, params));
+    }
+    
     /** Removes '&' and cut parameters like {0} from the end.
      * @param value string to modify
      * @return string with removed '&' and parameters like {0} from the end.
      */
     private static String trim(String value) {
         // remove '&'
-        if(value.indexOf('&')!=-1)
+        if(value.indexOf('&')!=-1) {
             value = new StringBuffer(value).deleteCharAt(value.indexOf('&')).toString();
+        }
         // cut parameters like {0} from string
-        if(value.indexOf('{')!=-1)
+        if(value.indexOf('{')!=-1) {
             value = value.substring(0, value.indexOf('{'));
+        }
         return value;
     }
     
