@@ -13,13 +13,12 @@
 
 package org.netbeans.api.queries;
 
+import java.io.File;
 import java.util.Iterator;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 // XXX perhaps should be in the Filesystems API instead of here?
-// XXX should perhaps use File not FileObject (cf. CollocationQuery)
 
 /**
  * Determine whether files should be shared (for example in a VCS) or are intended
@@ -37,52 +36,56 @@ public final class SharabilityQuery {
     
     private static final Lookup.Result/*<SharabilityQueryImplementation>*/ implementations =
         Lookup.getDefault().lookup(new Lookup.Template(SharabilityQueryImplementation.class));
+
+    /**
+     * Constant indicating that nothing is known about whether a given
+     * file should be considered sharable or not.
+     * A client should therefore behave in the safest way it can.
+     */
+    public static final int UNKNOWN = 0;
+    
+    /**
+     * Constant indicating that the file or directory is sharable.
+     * In the case of a directory, this means that all files and
+     * directories recursively contained in this directory are also
+     * sharable.
+     */
+    public static final int SHARABLE = 1;
+    
+    /**
+     * Constant indicating that the file or directory is not sharable.
+     * In the case of a directory, this means that all files and
+     * directories recursively contained in this directory are also
+     * not sharable.
+     */
+    public static final int NOT_SHARABLE = 2;
+    
+    /**
+     * Constant indicating that a directory is sharable but files and
+     * directories recursively contained in it may or may not be sharable.
+     * A client interested in children of this directory should explicitly
+     * ask about each in turn.
+     */
+    public static final int MIXED = 3;
     
     private SharabilityQuery() {}
     
-    // XXX may also need a related query: check whether a given file is
-    // machine-generated and should thus be made read-only in the editor
-    // (e.g. generated servlets, or build-impl.xml)
-    
     /**
      * Check whether an existing file is sharable.
-     * @param file a file or directory
-     * @return true if it should be shared, false if it should not, or null if
-     *         no definite answer is available
+     * @param file a file or directory (may or may not already exist)
+     * @return one of the constants in this class
      */
-    public static Boolean isSharable(FileObject file) {
+    public static int getSharability(File file) {
         if (file == null) throw new IllegalArgumentException();
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {
             SharabilityQueryImplementation sqi = (SharabilityQueryImplementation)it.next();
-            Boolean b = sqi.isSharable(file);
-            if (b != null) {
-                return b;
+            int x = sqi.getSharability(file);
+            if (x != UNKNOWN) {
+                return x;
             }
         }
-        return null;
-    }
-    
-    /**
-     * Check whether a new file should be sharable.
-     * @param parent an existing parent directory
-     * @param childName the proposed name of the child
-     * @param directory true if the proposed child will be a directory
-     * @return true if it should be shared, false if it should not, or null if
-     *         no definite answer is available
-     */
-    public static Boolean willBeSharable(FileObject parent, String childName, boolean directory) {
-        if (parent == null || childName == null) throw new IllegalArgumentException();
-        if (!parent.isFolder()) throw new IllegalArgumentException();
-        Iterator it = implementations.allInstances().iterator();
-        while (it.hasNext()) {
-            SharabilityQueryImplementation sqi = (SharabilityQueryImplementation)it.next();
-            Boolean b = sqi.willBeSharable(parent, childName, directory);
-            if (b != null) {
-                return b;
-            }
-        }
-        return null;
+        return UNKNOWN;
     }
     
 }
