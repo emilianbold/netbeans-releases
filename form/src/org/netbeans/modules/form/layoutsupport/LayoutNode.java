@@ -68,21 +68,24 @@ public class LayoutNode extends FormNode
         return layoutSupport.getPropertySets();
     }
 
-    protected SystemAction[] createActions() {
-        ArrayList actions = new ArrayList(10);
+    public javax.swing.Action[] getActions(boolean context) {
+        if (systemActions == null) { // from AbstractNode
+            ArrayList actions = new ArrayList(10);
 
-        if (!layoutSupport.getMetaContainer().isReadOnly()) {
-            actions.add(SystemAction.get(SelectLayoutAction.class));
-            actions.add(null);
+            if (!layoutSupport.getMetaContainer().isReadOnly()) {
+                actions.add(SystemAction.get(SelectLayoutAction.class));
+                actions.add(null);
+            }
+
+            javax.swing.Action[] superActions = super.getActions(context);
+            for (int i=0; i < superActions.length; i++)
+                actions.add(superActions[i]);
+
+            systemActions = new SystemAction[actions.size()];
+            actions.toArray(systemActions);
         }
 
-        SystemAction[] superActions = super.createActions();
-        for (int i=0; i < superActions.length; i++)
-            actions.add(superActions[i]);
-
-        SystemAction[] array = new SystemAction[actions.size()];
-        actions.toArray(array);
-        return array;
+        return systemActions;
     }
 
     public boolean hasCustomizer() {
