@@ -278,12 +278,15 @@ abstract class ContentModel {
                         if (models[i].eat(food) == false) {
                             models[i].reset();
                             if (models[i].isOptional() == false) break;
+                        } else {
+                            if (store == food.mark()) {
+                                // the automaton was unattracted
+                                models[i].reset();
+                            }
                         }
                     }
                     food.reset(level);
-                    if (food.hasNext()) {
-                        throw new IllegalStateException("Food mark/reset invariant is broken!");
-                    }
+                    assert food.hasNext() == false : "Food mark/reset invariant is broken!";
                                         
                 } else if (terminated) {
                     // it accepted and is complete
