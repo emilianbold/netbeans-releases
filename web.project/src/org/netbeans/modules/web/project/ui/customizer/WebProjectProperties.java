@@ -496,7 +496,8 @@ public class WebProjectProperties {
                         if (values == null) break;
                         for (Iterator v = values.iterator(); v.hasNext(); ) {
                             VisualClassPathItem valcpi = (VisualClassPathItem)v.next();
-                            if (valcpi.getRaw().indexOf(vcpi.getRaw()) > -1) {
+                            String raw = valcpi.getRaw();
+                            if (raw != null && raw.indexOf(vcpi.getRaw()) > -1) {
                                 used = true;
                                 break;
                             }
