@@ -18,6 +18,7 @@ package org.netbeans.modules.search;
 import java.awt.Image;
 import java.beans.*;
 import java.io.IOException;
+import java.io.CharConversionException;
 import java.util.*;
 import java.text.MessageFormat;
 import javax.swing.event.ChangeEvent;
@@ -33,6 +34,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.ErrorManager;
+import org.openide.xml.XMLUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
@@ -711,7 +713,11 @@ public class ResultModel implements TaskListener {
             if(fileFolder != null) {
                 String hint = fileFolder.getPath();
                 String orig = getOriginal().getDisplayName();
-                return "<html>" + orig + " <font color='!controlShadow'>" + hint;  // NOI18N
+                try {
+                    return "<html>" + orig + " <font color='!controlShadow'>" + XMLUtil.toElementContent(hint);  // NOI18N
+                } catch (CharConversionException e) {
+                    return null;
+                }
             } else {
                 return getOriginal().getHtmlDisplayName();
             }
