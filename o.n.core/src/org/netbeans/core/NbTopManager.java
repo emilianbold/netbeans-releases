@@ -14,7 +14,6 @@
 package org.netbeans.core;
 
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
@@ -127,8 +126,6 @@ public abstract class NbTopManager extends TopManager {
 
     /** nodeOperation */
     private NodeOperation nodeOperation;
-    /** clipboard */
-    private ExClipboard clipboard;
 
     /** ProjectOperation main variable */
     static NbProjectOperation projectOperation;
@@ -488,16 +485,7 @@ public abstract class NbTopManager extends TopManager {
     * @return the clipboard for whole system
     */
     public ExClipboard getClipboard () {
-        if (clipboard != null) {
-            return clipboard;
-        }
-
-        synchronized (this) {
-            if (clipboard == null) {
-                clipboard = new CoronaClipboard (""); // NOI18N
-            }
-        }
-        return clipboard;
+        return NbClipboard.getDefault();
     }
 
     /** Returns pool of options.
