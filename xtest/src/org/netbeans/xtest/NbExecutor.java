@@ -94,16 +94,21 @@ public class NbExecutor extends Task {
             while(tests.hasMoreElements()) {
               MConfig.Test test = (MConfig.Test) tests.nextElement();
               try {  
-                CallTarget   callee = (CallTarget) getProject().createTask( "antcall" );
+                Ant   callee = (Ant) getProject().createTask( "ant" );
                 String       pattern;
                 
-                callee.setTarget(targetName);
                 callee.setOwningTarget(target);
+                callee.setTaskName(getTaskName());
+                callee.setLocation(location);
                 callee.init();
 
-                Property paramModule = callee.createParam();
-                Property paramTestType = callee.createParam();
-                Property paramTestAttribute = callee.createParam();
+                callee.setTarget(targetName);
+                callee.setDir(project.getBaseDir());
+                callee.setAntfile(project.getProperty("ant.file"));
+
+                Property paramModule = callee.createProperty();
+                Property paramTestType = callee.createProperty();
+                Property paramTestAttribute = callee.createProperty();
                 
                 paramModule.setName(targetParamModule);
                 paramModule.setValue(test.getModule());
@@ -116,9 +121,23 @@ public class NbExecutor extends Task {
                 Iterator it = set.iterator();
                 while (it.hasNext()) {
                     Map.Entry map = (Map.Entry) it.next();
-                    Property newproperty = callee.createParam();
+                    Property newproperty = callee.createProperty();
                     newproperty.setName((String)map.getKey());
                     newproperty.setValue((String)map.getValue());
+                }
+                String testrundir = project.getProperty("xtest.results.testrun.dir");
+                if (testrundir != null) {
+                    String dir = testrundir + File.separator + "logs";
+                    File dirfile = new File(dir);
+                    if (!dirfile.exists()) dirfile.mkdirs();
+                    File file = new File(dirfile, test.getModule() + "_" + test.getType() + ".log");
+                    int c = 1;
+                    while (file.exists()) {
+                        file = new File(dirfile, test.getModule() + "_" + test.getType() + "_"+ c + ".log");
+                        c++;
+                    }
+                    callee.setOutput(file.getAbsolutePath());
+                    
                 }
                 callee.execute(); 
               }
