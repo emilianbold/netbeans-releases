@@ -21,6 +21,8 @@ import java.lang.ref.*;
 import java.awt.event.*;
 import java.awt.*;
 import java.beans.PropertyVetoException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import javax.swing.JList;
 import javax.swing.tree.TreeSelectionModel;
@@ -125,7 +127,8 @@ public class SelectionModeTest extends NbTestCase {
      * @throws Exception  */    
     public void testSingleSelectionMode () throws Exception {
         prepareTest ();
-        tree.setSelectionMode (TreeSelectionModel.SINGLE_TREE_SELECTION);
+        // try setSelectionMode; if not present then fail
+        setSelectionMode (tree, TreeSelectionModel.SINGLE_TREE_SELECTION);
         PropertyVetoException exp = null;
         
         // single
@@ -171,7 +174,8 @@ public class SelectionModeTest extends NbTestCase {
      * @throws Exception  */    
     public void testContigousSelection () throws Exception {
         prepareTest ();
-        tree.setSelectionMode (TreeSelectionModel.CONTIGUOUS_TREE_SELECTION);
+        // try setSelectionMode; if not present then fail
+        setSelectionMode (tree, TreeSelectionModel.CONTIGUOUS_TREE_SELECTION);
         PropertyVetoException exp = null;
         
         // single
@@ -215,7 +219,8 @@ public class SelectionModeTest extends NbTestCase {
      * @throws Exception  */    
     public void testDiscontigousSelection () throws Exception {
         prepareTest ();
-        tree.setSelectionMode (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+        // try setSelectionMode; if not present then fail
+        setSelectionMode (tree, TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         PropertyVetoException exp = null;
         
         // single
@@ -262,6 +267,23 @@ public class SelectionModeTest extends NbTestCase {
             return Arrays.equals (selected, mgr.getSelectedNodes ());
         }
         return true;
+    }
+    
+    /** Set selection on TreeView if the method is present. If not then the test failed.
+     * @param TreeView tree instance TreeView
+     * @param int mode selection mode */    
+    private void setSelectionMode (TreeView tree, int mode) {
+        try {
+            Class c = tree.getClass ();
+            Method m = c.getMethod ("setSelectionMode", new Class[] {Integer.class});
+            m.invoke (tree, new Object[] {new Integer (mode)});
+        } catch (NoSuchMethodException nsme) {
+            fail ("The method setSelectionMode can't be called on this object.");
+        } catch (IllegalAccessException iae) {
+            fail ("IllegalAccessException thrown from setSelectionMode.");
+        } catch (InvocationTargetException ite) {
+            fail ("InvocationTargetException thrown from setSelectionMode.");
+        }
     }
 
 }
