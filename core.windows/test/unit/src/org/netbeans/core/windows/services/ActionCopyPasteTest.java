@@ -15,7 +15,6 @@
 package org.netbeans.core.windows.services;
 
 import java.awt.datatransfer.Transferable;
-import java.util.ArrayList;
 import javax.swing.AbstractAction;
 import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
@@ -24,6 +23,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.datatransfer.PasteType;
 
 
 
@@ -76,43 +76,36 @@ public class ActionCopyPasteTest extends NbTestCase {
         DataObject[] folderChildren = ((DataFolder)toolbar1.getDataObject()).getChildren();
         DataObject child1 = folderChildren[0];
         Transferable t = child1.getNodeDelegate().clipboardCopy();
+        PasteType[] types;
         
-        ArrayList list = new ArrayList();
-        toolbar1.createPasteTypes( t, list );
-        assertEquals( "Cannot paste an action if the toolbar already contains it.", 0, list.size() );
+        types = toolbar1.getPasteTypes( t );
+        assertEquals( "Cannot paste an action if the toolbar already contains it.", 0, types.length );
         
-        list.clear();
-        toolbar2.createPasteTypes( t, list );
-        assertTrue( "Pasting to a different folder is ok.", list.size() > 0 );
+        types = toolbar2.getPasteTypes( t );
+        assertTrue( "Pasting to a different folder is ok.", types.length > 0 );
         
-        list.clear();
-        menu1.createPasteTypes( t, list );
-        assertEquals( "Cannot paste an action if the menu already contains it.", 0, list.size() );
+        types = menu1.getPasteTypes( t );
+        assertEquals( "Cannot paste an action if the menu already contains it.", 0, types.length );
         
-        list.clear();
-        menu2.createPasteTypes( t, list );
-        assertTrue( "Pasting to a different menu is ok.", list.size() > 0 );
+        types = menu2.getPasteTypes( t );
+        assertTrue( "Pasting to a different menu is ok.", types.length > 0 );
 
         //check copy & paste for menu folders
         folderChildren = ((DataFolder)menu1.getDataObject()).getChildren();
         child1 = folderChildren[0];
         t = child1.getNodeDelegate().clipboardCopy();
 
-        list.clear();
-        toolbar1.createPasteTypes( t, list );
-        assertEquals( "Cannot paste an action if the toolbar already contains it.", 0, list.size() );
+        types = toolbar1.getPasteTypes( t );
+        assertEquals( "Cannot paste an action if the toolbar already contains it.", 0, types.length );
         
-        list.clear();
-        toolbar2.createPasteTypes( t, list );
-        assertTrue( "Pasting to a different folder is ok.", list.size() > 0 );
+        types = toolbar2.getPasteTypes( t );
+        assertTrue( "Pasting to a different folder is ok.", types.length > 0 );
         
-        list.clear();
-        menu1.createPasteTypes( t, list );
-        assertEquals( "Cannot paste an action if the menu already contains it.", 0, list.size() );
+        types = menu1.getPasteTypes( t );
+        assertEquals( "Cannot paste an action if the menu already contains it.", 0, types.length );
         
-        list.clear();
-        menu2.createPasteTypes( t, list );
-        assertTrue( "Pasting to a different menu is ok.", list.size() > 0 );
+        types = menu2.getPasteTypes( t );
+        assertTrue( "Pasting to a different menu is ok.", types.length > 0 );
     }
     
     DataFolder createFolder( String parent, String folderName ) throws Exception {
