@@ -137,7 +137,7 @@ public final class NbMainExplorer extends CloneableTopComponent
   /** Open all main explorer's top components on given workspace */
   public void openRoots (Workspace workspace) {
     // save the tab we should activate
-    final MainTab toBeActivated = MainTab.lastActivated;
+    ExplorerTab toBeActivated = MainTab.lastActivated;
     // perform open operation
     refreshRoots();
     Node[] rootsArray = (Node[])getRoots().toArray(new Node[0]);
@@ -148,14 +148,16 @@ public final class NbMainExplorer extends CloneableTopComponent
         tc.open(workspace);
       }
     }
-    // set focus to saved last activated tab, if possible
-    if (toBeActivated != null) {
-      SwingUtilities.invokeLater(new Runnable () {
-        public void run () {
-          toBeActivated.requestFocus();
-        }
-      });
+    // set focus to saved last activated tab or repository tab
+    if (toBeActivated == null) {
+      toBeActivated = getRootPanel(rootsArray[0]);
     }
+    final ExplorerTab localActivated = toBeActivated;
+    SwingUtilities.invokeLater(new Runnable () {
+      public void run () {
+        localActivated.requestFocus();
+      }
+    });
   }
 
   /** Refreshes current state of main explorer's top components, so they
@@ -255,8 +257,10 @@ public final class NbMainExplorer extends CloneableTopComponent
     result.add(ns.repository());
     // roots added by modules (javadoc etc...)
     result.addAll(Arrays.asList(ns.roots()));
-    // projects tab
-    result.add(NbProjectOperation.getProjectDesktop());
+    // projects tab (only if projects module is installed)
+    if (NbProjectOperation.hasProjectDesktop()) {
+      result.add(NbProjectOperation.getProjectDesktop());
+    }
     // runtime
     result.add(ns.environment());
     
@@ -583,6 +587,7 @@ public final class NbMainExplorer extends CloneableTopComponent
 
 /*
 * Log
+*  47   Gandalf   1.46        12/21/99 David Simonek   minor fixes
 *  46   Gandalf   1.45        12/17/99 David Simonek   #4886
 *  45   Gandalf   1.44        12/3/99  David Simonek   
 *  44   Gandalf   1.43        11/30/99 David Simonek   neccessary changes needed
