@@ -30,7 +30,7 @@ import org.netbeans.jellytools.actions.ExecuteAction;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.web.test.util.Utils;
 
-
+import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waiter;
 
 import org.netbeans.web.test.nodes.JSPNode;
@@ -49,6 +49,7 @@ public class ExecuteCLBrowser extends JellyTestCase {
     private static String webModule = null;
     private static String wmName = "wm1";
     private static String fSep = System.getProperty("file.separator");
+    private static Timeouts tm = null;
     private static String iSep = "|";
     private static String classes = "Classes";
     private static String servletForExecution = "ServletForExecution";
@@ -85,15 +86,23 @@ public class ExecuteCLBrowser extends JellyTestCase {
 	jspForExecution = webModule + iSep + "jsp" + iSep + "JSPForExecution";
 	pkg = webModule + iSep + "WEB-INF" + iSep + classes + iSep + pkg;
 	String defBr = System.getProperty("extbrowser.default");
-	if(defBr.equals("ns4"))
+	if(defBr.equals("ns4")) {
 	    defaultBrowser = BrowserUtils.NETSCAPE4;
-	if(defBr.equals("ns6"))
+	    netscape  = "netscape {URL}";
+	}
+	if(defBr.equals("ns6")) {
 	    defaultBrowser = BrowserUtils.NETSCAPE6;
-	if(defBr.equals("ns7"))
+	    netscape  = "netscape6 {URL}";
+	}
+	if(defBr.equals("ns7")) {
 	    defaultBrowser = BrowserUtils.NETSCAPE7;
+	    netscape  = "netscape7 {URL}";
+	}
 	if(defBr.equals("ie6"))
 	    defaultBrowser = BrowserUtils.MSIE6;
 
+	BrowserUtils.setCLBrowser();
+	BrowserUtils.setCLBrowserCommand(netscape);
 	String wmc = System.getProperty("extbrowser.mountcount");
 	int count = 0;
 	if(wmc != null) {
@@ -106,14 +115,14 @@ public class ExecuteCLBrowser extends JellyTestCase {
 	    }
 	    first = false;
 	}
+	tm = new Timeouts();
+	tm.initTimeout("Waiter.WaitingTime", 300000); //5 minutes
 	return new NbTestSuite(ExecuteCLBrowser.class);
     }
     
     public void testExecuteHtml() {
 	NbFrameOperator fo = null;
 	HTMLNode node1 = null;
-	BrowserUtils.setCLBrowser();
-	BrowserUtils.setCLBrowserCommand(netscape);
 	try {
 	    node1 = new HTMLNode(htmlForExecution);
 	}catch(Exception e) {
@@ -122,6 +131,7 @@ public class ExecuteCLBrowser extends JellyTestCase {
 	new ExecuteAction().perform(node1);
 	HttpRequestWaitable hrw = new HttpRequestWaitable(urlToRedirectFromHTML, defaultAnswer, defaultPort);
 	Waiter w = new Waiter(hrw);
+	w.setTimeouts(tm);
 	try {
 	    w.waitAction(hrw);
 	} catch (Exception e) {
@@ -135,8 +145,6 @@ public class ExecuteCLBrowser extends JellyTestCase {
     
     public void testExecuteSevlet() {
 	ServletNode node1 = null;
-	BrowserUtils.setCLBrowser();
-	BrowserUtils.setCLBrowserCommand(netscape);
 	try {
 	    node1 = new ServletNode(pkg + iSep + servletForExecution);
 	}catch(Exception e) {
@@ -145,6 +153,7 @@ public class ExecuteCLBrowser extends JellyTestCase {
 	JSPServletResponseWaitable jsrw = new JSPServletResponseWaitable(servletId, defaultAnswer, port);
 	node1.execute();
 	Waiter w = new Waiter(jsrw);
+	w.setTimeouts(tm);
 	try {
 	    w.waitAction(jsrw);
 	} catch (Exception e) {
@@ -155,8 +164,6 @@ public class ExecuteCLBrowser extends JellyTestCase {
 
     public void testExecuteJSP() {
 	JSPNode node1 = null;
-	BrowserUtils.setCLBrowser();
-	BrowserUtils.setCLBrowserCommand(netscape);
 	try {
 	    node1 = new JSPNode(jspForExecution);
 	}catch(Exception e) {
@@ -165,6 +172,7 @@ public class ExecuteCLBrowser extends JellyTestCase {
 	JSPServletResponseWaitable jsrw = new JSPServletResponseWaitable(jspId, defaultAnswer, port);
 	node1.execute();
 	Waiter w = new Waiter(jsrw);
+	w.setTimeouts(tm);
 	try {
 	    w.waitAction(jsrw);
 	} catch (Exception e) {
@@ -175,8 +183,6 @@ public class ExecuteCLBrowser extends JellyTestCase {
 
     public void testExecuteWebModule() {
 	FolderNode node1 = null;
-	BrowserUtils.setCLBrowser();
-	BrowserUtils.setCLBrowserCommand(netscape);
 	try {
 	    node1 = new FolderNode(workDir + fSep + wmForExecution + iSep + "WEB-INF");
 	}catch(Exception e) {
@@ -185,6 +191,7 @@ public class ExecuteCLBrowser extends JellyTestCase {
 	JSPServletResponseWaitable jsrw = new JSPServletResponseWaitable(wmId, defaultAnswer, port);
 	new ExecuteAction().perform(node1);
 	Waiter w = new Waiter(jsrw);
+	w.setTimeouts(tm);
 	try {
 	    w.waitAction(jsrw);
 	} catch (Exception e) {

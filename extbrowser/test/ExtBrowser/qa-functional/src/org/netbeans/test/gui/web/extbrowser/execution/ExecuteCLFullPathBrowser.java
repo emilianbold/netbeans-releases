@@ -29,7 +29,7 @@ import org.netbeans.jellytools.actions.ExecuteAction;
 
 import org.netbeans.junit.NbTestSuite;
 
-
+import org.netbeans.jemmy.Timeouts;
 
 import org.netbeans.jemmy.Waiter;
 
@@ -38,6 +38,7 @@ import org.netbeans.web.test.nodes.ServletNode;
 import org.netbeans.test.gui.web.util.JSPServletResponseWaitable;
 import org.netbeans.test.gui.web.util.HttpRequestWaitable;
 import org.netbeans.test.gui.web.util.BrowserUtils;
+import org.netbeans.web.test.util.Utils;
 
 import java.io.File;
 
@@ -49,6 +50,7 @@ public class ExecuteCLFullPathBrowser extends JellyTestCase {
     private static String webModule = null;
     private static String wmName = "wm1";
     private static String fSep = System.getProperty("file.separator");
+    private static Timeouts tm = null;
     private static String iSep = "|";
     private static String classes = "Classes";
     private static String servletForExecution = "ServletForExecution";
@@ -59,6 +61,7 @@ public class ExecuteCLFullPathBrowser extends JellyTestCase {
     private static String pkg = "execution";
     private static ExplorerOperator explorer = null;
     private static String netscape  = null;
+    private static boolean first = true;
     private String servletId = "cebde3e2-e8f1-4421-8a1c-df11dcc6e79a";
     private String jspId     = "c78eae2b-39f2-4b41-b2be-032e5373d7f4";
     private String wmId      = "9bc4ac0b-0a21-452a-9e51-ca9df3c2fa04";
@@ -83,15 +86,30 @@ public class ExecuteCLFullPathBrowser extends JellyTestCase {
 	htmlForExecution = webModule + iSep + "html" + iSep + "HtmlFileForExecution";
 	jspForExecution = webModule + iSep + "jsp" + iSep + "JSPForExecution";
 	pkg = webModule + iSep + "WEB-INF" + iSep + classes + iSep + pkg;
+	String wmc = System.getProperty("extbrowser.mountcount");
+	int count = 0;
+	if(wmc != null) {
+	    count = new Integer(wmc).intValue();
+	}
+	if(first) {
+	    while(count >0) {
+		Utils.handleDialogAfterNewWebModule();
+		count--;
+	    }
+	    first = false;
+	}
 	netscape = fullPathCommand();
+	tm = new Timeouts();
+	tm.initTimeout("Waiter.WaitingTime", 300000); //5 minutes
+	BrowserUtils.setCLBrowser();
+	BrowserUtils.setCLBrowserCommand(netscape);
 	return new NbTestSuite(ExecuteCLFullPathBrowser.class);
     }
     
     public void testExecuteHtml() {
 	NbFrameOperator fo = null;
 	HTMLNode node1 = null;
-	BrowserUtils.setCLBrowser();
-	BrowserUtils.setCLBrowserCommand(netscape);
+	
 	try {
 	    node1 = new HTMLNode(htmlForExecution);
 	}catch(Exception e) {
@@ -100,6 +118,7 @@ public class ExecuteCLFullPathBrowser extends JellyTestCase {
 	new ExecuteAction().perform(node1);
 	HttpRequestWaitable hrw = new HttpRequestWaitable(urlToRedirectFromHTML, defaultAnswer, defaultPort);
 	Waiter w = new Waiter(hrw);
+	w.setTimeouts(tm);
 	try {
 	    w.waitAction(hrw);
 	} catch (Exception e) {
@@ -110,8 +129,7 @@ public class ExecuteCLFullPathBrowser extends JellyTestCase {
     
     public void testExecuteSevlet() {
 	ServletNode node1 = null;
-	BrowserUtils.setCLBrowser();
-	BrowserUtils.setCLBrowserCommand(netscape);
+	
 	try {
 	    node1 = new ServletNode(pkg + iSep + servletForExecution);
 	}catch(Exception e) {
@@ -120,6 +138,7 @@ public class ExecuteCLFullPathBrowser extends JellyTestCase {
 	JSPServletResponseWaitable jsrw = new JSPServletResponseWaitable(servletId, defaultAnswer, port);
 	node1.execute();
 	Waiter w = new Waiter(jsrw);
+	w.setTimeouts(tm);
 	try {
 	    w.waitAction(jsrw);
 	} catch (Exception e) {
@@ -130,8 +149,7 @@ public class ExecuteCLFullPathBrowser extends JellyTestCase {
 
     public void testExecuteJSP() {
 	JSPNode node1 = null;
-	BrowserUtils.setCLBrowser();
-	BrowserUtils.setCLBrowserCommand(netscape);
+	
 	try {
 	    node1 = new JSPNode(jspForExecution);
 	}catch(Exception e) {
@@ -140,6 +158,7 @@ public class ExecuteCLFullPathBrowser extends JellyTestCase {
 	JSPServletResponseWaitable jsrw = new JSPServletResponseWaitable(jspId, defaultAnswer, port);
 	node1.execute();
 	Waiter w = new Waiter(jsrw);
+	w.setTimeouts(tm);
 	try {
 	    w.waitAction(jsrw);
 	} catch (Exception e) {
@@ -150,8 +169,7 @@ public class ExecuteCLFullPathBrowser extends JellyTestCase {
 
     public void testExecuteWebModule() {
 	FolderNode node1 = null;
-	BrowserUtils.setCLBrowser();
-	BrowserUtils.setCLBrowserCommand(netscape);
+	
 	try {
 	    node1 = new FolderNode(workDir + fSep + wmForExecution + iSep + "WEB-INF");
 	}catch(Exception e) {
@@ -160,6 +178,7 @@ public class ExecuteCLFullPathBrowser extends JellyTestCase {
 	JSPServletResponseWaitable jsrw = new JSPServletResponseWaitable(wmId, defaultAnswer, port);
 	new ExecuteAction().perform(node1);
 	Waiter w = new Waiter(jsrw);
+	w.setTimeouts(tm);
 	try {
 	    w.waitAction(jsrw);
 	} catch (Exception e) {
@@ -174,7 +193,15 @@ public class ExecuteCLFullPathBrowser extends JellyTestCase {
 	if(System.getProperty("os.name").indexOf("Windows")!=-1) {
             fail("This test must be extended for Windows platform");
         }else {
-	    paths = new String[] {"/usr/bin/netscape","/usr/local/bin/netscape","/bin/netscape"};
+	    String defBr = System.getProperty("extbrowser.default");
+	    if(defBr.equals("ns4"))
+		paths = new String[] {"/usr/bin/netscape","/usr/local/bin/netscape","/bin/netscape"};
+	    if(defBr.equals("ns6"))
+		paths = new String[] {"/usr/local/netscape6/netscape", "/usr/dt/bin/netscape6","/usr/dt/appconfig/SUNWns6/netscape"};
+	    if(defBr.equals("ns7"))
+		paths = new String[] {"/usr/local/netscape/netscape", "/usr/dt/bin/netscape7","/usr/dt/appconfig/SUNWns7/netscape"}; //NB
+	    if(defBr.equals("ie6"))
+		paths = null; //NB		
 	}
 	for(int i=0;i<paths.length;i++) {
 	    if((new File(paths[i])).exists()) {

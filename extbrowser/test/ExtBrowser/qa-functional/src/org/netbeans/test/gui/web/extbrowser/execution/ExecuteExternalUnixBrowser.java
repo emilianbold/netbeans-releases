@@ -30,11 +30,12 @@ import org.netbeans.jellytools.actions.ExecuteAction;
 import org.netbeans.junit.NbTestSuite;
 
 
-
+import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waiter;
 
 import org.netbeans.web.test.nodes.JSPNode;
 import org.netbeans.web.test.nodes.ServletNode;
+import org.netbeans.web.test.util.Utils;
 import org.netbeans.test.gui.web.util.JSPServletResponseWaitable;
 import org.netbeans.test.gui.web.util.HttpRequestWaitable;
 import org.netbeans.test.gui.web.util.BrowserUtils;
@@ -45,6 +46,8 @@ public class ExecuteExternalUnixBrowser extends JellyTestCase {
     private static String wmName = "wm1";
     private static String fSep = System.getProperty("file.separator");
     private static String iSep = "|";
+    private static Timeouts tm = null;
+    private static boolean first = true;
     private static String classes = "Classes";
     private static String servletForExecution = "ServletForExecution";
     private static String htmlForExecution = null;;
@@ -77,12 +80,28 @@ public class ExecuteExternalUnixBrowser extends JellyTestCase {
 	htmlForExecution = webModule + iSep + "html" + iSep + "HtmlFileForExecution";
 	jspForExecution = webModule + iSep + "jsp" + iSep + "JSPForExecution";
 	pkg = webModule + iSep + "WEB-INF" + iSep + classes + iSep + pkg;
+	String wmc = System.getProperty("extbrowser.mountcount");
+	int count = 0;
+	if(wmc != null) {
+	    count = new Integer(wmc).intValue();
+	}
+	if(first) {
+	    while(count >0) {
+		Utils.handleDialogAfterNewWebModule();
+		count--;
+	    }
+	    first = false;
+	}
+	tm = new Timeouts();
+	tm.initTimeout("Waiter.WaitingTime", 300000); //5 minutes
+
+	BrowserUtils.setExternalUnixBrowser();
 	return new NbTestSuite(ExecuteExternalUnixBrowser.class);
     }
 
     public void testExecuteHtml() {
 	HTMLNode node1 = null;
-	BrowserUtils.setExternalUnixBrowser();
+	
 	try {
 	    node1 = new HTMLNode(htmlForExecution);
 	}catch(Exception e) {
@@ -91,6 +110,7 @@ public class ExecuteExternalUnixBrowser extends JellyTestCase {
 	new ExecuteAction().perform(node1);
 	HttpRequestWaitable hrw = new HttpRequestWaitable(urlToRedirectFromHTML, defaultAnswer, defaultPort);
 	Waiter w = new Waiter(hrw);
+	w.setTimeouts(tm);
 	try {
 	    w.waitAction(hrw);
 	} catch (Exception e) {
@@ -101,7 +121,6 @@ public class ExecuteExternalUnixBrowser extends JellyTestCase {
 
     public void testExecuteSevlet() {
 	ServletNode node1 = null;
-	BrowserUtils.setExternalUnixBrowser();
 	try {
 	    node1 = new ServletNode(pkg + iSep + servletForExecution);
 	}catch(Exception e) {
@@ -110,6 +129,7 @@ public class ExecuteExternalUnixBrowser extends JellyTestCase {
 	node1.execute();
 	JSPServletResponseWaitable jsrw = new JSPServletResponseWaitable(servletId, defaultAnswer, port);
 	Waiter w = new Waiter(jsrw);
+	w.setTimeouts(tm);
 	try {
 	    w.waitAction(jsrw);
 	} catch (Exception e) {
@@ -120,7 +140,6 @@ public class ExecuteExternalUnixBrowser extends JellyTestCase {
 
     public void testExecuteJSP() {
 	JSPNode node1 = null;
-	BrowserUtils.setExternalUnixBrowser();
 	try {
 	    node1 = new JSPNode(jspForExecution);
 	}catch(Exception e) {
@@ -129,6 +148,7 @@ public class ExecuteExternalUnixBrowser extends JellyTestCase {
 	node1.execute();
 	JSPServletResponseWaitable jsrw = new JSPServletResponseWaitable(jspId, defaultAnswer, port);
 	Waiter w = new Waiter(jsrw);
+	w.setTimeouts(tm);
 	try {
 	    w.waitAction(jsrw);
 	} catch (Exception e) {
@@ -139,7 +159,6 @@ public class ExecuteExternalUnixBrowser extends JellyTestCase {
 
     public void testExecuteWebModule() {
 	FolderNode node1 = null;
-	BrowserUtils.setExternalUnixBrowser();
 	try {
 	    node1 = new FolderNode(workDir + fSep + wmForExecution + iSep + "WEB-INF");
 	}catch(Exception e) {
@@ -148,6 +167,7 @@ public class ExecuteExternalUnixBrowser extends JellyTestCase {
 	new ExecuteAction().perform(node1);
 	JSPServletResponseWaitable jsrw = new JSPServletResponseWaitable(wmId, defaultAnswer, port);
 	Waiter w = new Waiter(jsrw);
+	w.setTimeouts(tm);
 	try {
 	    w.waitAction(jsrw);
 	} catch (Exception e) {
