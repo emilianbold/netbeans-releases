@@ -13,11 +13,6 @@
 
 package examples.imageviewer;
 
-/**
- *
- * @author
- * @version 
- */
 public class ImageFrame extends javax.swing.JInternalFrame {
 
     /** Creates new form ImageFrame */

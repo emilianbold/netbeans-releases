@@ -16,11 +16,6 @@ package examples.texteditor;
 import java.awt.FileDialog;
 import java.io.*;
 
-/**
- *
- * @author
- * @version
- */
 public class Ted extends javax.swing.JFrame {
 
     /** Initializes the Form */

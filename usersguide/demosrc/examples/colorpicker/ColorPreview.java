@@ -13,11 +13,6 @@
 
 package examples.colorpicker;
 
-/**
- *
- * @author
- * @version 
- */
 public class ColorPreview extends javax.swing.JPanel {
 
     private int red;

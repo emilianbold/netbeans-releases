@@ -13,11 +13,6 @@
 
 package examples.texteditor;
 
-/**
- *
- * @author
- * @version
- */
 public class About extends javax.swing.JDialog {
 
     /** Initializes the Form */

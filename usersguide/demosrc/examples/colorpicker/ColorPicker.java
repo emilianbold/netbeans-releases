@@ -13,11 +13,6 @@
 
 package examples.colorpicker;
 
-/**
- *
- * @author
- * @version
- */
 public class ColorPicker extends javax.swing.JFrame {
 
     /** Initializes the Form */
