@@ -14,6 +14,7 @@
 package org.netbeans.modules.beans.beaninfo;
 
 import java.lang.reflect.Modifier;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
@@ -47,8 +48,8 @@ final class BiSuperClass extends Object {
             JavaClass ce = classElement;
             int methodsAdded = 0;           // Workaround for getMethd
 
-
-            while ( ce != null && !"java.lang.Object".equals(ce.getName())) { // NOI18N
+            HashSet visited = new HashSet();
+            while ( ce != null && visited.add(ce) && !"java.lang.Object".equals(ce.getName())) { // NOI18N
                 List/*<Method>*/ methods = JMIUtils.getMethods(ce);
                 for (Iterator it = methods.iterator(); it.hasNext();) {
                     Method method = (Method) it.next();
