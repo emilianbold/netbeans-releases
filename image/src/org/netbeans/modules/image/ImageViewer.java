@@ -15,6 +15,7 @@ package org.netbeans.modules.image;
 
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -26,13 +27,13 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Hashtable;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
 import org.openide.filesystems.FileObject;
@@ -77,6 +78,15 @@ public class ImageViewer extends CloneableTopComponent {
     /** Icon. */
     private static Image icon = null;
     
+    /** On/off grid */
+    private boolean grid = false;
+    
+    /** Distance between two lines in grid.*/
+    private int grid_dis = 1;
+
+    /** Grid color. */
+    private Color grid_color = Color.black;
+    
     /** Serialized version UID. */
     static final long serialVersionUID =6960127954234034486L;
     
@@ -120,14 +130,30 @@ public class ImageViewer extends CloneableTopComponent {
                 storedImage.getImage(),
                 0,
                 0,
-                (int)(storedImage.getIconWidth() * getScale()),
-                (int)((storedImage.getIconWidth() * getScale()) * factor),
+                (int)(storedImage.getIconWidth() * getScale()) ,
+                (int)((storedImage.getIconWidth() * getScale()) * factor) ,
                 0,
                 0,
                 storedImage.getIconWidth(),
                 storedImage.getIconHeight(),
                 this
                 );
+                
+                if (grid) {
+                    int x = (int)(storedImage.getIconWidth() * getScale());
+                    int y = (int)((storedImage.getIconWidth() * getScale()) * factor);
+                    int true_grid_dis = (int)(grid_dis * getScale());
+                    
+                    if(true_grid_dis < 2) 
+                        // Disable painting of grid if no image pixels would be visible.
+                        return;
+                    
+                    g.setColor(grid_color);
+                    for(int i = true_grid_dis; i < x ;i += true_grid_dis)
+                        g.drawLine(i,0,i,y);
+                    for(int j = true_grid_dis; j < y; j += true_grid_dis)
+                        g.drawLine(0,j,x,j);
+                }
                 
             }
             
@@ -159,11 +185,12 @@ public class ImageViewer extends CloneableTopComponent {
         
         obj.addPropertyChangeListener(WeakListener.propertyChange(nameChangeL, obj));
     }
-
+    
     /** Creates toolbar. */
     private JToolBar createToolBar() {
-        // Ddefinition of toolbar
+        // Definition of toolbar.
         JToolBar toolBar = new JToolBar();
+        
         toolBar.add(new ZoomOutAction());
         toolBar.add(new ZoomInAction());
         toolBar.addSeparator();
@@ -178,6 +205,8 @@ public class ImageViewer extends CloneableTopComponent {
         toolBar.add(getZoomButton(7,1));
         toolBar.addSeparator();
         toolBar.add(new CustomZoomAction());
+        toolBar.addSeparator();
+        toolBar.add(getGridButton());
         
         return toolBar;
     }
@@ -280,7 +309,7 @@ public class ImageViewer extends CloneableTopComponent {
     
     /** Draws zoom out scaled image. */
     public void zoomOut() {
-        if (isNewSizeOK()) { // You can't still make picture smaller, but bigger why not?            
+        if (isNewSizeOK()) { // You can't still make picture smaller, but bigger why not?
             scaleOut();
             resizePanel();
             panel.repaint(0, 0, panel.getWidth(), panel.getHeight());
@@ -290,8 +319,8 @@ public class ImageViewer extends CloneableTopComponent {
     /** Resizes panel. */
     private void resizePanel() {
         panel.setPreferredSize(new Dimension(
-            (int)(storedImage.getIconWidth() * getScale()),
-            (int)((storedImage.getIconWidth() * getScale())*factor))
+        (int)(storedImage.getIconWidth() * getScale()),
+        (int)((storedImage.getIconWidth() * getScale())*factor))
         );
         panel.revalidate();
     }
@@ -313,7 +342,7 @@ public class ImageViewer extends CloneableTopComponent {
     /** Perform zoom with specific proportion.
      * @param fx numerator for scaled
      * @param fy denominator for scaled
-     */    
+     */
     public void customZoom(int fx, int fy) {
         scale_x = fx;
         scale_y = fy;
@@ -348,7 +377,7 @@ public class ImageViewer extends CloneableTopComponent {
     private JButton getZoomButton(final int xf, final int yf) {
         // PENDING buttons should have their own icons.
         JButton button = new JButton(""+xf+":"+yf); // NOI18N
-        
+
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 customZoom(xf, yf);
@@ -357,5 +386,20 @@ public class ImageViewer extends CloneableTopComponent {
         
         return button;
     }
+    
+    /** Gets grid button.*/
+    private JButton getGridButton() {
+        // PENDING buttons should have their own icons.
+        final JButton button = new JButton(" # "); // NOI18N
 
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                grid = !grid;
+                panel.repaint(0, 0, panel.getWidth(), panel.getHeight());
+            }
+        });
+        
+        return button;
+    }
+    
 }
