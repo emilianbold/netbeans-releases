@@ -219,7 +219,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public boolean canPopFrames () {
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return false;
-        return vm.canRedefineClasses ();
+        return vm.canPopFrames ();
     }
 
     /**
@@ -231,7 +231,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public boolean canFixClasses () {
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return false;
-        return vm.canPopFrames ();
+        return vm.canRedefineClasses ();
     }
 
     /**
