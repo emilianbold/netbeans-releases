@@ -137,6 +137,9 @@ class CodeSupport {
             if ((varType & declareMask) == CodeVariable.LOCAL) {
                 // no explicit local variable declaration, so we make the
                 // declaration together with the assignment
+                if ((varType & CodeVariable.FINAL) == CodeVariable.FINAL)
+                    buf.append("final "); // NOI18N
+
                 buf.append(variable.getDeclaredType().getName()
                                                        .replace('$','.'));
                 buf.append(" "); // NOI18N

@@ -614,7 +614,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                     String propName = evt.getPropertyName();
 
                     if (FormLoaderSettings.PROP_USE_INDENT_ENGINE.equals(propName)
-                        || FormLoaderSettings.PROP_VARIABLES_MODIFIER.equals(propName))
+                        || FormLoaderSettings.PROP_VARIABLES_MODIFIER.equals(propName)
+                        || FormLoaderSettings.PROP_VARIABLES_LOCAL.equals(propName))
                     {
                         formModel.fireSyntheticPropertyChanged(null, propName,
                                         evt.getOldValue(), evt.getNewValue());

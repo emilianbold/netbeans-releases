@@ -40,7 +40,7 @@ public interface CodeVariable {
     public static final int VOLATILE = 0x0040;
     public static final int TRANSIENT = 0x0080;
 
-    static final int DEFAULT_TYPE = 0x30DF;
+    public static final int NO_MODIFIER = 0x0000;
 
     // explicit local variable declaration in code (bit 14)
     public static final int EXPLICIT_DECLARATION = 0x4000;
@@ -56,6 +56,8 @@ public interface CodeVariable {
     public static final int DECLARATION_MASK = 0x4000;
     public static final int RELEASE_MASK = 0x8000;
     public static final int ALL_MASK = 0xF0DF;
+
+    static final int DEFAULT_TYPE = SCOPE_MASK | ALL_MODIF_MASK; // 0x30DF;
 
     // ------
 

@@ -50,6 +50,8 @@ class JavaCodeGenerator extends CodeGenerator {
 
     protected static final String AUX_VARIABLE_MODIFIER =
         "JavaCodeGenerator_VariableModifier"; // NOI18N
+    protected static final String AUX_VARIABLE_LOCAL =
+        "JavaCodeGenerator_VariableLocal"; // NOI18N
     protected static final String AUX_SERIALIZE_TO =
         "JavaCodeGenerator_SerializeTo"; // NOI18N
     protected static final String AUX_CODE_GENERATION =
@@ -143,38 +145,32 @@ class JavaCodeGenerator extends CodeGenerator {
      */
 
     public Node.Property[] getSyntheticProperties(final RADComponent component) {
-        Node.Property variableProperty = new PropertySupport.ReadWrite(
-            "variableName",
-            String.class,
-            FormEditor.getFormBundle().getString("MSG_JC_VariableName"),
-            FormEditor.getFormBundle().getString("MSG_JC_VariableDesc"))
-        {
-            public void setValue(Object value) {
-                if (!(value instanceof String)) {
-                    throw new IllegalArgumentException();
-                }
-//                String oldValue = component.getName();
-                component.setName((String)value);
-//                component.getNodeReference().notifyPropertiesChange();
-//                component.getNodeReference().firePropertyChangeHelper(
-//                    "variableName", oldValue, value); // NOI18N
-            }
-
-            public Object getValue() {
-                return component.getName();
-            }
-
-            public boolean canWrite() {
-                return JavaCodeGenerator.this.canGenerate;
-            }
-        };
-
-//        if (!component.getFormModel().getFormEditorSupport().supportsAdvancedFeatures()) {
-//            return new Node.Property[] { variableProperty };
-//        }
-//        else {
         Node.Property[] props = new Node.Property[] {
-            variableProperty,
+            new PropertySupport.ReadWrite(
+                "variableName",
+                String.class,
+                FormEditor.getFormBundle().getString("MSG_JC_VariableName"),
+                FormEditor.getFormBundle().getString("MSG_JC_VariableDesc"))
+            {
+                public void setValue(Object value) {
+                    if (!(value instanceof String)) {
+                        throw new IllegalArgumentException();
+                    }
+    //                String oldValue = component.getName();
+                    component.setName((String)value);
+    //                component.getNodeReference().notifyPropertiesChange();
+    //                component.getNodeReference().firePropertyChangeHelper(
+    //                    "variableName", oldValue, value); // NOI18N
+                }
+
+                public Object getValue() {
+                    return component.getName();
+                }
+
+                public boolean canWrite() {
+                    return JavaCodeGenerator.this.canGenerate;
+                }
+            },
             new PropertySupport.ReadWrite(
                 "useDefaultModifiers",
                 Boolean.TYPE,
@@ -182,16 +178,43 @@ class JavaCodeGenerator extends CodeGenerator {
                 FormEditor.getFormBundle().getString("MSG_JC_UseDefaultModDesc"))
             {
                 public void setValue(Object value) {
-                    if (!(value instanceof Boolean)) {
+                    if (!(value instanceof Boolean))
                         throw new IllegalArgumentException();
+
+                    CodeStructure codeStructure = formModel.getCodeStructure();
+                    CodeExpression exp = component.getCodeExpression();
+                    int varType = -1;
+                    String varName = component.getName();
+
+                    boolean useDefaultModif = ((Boolean)value).booleanValue();
+                    if (useDefaultModif) {
+                        if (component.getAuxValue(AUX_VARIABLE_MODIFIER) != null) {
+                            varType = 0x30DF; // default
+                            codeStructure.removeExpressionFromVariable(exp);
+                            component.setAuxValue(AUX_VARIABLE_MODIFIER, null);
+                            component.setAuxValue(AUX_VARIABLE_LOCAL, null);
+                        }
                     }
-                    boolean useDefaultModifiers =((Boolean)value).booleanValue();
-                    if (useDefaultModifiers) {
-                        component.setAuxValue(AUX_VARIABLE_MODIFIER, null);
-                    } else {
-                        component.setAuxValue(AUX_VARIABLE_MODIFIER, new Integer(FormEditor.getFormSettings().getVariablesModifier()));
+                    else {
+                        if (component.getAuxValue(AUX_VARIABLE_MODIFIER) == null) {
+                            varType = exp.getVariable().getType();
+                            codeStructure.removeExpressionFromVariable(exp);
+                            component.setAuxValue(
+                                AUX_VARIABLE_MODIFIER,
+                                new Integer(varType & CodeVariable.ALL_MODIF_MASK));
+                            component.setAuxValue(
+                                AUX_VARIABLE_LOCAL,
+                                new Boolean((varType & CodeVariable.LOCAL)
+                                             == CodeVariable.LOCAL));
+                        }
                     }
+
+                    if (varType >= 0)
+                        codeStructure.createVariableForExpression(
+                                             exp, varType, varName);
+
                     regenerateVariables();
+                    regenerateInitializer();
                     component.getNodeReference().fireComponentPropertiesChange();
                     component.getNodeReference().fireComponentPropertySetsChange();
                 }
@@ -211,11 +234,25 @@ class JavaCodeGenerator extends CodeGenerator {
                 FormEditor.getFormBundle().getString("MSG_JC_VariableModifiersDesc"))
             {
                 public void setValue(Object value) {
-                    if (!(value instanceof Integer)) {
+                    if (!(value instanceof Integer))
                         throw new IllegalArgumentException();
-                    }
+
+                    CodeStructure codeStructure = formModel.getCodeStructure();
+                    CodeExpression exp = component.getCodeExpression();
+                    int varType = exp.getVariable().getType();
+                    String varName = component.getName();
+
+                    varType &= ~CodeVariable.ALL_MODIF_MASK;
+                    varType |= ((Integer)value).intValue() & CodeVariable.ALL_MODIF_MASK;
+
+                    codeStructure.removeExpressionFromVariable(exp);
+                    codeStructure.createVariableForExpression(
+                                         exp, varType, varName);
+
                     component.setAuxValue(AUX_VARIABLE_MODIFIER, value);
+
                     regenerateVariables();
+                    regenerateInitializer();
                     component.getNodeReference().fireComponentPropertiesChange();
                 }
 
@@ -229,13 +266,68 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
 
                 public PropertyEditor getPropertyEditor() {
-                    return new ModifierEditor(Modifier.PUBLIC
-                                              | Modifier.PROTECTED
-                                              | Modifier.PRIVATE
-                                              | Modifier.STATIC
-                                              | Modifier.FINAL
-                                              | Modifier.TRANSIENT
-                                              | Modifier.VOLATILE);
+                    int varType = component.getCodeExpression().getVariable().getType();
+                    Boolean val = (Boolean)component.getAuxValue(AUX_VARIABLE_LOCAL);
+                    return (varType & CodeVariable.LOCAL) == CodeVariable.LOCAL ?
+                        new ModifierEditor(Modifier.FINAL)
+                        :
+                        new ModifierEditor(Modifier.PUBLIC
+                                           | Modifier.PROTECTED
+                                           | Modifier.PRIVATE
+                                           | Modifier.STATIC
+                                           | Modifier.FINAL
+                                           | Modifier.TRANSIENT
+                                           | Modifier.VOLATILE);
+                }
+            },
+            new PropertySupport.ReadWrite(
+                "useLocalVariable",
+                Boolean.TYPE,
+                FormEditor.getFormBundle().getString("MSG_JC_UseLocalVar"),
+                FormEditor.getFormBundle().getString("MSG_JC_UseLocalVarDesc"))
+            {
+                public void setValue(Object value) {
+                    if (!(value instanceof Boolean))
+                        throw new IllegalArgumentException();
+
+                    boolean useLocalVariable = ((Boolean)value).booleanValue();
+
+                    CodeStructure codeStructure = formModel.getCodeStructure();
+                    CodeExpression exp = component.getCodeExpression();
+                    int varType = exp.getVariable().getType();
+                    String varName = component.getName();
+
+                    varType &= CodeVariable.FINAL
+                               | ~(CodeVariable.ALL_MODIF_MASK
+                                     | CodeVariable.SCOPE_MASK);
+                    if (Boolean.TRUE.equals(value))
+                        varType |= CodeVariable.LOCAL;
+                    else
+                        varType |= CodeVariable.FIELD
+                                   | formSettings.getVariablesModifier();
+
+                    codeStructure.removeExpressionFromVariable(exp);
+                    codeStructure.createVariableForExpression(
+                                         exp, varType, varName);
+
+                    component.setAuxValue(AUX_VARIABLE_LOCAL, value);
+                    component.setAuxValue(
+                        AUX_VARIABLE_MODIFIER,
+                        new Integer(varType & CodeVariable.ALL_MODIF_MASK));
+
+                    regenerateVariables();
+                    regenerateInitializer();
+                    component.getNodeReference().fireComponentPropertiesChange();
+                    component.getNodeReference().fireComponentPropertySetsChange();
+                }
+
+                public Object getValue() {
+                    return component.getAuxValue(AUX_VARIABLE_LOCAL);
+                }
+
+                public boolean canWrite() {
+                    return JavaCodeGenerator.this.canGenerate
+                           && component.getAuxValue(AUX_VARIABLE_LOCAL) != null;
                 }
             },
             new PropertySupport.ReadWrite(
@@ -477,17 +569,18 @@ class JavaCodeGenerator extends CodeGenerator {
 
         try {
             initCodeWriter.write(INIT_COMPONENTS_HEADER);
-            RADComponent top = formModel.getTopRADComponent();
+
             RADComponent[] nonVisualComponents = formModel.getNonVisualComponents();
             for (int i = 0; i < nonVisualComponents.length; i++) {
                 addCreateCode(nonVisualComponents[i], initCodeWriter);
             }
+            RADComponent top = formModel.getTopRADComponent();
             addCreateCode(top, initCodeWriter);
             initCodeWriter.write("\n");
 
             if (addLocalVariables(initCodeWriter))
                 initCodeWriter.write("\n");
-                
+
             for (int i = 0; i < nonVisualComponents.length; i++) {
                 addInitCode(nonVisualComponents[i], initCodeWriter, 0);
             }
@@ -698,7 +791,6 @@ class JavaCodeGenerator extends CodeGenerator {
 
         String preCode = (String) comp.getAuxValue(AUX_CREATE_CODE_PRE);
         String postCode = (String) comp.getAuxValue(AUX_CREATE_CODE_POST);
-        String customCreateCode = (String) comp.getAuxValue(AUX_CREATE_CODE_CUSTOM);
         if (preCode != null && !preCode.equals("")) { // NOI18N
             initCodeWriter.write(preCode);
             initCodeWriter.write("\n"); // NOI18N
@@ -735,27 +827,52 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write("}\n"); // NOI18N
         }
         else {
-            CreationDescriptor desc = CreationFactory.getDescriptor(
-                                                          comp.getBeanClass());
-            if (desc == null)
-                desc = new ConstructorsDescriptor(comp.getBeanClass());
+            StringBuffer varBuf = new StringBuffer();
 
             CodeVariable var = comp.getCodeExpression().getVariable();
-            initCodeWriter.write(var.getName());
-            initCodeWriter.write(" = "); // NOI18N
+            int varType = var.getType();
+            int declareMask = CodeVariable.SCOPE_MASK
+                              | CodeVariable.DECLARATION_MASK;
 
-            if (customCreateCode != null && !customCreateCode.equals("")) { // NOI18N
+            if ((varType & declareMask) == CodeVariable.LOCAL) {
+                // make a local variable declaration together with the assignment
+                if ((varType & CodeVariable.FINAL) == CodeVariable.FINAL)
+                    varBuf.append("final "); // NOI18N
+
+                varBuf.append(comp.getBeanClass().getName());
+                varBuf.append(" "); // NOI18N
+            }
+
+            varBuf.append(var.getName());
+
+            String customCreateCode = (String) comp.getAuxValue(AUX_CREATE_CODE_CUSTOM);
+            if (customCreateCode != null && !"".equals(customCreateCode)) { // NOI18N
+                initCodeWriter.write(varBuf.toString());
+                initCodeWriter.write(" = "); // NOI18N
                 initCodeWriter.write(customCreateCode);
                 initCodeWriter.write("\n"); // NOI18N
             }
             else {
+                CreationDescriptor desc = CreationFactory.getDescriptor(
+                                                              comp.getBeanClass());
+                if (desc == null)
+                    desc = new ConstructorsDescriptor(comp.getBeanClass());
+
                 CreationDescriptor.Creator creator =
                     desc.findBestCreator(comp.getAllBeanProperties(),
                                          CreationDescriptor.CHANGED_ONLY);
 
+                initCodeWriter.write(varBuf.toString());
+
                 Class[] exceptions = creator.getExceptionTypes();
                 if (!generateTryCode(exceptions, initCodeWriter))
                     exceptions = null;
+                else {
+                    initCodeWriter.write(";\n");
+                    initCodeWriter.write(var.getName());
+                }
+
+                initCodeWriter.write(" = "); // NOI18N
 
                 String[] propNames = creator.getPropertyNames();
                 FormProperty[] props;

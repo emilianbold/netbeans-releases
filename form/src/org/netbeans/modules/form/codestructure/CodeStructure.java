@@ -34,7 +34,7 @@ public class CodeStructure {
 
     private static int globalDefaultVariableType = CodeVariable.FIELD
                                                    | CodeVariable.PRIVATE;
-    private int defaultVariableType = globalDefaultVariableType;
+    private int defaultVariableType = -1;
 
     // -------
     // expressions

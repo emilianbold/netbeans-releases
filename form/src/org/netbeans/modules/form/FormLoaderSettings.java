@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
 import java.lang.reflect.Modifier;
@@ -20,10 +19,13 @@ import java.util.*;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 
+import org.netbeans.modules.form.codestructure.*;
+
 /** Settings for form data loader.
  *
  * @author Ian Formanek
  */
+
 public class FormLoaderSettings extends SystemOption {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 8949624818164732719L;
@@ -82,6 +84,9 @@ public class FormLoaderSettings extends SystemOption {
     /** Property name of the formDesignerBorderColor property */
     public static final String PROP_FORMDESIGNER_BORDER_COLOR = "formDesignerBorderColor"; // NOI18N
 
+    /** Property name of the variablesLocal property */
+    public static final String PROP_VARIABLES_LOCAL = "variablesLocal"; // NOI18N
+
     /** Minimum output detail level */
     public static final int OUTPUT_MINIMUM = 0;
     /** Normal output detail level */
@@ -121,6 +126,8 @@ public class FormLoaderSettings extends SystemOption {
     private static boolean applyGridToPosition = true;
     /** True if grid should be applied to size of components, false otherwise. */
     private static boolean applyGridToSize = true;
+    /** The local variable generation state for components in Form Editor. */
+    private static boolean variablesLocal = false;
     /** The modifiers of variables generated for component in Form Editor */
     private static int variablesModifier = Modifier.PRIVATE;
 
@@ -364,6 +371,24 @@ public class FormLoaderSettings extends SystemOption {
         firePropertyChange(PROP_APPLY_GRID_TO_SIZE, new Boolean(oldValue), new Boolean(applyGridToSize));
     }
 
+    /** Getter for the variablesLocal option. */
+    public boolean getVariablesLocal() {
+        return variablesLocal;
+    }
+
+    /** Setter for the variablesLocal option. */
+    public void setVariablesLocal(boolean value) {
+        boolean oldValue = variablesLocal;
+        variablesLocal = value;
+
+        int varType = variablesLocal ?
+            CodeVariable.LOCAL | (variablesModifier & CodeVariable.FINAL) :
+            CodeVariable.FIELD | variablesModifier;
+        CodeStructure.setGlobalDefaultVariableType(varType);
+
+        firePropertyChange(PROP_VARIABLES_LOCAL, new Boolean(oldValue), new Boolean(variablesLocal));
+    }
+
     /** Getter for the variablesModifier option */
     public int getVariablesModifier() {
         return variablesModifier;
@@ -373,6 +398,12 @@ public class FormLoaderSettings extends SystemOption {
     public void setVariablesModifier(int value) {
         int oldValue = variablesModifier;
         variablesModifier = value;
+
+        int varType = variablesLocal ?
+            CodeVariable.LOCAL | variablesModifier :
+            CodeVariable.FIELD | variablesModifier;
+        CodeStructure.setGlobalDefaultVariableType(varType);
+
         firePropertyChange(PROP_VARIABLES_MODIFIER, new Integer(oldValue), new Integer(variablesModifier));
     }
 

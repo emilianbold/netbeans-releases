@@ -96,7 +96,9 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                 new PropertyDescriptor(FormLoaderSettings.PROP_FORMDESIGNER_BORDER_COLOR, FormLoaderSettings.class, // NOI18N
                                        "getFormDesignerBorderColor", "setFormDesignerBorderColor"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_SHOW_COMPONENTS_NAMES, FormLoaderSettings.class, // NOI18N
-                                       "getShowComponentsNames", "setShowComponentsNames") // NOI18N
+                                       "getShowComponentsNames", "setShowComponentsNames"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_VARIABLES_LOCAL, FormLoaderSettings.class, // NOI18N
+                                       "getVariablesLocal", "setVariablesLocal"), // NOI18N
             };
 
 //            desc[0].setDisplayName(formBundle.getString("PROP_INDENT_AWT_HIERARCHY"));
@@ -188,7 +190,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[18].setShortDescription(formBundle.getString("HINT_FORMDESIGNER_BORDER_COLOR"));
             
             desc[19].setHidden(true);
-            
+
+            desc[20].setDisplayName(formBundle.getString("PROP_VARIABLES_LOCAL"));
+            desc[20].setShortDescription(formBundle.getString("HINT_VARIABLES_LOCAL"));
+            desc[20].setExpert(true);
+
             return desc;
             
         } catch (IntrospectionException ex) {
