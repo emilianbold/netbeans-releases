@@ -34,8 +34,6 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
     private static final String PROPERTY_NEW_TYPE = "createNew"; // NOI18N
     /** Name of the custom property that can be passed in PropertyEnv. */
     private static final String PROPERTY_SUPERCLASS = "superClass"; // NOI18N
-    /** Name of the custom property that can be passed in PropertyEnv. */
-    private static final String PROPERTY_NONE_SERVICE_CLASS = "noneServiceClass"; // NOI18N
     
     /** tagx */
     private String[] tags;
@@ -45,9 +43,6 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
 
     /** message key to be used in custom editor */
     private String message;
-
-    /** type which will be used to indicate "none", i.e. a no-op */ // NOI18N
-    private ServiceType none;
     
     /** Environment passed to the ExPropertyEditor*/
     private PropertyEnv env;
@@ -73,7 +68,6 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
     public ServiceTypeEditor(Class clazz, String message, ServiceType none) {
         this.clazz = clazz;
         this.message = message;
-        this.none = none;
     }
 
     /**
@@ -91,10 +85,6 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
         if (sup instanceof Class) {
             clazz = (Class)sup;
         }
-        Object no = env.getFeatureDescriptor().getValue(PROPERTY_NONE_SERVICE_CLASS);
-        if (no instanceof ServiceType) {
-            none = (ServiceType)no;
-        }
     }
     
     /** Updates the list of executors.
@@ -108,7 +98,6 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
             ServiceType e = (ServiceType) ee.nextElement();
             names.add(e.getName());
         }
-        if (none != null) names.add (none.getName ());
         names.toArray(tags = new String[names.size()]);
     }
 
@@ -143,21 +132,18 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
             // new instance cannot be entered as a text
             throw new IllegalArgumentException();
         }
-        if (none != null && none.getName ().equals (text))
-            setValue (none);
-        else {
-            ServiceType.Registry registry = (ServiceType.Registry)Lookup.getDefault ()
-                    .lookup (ServiceType.Registry.class);
-            Enumeration en = registry.services (clazz);
-            while (en.hasMoreElements ()) {
-                ServiceType t = (ServiceType)en.nextElement ();
-                if (text.equals (t.getName ())) {
-                    setValue (t);
-                    return;
-                }
+
+        ServiceType.Registry registry = (ServiceType.Registry)Lookup.getDefault ()
+                .lookup (ServiceType.Registry.class);
+        Enumeration en = registry.services (clazz);
+        while (en.hasMoreElements ()) {
+            ServiceType t = (ServiceType)en.nextElement ();
+            if (text.equals (t.getName ())) {
+                setValue (t);
+                return;
             }
-            setValue (null);
-        }            
+        }
+        setValue (null);
     }
 
     /** @return tags */
@@ -174,7 +160,7 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
     }
 
     public java.awt.Component getCustomEditor () {
-        final ServiceTypePanel s = new ServiceTypePanel (clazz, getString(message), none, createNewInstance);
+        final ServiceTypePanel s = new ServiceTypePanel (clazz, getString(message), /*none*/ null, createNewInstance);
 
         s.setServiceType ((ServiceType)getValue ());
         // [PENDING] why is this here? Cancel does not work correctly because of this, I think:

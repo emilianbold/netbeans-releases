@@ -56,24 +56,11 @@ public final class Services extends ServiceType.Registry implements LookupListen
     
     public Services() {
         name2Service = new HashMap();
-        fillMap(name2Service);
-    }
-    
-    private static void fillMap(Map map) {
-        map.put(ExecutorEditor.NO_EXECUTOR.getName(), ExecutorEditor.NO_EXECUTOR);
-//        map.put(CompilerTypeEditor.NO_COMPILER.getName(), CompilerTypeEditor.NO_COMPILER);
-//        map.put(DebuggerTypeEditor.NO_DEBUGGER.getName(), DebuggerTypeEditor.NO_DEBUGGER);
     }
     
     /** Override to specially look up no-op services. */
     public ServiceType find (Class clazz) {
-        if (clazz == ExecutorEditor.NoExecutor.class)
-            return ExecutorEditor.NO_EXECUTOR;
-//        else if (clazz == CompilerTypeEditor.NoCompiler.class)
-//            return CompilerTypeEditor.NO_COMPILER;
-//        else if (clazz == DebuggerTypeEditor.NoDebugger.class)
-//            return DebuggerTypeEditor.NO_DEBUGGER;
-        else if (clazz == null)
+        if (clazz == null)
             return null;
         else
             return (ServiceType) Lookup.getDefault().lookup(clazz);
@@ -119,7 +106,6 @@ public final class Services extends ServiceType.Registry implements LookupListen
     public void resultChanged(LookupEvent ev) {
         synchronized (name2Service) {
             name2Service.clear();
-            fillMap(name2Service);
         }
     }
     
