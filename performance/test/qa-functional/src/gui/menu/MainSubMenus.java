@@ -56,7 +56,8 @@ public class MainSubMenus extends testUtilities.PerformanceTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new MainSubMenus("testFileOpenRecentProjectMenu", "File | Open Recent Project main menu"));
+        // recent prj menu is empty and disabled
+//        suite.addTest(new MainSubMenus("testFileOpenRecentProjectMenu", "File | Open Recent Project main menu")); 
         suite.addTest(new MainSubMenus("testFileSetMainProjectMenu", "File | Set Main Project main menu"));
         suite.addTest(new MainSubMenus("testViewDocumentationIndicesMenu", "View | Documentation Indices main menu"));
         suite.addTest(new MainSubMenus("testViewToolbarsMenu", "View | Toolbars main menu"));
