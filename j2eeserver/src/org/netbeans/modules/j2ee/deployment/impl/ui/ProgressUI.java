@@ -43,6 +43,8 @@ public class ProgressUI extends JPanel {
     private boolean changeFontSize;
     private boolean wasCancelled; 
     private String  dlgTitle;
+    private String  desc;
+    private Object  lockObj;
     private boolean modal;
     private static boolean autoClose = true;
     private WindowAdapter windowListener;
@@ -61,6 +63,7 @@ public class ProgressUI extends JPanel {
 	changeFontSize = true;
 	wasCancelled = false;        
 	this.modal = modal;
+	lockObj = new Object();
     }
 
     public ProgressUI(Component parent) {
@@ -103,8 +106,21 @@ public class ProgressUI extends JPanel {
             }
         });
     }
-    
 
+    /**
+     * Use this method to set the accessible description for the
+     * displayed Progress UI dialog or frame.
+     *
+     * @param s The accessible description for the dialog or frame.
+     *          If no accessible description is set, the default
+     *          accessible description of "Progress Monitor" will
+     *          be used.
+     */
+    public void setAccessibleDescription (String s) {
+	desc = s;
+    } 
+ 
+    
     /**
      * must call this next, after instantiation
      */
@@ -136,6 +152,11 @@ public class ProgressUI extends JPanel {
             };
             
 
+	    if (desc == null) {
+	        getAccessibleContext().setAccessibleDescription(title);
+	    } else {
+	        getAccessibleContext().setAccessibleDescription(desc);
+	    }
             
             final DialogDescriptor dd = 
                             new DialogDescriptor (this, dlgTitle , modal, listener) {
@@ -146,12 +167,12 @@ public class ProgressUI extends JPanel {
             Object [] options = new Object [] { NotifyDescriptor.CLOSED_OPTION };
             dd.setOptions (options);
             dd.setClosingOptions (options);
+            dialog = DialogDisplayer.getDefault().createDialog(dd);
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     myMonitor.setMaximum (max);
                     myMonitor.setValue (0);
                     taskTitle.setText (msg);
-                    dialog = DialogDisplayer.getDefault().createDialog(dd);
                     dialog.setVisible (true);
                 }
             });
@@ -162,12 +183,12 @@ public class ProgressUI extends JPanel {
                 return;
             }      
             final JPanel thisPanel = this;
+            frame = new JFrame(dlgTitle );
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     myMonitor.setMaximum (max);
                     myMonitor.setValue (0);
                     taskTitle.setText (msg);
-                    frame = new JFrame(dlgTitle );
                     frame.getContentPane().add(thisPanel);
                     frame.setBounds(Utilities.findCenterBounds(frame.getSize()));
                     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
@@ -248,15 +269,16 @@ public class ProgressUI extends JPanel {
     private void disposeUI() {            
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
-                    if (modal) {
-                        dialog.hide();
-                        dialog.dispose ();
-                        dialog = null;
-                    }
-                    else {
-                        frame.hide();
-                        frame.dispose ();
-                        frame = null;
+		    synchronized (lockObj) {
+                        if ((dialog != null) && (modal)) {
+                            dialog.hide();
+                            dialog.dispose ();
+                            dialog = null;
+                        } else if (frame != null) {
+                            frame.hide();
+                            frame.dispose ();
+                            frame = null;
+			}
                     }
                 }
             });
