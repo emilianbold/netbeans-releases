@@ -58,18 +58,17 @@ public class ServerInstance implements Node.Cookie {
     private boolean commandSucceed = false;
     private InstancePropertiesImpl instanceProperties;
     private ServerStatusBar serverStatusBar = null;
+    private HashMap/*<Target, ServerDebugInfo>*/ debugInfo = new HashMap();
     
     private static class ConflictData {
-        private String transport;
         private ServerInstance si;
-        public ConflictData(ServerInstance si, String transport) {
+        private ServerDebugInfo sdi;
+        public ConflictData(ServerInstance si, ServerDebugInfo sdi) {
             this.si = si;
-            assert transport.equals(ServerDebugInfo.TRANSPORT_SOCKET) ||
-                   transport.equals(ServerDebugInfo.TRANSPORT_SHMEM);
-            this.transport = transport;
+            this.sdi = sdi;
         }
-        public String getTransport() { return transport; }
         public ServerInstance getServerInstance() { return si; }
+        public ServerDebugInfo getServerDebugInfo() { return sdi; }
     };
         
     // PENDING how to manage connected/disconnected servers with the same manager?
@@ -163,6 +162,22 @@ public class ServerInstance implements Node.Cookie {
             }
         }
         return j2eePlatformImpl;
+    }
+    
+    public ServerDebugInfo getServerDebugInfo(Target target) {
+        assert debugInfo != null;
+        ServerDebugInfo sdi = null;
+        if (target == null) //performance: treat as special simple case
+            sdi = (ServerDebugInfo) debugInfo.get(null);
+        else {
+            for (Iterator it = debugInfo.keySet().iterator(); sdi == null && it.hasNext(); ) {
+                Target t = (Target) it.next();
+                if (t == target || t.getName().equals(target.getName()))
+                    sdi = (ServerDebugInfo) debugInfo.get(t);
+            }
+        }
+        
+        return sdi;
     }
     
     public void refresh(ServerState serverState) {
@@ -354,15 +369,15 @@ public class ServerInstance implements Node.Cookie {
         //get debug info for this instance
         StartServer thisSS = getStartServer();
         if (thisSS == null) //this case should not occur =>
-            return cd; //attempt to start server (serverInstance remains null)
-        ServerDebugInfo thisSDI;
-        if (target == null)
-            thisSDI = getDebugInfo();
-        else 
-            thisSDI = thisSS.getDebugInfo(target);
-        //should not occur -> workaround for issue #56714
-        if (thisSDI == null)
-            return cd;
+            return null; //attempt to start server (serverInstance remains null)
+        ServerDebugInfo thisSDI = getServerDebugInfo(target);
+        if (thisSDI == null) {
+            thisSDI = _retrieveDebugInfo(target);
+            if (thisSDI == null) {
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
+                return null;
+            }
+        }
         
         //get all server instances
         ServerInstance[] serverInstances = ServerRegistry.getInstance().getServerInstances();
@@ -370,17 +385,18 @@ public class ServerInstance implements Node.Cookie {
         for (int i = 0; cd == null && i < serverInstances.length; i++) {
             ServerInstance si = serverInstances[i];
             if (url.equalsIgnoreCase(si.getUrl())) continue;
-            if (si.isDebuggable(target)) { //running in debug mode
-                ServerDebugInfo sdi = si.getDebugInfo();
+            if (si.isDebuggable(null)) { //running in debug mode
+                Target t = si._retrieveTarget(null);
+                ServerDebugInfo sdi = si.getServerDebugInfo(t);
                 if (sdi == null) continue; //should not occur -> workaround for issue #56714
                 if (thisSDI.getTransport().equals(sdi.getTransport())) { //transport matches
                     if (thisSDI.getTransport() == ServerDebugInfo.TRANSPORT_SOCKET) {
                         if (thisSDI.getHost().equalsIgnoreCase(sdi.getHost())) //host matches
                             if (thisSDI.getPort() == sdi.getPort()) //port matches
-                                cd = new ConflictData(si, ServerDebugInfo.TRANSPORT_SOCKET);
+                                cd = new ConflictData(si, thisSDI);
                     }
                     else if (thisSDI.getShmemName().equalsIgnoreCase(sdi.getShmemName()))
-                        cd = new ConflictData(si, ServerDebugInfo.TRANSPORT_SHMEM);
+                        cd = new ConflictData(si, thisSDI);
                 }
             }
         }
@@ -394,21 +410,16 @@ public class ServerInstance implements Node.Cookie {
      */
     public boolean isSuspended() {
 
-        ServerDebugInfo sdi = null;
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
 
-        try {
-            sdi = getDebugInfo();
-        } catch (Exception e) {
-            // don't care - just a try
-        }
-
+        Target target = _retrieveTarget(null);
+        ServerDebugInfo sdi = getServerDebugInfo(target);
         if (sdi == null) {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
             return false; // give user a chance to start server even if we don't know whether she will success
         }
 
-        for (int i=0; i < sessions.length; i++) {
+        for (int i = 0; i < sessions.length; i++) {
             Session s = sessions[i];
             if (s == null) continue;
             Object o = s.lookupFirst(null, AttachingDICookie.class);
@@ -504,7 +515,10 @@ public class ServerInstance implements Node.Cookie {
      * @return true when server is started successfully; else return false.
      */
     public boolean startDebugTarget(Target target, DeployProgressUI ui) {
-        return startTarget(target, ui, true);
+        boolean started = startTarget(target, ui, true);
+        if (started)
+            _retrieveDebugInfo(target);
+        return started;
     }
     
     /**
@@ -535,9 +549,12 @@ public class ServerInstance implements Node.Cookie {
      * Stop admin server.
      */
     public void stop(DeployProgressUI ui) {
+        boolean stopped = false;
         if (isReallyRunning()) {
-            _stop(ui);
+            stopped = _stop(ui);
         }
+        if (stopped)
+            debugInfo.clear();
     }
 
     /** Stop the server and do not wait for response.
@@ -561,9 +578,6 @@ public class ServerInstance implements Node.Cookie {
      */
     private boolean _resolveServerConflict(Target target, DeployProgressUI ui, ConflictData cd) {
         
-        StartServer ss = getStartServer();
-        assert(ss != null);
-        
         ServerInstance si = cd.getServerInstance();
         //inform a user and allow him to stop the running instance
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
@@ -572,11 +586,11 @@ public class ServerInstance implements Node.Cookie {
                             "MSG_AnotherServerRunning",
                             new Object[] {
                                 si.getDisplayName(),
-                                ss.getDebugInfo(target).getHost(),
-                                cd.getTransport().equals(ServerDebugInfo.TRANSPORT_SOCKET) ?
+                                cd.getServerDebugInfo().getHost(),
+                                cd.getServerDebugInfo().getTransport().equals(ServerDebugInfo.TRANSPORT_SOCKET) ?
                                     "socket" : "shared memory",
-                                cd.getTransport().equals(ServerDebugInfo.TRANSPORT_SOCKET) ?
-                                    new Integer(ss.getDebugInfo(target).getPort()).toString() : ss.getDebugInfo(target).getShmemName()
+                                cd.getServerDebugInfo().getTransport().equals(ServerDebugInfo.TRANSPORT_SOCKET) ?
+                                    new Integer(cd.getServerDebugInfo().getPort()).toString() : cd.getServerDebugInfo().getShmemName()
                             }),
                 NotifyDescriptor.QUESTION_MESSAGE
                 );
@@ -1129,35 +1143,55 @@ public class ServerInstance implements Node.Cookie {
         return serverStatusBar;
     }
     
-    public ServerDebugInfo getDebugInfo() {
+    private ServerDebugInfo _retrieveDebugInfo(Target target) {
         StartServer ss = getStartServer();
         if (ss == null) {
             return null;
         }
 
-        // AS8.1 needs to have server running to get accurate debug info, and also need a non-null target 
-        // But getting targets from AS8.1 require start server which would hang UI, so avoid start server
-        // Note: for debug info after deploy, server should already start.
+        Target t = _retrieveTarget(target);
+        ServerDebugInfo sdi = ss.getDebugInfo(t);
+        
+        if (sdi != null || t != null) {
+            debugInfo.remove(t);
+            debugInfo.put(t, sdi);//cache debug info for given target
+        }
+        
+        return sdi;
+    }
+    
+    private Target _retrieveTarget(Target target) {
+        StartServer ss = getStartServer();
+        if (ss == null) {
+            return null;
+        }
+        
+        Target t = null;
+        
+        // Getting targets from AS8.1 requires start server which would hang UI, so avoid start server
         if (! isRunningLastCheck() && ss.needsStartForTargetList()) {
-            if (ss.isAlsoTargetServer(null)) {
-                return ss.getDebugInfo(null);
+            if (t == null) {
+                for (Iterator it = debugInfo.keySet().iterator(); t == null && it.hasNext(); ) {
+                    Target cachedTarget = (Target) it.next();
+                    if (ss.isAlsoTargetServer(cachedTarget))
+                        t = cachedTarget;
+                }
             } else {
-                return null;
+                if (ss.isAlsoTargetServer(target))
+                    t = target;
             }
+        } 
+        else {
+            ServerTarget[] targets = getTargets();
+            for (int i = 0; t == null && i < targets.length; i++)
+                if (ss.isAlsoTargetServer(targets[i].getTarget()))
+                    t = targets[i].getTarget();
+
+            if (t == null && targets.length > 0)
+                t = targets[0].getTarget();
         }
 
-        Target target = null;
-        ServerTarget[] targets = getTargets();
-        for (int i=0; i<targets.length; i++) {
-            if (ss.isAlsoTargetServer(targets[i].getTarget())) {
-                target = targets[i].getTarget();
-                break;
-            }
-        }
-        if (target == null && targets.length > 0) {
-            target = targets[0].getTarget();
-        }
-        return ss.getDebugInfo(target);
+        return t;
     }
     
 }
