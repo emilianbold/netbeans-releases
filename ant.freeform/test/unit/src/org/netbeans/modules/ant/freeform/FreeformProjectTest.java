@@ -26,13 +26,11 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.Lookup;
 
-// XXX testClassPathProvider
 // XXX testSourceForBinaryQuery
 // XXX testSourceLevelQuery
 // XXX testAuxiliaryConfiguration
 // XXX testCacheProvider
 // XXX testSubprojectProvider
-// XXX testGlobalPathRegistryUsage
 // XXX testLogicalViewItems
 // XXX testAntArtifact
 // XXX testExternalSourceRoots

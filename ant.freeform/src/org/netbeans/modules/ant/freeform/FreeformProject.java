@@ -46,6 +46,7 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.support.LogicalViews;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
@@ -114,12 +115,17 @@ public final class FreeformProject implements Project {
     }
     
     private Lookup initLookup() throws IOException {
+        Classpaths cp = new Classpaths(this);
         return Lookups.fixed(new Object[] {
-            new Info(),
-            initSources(),
-            new Actions(this),
-            new View(this),
-            new ProjectCustomizerProvider(this, helper, eval),
+            new Info(), // ProjectInformation
+            initSources(), // Sources
+            new Actions(this), // ActionProvider
+            new View(this), // LogicalViewProvider
+            cp, // ClassPathProvider
+            new ProjectCustomizerProvider(this, helper, eval), // CustomizerProvider
+            new OpenHook(cp), // ProjectOpenedHook
+            helper().createAuxiliaryConfiguration(), // AuxiliaryConfiguration
+            helper().createCacheDirectoryProvider(), // CacheDirectoryProvider
         });
     }
     
@@ -198,6 +204,24 @@ public final class FreeformProject implements Project {
         
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             // XXX
+        }
+        
+    }
+    
+    private final class OpenHook extends ProjectOpenedHook {
+        
+        private final Classpaths cp;
+        
+        public OpenHook(Classpaths cp) {
+            this.cp = cp;
+        }
+        
+        protected void projectOpened() {
+            cp.opened();
+        }
+        
+        protected void projectClosed() {
+            cp.closed();
         }
         
     }

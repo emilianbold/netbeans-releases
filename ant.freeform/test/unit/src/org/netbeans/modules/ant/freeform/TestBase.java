@@ -26,6 +26,10 @@ import org.openide.util.Lookup;
  */
 abstract class TestBase extends NbTestCase {
     
+    static {
+        TestBase.class.getClassLoader().setDefaultAssertionStatus(true);
+    }
+    
     protected TestBase(String name) {
         super(name);
     }
