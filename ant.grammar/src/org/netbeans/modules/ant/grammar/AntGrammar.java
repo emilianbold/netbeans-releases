@@ -61,8 +61,7 @@ class AntGrammar implements GrammarQuery {
     }
     
     private static IntrospectedInfo getAntGrammar() {
-        return IntrospectedInfo.getDefaults();
-        
+        return IntrospectedInfo.getKnownInfo();
     }
     /**
      * @stereotype query
