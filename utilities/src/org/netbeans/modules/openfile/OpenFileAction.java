@@ -14,7 +14,6 @@ package org.netbeans.modules.openfile;
 
 import java.io.File;
 import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.utilities.Manager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -57,22 +56,10 @@ public class OpenFileAction extends CallableSystemAction {
      * @return  the initialized file chooser
      */
     protected JFileChooser prepareFileChooser() {
-        JFileChooser chooser = new JFileChooser();
+        JFileChooser chooser = new FileChooser();
+        
         FileUtil.preventFileChooserSymlinkTraversal(chooser, currDir);
         HelpCtx.setHelpIDString(chooser, getHelpCtx().getHelpID());
-        
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setMultiSelectionEnabled(true);
-        
-        /* initialize file filters */
-        FileFilter currentFilter = chooser.getFileFilter();
-        chooser.addChoosableFileFilter(new Filter(
-            new String[] {DefaultOpenFileImpl.JAVA_EXT},
-            NbBundle.getBundle(getClass()).getString("TXT_JavaFilter")));
-        chooser.addChoosableFileFilter(new Filter(
-            new String[] {DefaultOpenFileImpl.TXT_EXT}, 
-            NbBundle.getBundle(getClass()).getString("TXT_TxtFilter")));
-        chooser.setFileFilter(currentFilter);
         
         return chooser;
     }
@@ -130,62 +117,5 @@ public class OpenFileAction extends CallableSystemAction {
     protected boolean asynchronous() {
         return false;
     }
-    
-
-    /** File chooser filter that filters files by their names' suffixes. */
-    private static class Filter extends FileFilter {
-        
-        /** suffixes accepted by this filter */
-        private String[] extensions;
-        
-        /** localized description of this filter */
-        private String description;
-        
-        
-        /**
-         * Creates a new filter that accepts files having specified suffixes.
-         * The filter is case-insensitive.
-         * <p>
-         * The filter does not use file <em>extensions</em> but it just
-         * tests whether the file name ends with the specified string.
-         * So it is recommended to pass a file name extension including the
-         * preceding dot rather than just the extension.
-         *
-         * @param  extensions  list of accepted suffixes
-         * @param  description  name of the filter
-         */
-        public Filter(String[] extensions, String description) {
-            
-            this.extensions = new String[extensions.length];
-            for (int i = 0; i < extensions.length; i++) {
-                this.extensions[i] = extensions[i].toUpperCase();
-            }
-            this.description = description;
-        }
-        
-        
-        /**
-         * @return  <code>true</code> if the file's name ends with one of the
-         *          strings specified by the constructor or if the file
-         *          is a directory, <code>false</code> otherwise
-         */
-        public boolean accept(File file) {
-            if (file.isDirectory()) {
-                return true;
-            }
-            for (int i = 0; i < extensions.length; i++) {
-                if (file.getName().toUpperCase().endsWith(extensions[i])) {
-                    return true;
-                }
-            }
-            
-            return false;
-        }
-        
-        /** */
-        public String getDescription() {
-            return description;
-        }
-    } // End of Filter class.
 
 }
