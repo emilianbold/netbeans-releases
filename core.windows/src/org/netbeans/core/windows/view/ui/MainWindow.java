@@ -69,7 +69,6 @@ public final class MainWindow extends JFrame {
     public MainWindow() {
     }
     
-
     /** Overrides superclass method, adds help context to the new root pane. */
     protected void setRootPane(JRootPane root) {
         super.setRootPane(root);
@@ -77,6 +76,11 @@ public final class MainWindow extends JFrame {
             HelpCtx.setHelpIDString(
                     root, new HelpCtx(MainWindow.class).getHelpID());
         }
+        //Optimization related to jdk bug 439857 - on pre 1.5 jdk's an
+        //extra repaint is caused by the search for an opaque component up
+        //to the component root.  Post 1.5, root pane will automatically be
+        //opaque.
+        root.setOpaque(true);
     }
     
     /** Initializes main window. */

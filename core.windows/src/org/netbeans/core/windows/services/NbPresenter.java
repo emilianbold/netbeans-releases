@@ -165,6 +165,12 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
     }
     
     private void initialize(NotifyDescriptor d) {
+        //Optimization related to jdk bug 439857 - on pre 1.5 jdk's an
+        //extra repaint is caused by the search for an opaque component up
+        //to the component root. Post 1.5, root pane will automatically be
+        //opaque.
+        getRootPane().setOpaque(true);
+        
         descriptor = d;
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         buttonListener = new ButtonListener();
