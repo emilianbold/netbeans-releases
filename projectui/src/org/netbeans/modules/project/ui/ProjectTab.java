@@ -253,7 +253,7 @@ public class ProjectTab extends TopComponent
     
     // SEARCHING NODES
     
-    public void selectNode( Object object ) {
+    public boolean selectNode( Object object ) {
         // System.out.println("Selecting node " + id + " : " + object );
         
         ProjectsRootNode root = (ProjectsRootNode)manager.getRootContext();
@@ -263,13 +263,15 @@ public class ProjectTab extends TopComponent
                 manager.setSelectedNodes( new Node[] { selectedNode } );
                 open();
                 requestActive();                
-                return;
+                return true;
             }
             catch ( PropertyVetoException e ) {
                 // Bad day node found but can't be selected
-                return;
+                return false;
             }
         }
+        
+        return false;
         
                 
         /* Nice old version with lookup and names 

@@ -15,6 +15,7 @@ package org.netbeans.modules.project.ui.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -22,15 +23,12 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
+import javax.swing.*;
+import javax.swing.JPopupMenu.Separator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.NewFileWizard;
 import org.netbeans.modules.project.ui.OpenProjectList;
+import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -38,24 +36,21 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.actions.Presenter;
+import org.openide.util.actions.Presenter.Popup;
 
 
 /** Action for invoking the project sensitive NewFile Wizard
  */
-public class NewFile extends ProjectAction implements Presenter.Popup, PropertyChangeListener {
+public class NewFile extends ProjectAction implements PropertyChangeListener, Popup {
 
     private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newFile.gif" ) ); //NOI18N        
     private static final String NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Name" ); // NI18N
     private static final String POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_PopupName" ); // NOI18N
     private static final String FILE_POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_File_PopupName" ); // NOI18N
     private static final String TEMPLATE_NAME_FORMAT = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Template_PopupName" ); // NOI18N
-    
-    
     
     public NewFile() {
         this( null );
@@ -117,16 +112,7 @@ public class NewFile extends ProjectAction implements Presenter.Popup, PropertyC
                     assert false : obj;
                 }
                 if (newDO != null) {
-                    // Same what template wizard does - not very nice
-                    // run default action (hopefully should be here)
-                    final Node node = newDO.getNodeDelegate ();
-                    Action a = node.getPreferredAction();
-                    if (a instanceof ContextAwareAction) {
-                        a = ((ContextAwareAction)a).createContextAwareInstance(node.getLookup ());
-                    }
-                    if (a != null) {
-                        a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                    }
+                    ProjectUtilities.openAndSelectNewObject (newDO);
                 }
             }
         }
@@ -218,16 +204,16 @@ public class NewFile extends ProjectAction implements Presenter.Popup, PropertyC
         fileItem.addActionListener( menuListener );
         fileItem.putClientProperty( TEMPLATE_PROPERTY, null );
         menuItem.add( fileItem );
-        menuItem.add( new JPopupMenu.Separator() );
+        menuItem.add( new Separator() );
         
         List lruList = OpenProjectList.getDefault().getTemplatesLRU( project );
         for( Iterator it = lruList.iterator(); it.hasNext(); ) {
             DataObject template = (DataObject)it.next();
             
-            org.openide.nodes.Node delegate = template.getNodeDelegate();
+            Node delegate = template.getNodeDelegate();
             JMenuItem item = new JMenuItem( 
                 MessageFormat.format( TEMPLATE_NAME_FORMAT, new Object[] { delegate.getDisplayName() } ),
-                new ImageIcon( delegate.getIcon( java.beans.BeanInfo.ICON_COLOR_16x16 ) ) );
+                new ImageIcon( delegate.getIcon( BeanInfo.ICON_COLOR_16x16 ) ) );
             item.putClientProperty( TEMPLATE_PROPERTY, template );
             item.addActionListener( menuListener );
             menuItem.add( item );

@@ -13,6 +13,13 @@
 
 package org.netbeans.modules.project.ui;
 
+import org.openide.util.Mutex;
+
+import java.awt.event.ActionEvent;
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
+import org.openide.util.ContextAwareAction;
+
 import java.util.*;
 
 import org.netbeans.api.project.FileOwnerQuery;
@@ -109,6 +116,44 @@ public class ProjectUtilities {
             throw new IllegalArgumentException ("No specified project."); // NOI18N
         }
         return closeAllDocuments (new Project[] { p });
+    }
+    
+    /** Invokes the preferred action on given object and tries to select it in
+     * corresponding view, e.g. in logical view if possible otherwise
+     * in physical project's view.
+     * Note: execution this methods can invokes new threads to assure the action
+     * is called in EQ.
+     *
+     * @param newDo new data object
+     */   
+    final public static void openAndSelectNewObject (final DataObject newDo) {
+        // call the preferred action on main class
+        Mutex.EVENT.writeAccess (new Runnable () {
+            public void run () {
+                final Node node = newDo.getNodeDelegate ();
+                Action a = node.getPreferredAction();
+                if (a instanceof ContextAwareAction) {
+                    a = ((ContextAwareAction)a).createContextAwareInstance(node.getLookup ());
+                }
+                if (a != null) {
+                    a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                }
+
+                // next action -> expand && select main class in package view
+                final ProjectTab ptLogial  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
+                final ProjectTab ptPhysical  = ProjectTab.findDefault (ProjectTab.ID_PHYSICAL);
+                // invoke later, Mutex.EVENT.writeAccess isn't suffice to 
+                // select && expand if the focus is outside ProjectTab
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        boolean success = ptLogial.selectNode (newDo.getPrimaryFile ());
+                        if (!success) {
+                            ptPhysical.selectNode (newDo.getPrimaryFile ());
+                        }
+                    }
+                });
+            }
+        });
     }
     
 }

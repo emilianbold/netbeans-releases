@@ -17,22 +17,17 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.NewProjectWizard;
 import org.netbeans.modules.project.ui.OpenProjectList;
-import org.netbeans.modules.project.ui.ProjectTab;
+import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -82,29 +77,7 @@ public class NewProject extends BasicAction {
                                 }
                             }
                         } else {
-                            // call the preferred action on main class
-                            Mutex.EVENT.writeAccess (new Runnable () {
-                                public void run () {
-                                    final Node node = newDo.getNodeDelegate ();
-                                    Action a = node.getPreferredAction();
-                                    if (a instanceof ContextAwareAction) {
-                                        a = ((ContextAwareAction)a).createContextAwareInstance(node.getLookup ());
-                                    }
-                                    if (a != null) {
-                                        a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                                    }
-
-                                    // next action -> expand && select main class in package view
-                                    final ProjectTab pt  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
-                                    // invoke later, Mutex.EVENT.writeAccess isn't suffice to 
-                                    // select && expand if the focus is outside ProjectTab
-                                    SwingUtilities.invokeLater (new Runnable () {
-                                        public void run () {
-                                            pt.selectNode (newDo.getPrimaryFile ());        
-                                        }
-                                    });
-                                }
-                            });
+                            ProjectUtilities.openAndSelectNewObject (newDo);
                         }
                     } else {
                         assert false : obj;
