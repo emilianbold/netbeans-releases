@@ -133,7 +133,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
       currentRetries = 0;
   }
 
-  /** Restarts the server if it is running */
+  /** Restarts the server if it is running - must be called in a synchronized block */
   private void restartIfNecessary() {
     if (running) {
       HttpServerModule.stopHTTPServer();
@@ -413,6 +413,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  14   Gandalf   1.13        7/3/99   Petr Jiricka    
  *  13   Gandalf   1.12        7/3/99   Petr Jiricka    
  *  12   Gandalf   1.11        6/25/99  Petr Jiricka    Removed debug prints
  *  11   Gandalf   1.10        6/24/99  Petr Jiricka    Implements recent 
