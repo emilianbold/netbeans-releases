@@ -329,15 +329,17 @@ public abstract class NbTopManager /*extends TopManager*/ {
 
     /** Adds new explorer manager that will rule the selection of current
     * nodes until the runnable is running.
+     * <b>Attention: This method is no longer supported and is going to 
+     * be removed soon, see http://www.netbeans.org/issues/show_bug.cgi?id=28804.</b>
     *
     * @param run runnable to execute (till it is running the explorer manager is in progress)
     * @param em explorer manager 
     */
     public void attachExplorer (Runnable run, ExplorerManager em) {
-        WindowManagerImpl m = WindowManagerImpl.getInstance();
-        if (m != null) {
-            m.attachExplorer(run, em);
-        }
+        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+            new UnsupportedOperationException("Method NbTopManager.attachExplorer" // NOI18N
+            + " is no more supported and is going to be removed, see more at:" // NOI18N
+            + " http://www.netbeans.org/issues/show_bug.cgi?id=28804")); // NOI18N
     }
 
     public static final class NbDialogDisplayer extends DialogDisplayer {
