@@ -23,6 +23,7 @@ workspaceswitcher
 
 <project name="nbbuild" default="all" basedir=".">
   <property name="build.sysclasspath" value="ignore"/>
+  <property file="build.properties"/>
 
   <!-- To make people happy who want to do `ant clean all': -->
   <target name="all" depends="build,sanity-check" description="Build the IDE and run a sanity check."/>
@@ -96,11 +97,11 @@ workspaceswitcher
       <config name="superslim" modules="classfile,clazz,editor,html,image,java,openidex,projects,text,utilities"/>
       <config name="slim" modules="autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,image,java,openidex,projects,text,utilities"/>
       <!-- [PENDING] A poor name; 'standard' would be more in line with the CVS pseudomodule. -->
-      <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web"/>
-      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web"/>
-      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web"/>
+      <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web"/>
+      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,httpserver/servletapi,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,openidex,projects,properties,rmi,scripting,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web"/>
+      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web"/>
       <!-- You are on your own for getting the binaries for some of these: -->
-      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web"/>
+      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,freestylebrowser,html,httpserver,httpserver/servletapi,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,tomcatint/tomcat32,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web"/>
     </configmods>
   </target>
 
@@ -193,9 +194,13 @@ workspaceswitcher
     <echo message="Building module html..."/>
     <ant dir="../html" target="netbeans"/>
   </target>
-  <target name="all-httpserver" depends="all-openide">
+  <target name="all-httpserver" depends="all-openide, all-httpserver/servletapi">
     <echo message="Building module httpserver..."/>
     <ant dir="../httpserver" target="netbeans"/>
+  </target>
+  <target name="all-httpserver/servletapi" depends="all-openide">
+    <echo message="Building module httpserver/servletapi..."/>
+    <ant dir="../httpserver/servletapi" target="netbeans"/>
   </target>
   <target name="all-i18n" depends="all-openide,all-core,all-properties,all-form">
     <echo message="Building module i18n..."/>
@@ -562,6 +567,8 @@ the ${netbeans.dest}/bin/ directory.
     <ant dir="../form" target="nbm"/>
     <echo message="Making NBM for module html..."/>
     <ant dir="../html" target="nbm"/>
+    <echo message="Making NBM for module httpserver/servletapi..."/>
+    <ant dir="../httpserver/servletapi" target="nbm"/>
     <echo message="Making NBM for module httpserver..."/>
     <ant dir="../httpserver" target="nbm"/>
     <echo message="Making NBM for module properties..."/>
