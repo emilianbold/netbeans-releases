@@ -30,7 +30,7 @@ import org.openide.filesystems.FileObject;
  * non-null in case there was a valid parse before, and some changes
  * are now invalid.
  */
-public interface AntProjectCookie extends Node.Cookie, Serializable {
+public interface AntProjectCookie extends Node.Cookie {
     /** Get the disk file for the build script.
      * @return the disk file, or null if none (but must be a file object)
      */

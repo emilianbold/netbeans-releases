@@ -56,36 +56,16 @@ public class AntProperty extends Node.Property {
         return el.getAttribute (name);
     }
     
-    public void setValue (Object value) throws IllegalArgumentException, InvocationTargetException {
-        Element el = getElement ();
-        if (el == null) return;
-        if (value == null) value = ""; // NOI18N
-        if (! (value instanceof String)) throw new IllegalArgumentException ();
-        if (value.equals ("")) { // NOI18N
-            try {
-                el.removeAttribute (name);
-            } catch (DOMException dome) {
-                throw new InvocationTargetException (dome);
-            }
-        } else {
-            el.setAttribute (name, (String) value);
-        }
-    }
-    
     public boolean canRead () {
         return true;
     }
     
     public boolean canWrite () {
-        return (getElement () != null && ! AntProjectNode.isScriptReadOnly(proj));
+        return false;
     }
     
-    public boolean supportsDefaultValue () {
-        return (getElement () != null);
-    }
-    
-    public void restoreDefaultValue () throws IllegalArgumentException, InvocationTargetException {
-        setValue (""); // NOI18N
+    public void setValue(Object val) throws IllegalArgumentException{
+        throw new IllegalArgumentException();
     }
     
 }

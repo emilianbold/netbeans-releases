@@ -41,7 +41,6 @@ import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.*;
 import org.apache.tools.ant.module.xml.ElementSupport;
-import org.apache.tools.ant.module.wizards.properties.*;
 import org.openide.util.Utilities;
 
 /** A node that represents an Ant project.
@@ -53,8 +52,7 @@ public class AntProjectNode extends DataNode implements ChangeListener {
     }
     private AntProjectNode(DataObject obj, AntProjectCookie cookie) {
         super(obj, new AntProjectChildren(cookie));
-        cookie.addChangeListener(WeakListener.change(this, cookie));
-        getCookieSet ().add (new ProjectNodeIndex (this));
+        cookie.addChangeListener(WeakListeners.change(this, cookie));
         setValue("propertiesHelpID", "org.apache.tools.ant.module.nodes.AntProjectNode.propertysheet"); // NOI18N
     }
     
@@ -158,25 +156,6 @@ public class AntProjectNode extends DataNode implements ChangeListener {
         }
     }
 
-    private class TargetEditor extends PropertyEditorSupport {
-        public String getAsText () {
-            return (String) getValue ();
-        }
-        public void setAsText (String v) throws IllegalArgumentException {
-            setValue (v);
-        }
-        public String[] getTags () {
-            Element proj = ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
-            if (proj == null) return new String[] { getAsText () };
-            NodeList nl = proj.getElementsByTagName ("target"); // NOI18N
-            String[] tags = new String[nl.getLength ()];
-            for (int i = 0; i < tags.length; i++) {
-                tags[i] = ((Element) nl.item (i)).getAttribute ("name"); // NOI18N
-            }
-            return tags;
-        }
-    }
-
     private class ProjectTargetProperty extends AntProperty {
         public ProjectTargetProperty (String name, AntProjectCookie proj) {
             super (name, proj);
@@ -184,23 +163,9 @@ public class AntProjectNode extends DataNode implements ChangeListener {
         protected Element getElement () {
             return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
         }
-        public boolean supportsDefaultValue () {
-            return false;
-        }
-        public void setValue (Object value) throws IllegalArgumentException, InvocationTargetException {
-            if (value == null || value.equals ("")) {
-                IllegalArgumentException iae = new IllegalArgumentException ("no default for " + this.getName ()); // NOI18N
-                AntModule.err.annotate (iae, NbBundle.getMessage (AntProjectNode.class, "EXC_no_default_value_for_prop", this.getDisplayName ()));
-                throw iae;
-            }
-            super.setValue (value);
-        }
-        public PropertyEditor getPropertyEditor () {
-            return new TargetEditor ();
-        }
     }
 
-    private class ProjectBasedirProperty extends PropertySupport.ReadWrite {
+    private class ProjectBasedirProperty extends PropertySupport.ReadOnly {
         public ProjectBasedirProperty (String dname, String sdesc) {
             super ("basedir", File.class, dname, sdesc); // NOI18N
             this.setValue ("directories", Boolean.TRUE); // NOI18N
@@ -218,35 +183,6 @@ public class AntProjectNode extends DataNode implements ChangeListener {
             if (bd.equals("")) return null; // NOI18N
             if (bd.equals(".")) bd = ""; // NOI18N
             return new File(bd);
-        }
-        public void setValue (Object o) throws IllegalArgumentException, InvocationTargetException {
-            Element el = getElement ();
-            if (el == null) return;
-            if (o == null) {
-                try {
-                    el.removeAttribute ("basedir"); // NOI18N
-                } catch (DOMException dome) {
-                    throw new InvocationTargetException (dome);
-                }
-                return;
-            }
-            if (! (o instanceof File)) throw new IllegalArgumentException ();
-            try {
-                String path = ((File)o).getPath();
-                if (path.equals("")) path = "."; // NOI18N
-                el.setAttribute("basedir", path); // NOI18N
-            } catch (DOMException dome) {
-                throw new InvocationTargetException (dome);
-            }
-        }
-        public boolean canWrite () {
-            return (getElement () != null && ! isScriptReadOnly((AntProjectCookie) getCookie(AntProjectCookie.class)));
-        }
-        public boolean supportsDefaultValue () {
-            return (getElement () != null);
-        }
-        public void restoreDefaultValue () throws InvocationTargetException {
-            setValue (null);
         }
         public PropertyEditor getPropertyEditor() {
             // Before using File editor, set up the base directory...
@@ -283,10 +219,6 @@ public class AntProjectNode extends DataNode implements ChangeListener {
         props.put (prop);
         // id prop unnecessary, since project name functions as an ID
         props.put (new ProjectBuildSequenceProperty(proj));
-        ProjectPropertiesFileProperty ppfp = new ProjectPropertiesFileProperty ();
-        props.put (ppfp);
-        PropertiesChooserProperty pcp = new PropertiesChooserProperty (ppfp);
-        props.put (pcp);
     }
 
     public void stateChanged (ChangeEvent ev) {
@@ -305,108 +237,6 @@ public class AntProjectNode extends DataNode implements ChangeListener {
         return new HelpCtx ("org.apache.tools.ant.module.identifying-project");
     }
 
-    protected void createPasteTypes (Transferable t, List l) {
-        AntProjectCookie proj = (AntProjectCookie) getCookie (AntProjectCookie.class);
-        Element pel = proj.getProjectElement ();
-        if (pel != null && ! isScriptReadOnly (proj)) {
-            ElementCookie cookie = (ElementCookie) NodeTransfer.cookie (t, NodeTransfer.COPY, ElementCookie.class);
-            if (cookie != null && canPasteElement (cookie.getElement ())) {
-                l.add (new ElementNode.ElementPaste (pel, cookie.getElement (), false));
-            }
-            cookie = (ElementCookie) NodeTransfer.cookie (t, NodeTransfer.MOVE, ElementCookie.class);
-            if (cookie != null && canPasteElement (cookie.getElement ())) {
-                l.add (new ElementNode.ElementPaste (pel, cookie.getElement (), true));
-            }
-        }
-    }
-
-    private boolean canPasteElement (Element el) {
-        String type = el.getNodeName ();
-        return type.equals ("target") || // NOI18N
-               type.equals ("property") || // NOI18N
-               type.equals ("taskdef") || // NOI18N
-               type.equals ("typedef") || // NOI18N
-               type.equals ("description") || // NOI18N
-               IntrospectedInfo.getDefaults ().getDefs ("type").containsKey (type) || // NOI18N
-               AntSettings.getDefault ().getCustomDefs ().getDefs ("type").containsKey (type); // NOI18N
-    }
-
-    public NewType[] getNewTypes () {
-        if (! isScriptReadOnly ((AntProjectCookie) getCookie(AntProjectCookie.class))) {
-            List names = new ArrayList ();
-            names.addAll (IntrospectedInfo.getDefaults ().getDefs ("type").keySet ()); // NOI18N
-            names.addAll (AntSettings.getDefault ().getCustomDefs ().getDefs ("type").keySet ()); // NOI18N
-            Collections.sort (names);
-            names.add (0, "target"); // NOI18N
-            names.add (1, "property"); // NOI18N
-            names.add (2, "taskdef"); // NOI18N
-            names.add (3, "typedef"); // NOI18N
-            names.add (4, "description"); // NOI18N
-            // XXX in Ant 1.6, *any* task can be used here, so just add them all
-            NewType[] types = new NewType[names.size ()];
-            for (int i = 0; i < types.length; i++) {
-                types[i] = new ProjectNewType ((String) names.get (i));
-            }
-            return types;
-        } else {
-            return new NewType[0];
-        }
-    }
-
-    private class ProjectNewType extends NewType {
-        private String name;
-        public ProjectNewType (String name) {
-            this.name = name;
-        }
-        public String getName () {
-            return name;
-        }
-        public HelpCtx getHelpCtx () {
-            return new HelpCtx ("org.apache.tools.ant.module.node-manip");
-        }
-        public void create () throws IOException {
-            Element el = ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
-            if (el == null) throw new IOException ();
-            try {
-                Element el2 = el.getOwnerDocument ().createElement (name);
-                ElementNode.appendWithIndent (el, el2);
-                if (name.equals ("target")) { // NOI18N
-                    el2.setAttribute ("name", NbBundle.getMessage (AntProjectNode.class, "MSG_target_name_changeme"));
-                } else if (name.equals ("property")) { // NOI18N
-                    el2.setAttribute ("name", NbBundle.getMessage (AntProjectNode.class, "MSG_property_name_changeme"));
-                    el2.setAttribute ("value", NbBundle.getMessage (AntProjectNode.class, "MSG_property_value_changeme"));
-                } else if (name.equals ("taskdef") || name.equals("typedef")) { // NOI18N
-                    el2.setAttribute ("name", NbBundle.getMessage (AntProjectNode.class, "MSG_taskdef_name_changeme"));
-                    el2.setAttribute ("classname", NbBundle.getMessage (AntProjectNode.class, "MSG_taskdef_classname_changeme"));
-                } else if (name.equals("description")) { // NOI18N
-                    ElementNode.appendWithIndent(el2,
-                        el.getOwnerDocument().createTextNode(NbBundle.getMessage(AntProjectNode.class, "MSG_description_changeme")));
-                } else {
-                    // Random data type.
-                    el2.setAttribute ("id", NbBundle.getMessage (AntProjectNode.class, "MSG_id_changeme"));
-                }
-            } catch (DOMException dome) {
-                IOException ioe = new IOException ();
-                AntModule.err.annotate (ioe, dome);
-                throw ioe;
-            }
-        }
-    }
-
-    
-    
-    /** Returns true if the Antscript represented by the passed cookie is read-only. */
-    public static boolean isScriptReadOnly(AntProjectCookie cookie) {
-        if (cookie != null) {
-            if (cookie.getFileObject() != null) {
-                return cookie.getFileObject().isReadOnly();
-            } else if (cookie.getFile() != null) {
-                return ! cookie.getFile().canWrite();
-            }
-        }
-        return true;
-    }
-    
     /** Property displaying the build sequence of the whole project. */
     public static class ProjectBuildSequenceProperty extends AntTargetNode.BuildSequenceProperty {
         
@@ -443,37 +273,4 @@ public class AntProjectNode extends DataNode implements ChangeListener {
         }
     }
     
-    /** Index Cookie for ProjectNode. Enables ReorderAction. */
-    public static class ProjectNodeIndex extends ElementNode.ElementNodeIndex {
-        
-        /** Creates new ProjectNodeIndex. */
-        public ProjectNodeIndex(org.openide.nodes.Node indexNode) {
-            super (indexNode);
-        }
-
-        /** Get the parent Node of the Elements that can be moved.*/
-        protected org.w3c.dom.Node getParentNode() {
-            return ((AntProjectCookie) indexNode.getCookie (AntProjectCookie.class)).getProjectElement ();
-        }
-    }
-    
-    /** Displays the Properties for the project stored in a .properties file. */
-    class ProjectPropertiesFileProperty extends PropertiesFileProperty {
-        ProjectPropertiesFileProperty () {
-            super ( NbBundle.getMessage (AntProjectNode.class, "PROP_project_properties"),
-                    NbBundle.getMessage (AntProjectNode.class, "HINT_project_properties")
-                  );
-        }
-        /** Get the Project Element. */
-        public Element getElement () {
-            return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
-        }
-        /** Get the AntProjectCookie. */
-        public AntProjectCookie getAntProjectCookie () {
-            return (AntProjectCookie) getCookie (AntProjectCookie.class);
-        }        
-        protected void firePropertiesFilePropertyChange() {
-            AntProjectNode.this.firePropertySetsChange(null, null);
-        }
-    }
 }

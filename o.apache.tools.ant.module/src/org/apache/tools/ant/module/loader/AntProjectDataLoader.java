@@ -62,14 +62,9 @@ public class AntProjectDataLoader extends UniFileLoader {
             null,
             SystemAction.get (CutAction.class),
             SystemAction.get (CopyAction.class),
-            SystemAction.get (PasteAction.class),
-            null,
-            SystemAction.get (ReorderAction.class),
             null,
             SystemAction.get (DeleteAction.class),
             SystemAction.get (RenameAction.class),
-            null,
-            SystemAction.get (NewAction.class),
             null,
             SystemAction.get (SaveAsTemplateAction.class),
             null,
@@ -126,7 +121,7 @@ public class AntProjectDataLoader extends UniFileLoader {
             // Trying to uselessly clear the attr can cause empty .nbattrs to be written etc.
             return;
         }
-        if (fo.isReadOnly ()) {
+        if (!fo.canWrite()) {
             // Don't even try.
             return;
         }

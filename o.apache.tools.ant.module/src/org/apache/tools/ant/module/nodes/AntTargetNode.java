@@ -43,27 +43,16 @@ import org.apache.tools.ant.module.api.ElementCookie;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.run.TargetExecutor;
 import org.apache.tools.ant.module.xml.ElementSupport;
-import org.apache.tools.ant.module.wizards.properties.*;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Dimension;
-import javax.swing.border.EmptyBorder;
-import java.awt.Insets;
 import org.apache.tools.ant.module.wizards.shortcut.ShortcutWizard;
 import org.openide.util.HelpCtx;
-import org.netbeans.api.javahelp.Help;
 
 /** A node representing an Ant build target.
  */
 public class AntTargetNode extends ElementNode implements ChangeListener {
     
     public AntTargetNode (final AntProjectCookie project, final Element targetElem) {
-        super (targetElem, new AntTargetChildren (targetElem));
-        /*
-        AntTargetCookie targetCookie = new AntTargetSupport (project, targetElem);
-        getCookieSet().add(targetCookie);
-         */
-        project.addChangeListener(WeakListener.change(this, project));
+        super(targetElem, hasChildElements(targetElem) ? new AntTargetChildren(targetElem) : Children.LEAF);
+        project.addChangeListener(WeakListeners.change(this, project));
     }
     
     public void stateChanged (ChangeEvent ev) {
@@ -96,19 +85,6 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
             CREATE_SHORTCUT,
             null,
             SystemAction.get (OpenLocalExplorerAction.class),
-            null,
-            SystemAction.get (CutAction.class),
-            SystemAction.get (CopyAction.class),
-            SystemAction.get (PasteAction.class),
-            null,
-            SystemAction.get (MoveUpAction.class),
-            SystemAction.get (MoveDownAction.class),
-            SystemAction.get (ReorderAction.class),
-            null,
-            SystemAction.get (DeleteAction.class),
-            SystemAction.get (RenameAction.class),
-            null,
-            SystemAction.get (NewAction.class),
             null,
             SystemAction.get (ToolsAction.class),
             SystemAction.get (PropertiesAction.class),
@@ -178,31 +154,8 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
         }
         props.put (new DependsProperty (proj));
         props.put (new BuildSequenceProperty(el));
-        TargetPropertiesFileProperty tpfp = new TargetPropertiesFileProperty ();
-        props.put (tpfp); 
-        PropertiesChooserProperty pcp = new PropertiesChooserProperty (tpfp);
-        props.put (pcp);
     }
 
-    private class TargetPropertiesFileProperty extends PropertiesFileProperty {
-        TargetPropertiesFileProperty () {
-            super ( NbBundle.getMessage (AntTargetNode.class, "PROP_target_properties"),
-                    NbBundle.getMessage (AntTargetNode.class, "HINT_target_properties")
-                  );
-        }
-        /** Get the Element of this TargetNode. */
-        public Element getElement () {
-            return el;
-        }
-        /** Get the AntProjectCookie. */
-        public AntProjectCookie getAntProjectCookie () {
-            return (AntProjectCookie) getCookie (AntProjectCookie.class);
-        }
-        protected void firePropertiesFilePropertyChange() {
-            AntTargetNode.this.firePropertySetsChange(null, null);
-        }
-    }
-    
     private class DependsProperty extends AntProperty {
         public DependsProperty (AntProjectCookie proj) {
             super (el, "depends", proj); // NOI18N
@@ -226,267 +179,14 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
             AntModule.err.log ("AntTargetNode.DependsProperty.available=" + s);
             return s;
         }
-        public void setValue (Object o) throws IllegalArgumentException, InvocationTargetException {
-            if (! (o instanceof String)) throw new IllegalArgumentException ();
-            Set av = getAvailable ();
-            StringTokenizer tok = new StringTokenizer ((String) o, ", "); // NOI18N
-            while (tok.hasMoreTokens ()) {
-                String target = tok.nextToken ();
-                if (! av.contains (target)) {
-                    IllegalArgumentException iae = new IllegalArgumentException ("no such target: " + target); // NOI18N
-                    AntModule.err.annotate (iae, NbBundle.getMessage (AntTargetNode.class, "EXC_target_not_exist", target));
-                    throw iae;
-                }
-            }
-            super.setValue (o);
-        }
-        public Object getValue () {
-            return super.getValue ();
-        }
         public PropertyEditor getPropertyEditor () {
             return new DependsEditor ();
         }
-        /** Note: treats list of dependencies as an _unordered set_.
-         * Ant does not currently officially specify that the order
-         * of items in a depends clause means anything, so this GUI
-         * faithfully provides no interface to reorder them.
-         * Cf. Peter Donald's message "RE: Order of Depends" to
-         * ant-dev on Feb 21 2001.
-         */
         private class DependsEditor extends PropertyEditorSupport {
             public String getAsText () {
                 return (String) this.getValue ();
             }
-            public void setAsText (String v) {
-                this.setValue (v);
-            }
-            public boolean supportsCustomEditor () {
-                return true;
-            }
-            public Component getCustomEditor () {
-                JPanel pane = new JPanel();
-                pane.setLayout(new javax.swing.BoxLayout(pane, javax.swing.BoxLayout.Y_AXIS));
-                pane.setBorder(new EmptyBorder(new Insets(12, 12, 11, 11)));
-                pane.add(new JScrollPane(new DependsPanel ()));
-                pane.setPreferredSize(new Dimension(250,300));
-                pane.getAccessibleContext().setAccessibleDescription (
-                    NbBundle.getMessage (AntTargetNode.class, "AD_DependsEditor"));
-                HelpCtx.setHelpIDString (pane, "org.apache.tools.ant.module.nodes.AntTargetNode$DependsProperty$DependsEditor");
-                return pane;
-            }
-            private class DependsPanel extends Box implements ActionListener {
-                private final Set on = new HashSet (); // Set<String>
-                public DependsPanel () {
-                    super (BoxLayout.Y_AXIS);
-                    String depends = (String) DependsEditor.this.getValue ();
-                    StringTokenizer tok = new StringTokenizer (depends, ", "); // NOI18N
-                    Set available = getAvailable ();
-                    Set bogus = new HashSet (); // Set<String>
-                    while (tok.hasMoreTokens ()) {
-                        String dep = tok.nextToken ();
-                        if (available.contains (dep)) {
-                            on.add (dep);
-                        } else {
-                            bogus.add (dep);
-                        }
-                    }
-                    if (! bogus.isEmpty ()) {
-                        // #12681: if there are bad dependencies, just skip them.
-                        List bogusList = new ArrayList (bogus); // List<String>
-                        Collections.sort (bogusList);
-                        StringBuffer bogusListString = new StringBuffer (100);
-                        Iterator it = bogusList.iterator ();
-                        bogusListString.append ((String) it.next ());
-                        while (it.hasNext ()) {
-                            bogusListString.append (' '); // NOI18N
-                            bogusListString.append ((String) it.next ());
-                        }
-                        add (new JLabel (NbBundle.getMessage (AntTargetNode.class,
-                            "MSG_suppressing_bad_deps", bogusListString.toString ()))); // NOI18N
-                    }
-                    List availableList = new ArrayList (available); // List<String>
-                    Collections.sort (availableList);
-                    Iterator it = availableList.iterator ();
-                    while (it.hasNext ()) {
-                        String target = (String) it.next ();
-                        AbstractButton check = new JCheckBox (target, on.contains (target));
-                        check.addActionListener (this);
-                        add (check);
-                    }
-                    add (createGlue ());
-                }
-                public void actionPerformed (ActionEvent ev) {
-                    JCheckBox box = (JCheckBox) ev.getSource ();
-                    String target = box.getText ();
-                    if (box.isSelected ()) {
-                        on.add (target);
-                    } else {
-                        on.remove (target);
-                    }
-                    StringBuffer buf = new StringBuffer ();
-                    List onList = new ArrayList (on); // List<String>
-                    Collections.sort (onList);
-                    Iterator it = onList.iterator ();
-                    while (it.hasNext ()) {
-                        target = (String) it.next ();
-                        if (buf.length () > 0) buf.append (','); // NOI18N
-                        buf.append (target);
-                    }
-                    DependsEditor.this.setValue (buf.toString ());
-                }
-            }
         }
-    }
-
-    public NewType[] getNewTypes () {
-        if (! AntProjectNode.isScriptReadOnly ((AntProjectCookie) getCookie (AntProjectCookie.class))) {
-            List names = new ArrayList ();
-            names.addAll (IntrospectedInfo.getDefaults ().getDefs ("task").keySet ()); // NOI18N
-            names.addAll (AntSettings.getDefault ().getCustomDefs ().getDefs ("task").keySet ()); // NOI18N
-            Collections.sort (names);
-            List newtypes = new ArrayList();
-            newtypes.add(new TaskNewType(names));
-            List types = new ArrayList();
-            types.addAll (IntrospectedInfo.getDefaults ().getDefs ("type").keySet ()); // NOI18N
-            types.addAll (AntSettings.getDefault ().getCustomDefs ().getDefs ("type").keySet ()); // NOI18N
-            Collections.sort(types);
-            Iterator it = types.iterator();
-            while (it.hasNext()) {
-                newtypes.add(new TypeNewType((String)it.next()));
-            }
-            return (NewType[])newtypes.toArray(new NewType[newtypes.size()]);
-        } else {
-            return new NewType[0];
-        }
-    }
-    
-    private final class TypeNewType extends NewType {
-        private final String name;
-        public TypeNewType(String name) {
-            this.name = name;
-        }
-        public String getName () {
-            return name;
-        }
-        public HelpCtx getHelpCtx () {
-            return new HelpCtx ("org.apache.tools.ant.module.node-manip");
-        }
-        public void create () throws IOException {
-            try {
-                Element el2 = el.getOwnerDocument ().createElement (name);
-                el2.setAttribute ("id", NbBundle.getMessage (AntProjectNode.class, "MSG_id_changeme"));
-                ElementNode.appendWithIndent (el, el2);
-            } catch (DOMException dome) {
-                IOException ioe = new IOException ();
-                AntModule.err.annotate (ioe, dome);
-                throw ioe;
-            }
-        }
-    }
-
-    private class TaskNewType extends NewType {
-        private List names;
-        public TaskNewType (List names) {
-            this.names = names;
-        }
-        public String getName () {
-            return NbBundle.getMessage (AntTargetNode.class, "LBL_task_new_type");
-        }
-        public HelpCtx getHelpCtx () {
-            return new HelpCtx ("org.apache.tools.ant.module.node-manip");
-        }
-        public void create () throws IOException {
-            // Ask the user which to choose.
-            JPanel pane = new JPanel ();
-            pane.setLayout (new GridBagLayout ());
-            GridBagConstraints gridBagConstraints;
-
-            // #20657 - the content of the panel was redesigned. The issue
-            // contain the .form file
-            JLabel jLabel1 = new javax.swing.JLabel(NbBundle.getMessage (AntTargetNode.class, "LBL_choose_task"));
-            final JButton help = new javax.swing.JButton();
-            final JComboBox combo = new javax.swing.JComboBox(names.toArray ());
-            combo.getAccessibleContext().setAccessibleName(NbBundle.getMessage (AntTargetNode.class, "ACSN_choose_task_combo"));
-            combo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AntTargetNode.class, "ACSD_choose_task_combo"));
-            jLabel1.setDisplayedMnemonic((NbBundle.getMessage(AntTargetNode.class, "LBL_choose_task_mnem")).charAt(0));
-            jLabel1.setLabelFor(combo);
-
-            help.setText(NbBundle.getMessage(AntTargetNode.class, "LBL_task_help"));
-            help.setMnemonic((NbBundle.getMessage(AntTargetNode.class, "LBL_task_help_mnem")).charAt(0));
-            gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 6);
-            pane.add(jLabel1, gridBagConstraints);
-
-
-            if (AntTaskNode.helpFor("property", "task") != null) { // NOI18N
-                // We have help available. (<property> is well-known.)
-                ActionListener helplistener = new ActionListener () {
-                        public void actionPerformed (ActionEvent ignore) {
-                            help.setEnabled(AntTaskNode.helpFor((String)combo.getSelectedItem(), "task") != null); // NOI18N
-                        }
-                    };
-                helplistener.actionPerformed (null);
-                combo.addActionListener (helplistener);
-                help.addActionListener (new ActionListener () {
-                        public void actionPerformed (ActionEvent ev) {
-                            Help help = (Help)Lookup.getDefault().lookup(Help.class);
-                            help.showHelp(AntTaskNode.helpFor((String)combo.getSelectedItem(), "task"));
-                        }
-                    });
-            
-            gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 2;
-            gridBagConstraints.gridy = 0;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-            gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 11);
-            pane.add(help, gridBagConstraints);
-            }
-
-            
-            gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = 0;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-            gridBagConstraints.weightx = 1.0;
-            gridBagConstraints.insets = new java.awt.Insets(12, 6, 11, 6);
-            pane.add(combo, gridBagConstraints);
-            pane.getAccessibleContext().setAccessibleName(NbBundle.getMessage (AntTargetNode.class, "ACSN_target_node_panel"));
-            pane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AntTargetNode.class, "ACSD_target_node_panel"));
-    
-            
-            DialogDescriptor dlg = new DialogDescriptor (pane, NbBundle.getMessage (AntTargetNode.class, "TITLE_select_task"));
-            dlg.setHelpCtx (getHelpCtx ());
-            dlg.setModal (true);
-            DialogDisplayer.getDefault ().createDialog (dlg).show ();
-            if (dlg.getValue () != NotifyDescriptor.OK_OPTION) return;
-            String name = (String) combo.getSelectedItem ();
-            try {
-                Element el2 = el.getOwnerDocument ().createElement (name);
-                ElementNode.appendWithIndent (el, el2);
-            } catch (DOMException dome) {
-                IOException ioe = new IOException ();
-                AntModule.err.annotate (ioe, dome);
-                throw ioe;
-            }
-        }
-    }
-
-    protected boolean canPasteElement (Element el2) {
-        String name = el2.getNodeName ();
-        if (IntrospectedInfo.getDefaults ().getDefs ("task").containsKey (name)) { // NOI18N
-            return true;
-        }
-        if (IntrospectedInfo.getDefaults ().getDefs ("type").containsKey (name)) { // NOI18N
-            return true;
-        }
-        if (AntSettings.getDefault ().getCustomDefs ().getDefs ("task").containsKey (name)) { // NOI18N
-            return true;
-        }
-        if (AntSettings.getDefault ().getCustomDefs ().getDefs ("type").containsKey (name)) { // NOI18N
-            return true;
-        }
-        return false;
     }
 
     /**
