@@ -65,8 +65,15 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         if ( output == null ) {
             throw new BuildException ("output file must be specified");
         }
-
+        
         boolean generateTemplate = !questionsFile.exists();
+        
+        if (!generateTemplate && output.exists() && questionsFile.lastModified() <= output.lastModified()) {
+            // nothing needs to be generated. everything is up to date
+            return;
+        }
+        
+        
         org.w3c.dom.Document q;
         try {
             javax.xml.parsers.DocumentBuilder builder = javax.xml.parsers.DocumentBuilderFactory.newInstance ().newDocumentBuilder();
@@ -78,7 +85,7 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
                 q = builder.parse (questionsFile);
             }
         } catch (Exception ex) {
-            throw new BuildException ("File " + questionsFile + " cannot be parsed", ex);
+            throw new BuildException ("File " + questionsFile + " cannot be parsed: " + ex.getLocalizedMessage(), ex);
         }
 
         questions = readElements (q, "question");
@@ -88,7 +95,7 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         }
         
         if (generateTemplate) {
-            log ("Input file " + questionsFile + " does not exists. Generating it with skeleton answers");
+            log ("Input file " + questionsFile + " does not exists. Generating it filled with skeleton answers.");
             try {
                 TreeSet s = new TreeSet (questions.keySet ());
                 generateTemplateFile (s);
