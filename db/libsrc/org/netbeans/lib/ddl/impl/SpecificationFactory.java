@@ -128,7 +128,8 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 			boolean close = (jdbccon != null ? false : true);
 			Connection con = (jdbccon != null ? jdbccon : dbcon.createJDBCConnection());
 			DatabaseMetaData dmd = con.getMetaData();	
-			pn = dmd.getDatabaseProductName();
+			pn = dmd.getDatabaseProductName().trim();
+			
 			DatabaseSpecification spec = createSpecification(dbcon, pn, con);
 			if (close) con.close();
 			return spec;
@@ -149,11 +150,14 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 	throws DatabaseProductNotFoundException
 	{
 		HashMap product = (HashMap)specs.get(databaseProductName);
-		if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
+		
+		if (product == null)
+		  throw new DatabaseProductNotFoundException(databaseProductName);
 		HashMap specmap = deepUnion(product, (HashMap)specs.get("GenericDatabaseSystem"), true);
 		specmap.put("connection", connection);
 		DatabaseSpecification spec = new Specification(specmap, c);
 		spec.setSpecificationFactory(this);
+		
 		return spec;
 	}
 
@@ -175,7 +179,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 	public DatabaseSpecification createSpecification(Connection c) 
 	throws DatabaseProductNotFoundException, SQLException
 	{
-		return createSpecification(c, c.getMetaData().getDatabaseProductName());
+		return createSpecification(c, c.getMetaData().getDatabaseProductName().trim());
 	}
 
 	public DatabaseSpecification createSpecification(Connection c, String databaseProductName) 
@@ -256,6 +260,8 @@ public class SpecificationFactory implements DatabaseSpecificationFactory {
 
 /*
 * <<Log>>
+*  10   Gandalf   1.9         11/1/99  Radko Najman    getDatabaseProductName().trim()
+*       
 *  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  8    Gandalf   1.7         9/13/99  Slavek Psenicka 
