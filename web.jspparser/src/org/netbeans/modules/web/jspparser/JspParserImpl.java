@@ -127,6 +127,8 @@ public class JspParserImpl implements JspParserAPI {
             return getNoWebModuleResult(jspFile, wm);
         }
         WebAppParseProxy pp = getParseProxy(wm);
+        if (pp == null)
+            return getNoWebModuleResult(jspFile, wm);
         return pp.analyzePage(jspFile, errorReportingMode);
     }
     
