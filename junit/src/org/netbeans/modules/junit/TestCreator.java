@@ -427,7 +427,7 @@ public final class TestCreator {
                 if (!tImpSet.contains(new ImpEq(imp))) {
                     tgtImports.add(tgtPackage.getImport().
                                    createImport(imp.getName(),
-                                                imp.getIdentifier(),
+                                                null,
                                                 imp.isStatic(),
                                                 imp.isOnDemand()));
                 }
