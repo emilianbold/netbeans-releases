@@ -95,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
                  <text>For the XML Entity Catalog module itself:</text>
                  <file location="${license.file}"/>
                  <text>For the XML Resolver library:</text>
-                 <file location="${nb_all}/xml/external/resolver-license.txt"/>
+                 <file location="${nb_all}/nbbuild/external/apache-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
