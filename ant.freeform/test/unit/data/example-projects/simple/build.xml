@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="dist" name="simple-freeform-project">
-    <!-- should have run and debug targets here too -->
     <target name="init">
         <property file="build.properties"/>
         <path id="cp">
