@@ -46,7 +46,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
-    private final Reference[] cache = new SoftReference[7];
+    private final Reference[] cache = new SoftReference[8];
 
     private final Map/*<String,FileObject>*/ dirCache = new HashMap();
 
@@ -148,7 +148,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private ClassPath getRunTimeClasspath(FileObject file) {
         int type = getType(file);
-        if (type < 0 || type > 3) {
+        if (type < 0 || type > 4) {
             // Unregistered file, or in a JAR.
             // For jar:file:$projdir/dist/*.jar!/**/*.class, it is misleading to use
             // run.classpath since that does not actually contain the file!
@@ -167,6 +167,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 cp = ClassPathFactory.createClassPath(
                 new ProjectClassPathImplementation(helper, "run.test.classpath", evaluator)); // NOI18N
             }
+            else if (type == 2) {
+                //Only to make the CompiledDataNode hapy
+                //Todo: Strictly it should return ${run.classpath} - ${build.classes.dir} + ${dist.jar}
+                cp = ClassPathFactory.createClassPath(
+                new ProjectClassPathImplementation(helper, DIST_JAR, evaluator)); // NOI18N
+            }
             cache[4+type] = new SoftReference(cp);
         }
         return cp;
@@ -174,31 +180,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private ClassPath getSourcepath(FileObject file) {
         int type = getType(file);
-        if (type < 0) {
+        if (type < 0 || type > 1) {
             // Unknown.
             return null;
-        } else if (type > 1) {
-            // Class file. Return a "source path" of the binary dir.
-            // Seems to make clazz.CompiledDataNode happy at least in the case
-            // of a dist.jar class (see comment in getRunTimeClasspath).
-            // XXX this stuff should be cached and react to changes...
-            // not nearly as frequently used as the real source paths though.
-            FileObject root;
-            switch (type) {
-            case 2:
-                root = getBuildClassesDir();
-                break;
-            case 3:
-                root = getBuildTestClassesDir();
-                break;
-            case 4:
-                root = FileUtil.getArchiveRoot(getDistJar());
-                break;
-            default:
-                throw new AssertionError("weird type " + type); // NOI18N
-            }
-            assert root != null : "No root for files of type " + type; // NOI18N
-            return ClassPathSupport.createClassPath(new FileObject[] {root});
         }
         ClassPath cp = null;
         if (cache[type] == null || (cp = (ClassPath)cache[type].get()) == null) {
@@ -217,9 +201,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private ClassPath getBootClassPath() {
         ClassPath cp = null;
-        if (cache[6] == null || (cp = (ClassPath)cache[6].get()) == null) {
+        if (cache[7] == null || (cp = (ClassPath)cache[7].get()) == null) {
             cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(helper, evaluator));
-            cache[6] = new SoftReference(cp);
+            cache[7] = new SoftReference(cp);
         }
         return cp;
     }
