@@ -73,7 +73,7 @@ public final class TAXUtil {
      */
     public static String printableValue (String value) {
         if (value == null)
-            return new String ("<null>"); // NOI18N
+            return "<null>"; // NOI18N
         
         int ch;
         int MAX_LENGTH = 33;

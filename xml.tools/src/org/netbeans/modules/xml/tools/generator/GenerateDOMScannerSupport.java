@@ -120,7 +120,7 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
         getDTD();
         
 	String header = GenerateSupportUtils.getJavaFileHeader (name, primFile);
-	String packageLine = (packageName.length() != 0 ? new String ("package " + packageName + ";\n") : new String()); // NOI18N
+	String packageLine = (packageName.length() != 0 ? "package " + packageName + ";\n" : ""); // NOI18N
 	ClassElement clazz = prepareDOMScannerClass (name);
 	
 	StringBuffer buf = new StringBuffer();

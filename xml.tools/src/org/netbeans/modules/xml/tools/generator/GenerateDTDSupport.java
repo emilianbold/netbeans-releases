@@ -174,7 +174,7 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
                 if ( ( elem.pcdata == true ) ||
                      ( collect.size() == 0 ) ) {
                     Vector vect = new Vector (collect);
-                    vect.insertElementAt (new String ("#PCDATA"), 0); // NOI18N
+                    vect.insertElementAt ("#PCDATA", 0); // NOI18N
                     collect = vect;
                 }
                 Iterator I2 = collect.iterator();
