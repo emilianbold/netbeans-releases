@@ -13,7 +13,9 @@
 
 package org.netbeans.modules.j2ee.deployment.config;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -298,10 +300,12 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                 }
                 config.getDConfigBeanRoot(mds.getDeployableObject().getDDBeanRoot());
                 if (!hasCustomSupport()) {
-                    //standard configuration
-                    primary.lock();
-                    out = primary.getOutputStream(lock);
+                    //jsr-88 deployment plan file
+                    String dpFileName = getPrimaryConfigurationFileName();
+                    File dpFile = getProvider().getDeploymentConfigurationFile(dpFileName);
+                    out = new BufferedOutputStream(new FileOutputStream(dpFile));
                     config.save(out);
+                    primary = FileUtil.toFileObject(dpFile);
                 } else {
                     //server sepecific files
                     String[] fnames = getDeploymentConfigurationFileNames();
