@@ -39,11 +39,21 @@ public class WinClassicCompBorder implements Border {
     }
 
     public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+        int topOffset = 0;
+        // TODO - other option is to let the painting of the dark border to the inner component and make this border's insets smaller.
+        if (c instanceof JComponent) {
+            JComponent jc = (JComponent)c;
+            Integer in = (Integer)jc.getClientProperty("MultiViewBorderHack.topOffset");
+            topOffset = in == null ? topOffset : in.intValue();
+        }
         g.translate(x, y);
         g.setColor(UIManager.getColor("InternalFrame.borderShadow")); //NOI18N
-        g.drawLine(0, 0, 0, height - 1);
+        g.drawLine(0, 0, 0, height - 1); 
+        if (topOffset != 0) {
+            g.drawLine(1, topOffset - 1, 1, topOffset);
+        }
         g.setColor(UIManager.getColor("InternalFrame.borderDarkShadow")); //NOI18N
-        g.drawLine(1, 0, 1, height - 2);
+        g.drawLine(1, topOffset, 1, height - 2);
         g.setColor(UIManager.getColor("InternalFrame.borderHighlight")); //NOI18N
         g.drawLine(1, height - 1, width - 1, height - 1);
         g.drawLine(width - 1, height - 2, width - 1, 0);

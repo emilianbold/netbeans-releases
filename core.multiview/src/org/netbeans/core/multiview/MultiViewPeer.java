@@ -119,7 +119,7 @@ public final class MultiViewPeer  {
         input = peer.getInputMap(JComponent.WHEN_FOCUSED);
         input.put(stroke, "accesstoggles"); //NOI18N
         
-        peer.putClientProperty("MultiViewBorderHack.topOffset", new Integer(tabs.getPreferredSize().height));
+        peer.putClientProperty("MultiViewBorderHack.topOffset", new Integer(tabs.getPreferredSize().height - 1));
     }
     
   // It is necessary so the old actions (clone and close from org.openide.actions package) remain working.

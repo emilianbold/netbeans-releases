@@ -491,6 +491,12 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
             StackLayout stack = ((StackLayout) contentDisplayerLayout);
             Component last = stack.getVisibleComponent();
             stack.showComponent(c, contentDisplayer);
+            if (c != null) {
+                Integer offset = (Integer)((JComponent)c).getClientProperty("MultiViewBorderHack.topOffset");
+                contentDisplayer.putClientProperty("MultiViewBorderHack.topOffset", offset);
+            } else {
+                contentDisplayer.putClientProperty("MultiViewBorderHack.topOffset", null);
+            }
             if (last != c) {
                 maybeRemoveLastComponent(last);
                 return last;
