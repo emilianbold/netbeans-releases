@@ -34,7 +34,7 @@ import com.sun.web.core.Context;
 *
 * @author Petr Jiricka
 */
-public class HttpServerModule implements ModuleInstall, Externalizable {
+public class HttpServerModule extends ModuleInstall implements Externalizable {
 
   
   private static HttpServer server;
@@ -43,11 +43,6 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
   private static boolean inSetRunning = false;
   
   static boolean optionsSerialized = false;
-
-  /** Module installed for the first time. */
-  public void installed() {
-    restored ();
-  }
 
   /** Module installed again.
   * Add applet executor
@@ -61,9 +56,6 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
     }
   }
 
-  /** Module was uninstalled. */
-  public void uninstalled() {
-  }
 
   /** Module is being closed. */
   public boolean closing () {
@@ -231,6 +223,8 @@ e.printStackTrace();
 
 /*
  * Log
+ *  24   Gandalf   1.23        10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
+ *        changed to class + some methods added
  *  23   Gandalf   1.22        9/30/99  Petr Jiricka    Jetty -> JSWDK (TomCat)
  *  22   Gandalf   1.21        9/8/99   Petr Jiricka    SecurityException fix
  *  21   Gandalf   1.20        9/8/99   Petr Jiricka    Fixed 

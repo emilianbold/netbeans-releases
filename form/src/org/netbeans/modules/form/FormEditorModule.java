@@ -30,7 +30,7 @@ import com.netbeans.developer.modules.loaders.form.palette.*;
 *
 * @author Ian Formanek
 */
-public class FormEditorModule implements ModuleInstall {
+public class FormEditorModule extends ModuleInstall {
 
   private static final String AWT_CATEGORY_NAME = "AWT";
   private static final String SWING_CATEGORY_NAME = "Swing";
@@ -75,11 +75,6 @@ public class FormEditorModule implements ModuleInstall {
 
     // [PENDING - ask and delete ComponentPalette]
     // [PENDING - ask and delete Form templates]
-  }
-
-  /** Module is being closed. */
-  public boolean closing () {
-    return true; // agree to close
   }
   
 // -----------------------------------------------------------------------------
@@ -515,6 +510,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  33   Gandalf   1.32        10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
+ *        changed to class + some methods added
  *  32   Gandalf   1.31        9/13/99  Ian Formanek    Fixed bug 3182 - 
  *       Property Editor for Border has two the same tabs.
  *  31   Gandalf   1.30        8/15/99  Ian Formanek    Removed 

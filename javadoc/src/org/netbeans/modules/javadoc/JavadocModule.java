@@ -39,7 +39,7 @@ import com.netbeans.developer.modules.javadoc.search.DocFileSystem;
 
  @author Petr Hrebejk
 */
-public class JavadocModule implements ModuleInstall, java.io.Externalizable {
+public class JavadocModule extends ModuleInstall {
   
   private int numberOfStarts = 0;
   
@@ -115,13 +115,6 @@ public class JavadocModule implements ModuleInstall, java.io.Externalizable {
     }
   }
 	
-  /** Called before exiting IDE. 
-  * @return Allways <CODE>true</CODE>.
-  */
-  public boolean closing() {
-    return true;
-  }
-
   // UTILITY METHODS ----------------------------------------------------------------------
 
   private void createFirstAction ( Class actionClass, DataFolder folder )
@@ -288,6 +281,8 @@ public class JavadocModule implements ModuleInstall, java.io.Externalizable {
 
 /* 
  * Log
+ *  16   Gandalf   1.15        10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
+ *        changed to class + some methods added
  *  15   Gandalf   1.14        8/13/99  Petr Hrebejk    Initialization of JDoc 
  *       repository on first and second start added
  *  14   Gandalf   1.13        7/21/99  Petr Hrebejk    Action installation fix

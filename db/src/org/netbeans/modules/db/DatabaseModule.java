@@ -28,7 +28,7 @@ import org.openide.util.NbBundle;
 * DB module.
 * @author Slavek Psenicka
 */
-public class DatabaseModule extends Object implements ModuleInstall 
+public class DatabaseModule extends ModuleInstall 
 {
 	private ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
 	
@@ -56,21 +56,12 @@ public class DatabaseModule extends Object implements ModuleInstall
 			if (tm != null) tm.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
 		}
 	}
-
-	public void restored() {
-	}
-
-	public void uninstalled() {
-   		System.out.println("Uninstalling database module");
-	}
-
-	public boolean closing() {
-		return true;
-	}
 }
 
 /*
 * <<Log>>
+*  6    Gandalf   1.5         10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
+*        changed to class + some methods added
 *  5    Gandalf   1.4         9/27/99  Slavek Psenicka new Database/Adaptors 
 *       folder
 *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 

@@ -44,7 +44,7 @@ import com.netbeans.developer.modules.text.java.JCStorage;
 *
 * @author Miloslav Metelka
 */
-public class EditorModule implements ModuleInstall {
+public class EditorModule extends ModuleInstall {
 
   private static final String DB_DIR = "ParserDB";
   private static final String JDK12_JAR
@@ -79,11 +79,6 @@ public class EditorModule implements ModuleInstall {
   private static void registerIndents() {
     IndentEngine.register(MIME_JAVA,
         new FilterIndentEngine(Formatter.getFormatter(JavaKit.class)));
-  }
-
-  /** Module installed for the first time. */
-  public void installed () {
-    restored ();
   }
 
   /** Module installed again. */
@@ -146,15 +141,6 @@ public class EditorModule implements ModuleInstall {
 
   }
 
-  /** Module was uninstalled. */
-  public void uninstalled () {
-  }
-
-  /** Module is being closed. */
-  public boolean closing () {
-    return true; // agree to close
-  }
-
   static class KitInfo {
 
     /** Content type for which the kits will be switched */
@@ -196,6 +182,8 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  30   Gandalf   1.29        10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
+ *        changed to class + some methods added
  *  29   Gandalf   1.28        9/30/99  Miloslav Metelka 
  *  28   Gandalf   1.27        9/13/99  Petr Jiricka    JSP and properties 
  *       kitinfo removed.
