@@ -96,7 +96,7 @@ public class HttpServerURLMapper extends URLMapper {
     public URL getURL(FileObject fileObject, int type) {
         
         // only do external and network URLs
-        if (type == URLMapper.INTERNAL)
+        if (type != URLMapper.NETWORK)
             return null;
         
         // fileObject must not be null
