@@ -15,9 +15,8 @@ package org.netbeans.tax;
 import org.netbeans.tax.spec.Document;
 import org.netbeans.tax.spec.DocumentType;
 import org.netbeans.tax.spec.DTD;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
+
+import java.util.*;
 
 /**
  *
@@ -41,9 +40,13 @@ public class TreeDocumentType extends AbstractTreeDTD implements TreeDTDRoot, Do
     
     /** -- can be null. */
     private String systemId;
-    
-    private TreeObjectList externalDTDList;
-    
+
+    // strong reference to keep a key in bellow map
+    private DTDIdentity dtdIdentity;
+
+    // holds DTD-ID -> TreeDocumentFragment mapping
+    private static final WeakHashMap externalEntities = new WeakHashMap();
+
     private String internalDTDText;  //!!! it is accesed by introspection, it a hack
     
     //
@@ -64,8 +67,8 @@ public class TreeDocumentType extends AbstractTreeDTD implements TreeDTDRoot, Do
         this.elementName = elementName;
         this.publicId    = publicId;
         this.systemId    = systemId;
-        
-        externalDTDList = new TreeObjectList (createExternalDTDListContentManager ());
+        this.dtdIdentity = getDTDIdentity();
+
     }
     
     
@@ -84,11 +87,7 @@ public class TreeDocumentType extends AbstractTreeDTD implements TreeDTDRoot, Do
         this.publicId    = documentType.publicId;
         this.systemId    = documentType.systemId;
         this.internalDTDText = documentType.internalDTDText;
-        
-        this.externalDTDList = new TreeObjectList (createExternalDTDListContentManager ());
-        if (deep) {
-            this.externalDTDList.addAll ((TreeObjectList)documentType.externalDTDList.clone ());
-        }
+        this.dtdIdentity = documentType.dtdIdentity;
     }
     
     
@@ -115,7 +114,7 @@ public class TreeDocumentType extends AbstractTreeDTD implements TreeDTDRoot, Do
             return false;
         if (!!! Util.equals (this.getSystemId (), peer.getSystemId ()))
             return false;
-        if (!!! Util.equals (this.externalDTDList, peer.externalDTDList))
+        if (!!! Util.equals (this.dtdIdentity, peer.dtdIdentity))
             return false;
         
         return true;
@@ -134,7 +133,7 @@ public class TreeDocumentType extends AbstractTreeDTD implements TreeDTDRoot, Do
         setPublicIdImpl (peer.getPublicId ());
         setSystemIdImpl (peer.getSystemId ());
         internalDTDText = peer.internalDTDText;
-        externalDTDList.merge (peer.externalDTDList);
+        dtdIdentity = peer.dtdIdentity;
     }
     
     
@@ -144,11 +143,10 @@ public class TreeDocumentType extends AbstractTreeDTD implements TreeDTDRoot, Do
     
     
     /**
+     * It's not propagated to exteranl entity. It's always read only.
      */
     protected void setReadOnly (boolean newReadOnly) {
         super.setReadOnly (newReadOnly);
-        
-        externalDTDList.setReadOnly (newReadOnly);
     }
     
     
@@ -160,9 +158,12 @@ public class TreeDocumentType extends AbstractTreeDTD implements TreeDTDRoot, Do
     /**
      */
     public boolean hasChildNodes (Class childClass, boolean recursive) {
+        TreeObjectList external = getExternalDTD();
+        Iterator externalIterator = external != null ?
+                external.iterator() : Collections.EMPTY_SET.iterator();
         Iterator[] its = new Iterator[] {
             getChildNodes ().iterator (),
-            externalDTDList.iterator ()
+            externalIterator
         };
         
         for (int i = 0; i<its.length; i++) {
@@ -189,14 +190,18 @@ public class TreeDocumentType extends AbstractTreeDTD implements TreeDTDRoot, Do
     }
     
     /**
-     * @return copy collection containing references from internal and external part of DTD
+     * @return copy collection containing references from internal and
+     * optionally external part of DTD
      */
     public Collection getChildNodes (Class childClass, boolean recursive) {
         Collection allChildNodes = new LinkedList ();
-        
+        TreeObjectList external = getExternalDTD();
+        Iterator externalIterator = external != null ?
+                external.iterator() : Collections.EMPTY_SET.iterator();
+
         Iterator[] its = new Iterator[] {
             getChildNodes ().iterator (),
-            externalDTDList.iterator ()
+            externalIterator
         };
         
         for (int i = 0; i<its.length; i++) {
@@ -222,10 +227,16 @@ public class TreeDocumentType extends AbstractTreeDTD implements TreeDTDRoot, Do
     //
     
     /**
-     * Return child list representing external DTD content.
+     * Return read only child list representing external DTD content
+     * or <code>null</code> if unknown.
      */
     public final TreeObjectList getExternalDTD () {
-        return externalDTDList;
+        TreeDTDFragment fragment = (TreeDTDFragment) externalEntities.get(dtdIdentity);
+        if (fragment == null) {
+            return null;
+        } else {
+            return fragment.getChildNodes();
+        }
     }
     
     /**
@@ -281,7 +292,7 @@ public class TreeDocumentType extends AbstractTreeDTD implements TreeDTDRoot, Do
         String oldPublicId = this.publicId;
         
         this.publicId = newPublicId;
-        
+
         firePropertyChange (PROP_PUBLIC_ID, oldPublicId, newPublicId);
     }
     
@@ -363,13 +374,7 @@ public class TreeDocumentType extends AbstractTreeDTD implements TreeDTDRoot, Do
         return new ChildListContentManager ();
     }
     
-    /**
-     */
-    protected TreeObjectList.ContentManager createExternalDTDListContentManager () {
-        return new ExternalDTDContentManager ();
-    }
-    
-    
+
     /**
      * Internal DTD content manager.
      * All kids use as parent node wrapping TreeDocumentType.
@@ -393,26 +398,55 @@ public class TreeDocumentType extends AbstractTreeDTD implements TreeDTDRoot, Do
     } // end: class ChildListContentManager
     
     
+
     /**
-     * External DTD content manager (assigned to externalDTDList).
-     * All kids use as parent node wrapping TreeDocumentType.
-     * All kids must be DTD.Child instances.
+     * Get DTDIdentity proxy for this class. It's a live object.
      */
-    protected class ExternalDTDContentManager extends TreeParentNode.ChildListContentManager {
-        
-        /**
-         */
-        public TreeNode getOwnerNode () {
-            return TreeDocumentType.this;
-        }
-        
-        /**
-         */
-        public void checkAssignableObject (Object obj) {
-            super.checkAssignableObject (obj);
-            checkAssignableClass (DTD.Child.class, obj);
-        }
-        
+    public final DTDIdentity getDTDIdentity() {
+        return new DTDIdentity();
     }
-    
+
+    /**
+     * Set new external DTD model. Note that it can be shared by
+     * several TreeDocumentType instances.
+     */
+    public final void setExternalDTD(TreeDocumentFragment externalDTD) {
+        externalEntities.put(getDTDIdentity(), externalDTD);
+    }
+
+    /**
+     * Defines doctype identity based on its public ID and system ID pairs.
+     * Can be used as key if such equalince/identity is required.
+     * @see #getDTDIdentity
+     */
+    public final class DTDIdentity {
+
+        private DTDIdentity() {
+        }
+
+        private String getPublicId() {
+            return publicId;
+        }
+
+        private String getSystemId() {
+            return systemId;
+        }
+
+        public boolean equals(Object o) {
+            if (o == this) return true;
+            if (o instanceof DTDIdentity) {
+                DTDIdentity peer = (DTDIdentity) o;
+                if (Util.equals(peer.getPublicId(), publicId) == false) return false;
+                if (Util.equals(peer.getSystemId(), systemId) == false) return false;
+                return true;
+            }
+            return false;
+        }
+
+        public int hashCode() {
+            int h1 = publicId != null ? publicId.hashCode() : 13;
+            int h2 = systemId != null ? systemId.hashCode() : 37;
+            return h1 ^ h2;
+        }
+    }
 }

@@ -244,8 +244,8 @@ public final class XNIBuilder implements TreeBuilder {
         private TreeDocumentType doctype;   // it will become parent node of DTD content
         private TreeNode tempNode;          // current working node
         
-        private Stack   parentStack;        // parents' child lists stack
-        private TreeObjectList parent;      // top of the stack
+        private Stack   parentObjectListStack;        // parents' child lists stack
+        private TreeObjectList parentObjectList;      // top of the stack
         private Stack parentNodeStack;      // some times we need nodes directly
         
         private Stack   elementStack;           // ??? it could be avoided
@@ -271,8 +271,8 @@ public final class XNIBuilder implements TreeBuilder {
         private boolean hasExternalDTD = false;
         
         private RememberingReader rememberingReader;
-        
-        
+
+
         /**
          * Create a parser with standard configuration.
          * @param xmlDocument false if building standalone DTD
@@ -283,7 +283,7 @@ public final class XNIBuilder implements TreeBuilder {
             isCorrect = false;
             inCDATASection = false;
             inDTD = false;
-            parentStack = new Stack ();
+            parentObjectListStack = new Stack ();
             parentNodeStack = new Stack ();
             elementStack = new Stack ();  //stacks all non-empty elements
             cdataSectionBuffer = new StringBuffer ();
@@ -761,10 +761,10 @@ DOCTYPE_LOOP:
         public void endDocument (Augmentations a) {
             trace ("endDocument()"); // NOI18N
             
-            if (parentStack.isEmpty () == false) {
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Inconsistency at parentStack: " + parentStack ); // NOI18N
+            if (parentObjectListStack.isEmpty () == false) {
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Inconsistency at parentStack: " + parentObjectListStack ); // NOI18N
             } else if (elementStack.isEmpty () == false) {
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Inconsistency at elementStack: " + parentStack ); // NOI18N
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("Inconsistency at elementStack: " + parentObjectListStack ); // NOI18N
             } else {
                 isCorrect = true;
             }
@@ -807,8 +807,20 @@ DOCTYPE_LOOP:
                     hasExternalDTD = true;
                     
                     // we are entering external DTD attach all to DOCTYPE ObjectList
-                    pushParent (doctype.getExternalDTD ());
-                    
+                    // There is performance optimalization: External DTD model
+                    // can be shared among several instances referring it.
+                    // It's currently managed by the TreeDocumentType class
+                    TreeObjectList external = doctype.getExternalDTD ();
+                    if (external == null) {
+                        TreeDTDFragment entity = new TreeDTDFragment();
+                        TreeObjectList holder = entity.getChildNodes();
+                        pushParentObjectList (holder);
+                        doctype.setExternalDTD(entity);
+                    } else {
+                        // It was already parsed, ignore its content
+                        pushParentObjectList(null);
+                    }
+
                 } else if (name.startsWith ("#")) { // NOI18N
                     
                     tempNode = new TreeCharacterReference (name);
@@ -929,7 +941,7 @@ DOCTYPE_LOOP:
             }
             
             if (isXMLDocument && DTD_ENTITY.equals (name)) {
-                popParent ();  // DOCTYPE ObjectList
+                popParentObjectList ();  // DOCTYPE ObjectList
             } else {
                 popParentNode ();
             }
@@ -1409,32 +1421,35 @@ DOCTYPE_LOOP:
          */
         private void pushParentNode (TreeParentNode parent) {
             parentNodeStack.push (parent);
-            pushParent (parent.getChildNodes ());
+            pushParentObjectList (parent.getChildNodes ());
         }
         
         /**
          * Set new parent list pushing original one to node stack
          */
-        private void pushParent (TreeObjectList parentList) {
-            if (parentList == null)
-                throw new NullPointerException ("Null parent is not allowed."); // NOI18N
-            if (parent != null)
-                parentStack.push (parent);
-            parent = parentList;
+        private void pushParentObjectList (TreeObjectList parentList) {
+            parentObjectListStack.push (parentObjectList);
+
+            // inherit null parents (for nested parents)
+            if (parentObjectList != null || parentObjectListStack.size() == 1) {
+                parentObjectList = parentList;
+            } else {
+                parentObjectList = null;
+            }
         }
         
         /**
          * Restore current children list poping it from stack.
          */
-        private void popParent () {
-            parent = (TreeObjectList) parentStack.pop ();
+        private void popParentObjectList () {
+            parentObjectList = (TreeObjectList) parentObjectListStack.pop ();
         }
         
         /**
          * Resotore parent node and its list from stack
          */
         private void popParentNode () {
-            popParent ();
+            popParentObjectList ();
             TreeParentNode parentNode = (TreeParentNode) parentNodeStack.pop ();
             
             // referenced things and DTD things are read only
@@ -1450,7 +1465,12 @@ DOCTYPE_LOOP:
             } else if ( parentNode instanceof TreeDocumentType ) {
                 
                 setReadOnly (parentNode.getChildNodes ());
-                setReadOnly (((TreeDocumentType)parentNode).getExternalDTD ());
+
+                // there can be pure internal DTD
+                TreeObjectList externalDTD = ((TreeDocumentType)parentNode).getExternalDTD ();
+                if (externalDTD != null) {
+                    setReadOnly (externalDTD);
+                }
             }
         }
         
@@ -1462,7 +1482,7 @@ DOCTYPE_LOOP:
          * Add child to current parent list.
          */
         private void appendChild (TreeObject child) {
-            parent.add (child);
+            if (parentObjectList != null) parentObjectList.add (child);
         }
         
         /**

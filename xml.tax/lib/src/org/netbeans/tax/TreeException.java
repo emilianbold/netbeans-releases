@@ -12,7 +12,11 @@
  */
 package org.netbeans.tax;
 
+import org.xml.sax.SAXException;
+
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 
 /**
  * All exceptions in tree are by default unchecked so they must be
@@ -74,15 +78,41 @@ public class TreeException extends Exception {
     public Exception getException () {
         return exception;
     }
-    
+
     /**
+     * Print out all nested exceptions.
      */
-    public void printStackTrace () {
-        super.printStackTrace ();
+    public void printStackTrace(PrintStream s) {
+        super.printStackTrace(s);
         if (exception != null) {
             System.err.println (Util.THIS.getString ("PROP_Wrapped_exception") + exception.getMessage ());
-            exception.printStackTrace ();
+            exception.printStackTrace (s);
+            if (exception instanceof SAXException) {
+                Throwable t = ((SAXException)exception).getException();
+                if (t != null) {
+                    System.err.println (Util.THIS.getString ("PROP_Wrapped_exception") + t.getMessage ());
+                    t.printStackTrace (s);
+                }
+            }
         }
     }
-    
+
+    /**
+     * Print out all nested exceptions.
+     */
+    public void printStackTrace(PrintWriter s) {
+        super.printStackTrace(s);
+        if (exception != null) {
+            System.err.println (Util.THIS.getString ("PROP_Wrapped_exception") + exception.getMessage ());
+            exception.printStackTrace (s);
+            if (exception instanceof SAXException) {
+                Throwable t = ((SAXException)exception).getException();
+                if (t != null) {
+                    System.err.println (Util.THIS.getString ("PROP_Wrapped_exception") + t.getMessage ());
+                    t.printStackTrace (s);
+                }
+            }
+        }
+    }
+
 }

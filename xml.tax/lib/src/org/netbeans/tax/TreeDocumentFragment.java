@@ -15,9 +15,12 @@ package org.netbeans.tax;
 import org.netbeans.tax.event.TreeEventManager;
 
 import org.netbeans.tax.spec.DocumentFragment;
+import org.netbeans.tax.spec.DTD;
 
 /**
- * It may contain <b>multiple "root elements"</b> because it must be placed somewhere anyway.
+ * It may contain <b>multiple "root elements"</b> because it must be placed somewhere
+ * anyway.
+ * <p>It maps to external entities.
  *
  * @author  Libor Kramolis
  * @version 0.1
@@ -36,8 +39,8 @@ public class TreeDocumentFragment extends AbstractTreeDocument implements TreeDo
     
     /** -- can be null. */
     private String encoding;
-    
-    
+
+
     //
     // init
     //
@@ -66,7 +69,8 @@ public class TreeDocumentFragment extends AbstractTreeDocument implements TreeDo
     public TreeDocumentFragment () throws InvalidArgumentException {
         this (null, null);  // Q: is it valid? A: yes, header is not mandatory
     }
-    
+
+
     /** Creates new TreeDocumentFragment -- copy constructor. */
     protected TreeDocumentFragment (TreeDocumentFragment documentFragment, boolean deep) {
         super (documentFragment, deep);
@@ -294,5 +298,6 @@ public class TreeDocumentFragment extends AbstractTreeDocument implements TreeDo
         }
         
     } // end: class ChildListContentManager
-    
+
+
 }

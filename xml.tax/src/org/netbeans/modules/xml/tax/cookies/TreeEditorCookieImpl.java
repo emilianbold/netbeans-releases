@@ -348,7 +348,11 @@ public class TreeEditorCookieImpl implements TreeEditorCookie, UpdateDocumentCoo
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("XMLTreeEditorCookieImpl::updateTree", ex); // NOI18N
                 
             setTreeAndStatus (null, STATUS_ERROR);
-            
+
+            // for diagnostic purposes log it
+            Util.THIS.getErrorManager().annotate (ex, annotation);
+            Util.THIS.debug(ex);
+
             if (ex instanceof TreeException || ex instanceof IOException) {
                 // text modification caused error
                 // we treat IOException in same way because problems with external entities
@@ -362,11 +366,8 @@ public class TreeEditorCookieImpl implements TreeEditorCookie, UpdateDocumentCoo
                 if (ex instanceof TreeException) throw (TreeException) ex;
                 
             } else if (ex instanceof RuntimeException) {
-                
-                // if runtime exception log it                           
-                Util.THIS.getErrorManager().annotate (ex, annotation);
-                Util.THIS.debug (ex);
 
+                // it masks real reason why parsing failer (an internal error)
                 throw new TreeException(ex);
             }
         }
