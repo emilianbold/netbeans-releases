@@ -70,6 +70,6 @@ public abstract class GrantAccessEvent extends EventObject {
   * @return true if a listener granted the access
   */
   boolean isGranted () {
-    return true;
+    return granted;
   }
 }
