@@ -755,7 +755,8 @@ public abstract class NbTopManager extends TopManager {
     public ClassLoader systemClassLoader () {
         ModuleSystem ms = getModuleSystem();
         if (ms != null) {
-            return ms.getManager().getClassLoader();
+            // #16265: do not go straight to ModuleManager
+            return ms.getSystemClassLoader();
         } else {
             // This can be called very early: if lookup asks for ClassLoader.
             // For now, just give the startup classloader.
