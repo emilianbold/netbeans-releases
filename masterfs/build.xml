@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="netbeans/modules"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/modules/org-netbeans-modules-masterfs-1-${OpenIDE-Module-Specification-Version}.jar"
+        <locjar jarfile="netbeans/modules/org-netbeans-modules-masterfs.jar"
             basedir="src"
             manifest="manifest-subst.mf"
 	 excludesfile="../../nbbuild/standard-jar-excludes.txt"
@@ -58,9 +58,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="nbm" depends="netbeans">
-        <makenbm file="org-netbeans-modules-masterfs-1-${OpenIDE-Module-Specification-Version}.nbm"
+        <makenbm file="org-netbeans-modules-masterfs.nbm"
                  topdir="."
-                 module="netbeans/modules/org-netbeans-modules-masterfs-1-${OpenIDE-Module-Specification-Version}.jar"
+                 module="netbeans/modules/org-netbeans-modules-masterfs.jar"
              homepage="http://openide.${homepage.base}/"
              distribution="http://${dist.base}/masterfs.nbm">
           <license file="${license.file}"/>
@@ -76,7 +76,7 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </delete>
         <delete file="manifest-subst.mf"/>
-        <delete file="masterfs.nbm"/>
+        <delete file="org-netbeans-modules-masterfs.nbm"/>
         <delete dir="netbeans"/>
         <delete dir="Info"/>
         <delete file="MasterFSAPIs.zip"/>
