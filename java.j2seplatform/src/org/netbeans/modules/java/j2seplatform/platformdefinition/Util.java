@@ -44,6 +44,7 @@ public class Util {
         return ClassPathSupport.createClassPath(list);
     }
 
+    // XXX this method could probably be removed... use standard FileUtil stuff
     static URL getRootURL  (File f) {
         URL url = null;
         try {
@@ -160,7 +161,7 @@ public class Util {
         return new SpecificationVersion("0"); // NOI18N
     }
 
-
+    // XXX this method could probably be removed...
     private static boolean isArchiveFile (File f) {
         // the f might not exist and so you cannot use e.g. f.isFile() here
         String fileName = f.getName().toLowerCase();
