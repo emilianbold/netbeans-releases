@@ -120,7 +120,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                         // hack for Pointbase Network Server
                         String message = MessageFormat.format(bundle.getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); // NOI18N
                         if(con.getDriver().equals(PointbasePlus.DRIVER))
-                            if(exc.getErrorCode()==86024/*error code if pointbase network server doesn't run*/)
+                            if(exc.getErrorCode()==PointbasePlus.ERR_SERVER_REJECTED)
                                 message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message}); // NOI18N
                         TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                         dlg.setSelectedComponent(basePanel);
