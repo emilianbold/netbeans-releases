@@ -3851,12 +3851,18 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable {
     * Indicates whether the driver supports batch updates.
     * @return true if the driver supports batch updates
     */
-    public boolean supportsBatchUpdates() throws SQLException
-    {
+    public boolean supportsBatchUpdates() throws SQLException {
         Boolean flag = (Boolean)properties.get(PROP_BATCH_UPDATES);
         if (flag == null) {
-            if (dmd != null) flag = dmd.supportsBatchUpdates() ? Boolean.TRUE : Boolean.FALSE;
-            else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
+            if (dmd != null)
+                try {
+                    flag = dmd.supportsBatchUpdates() ? Boolean.TRUE : Boolean.FALSE;
+                } catch (AbstractMethodError exc) {
+                    //PENDING - unknown problem with AbstractMethodError
+                    //bug #27858 (http://db.netbeans.org/issues/show_bug.cgi?id=27858)
+                }
+            else
+                throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_BATCH_UPDATES, flag);
         }
 
