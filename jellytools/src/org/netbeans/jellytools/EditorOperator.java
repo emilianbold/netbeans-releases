@@ -716,13 +716,6 @@ public class EditorOperator extends TopComponentOperator {
         }
     }
     
-    /** Returns current modify state of edited source
-     * @return boolean true when edited source is modified
-     */    
-    public boolean isModified() {
-        return getName().endsWith("*");
-    }
-    
     /** Waits for given modified state of edited source.
      * @param modified boolean true waits for file state change to modified, false for change to
      * unmodified (saved).

@@ -68,6 +68,12 @@ import org.openide.windows.TopComponent;
  * @see org.netbeans.jellytools.actions.RestoreWindowAction
  */
 public class TopComponentOperator extends JComponentOperator {
+    /** "Close Window" popup menu item. */
+    private static final String closeWindowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
+                                                                          "LBL_CloseWindowAction");
+    /** "Close All Documents" popup menu item. */
+    private static final String closeAllDocumentsItem = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
+                                                                                "LBL_CloseAllDocumentsAction");
     
     static {
         // Checks if you run on correct jemmy version. Writes message to jemmy log if not.
@@ -210,8 +216,16 @@ public class TopComponentOperator extends JComponentOperator {
     /** Closes this TopComponent and wait until it is closed. 
      * TopComponent is activated before action is performed. */
     public void closeWindow() {
-        new CloseViewAction().perform(this);
-        waitComponentShowing(false);
+        if(isModified()) {
+            new Thread(new Runnable() {
+                public void run() {
+                    pushMenuOnTab(closeWindowItem);
+                };
+            }, "thread to close TopComponent").start();
+        } else {
+            new CloseViewAction().perform(this);
+            waitComponentShowing(false);
+        }
     }
 
     /** Closes this TopComponent instance by IDE API call and wait until
@@ -237,6 +251,23 @@ public class TopComponentOperator extends JComponentOperator {
                 dob.setModified(false);
             }
         }
+    }
+
+    /** Returns true if this top component is modified (e.g. source in editor)
+     * @return boolean true if this object is modified; false otherwise
+     */
+    public boolean isModified() {
+        // should be just one node
+        org.openide.nodes.Node[] nodes = ((TopComponent)getSource()).getActivatedNodes();
+        // TopComponent like Execution doesn't have any nodes associated
+        if(nodes != null) {
+            for(int i=0;i<nodes.length;i++) {
+                DataObject dob = (DataObject)nodes[i].getCookie(DataObject.class);
+                return dob.isModified();
+            }
+        }
+        // it cannot be modified at all
+        return false;
     }
 
     /** Saves content of this TopComponent. If it is not applicable or content 
@@ -267,25 +298,36 @@ public class TopComponentOperator extends JComponentOperator {
      * method.
      */
     public void close() {
-        // run in a new thread because question may block further execution
-        new Thread(new Runnable() {
-            public void run() {
-                // run in dispatch thread
-                runMapping(new MapVoidAction("close") {
-                    public void map() {
-                        ((TopComponent)getSource()).close();
-                    }
-                });
-            }
-        }, "thread to close TopComponent").start();
-        // wait to be away
-        waitComponentShowing(false);
+        if(isModified()) {
+            // need to call it by popup because it is impossible to call
+            // TopComponent.close in AWT thread and handle question dialog in a different thread
+            closeWindow();
+        } else {
+            // run in dispatch thread
+            runMapping(new MapVoidAction("close") {
+                public void map() {
+                    ((TopComponent)getSource()).close();
+                }
+            });
+            waitComponentShowing(false);
+        }
     }
 
     /** Closes all opened documents and waits until this top component is closed. */
     public void closeAllDocuments() {
-        new CloseAllDocumentsAction().perform(this);
-        waitComponentShowing(false);
+        DataObject[] modifs = DataObject.getRegistry ().getModified ();
+        if(modifs.length != 0) {
+            // some object modified => need to call in new thread because modal question dialog appears
+            new Thread(new Runnable() {
+                public void run() {
+                    pushMenuOnTab(closeAllDocumentsItem);
+                };
+            }, "thread to closeAllDocuments").start();
+        } else {
+            // no object modified
+            new CloseAllDocumentsAction().perform(this);
+            waitComponentShowing(false);
+        }
     }
 
     /** Saves this document by popup menu on tab. */
