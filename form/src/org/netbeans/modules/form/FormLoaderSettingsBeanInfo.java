@@ -49,12 +49,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc = new PropertyDescriptor[] {
                 new PropertyDescriptor(FormLoaderSettings.PROP_INDENT_AWT_HIERARCHY, FormLoaderSettings.class,
                                        "getIndentAWTHierarchy", "setIndentAWTHierarchy"), // NOI18N
-                new PropertyDescriptor(FormLoaderSettings.PROP_SORT_EVENT_SETS, FormLoaderSettings.class,
-                                       "getSortEventSets", "setSortEventSets"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_EVENT_VARIABLE_NAME, FormLoaderSettings.class,
                                        "getEventVariableName", "setEventVariableName"), // NOI18N
-                new PropertyDescriptor(FormLoaderSettings.PROP_SHORT_BEAN_NAMES, FormLoaderSettings.class,
-                                       "getShortBeanNames", "setShortBeanNames"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_SELECTION_BORDER_SIZE, FormLoaderSettings.class,
                                        "getSelectionBorderSize", "setSelectionBorderSize"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_SELECTION_BORDER_COLOR, FormLoaderSettings.class,
@@ -85,61 +81,70 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        "isNullLayout", "setNullLayout"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_WORKSPACE, FormLoaderSettings.class,
                                        "getWorkspace", "setWorkspace"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_PALETTE_TABS_VISIBLE, FormLoaderSettings.class,
+                                       "getPaletteTabsVisible", "setPaletteTabsVisible") // NOI18N
             };
 
             desc[0].setDisplayName(formBundle.getString("PROP_INDENT_AWT_HIERARCHY"));
             desc[0].setShortDescription(formBundle.getString("HINT_INDENT_AWT_HIERARCHY"));
-            desc[1].setDisplayName(formBundle.getString("PROP_SORT_EVENT_SETS"));
-            desc[1].setShortDescription(formBundle.getString("HINT_SORT_EVENT_SETS"));
-            desc[1].setExpert(true);
-            desc[1].setHidden(true);
-            desc[2].setDisplayName(formBundle.getString("PROP_EVENT_VARIABLE_NAME"));
-            desc[2].setShortDescription(formBundle.getString("HINT_EVENT_VARIABLE_NAME"));
-            desc[3].setDisplayName(formBundle.getString("PROP_SHORT_BEAN_NAMES"));
-            desc[3].setShortDescription(formBundle.getString("HINT_SHORT_BEAN_NAMES"));
-            desc[3].setHidden(true);
+            desc[1].setDisplayName(formBundle.getString("PROP_EVENT_VARIABLE_NAME"));
+            desc[1].setShortDescription(formBundle.getString("HINT_EVENT_VARIABLE_NAME"));
+            desc[2].setDisplayName(formBundle.getString("PROP_SELECTION_BORDER_SIZE"));
+            desc[2].setShortDescription(formBundle.getString("HINT_SELECTION_BORDER_SIZE"));
+            desc[2].setExpert(true);
+
+            desc[3].setDisplayName(formBundle.getString("PROP_SELECTION_BORDER_COLOR"));
+            desc[3].setShortDescription(formBundle.getString("HINT_SELECTION_BORDER_COLOR"));
             desc[3].setExpert(true);
-            desc[4].setDisplayName(formBundle.getString("PROP_SELECTION_BORDER_SIZE"));
-            desc[4].setShortDescription(formBundle.getString("HINT_SELECTION_BORDER_SIZE"));
+            
+            desc[4].setDisplayName(formBundle.getString("PROP_CONNECTION_BORDER_COLOR"));
+            desc[4].setShortDescription(formBundle.getString("HINT_CONNECTION_BORDER_COLOR"));
             desc[4].setExpert(true);
-            desc[5].setDisplayName(formBundle.getString("PROP_SELECTION_BORDER_COLOR"));
-            desc[5].setShortDescription(formBundle.getString("HINT_SELECTION_BORDER_COLOR"));
+            
+            desc[5].setDisplayName(formBundle.getString("PROP_DRAG_BORDER_COLOR"));
+            desc[5].setShortDescription(formBundle.getString("HINT_DRAG_BORDER_COLOR"));
             desc[5].setExpert(true);
-            desc[6].setDisplayName(formBundle.getString("PROP_CONNECTION_BORDER_COLOR"));
-            desc[6].setShortDescription(formBundle.getString("HINT_CONNECTION_BORDER_COLOR"));
-            desc[6].setExpert(true);
-            desc[7].setDisplayName(formBundle.getString("PROP_DRAG_BORDER_COLOR"));
-            desc[7].setShortDescription(formBundle.getString("HINT_DRAG_BORDER_COLOR"));
-            desc[7].setExpert(true);
-            desc[8].setDisplayName(formBundle.getString("PROP_SHOW_GRID"));
-            desc[8].setShortDescription(formBundle.getString("HINT_SHOW_GRID"));
-            desc[9].setDisplayName(formBundle.getString("PROP_GRID_X"));
-            desc[9].setShortDescription(formBundle.getString("HINT_GRID_X"));
-            desc[10].setDisplayName(formBundle.getString("PROP_GRID_Y"));
-            desc[10].setShortDescription(formBundle.getString("HINT_GRID_Y"));
-            desc[11].setDisplayName(formBundle.getString("PROP_APPLY_GRID_TO_POSITION"));
-            desc[11].setShortDescription(formBundle.getString("HINT_APPLY_GRID_TO_POSITION"));
-            desc[11].setExpert(true);
-            desc[12].setDisplayName(formBundle.getString("PROP_APPLY_GRID_TO_SIZE"));
-            desc[12].setShortDescription(formBundle.getString("HINT_APPLY_GRID_TO_SIZE"));
-            desc[12].setExpert(true);
-            desc[13].setDisplayName(formBundle.getString("PROP_VARIABLES_MODIFIER"));
-            desc[13].setShortDescription(formBundle.getString("HINT_VARIABLES_MODIFIER"));
-            desc[13].setPropertyEditorClass(FieldModifierPropertyEditor.class);
-            desc[14].setDisplayName(formBundle.getString("PROP_EDITOR_SEARCH_PATH"));
-            desc[14].setShortDescription(formBundle.getString("HINT_EDITOR_SEARCH_PATH"));
-            desc[15].setDisplayName(formBundle.getString("PROP_REGISTERED_EDITORS"));
-            desc[15].setShortDescription(formBundle.getString("HINT_REGISTERED_EDITORS"));
-            desc[16].setDisplayName(formBundle.getString("PROP_OUTPUT_LEVEL"));
-            desc[16].setShortDescription(formBundle.getString("HINT_OUTPUT_LEVEL"));
-            desc[16].setPropertyEditorClass(FormLoaderSettingsBeanInfo.OutputLevelEditor.class);
-            desc[17].setDisplayName(formBundle.getString("PROP_NULL_LAYOUT"));
-            desc[17].setShortDescription(formBundle.getString("HINT_NULL_LAYOUT"));
-            desc[18].setDisplayName(formBundle.getString("PROP_WORKSPACE"));
-            desc[18].setShortDescription(formBundle.getString("HINT_WORKSPACE"));
-            desc[18].setPropertyEditorClass(WorkspaceEditor.class);
+            
+            desc[6].setDisplayName(formBundle.getString("PROP_SHOW_GRID"));
+            desc[6].setShortDescription(formBundle.getString("HINT_SHOW_GRID"));
+            
+            desc[7].setDisplayName(formBundle.getString("PROP_GRID_X"));
+            desc[7].setShortDescription(formBundle.getString("HINT_GRID_X"));
+            
+            desc[8].setDisplayName(formBundle.getString("PROP_GRID_Y"));
+            desc[8].setShortDescription(formBundle.getString("HINT_GRID_Y"));
+            
+            desc[9].setDisplayName(formBundle.getString("PROP_APPLY_GRID_TO_POSITION"));
+            desc[9].setShortDescription(formBundle.getString("HINT_APPLY_GRID_TO_POSITION"));
+            desc[9].setExpert(true);
+            
+            desc[10].setDisplayName(formBundle.getString("PROP_APPLY_GRID_TO_SIZE"));
+            desc[10].setShortDescription(formBundle.getString("HINT_APPLY_GRID_TO_SIZE"));
+            desc[10].setExpert(true);
+            
+            desc[11].setDisplayName(formBundle.getString("PROP_VARIABLES_MODIFIER"));
+            desc[11].setShortDescription(formBundle.getString("HINT_VARIABLES_MODIFIER"));
+            desc[11].setPropertyEditorClass(FieldModifierPropertyEditor.class);
+            
+            desc[12].setDisplayName(formBundle.getString("PROP_EDITOR_SEARCH_PATH"));
+            desc[12].setShortDescription(formBundle.getString("HINT_EDITOR_SEARCH_PATH"));
+            
+            desc[13].setDisplayName(formBundle.getString("PROP_REGISTERED_EDITORS"));
+            desc[13].setShortDescription(formBundle.getString("HINT_REGISTERED_EDITORS"));
+            
+            desc[14].setDisplayName(formBundle.getString("PROP_OUTPUT_LEVEL"));
+            desc[14].setShortDescription(formBundle.getString("HINT_OUTPUT_LEVEL"));
+            desc[14].setPropertyEditorClass(FormLoaderSettingsBeanInfo.OutputLevelEditor.class);
+            
+            desc[15].setDisplayName(formBundle.getString("PROP_NULL_LAYOUT"));
+            desc[15].setShortDescription(formBundle.getString("HINT_NULL_LAYOUT"));
+            
+            desc[16].setDisplayName(formBundle.getString("PROP_WORKSPACE"));
+            desc[16].setShortDescription(formBundle.getString("HINT_WORKSPACE"));
+            desc[16].setPropertyEditorClass(WorkspaceEditor.class);
 
-
+            desc[17].setDisplayName(formBundle.getString("PROP_PALETTE_TABS_VISIBLE"));
+            desc[17].setShortDescription(formBundle.getString("HINT_PALETTE_TABS_VISIBLE"));
         } catch (IntrospectionException ex) {
             throw new InternalError();
         }

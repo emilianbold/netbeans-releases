@@ -22,26 +22,34 @@ import java.awt.*;
  * @author Tran Duc Trung
  */
 
-class FakePeerContainer extends Container
+public class FakePeerContainer extends Container
 {
-    FakePeerContainer() {
+    public FakePeerContainer() {
         super();
     }
 
+    public void addNotify() {
+        FakePeerSupport.attachFakePeerRecursively(this);
+        super.addNotify();
+    }
+
+    protected void addImpl(Component comp, Object constraints, int index) {
+        FakePeerSupport.attachFakePeer(comp);
+        super.addImpl(comp, constraints, index);
+    }
+    
     public void update(Graphics g) {
     }
 
     public void paint(Graphics g) {
-//        System.err.println("** FakeContainer.paint()");
-
         Dimension sz = getSize();
-        Shape oldClip = g.getClip();
-        g.setClip(0, 0, sz.width, sz.height);
+//        Shape oldClip = g.getClip();
+//        g.setClip(0, 0, sz.width, sz.height);
 
         Color c = SystemColor.control;
         g.setColor(c);
         g.fillRect(0, 0, sz.width, sz.height);
-        g.setClip(oldClip);
+//        g.setClip(oldClip);
 
         super.paint(g);
         paintFakePeersRecursively(g, this);
@@ -54,7 +62,7 @@ class FakePeerContainer extends Container
         Component components[] = container.getComponents();
         int ncomponents = components.length;
 
-        Rectangle clip = g.getClipRect();
+        Rectangle clip = g.getClipBounds();
         for (int i = 0; i < ncomponents; i++) {
             Component comp = components[i];
             if (comp != null &&

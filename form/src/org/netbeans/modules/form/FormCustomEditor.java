@@ -59,8 +59,8 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
         setBorder(new EmptyBorder(5, 5, 5, 5));
         setLayout(new BorderLayout());
 
-        preCode = editor.getRADProperty().getPreCode();
-        postCode = editor.getRADProperty().getPostCode();
+        preCode = editor.getProperty().getPreCode();
+        postCode = editor.getProperty().getPostCode();
 
         allEditors = editor.getAllEditors();
         allCustomEditors = new Component[allEditors.length];
@@ -74,14 +74,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
         }
 
         if (allEditors.length == 1) {
-            if (allEditors[0] instanceof FormAwareEditor) {
-                ((FormAwareEditor)allEditors[0]).setRADComponent(editor.getRADComponent(), editor.getRADProperty());
-            }
-
-            if (allEditors[0] instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
-                ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)allEditors[0]).attach(new org.openide.nodes.Node[] { editor.getRADComponent().getNodeReference() });
-            }
-
+            editor.getPropertyContext().initPropertyEditor(allEditors[0]);
             allEditors[0].setValue(editor.getValue());
 
             Component custEd = null;
@@ -91,21 +84,14 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
             allCustomEditors[0] = custEd;
             add(custEd, BorderLayout.CENTER);
-
         } else {
             tabs = new JTabbedPane();
             HelpCtx.setHelpIDString(tabs, FormCustomEditor.class.getName() + ".tabbedPane"); // NOI18N
             int indexToSelect = -1;
             for (int i = 0; i < allEditors.length; i++) {
-                if (allEditors[i] instanceof FormAwareEditor) {
-                    ((FormAwareEditor)allEditors[i]).setRADComponent(editor.getRADComponent(), editor.getRADProperty());
-                }
+                editor.getPropertyContext().initPropertyEditor(allEditors[i]);
 
-                if (allEditors[i] instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
-                    ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)allEditors[i]).attach(new org.openide.nodes.Node[] { editor.getRADComponent().getNodeReference() });
-                }
-
-                if (allEditors[i].getClass().equals(currentlyUsedEditor.getClass()) &&(indexToSelect == -1)) {
+                if (allEditors[i].getClass().equals(currentlyUsedEditor.getClass()) && indexToSelect == -1) {
                     allEditors[i].setValue(editor.getValue());
                     indexToSelect = i;
                 } else {
@@ -116,7 +102,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
                             allEditors[i].setValue(currValue); // current value is of the real property type
                             valueSet = true;
                         } else if (currValue instanceof FormDesignValue) {
-                            Object desValue =((FormDesignValue)currValue).getDesignValue(editor.getRADComponent());
+                            Object desValue = ((FormDesignValue)currValue).getDesignValue();
                             if (desValue != FormDesignValue.IGNORED_VALUE) {
                                 allEditors[i].setValue(desValue); // current value is of the real property type
                                 valueSet = true;
@@ -124,7 +110,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
                         }
                     }
                     if (!valueSet) {
-                        Object defValue = editor.getRADProperty().getDefaultValue();
+                        Object defValue = editor.getProperty().getDefaultValue();
                         if (defValue != null) {
                             allEditors[i].setValue(defValue);
                         }
@@ -137,6 +123,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
                 } else {
                     tabName = Utilities.getShortClassName(allEditors[i].getClass());
                 }
+
                 Component custEd = null;
                 if (!allEditors[i].supportsCustomEditor()
                       || (custEd = allEditors[i].getCustomEditor()) instanceof java.awt.Window)
@@ -195,7 +182,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             preCode = fcea.getPreCode();
-            postCode =fcea.getPostCode();
+            postCode = fcea.getPostCode();
         }
     }
 
@@ -215,8 +202,8 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
             editor.commitModifiedEditor();
         }
 
-        editor.getRADProperty().setPreCode(preCode); // [PENDING - change only if modified]
-        editor.getRADProperty().setPostCode(postCode);
+        editor.getProperty().setPreCode(preCode); // [PENDING - change only if modified]
+        editor.getProperty().setPostCode(postCode);
 
         if (currentCustomEditor instanceof EnhancedCustomPropertyEditor) {
             return((EnhancedCustomPropertyEditor)currentCustomEditor).getPropertyValue();

@@ -27,7 +27,8 @@ import javax.swing.JComponent;
 import java.text.MessageFormat;
 
 import org.openide.util.Utilities;
-import org.openide.util.io.*;
+import org.openide.nodes.Node;
+//import org.openide.util.io.*;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.netbeans.modules.form.util.*;
 import org.openide.util.NbBundle;
@@ -60,9 +61,10 @@ public class FormUtils
     static final Object PROP_HIDDEN = new Object();
 
     private static Object[][] propsClassifications = {
+//        { javax.awt.Container.class, CLASS_AND_SUBCLASSES,
+//                "layout", PROP_HIDDEN },
         { javax.swing.JComponent.class, CLASS_AND_SUBCLASSES,
-                "debugGraphicsOptions", PROP_EXPERT },
-        { javax.swing.JComponent.class, CLASS_AND_SUBCLASSES,
+                "debugGraphicsOptions", PROP_EXPERT,
                 "preferredSize", PROP_NORMAL },
         { javax.swing.text.JTextComponent.class, CLASS_AND_SUBCLASSES,
                 "text", PROP_PREFERRED,
@@ -75,7 +77,9 @@ public class FormUtils
                 "columns", PROP_PREFERRED },
         { javax.swing.JTextArea.class, CLASS_AND_SUBCLASSES,
                 "columns", PROP_PREFERRED,
-                "rows", PROP_PREFERRED },
+                "rows", PROP_PREFERRED,
+                "lineWrap", PROP_PREFERRED,
+                "wrapStyleWord", PROP_PREFERRED },
         { javax.swing.JEditorPane.class, CLASS_AND_SUBCLASSES,
                 "border", PROP_PREFERRED,
                 "font", PROP_PREFERRED },
@@ -85,13 +89,20 @@ public class FormUtils
                 "mnemonic", PROP_PREFERRED },
         { javax.swing.JToggleButton.class, CLASS_AND_SUBCLASSES,
                 "icon", PROP_PREFERRED,
-                "selected", PROP_PREFERRED },
+                "selected", PROP_PREFERRED,
+                "buttonGroup", PROP_PREFERRED },
         { javax.swing.JButton.class, CLASS_AND_SUBCLASSES,
                 "icon", PROP_PREFERRED },
         { javax.swing.JCheckBox.class, CLASS_EXACTLY,
                 "icon", PROP_NORMAL },
         { javax.swing.JRadioButton.class, CLASS_EXACTLY,
                 "icon", PROP_NORMAL },
+        { javax.swing.JCheckBoxMenuItem.class, CLASS_AND_SUBCLASSES,
+                "selected", PROP_PREFERRED,
+                "buttonGroup", PROP_PREFERRED },
+        { javax.swing.JRadioButtonMenuItem.class, CLASS_AND_SUBCLASSES,
+                "selected", PROP_PREFERRED,
+                "buttonGroup", PROP_PREFERRED },
         { javax.swing.JTabbedPane.class, CLASS_EXACTLY,
                 "selectedComponent", PROP_EXPERT },
         { javax.swing.JSplitPane.class, CLASS_AND_SUBCLASSES,
@@ -110,7 +121,8 @@ public class FormUtils
                 "paintTrack", PROP_PREFERRED,
                 "snapToTicks", PROP_PREFERRED },
         { javax.swing.JLabel.class, CLASS_AND_SUBCLASSES,
-                "horizontalAlignment", PROP_PREFERRED },
+                "horizontalAlignment", PROP_PREFERRED,
+                "verticalAlignment", PROP_PREFERRED },
         { javax.swing.JList.class, CLASS_AND_SUBCLASSES,
                 "model", PROP_PREFERRED,
                 "border", PROP_PREFERRED },
@@ -120,7 +132,24 @@ public class FormUtils
                 "model", PROP_PREFERRED,
                 "border", PROP_PREFERRED },
         { javax.swing.JSeparator.class, CLASS_EXACTLY,
-                "font", PROP_NORMAL }
+                "font", PROP_NORMAL },
+        { javax.swing.JInternalFrame.class, CLASS_AND_SUBCLASSES,
+                "visible", PROP_NORMAL },
+        { javax.swing.JInternalFrame.class, CLASS_EXACTLY,
+                "menuBar", PROP_HIDDEN,
+                "JMenuBar", PROP_HIDDEN,
+                "layout", PROP_HIDDEN },
+        { javax.swing.JMenu.class, CLASS_EXACTLY,
+                "accelerator", PROP_HIDDEN },
+        { javax.swing.JFrame.class, CLASS_AND_SUBCLASSES,
+                "title", PROP_PREFERRED },
+        { javax.swing.JFrame.class, CLASS_EXACTLY,
+                "menuBar", PROP_HIDDEN,
+                "layout", PROP_HIDDEN },
+        { javax.swing.JDialog.class, CLASS_AND_SUBCLASSES,
+                "title", PROP_PREFERRED },
+        { javax.swing.JDialog.class, CLASS_EXACTLY,
+                "layout", PROP_HIDDEN }
     };
 
     /** The properties whose changes are ignored in JComponent subclasses */
@@ -162,6 +191,7 @@ public class FormUtils
     // -----------------------------------------------------------------------------
     // Utility methods
 
+    // !! not called from anywhere
     public static void notifyPropertyException(Class beanClass,
                                                String propertyName,
                                                String displayName,
@@ -193,23 +223,18 @@ public class FormUtils
         }
     }
 
+    //
+    //
+    //
 
-    /**
-     * A utility method that returns the string that should be used for indenting
-     * the generated text. It is a String that is a tabSize of spaces
+    /** Utility method that tries to clone an object. Objects of explicitly
+     * specified types are constructed directly, other are serialized and
+     * deserialized (if not serializable exception is thrown).
      */
-    public static String getIndentString() {
-        return "  "; // EditorSettingsJava.getIndentString(); // NOI18N
-    }
-
-    //
-    // JavaBeans helper mthods
-    //
-
     public static Object cloneObject(Object o) throws CloneNotSupportedException {
-        if (o == null)
-            return null;
-        else if ((o instanceof Byte) ||
+        if (o == null) return null;
+
+        if ((o instanceof Byte) ||
                  (o instanceof Short) ||
                  (o instanceof Integer) ||
                  (o instanceof Long) ||
@@ -220,30 +245,168 @@ public class FormUtils
                  (o instanceof String)) {
             return o; // no need to change reference
         }
-        else if (o instanceof Font)
+
+        if (o instanceof Font)
             return Font.getFont(((Font)o).getAttributes());
-        else if (o instanceof Color)
+        if (o instanceof Color)
             return new Color(((Color)o).getRGB());
-        else if (o instanceof Dimension)
+        if (o instanceof Dimension)
             return new Dimension((Dimension)o);
-        else if (o instanceof Point)
+        if (o instanceof Point)
             return new Point((Point)o);
-        else if (o instanceof Rectangle)
+        if (o instanceof Rectangle)
             return new Rectangle((Rectangle)o);
-        else if (o instanceof Serializable) {
+        if (o instanceof Insets)
+            return ((Insets)o).clone();
+        if (o instanceof Serializable)
+            return cloneBeanInstance(o, null);
+
+        throw new CloneNotSupportedException();
+    }
+
+    /** Utility method that tries to clone an object as a bean.
+     * First - if it is serializable, then it is copied using serialization.
+     * If not serializable, then all properties (taken from BeanInfo) are
+     * copied (property values cloned recursively).
+     */
+    public static Object cloneBeanInstance(Object bean, BeanInfo bInfo)
+    throws CloneNotSupportedException {
+        if (bean == null) return null;
+
+        if (bean instanceof Serializable) {
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 ObjectOutputStream oos = new ObjectOutputStream(baos);
-                oos.writeObject(o);
+                oos.writeObject(bean);
                 oos.close();
+
                 ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
                 ObjectInputStream ois = new ObjectInputStream(bais);
                 return ois.readObject();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 throw new CloneNotSupportedException();
             }
         }
-        throw new CloneNotSupportedException();
+
+        // object is not Serializable
+        Object clone;
+        try {
+            clone = CreationFactory.createDefaultInstance(bean.getClass());
+            if (clone == null)
+                throw new CloneNotSupportedException();
+
+            if (bInfo == null) {
+                try {
+                    bInfo = Utilities.getBeanInfo(bean.getClass());
+                } 
+                catch (IntrospectionException e) {
+                    throw new CloneNotSupportedException(e.getMessage());
+                }
+            }
+        }
+        catch (Exception ex) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+            throw new CloneNotSupportedException(ex.getMessage());
+        }
+
+        // default instance successfully created, now copy properties
+        PropertyDescriptor[] pds = bInfo.getPropertyDescriptors();
+        for (int i=0; i < pds.length; i++) {
+            Method getter = pds[i].getReadMethod();
+            Method setter = pds[i].getWriteMethod();
+            if (getter != null && setter != null) {
+                Object propertyValue;
+                try {
+                    propertyValue = getter.invoke(bean, new Object[0]);
+                }
+                catch (Exception e1) { // ignore - do not copy this property
+                    continue;
+                }
+                try {
+                    propertyValue = cloneObject(propertyValue);
+                }
+                catch (Exception e2) { // ignore - do not clone property value
+                }
+                try {
+                    setter.invoke(clone, new Object[] {  });
+                }
+                catch (Exception e3) { // ignore - do not copy this property
+                }
+            }
+        }
+
+        return clone;
+    }
+
+    public static void copyProperties(Node.Property[] sourceProperties,
+                                      Node.Property[] targetProperties,
+                                      boolean changedOnly, boolean fireChanges)
+    {
+        for (int i=0; i < sourceProperties.length; i++) {
+            Node.Property snProp = sourceProperties[i];
+            FormProperty sfProp = snProp instanceof FormProperty ?
+                                    (FormProperty)snProp : null;
+
+            FormProperty sprop = (FormProperty)sourceProperties[i];
+            if (sfProp != null && changedOnly && !sfProp.isChanged())
+                continue; // copy only changed properties
+
+            // find target property
+            Node.Property tnProp = targetProperties[i];
+            if (!tnProp.getName().equals(snProp.getName())) {
+                int j;
+                for (j=0; j < targetProperties.length; j++) {
+                    tnProp = targetProperties[i];
+                    if (tnProp.getName().equals(snProp.getName()))
+                        break;
+                }
+                if (j == targetProperties.length) continue; // not found
+            }
+            FormProperty tfProp = tnProp instanceof FormProperty ?
+                                    (FormProperty)tnProp : null;
+
+            try {
+                // get and clone property value
+                Object propertyValue = snProp.getValue();
+                if (!(propertyValue instanceof FormDesignValue)) {
+                    try {
+                        propertyValue = FormUtils.cloneObject(propertyValue);
+                    }
+                    catch (CloneNotSupportedException ex) { } // ignore
+                }
+
+                // set property value
+                if (tfProp != null) {
+                    boolean firing = tfProp.isChangeFiring();
+                    tfProp.setChangeFiring(fireChanges);
+                    tfProp.setValue(propertyValue);
+                    tfProp.setChangeFiring(firing);
+                }
+                else tnProp.setValue(propertyValue);
+
+                if (sfProp != null && tfProp != null) {
+                    // also clone current PropertyEditor
+                    PropertyEditor sPrEd = sfProp.getCurrentEditor();
+                    PropertyEditor tPrEd = tfProp.getCurrentEditor();
+                    if (sPrEd != null
+                        && (tPrEd == null 
+                            || sPrEd.getClass() != tPrEd.getClass()))
+                    {
+                        tPrEd = sPrEd instanceof RADConnectionPropertyEditor ?
+                            new RADConnectionPropertyEditor(tfProp.getValueType()) :
+                            (PropertyEditor)CreationFactory.createDefaultInstance(
+                                                             sPrEd.getClass());
+                        tfProp.setCurrentEditor(tPrEd);
+                    }
+                }
+            }
+            catch (Exception ex) { // ignore
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace();
+            }
+        }
     }
 
     /**

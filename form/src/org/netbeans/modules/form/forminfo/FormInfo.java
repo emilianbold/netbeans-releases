@@ -74,7 +74,7 @@ public abstract class FormInfo
      * @return the String to be used for adding to the top-level container
      * @see #getTopContainer
      */
-    public String getContainerGenName() {
-        return ""; // NOI18N
-    }
+//    public String getContainerGenName() {
+//        return ""; // NOI18N
+//    }
 }

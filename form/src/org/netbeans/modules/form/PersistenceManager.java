@@ -58,15 +58,15 @@ public abstract class PersistenceManager {
 
     /** Called to actually load the form stored in specified formObject.
      * @param formObject the FormDataObject which represents the form files
-     * @return the FormManager2 representing the loaded form or null if some problem occured
+     * @return the FormModel representing the loaded form or null if some problem occured
      * @exception IOException if any problem occured when loading the form
      */
-    public abstract FormManager2 loadForm(FormDataObject formObject) throws IOException;
+    public abstract FormModel loadForm(FormDataObject formObject) throws IOException;
 
-    /** Called to actually save the form represented by specified FormManager2 into specified formObject.
+    /** Called to actually save the form represented by specified FormModel into specified formObject.
      * @param formObject the FormDataObject which represents the form files
-     * @param manager the FormManager2 representing the form to be saved
+     * @param manager the FormModel representing the form to be saved
      * @exception IOException if any problem occured when saving the form
      */
-    public abstract void saveForm(FormDataObject formObject, FormManager2 manager) throws IOException;
+    public abstract void saveForm(FormDataObject formObject, FormModel manager) throws IOException;
 }

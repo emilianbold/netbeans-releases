@@ -73,183 +73,230 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Swing">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
 
-            <file name="JLabel[javax-swing-JLabel].instance">
+            <file name="javax-swing-JLabel.instance">
+                name=Jlabel
                 icon=/javax/swing/beaninfo/images/JLabelColor16.gif
             </file>
-            <file name="JButton[javax-swing-JButton].instance">
+            <file name="javax-swing-JButton.instance">
+                name=JButton
                 icon=/javax/swing/beaninfo/images/JButtonColor16.gif
             </file>
-            <file name="JCheckBox[javax-swing-JCheckBox].instance">
-                icon=/javax/swing/beaninfo/images/JCheckBoxColor16.gif
-            </file>
-            <file name="JRadioButton[javax-swing-JRadioButton].instance">
-                icon=/javax/swing/beaninfo/images/JRadioButtonColor16.gif
-            </file>
-            <file name="JComboBox[javax-swing-JComboBox].instance">
-                icon=/javax/swing/beaninfo/images/JComboBoxColor16.gif
-            </file>
-            <file name="JList[javax-swing-JList].instance">
-                icon=/javax/swing/beaninfo/images/JListColor16.gif
-            </file>
-            <file name="JTextField[javax-swing-JTextField].instance">
-                icon=/javax/swing/beaninfo/images/JTextFieldColor16.gif
-            </file>
-            <file name="JTextArea[javax-swing-JTextArea].instance">
-                icon=/javax/swing/beaninfo/images/JTextAreaColor16.gif
-            </file>
-            <file name="JToggleButton[javax-swing-JToggleButton].instance">
+            <file name="javax-swing-JToggleButton.instance">
+                name=JToggleButton
                 icon=/javax/swing/beaninfo/images/JToggleButtonColor16.gif
             </file>
-            <file name="JPanel[javax-swing-JPanel].instance">
+            <file name="javax-swing-JCheckBox.instance">
+                name=JCheckBox
+                icon=/javax/swing/beaninfo/images/JCheckBoxColor16.gif
+            </file>
+            <file name="javax-swing-JRadioButton.instance">
+                name=JRadioButton
+                icon=/javax/swing/beaninfo/images/JRadioButtonColor16.gif
+            </file>
+            <file name="javax-swing-ButtonGroup.instance">
+                name=ButtonGroup
+                icon=/org/netbeans/modules/form/resources/ButtonGroup16.gif
+            </file>
+            <file name="javax-swing-JComboBox.instance">
+                name=JComboBox
+                icon=/javax/swing/beaninfo/images/JComboBoxColor16.gif
+            </file>
+            <file name="javax-swing-JList.instance">
+                name=JList
+                icon=/javax/swing/beaninfo/images/JListColor16.gif
+            </file>
+            <file name="javax-swing-JTextField.instance">
+                name=JTextField
+                icon=/javax/swing/beaninfo/images/JTextFieldColor16.gif
+            </file>
+            <file name="javax-swing-JTextArea.instance">
+                name=JTextArea
+                icon=/javax/swing/beaninfo/images/JTextAreaColor16.gif
+            </file>
+            <file name="javax-swing-JPanel.instance">
+                name=JPanel
                 icon=/javax/swing/beaninfo/images/JPanelColor16.gif
             </file>
-            <file name="JTabbedPane[javax-swing-JTabbedPane].instance">
+            <file name="javax-swing-JTabbedPane.instance">
+                name=JTabbedPane
                 icon=/javax/swing/beaninfo/images/JTabbedPaneColor16.gif
             </file>
-            <file name="JScrollBar[javax-swing-JScrollBar].instance">
+            <file name="javax-swing-JScrollBar.instance">
+                name=JScrollBar
                 icon=/javax/swing/beaninfo/images/JScrollBarColor16.gif
             </file>
-            <file name="JScrollPane[javax-swing-JScrollPane].instance">
+            <file name="javax-swing-JScrollPane.instance">
+                name=JScrollPane
                 icon=/javax/swing/beaninfo/images/JScrollPaneColor16.gif
             </file>
-            <file name="JMenuBar[javax-swing-JMenuBar].instance">
+            <file name="javax-swing-JMenuBar.instance">
+                name=JMenuBar
                 icon=/javax/swing/beaninfo/images/JMenuBarColor16.gif
             </file>
-            <file name="JPopupMenu[javax-swing-JPopupMenu].instance">
+            <file name="javax-swing-JPopupMenu.instance">
+                name=JPopupMenu
                 icon=/javax/swing/beaninfo/images/JPopupMenuColor16.gif
             </file>
 
-            <attr name="JLabel[javax-swing-JLabel].instance/JButton[javax-swing-JButton].instance" boolvalue="true" />
-            <attr name="JButton[javax-swing-JButton].instance/JCheckBox[javax-swing-JCheckBox].instance" boolvalue="true" />
-            <attr name="JCheckBox[javax-swing-JCheckBox].instance/JRadioButton[javax-swing-JRadioButton].instance" boolvalue="true" />
-            <attr name="JRadioButton[javax-swing-JRadioButton].instance/JComboBox[javax-swing-JComboBox].instance" boolvalue="true" />
-            <attr name="JComboBox[javax-swing-JComboBox].instance/JList[javax-swing-JList].instance" boolvalue="true" />
-            <attr name="JList[javax-swing-JList].instance/JTextField[javax-swing-JTextField].instance" boolvalue="true" />
-            <attr name="JTextField[javax-swing-JTextField].instance/JTextArea[javax-swing-JTextArea].instance" boolvalue="true" />
-            <attr name="JTextArea[javax-swing-JTextArea].instance/JToggleButton[javax-swing-JToggleButton].instance" boolvalue="true" />
-            <attr name="JToggleButton[javax-swing-JToggleButton].instance/JPanel[javax-swing-JPanel].instance" boolvalue="true" />
-            <attr name="JPanel[javax-swing-JPanel].instance/JTabbedPane[javax-swing-JTabbedPane].instance" boolvalue="true" />
-            <attr name="JTabbedPane[javax-swing-JTabbedPane].instance/JScrollBar[javax-swing-JScrollBar].instance" boolvalue="true" />
-            <attr name="JScrollBar[javax-swing-JScrollBar].instance/JScrollPane[javax-swing-JScrollPane].instance" boolvalue="true" />
-            <attr name="JScrollPane[javax-swing-JScrollPane].instance/JMenuBar[javax-swing-JMenuBar].instance" boolvalue="true" />
-            <attr name="JMenuBar[javax-swing-JMenuBar].instance/JPopupMenu[javax-swing-JPopupMenu].instance" boolvalue="true" />
+            <attr name="javax-swing-JLabel.instance/javax-swing-JButton.instance" boolvalue="true" />
+            <attr name="javax-swing-JButton.instance/javax-swing-JToggleButton.instance" boolvalue="true" />
+            <attr name="javax-swing-JToggleButton.instance/javax-swing-JCheckBox.instance" boolvalue="true" />
+            <attr name="javax-swing-JCheckBox.instance/javax-swing-JRadioButton.instance" boolvalue="true" />
+            <attr name="javax-swing-JRadioButton.instance/javax-swing-ButtonGroup.instance" boolvalue="true" />
+            <attr name="javax-swing-ButtonGroup.instance/javax-swing-JComboBox.instance" boolvalue="true" />
+            <attr name="javax-swing-JComboBox.instance/javax-swing-JList.instance" boolvalue="true" />
+            <attr name="javax-swing-JList.instance/javax-swing-JTextField.instance" boolvalue="true" />
+            <attr name="javax-swing-JTextField.instance/javax-swing-JTextArea.instance" boolvalue="true" />
+            <attr name="javax-swing-JTextArea.instance/javax-swing-JPanel.instance" boolvalue="true" />
+            <attr name="javax-swing-JPanel.instance/javax-swing-JTabbedPane.instance" boolvalue="true" />
+            <attr name="javax-swing-JTabbedPane.instance/javax-swing-JScrollBar.instance" boolvalue="true" />
+            <attr name="javax-swing-JScrollBar.instance/javax-swing-JScrollPane.instance" boolvalue="true" />
+            <attr name="javax-swing-JScrollPane.instance/javax-swing-JMenuBar.instance" boolvalue="true" />
+            <attr name="javax-swing-JMenuBar.instance/javax-swing-JPopupMenu.instance" boolvalue="true" />
         </folder>
         <folder name="Swing2">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
 
-            <file name="JSlider[javax-swing-JSlider].instance">
+            <file name="javax-swing-JSlider.instance">
+                name=JSlider
                 icon=/javax/swing/beaninfo/images/JSliderColor16.gif
             </file>
-            <file name="JProgressBar[javax-swing-JProgressBar].instance">
+            <file name="javax-swing-JProgressBar.instance">
+                name=JProgressBar
                 icon=/javax/swing/beaninfo/images/JProgressBarColor16.gif
             </file>
-            <file name="JSplitPane[javax-swing-JSplitPane].instance">
+            <file name="javax-swing-JSplitPane.instance">
+                name=JSplitPane
                 icon=/javax/swing/beaninfo/images/JSplitPaneColor16.gif
             </file>
-            <file name="JPasswordField[javax-swing-JPasswordField].instance">
+            <file name="javax-swing-JPasswordField.instance">
+                name=JPasswordField
                 icon=/javax/swing/beaninfo/images/JPasswordFieldColor16.gif
             </file>
-            <file name="JSeparator[javax-swing-JSeparator].instance">
+            <file name="javax-swing-JSeparator.instance">
+                name=JSeparator
                 icon=/javax/swing/beaninfo/images/JSeparatorColor16.gif
             </file>
-            <file name="JTextPane[javax-swing-JTextPane].instance">
+            <file name="javax-swing-JTextPane.instance">
+                name=JTextPane
                 icon=/javax/swing/beaninfo/images/JTextPaneColor16.gif
             </file>
-            <file name="JEditorPane[javax-swing-JEditorPane].instance">
+            <file name="javax-swing-JEditorPane.instance">
+                name=JEditorPane
                 icon=/javax/swing/beaninfo/images/JEditorPaneColor16.gif
             </file>
-            <file name="JTree[javax-swing-JTree].instance">
+            <file name="javax-swing-JTree.instance">
+                name=JTree
                 icon=/javax/swing/beaninfo/images/JTreeColor16.gif
             </file>
-            <file name="JTable[javax-swing-JTable].instance">
+            <file name="javax-swing-JTable.instance">
+                name=JTable
                 icon=/javax/swing/beaninfo/images/JTableColor16.gif
             </file>
-            <file name="JToolBar[javax-swing-JToolBar].instance">
+            <file name="javax-swing-JToolBar.instance">
+                name=JToolBar
                 icon=/javax/swing/beaninfo/images/JToolBarColor16.gif
             </file>
-            <file name="JInternalFrame[javax-swing-JInternalFrame].instance">
+            <file name="javax-swing-JInternalFrame.instance">
+                name=JInternalFrame
                 icon=/javax/swing/beaninfo/images/JInternalFrameColor16.gif
             </file>
-            <file name="JLayeredPane[javax-swing-JLayeredPane].instance">
+            <file name="javax-swing-JLayeredPane.instance">
+                name=JLayeredPane
                 icon=/javax/swing/beaninfo/images/JLayeredPaneColor16.gif
             </file>
-            <file name="JDesktopPane[javax-swing-JDesktopPane].instance">
+            <file name="javax-swing-JDesktopPane.instance">
+                name=JDesktopPane
                 icon=/javax/swing/beaninfo/images/JDesktopPaneColor16.gif
             </file>
-            <file name="JOptionPane[javax-swing-JOptionPane].instance">
+            <file name="javax-swing-JOptionPane.instance">
+                name=JOptionPane
                 icon=/javax/swing/beaninfo/images/JOptionPaneColor16.gif
             </file>
 
-            <attr name="JSlider[javax-swing-JSlider].instance/JProgressBar[javax-swing-JProgressBar].instance" boolvalue="true" />
-            <attr name="JProgressBar[javax-swing-JProgressBar].instance/JSplitPane[javax-swing-JSplitPane].instance" boolvalue="true" />
-            <attr name="JSplitPane[javax-swing-JSplitPane].instance/JPasswordField[javax-swing-JPasswordField].instance" boolvalue="true" />
-            <attr name="JPasswordField[javax-swing-JPasswordField].instance/JSeparator[javax-swing-JSeparator].instance" boolvalue="true" />
-            <attr name="JSeparator[javax-swing-JSeparator].instance/JTextPane[javax-swing-JTextPane].instance" boolvalue="true" />
-            <attr name="JTextPane[javax-swing-JTextPane].instance/JEditorPane[javax-swing-JEditorPane].instance" boolvalue="true" />
-            <attr name="JEditorPane[javax-swing-JEditorPane].instance/JTree[javax-swing-JTree].instance" boolvalue="true" />
-            <attr name="JTree[javax-swing-JTree].instance/JTable[javax-swing-JTable].instance" boolvalue="true" />
-            <attr name="JTable[javax-swing-JTable].instance/JToolBar[javax-swing-JToolBar].instance" boolvalue="true" />
-            <attr name="JToolBar[javax-swing-JToolBar].instance/JInternalFrame[javax-swing-JInternalFrame].instance" boolvalue="true" />
-            <attr name="JInternalFrame[javax-swing-JInternalFrame].instance/JLayeredPane[javax-swing-JLayeredPane].instance" boolvalue="true" />
-            <attr name="JLayeredPane[javax-swing-JLayeredPane].instance/JDesktopPane[javax-swing-JDesktopPane].instance" boolvalue="true" />
-            <attr name="JDesktopPane[javax-swing-JDesktopPane].instance/JOptionPane[javax-swing-JOptionPane].instance" boolvalue="true" />
+            <attr name="javax-swing-JSlider.instance/javax-swing-JProgressBar.instance" boolvalue="true" />
+            <attr name="javax-swing-JProgressBar.instance/javax-swing-JSplitPane.instance" boolvalue="true" />
+            <attr name="javax-swing-JSplitPane.instance/javax-swing-JPasswordField.instance" boolvalue="true" />
+            <attr name="javax-swing-JPasswordField.instance/javax-swing-JSeparator.instance" boolvalue="true" />
+            <attr name="javax-swing-JSeparator.instance/javax-swing-JTextPane.instance" boolvalue="true" />
+            <attr name="javax-swing-JTextPane.instance/javax-swing-JEditorPane.instance" boolvalue="true" />
+            <attr name="javax-swing-JEditorPane.instance/javax-swing-JTree.instance" boolvalue="true" />
+            <attr name="javax-swing-JTree.instance/javax-swing-JTable.instance" boolvalue="true" />
+            <attr name="javax-swing-JTable.instance/javax-swing-JToolBar.instance" boolvalue="true" />
+            <attr name="javax-swing-JToolBar.instance/javax-swing-JInternalFrame.instance" boolvalue="true" />
+            <attr name="javax-swing-JInternalFrame.instance/javax-swing-JLayeredPane.instance" boolvalue="true" />
+            <attr name="javax-swing-JLayeredPane.instance/javax-swing-JDesktopPane.instance" boolvalue="true" />
+            <attr name="javax-swing-JDesktopPane.instance/javax-swing-JOptionPane.instance" boolvalue="true" />
         </folder>
 
         <folder name="AWT">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
 
-            <file name="Label[java-awt-Label].instance">
+            <file name="java-awt-Label.instance">
+                name=Label
                 icon=/org/netbeans/beaninfo/awt/label.gif
             </file>
-            <file name="Button[java-awt-Button].instance">
+            <file name="java-awt-Button.instance">
+                name=Button
                 icon=/org/netbeans/beaninfo/awt/button.gif
             </file>
-            <file name="TextField[java-awt-TextField].instance">
+            <file name="java-awt-TextField.instance">
+                name=TextField
                 icon=/org/netbeans/beaninfo/awt/textfield.gif
             </file>
-            <file name="TextArea[java-awt-TextArea].instance">
+            <file name="java-awt-TextArea.instance">
+                name=TextArea
                 icon=/org/netbeans/beaninfo/awt/textarea.gif
             </file>
-            <file name="Checkbox[java-awt-Checkbox].instance">
+            <file name="java-awt-Checkbox.instance">
+                name=Checkbox
                 icon=/org/netbeans/beaninfo/awt/checkbox.gif
             </file>
-            <file name="Choice[java-awt-Choice].instance">
-                 icon=/org/netbeans/beaninfo/awt/choice.gif
+            <file name="java-awt-Choice.instance">
+                name=Choice
+                icon=/org/netbeans/beaninfo/awt/choice.gif
             </file>
-            <file name="List[java-awt-List].instance">
-                 icon=/org/netbeans/beaninfo/awt/list.gif
+            <file name="java-awt-List.instance">
+                name=List
+                icon=/org/netbeans/beaninfo/awt/list.gif
             </file>
-            <file name="Scrollbar[java-awt-Scrollbar].instance">
-                 icon=/org/netbeans/beaninfo/awt/scrollbar.gif
+            <file name="java-awt-Scrollbar.instance">
+                name=Scrollbar
+                icon=/org/netbeans/beaninfo/awt/scrollbar.gif
             </file>
-            <file name="ScrollPane[java-awt-ScrollPane].instance">
-                 icon=/org/netbeans/beaninfo/awt/scrollpane.gif
+            <file name="java-awt-ScrollPane.instance">
+                name=ScrollPane
+                icon=/org/netbeans/beaninfo/awt/scrollpane.gif
             </file>
-            <file name="Panel[java-awt-Panel].instance">
-                 icon=/org/netbeans/beaninfo/awt/panel.gif
+            <file name="java-awt-Panel.instance">
+                name=Panel
+                icon=/org/netbeans/beaninfo/awt/panel.gif
             </file>
-            <file name="Canvas[java-awt-Canvas].instance">
-                 icon=/org/netbeans/beaninfo/awt/canvas.gif
+            <file name="java-awt-Canvas.instance">
+                name=Canvas
+                icon=/org/netbeans/beaninfo/awt/canvas.gif
             </file>
-            <file name="MenuBar[java-awt-MenuBar].instance">
-                 icon=/org/netbeans/beaninfo/awt/menubar.gif
+            <file name="java-awt-MenuBar.instance">
+                name=MenuBar
+                icon=/org/netbeans/beaninfo/awt/menubar.gif
             </file>
-            <file name="PopupMenu[java-awt-PopupMenu].instance">
-                 icon=/org/netbeans/beaninfo/awt/popupmenu.gif
+            <file name="java-awt-PopupMenu.instance">
+                name=PopupMenu
+                icon=/org/netbeans/beaninfo/awt/popupmenu.gif
             </file>
 
-            <attr name="Label[java-awt-Label].instance/Button[java-awt-Button].instance" boolvalue="true" />
-            <attr name="Button[java-awt-Button].instance/TextField[java-awt-TextField].instance" boolvalue="true" />
-            <attr name="TextField[java-awt-TextField].instance/TextArea[java-awt-TextArea].instance" boolvalue="true" />
-            <attr name="TextArea[java-awt-TextArea].instance/Checkbox[java-awt-Checkbox].instance" boolvalue="true" />
-            <attr name="Checkbox[java-awt-Checkbox].instance/Choice[java-awt-Choice].instance" boolvalue="true" />
-            <attr name="Choice[java-awt-Choice].instance/List[java-awt-List].instance" boolvalue="true" />
-            <attr name="List[java-awt-List].instance/Scrollbar[java-awt-Scrollbar].instance" boolvalue="true" />
-            <attr name="Scrollbar[java-awt-Scrollbar].instance/ScrollPane[java-awt-ScrollPane].instance" boolvalue="true" />
-            <attr name="ScrollPane[java-awt-ScrollPane].instance/Panel[java-awt-Panel].instance" boolvalue="true" />
-            <attr name="Panel[java-awt-Panel].instance/Canvas[java-awt-Canvas].instance" boolvalue="true" />
-            <attr name="Canvas[java-awt-Canvas].instance/MenuBar[java-awt-MenuBar].instance" boolvalue="true" />
-            <attr name="MenuBar[java-awt-MenuBar].instance/PopupMenu[java-awt-PopupMenu].instance" boolvalue="true" />
+            <attr name="java-awt-Label.instance/java-awt-Button.instance" boolvalue="true" />
+            <attr name="java-awt-Button.instance/java-awt-TextField.instance" boolvalue="true" />
+            <attr name="java-awt-TextField.instance/java-awt-TextArea.instance" boolvalue="true" />
+            <attr name="java-awt-TextArea.instance/java-awt-Checkbox.instance" boolvalue="true" />
+            <attr name="java-awt-Checkbox.instance/java-awt-Choice.instance" boolvalue="true" />
+            <attr name="java-awt-Choice.instance/java-awt-List.instance" boolvalue="true" />
+            <attr name="java-awt-List.instance/java-awt-Scrollbar.instance" boolvalue="true" />
+            <attr name="java-awt-Scrollbar.instance/java-awt-ScrollPane.instance" boolvalue="true" />
+            <attr name="java-awt-ScrollPane.instance/java-awt-Panel.instance" boolvalue="true" />
+            <attr name="java-awt-Panel.instance/java-awt-Canvas.instance" boolvalue="true" />
+            <attr name="java-awt-Canvas.instance/java-awt-MenuBar.instance" boolvalue="true" />
+            <attr name="java-awt-MenuBar.instance/java-awt-PopupMenu.instance" boolvalue="true" />
         </folder>
 
         <folder name="Beans">
@@ -258,75 +305,81 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Layouts">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
 
-            <file name="DesignFlowLayout[org-netbeans-modules-form-compat2-layouts-DesignFlowLayout].instance">
-                icon=/org/netbeans/modules/form/resources/palette/flowLayout.gif
+            <file name="java-awt-FlowLayout.instance">
+                name=FlowLayout
+                icon=/org/netbeans/beaninfo/swing/flowLayout.gif
             </file>
-            <file name="DesignBorderLayout[org-netbeans-modules-form-compat2-layouts-DesignBorderLayout].instance">
-                icon=/org/netbeans/modules/form/resources/palette/borderLayout.gif
+            <file name="java-awt-BorderLayout.instance">
+                name=BorderLayout
+                icon=/org/netbeans/beaninfo/swing/borderLayout.gif
             </file>
-            <file name="DesignGridLayout[org-netbeans-modules-form-compat2-layouts-DesignGridLayout].instance">
-                icon=/org/netbeans/modules/form/resources/palette/gridLayout.gif
+            <file name="java-awt-GridLayout.instance">
+                name=GridLayout
+                icon=/org/netbeans/beaninfo/swing/gridLayout.gif
             </file>
-            <file name="DesignCardLayout[org-netbeans-modules-form-compat2-layouts-DesignCardLayout].instance">
-                icon=/org/netbeans/modules/form/resources/palette/cardLayout.gif
+            <file name="java-awt-GridBagLayout.instance">
+                name=GridBagLayout
+                icon=/org/netbeans/beaninfo/swing/gridBagLayout.gif
             </file>
-            <file name="DesignGridBagLayout[org-netbeans-modules-form-compat2-layouts-DesignGridBagLayout].instance">
-                icon=/org/netbeans/modules/form/resources/palette/gridBagLayout.gif
+            <file name="java-awt-CardLayout.instance">
+                name=CardLayout
+                icon=/org/netbeans/beaninfo/swing/cardLayout.gif
             </file>
-            <file name="DesignAbsoluteLayout[org-netbeans-modules-form-compat2-layouts-DesignAbsoluteLayout].instance">
-                icon=/org/netbeans/modules/form/resources/palette/absoluteLayout.gif
-            </file>
-            <file name="DesignBoxLayout[org-netbeans-modules-form-compat2-layouts-DesignBoxLayout].instance">
-                icon=/org/netbeans/modules/form/resources/palette/boxLayout.gif
+            <file name="javax-swing-BoxLayout.instance">
+                name=BoxLayout
+                icon=/org/netbeans/beaninfo/swing/boxLayout.gif
             </file>
 
-            <attr name="DesignFlowLayout[org-netbeans-modules-form-compat2-layouts-DesignFlowLayout].instance/DesignBorderLayout[org-netbeans-modules-form-compat2-layouts-DesignBorderLayout].instance" boolvalue="true" />
-            <attr name="DesignBorderLayout[org-netbeans-modules-form-compat2-layouts-DesignBorderLayout].instance/DesignGridLayout[org-netbeans-modules-form-compat2-layouts-DesignGridLayout].instance" boolvalue="true" />
-            <attr name="DesignGridLayout[org-netbeans-modules-form-compat2-layouts-DesignGridLayout].instance/DesignCardLayout[org-netbeans-modules-form-compat2-layouts-DesignCardLayout].instance" boolvalue="true" />
-            <attr name="DesignCardLayout[org-netbeans-modules-form-compat2-layouts-DesignCardLayout].instance/DesignGridBagLayout[org-netbeans-modules-form-compat2-layouts-DesignGridBagLayout].instance" boolvalue="true" />
-            <attr name="DesignGridBagLayout[org-netbeans-modules-form-compat2-layouts-DesignGridBagLayout].instance/DesignAbsoluteLayout[org-netbeans-modules-form-compat2-layouts-DesignAbsoluteLayout].instance" boolvalue="true" />
-            <attr name="DesignAbsoluteLayout[org-netbeans-modules-form-compat2-layouts-DesignAbsoluteLayout].instance/DesignBoxLayout[org-netbeans-modules-form-compat2-layouts-DesignBoxLayout].instance" boolvalue="true" />
+            <attr name="java-awt-FlowLayout.instance/java-awt-BorderLayout.instance" boolvalue="true" />
+            <attr name="java-awt-BorderLayout.instance/java-awt-GridLayout.instance" boolvalue="true" />
+            <attr name="java-awt-GridLayout.instance/java-awt-GridBagLayout.instance" boolvalue="true" />
+            <attr name="java-awt-GridBagLayout.instance/java-awt-CardLayout.instance" boolvalue="true" />
+            <attr name="java-awt-CardLayout.instance/javax-swing-BoxLayout.instance" boolvalue="true" />
         </folder>
 
         <folder name="Borders">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
 
-            <file name="EmptyBorderInfo[org-netbeans-modules-form-compat2-border-EmptyBorderInfo].instance">
-                icon=/org/netbeans/modules/form/resources/palette/border.gif
+            <file name="javax-swing-border-EmptyBorder.instance">
+                name=EmptyBorder
+                icon=/org/netbeans/beaninfo/swing/emptyBorder.gif
             </file>
-            <file name="LineBorderInfo[org-netbeans-modules-form-compat2-border-LineBorderInfo].instance">
-                icon=/org/netbeans/modules/form/resources/palette/lineBorder.gif
+            <file name="javax-swing-border-LineBorder.instance">
+                name=LineBorder
+                icon=/org/netbeans/beaninfo/swing/lineBorder.gif
             </file>
-            <file name="MatteIconBorderInfo[org-netbeans-modules-form-compat2-border-MatteIconBorderInfo].instance">
-                icon=/org/netbeans/modules/form/resources/palette/matteIconBorder.gif
+            <file name="javax-swing-border-MatteBorder.instance">
+                name=MatteBorder
+                icon=/org/netbeans/beaninfo/swing/matteBorder.gif
             </file>
-            <file name="MatteColorBorderInfo[org-netbeans-modules-form-compat2-border-MatteColorBorderInfo].instance">
-                icon=/org/netbeans/modules/form/resources/palette/matteColorBorder.gif
+            <file name="javax-swing-border-TitledBorder.instance">
+                name=TitledBorder
+                icon=/org/netbeans/beaninfo/swing/titledBorder.gif
             </file>
-            <file name="TitledBorderInfo[org-netbeans-modules-form-compat2-border-TitledBorderInfo].instance">
-                icon=/org/netbeans/modules/form/resources/palette/titledBorder.gif
+            <file name="javax-swing-border-EtchedBorder.instance">
+                name=EtchedBorder
+                icon=/org/netbeans/beaninfo/swing/etchedBorder.gif
             </file>
-            <file name="EtchedBorderInfo[org-netbeans-modules-form-compat2-border-EtchedBorderInfo].instance">
-                icon=/org/netbeans/modules/form/resources/palette/etchedBorder.gif
+            <file name="javax-swing-border-BevelBorder.instance">
+                name=BevelBorder
+                icon=/org/netbeans/beaninfo/swing/bevelBorder.gif
             </file>
-            <file name="BevelBorderInfo[org-netbeans-modules-form-compat2-border-BevelBorderInfo].instance">
-                icon=/org/netbeans/modules/form/resources/palette/bevelBorder.gif
+            <file name="javax-swing-border-SoftBevelBorder.instance">
+                name=SoftBevelBorder
+                icon=/org/netbeans/beaninfo/swing/softBevelBorder.gif
             </file>
-            <file name="SoftBevelBorderInfo[org-netbeans-modules-form-compat2-border-SoftBevelBorderInfo].instance">
-                icon=/org/netbeans/modules/form/resources/palette/softBevelBorder.gif
-            </file>
-            <file name="CompoundBorderInfo[org-netbeans-modules-form-compat2-border-CompoundBorderInfo].instance">
-                icon=/org/netbeans/modules/form/resources/palette/compoundBorder.gif
+            <file name="javax-swing-border-CompoundBorder.instance">
+                name=CompoundBorder
+                icon=/org/netbeans/beaninfo/swing/compoundBorder.gif
             </file>
 
-            <attr name="EmptyBorderInfo[org-netbeans-modules-form-compat2-border-EmptyBorderInfo].instance/LineBorderInfo[org-netbeans-modules-form-compat2-border-LineBorderInfo].instance" boolvalue="true" />
-            <attr name="LineBorderInfo[org-netbeans-modules-form-compat2-border-LineBorderInfo].instance/MatteIconBorderInfo[org-netbeans-modules-form-compat2-border-MatteIconBorderInfo].instance" boolvalue="true" />
-            <attr name="MatteIconBorderInfo[org-netbeans-modules-form-compat2-border-MatteIconBorderInfo].instance/MatteColorBorderInfo[org-netbeans-modules-form-compat2-border-MatteColorBorderInfo].instance" boolvalue="true" />
-            <attr name="MatteColorBorderInfo[org-netbeans-modules-form-compat2-border-MatteColorBorderInfo].instance/TitledBorderInfo[org-netbeans-modules-form-compat2-border-TitledBorderInfo].instance" boolvalue="true" />
-            <attr name="TitledBorderInfo[org-netbeans-modules-form-compat2-border-TitledBorderInfo].instance/EtchedBorderInfo[org-netbeans-modules-form-compat2-border-EtchedBorderInfo].instance" boolvalue="true" />
-            <attr name="EtchedBorderInfo[org-netbeans-modules-form-compat2-border-EtchedBorderInfo].instance/BevelBorderInfo[org-netbeans-modules-form-compat2-border-BevelBorderInfo].instance" boolvalue="true" />
-            <attr name="BevelBorderInfo[org-netbeans-modules-form-compat2-border-BevelBorderInfo].instance/SoftBevelBorderInfo[org-netbeans-modules-form-compat2-border-SoftBevelBorderInfo].instance" boolvalue="true" />
-            <attr name="SoftBevelBorderInfo[org-netbeans-modules-form-compat2-border-SoftBevelBorderInfo].instance/CompoundBorderInfo[org-netbeans-modules-form-compat2-border-CompoundBorderInfo].instance" boolvalue="true" />
+            <attr name= "javax-swing-border-EmptyBorder.instance/javax-swing-border-LineBorder.instance" boolvalue="true"/>
+            <attr name= "javax-swing-border-LineBorder.instance/javax-swing-border-MatteBorder.instance" boolvalue="true"/>
+            <attr name= "javax-swing-border-MatteBorder.instance/javax-swing-border-TitledBorder.instance" boolvalue="true"/>
+            <attr name= "javax-swing-border-TitledBorder.instance/javax-swing-border-EtchedBorder.instance" boolvalue="true"/>
+            <attr name= "javax-swing-border-EtchedBorder.instance/javax-swing-border-BevelBorder.instance" boolvalue="true"/>
+            <attr name= "javax-swing-border-BevelBorder.instance/javax-swing-border-SoftBevelBorder.instance" boolvalue="true"/>
+            <attr name= "javax-swing-border-SoftBevelBorder.instance/javax-swing-border-CompoundBorder.instance" boolvalue="true"/>
         </folder>
 
         <attr name="Swing/Swing2" boolvalue="true" />
@@ -347,6 +400,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/applet.gif"/>
                 <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420446562756767696e6774002e6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c657444656275676765725479706578"/>
                 <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420457865637574696f6e74002a6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c65744578656375746f7278"/>
+                <attr name="templateWizardIterator" methodValue="org.netbeans.modules.java.wizard.JavaWizardIterator.singleton"/>
             </file>
             <file name="Applet.form" url="templates/AWTForms/Applet_form">
                 <attr name="template" boolvalue="true" />
@@ -356,6 +410,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialog.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/dialog.gif"/>
+                <attr name="templateWizardIterator" methodValue="org.netbeans.modules.java.wizard.JavaWizardIterator.singleton"/>
             </file>
             <file name="Dialog.form" url="templates/AWTForms/Dialog_form">
                 <attr name="template" boolvalue="true" />
@@ -365,6 +420,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Frame.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/frame.gif"/>
+                <attr name="templateWizardIterator" methodValue="org.netbeans.modules.java.wizard.JavaWizardIterator.singleton"/>
             </file>
             <file name="Frame.form" url="templates/AWTForms/Frame_form">
                 <attr name="template" boolvalue="true" />
@@ -374,6 +430,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Panel.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/beaninfo/awt/panel.gif"/>
+                <attr name="templateWizardIterator" methodValue="org.netbeans.modules.java.wizard.JavaWizardIterator.singleton"/>
             </file>
             <file name="Panel.form" url="templates/AWTForms/Panel_form">
                 <attr name="template" boolvalue="true" />
@@ -391,6 +448,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JAppletColor32.gif"/>
                 <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420446562756767696e6774002e6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c657444656275676765725479706578"/>
                 <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420457865637574696f6e74002a6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c65744578656375746f7278"/>
+                <attr name="templateWizardIterator" methodValue="org.netbeans.modules.java.wizard.JavaWizardIterator.singleton"/>
             </file>
             <file name="JApplet.form" url="templates/SwingForms/JApplet_form">
                 <attr name="template" boolvalue="true" />
@@ -401,6 +459,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JDialog.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor32.gif"/>
+                <attr name="templateWizardIterator" methodValue="org.netbeans.modules.java.wizard.JavaWizardIterator.singleton"/>
             </file>
             <file name="JDialog.form" url="templates/SwingForms/JDialog_form">
                 <attr name="template" boolvalue="true" />
@@ -411,6 +470,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JFrame.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
+                <attr name="templateWizardIterator" methodValue="org.netbeans.modules.java.wizard.JavaWizardIterator.singleton"/>
             </file>
             <file name="JFrame.form" url="templates/SwingForms/JFrame_form">
                 <attr name="template" boolvalue="true" />
@@ -421,6 +481,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JInternalFrame.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JInternalFrameColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JInternalFrameColor32.gif"/>
+                <attr name="templateWizardIterator" methodValue="org.netbeans.modules.java.wizard.JavaWizardIterator.singleton"/>
             </file>
             <file name="JInternalFrame.form" url="templates/SwingForms/JInternalFrame_form">
                 <attr name="template" boolvalue="true" />
@@ -431,6 +492,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JPanel.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor32.gif"/>
+                <attr name="templateWizardIterator" methodValue="org.netbeans.modules.java.wizard.JavaWizardIterator.singleton"/>
             </file>
             <file name="JPanel.form" url="templates/SwingForms/JPanel_form">
                 <attr name="template" boolvalue="true" />
@@ -446,6 +508,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Application.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
+                <attr name="templateWizardIterator" methodValue="org.netbeans.modules.java.wizard.JavaWizardIterator.singleton"/>
             </file>
             <file name="Application.form" url="templates/Dialogs/Application_form">
                 <attr name="template" boolvalue="true" />
@@ -456,6 +519,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/MDIApplication.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
+                <attr name="templateWizardIterator" methodValue="org.netbeans.modules.java.wizard.JavaWizardIterator.singleton"/>
             </file>
             <file name="MDIApplication.form" url="templates/Dialogs/MDIApplication_form">
                 <attr name="template" boolvalue="true" />
@@ -466,6 +530,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/OKCancelDialog.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor32.gif"/>
+                <attr name="templateWizardIterator" methodValue="org.netbeans.modules.java.wizard.JavaWizardIterator.singleton"/>
             </file>
             <file name="OkCancelDialog.form" url="templates/Dialogs/OkCancelDialog_form">
                 <attr name="template" boolvalue="true" />

@@ -17,7 +17,7 @@ package org.netbeans.modules.form;
 
 /** FormAwareEditor is an interface implemented by property editors
  * and Customizers, which want to be aware of extended design-time 
- * information about the form - e.g. other components and their properties.
+ * information about the form - e.g. other components.
  * @author Ian Formanek
  */
 public interface FormAwareEditor {
@@ -25,10 +25,7 @@ public interface FormAwareEditor {
     /** If a property editor or customizer implements the FormAwareEditor
      * interface, this method is called immediately after the PropertyEditor
      * instance is created or the Customizer is obtained from getCustomizer().
-     * @param component The RADComponent representing the JavaBean being edited by this 
-     *                  property editor or customizer
-     * @param property  The RADProperty being edited by this property editor or null 
-     *                  if this interface is implemented by a customizer
+     * @model The FormModel representing meta-data of current form
      */
-    public void setRADComponent(RADComponent component, RADComponent.RADProperty property);
+    public void setFormModel(FormModel model);
 }

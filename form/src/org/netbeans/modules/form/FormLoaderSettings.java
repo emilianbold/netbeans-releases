@@ -33,12 +33,9 @@ public class FormLoaderSettings extends SystemOption {
     public static final String PROP_WORKSPACE = "workspace"; // NOI18N
     /** Property name of the indentAWTHierarchy property */
     public static final String PROP_INDENT_AWT_HIERARCHY = "indentAWTHierarchy"; // NOI18N
-    /** Property name of the sortEventSets property */
-    public static final String PROP_SORT_EVENT_SETS = "sortEventSets"; // NOI18N
     /** Property name of the eventVariableName property */
     public static final String PROP_EVENT_VARIABLE_NAME = "eventVariableName"; // NOI18N
-    /** Property name of the shortBeanNames property */
-    public static final String PROP_SHORT_BEAN_NAMES = "shortBeanNames"; // NOI18N
+
     /** Property name of the selectionBorderSize property */
     public static final String PROP_SELECTION_BORDER_SIZE = "selectionBorderSize"; // NOI18N
     /** Property name of the selectionBorderColor property */
@@ -73,6 +70,8 @@ public class FormLoaderSettings extends SystemOption {
     /** Property name of the nullLayout property */
     public static final String PROP_NULL_LAYOUT = "nullLayout"; // NOI18N
 
+    public static final String PROP_PALETTE_TABS_VISIBLE = "paletteTabsVisible"; // NOI18N
+
     /** Minimum output detail level */
     public static final int OUTPUT_MINIMUM = 0;
     /** Normal output detail level */
@@ -89,25 +88,16 @@ public class FormLoaderSettings extends SystemOption {
      * Container is indented to the right).
      */
     private static boolean indentAWTHierarchy = false;
-    /** If true, the event sets are sorted in the propertySheet
-     * according to the name of the EventSet(i.e. its addXXX method).
-     * If false, the original order is used.
-     */
-    private static boolean sortEventSets = true;
+
     /** The name of the Event variable generated in the event handlers. */
     private static String eventVariableName = "evt"; // NOI18N
-    /** If true, the names of beans in ComponentPalette are shown without
-     * the package names.
-     * If false, fully qualified name is used.
-     */
-    private static boolean shortBeanNames = true;
     /** The size(in pixels) of the border that marks visual components on a form
      * as selected. */
-    private static int selectionBorderSize = 5;
+    private static int selectionBorderSize = 3;
     /** The color of the border boxes on selection border */
-    private static java.awt.Color selectionBorderColor = java.awt.Color.blue;
+    private static java.awt.Color selectionBorderColor = new java.awt.Color(96,96,96);
     /** The color of the border boxes on connection border */
-    private static java.awt.Color connectionBorderColor = java.awt.Color.red;
+    private static java.awt.Color connectionBorderColor = java.awt.Color.blue;
     /** The color of the drag border on selection border */
     private static java.awt.Color dragBorderColor = java.awt.Color.darkGray;
     /** True if grid should be used, false otherwise. */
@@ -145,7 +135,9 @@ public class FormLoaderSettings extends SystemOption {
 
     private static int emptyFormType = 0;
 
-    private static final int MIN_SELECTION_BORDER_SIZE = 3;
+    private static boolean paletteTabsVisible = true;
+
+    private static final int MIN_SELECTION_BORDER_SIZE = 1;
     private static final int MAX_SELECTION_BORDER_SIZE = 15;
 
     private static final int MIN_GRID_X = 2;
@@ -192,20 +184,6 @@ public class FormLoaderSettings extends SystemOption {
     }
 
     /** Getter for the sortEventSets option */
-    public boolean getSortEventSets() {
-        return sortEventSets;
-    }
-
-    /** Setter for the sortEventSets option */
-    public void setSortEventSets(boolean value) {
-        if (value == sortEventSets)
-            return;
-        sortEventSets = value;
-        firePropertyChange(PROP_SORT_EVENT_SETS,
-                           new Boolean(!sortEventSets), new Boolean(sortEventSets));
-    }
-
-    /** Getter for the sortEventSets option */
     public String getEventVariableName() {
         return eventVariableName;
     }
@@ -217,20 +195,6 @@ public class FormLoaderSettings extends SystemOption {
         String oldValue = eventVariableName;
         eventVariableName = value;
         firePropertyChange(PROP_EVENT_VARIABLE_NAME, oldValue, eventVariableName);
-    }
-
-    /** Getter for the shortBeanNames option */
-    public boolean getShortBeanNames() {
-        return shortBeanNames;
-    }
-
-    /** Setter for the shortBeanNames option */
-    public void setShortBeanNames(boolean value) {
-        if (value == shortBeanNames)
-            return;
-        shortBeanNames = value;
-        firePropertyChange(PROP_SHORT_BEAN_NAMES,
-                           new Boolean(!shortBeanNames), new Boolean(shortBeanNames));
     }
 
     /** Getter for the selectionBorderSize option */
@@ -448,6 +412,17 @@ public class FormLoaderSettings extends SystemOption {
         nullLayout = value;
         // fire the PropertyChange
         firePropertyChange(PROP_NULL_LAYOUT, new Boolean(oldValue), new Boolean(nullLayout));
+    }
+
+    public boolean getPaletteTabsVisible() {
+        return paletteTabsVisible;
+    }
+
+    public void setPaletteTabsVisible(boolean value) {
+        if (value == paletteTabsVisible) return;
+        paletteTabsVisible = value;
+        // fire the PropertyChange
+        firePropertyChange(PROP_PALETTE_TABS_VISIBLE, new Boolean(!value), new Boolean(value));
     }
 
     // XXX(-tdt) Hmm, backward compatibility with com.netbeans package name

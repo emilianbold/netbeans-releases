@@ -29,6 +29,7 @@ import org.openide.TopManager;
 import org.openide.loaders.XMLDataObject;
 import org.openide.util.io.NbObjectInputStream;
 
+import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.compat2.layouts.*;
 import org.netbeans.modules.form.forminfo.*;
 
@@ -211,10 +212,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     /** Called to actually load the form stored in specified formObject.
      * @param formObject the FormDataObject which represents the form files
-     * @return the FormManager2 representing the loaded form or null if some problem occured
+     * @return the FormModel representing the loaded form or null if some problem occured
      * @exception IOException if any problem occured when loading the form
      */
-    public FormManager2 loadForm(FormDataObject formObject) throws IOException {
+    public FormModel loadForm(FormDataObject formObject) throws IOException {
         FileObject formFile = formObject.getFormEntry().getFile();
         org.w3c.dom.Document doc;
         org.w3c.dom.Element mainElement;
@@ -255,10 +256,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                   );
         }
 
-        RADForm radForm = new RADForm(formInfo);
-        FormManager2 formManager2 = new FormManager2(formObject, radForm);
-        formManager2.setEncoding(encoding);
-        RADVisualContainer topComp =(RADVisualContainer)radForm.getTopLevelComponent(); // [PENDING - illegal cast]
+        //XXX RADForm radForm = new RADForm(formInfo);
+        FormModel formModel = new FormModel();
+        formModel.setFormDataObject(formObject);
+        formModel.setFormInfo(formInfo);
+        //XXX formModel.setEncoding(encoding);
+        RADVisualContainer topComp =(RADVisualContainer) formModel.getTopRADComponent();
 
         // B. process top-element's subnodes(all required)
 
@@ -267,13 +270,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
             throw new IOException(FormEditor.getFormBundle().getString("ERR_BadXMLFormat"));
         }
 
-        loadNonVisuals(mainElement, formManager2);
-        loadContainer(mainElement, formManager2, topComp, null);
+        loadNonVisuals(mainElement, formModel);
+        loadContainer(mainElement, formModel, topComp, null);
 
-        return formManager2;
+        formModel.fireFormLoaded();
+        return formModel;
     }
 
-    private boolean loadNonVisuals(org.w3c.dom.Node node, FormManager2 formManager2) {
+    private boolean loadNonVisuals(org.w3c.dom.Node node, FormModel formModel2) {
         org.w3c.dom.Node nonVisualsNode = findSubNode(node, XML_NON_VISUAL_COMPONENTS);
         org.w3c.dom.NodeList childNodes =(nonVisualsNode == null) ? null : nonVisualsNode.getChildNodes();
         //    System.out.println("NonVisual children: "+childNodes); // NOI18N
@@ -285,24 +289,24 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 //        System.out.println("Processing node: "+childNodes.item(i).getNodeName()); // NOI18N
                 if (XML_COMPONENT.equals(childNodes.item(i).getNodeName())) {
                     RADComponent comp = new RADComponent();
-                    if (loadComponent(childNodes.item(i), formManager2, comp, null)) {
+                    if (loadComponent(childNodes.item(i), formModel2, comp, null)) {
                         list.add(comp);
                     }
                 } else if (XML_CONTAINER.equals(childNodes.item(i).getNodeName())) {
                     RADContainer cont = new RADContainer();
-                    if (loadContainer(childNodes.item(i), formManager2, cont, null)) {
+                    if (loadContainer(childNodes.item(i), formModel2, cont, null)) {
                         list.add(cont);
                     }
                 } else if (XML_MENU_COMPONENT.equals(childNodes.item(i).getNodeName())) {
                     //          System.out.println("$$$MenuItem"); // NOI18N
                     RADMenuItemComponent comp = new RADMenuItemComponent();
-                    if (loadComponent(childNodes.item(i), formManager2, comp, null)) {
+                    if (loadComponent(childNodes.item(i), formModel2, comp, null)) {
                         list.add(comp);
                     }
                 } else if (XML_MENU_CONTAINER.equals(childNodes.item(i).getNodeName())) {
                     //          System.out.println("$$$Menu"); // NOI18N
                     RADMenuComponent cont = new RADMenuComponent();
-                    if (loadContainer(childNodes.item(i), formManager2, cont, null)) {
+                    if (loadContainer(childNodes.item(i), formModel2, cont, null)) {
                         list.add(cont);
                     }
                 }
@@ -311,17 +315,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         RADComponent[] nonVisualComps = new RADComponent[list.size()];
         list.toArray(nonVisualComps);
-        formManager2.initNonVisualComponents(nonVisualComps);
+        formModel2.initNonVisualComponents(nonVisualComps);
         return true;
     }
 
     private boolean loadComponent(org.w3c.dom.Node node,
-                                  FormManager2 formManager2,
+                                  FormModel formModel2,
                                   RADComponent comp,
                                   ComponentContainer parentContainer) {
         try {
             if (!(comp instanceof FormContainer)) {
-                comp.initialize(formManager2);
+                comp.initialize(formModel2);
                 String className = findAttribute(node, ATTR_COMPONENT_CLASS);
                 String compName = findAttribute(node, ATTR_COMPONENT_NAME);
                 Class compClass = null;
@@ -357,7 +361,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     } else if (XML_EVENTS.equals(componentNode.getNodeName())) {
                         Collection events = loadEvents(componentNode);
                         if (events != null) {
-                            comp.getEventsListImpl().initEvents(events);
+                            comp.getEventHandlers().initEvents(events);
                         }
 
                     } else if (XML_AUX_VALUES.equals(componentNode.getNodeName())) {
@@ -381,40 +385,63 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
-    private boolean loadVisualComponent(org.w3c.dom.Node node, FormManager2 formManager2, RADVisualComponent comp, ComponentContainer parentContainer) {
-        if (!loadComponent(node, formManager2, comp, parentContainer)) {
+    private boolean loadVisualComponent(org.w3c.dom.Node node,
+                                        FormModel formModel,
+                                        RADVisualComponent comp,
+                                        ComponentContainer parentContainer) {
+
+        if (!loadComponent(node, formModel, comp, parentContainer))
             return false;
-        }
 
-        if (!(comp instanceof FormContainer)) {
-            org.w3c.dom.Node constraintsNode = findSubNode(node, XML_CONSTRAINTS);
-            if (constraintsNode != null) {
-                org.w3c.dom.Node[] constrNodes = findSubNodes(constraintsNode, XML_CONSTRAINT);
-                for (int i = 0; i < constrNodes.length; i++) {
-                    String layoutName = findAttribute(constrNodes[i], ATTR_CONSTRAINT_LAYOUT);
-                    String cdName = findAttribute(constrNodes[i], ATTR_CONSTRAINT_VALUE);
-                    if ((layoutName != null) &&(cdName != null)) {
-                        try {
-                            Class layoutClass = PersistenceObjectRegistry.loadClass(layoutName);
-                            DesignLayout.ConstraintsDescription cd =
-                                (DesignLayout.ConstraintsDescription)
-                                PersistenceObjectRegistry.createInstance(cdName);
+        if (comp instanceof FormContainer)
+            return true;
 
-                            org.w3c.dom.NodeList children = constrNodes[i].getChildNodes();
-                            if (children != null) {
-                                for (int j = 0; j < children.getLength(); j++) {
-                                    if (children.item(j).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                                        cd.readFromXML(children.item(j));
-                                        break;
-                                    }
-                                }
+        // load constraints
+        org.w3c.dom.Node constraintsNode = findSubNode(node, XML_CONSTRAINTS);
+        if (constraintsNode != null) {
+            org.w3c.dom.Node[] constrNodes = findSubNodes(constraintsNode, XML_CONSTRAINT);
+            for (int i = 0; i < constrNodes.length; i++) {
+                String designLayoutName = findAttribute(constrNodes[i],
+                                                        ATTR_CONSTRAINT_LAYOUT);
+                String cdName = findAttribute(constrNodes[i],
+                                              ATTR_CONSTRAINT_VALUE);
+                if (designLayoutName == null || cdName == null)
+                    continue;
+
+                try {
+                    DesignLayout.ConstraintsDescription cd =
+                        (DesignLayout.ConstraintsDescription)
+                        PersistenceObjectRegistry.createInstance(cdName);
+
+                    org.w3c.dom.NodeList children = constrNodes[i].getChildNodes();
+                    if (children != null) {
+                        for (int j = 0; j < children.getLength(); j++) {
+                            if (children.item(j).getNodeType()
+                                    == org.w3c.dom.Node.ELEMENT_NODE) {
+                                cd.readFromXML(children.item(j));
+                                break;
                             }
-                            comp.setConstraints(layoutClass, cd);
-                        } catch (Exception e) {
-                            if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
-                            // ignore and try another constraints // [PENDING - add to errors list]
                         }
                     }
+
+                    String layoutSupportName = Compat31LayoutFactory
+                             .getCompatibleLayoutSupportName(designLayoutName);
+                    if (layoutSupportName != null) { // convert constraints
+                        LayoutSupport.ConstraintsDesc lsDesc =
+                            Compat31LayoutFactory.createCompatibleConstraints(cd);
+                        if (lsDesc != null) // use converted constraints for LayoutSupport
+                            comp.setConstraintsDesc(PersistenceObjectRegistry
+                                        .loadClass(layoutSupportName), lsDesc);
+                    }
+                    else { // use the original constraints (of DesignLayout)
+                        comp.setConstraints(PersistenceObjectRegistry
+                                             .loadClass(designLayoutName), cd);
+                    }
+                }
+                catch (Exception e) { // ignore and try another constraints
+                    if (Boolean.getBoolean("netbeans.debug.exceptions"))
+                        e.printStackTrace(); // NOI18N
+                    // [PENDING - add to errors list]
                 }
             }
         }
@@ -422,11 +449,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
         return true;
     }
 
-    private boolean loadContainer(org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
+    private boolean loadContainer(org.w3c.dom.Node node,
+                                  FormModel formModel,
+                                  RADComponent comp,
+                                  ComponentContainer parentContainer) {
         if (comp instanceof RADVisualComponent) {
-            if (!loadVisualComponent(node, formManager2,(RADVisualComponent)comp, parentContainer)) return false;
+            if (!loadVisualComponent(node, formModel,(RADVisualComponent)comp, parentContainer))
+                return false;
         } else {
-            if (!loadComponent(node, formManager2, comp, parentContainer)) return false;
+            if (!loadComponent(node, formModel, comp, parentContainer))
+                return false;
         }
 
         //        System.out.println("1..."); // NOI18N
@@ -446,24 +478,24 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
                     if (XML_COMPONENT.equals(componentNode.getNodeName())) {  // [PENDING - visual x non-visual]
                         RADVisualComponent newComp = new RADVisualComponent();
-                        if (loadVisualComponent(componentNode, formManager2, newComp,(ComponentContainer)comp)) {
+                        if (loadVisualComponent(componentNode, formModel, newComp,(ComponentContainer)comp)) {
                             list.add(newComp);
                         }
                     } else if (XML_MENU_COMPONENT.equals(componentNode.getNodeName())) {  // [PENDING - visual x non-visual]
                         RADMenuItemComponent newComp = new RADMenuItemComponent();
                         //        System.out.println("Processing menu node: "+componentNode.getNodeName()); // NOI18N
-                        if (loadContainer(componentNode, formManager2, newComp,(ComponentContainer)comp)) {
+                        if (loadContainer(componentNode, formModel, newComp,(ComponentContainer)comp)) {
                             list.add(newComp);
                         }
                     } else if (XML_MENU_CONTAINER.equals(componentNode.getNodeName())) {  // [PENDING - visual x non-visual]
                         RADMenuComponent newComp = new RADMenuComponent();
                         //        System.out.println("Processing menu container node: "+componentNode.getNodeName()); // NOI18N
-                        if (loadContainer(componentNode, formManager2, newComp,(ComponentContainer)comp)) {
+                        if (loadContainer(componentNode, formModel, newComp,(ComponentContainer)comp)) {
                             list.add(newComp);
                         }
                     } else {
                         RADVisualContainer newComp = new RADVisualContainer();
-                        if (loadContainer(componentNode, formManager2, newComp,(ComponentContainer)comp)) {
+                        if (loadContainer(componentNode, formModel, newComp,(ComponentContainer)comp)) {
                             list.add(newComp);
                         }
                     }
@@ -478,35 +510,42 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if (comp instanceof RADVisualContainer) {
             org.w3c.dom.Node layoutNode = findSubNode(node, XML_LAYOUT);
-            String className = findAttribute(layoutNode, ATTR_LAYOUT_CLASS);
-            try {
-                DesignLayout dl =(DesignLayout)
-                    PersistenceObjectRegistry.createInstance(className);
+            if (layoutNode != null) {
+                String className = findAttribute(layoutNode, ATTR_LAYOUT_CLASS);
+                try {
+                    DesignLayout dl =(DesignLayout)
+                        PersistenceObjectRegistry.createInstance(className);
 
-                org.w3c.dom.Node[] propNodes = findSubNodes(layoutNode, XML_PROPERTY);
-                if (propNodes.length > 0) {
-                    HashMap propsMap = new HashMap(propNodes.length * 2);
-                    for (int i = 0; i < propNodes.length; i++) {
-                        try {
-                            Object propValue = getEncodedPropertyValue(propNodes[i], null);
-                            String propName = findAttribute(propNodes[i], ATTR_PROPERTY_NAME);
-                            if ((propName != null) &&(propValue != null) &&(propValue != NO_VALUE)) {
-                                propsMap.put(propName, propValue);
+                    org.w3c.dom.Node[] propNodes = findSubNodes(layoutNode, XML_PROPERTY);
+                    if (propNodes.length > 0) {
+                        HashMap propsMap = new HashMap(propNodes.length * 2);
+                        for (int i = 0; i < propNodes.length; i++) {
+                            try {
+                                Object propValue = getEncodedPropertyValue(propNodes[i], null);
+                                String propName = findAttribute(propNodes[i], ATTR_PROPERTY_NAME);
+                                if ((propName != null) &&(propValue != null) &&(propValue != NO_VALUE)) {
+                                    propsMap.put(propName, propValue);
+                                }
+                            } catch (Exception e) {
+                                if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
+                                // ignore property with problem
+                                // [PENDING - notify problem]
                             }
-                        } catch (Exception e) {
-                            if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
-                            // ignore property with problem
-                            // [PENDING - notify problem]
                         }
+                        dl.initChangedProperties(propsMap);
+                        dl.setRADContainer((RADVisualContainer)comp);
                     }
-                    dl.initChangedProperties(propsMap);
+                    LayoutSupport layoutSupp =
+                        Compat31LayoutFactory.createCompatibleLayoutSupport(dl);
+                    ((RADVisualContainer)comp).setLayoutSupport(layoutSupp);
+                } catch (Exception e) {
+                    // if (System.getProperty("netbeans.debug.exceptions") != null) // [PENDING]
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
+                    return false; // [PENDING - notify]
                 }
-
-                ((RADVisualContainer)comp).setDesignLayout(dl);
-            } catch (Exception e) {
-                // if (System.getProperty("netbeans.debug.exceptions") != null) // [PENDING]
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
-                return false; // [PENDING - notify]
+            }
+            else { // no layout saved, initialize the default
+                ((RADVisualContainer)comp).initLayoutSupport();
             }
         }
         return true;
@@ -532,15 +571,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 String propName = findAttribute(propNodes[i], ATTR_PROPERTY_NAME);
                 String propType = findAttribute(propNodes[i], ATTR_PROPERTY_TYPE);
 
-                RADComponent.RADProperty prop = comp.getPropertyByName(propName);
+                RADProperty prop = comp.getPropertyByName(propName);
+                if (prop == null)
+                    continue; // property doesn't exist
 
                 String propertyEditor = findAttribute(propNodes[i], ATTR_PROPERTY_EDITOR);
                 if (propertyEditor != null) {
                     try {
                         Class editorClass = PersistenceObjectRegistry.loadClass(propertyEditor);
                         Class propertyClass = findPropertyType(propType);
-                        PropertyEditor ed = FormEditor.createPropertyEditor(editorClass, propertyClass, comp, prop);
-                        ((RADComponent.RADProperty)prop).setCurrentEditor(ed);
+                        PropertyEditor ed = FormEditor.createPropertyEditor(editorClass, propertyClass, prop);
+                        ((RADProperty)prop).setCurrentEditor(ed);
                     } catch (Exception e) {
                         if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
                         // ignore
@@ -640,7 +681,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     String paramTypes = findAttribute(children.item(i), ATTR_EVENT_PARAMS);
                     String eventHandlers = findAttribute(children.item(i), ATTR_EVENT_HANDLER);
                     if (eventName != null && eventHandlers != null) { // [PENDING - error check]
-                        events.add(new EventsList.EventInfo(eventName,eventListener,paramTypes,eventHandlers));
+                        events.add(new Event.EventInfo(eventName,eventListener,paramTypes,eventHandlers));
                     }
                 }
             }
@@ -697,19 +738,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
         return auxTable;
     }
 
-    /** Called to actually save the form represented by specified FormManager2 into specified formObject.
+    /** Called to actually save the form represented by specified FormModel into specified formObject.
      * @param formObject the FormDataObject which represents the form files
-     * @param manager the FormManager2 representing the form to be saved
+     * @param manager the FormModel representing the form to be saved
      * @exception IOException if any problem occured when saving the form
      */
-    public void saveForm(FormDataObject formObject, FormManager2 manager) throws IOException {
+    public void saveForm(FormDataObject formObject, FormModel manager) throws IOException {
         FileObject formFile = formObject.getFormEntry().getFile();
         if (formFile.isReadOnly()) // should not happen
-            throw new InternalError("Tried to save read-only form "+formFile.getName()); // NOI18N
+            throw new IllegalStateException("Tried to save read-only form: "+formFile.getName()); // NOI18N
 
         FileLock lock = null;
         java.io.OutputStream os = null;
-        String encoding = manager.getEncoding();
+        String encoding = null;//XXX manager.getEncoding();
 
         if (encoding == null) {
             encoding = "UTF-8";
@@ -741,7 +782,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 new String[] { ATTR_FORM_VERSION, ATTR_FORM_TYPE },
                 new String[] { CURRENT_VERSION,
                                PersistenceObjectRegistry.getPrimaryName(
-                                   manager.getRADForm().getFormInfo()) }
+                                   manager.getFormInfo()) }
                 );
 
             // 3.store Non-Visual Components
@@ -777,7 +818,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 buf.append(ONE_INDENT); addElementClose(buf, XML_NON_VISUAL_COMPONENTS);
             }
             // 4.store form and its visual components hierarchy
-            saveContainer((ComponentContainer)manager.getRADForm().getTopLevelComponent(), buf, ONE_INDENT);
+            saveContainer((ComponentContainer)manager.getTopRADComponent(), buf, ONE_INDENT);
             addElementClose(buf, XML_FORM);
 
             os = formFile.getOutputStream(lock); // [PENDING - first save to ByteArray for safety]
@@ -792,7 +833,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private void saveContainer(ComponentContainer container, StringBuffer buf, String indent) {
         if (container instanceof RADVisualContainer) {
             saveVisualComponent((RADVisualComponent)container, buf, indent);
-            saveLayout(((RADVisualContainer)container).getDesignLayout(), buf, indent);
+            saveLayout(((RADVisualContainer)container).getLayoutSupport(), buf, indent);
         } else {
             saveComponent((RADComponent)container, buf, indent);
         }
@@ -830,6 +871,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
+    private void saveLayout(LayoutSupport layout, StringBuffer buf, String indent) {
+        DesignLayout dl = Compat31LayoutFactory.createCompatibleDesignLayout(layout);
+        if (dl != null)
+            saveLayout(dl, buf, indent);
+    }
+    
     private void saveLayout(DesignLayout layout, StringBuffer buf, String indent) {
         buf.append("\n"); // NOI18N
         buf.append(indent);
@@ -926,9 +973,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private void saveVisualComponent(RADVisualComponent component, StringBuffer buf, String indent) {
         saveComponent(component, buf, indent);
         if (!(component instanceof FormContainer)) {
-            buf.append(indent); addElementOpen(buf, XML_CONSTRAINTS);
-            saveConstraints(component, buf, indent + ONE_INDENT);
-            buf.append(indent); addElementClose(buf, XML_CONSTRAINTS);
+//            buf.append(indent); addElementOpen(buf, XML_CONSTRAINTS);
+            saveConstraints(component, buf, indent); // + ONE_INDENT);
+//            buf.append(indent); addElementClose(buf, XML_CONSTRAINTS);
         }
     }
 
@@ -964,7 +1011,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private void saveComponent(RADComponent component, StringBuffer buf, String indent) {
         // 1. Properties
         boolean doSaveProps = false;
-        RADComponent.RADProperty[] props = component.getAllProperties();
+        RADProperty[] props = component.getAllBeanProperties();
         for (int i = 0; i < props.length; i++) {
             if (props[i].isChanged() ||(props[i].getPreCode() != null) ||(props[i].getPostCode() != null)) {
                 doSaveProps = true;
@@ -986,7 +1033,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         // 2. Events
-        Collection events = component.getEventsList().getEventsInfo();
+        Collection events = component.getEventHandlers().getEventsInfo();
         if (events.size() > 0) {
             buf.append("\n"); // NOI18N
             buf.append(indent); addElementOpen(buf, XML_EVENTS);
@@ -1004,10 +1051,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     private void saveProperties(RADComponent component, StringBuffer buf, String indent) {
-        RADComponent.RADProperty[] props = component.getAllProperties();
+        RADProperty[] props = component.getAllBeanProperties();
         for (int i = 0; i < props.length; i++) {
-            RADComponent.RADProperty prop =(RADComponent.RADProperty) props[i];
-            PropertyDescriptor desc = prop.getPropertyDescriptor();
+            RADProperty prop =(RADProperty) props[i];
 
             if (!props[i].isChanged()) {
                 if (props[i].getPreCode() != null || props[i].getPostCode() != null) {
@@ -1022,7 +1068,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             ATTR_PROPERTY_POST_CODE,
                         },
                         new String[] {
-                            desc.getName(),
+                            prop.getName(),
                             prop.getPreCode(),
                             prop.getPostCode(),
                         }
@@ -1069,8 +1115,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         ATTR_PROPERTY_POST_CODE,
                     },
                     new String[] {
-                        desc.getName(),
-                        desc.getPropertyType().getName(),
+                        prop.getName(),
+                        prop.getValueType().getName(),
                         prop.getCurrentEditor().getClass().getName(),
                         encodedValue,
                         prop.getPreCode(),
@@ -1089,8 +1135,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         ATTR_PROPERTY_POST_CODE,
                     },
                     new String[] {
-                        desc.getName(),
-                        desc.getPropertyType().getName(),
+                        prop.getName(),
+                        prop.getValueType().getName(),
                         prop.getCurrentEditor().getClass().getName(),
                         prop.getPreCode(),
                         prop.getPostCode(),
@@ -1162,7 +1208,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private void saveEvents(Collection events, StringBuffer buf, String indent) {
         Iterator it=events.iterator();
         while (it.hasNext()) {
-            EventsList.EventInfo eventInfo = (EventsList.EventInfo)it.next();
+            Event.EventInfo eventInfo = (Event.EventInfo)it.next();
 
             buf.append(indent);
             addLeafElementOpenAttr(
@@ -1180,7 +1226,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     eventInfo.paramTypes,
                     eventInfo.eventHandlers
                 }
-                );
+            );
         }
     }
 
@@ -1218,6 +1264,41 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private void saveConstraints(RADVisualComponent component,
                                  StringBuffer buf,
                                  String indent) {
+        LayoutSupport laySup = component.getParentContainer().getLayoutSupport();
+        if (laySup == null) return;
+
+        LayoutSupport.ConstraintsDesc lsConstr = laySup.getConstraints(component);
+        if (lsConstr == null) return;
+
+        DesignLayout.ConstraintsDescription dlConstr =
+            Compat31LayoutFactory.createCompatibleConstraints(lsConstr);
+        if (dlConstr == null) return;
+
+        org.w3c.dom.Node constrNode = dlConstr.storeToXML(topDocument);
+        if (constrNode != null) {
+            buf.append(indent);
+            addElementOpen(buf, XML_CONSTRAINTS);
+            buf.append(indent + ONE_INDENT);
+            addElementOpenAttr(
+                buf,
+                XML_CONSTRAINT,
+                new String[] {
+                    ATTR_CONSTRAINT_LAYOUT,
+                    ATTR_CONSTRAINT_VALUE },
+                new String[] {
+                    Compat31LayoutFactory.getCompatibleDesignLayoutName(
+                                                laySup.getClass().getName()),
+                    PersistenceObjectRegistry.getPrimaryName(dlConstr),
+                });
+
+            saveNodeIntoText(buf, constrNode, indent + ONE_INDENT + ONE_INDENT);
+
+            buf.append(indent + ONE_INDENT);
+            addElementClose(buf, XML_CONSTRAINT);
+            buf.append(indent);
+            addElementClose(buf, XML_CONSTRAINTS);
+        }
+/** XXX        
         Map constraintsMap = component.getConstraintsMap();
         for (Iterator it = constraintsMap.keySet().iterator(); it.hasNext();) {
             String layoutName =(String)it.next();
@@ -1263,6 +1344,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     );
             }
         }
+        ****/
     }
 
     // --------------------------------------------------------------------------------------
@@ -1291,20 +1373,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
             throw new IOException(); // [PENDING - explanation of problem]
         }
 
-        RADComponent.RADProperty prop = null;
+        RADProperty prop = null;
         if (radComponent != null) prop = radComponent.getPropertyByName(nameNode.getNodeValue());
 
         if (typeNode == null) {
-//            if ((preCodeNode == null) ||(postCodeNode == null)) {
-//                throw new IOException(); // [PENDING - explanation of problem]
-//            } else {
             if (preCodeNode != null) {
                 prop.setPreCode(preCodeNode.getNodeValue());
             }
             if (postCodeNode != null) {
                 prop.setPostCode(postCodeNode.getNodeValue());
             }
-//            }
             return NO_VALUE; // value is not stored for this property, just the pre/post code
         }
 
@@ -1314,7 +1392,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             Class editorClass =
                 PersistenceObjectRegistry.loadClass(editorNode.getNodeValue());
             if (prop != null) {
-                ed = FormEditor.createPropertyEditor(editorClass, propertyType, radComponent, prop);
+                ed = FormEditor.createPropertyEditor(editorClass, propertyType, prop);
             } else {
                 if (Boolean.getBoolean("netbeans.debug.form")) { // NOI18N
                     System.out.println("Property: "+nameNode.getNodeValue()+", of component: "+radComponent.getName()+"["+radComponent.getBeanClass().getName()+"] not found."); // NOI18N
@@ -1714,5 +1792,4 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (valueNode == null) return null;
         else return valueNode.getNodeValue();
     }
-
 }

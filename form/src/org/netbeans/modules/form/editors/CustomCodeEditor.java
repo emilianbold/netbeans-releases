@@ -20,10 +20,9 @@ import org.netbeans.modules.form.FormEditor;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
-/**
+/** Customizer for "code properties" used by JavaCodeGenerator.
  *
  * @author  Pavel Buzek
- * @version
  */
 public class CustomCodeEditor extends javax.swing.JPanel
                               implements EnhancedCustomPropertyEditor {

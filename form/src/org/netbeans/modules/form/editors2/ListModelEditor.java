@@ -16,7 +16,6 @@ package org.netbeans.modules.form.editors2;
 import javax.swing.*;
 import org.openide.explorer.propertysheet.editors.*;
 import org.netbeans.modules.form.FormDesignValue;
-import org.netbeans.modules.form.RADComponent;
 
 /** A simple property editor for ListModel.
  *
@@ -78,11 +77,18 @@ public class ListModelEditor extends StringArrayEditor {
                 model.addElement(data[i]);
         }
 
+        /** Returns description of the design value. Useful when
+         * design value is not provided.
+         */
+        public String getDescription() {
+            return "ListModel"; // NOI18N
+        }
+        
         /** Provides a value which should be used during design-time
          * as the real value of a property on the JList instance.
          * @return the real property value to be used during design-time
          */
-        public Object getDesignValue(RADComponent radComponent) {
+        public Object getDesignValue() {
             return model;
         }
     }

@@ -1,15 +1,17 @@
 /*
  *                 Sun Public License Notice
- *
+ * 
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- *
+ * 
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
+/* $Id$ */
 
 package org.netbeans.modules.form;
 
@@ -18,10 +20,13 @@ import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.text.IndentEngine;
 import org.openide.util.Utilities;
+import org.openide.util.SharedClassObject;
 import org.openide.loaders.MultiDataObject.Entry;
+
 import org.netbeans.modules.java.JavaEditor;
+
 import org.netbeans.modules.form.editors.CustomCodeEditor;
-import org.netbeans.modules.form.compat2.layouts.DesignLayout;
+import org.netbeans.modules.form.layoutsupport.LayoutSupport;
 import org.netbeans.modules.form.forminfo.MenuBarContainer;
 import org.netbeans.modules.form.forminfo.JMenuBarContainer;
 
@@ -37,7 +42,7 @@ import java.util.Map;
 import java.util.Iterator;
 
 /* TODO
-   - Exception handling in guarded blocks - from FormSettings???, or as a property of formManager
+   - Exception handling in guarded blocks - from FormSettings???, or as a property of formModel
 
    - BeanContext support
    - External Event Handlers
@@ -93,9 +98,12 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private static final String oneIndent = "  "; // [PENDING - indentation engine] // NOI18N
 
-    private FormManager2 formManager;
+    /** The FormLoaderSettings instance */
+    private static FormLoaderSettings formSettings = (FormLoaderSettings)
+                   SharedClassObject.findObject(FormLoaderSettings.class, true);
+
+    private FormModel formModel;
     private boolean initialized = false;
-    private boolean errorInitializing = false;
     private boolean canGenerate = true;
 
     private JavaEditor.SimpleSection initComponentsSection;
@@ -106,22 +114,25 @@ class JavaCodeGenerator extends CodeGenerator {
     public JavaCodeGenerator() {
     }
 
-    public void initialize(FormManager2 formManager) {
-        canGenerate = !formManager.getFormObject().isReadOnly();
-
+    public void initialize(FormModel formModel) {
         if (!initialized) {
-            this.formManager = formManager;
-            if (canGenerate)
-                formManager.addFormListener(new JCGFormListener());
-            initialized = true;
-        }
-        FormEditorSupport s = formManager.getFormEditorSupport();
-        initComponentsSection = s.findSimpleSection(SECTION_INIT_COMPONENTS);
-        variablesSection = s.findSimpleSection(SECTION_VARIABLES);
+            this.formModel = formModel;
+            if (!formModel.getFormDataObject().isReadOnly()) {
+                canGenerate = true;
+                formModel.addFormModelListener(new JCGFormListener());
+            }
+            else canGenerate = false;
 
-        if ((initComponentsSection == null) ||(variablesSection == null)) {
-            System.out.println("ERROR: Cannot initialize guarded sections... code generation is disabled."); // NOI18N
-            errorInitializing = true;
+            FormEditorSupport s = formModel.getFormEditorSupport();
+            initComponentsSection = s.findSimpleSection(SECTION_INIT_COMPONENTS);
+            variablesSection = s.findSimpleSection(SECTION_VARIABLES);
+
+            if (initComponentsSection == null || variablesSection == null) {
+                System.out.println("ERROR: Cannot initialize guarded sections... code generation is disabled."); // NOI18N
+                canGenerate = false;
+            }
+
+            initialized = true;
         }
     }
 
@@ -144,10 +155,11 @@ class JavaCodeGenerator extends CodeGenerator {
                 if (!(value instanceof String)) {
                     throw new IllegalArgumentException();
                 }
-                String oldValue = component.getName();
+//                String oldValue = component.getName();
                 component.setName((String)value);
-                component.getNodeReference().firePropertyChangeHelper(
-                    "variableName", oldValue, value); // NOI18N
+//                component.getNodeReference().notifyPropertiesChange();
+//                component.getNodeReference().firePropertyChangeHelper(
+//                    "variableName", oldValue, value); // NOI18N
             }
 
             public Object getValue() {
@@ -159,7 +171,7 @@ class JavaCodeGenerator extends CodeGenerator {
             }
         };
 
-        if (!component.getFormManager().getFormEditorSupport().supportsAdvancedFeatures()) {
+        if (!component.getFormModel().getFormEditorSupport().supportsAdvancedFeatures()) {
             return new Node.Property[] { variableProperty };
         }
         else {
@@ -182,8 +194,8 @@ class JavaCodeGenerator extends CodeGenerator {
                             component.setAuxValue(AUX_VARIABLE_MODIFIER, new Integer(FormEditor.getFormSettings().getVariablesModifier()));
                         }
                         regenerateVariables();
-                        component.getNodeReference().notifyPropertiesChange();
-                        component.getNodeReference().notifyPropertySetsChange();
+                        component.getNodeReference().fireComponentPropertiesChange();
+                        component.getNodeReference().fireComponentPropertySetsChange();
                     }
 
                     public Object getValue() {
@@ -206,7 +218,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         }
                         component.setAuxValue(AUX_VARIABLE_MODIFIER, value);
                         regenerateVariables();
-                        component.getNodeReference().notifyPropertiesChange();
+                        component.getNodeReference().fireComponentPropertiesChange();
                     }
 
                     public Object getValue() {
@@ -215,8 +227,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     public boolean canWrite() {
                         return JavaCodeGenerator.this.canGenerate
-                               && component.getAuxValue(AUX_VARIABLE_MODIFIER)
-                                                                      != null;
+                               && component.getAuxValue(AUX_VARIABLE_MODIFIER) != null;
                     }
 
                     public PropertyEditor getPropertyEditor() {
@@ -247,7 +258,7 @@ class JavaCodeGenerator extends CodeGenerator {
                             }
                         }
                         regenerateInitializer();
-                        component.getNodeReference().notifyPropertiesChange();
+                        component.getNodeReference().fireComponentPropertiesChange();
                     }
 
                     public Object getValue() {
@@ -265,6 +276,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     public boolean canWrite() {
                         return JavaCodeGenerator.this.canGenerate;
                     }
+
                     public PropertyEditor getPropertyEditor() {
                         return new CodeGenerateEditor(component);
                     }
@@ -281,7 +293,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         }
                         component.setAuxValue(AUX_CREATE_CODE_PRE, value);
                         regenerateInitializer();
-                        component.getNodeReference().notifyPropertiesChange();
+                        component.getNodeReference().fireComponentPropertiesChange();
                     }
 
                     public Object getValue() {
@@ -304,7 +316,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         }
                         component.setAuxValue(AUX_CREATE_CODE_POST, value);
                         regenerateInitializer();
-                        component.getNodeReference().notifyPropertiesChange();
+                        component.getNodeReference().fireComponentPropertiesChange();
                     }
 
                     public Object getValue() {
@@ -327,7 +339,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         }
                         component.setAuxValue(AUX_INIT_CODE_PRE, value);
                         regenerateInitializer();
-                        component.getNodeReference().notifyPropertiesChange();
+                        component.getNodeReference().fireComponentPropertiesChange();
                     }
 
                     public Object getValue() {
@@ -350,7 +362,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         }
                         component.setAuxValue(AUX_INIT_CODE_POST, value);
                         regenerateInitializer();
-                        component.getNodeReference().notifyPropertiesChange();
+                        component.getNodeReference().fireComponentPropertiesChange();
                     }
 
                     public Object getValue() {
@@ -373,7 +385,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         }
                         component.setAuxValue(AUX_SERIALIZE_TO, value);
                         regenerateInitializer();
-                        component.getNodeReference().notifyPropertiesChange();
+                        component.getNodeReference().fireComponentPropertiesChange();
                     }
 
                     public Object getValue() {
@@ -409,7 +421,7 @@ class JavaCodeGenerator extends CodeGenerator {
                             }
                             component.setAuxValue(AUX_CREATE_CODE_CUSTOM, value);
                             regenerateInitializer();
-                            component.getNodeReference().notifyPropertiesChange();
+                            component.getNodeReference().fireComponentPropertiesChange();
                         }
 
                         public Object getValue() {
@@ -419,6 +431,7 @@ class JavaCodeGenerator extends CodeGenerator {
                             }
                             return value;
                         }
+
                         public boolean canWrite() {
                             if (!JavaCodeGenerator.this.canGenerate)
                                 return false;
@@ -438,122 +451,109 @@ class JavaCodeGenerator extends CodeGenerator {
     //
 
     private String getDefaultSerializedName(RADComponent component) {
-        return component.getFormManager().getFormObject().getName()
+        return component.getFormModel().getFormDataObject().getName()
             + "_" + component.getName(); // NOI18N
     }
 
-
-    private String createInitializer() throws IOException {
-        IndentEngine engine = IndentEngine.find(formManager.getFormEditorSupport().getDocument()); // NOI18N
-        AWTIndentStringWriter initCodeBuffer = new AWTIndentStringWriter();
-        Writer initCodeWriter = engine.createWriter(
-            formManager.getFormEditorSupport().getDocument(),
-            initComponentsSection.getBegin().getOffset(), initCodeBuffer);
-
-        initCodeWriter.write(INIT_COMPONENTS_HEADER);
-        RADForm form = formManager.getRADForm();
-        RADComponent top = form.getTopLevelComponent();
-        RADComponent[] nonVisualComponents = formManager.getNonVisualComponents();
-        for (int i = 0; i < nonVisualComponents.length; i++) {
-            addCreateCode(nonVisualComponents[i], initCodeWriter);
-        }
-        addCreateCode(top, initCodeWriter);
-
-        for (int i = 0; i < nonVisualComponents.length; i++) {
-            addInitCode(nonVisualComponents[i], initCodeWriter, initCodeBuffer, 0);
-        }
-        addInitCode(top, initCodeWriter, initCodeBuffer, 0);
-
-        // for visual forms append sizing text
-        if (form.getTopLevelComponent() instanceof RADVisualFormContainer) {
-            RADVisualFormContainer visualForm =
-                (RADVisualFormContainer)form.getTopLevelComponent();
-
-            // 1. generate code for menu, if the form is menu bar container and has
-            // a menu associated
-
-            String menuComp = visualForm.getFormMenu();
-            if (menuComp != null) {
-                String menuText = null;
-                if (visualForm.getFormInfo() instanceof JMenuBarContainer) {
-                    menuText = "setJMenuBar("; // NOI18N
-                } else if (visualForm.getFormInfo() instanceof MenuBarContainer) {
-                    menuText = "setMenuBar("; // NOI18N
-                }
-                if (menuText != null) {
-                    menuText = menuText + menuComp + ");\n\n"; // NOI18N
-                    initCodeWriter.write(menuText);
-                }
-            }
-
-            // 2. generate size code according to form size policy
-
-            int formPolicy = visualForm.getFormSizePolicy();
-            boolean genSize = visualForm.getGenerateSize();
-            boolean genPosition = visualForm.getGeneratePosition();
-            boolean genCenter = visualForm.getGenerateCenter();
-            Dimension formSize = visualForm.getFormSize();
-            Point formPosition = visualForm.getFormPosition();
-
-            String sizeText = ""; // NOI18N
-
-            switch (formPolicy) {
-                case RADVisualFormContainer.GEN_PACK:
-                    sizeText = "pack();\n"; // NOI18N
-                    break;
-                case RADVisualFormContainer.GEN_BOUNDS:
-                    if (genCenter) {
-                        StringBuffer sizeBuffer = new StringBuffer();
-                        if (genSize) {
-                            sizeBuffer.append("pack();\n"); // NOI18N
-                            sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
-                            sizeBuffer.append("setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"); // NOI18N
-                            sizeBuffer.append("setLocation((screenSize.width-"+formSize.width+")/2,(screenSize.height-"+formSize.height+")/2);\n"); // NOI18N
-                        } else {
-                            sizeBuffer.append("pack();\n"); // NOI18N
-                            sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
-                            sizeBuffer.append("java.awt.Dimension dialogSize = getSize();\n"); // NOI18N
-                            sizeBuffer.append("setLocation((screenSize.width-dialogSize.width)/2,(screenSize.height-dialogSize.height)/2);\n"); // NOI18N
-                        }
-
-                        sizeText = sizeBuffer.toString();
-
-                    } else if (genPosition && genSize) { // both size and position
-                        sizeText = "setBounds("+formPosition.x + ", " + formPosition.y +", " + formSize.width + ", " + formSize.height + ");\n"; // NOI18N
-                    } else if (genPosition) { // position only
-                        sizeText = "setLocation(new java.awt.Point("+formPosition.x + ", " + formPosition.y + "));\n"; // NOI18N
-                    } else if (genSize) { // size only
-                        sizeText = "setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"; // NOI18N
-                    }
-                    break;
-            }
-
-            initCodeWriter.write(sizeText);
-        }
-
-        initCodeWriter.write(INIT_COMPONENTS_FOOTER);
-        initCodeWriter.close();
-        
-        return initCodeBuffer.toString();
-    }
-
-   private void regenerateVariablesAndInitializer() {
-        if (needsRegeneration()) {
-            regenerateInitializer();
-            regenerateVariables();
-        }
-   }
-    
-    
     private void regenerateInitializer() {
-        if (errorInitializing)
+        if (!initialized || !canGenerate)
             return;
-        
+
         try {
+            IndentEngine engine = IndentEngine.find(
+                formModel.getFormEditorSupport().getDocument());
+            AWTIndentStringWriter initCodeBuffer = new AWTIndentStringWriter();
+            Writer initCodeWriter = engine.createWriter(
+                formModel.getFormEditorSupport().getDocument(),
+                initComponentsSection.getBegin().getOffset(), initCodeBuffer);
+
+            initCodeWriter.write(INIT_COMPONENTS_HEADER);
+            RADComponent top = formModel.getTopRADComponent();
+            RADComponent[] nonVisualComponents = formModel.getNonVisualComponents();
+            for (int i = 0; i < nonVisualComponents.length; i++) {
+                addCreateCode(nonVisualComponents[i], initCodeWriter);
+            }
+            addCreateCode(top, initCodeWriter);
+
+            for (int i = 0; i < nonVisualComponents.length; i++) {
+                addInitCode(nonVisualComponents[i], initCodeWriter, initCodeBuffer, 0);
+            }
+            addInitCode(top, initCodeWriter, initCodeBuffer, 0);
+
+            // for visual forms append sizing text
+            if (formModel.getTopRADComponent() instanceof RADVisualFormContainer) {
+                RADVisualFormContainer visualForm =
+                    (RADVisualFormContainer) formModel.getTopRADComponent();
+
+                // 1. generate code for menu, if the form is menu bar container and has
+                // a menu associated
+
+                String menuComp = visualForm.getFormMenu();
+                if (menuComp != null) {
+                    //XXX initCodeWriter.write("\n"); // NOI18N
+                    String menuText = null;
+                    if (visualForm.getFormInfo() instanceof JMenuBarContainer) {
+                        menuText = "setJMenuBar("; // NOI18N
+                    } else if (visualForm.getFormInfo() instanceof MenuBarContainer) {
+                        menuText = "setMenuBar("; // NOI18N
+                    }
+                    if (menuText != null) {
+                        menuText = menuText + menuComp + ");\n"; // NOI18N
+                        initCodeWriter.write(menuText);
+                    }
+                }
+
+                // 2. generate size code according to form size policy
+
+                int formPolicy = visualForm.getFormSizePolicy();
+                boolean genSize = visualForm.getGenerateSize();
+                boolean genPosition = visualForm.getGeneratePosition();
+                boolean genCenter = visualForm.getGenerateCenter();
+                Dimension formSize = visualForm.getFormSize();
+                Point formPosition = visualForm.getFormPosition();
+
+                String sizeText = ""; // NOI18N
+
+                switch (formPolicy) {
+                    case RADVisualFormContainer.GEN_PACK:
+                        sizeText = "pack();\n"; // NOI18N
+                        break;
+                    case RADVisualFormContainer.GEN_BOUNDS:
+                        if (genCenter) {
+                            StringBuffer sizeBuffer = new StringBuffer();
+                            if (genSize) {
+                                sizeBuffer.append("pack();\n"); // NOI18N
+                                sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
+                                sizeBuffer.append("setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"); // NOI18N
+                                sizeBuffer.append("setLocation((screenSize.width-"+formSize.width+")/2,(screenSize.height-"+formSize.height+")/2);\n"); // NOI18N
+                            } else {
+                                sizeBuffer.append("pack();\n"); // NOI18N
+                                sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
+                                sizeBuffer.append("java.awt.Dimension dialogSize = getSize();\n"); // NOI18N
+                                sizeBuffer.append("setLocation((screenSize.width-dialogSize.width)/2,(screenSize.height-dialogSize.height)/2);\n"); // NOI18N
+                            }
+
+                            sizeText = sizeBuffer.toString();
+
+                        } else if (genPosition && genSize) { // both size and position
+                            sizeText = "setBounds("+formPosition.x + ", " + formPosition.y +", " + formSize.width + ", " + formSize.height + ");\n"; // NOI18N
+                        } else if (genPosition) { // position only
+                            sizeText = "setLocation(new java.awt.Point("+formPosition.x + ", " + formPosition.y + "));\n"; // NOI18N
+                        } else if (genSize) { // size only
+                            sizeText = "setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"; // NOI18N
+                        }
+                        break;
+                }
+
+                initCodeWriter.write(sizeText);
+            }
+
+            initCodeWriter.write(INIT_COMPONENTS_FOOTER);
+            initCodeWriter.close();
             // set the text into the guarded block
             synchronized(GEN_LOCK) {
                 String originalText = initComponentsSection.getText();
-                String newText = createInitializer();
+                String newText = initCodeBuffer.toString();
                 if (!newText.equals(originalText)) {
                     initComponentsSection.setText(newText);
                     clearUndo();
@@ -563,38 +563,26 @@ class JavaCodeGenerator extends CodeGenerator {
             throw new InternalError(); // cannot happen
         }
     }
-    
-    private boolean needsRegeneration() {
-       FormDataObject fdo = formManager.getFormObject();
-       Entry primary = fdo.getPrimaryEntry();
-       Entry form = fdo.formEntry;
-       
-       FileObject primaryFO = primary.getFile();
-       FileObject formFO = form.getFile();
-       
-       long diff = formFO.lastModified().getTime() - primaryFO.lastModified().getTime();
-       diff = Math.abs(diff);
-       return (diff > 1500 ? true : false);
-    }
 
     private void regenerateVariables() {
-        if (errorInitializing)
+        if (!initialized || !canGenerate)
             return;
-
-        IndentEngine engine = IndentEngine.find(formManager.getFormEditorSupport().getDocument()); // NOI18N
+        
+        IndentEngine engine = IndentEngine.find(
+            formModel.getFormEditorSupport().getDocument());
         StringWriter variablesBuffer = new StringWriter();
         Writer variablesWriter = engine.createWriter(
-            formManager.getFormEditorSupport().getDocument(),
+            formModel.getFormEditorSupport().getDocument(),
             variablesSection.getBegin().getOffset(),
             variablesBuffer);
 
         try {
             variablesWriter.write(VARIABLES_HEADER);
             variablesWriter.write("\n"); // NOI18N
-            RADForm form = formManager.getRADForm();
 
-            addVariables(formManager.getNonVisualsContainer(), variablesWriter);
-            addVariables(form.getFormContainer(), variablesWriter);
+            addVariables(formModel.getNonVisualsContainer(), variablesWriter);
+            addVariables((ComponentContainer)formModel.getTopRADComponent(),
+                         variablesWriter);
 
             variablesWriter.write(VARIABLES_FOOTER);
             variablesWriter.write("\n"); // NOI18N
@@ -609,6 +597,15 @@ class JavaCodeGenerator extends CodeGenerator {
             }
         } catch (IOException e) {
             throw new InternalError(); // cannot happen
+        }
+    }
+
+    private void regenerateEventHandlers() {
+        // only missing handler methods are generated, existing are left intact
+        Object[] handlers = formModel.getFormEventHandlers().getAllHandlers();
+        for (int i=0; i < handlers.length; i++) {
+            EventHandler eh = (EventHandler)handlers[i];
+            eh.generateHandler(null);
         }
     }
 
@@ -637,15 +634,16 @@ class JavaCodeGenerator extends CodeGenerator {
             RADComponent[] children =((ComponentContainer)comp).getSubBeans();
             for (int i = 0; i < children.length; i++) {
                 if ((comp instanceof FormContainer)
-                    ||(!FormEditor.getFormSettings().getIndentAWTHierarchy())) {
-                    initCodeWriter.write("\n"); // NOI18N
+                    ||(!FormEditor.getFormSettings().getIndentAWTHierarchy()))
+                {
+                    //XXX initCodeWriter.write("\n"); // NOI18N
                     // do not indent for top-level children
                     addInitCode(children[i], initCodeWriter, initCodeBuffer, level);
 
                     if (comp instanceof RADVisualContainer) {
                         if (comp instanceof RADVisualFormContainer) {
                             // no indent for top-level container
-                            initCodeWriter.write("\n"); // NOI18N
+                            //XXX initCodeWriter.write("\n"); // NOI18N
                             generateComponentAddCode(children[i],(RADVisualContainer)comp, initCodeWriter);
                         } else {
                             generateComponentAddCode(children[i],(RADVisualContainer)comp, initCodeWriter);
@@ -655,9 +653,10 @@ class JavaCodeGenerator extends CodeGenerator {
                     } // [PENDING - adding to non-visual containers]
 
                     initCodeWriter.write("\n"); // NOI18N
+
                 } else {
-                    initCodeWriter.write("\n"); // NOI18N
-                    initCodeWriter.flush();
+                    //XXX initCodeWriter.write("\n"); // NOI18N
+                    //XXX initCodeWriter.flush();
                     initCodeBuffer.setIndentLevel(level + 1, oneIndent);
                     addInitCode(children[i], initCodeWriter, initCodeBuffer, level + 1);
 
@@ -679,7 +678,6 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
             }
         }
-
     }
 
     private void generateComponentCreate(RADComponent comp,
@@ -697,7 +695,8 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write("\n"); // NOI18N
         }
         Integer generationType =(Integer)comp.getAuxValue(AUX_CODE_GENERATION);
-        if (comp.hasHiddenState() ||((generationType != null) &&(generationType.equals(VALUE_SERIALIZE)))) {
+        if (comp.hasHiddenState()
+                || (generationType != null && generationType.equals(VALUE_SERIALIZE))) {
             String serializeTo =(String)comp.getAuxValue(AUX_SERIALIZE_TO);
             if (serializeTo == null) {
                 serializeTo = getDefaultSerializedName(comp);
@@ -709,7 +708,7 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(comp.getBeanClass().getName());
             initCodeWriter.write(")java.beans.Beans.instantiate(getClass().getClassLoader(), \""); // NOI18N
             // write package name
-            String packageName = formManager.getFormObject().getPrimaryFile().getParent().getPackageName('.');
+            String packageName = formModel.getFormDataObject().getPrimaryFile().getParent().getPackageName('.');
             if (!"".equals(packageName)) { // NOI18N
                 initCodeWriter.write(packageName + "."); // NOI18N
             }
@@ -728,7 +727,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 //PENDING  -announce this !!
                 e.printStackTrace();
             }
-            if (exceptions.length > 0) {
+            if (exceptions != null && exceptions.length > 0) {
                 initCodeWriter.write("try {\n"); // NOI18N
             }
 
@@ -742,24 +741,26 @@ class JavaCodeGenerator extends CodeGenerator {
             }
             initCodeWriter.write("\n"); // NOI18N
 
-            int varCount = 1;
-            // add the catch for all checked exceptions
-            for (int j = 0; j < exceptions.length; j++) {
-                initCodeWriter.write("} catch ("); // NOI18N
-                initCodeWriter.write(exceptions[j].getName());
-                initCodeWriter.write(" "); // NOI18N
-                String excName = "e"+varCount; // NOI18N
-                varCount++;
-                while (formManager.getVariablesPool().isReserved(excName)) {
-                    excName = "e"+varCount; // NOI18N
+            if (exceptions != null && exceptions.length > 0) {
+                int varCount = 1;
+                // add the catch for all checked exceptions
+                for (int j = 0; j < exceptions.length; j++) {
+                    initCodeWriter.write("} catch ("); // NOI18N
+                    initCodeWriter.write(exceptions[j].getName());
+                    initCodeWriter.write(" "); // NOI18N
+                    String excName = "e"+varCount; // NOI18N
                     varCount++;
-                }
-                initCodeWriter.write(excName);
-                initCodeWriter.write(") {\n"); // NOI18N
-                initCodeWriter.write(excName);
-                initCodeWriter.write(".printStackTrace();\n"); // NOI18N
-                if (j == exceptions.length - 1) {
-                    initCodeWriter.write("}\n"); // NOI18N
+                    while (formModel.getVariablePool().isReserved(excName)) {
+                        excName = "e"+varCount; // NOI18N
+                        varCount++;
+                    }
+                    initCodeWriter.write(excName);
+                    initCodeWriter.write(") {\n"); // NOI18N
+                    initCodeWriter.write(excName);
+                    initCodeWriter.write(".printStackTrace();\n"); // NOI18N
+                    if (j == exceptions.length - 1) {
+                        initCodeWriter.write("}\n"); // NOI18N
+                    }
                 }
             }
         }
@@ -771,11 +772,13 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private void generateComponentInit(RADComponent comp, Writer initCodeWriter) throws IOException {
         if (comp instanceof RADVisualContainer) {
-            DesignLayout dl =((RADVisualContainer)comp).getDesignLayout();
-            String layoutInitCode = dl.generateInitCode((RADVisualContainer)comp);
-            if (layoutInitCode != null) {
-                // generate layout init code
-                initCodeWriter.write(layoutInitCode);
+            LayoutSupport layoutSupp = ((RADVisualContainer)comp).getLayoutSupport();
+            if (layoutSupp != null) {
+                String setlayout =
+                    layoutSupp.getJavaSetLayoutString(/*(RADVisualContainer)comp*/);
+                if (setlayout != null) {
+                    initCodeWriter.write(setlayout);
+                }
             }
         }
 
@@ -786,11 +789,13 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(preCode);
             initCodeWriter.write("\n"); // NOI18N
         }
-        if ((genType == null) || VALUE_GENERATE_CODE.equals(genType)) {
-            // not serialized ==>> save
-            RADComponent.RADProperty[] props = comp.getAllProperties();
+        if (!comp.hasHiddenState() 
+                && (genType == null || VALUE_GENERATE_CODE.equals(genType))) {
+            // not serialized
+            RADProperty[] props = comp.getAllBeanProperties();
             for (int i = 0; i < props.length; i++) {
-                if (props[i].isChanged() ||(props[i].getPreCode() != null) ||(props[i].getPostCode() != null)) {
+                if (props[i].isChanged()
+                      || props[i].getPreCode() != null || props[i].getPostCode() != null) {
                     /*      if (desc instanceof IndexedPropertyDescriptor) { // [PENDING]
                             generateIndexedPropertySetter(comp, rprop, initCodeWriter);
                             } else { */
@@ -805,9 +810,18 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    private void generateComponentAddCode(RADComponent comp, RADVisualContainer container, Writer initCodeWriter) throws IOException {
-        DesignLayout dl = container.getDesignLayout();
-        initCodeWriter.write(dl.generateComponentCode(container,(RADVisualComponent)comp));
+    private void generateComponentAddCode(RADComponent comp,
+                                          RADVisualContainer container,
+                                          Writer initCodeWriter) throws IOException {
+        LayoutSupport layoutSupp = container.getLayoutSupport();
+        if (layoutSupp != null) {
+            initCodeWriter.write(
+                layoutSupp.getJavaAddComponentString((RADVisualComponent)comp));
+//                layoutSupp.getJavaAddComponentString(container, (RADVisualComponent)comp));
+        }
+        else {
+            // XXX add fallback code here
+        }
     }
 
     private void generateMenuAddCode(RADComponent comp, RADMenuComponent container, Writer initCodeWriter) throws IOException {
@@ -828,114 +842,86 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     */
 
-    private synchronized void generatePropertySetter(RADComponent comp, RADComponent.RADProperty prop, Writer initCodeWriter) throws IOException {
-        String javaInitializationString = null;
-        PropertyDescriptor desc = prop.getPropertyDescriptor();
-        Method writeMethod = desc.getWriteMethod();
-        if (prop.isChanged()) {
-            PropertyEditor ed = null;
-            try {
-                if (prop.getCurrentEditor() instanceof RADConnectionPropertyEditor) {
-                    ed = new RADConnectionPropertyEditor(prop.getPropertyDescriptor().getPropertyType());
-                } else {
-                    ed =(PropertyEditor)prop.getCurrentEditor().getClass().newInstance();
-                }
-
-                if (ed != null) { // cannot generate without property editor
-
-                    Object value = prop.getValue();
-
-                    // process FormAwareEditors
-                    if (ed instanceof FormAwareEditor) {
-                        ((FormAwareEditor)ed).setRADComponent(comp, prop);
-                    }
-                    if (ed instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
-                        ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)ed).attach(new org.openide.nodes.Node[] { comp.getNodeReference() });
-                    }
-
-                    // null values are generated separately, as most property editors cannot cope with nulls
-                    if (value != null) {
-                        ed.setValue(value);
-
-                        javaInitializationString = ed.getJavaInitializationString();
-                        if ("???".equals(javaInitializationString)) { // NOI18N
-                            javaInitializationString = null; // cannot generate code for this property
-                        }
-                    } else {
-                        // null values are generated separately, as most property editors cannot cope with nulls
-                        javaInitializationString = "null"; // NOI18N
-                    }
-                }
-            } catch (Exception e) {
-                if (System.getProperty("netbeans.debug.exceptions") != null) e.printStackTrace();
-                // cannot generate code for this property without the property editor
-            }
-        }
-
+    // why is this method synchronized??
+    private synchronized void generatePropertySetter(RADComponent comp,
+                                                     RADProperty prop,
+                                                     Writer initCodeWriter)
+    throws IOException {
+        // 1. pre-initialization code
         String preCode = prop.getPreCode();
-        String postCode = prop.getPostCode();
-
-        // 1. pre initialization code
         if (preCode != null) {
             initCodeWriter.write(preCode);
             if (!preCode.endsWith("\n")) initCodeWriter.write("\n"); // NOI18N
         }
 
         // 2. property setter code
-        if (javaInitializationString != null) {
-            // if the setter throws checked exceptions, we must generate try/catch block around it.
-            Class[] exceptions = writeMethod.getExceptionTypes();
-            if (exceptions.length > 0) {
-                initCodeWriter.write("try {\n"); // NOI18N
+        if (prop.isChanged()) {
+            String javaStr;
+            Method writeMethod;
+
+            if ((javaStr = prop.getWholeSetterCode()) != null) {
+                initCodeWriter.write(javaStr);
+                if (!javaStr.endsWith("\n")) // NOI18N
+                    initCodeWriter.write("\n"); // NOI18N
             }
-
-            initCodeWriter.write(getVariableGenString(comp, false));
-            initCodeWriter.write(writeMethod.getName());
-            initCodeWriter.write("("); // NOI18N
-
-            initCodeWriter.write(javaInitializationString);
-
-            initCodeWriter.write(");\n"); // NOI18N
-
-            int varCount = 1;
-            // add the catch for all checked exceptions
-            for (int j = 0; j < exceptions.length; j++) {
-                initCodeWriter.write("} catch ("); // NOI18N
-                initCodeWriter.write(exceptions[j].getName());
-                initCodeWriter.write(" "); // NOI18N
-                String excName = "e"+varCount; // NOI18N
-                varCount++;
-                while (formManager.getVariablesPool().isReserved(excName)) {
-                    excName = "e"+varCount; // NOI18N
-                    varCount++;
+            else if ((javaStr = prop.getJavaInitializationString()) != null
+                      && (writeMethod = prop.getPropertyDescriptor().getWriteMethod()) != null) {
+               // if the setter throws checked exceptions,
+               // we must generate try/catch block around it.
+                Class[] exceptions = writeMethod.getExceptionTypes();
+                if (exceptions.length > 0) {
+                    initCodeWriter.write("try {\n"); // NOI18N
                 }
-                initCodeWriter.write(excName);
-                initCodeWriter.write(") {\n"); // NOI18N
-                initCodeWriter.write(excName);
-                initCodeWriter.write(".printStackTrace();\n"); // NOI18N
-                if (j == exceptions.length - 1) {
-                    initCodeWriter.write("}\n"); // NOI18N
+
+                initCodeWriter.write(getVariableGenString(comp));
+                initCodeWriter.write(writeMethod.getName());
+                initCodeWriter.write("("); // NOI18N
+                initCodeWriter.write(javaStr);
+                initCodeWriter.write(");\n"); // NOI18N
+
+                // add the catch for all checked exceptions
+                int varCount = 1;
+                for (int j = 0; j < exceptions.length; j++) {
+                    initCodeWriter.write("} catch ("); // NOI18N
+                    initCodeWriter.write(exceptions[j].getName());
+                    initCodeWriter.write(" "); // NOI18N
+
+                    String excName = "e"+varCount; // NOI18N
+                    varCount++;
+                    while (formModel.getVariablePool().isReserved(excName)) {
+                        excName = "e"+varCount; // NOI18N
+                        varCount++;
+                    }
+
+                    initCodeWriter.write(excName);
+                    initCodeWriter.write(") {\n"); // NOI18N
+                    initCodeWriter.write(excName);
+                    initCodeWriter.write(".printStackTrace();\n"); // NOI18N
+                    if (j == exceptions.length - 1) {
+                        initCodeWriter.write("}\n"); // NOI18N
+                    }
                 }
             }
         }
 
-        // 3. post initialization code
+        // 3. post-initialization code
+        String postCode = prop.getPostCode();
         if (postCode != null) {
             initCodeWriter.write(postCode);
-            if (!postCode.endsWith("\n")) initCodeWriter.write("\n"); // NOI18N
+            if (!postCode.endsWith("\n")) // NOI18N
+                initCodeWriter.write("\n"); // NOI18N
         }
     }
 
-
     private void generateComponentEvents(RADComponent comp, Writer initCodeWriter) throws IOException {
-        String variablePrefix = getVariableGenString(comp, false);
+        String variablePrefix = getVariableGenString(comp);
 
-        EventsList.EventSet[] eventSets = comp.getEventsList().getEventSets();
+        EventSet[] eventSets = comp.getEventHandlers().getEventSets();
 
         // go through the event sets - we generate the innerclass for whole
         // EventSet at once
         for (int i = 0; i < eventSets.length; i++) {
-            EventsList.Event events[] = eventSets[i].getEvents();
+            Event events[] = eventSets[i].getEvents();
             EventSetDescriptor eventSetDesc = eventSets[i].getEventSetDescriptor();
 
             // try to find adpater to use instead of the listener
@@ -967,6 +953,8 @@ class JavaCodeGenerator extends CodeGenerator {
             if (shouldGenerate) {
                 Method eventAddMethod = eventSetDesc.getAddListenerMethod();
 
+                initCodeWriter.write("\n"); // NOI18n
+                
                 boolean unicastEvent = false;
                 if ((eventAddMethod.getExceptionTypes().length == 1) &&
                     (java.util.TooManyListenersException.class.equals(eventAddMethod.getExceptionTypes()[0])))
@@ -1009,7 +997,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     if (events[j].getHandlers().size() > 0) {
                         // generate the call to the handlers
                         for (Iterator it = events[j].getHandlers().iterator(); it.hasNext();) {
-                            EventsManager.EventHandler handler =(EventsManager.EventHandler) it.next();
+                            EventHandler handler = (EventHandler) it.next();
                             initCodeWriter.write(handler.getName());
                             initCodeWriter.write("("); // NOI18N
                             for (int k = 0; k < varNames.length; k++) {
@@ -1018,28 +1006,26 @@ class JavaCodeGenerator extends CodeGenerator {
                                     initCodeWriter.write(", "); // NOI18N
                             }
                             initCodeWriter.write(");"); // NOI18N
-                            if (it.hasNext())
-                                initCodeWriter.write("\n"); // NOI18N
+                            initCodeWriter.write("\n"); // NOI18N
                         }
                     }
-                    initCodeWriter.write("\n"); // NOI18N
                     initCodeWriter.write("}\n"); // NOI18N
                 }
 
                 // end of the innerclass
                 initCodeWriter.write("}\n"); // NOI18N
-                initCodeWriter.write(");\n"); // NOI18N
+                initCodeWriter.write(");\n\n"); // NOI18N
 
 
                 // if the event is unicast, generate the catch for TooManyListenersException
                 if (unicastEvent) {
                     initCodeWriter.write("} catch (java.util.TooManyListenersException "); // NOI18N
                     String varName = "e"; // NOI18N
-                    if (formManager.getVariablesPool().isReserved(varName)) {
+                    if (formModel.getVariablePool().isReserved(varName)) {
                         int varCount = 1;
                         varName = "e1"; // NOI18N
                         while (true) {
-                            if (!(formManager.getVariablesPool().isReserved(varName)))
+                            if (!(formModel.getVariablePool().isReserved(varName)))
                                 break;
                             varName = "e"+varCount; // NOI18N
                         }
@@ -1049,7 +1035,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     initCodeWriter.write(") {\n"); // NOI18N
                     initCodeWriter.write(varName);
                     initCodeWriter.write(".printStackTrace();\n"); // NOI18N
-                    initCodeWriter.write("}\n"); // NOI18N
+                    initCodeWriter.write("}\n\n"); // NOI18N
                 }
             }
         }
@@ -1077,13 +1063,9 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    private static String getVariableGenString(RADComponent comp, boolean containerCode) {
+    private static String getVariableGenString(RADComponent comp) {
         if (comp instanceof FormContainer) {
-            if (containerCode) {
-                return(((FormContainer)comp).getFormInfo().getContainerGenName());
-            } else {
                 return ""; // NOI18N
-            }
         } else {
             return comp.getName() + "."; // NOI18N
         }
@@ -1095,18 +1077,18 @@ class JavaCodeGenerator extends CodeGenerator {
 
     /** Generates the specified event handler, if it does not exist yet.
      * @param handlerName The name of the event handler
-     * @param paramList the list of event handler parameter types
+     * @param paramTypes the array of event handler parameter types
+     * @param exceptTypes the array of exception types that event handler throws
      * @param bodyText the body text of the event handler or null for default(empty) one
      * @return true if the event handler have not existed yet and was creaated, false otherwise
      */
     public boolean generateEventHandler(String handlerName, String[] paramTypes,
                                         String[] exceptTypes, String bodyText) {
-        if (errorInitializing) return false;
-        if (!canGenerate) return false; // read only
-        if (getEventHandlerSection(handlerName) != null)
+        if (!initialized || !canGenerate
+              || getEventHandlerSection(handlerName) != null)
             return false;
 
-        FormEditorSupport s = formManager.getFormEditorSupport();
+        FormEditorSupport s = formModel.getFormEditorSupport();
         IndentEngine engine = IndentEngine.find(s.getDocument());
         StringWriter buffer = new StringWriter();
         Writer codeWriter = engine.createWriter(s.getDocument(),
@@ -1120,10 +1102,10 @@ class JavaCodeGenerator extends CodeGenerator {
                 codeWriter.write(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
                 codeWriter.flush();
                 i1 = buffer.getBuffer().length();
-                codeWriter.write(getEventHandlerBody(handlerName, paramTypes, bodyText));
+                codeWriter.write(getEventHandlerBody(bodyText)); //handlerName, paramTypes, bodyText));
                 codeWriter.flush();
                 i2 = buffer.getBuffer().length();
-                codeWriter.write(getEventHandlerFooter(handlerName, paramTypes));
+                codeWriter.write(getEventHandlerFooter()); //handlerName, paramTypes));
                 codeWriter.flush();
 
                 sec.setHeader(buffer.getBuffer().substring(0,i1));
@@ -1133,47 +1115,46 @@ class JavaCodeGenerator extends CodeGenerator {
                 codeWriter.close();
             } 
             catch (javax.swing.text.BadLocationException e) {
+                return false;
             }
             catch (java.io.IOException ioe) {
+                return false;
             }
-            
             clearUndo();
         }
-
         return true;
     }
 
     /** Changes the text of the specified event handler, if it already exists.
      * @param handlerName The name of the event handler
-     * @param paramList the list of event handler parameter types
+     * @param paramTypes the array of event handler parameter types
+     * @param exceptTypes the array of exception types that event handler throws
      * @param bodyText the new body text of the event handler or null for default(empty) one
      * @return true if the event handler existed and was modified, false otherwise
      */
     public boolean changeEventHandler(final String handlerName, final String[] paramTypes,
                                       final String[] exceptTypes, final String bodyText) {
-        if (errorInitializing) return false;
-        if (!canGenerate) return false; // read only
         JavaEditor.InteriorSection sec = getEventHandlerSection(handlerName);
-        if (sec == null)
+        if (sec == null || !initialized || !canGenerate)
             return false;
 
-        FormEditorSupport s = formManager.getFormEditorSupport();
+        FormEditorSupport s = formModel.getFormEditorSupport();
         IndentEngine engine = IndentEngine.find(s.getDocument());
         StringWriter buffer = new StringWriter();
         Writer codeWriter = engine.createWriter(s.getDocument(),
                                                 sec.getPositionBefore().getOffset(),
                                                 buffer);
-        int i1, i2;
-
         synchronized(GEN_LOCK) {
             try {
+                int i1, i2;
+
                 codeWriter.write(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
                 codeWriter.flush();
                 i1 = buffer.getBuffer().length();
-                codeWriter.write(getEventHandlerBody(handlerName, paramTypes, bodyText));
+                codeWriter.write(getEventHandlerBody(bodyText)); //handlerName, paramTypes, bodyText));
                 codeWriter.flush();
                 i2 = buffer.getBuffer().length();
-                codeWriter.write(getEventHandlerFooter(handlerName, paramTypes));
+                codeWriter.write(getEventHandlerFooter()); //handlerName, paramTypes));
                 codeWriter.flush();
 
                 sec.setHeader(buffer.getBuffer().substring(0,i1));
@@ -1183,6 +1164,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 codeWriter.close();
             }
             catch (IOException e) {
+                return false;
             }
             clearUndo();
         }
@@ -1193,12 +1175,11 @@ class JavaCodeGenerator extends CodeGenerator {
      * @param handlerName The name of the event handler
      */
     public boolean deleteEventHandler(String handlerName) {
-        if (errorInitializing) return false;
-        if (!canGenerate) return false; // read only
+        JavaEditor.InteriorSection section = getEventHandlerSection(handlerName);
+        if (section == null || !initialized || !canGenerate)
+            return false;
+
         synchronized(GEN_LOCK) {
-            JavaEditor.InteriorSection section = getEventHandlerSection(handlerName);
-            if (section == null)
-                return false;
             section.deleteSection();
             clearUndo();
         }
@@ -1209,10 +1190,7 @@ class JavaCodeGenerator extends CodeGenerator {
     private String getEventHandlerHeader(String handlerName, String[] paramTypes, String[] exceptTypes) {
         StringBuffer buf = new StringBuffer();
 
-        // [IAN] following line contains a hack, where the first four spaces in the event handler header
-        // is a quick workaround for the bug, where sections in JavaEditor do not use Indentation Engine
-        // and thus the first line of event handlers was not indented correctly
-        buf.append("    private void "); // NOI18N
+        buf.append("private void "); // NOI18N
         buf.append(handlerName);
         buf.append("("); // NOI18N
 
@@ -1220,7 +1198,7 @@ class JavaCodeGenerator extends CodeGenerator {
         String[] varNames = new String [paramTypes.length];
 
         if (paramTypes.length == 1)
-            varNames [0] = paramTypes [0] + " " + new FormLoaderSettings().getEventVariableName(); // NOI18N
+            varNames [0] = paramTypes [0] + " " + formSettings.getEventVariableName(); // NOI18N
         else
             for (int i = 0; i < paramTypes.length; i ++)
                 varNames [i] = paramTypes [0] + " param" + i; // NOI18N
@@ -1230,7 +1208,7 @@ class JavaCodeGenerator extends CodeGenerator {
             if (i != paramTypes.length - 1)
                 buf.append(", "); // NOI18N
             else
-                buf.append(")"); // {\n"); // NOI18N
+                buf.append(")"); // NOI18N
         }
 
         if (exceptTypes != null && exceptTypes.length > 0) {
@@ -1247,23 +1225,21 @@ class JavaCodeGenerator extends CodeGenerator {
         return buf.toString();
     }
 
-    private String getEventHandlerBody(String handlerName, String[] paramTypes, String bodyText) {
+//    private String getEventHandlerBody(String handlerName, String[] paramTypes, String bodyText) {
+    private String getEventHandlerBody(String bodyText) {
         if (bodyText == null) {
             bodyText = getDefaultEventBody();
-        } else {
-            /*      bodyText = Utilities.replaceString(bodyText, "\n", "\n"+oneIndent);
-                    bodyText = Utilities.replaceString(bodyText, "\t", oneIndent);
-                    bodyText = oneIndent + oneIndent + bodyText; */ // [PENDING]
         }
         return bodyText;
     }
 
-    private String getEventHandlerFooter(String handlerName, String[] paramTypes) {
-        return "    }\n"; // NOI18N
+//    private String getEventHandlerFooter(String handlerName, String[] paramTypes) {
+    private String getEventHandlerFooter() {
+        return "}\n"; // NOI18N
     }
 
     private String getDefaultEventBody() {
-        return "        "+FormEditor.getFormBundle().getString("MSG_EventHandlerBody");
+        return FormEditor.getFormBundle().getString("MSG_EventHandlerBody");
     }
 
     /** Renames the specified event handler to the given new name.
@@ -1272,42 +1248,55 @@ class JavaCodeGenerator extends CodeGenerator {
      */
     public boolean renameEventHandler(String oldHandlerName, String newHandlerName,
                                       String[] paramTypes, String[] exceptTypes) {
-        if (errorInitializing) return false;
-        if (!canGenerate) return false; // read only
-
         JavaEditor.InteriorSection sec = getEventHandlerSection(oldHandlerName);
-        if (sec == null) {
+        if (sec == null || !initialized || !canGenerate)
             return false;
-        }
 
+        FormEditorSupport s = formModel.getFormEditorSupport();
+        IndentEngine engine = IndentEngine.find(s.getDocument());
+        StringWriter buffer = new StringWriter();
+        Writer codeWriter = engine.createWriter(s.getDocument(),
+                                                sec.getPositionBefore().getOffset(),
+                                                buffer);
         synchronized(GEN_LOCK) {
-            sec.setHeader(getEventHandlerHeader(newHandlerName, paramTypes, exceptTypes));
-            sec.setBottom(getEventHandlerFooter(newHandlerName, paramTypes));
             try {
+                codeWriter.write(getEventHandlerHeader(newHandlerName, paramTypes, exceptTypes));
+                codeWriter.flush();
+                int i1 = buffer.getBuffer().length();
+                codeWriter.write(getEventHandlerFooter()); //newHandlerName, paramTypes));
+                codeWriter.flush();
+
+                sec.setHeader(buffer.getBuffer().substring(0,i1));
+                sec.setBottom(buffer.getBuffer().substring(i1));
                 sec.setName(getEventSectionName(newHandlerName));
-                clearUndo();
-            } catch (java.beans.PropertyVetoException e) {
+
+                codeWriter.close();
+            } 
+            catch (java.beans.PropertyVetoException e) {
                 return false;
             }
+            catch (IOException e) {
+                return false;
+            }
+            clearUndo();
         }
-
         return true;
     }
 
     /** Focuses the specified event handler in the editor. */
     public void gotoEventHandler(String handlerName) {
         JavaEditor.InteriorSection sec = getEventHandlerSection(handlerName);
-        if (sec != null) {
+        if (sec != null && initialized) {
             sec.openAt();
-            formManager.getFormEditorSupport().gotoEditor();
+            formModel.getFormEditorSupport().gotoEditor();
         }
     }
 
-    /**
-    * Returns whether the specified event handler is empty (with no user
-    * code). Empty handlers can be deleted without user confirmation.
-    * @return true if the event handler exists and is empty
-    */
+    /** 
+     * Returns whether the specified event handler is empty (with no user
+     * code). Empty handlers can be deleted without user confirmation.
+     * @return true if the event handler exists and is empty
+     */
     public boolean isEventHandlerEmpty(String handlerName) {
         JavaEditor.InteriorSection section = getEventHandlerSection(handlerName);
         if (section != null) {
@@ -1323,13 +1312,13 @@ class JavaCodeGenerator extends CodeGenerator {
 
     /** Clears undo buffer after code generation */
     private void clearUndo() {
-        formManager.getFormEditorSupport().getUndoManager().discardAllEdits();
+        formModel.getFormEditorSupport().getUndoManager().discardAllEdits();
     }
 
     // sections acquirement
 
     private JavaEditor.InteriorSection getEventHandlerSection(String eventName) {
-        FormEditorSupport s = formManager.getFormEditorSupport();
+        FormEditorSupport s = formModel.getFormEditorSupport();
         return s.findInteriorSection(getEventSectionName(eventName));
     }
 
@@ -1378,33 +1367,51 @@ class JavaCodeGenerator extends CodeGenerator {
         return buf.toString();
     }
 
+    /** Checks whether loaded form needs to be regenerated (code for
+     * initComponents() and variables). If the diff in last modif time
+     * of .java and .form files is less then (say) 1.5 sec then it is
+     * not necessary to regenerate the code.
+     */
+    private boolean needsRegeneration() {
+        FormDataObject fdo = formModel.getFormDataObject();
+        Entry primary = fdo.getPrimaryEntry();
+        Entry form = fdo.formEntry;
+
+        FileObject primaryFO = primary.getFile();
+        FileObject formFO = form.getFile();
+
+        long diff = formFO.lastModified().getTime() - primaryFO.lastModified().getTime();
+        diff = Math.abs(diff);
+        return diff > 1500 ? true : false;
+    }
+
     //
     // {{{ JCGFormListener
     //
 
-    private class JCGFormListener implements FormListener
+    private class JCGFormListener extends FormModelAdapter
     {
         /** Called when the form is succesfully loaded and fully initialized */
 
-        public void formLoaded() {
-            regenerateVariablesAndInitializer();
+        public void formLoaded(FormModelEvent e) {
+            if (needsRegeneration()) {
+                regenerateVariables();
+                regenerateInitializer();
+                regenerateEventHandlers();
+            }
         }
 
-        public void codeChanged() {
-            regenerateInitializer();
-        }
-
-        public void formChanged() {
+        public void formChanged(FormModelEvent e) {
             regenerateVariables();
             regenerateInitializer();
         }
 
         /** Called when the form is about to be saved */
 
-        public void formToBeSaved() {
-            serializeComponentsRecursively(formManager.getRADForm().getTopLevelComponent());
+        public void formToBeSaved(FormModelEvent e) {
+            serializeComponentsRecursively(formModel.getTopRADComponent());
 
-            RADComponent[] nonVisuals = formManager.getNonVisualComponents();
+            RADComponent[] nonVisuals = formModel.getNonVisualComponents();
             for (int i = 0; i < nonVisuals.length; i++) {
                 serializeComponentsRecursively(nonVisuals[i]);
             }
@@ -1412,11 +1419,12 @@ class JavaCodeGenerator extends CodeGenerator {
 
         private void serializeComponentsRecursively(RADComponent comp) {
             Object value = comp.getAuxValue(AUX_CODE_GENERATION);
-            if ((value != null) && VALUE_SERIALIZE.equals(value)) {
+            if (comp.hasHiddenState()
+                    || (value != null && VALUE_SERIALIZE.equals(value))) {
                 String serializeTo =(String)comp.getAuxValue(AUX_SERIALIZE_TO);
                 if (serializeTo != null) {
                     try {
-                        FileObject fo = formManager.getFormObject().getPrimaryFile();
+                        FileObject fo = formModel.getFormDataObject().getPrimaryFile();
                         FileObject serFile = fo.getParent().getFileObject(serializeTo, "ser"); // NOI18N
                         if (serFile == null) {
                             serFile = fo.getParent().createData(serializeTo, "ser"); // NOI18N
@@ -1458,117 +1466,6 @@ class JavaCodeGenerator extends CodeGenerator {
                     serializeComponentsRecursively(children[i]);
                 }
             }
-        }
-
-        /**
-         * Called when the order of components within their parent changes
-         * @param cont the container on which the components were reordered
-         */
-
-        public void componentsReordered(ComponentContainer cont) {
-            regenerateVariables();
-            regenerateInitializer();
-        }
-
-        /**
-         * Called when a new component is added to the form
-         * @param evt the event object describing the event
-         */
-
-        public void componentsAdded(RADComponent[] comps) {
-            regenerateVariables();
-            regenerateInitializer();
-        }
-
-        /**
-         * Called when any component is removed from the form
-         * @param evt the event object describing the event
-         */
-        public void componentsRemoved(RADComponent[] comps) {
-            regenerateVariables();
-            regenerateInitializer();
-
-            // delete the ".SER" file for removed components?
-            for (int i=0; i < comps.length; i++) {
-                RADComponent comp = comps[i];
-                Integer generationType =(Integer) comp.getAuxValue(AUX_CODE_GENERATION);
-                if (generationType != null && generationType.equals(VALUE_SERIALIZE)) {
-                    Object serTo = comp.getAuxValue(AUX_SERIALIZE_TO);
-                    if (serTo != null) {
-                        try {
-                            FileObject fo = formManager.getFormObject().getPrimaryFile();
-                            FileObject serFile = fo.getParent().getFileObject((String)serTo, "ser"); // NOI18N
-                            if (serFile != null) {
-                                serFile.delete(serFile.lock());
-                            }
-                        }
-                        catch (Exception ex) {
-                        }
-                    }
-                }
-            }
-        }
-
-        /**
-         * Called when any synthetic property of a component on the form is changed
-         * The synthetic properties include: variableName, serialize,
-         * serializeName, generateGlobalVariable
-         * @param evt the event object describing the event
-         */
-
-        public void componentChanged(FormPropertyEvent evt) {
-            regenerateVariables();
-            regenerateInitializer();
-        }
-
-        /**
-         * Called when any bean property of a component on the form is changed
-         * @param evt the event object describing the event
-         */
-
-        public void propertyChanged(FormPropertyEvent evt) {
-            regenerateInitializer();
-        }
-
-        /**
-         * Called when any layout property of specified component on given
-         * container changes
-         * @param container the visual container on which layout the change happened
-         * @param component the component which layout property changed or null if
-         * layout's own property changed
-         * @param propertyName name of changed property
-         * @param oldValue old value of changed property
-         * @param newValue new value of changed property
-         */
-
-        public void layoutChanged(RADVisualContainer container,
-                                  RADVisualComponent component,
-                                  String propertyName, Object oldValue, Object newValue) {
-            regenerateInitializer();
-        }
-
-        /**
-         * Called when an event handler is added to a component on the form
-         * @param evt the event object describing the event
-         */
-        public void eventAdded(FormEventEvent evt) {
-            regenerateInitializer();
-        }
-
-        /**
-         * Called when an event handler is added to a component on the form
-         * @param evt the event object describing the event
-         */
-        public void eventRemoved(FormEventEvent evt) {
-            regenerateInitializer();
-        }
-
-        /**
-         * Called when an event handler is renamed on a component on the form
-         * @param evt the event object describing the event
-         */
-        public void eventRenamed(FormEventEvent evt) {
-            regenerateInitializer();
         }
     }
     // }}}

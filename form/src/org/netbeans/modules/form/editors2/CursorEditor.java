@@ -25,7 +25,6 @@ import javax.swing.*;
 /**
  *
  * @author  Pavel Buzek
- * @version 
  */
 
 public class CursorEditor extends PropertyEditorSupport  implements EnhancedPropertyEditor, org.openide.explorer.propertysheet.editors.XMLPropertyEditor {

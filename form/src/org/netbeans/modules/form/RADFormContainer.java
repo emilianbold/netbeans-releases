@@ -64,9 +64,9 @@ public class RADFormContainer extends RADContainer implements FormContainer {
      * or method call ending with "."(e.g. "container.getContentPane().").
      * @return the prefix code for generating code to add subcomponents to this container
      */
-    public String getContainerGenName() {
-        return formInfo.getContainerGenName();
-    }
+//    public String getContainerGenName() {
+//        return formInfo.getContainerGenName();
+//    }
 
     /** @return the form info of form represented by this RADFormContainer */
     public FormInfo getFormInfo() {

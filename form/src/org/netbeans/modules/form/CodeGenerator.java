@@ -24,10 +24,10 @@ import org.openide.nodes.Node;
 public abstract class CodeGenerator {
 
     /**
-     * initializes a CodeGenerator for a given FormManager2 object
-     * @param formManager a FormManager2 object
+     * initializes a CodeGenerator for a given FormModel
+     * @param formModel a FormModel object
      */
-    public abstract void initialize(FormManager2 formManager);
+    public abstract void initialize(FormModel formModel);
 
     /**
      * Alows the code generator to provide synthetic properties for specified 
@@ -95,6 +95,13 @@ public abstract class CodeGenerator {
     /** Focuses the specified event handler in the editor. */
 
     public abstract void gotoEventHandler(String handlerName);
+
+    /** 
+     * Returns whether the specified event handler is empty (with no user
+     * code). Empty handlers can be deleted without user confirmation.
+     * @return true if the event handler exists and is empty
+     */
+    public boolean isEventHandlerEmpty(String handlerName) {
+        return false;
+    }
 }
-
-

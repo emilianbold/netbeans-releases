@@ -11,6 +11,8 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+/* $Id$ */
+
 package org.netbeans.modules.form;
 
 import java.awt.*;
@@ -33,12 +35,12 @@ import org.openide.nodes.*;
 import org.openide.util.*;
 import org.netbeans.modules.form.util2.*;
 import org.netbeans.modules.form.actions.*;
-import org.netbeans.modules.form.FormDataObject;
-import org.netbeans.modules.form.FormLoaderSettings;
 import org.netbeans.modules.form.palette.*;
 import org.netbeans.modules.form.compat2.layouts.*;
 import org.netbeans.modules.form.compat2.layouts.support.*;
 import org.netbeans.beaninfo.editors.TableModelEditor;
+
+import org.netbeans.modules.form.layoutsupport.*;
 
 /**
  * A static class that manages global FormEditor issues.
@@ -53,6 +55,9 @@ final public class FormEditor extends Object
     /** The global version number of the FormEditor serialized format */
     public static final NbVersion FORM_EDITOR_VERSION = new NbVersion(1, 0);
 
+    public static final String GUI_EDITING_WORKSPACE_NAME = "Visual"; // NOI18N
+    
+    
     /** The prefix for event properties. The name of an event property
      * is a concatenation of this string and the event name.
      * E.g. for mousePressed event, the property is named "__EVENT__mousePressed"
@@ -63,25 +68,12 @@ final public class FormEditor extends Object
      * E.g. for Direction layout property, the property is named "__LAYOUT__mousePressed"
      */
     public static final String LAYOUT_PREFIX = "__LAYOUT__"; // NOI18N
-    public static final String GUI_EDITING_WORKSPACE_NAME = "Visual"; // NOI18N
 
     /** The resource bundle for the form editor */
     private static ResourceBundle formBundle = NbBundle.getBundle(FormEditor.class);
     /** Settings of FormEditor */
-    private static FormLoaderSettings formSettings = (FormLoaderSettings) SharedClassObject.findObject (FormLoaderSettings.class, true);
-    /** The DesignMode action */
-    private static DesignModeAction designModeAction = (DesignModeAction) SharedClassObject.findObject (DesignModeAction.class, true);
-    /** The TestMode action */
-    private static TestModeAction testModeAction = (TestModeAction) SharedClassObject.findObject (TestModeAction.class, true);
-    /** The action that holds the curent palette state(selection/add mode) */
-    private static PaletteAction paletteAction = (PaletteAction) SharedClassObject.findObject (PaletteAction.class, true);
-
-    /** The default width of the ComponentInspector */
-    public static final int DEFAULT_INSPECTOR_WIDTH = 250;
-    /** The default height of the ComponentInspector */
-    public static final int DEFAULT_INSPECTOR_HEIGHT = 400;
-    /** The default percents of the splitting of the ComponentInspector */
-    public static final int DEFAULT_INSPECTOR_PERCENTS = 30;
+    private static FormLoaderSettings formSettings = (FormLoaderSettings)
+                   SharedClassObject.findObject(FormLoaderSettings.class, true);
 
     /** The default width of the form window */
     public static final int DEFAULT_FORM_WIDTH = 300;
@@ -94,12 +86,6 @@ final public class FormEditor extends Object
     // Private static variables
 
     private static ArrayList errorLog = new ArrayList();
-    private static ComponentInspector componentInspector;
-    private static EmptyInspectorNode emptyInspectorNode;
-
-    /** Default icon base for control panel. */
-    private static final String EMPTY_INSPECTOR_ICON_BASE =
-        "/org/netbeans/modules/form/resources/emptyInspector"; // NOI18N
 
     // -----------------------------------------------------------------------------
     // Static methods
@@ -114,38 +100,19 @@ final public class FormEditor extends Object
         return formSettings;
     }
 
-    /** Provides the shared PaletteAction */
-    public static PaletteAction getPaletteAction() {
-        return paletteAction;
-    }
-
-
-    public static ComponentInspector getComponentInspector() {
-        if (componentInspector == null) {
-            componentInspector = new ComponentInspector();
-        }
-        return componentInspector;
-    }
-
+    // used by GandalfPersistenceManager only
+    // why is this in FormEditor class??
     public static PropertyEditor createPropertyEditor(
-        Class editorClass,
-        Class propertyType,
-        RADComponent radComponent,
-        RADComponent.RADProperty radProperty)
+        Class editorClass, Class propertyType, FormProperty property)
         throws InstantiationException, IllegalAccessException
     {
         PropertyEditor ed;
         if (editorClass.equals(RADConnectionPropertyEditor.class)) {
             ed = new RADConnectionPropertyEditor(propertyType);
         } else {
-            ed =(PropertyEditor)editorClass.newInstance();
+            ed = (PropertyEditor)editorClass.newInstance();
         }
-        if (ed instanceof FormAwareEditor) {
-            ((FormAwareEditor)ed).setRADComponent(radComponent, radProperty);
-        }
-        if (ed instanceof NodePropertyEditor) {
-            ((NodePropertyEditor)ed).attach(new Node[] { radComponent.getNodeReference() });
-        }
+        property.getPropertyContext().initPropertyEditor(ed);
         return ed;
     }
 
@@ -162,7 +129,8 @@ final public class FormEditor extends Object
     }
 
     public static String getSerializedBeanName(RADComponent comp) {
-        StringBuffer name = new StringBuffer(comp.getFormManager().getFormObject().getName());
+        StringBuffer name =
+            new StringBuffer(comp.getFormModel().getFormDataObject().getName());
         name.append("$"); // NOI18N
         name.append(comp.getName());
         name.append(".ser"); // NOI18N
@@ -228,9 +196,13 @@ final public class FormEditor extends Object
                 propValue = varName;
             }
         }
+        else if (comp instanceof JInternalFrame) {
+            propName = "visible";
+            propValue = new Boolean(true);
+        }
 
         if (propName != null) {
-            RADComponent.RADProperty prop = radComp.getPropertyByName(propName);
+            RADProperty prop = radComp.getPropertyByName(propName);
             if (prop != null) {
                 try {
                     prop.setValue(propValue);
@@ -290,7 +262,7 @@ final public class FormEditor extends Object
             }
         }
         if (propName != null) {
-            RADComponent.RADProperty prop = menuComp.getPropertyByName(propName);
+            RADProperty prop = menuComp.getPropertyByName(propName);
             if (prop != null) {
                 try {
                     prop.setValue(propValue);
@@ -333,15 +305,18 @@ final public class FormEditor extends Object
         return null;
     }
 
-    /** @return The DesignLayout support for container represented by this PaletteNode, or
-     * null, if this PaletteNode does not represent a Container or there is no design-time
-     * support for the layout of the container
+    /**
+     * @return The DesignLayout support for container represented by this
+     * PaletteNode, or null, if this PaletteNode does not represent a Container
+     * or there is no design-time support for the layout of the container
      */
     public static DesignLayout findDesignLayout(PaletteItem item) {
-        if (!item.isContainer()) return null;
+        if (!item.isContainer())
+            return null;
         Class itemClass = item.getItemClass();
         DesignSupportLayout supportLayout = getSupportLayout(itemClass);
-        if (supportLayout != null) return supportLayout;
+        if (supportLayout != null)
+            return supportLayout;
 
         Object sharedInstance = null;
         try {
@@ -401,176 +376,64 @@ final public class FormEditor extends Object
         return newDesignLayout;
     }
 
-    static RADComponent.RADProperty[] sortProperties(
+/*    public static LayoutSupport findLayoutSupport(PaletteItem item) {
+        if (!item.isContainer())
+            return null;
+        
+        Object sharedInstance = null;
+        try {
+            sharedInstance = item.getSharedInstance();
+        } catch (Exception e) {
+        }
+        if (sharedInstance == null) {
+            return null;
+        }
+
+        LayoutSupport layoutSupp = null;
+        Container container = (Container) sharedInstance;
+        
+        try {
+            Object value = item.getBeanInfo().getBeanDescriptor().getValue("containerDelegate"); // NOI18N
+            if (value != null && value instanceof String) {
+                Method m = sharedInstance.getClass().getMethod((String) value,
+                                                               new Class [0]);
+                container = (Container) m.invoke(sharedInstance, new Object [0]);
+            }
+        } catch (Exception e) {}
+
+        
+        LayoutManager lm = container.getLayout();
+
+        if (lm instanceof FlowLayout) {
+            layoutSupp = new FlowLayoutSupport();
+        } else if (lm instanceof BorderLayout) {
+            layoutSupp = new BorderLayoutSupport();
+        } else if (lm instanceof CardLayout) {
+            layoutSupp = new CardLayoutSupport();
+        } else if (lm instanceof GridLayout) {
+            layoutSupp = new GridLayoutSupport();
+        } else if (lm instanceof GridBagLayout) {
+            layoutSupp = new GridBagLayoutSupport();
+//          } else if (lm instanceof EqualFlowLayout) {
+//              layoutSupp = new EqualFlowLayoutSupport();
+//          } else if (lm instanceof org.netbeans.lib.awtextra.AbsoluteLayout) {
+//              layoutSupp = new AbsoluteLayout();
+        } else if (lm instanceof BoxLayout) {
+            layoutSupp = new BoxLayoutSupport();
+        }
+
+        return layoutSupp;
+    } */
+
+    static RADProperty[] sortProperties(
         java.util.List properties, Class beanClass) {
-        return(RADComponent.RADProperty[])properties.toArray(
-            new RADComponent.RADProperty[properties.size()]); // noop so far [PENDING]
+        return (RADProperty[]) properties.toArray(
+            new RADProperty[properties.size()]); // noop so far [PENDING]
     }
 
     // ---------------------------------------------------
     // inner classes
 
-    /** The ComponentInspector explorer */
-    final public static class ComponentInspector extends ExplorerPanel
-        implements java.io.Serializable
-    {
-        /** The message formatter for Explorer title */
-        private static MessageFormat formatInspectorTitle = new MessageFormat(
-            formBundle.getString("FMT_InspectorTitle")
-            );
-
-        /** A JDK 1.1. serial version UID */
-        //    static final long serialVersionUID = 6802346985641760699L;
-
-        /** Currently focused form or null if no form is opened/focused */
-        transient private FormManager2 formManager;
-
-        private static final java.net.URL iconURL = 
-            ComponentInspector.class.getResource("/org/netbeans/modules/form/resources/inspector.gif"); // NOI18N
-
-        /** The Inspector's icon */
-        private final static Image inspectorIcon = Toolkit.getDefaultToolkit().getImage(iconURL);
-        
-        SplittedPanel split;
-        PropertySheetView sheet;
-
-        static final long serialVersionUID =4248268998485315927L;
-        ComponentInspector() {
-            final ExplorerManager manager = getExplorerManager();
-            emptyInspectorNode = new EmptyInspectorNode();
-            manager.setRootContext(emptyInspectorNode);
-            createSplit();
-            add("Center", split); // NOI18N
-
-            manager.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                        updateTitle();
-                        if (formManager != null) {
-                            formManager.updateSelection(getExplorerManager().getSelectedNodes());
-                        }
-                    }
-                }
-            }
-                                              );
-            setIcon(inspectorIcon);
-            setName(formBundle.getString("CTL_NoSelection"));
-        }
-        
-        private SplittedPanel createSplit() {
-            split = new SplittedPanel();
-            split.add(new BeanTreeView(), SplittedPanel.ADD_FIRST);
-            split.add(sheet = new PropertySheetView(), SplittedPanel.ADD_SECOND);
-            split.setSplitType(SplittedPanel.VERTICAL);
-            split.setSplitPosition(DEFAULT_INSPECTOR_PERCENTS);
-            sheet.setDisplayWritableOnly(getFormSettings().getDisplayWritableOnly());
-            return split;
-        }
-
-        public void open(Workspace workspace) {
-            Workspace realWorkspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
-            Workspace visualWorkspace = TopManager.getDefault().getWindowManager().findWorkspace(GUI_EDITING_WORKSPACE_NAME);
-            Mode ourMode = realWorkspace.findMode(this);
-            if ((ourMode == null) && workspace.equals(visualWorkspace)) {
-                // create new mode for CI and set the bounds properly
-                ourMode = workspace.createMode("ComponentInspector", getName(), iconURL); //NOI18N
-                Rectangle workingSpace = workspace.getBounds();
-                ourMode.setBounds(new Rectangle(workingSpace.x +(workingSpace.width * 3 / 10), workingSpace.y,
-                                                workingSpace.width * 2 / 10, workingSpace.height / 2));
-                ourMode.dockInto(this);
-            }
-            super.open(workspace);
-        }
-
-        public HelpCtx getHelpCtx() {
-            return getHelpCtx(getExplorerManager().getSelectedNodes(),
-                              new HelpCtx(ComponentInspector.class));
-        }
-
-        public void focusForm(FormManager2 formManager) {
-            //System.out.println("Focus Form: "+formManager); // NOI18N
-            this.formManager = formManager;
-            designModeAction.setFormManager(formManager);
-            testModeAction.setFormManager(formManager);
-            if (formManager == null ||
-                // XXX this should not happen, but sometimes it does. WHY?
-                null == formManager.getFormEditorSupport().getFormRootNode()) {
-                remove(split);
-                createSplit();
-                add("Center", split); // NOI18N
-                getExplorerManager().setRootContext(emptyInspectorNode);
-            } else {
-                sheet.setDisplayWritableOnly(!formManager.readOnly());
-                getExplorerManager().setRootContext(formManager.getFormEditorSupport().getFormRootNode());
-            }
-        }
-
-        FormManager2 getFocusedForm() {
-            return formManager;
-        }
-
-        void setSelectedNodes(Node[] nodes, FormManager2 manager) throws PropertyVetoException {
-            if (manager == formManager) {
-                getExplorerManager().setSelectedNodes(nodes);
-            }
-        }
-
-        Node[] getSelectedNodes() {
-            return getExplorerManager().getSelectedNodes();
-        }
-
-        /** Called when the explored context changes.
-         * The default implementation updates the title of the window.
-         */
-        protected void updateTitle() {
-            Node[] nodes = getExplorerManager().getSelectedNodes();
-            String title;
-            if (nodes.length == 0)
-                title = formBundle.getString("CTL_NoSelection");
-            else if (nodes.length == 1) {
-                RADComponentCookie cookie =(RADComponentCookie)nodes[0].getCookie(RADComponentCookie.class);
-                if (cookie != null) {
-                    RADComponent radComponent = cookie.getRADComponent();
-                    title = formatInspectorTitle.format(
-                        new Object[] { radComponent.getName() });
-                } else {
-                    title = formBundle.getString("CTL_NoSelection");
-                }
-            }
-            else
-                title = formBundle.getString("CTL_MultipleSelection");
-            setName(title);
-        }
-
-        /** Fixed preferred size, so as the inherited preferred size is too big */
-        public Dimension getPreferredSize() {
-            return new Dimension(DEFAULT_INSPECTOR_WIDTH, DEFAULT_INSPECTOR_HEIGHT);
-        }
-
-        /** replaces this in object stream */
-        public Object writeReplace() {
-            return new ResolvableHelper();
-        }
-
-    }
-
-    final public static class ResolvableHelper implements java.io.Serializable {
-        static final long serialVersionUID =7424646018839457544L;
-        public Object readResolve() {
-            return FormEditor.getComponentInspector();
-        }
-    }
-
-    static class EmptyInspectorNode extends AbstractNode {
-        public EmptyInspectorNode() {
-            super(Children.LEAF);
-            setIconBase(EMPTY_INSPECTOR_ICON_BASE);
-        }
-
-        public boolean canRename() {
-            return false;
-        }
-    }
 
     final static class ErrorLogItem {
         public static final int WARNING = 0;

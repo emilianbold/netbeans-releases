@@ -49,7 +49,7 @@ public class RADContainer extends RADComponent implements ComponentContainer {
                 subComponents.add(to, value);
             }
         }
-        getFormManager().fireComponentsReordered(this);
+        getFormModel().fireFormChanged();
     }
 
     public void add(RADComponent comp) {

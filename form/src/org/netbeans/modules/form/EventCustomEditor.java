@@ -29,7 +29,7 @@ public class EventCustomEditor extends javax.swing.JPanel {
     static final long serialVersionUID =-4825059521634962952L;
 
     /** Creates new form EventCustomEditor */
-    public EventCustomEditor(RADComponent.EventProperty eventProperty) {
+    public EventCustomEditor(EventProperty eventProperty) {
         this.eventProperty = eventProperty;
         changes = eventProperty.new HandlerSetChange();
 
@@ -44,12 +44,12 @@ public class EventCustomEditor extends javax.swing.JPanel {
      */
     private void initComponents() {//GEN-BEGIN:initComponents
         jScrollPane1 = new javax.swing.JScrollPane();
-        Vector h = eventProperty.event.getHandlers ();
-        for (int i=0, n=h.size (); i<n; i++) {
-            handlersModel.addElement (((EventsManager.EventHandler) (h.get (i))).getName ());
+        Vector h = eventProperty.event.getHandlers();
+        for (int i=0, n=h.size (); i < n; i++) {
+            handlersModel.addElement(((EventHandler) (h.get(i))).getName());
         }
         handlersList = new javax.swing.JList();
-        handlersList.setModel (handlersModel);
+        handlersList.setModel(handlersModel);
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
@@ -133,7 +133,6 @@ public class EventCustomEditor extends javax.swing.JPanel {
     }//GEN-END:initComponents
 
     private void handlersListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_handlersListValueChanged
-        // Add your handling code here:
         enableButtons();
     }//GEN-LAST:event_handlersListValueChanged
 
@@ -193,7 +192,6 @@ public class EventCustomEditor extends javax.swing.JPanel {
     }//GEN-LAST:event_editButtonActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        // Add your handling code here:
         Object[] handlers = handlersList.getSelectedValues();
         for (int i=0; i < handlers.length; i++) {
             int ii = changes.getAdded().indexOf(handlers[i]);
@@ -218,7 +216,6 @@ public class EventCustomEditor extends javax.swing.JPanel {
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        // Add your handling code here:
         NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine(FormEditor.getFormBundle().getString("CTL_EE_ADD_LABEL"), FormEditor.getFormBundle().getString("CTL_EE_ADD_CAPTION"));
         if (TopManager.getDefault().notify(nd).equals(NotifyDescriptor.OK_OPTION)) {
             String newHandler = nd.getInputText();
@@ -250,10 +247,8 @@ public class EventCustomEditor extends javax.swing.JPanel {
     public void doChanges() {
         try {
             eventProperty.setValue(changes);
-        } catch (java.lang.reflect.InvocationTargetException e1) {
-            e1.printStackTrace();
-        } catch (IllegalAccessException e2) {
-            e2.printStackTrace();
+        } catch (Exception e) { // should not happen
+            e.printStackTrace();
         }
     }
 
@@ -265,7 +260,7 @@ public class EventCustomEditor extends javax.swing.JPanel {
     private javax.swing.JButton editButton;
     // End of variables declaration//GEN-END:variables
 
-    RADComponent.EventProperty eventProperty;
-    javax.swing.DefaultListModel handlersModel = new DefaultListModel();
-    RADComponent.EventProperty.HandlerSetChange changes;
+    EventProperty eventProperty;
+    DefaultListModel handlersModel = new DefaultListModel();
+    EventProperty.HandlerSetChange changes;
 }

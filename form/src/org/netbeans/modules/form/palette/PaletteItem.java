@@ -17,11 +17,18 @@ package org.netbeans.modules.form.palette;
 
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.border.Border;
 
+import org.openide.nodes.Node;
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.InstanceDataObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
+
+import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.compat2.layouts.DesignLayout;
-import org.netbeans.modules.form.compat2.border.DesignBorder;
+import org.netbeans.modules.form.CreationDescriptor;
+import org.netbeans.modules.form.CreationFactory;
 import org.netbeans.modules.form.compat2.border.BorderInfo;
 
 import java.lang.ref.WeakReference;
@@ -45,62 +52,77 @@ public class PaletteItem implements java.io.Serializable {
     /** The JavaBean Class represented by this PaletteItem */
     private Class beanClass;
 
+    private Node itemNode;
     private InstanceCookie instanceCookie;
     private InstanceDataObject instanceDO;
 
-    private Boolean expliciteIsContainer;
-
+    static final long serialVersionUID =6553170650531136255L;
     // -----------------------------------------------------------------------------
     // Constructors
 
     /** Creates a new PaletteItem */
-    public PaletteItem(InstanceCookie instanceCookie) throws ClassNotFoundException, java.io.IOException {
-        this.instanceCookie = instanceCookie;
-        this.beanClass = instanceCookie.instanceClass();
-    }
-
-    static final long serialVersionUID =6553170650531136255L;
-    /** Creates a new PaletteItem */
-    public PaletteItem(InstanceDataObject ido) throws ClassNotFoundException, java.io.IOException {
-        this.beanClass = ido.instanceClass();
-        this.instanceCookie = ido;
-        this.instanceDO = ido;
+    public PaletteItem(Node node) throws ClassNotFoundException,
+                                         java.io.IOException,
+                                         InstantiationException {
+        itemNode = node;
+        InstanceCookie ic =
+            (InstanceDataObject)itemNode.getCookie(InstanceDataObject.class);
+        if (ic != null) {
+            instanceDO = (InstanceDataObject)ic;
+            beanClass = instanceDO.instanceClass();
+        }
+        else {
+            ic = (InstanceCookie)itemNode.getCookie(InstanceCookie.class);
+            if (ic == null)
+                throw new InstantiationException();
+            beanClass = ic.instanceClass();
+        }
+        instanceCookie = ic;
     }
 
     /** Creates a new PaletteItem for specified JavaBean class
      * @param beanClass the string name of the Java Bean's classass
      */
-    public PaletteItem(String beanName) throws ClassNotFoundException {
-        this(Class.forName(beanName));
-    }
+//    public PaletteItem(String beanName) throws ClassNotFoundException {
+//        this(Class.forName(beanName));
+//    }
 
     /** Creates a new PaletteItem for specified JavaBean class
      * @param beanClass the Java Bean's class
      */
-    public PaletteItem(Class beanClass) {
-        this(beanClass, Container.class.isAssignableFrom(beanClass));
-    }
+//    public PaletteItem(Class beanClass) {
+//        this(beanClass, Container.class.isAssignableFrom(beanClass));
+//    }
 
     /** Creates a new PaletteItem for specified JavaBean class
      * @param beanClass the Java Bean's class
      * @param isContainer allows to explicitly specify whether the item represents bean which can contain other beans
      */
-    public PaletteItem(Class beanClass, boolean isContainer) {
-        this.beanClass = beanClass;
-        this.expliciteIsContainer = new Boolean(isContainer);
-    }
+//    public PaletteItem(Class beanClass, boolean isContainer) {
+//        this.beanClass = beanClass;
+//        this.expliciteIsContainer = new Boolean(isContainer);
+//    }
 
     // -----------------------------------------------------------------------------
     // Class Methods
 
+    public Node getItemNode() {
+        return itemNode;
+    }
+
+    public Node getCategoryNode() {
+        return itemNode.getParentNode();
+    }
+
     public String getName() {
-        String name;
+        String name = instanceCookie.instanceName();
+/*        String name;
         if (instanceDO != null)
             name = instanceDO.instanceName();
         else if (instanceCookie != null)
             name = instanceCookie.instanceName();
         else
-            name = beanClass.getName();
+            name = beanClass.getName(); */
         int i = name.lastIndexOf('.');
         if (i >= 0)
             name = name.substring(i+1);
@@ -109,13 +131,16 @@ public class PaletteItem implements java.io.Serializable {
     }
 
     public String getDisplayName() {
-        String name = getName();
+        return itemNode.getDisplayName();
+/*        String name = getName();
         if (name.endsWith("BorderInfo")) { // NOI18N
             return name.substring(0, name.length() - 4); // remove the "Info" from BorderInfo classes // NOI18N
         } else if (name.endsWith("Layout") && name.startsWith("Design")) { // NOI18N
             return name.substring(6); // remove the "Design" from DesignXXXLayout classes // NOI18N
+        } else if (name.endsWith("LayoutSupport")) { // NOI18N
+            return name.substring(0, name.length() - "Support".length()); // NOI18N
         }
-        return name;
+        return name; */
     }
 
     public Object getSharedInstance() throws InstantiationException, IllegalAccessException {
@@ -128,27 +153,66 @@ public class PaletteItem implements java.io.Serializable {
         return sharedObject;
     }
 
-    public Object createInstance() throws InstantiationException, IllegalAccessException {
+    public Object createInstance() throws InstantiationException,
+                                          IllegalAccessException {
         if (beanClass == null) return null;
+
         try {
-            if (instanceDO != null) {
-                return instanceDO.instanceCreate();
+            if (instanceDO != null || instanceCookie == null) {
+                CreationDescriptor cd
+                    = CreationFactory.getDescriptor(beanClass);
+                return cd != null ? cd.createDefaultInstance() :
+                                    beanClass.newInstance();
+//                return instanceDO.instanceCreate();
             }
-
-            if (instanceCookie != null) {
+            else
+//            if (instanceCookie != null) {
                 return instanceCookie.instanceCreate();
-            }
-
-            return beanClass.newInstance();
-        }catch (ClassNotFoundException e) {
-            throw new InstantiationException(e.getMessage());
-        } catch (java.io.IOException e) {
-            throw new InstantiationException(e.getMessage());
+//            }
+//            return beanClass.newInstance();
         }
+        catch (ClassNotFoundException e1) {
+            throw new InstantiationException(e1.getMessage());
+        }
+        catch (java.lang.reflect.InvocationTargetException e2) {
+            throw new InstantiationException(e2.getTargetException().getMessage());
+        }
+        catch (java.io.IOException e3) {
+            throw new InstantiationException(e3.getMessage());
+        }
+    }
+
+    public LayoutSupport createLayoutSupportInstance()
+    throws InstantiationException, IllegalAccessException {
+
+        LayoutSupport layoutSupport = null;
+
+        if (LayoutManager.class.isAssignableFrom(beanClass)) {
+            // LayoutManager -> find LayoutSupport for it
+            Class laysupClass = LayoutSupportRegistry
+                        .getLayoutSupportForLayout(beanClass);
+            if (laysupClass != null) layoutSupport =
+                LayoutSupportRegistry.createLayoutSupport(laysupClass);
+        }
+        else if (LayoutSupport.class.isAssignableFrom(beanClass)) {
+            // LayoutSupport -> use it directly
+            layoutSupport = (LayoutSupport) createInstance();
+        }
+        else if (DesignLayout.class.isAssignableFrom(beanClass)) {
+            // DesignLayout -> convert to LayoutSupport
+            DesignLayout dl = (DesignLayout) createInstance();
+            layoutSupport = Compat31LayoutFactory.createCompatibleLayoutSupport(dl);
+        }
+
+        return layoutSupport;
     }
 
     public Class getItemClass() {
         return beanClass;
+    }
+
+    public InstanceCookie getInstanceCookie() {
+        return instanceCookie;
     }
 
     public java.beans.BeanInfo getBeanInfo() {
@@ -159,34 +223,40 @@ public class PaletteItem implements java.io.Serializable {
         }
     }
 
-    public DesignBorder createBorder() throws InstantiationException, IllegalAccessException {
-        return new DesignBorder((BorderInfo)createInstance());
-    }
-
     public boolean isBorder() {
-        return BorderInfo.class.isAssignableFrom(beanClass);
+        return BorderInfo.class.isAssignableFrom(beanClass)
+               || Border.class.isAssignableFrom(beanClass);
     }
 
     public boolean isVisual() {
         return Component.class.isAssignableFrom(beanClass);
     }
 
-    public boolean isDesignLayout() {
-        return DesignLayout.class.isAssignableFrom(beanClass);
+//    public boolean isDesignLayout() {
+//        return DesignLayout.class.isAssignableFrom(beanClass);
+//    }
+
+    public boolean isLayout() {
+        return LayoutSupport.class.isAssignableFrom(beanClass)
+               || LayoutManager.class.isAssignableFrom(beanClass)
+               || DesignLayout.class.isAssignableFrom(beanClass);
     }
 
     public boolean isContainer() {
-        if (expliciteIsContainer != null)
-            return expliciteIsContainer.booleanValue(); // explicitly set isContainer flag
+//        if (expliciteIsContainer != null)
+//            return expliciteIsContainer.booleanValue(); // explicitly set isContainer flag
 
-        boolean isContainer = Container.class.isAssignableFrom(beanClass);
-        if (instanceDO != null) {
-            Object attr = instanceDO.getPrimaryFile().getAttribute(ATTR_IS_CONTAINER);
-            if ((attr != null) &&(attr.equals(Boolean.FALSE))) {
-                isContainer = false;
-            }
+        if (!Container.class.isAssignableFrom(beanClass))
+            return false;
+
+        DataObject dobj = (DataObject) itemNode.getCookie(DataObject.class);
+        if (dobj != null) {
+            Object attr = dobj.getPrimaryFile().getAttribute(PaletteItem.ATTR_IS_CONTAINER);
+            if (attr instanceof Boolean)
+                return ((Boolean)attr).booleanValue();
         }
-        return isContainer;
+
+        return PaletteItemNode.canBeContainer(instanceCookie);
     }
 
     public boolean isMenu() {
@@ -194,5 +264,24 @@ public class PaletteItem implements java.io.Serializable {
             PopupMenu.class.isAssignableFrom(beanClass) ||
             JMenuBar.class.isAssignableFrom(beanClass) ||
             JPopupMenu.class.isAssignableFrom(beanClass);
+    }
+
+    // ------------------------------------
+
+    public boolean equals(Object obj) {
+        if (!(obj instanceof PaletteItem)) return false;
+
+        PaletteItem item = (PaletteItem)obj;
+        if (beanClass != item.beanClass) return false;
+
+        if (instanceDO != null && item.instanceDO != null)
+            return true;
+
+        DataObject do1 = (DataObject)itemNode.getCookie(DataObject.class);
+        DataObject do2 = (DataObject)item.itemNode.getCookie(DataObject.class);
+        if (!(do1 instanceof DataShadow) || !(do2 instanceof DataShadow))
+            return false;
+        
+        return ((DataShadow)do1).getOriginal() == ((DataShadow)do2).getOriginal();
     }
 }

@@ -104,9 +104,9 @@ public class RADMenuItemComponent extends RADComponent {
 
         // XXX(-tdt) PopupMenu is a subclass of MenuItem !!
         /* if (o instanceof MenuItem) { */
-        if (o.getClass() == MenuItem.class) {
+        if (o instanceof MenuItem && !(o instanceof Menu)) {
             JMenuItem designItem =
-                ((JMenuItem) getDesignTimeMenus(getFormManager()).getDesignTime(o));
+                ((JMenuItem) getDesignTimeMenus(getFormModel()).getDesignTime(o));
             designItem.addActionListener(getDefaultActionListener());
         }
         else if (o instanceof JMenuItem) {
@@ -136,19 +136,25 @@ public class RADMenuItemComponent extends RADComponent {
         if (JMenuBar.class.isAssignableFrom(cl)) return T_JMENUBAR;
         if (JPopupMenu.class.isAssignableFrom(cl)) return T_JPOPUPMENU;
 
-        throw new InternalError("Cannot create RADMenuItemComponent for nonmenu class:"+cl.getName()); // NOI18N
+        throw new IllegalArgumentException("Cannot create RADMenuItemComponent for nonmenu class: "+cl.getName()); // NOI18N
     }
 
 
     private ActionListener getDefaultActionListener() {
         return new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
-                if (!getFormManager().isTestMode() && hasDefaultEvent()) attachDefaultEvent();
+                JMenuItem source = (JMenuItem) ev.getSource();
+                if (source instanceof JCheckBoxMenuItem
+                        || source instanceof JRadioButtonMenuItem)
+                    source.setSelected(!source.isSelected());
+
+                if (!getFormModel().isTestMode() && hasDefaultEvent())
+                    attachDefaultEvent();
             }
         };
     }
 
-    static DesignTimeMenus getDesignTimeMenus(FormManager2 fm) {
+    static DesignTimeMenus getDesignTimeMenus(FormModel fm) {
         DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.get(fm);
         if (dtm == null) {
             dtm = new DesignTimeMenus(fm);
@@ -157,7 +163,7 @@ public class RADMenuItemComponent extends RADComponent {
         return dtm;
     }
 
-    // to find existing menu if caller does not know about formManager
+    // to find existing menu if caller does not know about formModel
     public static Object findDesignTimeMenu(Object awtMenu) {
         Object result;
         for (java.util.Iterator it = menusByFM.keySet().iterator(); it.hasNext();) {
@@ -168,35 +174,36 @@ public class RADMenuItemComponent extends RADComponent {
         }
         return null;
     }
-    
+
     void freeMenu() {
-        DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.get(getFormManager());
+        DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.get(getFormModel());
         if (dtm != null)
             dtm.removeDesignTime(getBeanInstance());
     }
 
-    static void freeDesignTimeMenus(FormManager2 manager) {
-        DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.remove(manager);
+    static void freeDesignTimeMenus(FormModel model) {
+        DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.remove(model);
         if (dtm != null) {
-            manager.removeFormListener(dtm.listener);
+            model.removeFormModelListener(dtm.listener);
             dtm.listener = null;
         }
     }
-    
+
     // -----------------------------------------------------------------------------
     // Inner classes
     static class DesignTimeMenus {
         final java.util.HashMap designTimeMenus = new java.util.HashMap();
-        FormListener listener;
-        
-        DesignTimeMenus(FormManager2 fm) {
-            listener = new FormAdapter() {
-                public void propertyChanged(FormPropertyEvent evt) {
-                    if (evt.getRADComponent() instanceof RADMenuItemComponent) {
-                        RADMenuItemComponent comp =(RADMenuItemComponent) evt.getRADComponent();
-                        copyMenuProperties(comp.getBeanInstance(), getDesignTime(comp.getBeanInstance()));
+        FormModelListener listener;
+
+        DesignTimeMenus(FormModel fm) {
+            listener = new FormModelAdapter() {
+                public void componentPropertyChanged(FormModelEvent e) {
+                    if (e.getComponent() instanceof RADMenuItemComponent) {
+                        Object bean = e.getComponent().getBeanInstance();
+                        copyMenuProperties(bean, getDesignTime(bean));
                     }
                 }
+                
                 public void formLoaded() {
                     for (java.util.Iterator it = designTimeMenus.keySet().iterator(); it.hasNext();) {
                         Object menu = it.next();
@@ -204,7 +211,7 @@ public class RADMenuItemComponent extends RADComponent {
                     }
                 }
             };
-            fm.addFormListener(listener);
+            fm.addFormModelListener(listener);
         }
 
         Object getDesignTime(Object awtMenu) {
@@ -233,7 +240,7 @@ public class RADMenuItemComponent extends RADComponent {
             }
             return swingMenu;
         }
-        
+
         void removeDesignTime(Object awtMenu) {
             designTimeMenus.remove(awtMenu);
         }

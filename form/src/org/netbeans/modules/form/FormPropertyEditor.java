@@ -17,55 +17,49 @@ package org.netbeans.modules.form;
 
 import java.beans.*;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.nodes.*;
 
-/** A Multiplexing PropertyEditor used in the form editor.
- * Allows multiple editors to be used with one currently selected.
+/** A multiplexing PropertyEditor used in the form editor.
+ * It allows multiple editors to be used with one currently selected.
  *
  * @author Ian Formanek
  */
-public class FormPropertyEditor implements PropertyEditor, PropertyChangeListener, EnhancedPropertyEditor {
-    // -----------------------------------------------------------------------------
-    // Private Variables
-
+public class FormPropertyEditor implements PropertyEditor,
+                                           PropertyChangeListener,
+                                           EnhancedPropertyEditor,
+                                           ExPropertyEditor
+{
     private Object value;
     private Object source;
-    private RADComponent radComponent;
-    private RADComponent.RADProperty radProperty;
+    private FormProperty property;
+    private FormPropertyContext propertyContext;
+
     private PropertyEditor modifiedEditor;
-    private Class propertyType;
     private PropertyEditor[] allEditors;
     private java.util.Vector listeners;
 
-    // -----------------------------------------------------------------------------
-    // Constructor
 
     /** Crates a new FormPropertyEditor */
-    FormPropertyEditor(RADComponent radComponent, Class propertyType, RADComponent.RADProperty radProperty) {
+    FormPropertyEditor(FormProperty property) {
+        this.property = property;
+        this.propertyContext = property.getPropertyContext();
         source = this;
-        this.radComponent = radComponent;
-        this.radProperty = radProperty;
-        this.propertyType = propertyType;
-        modifiedEditor = radProperty.getCurrentEditor();
-        if (modifiedEditor instanceof FormAwareEditor) {
-            ((FormAwareEditor)modifiedEditor).setRADComponent(radComponent, radProperty);
-        }
-        if (modifiedEditor instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
-            ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)modifiedEditor).attach(new org.openide.nodes.Node[] { radComponent.getNodeReference() });
-        }
+        modifiedEditor = property.getCurrentEditor();
         modifiedEditor.addPropertyChangeListener(this);
     }
 
     Class getPropertyType() {
-        return propertyType;
+        return property.getValueType();
     }
 
-    RADComponent getRADComponent() {
-        return radComponent;
+    FormProperty getProperty() {
+        return property;
     }
 
-    RADComponent.RADProperty getRADProperty() {
-        return radProperty;
+    FormPropertyContext getPropertyContext() {
+        return propertyContext;
     }
 
     PropertyEditor getModifiedEditor() {
@@ -73,8 +67,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
     }
 
     void commitModifiedEditor() {
-        radProperty.setCurrentEditor(modifiedEditor);
-        if (radComponent.getNodeReference() != null) radComponent.getNodeReference().notifyPropertySetsChange();
+        property.setCurrentEditor(modifiedEditor);
     }
 
     void setModifiedEditor(PropertyEditor editor) {
@@ -87,7 +80,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
     // PropertyChangeListener implementation
 
     public void propertyChange(PropertyChangeEvent evt) {
-        value = modifiedEditor.getValue(); // [PENDING - modified or current?]
+        value = modifiedEditor.getValue();
     }
 
     // -----------------------------------------------------------------------------
@@ -101,20 +94,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
      *     modified value.
      */
     public void setValue(Object newValue) {
-        // if the value is not a FormDesignValue, other property editor 
-        // than RADConnectionPropertyEditor is used
-        if (modifiedEditor instanceof RADConnectionPropertyEditor
-              && (newValue == null || !(newValue instanceof FormDesignValue)
-                                      && propertyType.isAssignableFrom(newValue.getClass()))) {
-
-            PropertyEditor[] editors = getAllEditors();
-            for (int i=0; i < allEditors.length; i++)
-                if (!(editors[i] instanceof RADConnectionPropertyEditor)) {
-                    modifiedEditor = editors[i];
-                    commitModifiedEditor();
-                    break;
-                }
-        }
+        if (modifiedEditor != property.getCurrentEditor())
+            setModifiedEditor(property.getCurrentEditor());
 
         Object oldValue = value;
         value = newValue;
@@ -128,7 +109,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
      * @return The value of the property.
      */
     public Object getValue() {
-        return value;
+        return modifiedEditor.getValue(); // value;
     }
 
     // -----------------------------------------------------------------------------
@@ -259,8 +240,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
     PropertyEditor[] getAllEditors() {
         if (allEditors == null) {
-            PropertyEditor expliciteEditor = radProperty.getExpliciteEditor();
-            allEditors = FormPropertyEditorManager.getAllEditors(propertyType, false);
+            PropertyEditor expliciteEditor = property.getExpliciteEditor();
+            allEditors = FormPropertyEditorManager.getAllEditors(property.getValueType(), false);
             if (expliciteEditor != null) {
                 PropertyEditor[] newAllEditors = new PropertyEditor[allEditors.length + 1];
                 newAllEditors[0] = expliciteEditor;
@@ -308,6 +289,16 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
             return false;
         }
     }
+
+    // -------------------------------------------------------------
+    // FormPropertyContainer implementation
+    
+//    public Node.Property[] getProperties() {
+//        if (modifiedEditor instanceof FormPropertyContainer)
+//            return ((FormPropertyContainer)modifiedEditor).getProperties();
+//        else
+//            return null;
+//    }
 
     // -----------------------------------------------------------------------------
 
@@ -359,4 +350,16 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
         }
     }
 
+    // -------------
+    // ExPropertyEditor implementation
+
+    /** 
+     * This method is called by the IDE to pass
+     * the environment to the property editor.
+     */
+    public void attachEnv(PropertyEnv env) {
+        propertyContext.setPropertyEnv(env);
+        if (modifiedEditor instanceof ExPropertyEditor)
+            ((ExPropertyEditor)modifiedEditor).attachEnv(env);
+    }
 }

@@ -36,10 +36,10 @@ public class PropertyPicker extends javax.swing.JDialog {
 
     static final long serialVersionUID =5689122601606238081L;
     /** Initializes the Form */
-    public PropertyPicker(java.awt.Frame parent, FormManager2 manager, RADComponent componentToSelect, Class requiredType) {
+    public PropertyPicker(java.awt.Frame parent, FormModel formModel, RADComponent componentToSelect, Class requiredType) {
         super(parent != null ? parent : TopManager.getDefault().getWindowManager().getMainWindow(), true);
 
-        this.manager = manager;
+        this.formModel = formModel;
         this.requiredType = requiredType;
         initComponents();
 
@@ -62,7 +62,7 @@ public class PropertyPicker extends javax.swing.JDialog {
             javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
             );
 
-        Collection allComponents = manager.getAllComponents();
+        Collection allComponents = formModel.getMetaComponents();
         components =(RADComponent[])allComponents.toArray(new RADComponent [allComponents.size()]);
         int selIndex = -1;
         for (int i = 0; i < components.length; i++) {
@@ -313,7 +313,7 @@ public class PropertyPicker extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
 
-    private FormManager2 manager;
+    private FormModel formModel;
     private int returnStatus = CANCEL;
 
     private RADComponent[] components;

@@ -15,119 +15,195 @@
 
 package org.netbeans.modules.form;
 
-import org.openide.nodes.Node;
-import org.netbeans.modules.form.compat2.layouts.DesignLayout;
-import org.netbeans.modules.form.compat2.layouts.support.DesignSupportLayout;
-
-import java.awt.Container;
+import java.awt.*;
+import java.beans.*;
 import java.util.ArrayList;
 
-/**
- * Initialization order: <UL>
- * <LI> Constructor: new RADVisualContainer();
- * <LI> FormManager2 init: initialize(FormManager2)
- * <LI> Bean init: setComponent(Class)
- * <LI> SubComponents init: initSubComponents(RADComponent[])
- * <LI> DesignLayout init: setDesignLayout(DesignLayout) </UL>
- 
- * @author Ian Formanek
- */
+import org.openide.nodes.Node;
+
+import org.netbeans.modules.form.layoutsupport.*;
+
+
 public class RADVisualContainer extends RADVisualComponent implements ComponentContainer {
-    private ArrayList subComponents;
-    private DesignLayout designLayout;
-    private DesignLayout previousLayout;
-    private RADLayoutNode layoutNode;
+    private ArrayList subComponents = new ArrayList(10);
+    private LayoutSupport layoutSupport;
+    private LayoutNode layoutNode;
 
-    transient private Container containerDelegate;
-
-    public void setComponent(Class beanClass) {
-        super.setComponent(beanClass);
-        initContainerDelegate();
-    }
+//    public void setComponent(Class beanClass) {
+//        super.setComponent(beanClass);
+//        initLayoutSupport();
+//    }
 
     public void setInstance(Object beanInstance) {
         super.setInstance(beanInstance);
-        initContainerDelegate();
+        initLayoutSupport();
     }
 
-    private void initContainerDelegate() {
-        Object instance = getBeanInstance();
-        if (instance instanceof javax.swing.RootPaneContainer) {
-            containerDelegate = ((javax.swing.RootPaneContainer) instance).getContentPane();
-            return;
+    public void initLayoutSupport() {
+        // first try to find special support dedicated to container type
+        Class layoutSupportClass =
+            LayoutSupportRegistry.getLayoutSupportForContainer(getBeanClass());
+
+        if (layoutSupportClass == null) {
+            // try to find support for LayoutManager used by the container
+            LayoutManager lm = getContainerDelegate(getBeanInstance()).getLayout();
+            if (lm != null)
+                layoutSupportClass =
+                    LayoutSupportRegistry.getLayoutSupportForLayout(lm.getClass());
         }
-        Object value = getBeanInfo().getBeanDescriptor().getValue("containerDelegate"); // NOI18N
-        if ((value != null) &&(value instanceof String) &&((String)value).equals("getContentPane")) { // NOI18N
+
+        try {
+            LayoutSupport laySup = layoutSupportClass == null ? null :
+                LayoutSupportRegistry.createLayoutSupport(layoutSupportClass);
+            setLayoutSupport(laySup);
+        }
+        catch (Exception e) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                e.printStackTrace();
+        }
+    }
+
+    public String getContainerDelegateGetterName() {
+        Object value = getBeanInfo().getBeanDescriptor()
+            .getValue("containerDelegate"); // NOI18N
+        
+        if (value != null && value instanceof String)
+            return (String) value;
+        else
+            return null;
+    }
+
+    public String getJavaContainerDelegateString() {
+        String delegateGetter = getContainerDelegateGetterName();
+        if (delegateGetter != null) {
+            return getName() + "." + delegateGetter + "()"; // NOI18N
+        }
+        else
+            return getName();
+    }
+    
+    /**
+     * @return The JavaBean visual container represented by this
+     * RADVisualComponent
+     */
+    
+    public Container getContainerDelegate(Object container) {
+        // XXX is it needed?  Does it mean we cannot rely on @beaninfo tags?
+        if (container instanceof javax.swing.RootPaneContainer) {
+            return ((javax.swing.RootPaneContainer) container).getContentPane();
+        }
+        
+        Container containerDelegate = (Container) container;
+        
+        String delegateGetter = getContainerDelegateGetterName();
+        if (delegateGetter != null) {
             try {
-                java.lang.reflect.Method m = getBeanClass().getMethod("getContentPane", new Class [0]); // NOI18N
-                containerDelegate =(Container) m.invoke(getBeanInstance(), new Object [0]);
-            } catch (Exception e) { // effectively ignored - simply no containerDelegate
+                java.lang.reflect.Method m = getBeanClass().getMethod(
+                    delegateGetter, new Class [0]); // NOI18N
+                containerDelegate = (Container) m.invoke(container, new Object [0]);
+            } catch (Exception e) {
+                // IGNORE
             }
         }
+        
+        return containerDelegate;
     }
 
-    /** @return The JavaBean visual container represented by this RADVisualComponent */
-    public Container getContainer() {
-        if (containerDelegate != null) {
-            return containerDelegate;
-        }
-        return(Container)getBeanInstance();
-    }
-
-    public void setLayoutNodeReference(RADLayoutNode node) {
+    public void setLayoutNodeReference(LayoutNode node) {
         this.layoutNode = node;
     }
 
-    public RADLayoutNode getLayoutNodeReference() {
+    public LayoutNode getLayoutNodeReference() {
         return layoutNode;
+    }
+
+    boolean shouldHaveLayoutNode() {
+        return layoutSupport != null && layoutSupport.getLayoutClass() != null;
     }
 
     // -----------------------------------------------------------------------------
     // Layout Manager management
 
-    public DesignLayout getPreviousDesignLayout() {
-        return previousLayout;
+//      public DesignLayout getPreviousDesignLayout() {
+//          return previousLayout;
+//      }
+
+//      public DesignLayout getDesignLayout() {
+//          return designLayout;
+//      }
+
+//      /** Must be called after initSubComponents!!! */
+//      public void setDesignLayout(DesignLayout layout) {
+//          if (designLayout instanceof DesignSupportLayout) {
+//              throw new InternalError("Cannot change a design layout on this container"); // NOI18N
+//          }
+//          if (designLayout != null) {
+//              if (layout.getClass().equals(designLayout.getClass())) return;
+//              designLayout.setRADContainer(null);
+//          }
+//          if (layout == null) return;
+
+//          previousLayout = designLayout;
+//          designLayout = layout;
+//          designLayout.setRADContainer(this);
+
+//          RADVisualComponent[] children = getSubComponents();
+//          for (int i = 0; i < children.length; i++) {
+//              designLayout.addComponent(children[i]);
+//          }
+
+//          getContainer().validate();
+//          getContainer().repaint();
+
+//      }
+
+    public void setLayoutSupport(LayoutSupport laySup) {
+//        LayoutSupport oldLayoutSupport = this.layoutSupport;
+        RADVisualComponent[] comps = getSubComponents();
+
+        // remove components from current layout
+        if (layoutSupport != null)
+            for (int i = 0; i < comps.length; i++)
+                layoutSupport.removeComponent(comps[i]);
+
+        // set new layout
+        this.layoutSupport = laySup;
+        if (layoutSupport != null) {
+            layoutSupport.initialize(this);
+
+            // add components to the new layout
+            for (int i = 0; i < comps.length; i++) {
+                RADVisualComponent comp = comps[i];
+                layoutSupport.addComponent(comp, 
+                                           layoutSupport.getConstraints(comp));
+                comp.resetConstraintsProperties();
+            }
+
+//            setLayoutNodeReference(layoutSupport.getLayoutClass() != null ?
+//                                   new LayoutNode(layoutSupport) : null);
+        }
+
+        setLayoutNodeReference(null);
     }
 
-    public DesignLayout getDesignLayout() {
-        return designLayout;
+    public LayoutSupport getLayoutSupport() {
+        return layoutSupport;
     }
 
-    /** Must be called after initSubComponents!!! */
-    public void setDesignLayout(DesignLayout layout) {
-        if (designLayout instanceof DesignSupportLayout) {
-            throw new InternalError("Cannot change a design layout on this container"); // NOI18N
-        }
-        if (designLayout != null) {
-            if (layout.getClass().equals(designLayout.getClass())) return;
-            designLayout.setRADContainer(null);
-        }
-        if (layout == null) return;
-
-        previousLayout = designLayout;
-        designLayout = layout;
-        designLayout.setRADContainer(this);
-
-        RADVisualComponent[] children = getSubComponents();
-        for (int i = 0; i < children.length; i++) {
-            designLayout.addComponent(children[i]);
-        }
-
-        getContainer().validate();
-        getContainer().repaint();
-
-    }
-
-    /** Called to obtain a Java code to be used to generate code to access the container for adding subcomponents.
-     * It is expected that the returned code is either ""(in which case the form is the container) or is a name of variable
-     * or method call ending with "."(e.g. "container.getContentPane().").
-     * @return the prefix code for generating code to add subcomponents to this container
+    /** Called to obtain a Java code to be used to generate code to access the
+     * container for adding subcomponents.  It is expected that the returned
+     * code is either ""(in which case the form is the container) or is a name
+     * of variable or method call ending with
+     * "."(e.g. "container.getContentPane().").
+     * @return the prefix code for generating code to add subcomponents to this
+     * container
      */
     public String getContainerGenName() {
-        if (containerDelegate != null) {
-            return getName() + ".getContentPane()."; // NOI18N
-        }
-        return getName() + "."; // NOI18N
+        String delegateGetter = getContainerDelegateGetterName();
+        if (delegateGetter != null)
+            return getName() + "." + delegateGetter + "()."; // NOI18N
+        else
+            return getName() + "."; // NOI18N
     }
 
     // -----------------------------------------------------------------------------
@@ -165,8 +241,8 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
                 subComponents.add(to, value);
             }
         }
-        getDesignLayout().updateLayout();
-        getFormManager().fireComponentsReordered(this);
+        //XXXgetDesignLayout().updateLayout();
+        getFormModel().fireFormChanged();
     }
 
     public void add(RADComponent comp) {
@@ -180,7 +256,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     public void remove(RADComponent comp) {
         if (!(comp instanceof RADVisualComponent)) throw new IllegalArgumentException();
-        designLayout.removeComponent(((RADVisualComponent)comp));
+        layoutSupport.removeComponent(((RADVisualComponent)comp));
         int index = subComponents.indexOf(comp);
         if (index != -1) {
             subComponents.remove(index);
@@ -192,15 +268,4 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         if (!(comp instanceof RADVisualComponent)) throw new IllegalArgumentException();
         return subComponents.indexOf(comp);
     }
-
-    // -----------------------------------------------------------------------------
-    // Debug methods
-
-    public String toString() {
-        String ret = super.toString() + ", layout: ---------------\n"; // NOI18N
-        ret = ret + "current: "+ designLayout +"\n"; // NOI18N
-        ret = ret + "previous: "+ previousLayout + "\n"; // NOI18N
-        return ret + "---------------------------"; // NOI18N
-    }
-
 }

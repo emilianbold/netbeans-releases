@@ -15,13 +15,13 @@
 
 package org.netbeans.modules.form.fakepeer;
 
-import java.awt.peer.LightweightPeer;
+import java.awt.peer.ComponentPeer;
 
 /**
  *
  * @author Tran Duc Trung
  */
 
-interface FakePeer extends LightweightPeer
+interface FakePeer extends ComponentPeer
 {
 }

@@ -55,10 +55,11 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
      * @return array of new type operations that are allowed
      */
     public NewType[] getNewTypes() {
-        if (readOnly())
+        if (isReadOnly())
             return RADComponent.NO_NEW_TYPES;
 
         Class[] classes =(Class []) supportedNewMenu.get(new Integer(getMenuItemType()));
+
         if (classes == null)
             return RADComponent.NO_NEW_TYPES;
 
@@ -120,7 +121,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         for (int i = 0, n = list.size(); i < n; i++)
             add((RADMenuItemComponent) list.get(i));
 
-        getFormManager().fireComponentsReordered(this);
+        getFormModel().fireFormChanged();
     }
 
     public void add(RADComponent comp) {
@@ -147,8 +148,8 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     private void addVisualMenu(RADMenuItemComponent comp) {
         Object o = getBeanInstance();
         Object m = comp.getBeanInstance();
-        Object dto = getDesignTimeMenus(getFormManager()).getDesignTime(o);
-        Object dtm = getDesignTimeMenus(getFormManager()).getDesignTime(m);
+        Object dto = getDesignTimeMenus(getFormModel()).getDesignTime(o);
+        Object dtm = getDesignTimeMenus(getFormModel()).getDesignTime(m);
 
         switch (getMenuItemType()) {
             case T_MENUBAR:
@@ -199,8 +200,8 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     private void removeVisualMenu(RADMenuItemComponent comp) {
         Object o = getBeanInstance();
         Object m = comp.getBeanInstance();
-        Object dto = getDesignTimeMenus(getFormManager()).getDesignTime(o);
-        Object dtm = getDesignTimeMenus(getFormManager()).getDesignTime(m);
+        Object dto = getDesignTimeMenus(getFormModel()).getDesignTime(o);
+        Object dtm = getDesignTimeMenus(getFormModel()).getDesignTime(m);
 
         switch (getMenuItemType()) {
             case T_MENUBAR:
@@ -294,15 +295,15 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
          */
         public void create() throws IOException {
             RADMenuItemComponent newSeparatorComp = new RADMenuItemComponent();
-            newSeparatorComp.initialize(getFormManager());
+            newSeparatorComp.initialize(getFormModel());
             if ((getMenuItemType() == T_MENU) ||(getMenuItemType() == T_POPUPMENU)) {
                 newSeparatorComp.setComponent(org.netbeans.modules.form.Separator.class);
             } else {
                 newSeparatorComp.setComponent(JSeparator.class);
             }
-            getFormManager().addNonVisualComponent(newSeparatorComp, RADMenuComponent.this);
+            getFormModel().addNonVisualComponent(newSeparatorComp, RADMenuComponent.this);
             //XXX(-tdt) addVisualMenu(newSeparatorComp);
-            getFormManager().selectComponent(newSeparatorComp, false);
+//XXX            getFormModel().selectComponent(newSeparatorComp, false);
             return;
         }
     }
@@ -325,12 +326,12 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
          */
         public String getName() {
             String s = item.getName();
-            if (FormEditor.getFormSettings().getShortBeanNames()) {
-                int index = s.lastIndexOf('.');
-                if (index != -1)
-                    return s.substring(index + 1);
-            }
-            return s;
+
+            int index = s.lastIndexOf('.');
+            if (index != -1)
+                return s.substring(index + 1);
+            else
+                return s;
         }
 
         /** Create the object.
@@ -346,19 +347,19 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
                 newMenuComp = new RADMenuComponent();
             }
 
-            newMenuComp.initialize(RADMenuComponent.this.getFormManager());
+            newMenuComp.initialize(RADMenuComponent.this.getFormModel());
             newMenuComp.setComponent(item);
             if (newMenuComp instanceof RADMenuComponent) {
                 ((RADMenuComponent)newMenuComp).initSubComponents(new RADComponent[0]);
             }
-            RADMenuComponent.this.getFormManager().addNonVisualComponent(newMenuComp, RADMenuComponent.this);
+            RADMenuComponent.this.getFormModel().addNonVisualComponent(newMenuComp, RADMenuComponent.this);
 
             // for some components, we initialize their properties with some non-default values
             // e.g. a label on buttons, checkboxes
             FormEditor.defaultMenuInit(newMenuComp);
             addVisualMenu(newMenuComp);
 
-            RADMenuComponent.this.getFormManager().selectComponent(newMenuComp, false);
+//XXX            RADMenuComponent.this.getFormModel().selectComponent(newMenuComp, false);
         }
     }
 }

@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* $Id$ */
-
 package org.netbeans.modules.form;
 
 import org.openide.TopManager;
@@ -42,11 +40,6 @@ public class FormEditorModule extends ModuleInstall {
 
     static final long serialVersionUID =1573432625099425394L;
     
-    /** Module installed for the first time. */
-    public void installed() {
-        restored();
-    }
-
     // XXX(-tdt) hack around failure of loading TimerBean caused by package
     // renaming com.netbeans => org.netbeans AND the need to preserve user's
     // system settings
@@ -81,7 +74,7 @@ public class FormEditorModule extends ModuleInstall {
                             return;
                         
                         jarfs.setJarFile(timerbean);
-                    }
+                   }
                     catch (java.io.IOException ex) { /* ignore */ }
                     catch (PropertyVetoException ex) { /* ignore */ }
                 }
@@ -91,7 +84,7 @@ public class FormEditorModule extends ModuleInstall {
     /** Module installed again. */
     public void restored() {
         Beans.setDesignTime(true);
-        
+
         timerBeanHack();
         
         lastProjectDesktop = TopManager.getDefault().getPlaces().nodes().projectDesktop();
@@ -143,7 +136,8 @@ public class FormEditorModule extends ModuleInstall {
                 if (projectDesktop != lastProjectDesktop) {
                     lastProjectDesktop = projectDesktop;
                     BeanInstaller.autoLoadBeans();
-                    ComponentPalette.getDefault().updatePalette();
+                    if (ComponentPalette.isCreated())
+                        ComponentPalette.getDefault().updatePalette();
                 }
             }
         }
@@ -152,11 +146,12 @@ public class FormEditorModule extends ModuleInstall {
     static String[] getDefaultAWTComponents() {
         return defaultAWTComponents;
     }
+
     static String[] getDefaultAWTIcons() {
         return defaultAWTIcons;
     }
 
-    static String[] getDefaultSwingComponents() {
+/*    static String[] getDefaultSwingComponents() {
         return defaultSwingComponents;
     }
     static String[] getDefaultSwingIcons() {
@@ -166,6 +161,7 @@ public class FormEditorModule extends ModuleInstall {
     static String[] getDefaultSwing2Components() {
         return defaultSwing2Components;
     }
+
     static String[] getDefaultSwing2Icons() {
         return defaultSwing2Icons;
     }
@@ -182,7 +178,7 @@ public class FormEditorModule extends ModuleInstall {
     }
     static String[] getDefaultBordersIcons() {
         return defaultBordersIcons;
-    }
+    } */
     
     // -----------------------------------------------------------------------------
     // Default Palette contents
@@ -222,11 +218,12 @@ public class FormEditorModule extends ModuleInstall {
     };
     
     /** The default Swing Components */
-    private final static String[] defaultSwingComponents = new String[] {
+/*    private final static String[] defaultSwingComponents = new String[] {
         "javax.swing.JLabel", // NOI18N
         "javax.swing.JButton", // NOI18N
         "javax.swing.JCheckBox", // NOI18N
         "javax.swing.JRadioButton", // NOI18N
+        "javax.swing.ButtonGroup", //  NOI18N
         "javax.swing.JComboBox", // NOI18N
         "javax.swing.JList", // NOI18N
         "javax.swing.JTextField", // NOI18N
@@ -238,14 +235,15 @@ public class FormEditorModule extends ModuleInstall {
         "javax.swing.JScrollPane", // NOI18N
         "javax.swing.JMenuBar", // NOI18N
         "javax.swing.JPopupMenu", // NOI18N
-    };
+    }; */
 
     /** The default Swing icons */
-    private final static String[] defaultSwingIcons = new String[] {
+/*    private final static String[] defaultSwingIcons = new String[] {
         "/javax/swing/beaninfo/images/JLabelColor16.gif", // NOI18N
         "/javax/swing/beaninfo/images/JButtonColor16.gif", // NOI18N
         "/javax/swing/beaninfo/images/JCheckBoxColor16.gif", // NOI18N
         "/javax/swing/beaninfo/images/JRadioButtonColor16.gif", // NOI18N
+        "/org/netbeans/modules/form/resources/ButtonGroup16.gif", // NOI18N
         "/javax/swing/beaninfo/images/JComboBoxColor16.gif", // NOI18N
         "/javax/swing/beaninfo/images/JListColor16.gif", // NOI18N
         "/javax/swing/beaninfo/images/JTextFieldColor16.gif", // NOI18N
@@ -257,10 +255,10 @@ public class FormEditorModule extends ModuleInstall {
         "/javax/swing/beaninfo/images/JScrollPaneColor16.gif", // NOI18N
         "/javax/swing/beaninfo/images/JMenuBarColor16.gif", // NOI18N
         "/javax/swing/beaninfo/images/JPopupMenuColor16.gif" // NOI18N
-    };
+    }; */
 
     /** The default Swing Components - Swing2 category */
-    private final static String[] defaultSwing2Components = new String[] {
+/*    private final static String[] defaultSwing2Components = new String[] {
         "javax.swing.JSlider", // NOI18N
         "javax.swing.JProgressBar", // NOI18N
         "javax.swing.JSplitPane", // NOI18N
@@ -275,10 +273,10 @@ public class FormEditorModule extends ModuleInstall {
         "javax.swing.JLayeredPane", // NOI18N
         "javax.swing.JDesktopPane", // NOI18N
         "javax.swing.JOptionPane", // NOI18N
-    };
+    }; */
 
     /** The default Swing icons - Swing2 category */
-    private final static String[] defaultSwing2Icons = new String[] {
+/*    private final static String[] defaultSwing2Icons = new String[] {
         "/javax/swing/beaninfo/images/JSliderColor16.gif", // NOI18N
         "/javax/swing/beaninfo/images/JProgressBarColor16.gif", // NOI18N
         "/javax/swing/beaninfo/images/JSplitPaneColor16.gif", // NOI18N
@@ -293,63 +291,56 @@ public class FormEditorModule extends ModuleInstall {
         "/javax/swing/beaninfo/images/JLayeredPaneColor16.gif", // NOI18N
         "/javax/swing/beaninfo/images/JDesktopPaneColor16.gif", // NOI18N
         "/javax/swing/beaninfo/images/JOptionPaneColor16.gif" // NOI18N
-    };
-
-    //  private final static String[] defaultDBComponents = new String[] {
-    //    "org.netbeans.lib.sql.JDBCRowSet", // NOI18N
-    //    "org.netbeans.lib.sql.components.DataNavigator", // NOI18N
-    //  };
+    }; */
 
     /** The default Swing Components - beans category */
-    private final static String[] defaultBeansComponents = new String[] {
-        // for future use.
-    };
+//    private final static String[] defaultBeansComponents = new String[] {
+//        // for future use.
+//    };
 
     /** The default Layout Components */
-    private final static String[] defaultLayoutsComponents = new String[] {
-        "org.netbeans.modules.form.compat2.layouts.DesignFlowLayout", // NOI18N
-        "org.netbeans.modules.form.compat2.layouts.DesignBorderLayout", // NOI18N
-        "org.netbeans.modules.form.compat2.layouts.DesignGridLayout", // NOI18N
-        "org.netbeans.modules.form.compat2.layouts.DesignCardLayout", // NOI18N
-        "org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout", // NOI18N
-        "org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout", // NOI18N
-        "org.netbeans.modules.form.compat2.layouts.DesignBoxLayout", // NOI18N
-    };
+/*    private final static String[] defaultLayoutsComponents = new String[] {
+        "org.netbeans.modules.form.layoutsupport.FlowLayoutSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.BorderLayoutSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.GridLayoutSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.CardLayoutSupport", // NOI18N
+//        "org.netbeans.modules.form.layoutsupport.AbsoluteLayoutSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.GridBagLayoutSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.BoxLayoutSupport", // NOI18N
+    }; */
 
     /** The default Layout Components */
-    private final static String[] defaultLayoutsIcons = new String[] {
-        "/org/netbeans/modules/form/resources/palette/flowLayout.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/palette/borderLayout.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/palette/gridLayout.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/palette/cardLayout.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/palette/absoluteLayout.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/palette/gridBagLayout.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/palette/boxLayout.gif", // NOI18N
-    };
+/*    private final static String[] defaultLayoutsIcons = new String[] {
+        "/org/netbeans/beaninfo/swing/FlowLayout.gif", // NOI18N
+        "/org/netbeans/beaninfo/swing/BorderLayout.gif", // NOI18N
+        "/org/netbeans/beaninfo/swing/GridLayout.gif", // NOI18N
+        "/org/netbeans/beaninfo/swing/CardLayout.gif", // NOI18N
+//        "/org/netbeans/modules/form/layoutsupport/resources/AbsoluteLayout.gif", // NOI18N
+        "/org/netbeans/beaninfo/swing/GridBagLayout.gif", // NOI18N
+        "/org/netbeans/beaninfo/swing/BoxLayout.gif", // NOI18N
+    }; */
 
     /** The default Swing Borders */
-    private final static String[] defaultBorders = new String[] {
-        "org.netbeans.modules.form.compat2.border.EmptyBorderInfo", // NOI18N
-        "org.netbeans.modules.form.compat2.border.LineBorderInfo", // NOI18N
-        "org.netbeans.modules.form.compat2.border.MatteIconBorderInfo", // NOI18N
-        "org.netbeans.modules.form.compat2.border.MatteColorBorderInfo", // NOI18N
-        "org.netbeans.modules.form.compat2.border.TitledBorderInfo", // NOI18N
-        "org.netbeans.modules.form.compat2.border.EtchedBorderInfo", // NOI18N
-        "org.netbeans.modules.form.compat2.border.BevelBorderInfo", // NOI18N
-        "org.netbeans.modules.form.compat2.border.SoftBevelBorderInfo", // NOI18N
-        "org.netbeans.modules.form.compat2.border.CompoundBorderInfo", // NOI18N
-    };
+/*    private final static String[] defaultBorders = new String[] {
+        "javax.swing.border.BevelBorder", // NOI18N
+        "javax.swing.border.CompoundBorder", // NOI18N
+        "javax.swing.border.EmptyBorder", // NOI18N
+        "javax.swing.border.EtchedBorder", // NOI18N
+        "javax.swing.border.LineBorder", // NOI18N
+        "javax.swing.border.MatteBorder", // NOI18N
+        "javax.swing.border.SoftBevelBorder", // NOI18N
+        "javax.swing.border.TitledBorder" // NOI18N
+    }; */
 
     /** The default Swing Borders */
-    private final static String[] defaultBordersIcons = new String[] {
-        "/org/netbeans/modules/form/resources/palette/border.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/palette/lineBorder.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/palette/matteIconBorder.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/palette/matteColorBorder.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/palette/titledBorder.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/palette/etchedBorder.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/palette/bevelBorder.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/palette/softBevelBorder.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/palette/compoundBorder.gif", // NOI18N
-    };
+/*    private final static String[] defaultBordersIcons = new String[] {
+        "/org/netbeans/beaninfo/swing/bevelBorder.gif", // NOI18N
+        "/org/netbeans/beaninfo/swing/compoundBorder.gif", // NOI18N
+        "/org/netbeans/beaninfo/swing/emptyBorder.gif", // NOI18N
+        "/org/netbeans/beaninfo/swing/etchedBorder.gif", // NOI18N
+        "/org/netbeans/beaninfo/swing/lineBorder.gif", // NOI18N
+        "/org/netbeans/beaninfo/swing/matteBorder.gif", // NOI18N
+        "/org/netbeans/beaninfo/swing/softBevelBorder.gif", // NOI18N
+        "/org/netbeans/beaninfo/swing/titledBorder.gif" // NOI18N
+    }; */
 }

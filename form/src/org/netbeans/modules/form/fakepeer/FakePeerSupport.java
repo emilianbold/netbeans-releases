@@ -28,10 +28,6 @@ public class FakePeerSupport
     private FakePeerSupport() {
     }
 
-    public static Container createFakePeerContainer() {
-        return new FakePeerContainer();
-    }
-
     public static void attachFakePeer(Component comp) {
         FakePeer peer = null;
 

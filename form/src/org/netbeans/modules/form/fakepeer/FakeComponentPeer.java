@@ -93,7 +93,8 @@ abstract class FakeComponentPeer implements FakePeer
     }
 
     public Point getLocationOnScreen() {
-        return _target.getLocationOnScreen();
+        // this is called from target (leads to infinite loop)
+        return null; //_target.getLocationOnScreen();
     }
 
     public Dimension getPreferredSize() {
@@ -109,7 +110,8 @@ abstract class FakeComponentPeer implements FakePeer
     }
 
     public Graphics getGraphics() {
-        return _target.getGraphics();
+        // this is called from target (leads to infinite loop)
+        return null; //_target.getGraphics();
     }
 
     public Toolkit getToolkit() {
@@ -117,7 +119,8 @@ abstract class FakeComponentPeer implements FakePeer
     }
 
     public FontMetrics getFontMetrics(Font font) {
-        return _target.getFontMetrics(font);
+        // this is called from target (leads to infinite loop)
+        return null; //_target.getFontMetrics(font);
     }
 
     public void setForeground(Color color) {
@@ -137,7 +140,8 @@ abstract class FakeComponentPeer implements FakePeer
     }
 
     public void requestFocus() {
-        _target.requestFocus();
+        // this is called from target (leads to infinite loop)
+        //_target.requestFocus();
     }
 
     public boolean isFocusTraversable() {

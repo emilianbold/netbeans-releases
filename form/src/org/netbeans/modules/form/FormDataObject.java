@@ -25,6 +25,7 @@ import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
+import org.openide.cookies.EditCookie;
 import org.netbeans.modules.java.JavaDataObject;
 import org.netbeans.modules.java.JavaEditor;
 import org.netbeans.modules.form.*;
@@ -56,6 +57,7 @@ public class FormDataObject extends JavaDataObject {
     // Constructors
 
     static final long serialVersionUID =-975322003627854168L;
+
     public FormDataObject(FileObject ffo, FileObject jfo, FormDataLoader loader) throws DataObjectExistsException {
         super(jfo, loader);
         formEntry =(FileEntry)registerEntry(ffo);
@@ -67,13 +69,18 @@ public class FormDataObject extends JavaDataObject {
         templateInit = false;
         modifiedInit = false;
         componentRefRegistered = false;
+
+        getCookieSet().add(new Class[] { EditCookie.class }, this);
     }
 
     //--------------------------------------------------------------------
-    // Important interface
-
-    //--------------------------------------------------------------------
     // Other methods
+
+    public Node.Cookie createCookie(Class klass) {
+        if (EditCookie.class.isAssignableFrom(klass))
+            return getJavaEditor();
+        return super.createCookie(klass);
+    }
 
     public FileObject getFormFile() {
         return getFormEntry().getFile();
@@ -132,7 +139,7 @@ public class FormDataObject extends JavaDataObject {
                     if (rootNode != null)
                         rootNode.updateName();
                     
-                    FormTopComponent topComp = formEditor.getFormTopComponent();
+                    FormDesigner topComp = formEditor.getFormDesigner();
                     if (topComp != null)
                         topComp.setName(java.text.MessageFormat.format(
                             FormEditor.getFormBundle ().getString("FMT_FormWindowTitle"),

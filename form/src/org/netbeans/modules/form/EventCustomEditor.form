@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
@@ -7,13 +7,7 @@
     </Property>
   </Properties>
   <SyntheticProperties>
-    <SyntheticProperty name="formSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,0,-56,0,0,1,44"/>
-    <SyntheticProperty name="formPosition" type="java.awt.Point" value="-84,-19,0,5,115,114,0,14,106,97,118,97,46,97,119,116,46,80,111,105,110,116,-74,-60,-118,114,52,126,-56,38,2,0,2,73,0,1,120,73,0,1,121,120,112,0,0,0,0,0,0,0,0"/>
-    <SyntheticProperty name="formSizePolicy" type="int" value="2"/>
-    <SyntheticProperty name="generatePosition" type="boolean" value="true"/>
-    <SyntheticProperty name="generateSize" type="boolean" value="true"/>
-    <SyntheticProperty name="generateCenter" type="boolean" value="true"/>
-    <SyntheticProperty name="encoding" type="java.lang.String" value="ISO-8859-1"/>
+    <SyntheticProperty name="encoding" type="java.lang.String" value="UTF-8"/>
   </SyntheticProperties>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
@@ -30,14 +24,14 @@
         <Component class="javax.swing.JList" name="handlersList">
 
           <Events>
-            <EventHandler event="valueChanged" handler="handlersListValueChanged"/>
+            <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="handlersListValueChanged"/>
           </Events>
 
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value="Vector h = eventProperty.event.getHandlers ();&#xa;for (int i=0, n=h.size (); i&lt;n; i++) {&#xa;  handlersModel.addElement (((EventsManager.EventHandler) (h.get (i))).getName ());&#xa;}"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value="Vector h = eventProperty.event.getHandlers();&#xa;for (int i=0, n=h.size (); i &lt; n; i++) {&#xa;  handlersModel.addElement(((EventHandler) (h.get(i))).getName());&#xa;}"/>
             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value=""/>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value=""/>
-            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="handlersList.setModel (handlersModel);"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="handlersList.setModel(handlersModel);"/>
           </AuxValues>
           <Constraints>
           </Constraints>
@@ -46,13 +40,13 @@
     </Container>
     <Component class="javax.swing.JButton" name="addButton">
       <Properties>
-        <Property name="label" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="FormEditor.getFormBundle ().getString (&quot;CTL_EE_ADD&quot;)" type="code"/>
         </Property>
       </Properties>
 
       <Events>
-        <EventHandler event="actionPerformed" handler="addButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addButtonActionPerformed"/>
       </Events>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -62,13 +56,13 @@
     </Component>
     <Component class="javax.swing.JButton" name="removeButton">
       <Properties>
-        <Property name="label" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="FormEditor.getFormBundle ().getString (&quot;CTL_EE_REMOVE&quot;)" type="code"/>
         </Property>
       </Properties>
 
       <Events>
-        <EventHandler event="actionPerformed" handler="removeButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeButtonActionPerformed"/>
       </Events>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -78,13 +72,13 @@
     </Component>
     <Component class="javax.swing.JButton" name="editButton">
       <Properties>
-        <Property name="label" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="FormEditor.getFormBundle ().getString (&quot;CTL_EE_RENAME&quot;)" type="code"/>
         </Property>
       </Properties>
 
       <Events>
-        <EventHandler event="actionPerformed" handler="editButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editButtonActionPerformed"/>
       </Events>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

@@ -39,8 +39,6 @@ public class FormDataLoader extends JavaDataLoader {
     }
 
     protected void initialize () {
-        super.initialize ();
-
         setDisplayName(NbBundle.getBundle(FormDataLoader.class).getString("PROP_FormLoader_Name"));
 
         setActions(new SystemAction[] {
@@ -51,7 +49,7 @@ public class FormDataLoader extends JavaDataLoader {
             SystemAction.get(FileSystemAction.class),
             null,
             SystemAction.get(CompileAction.class),
-            null,
+//            null,
             SystemAction.get(ExecuteAction.class),
             null,
             SystemAction.get(CutAction.class),
@@ -66,7 +64,6 @@ public class FormDataLoader extends JavaDataLoader {
             SystemAction.get(ToolsAction.class),
             SystemAction.get(PropertiesAction.class),
         });
-
     }
 
     /** finds file with the same name and specified extension in the same folder as param javaFile */

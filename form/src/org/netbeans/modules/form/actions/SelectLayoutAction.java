@@ -16,34 +16,40 @@
 package org.netbeans.modules.form.actions;
 
 import java.util.ArrayList;
+import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.MenuListener;
 import javax.swing.event.MenuEvent;
+import java.text.MessageFormat;
 
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
 import org.openide.nodes.Node;
 import org.netbeans.modules.form.palette.*;
 import org.netbeans.modules.form.*;
-import org.netbeans.modules.form.compat2.layouts.support.DesignSupportLayout;
+import org.netbeans.modules.form.layoutsupport.LayoutSupport;
 
-/** SelectLayout action - subclass of NodeAction - enabled on RADContainerNodes and RADLayoutNodes.
- *
- * @author   Ian Formanek
+/**
+ * SelectLayout action - subclass of NodeAction - enabled on RADContainerNodes
+ * and RADLayoutNodes.
  */
-public class SelectLayoutAction extends CookieAction {
-    static final long serialVersionUID =4760011790717781801L;
-    /** generated Serialized Version UID */
-    //  static final long serialVersionUID = -5280204757097896304L;
 
-    /** @return the mode of action. Possible values are disjunctions of MODE_XXX
-     * constants. */
+public class SelectLayoutAction extends CookieAction
+{
+    static final long serialVersionUID = 4760011790717781801L;
+
+    /**
+     * @return the mode of action. Possible values are disjunctions of
+     * MODE_XXX constants.
+     */
     protected int mode() {
         return MODE_ALL;
     }
 
-    /** Creates new set of classes that are tested by the cookie.
-     *
+    /**
+     * Creates new set of classes that are tested by the cookie.
      * @return list of classes the that the cookie tests
      */
     protected Class[] cookieClasses() {
@@ -80,37 +86,47 @@ public class SelectLayoutAction extends CookieAction {
     protected void performAction(Node[] activatedNodes) {
     }
 
-    /*
+    private static RADVisualContainer getContainer(Node node) {
+        RADVisualContainer container = null;
+        FormLayoutCookie layoutCookie =
+            (FormLayoutCookie) node.getCookie(FormLayoutCookie.class);
+
+        if (layoutCookie != null) {
+            container = layoutCookie.getLayoutNode().getLayoutSupport().getContainer();
+//            System.err.println("**** container = " + container); // XXX
+        }
+        else {
+            RADComponentCookie nodeCookie =
+                (RADComponentCookie) node.getCookie(RADComponentCookie.class);
+            if (nodeCookie != null) {
+                if (nodeCookie.getRADComponent() instanceof RADVisualContainer) {
+                    container = (RADVisualContainer) nodeCookie.getRADComponent();
+                }
+            }
+        }
+        return container;
+    }
+    
+    /**
      * In this method the enable / disable action logic can be defined.
      *
      * @param activatedNodes gives array of actually activated nodes.
      */
     protected boolean enable(Node[] activatedNodes) {
-        if (super.enable(activatedNodes)) {
-            for (int i = 0; i < activatedNodes.length; i++) {
-                RADVisualContainer container = null;
-                FormLayoutCookie layoutCookie =(FormLayoutCookie)activatedNodes[i].getCookie(FormLayoutCookie.class);
-                if (layoutCookie != null) {
-                    container = layoutCookie.getLayoutNode().getRADContainer();
-                } else {
-                    RADComponentCookie nodeCookie =(RADComponentCookie)activatedNodes[i].getCookie(RADComponentCookie.class);
-                    if (nodeCookie != null) {
-                        if (nodeCookie.getRADComponent() instanceof RADVisualContainer) {
-                            container =(RADVisualContainer)nodeCookie.getRADComponent();
-                        }
-                    }
-                }
-
-                if ((container != null) &&(!(container.getDesignLayout() instanceof DesignSupportLayout))) {
-                    return true;
-                }
-
-            }
+        if (!super.enable(activatedNodes))
+            return false;
+        
+        for (int i = 0; i < activatedNodes.length; i++) {
+            RADVisualContainer container = getContainer(activatedNodes[i]);
+            
+            if (container != null) //XXX &&(!(container.getDesignLayout() instanceof DesignSupportLayout))
+                return true;
         }
         return false;
     }
 
-    /** Returns a JMenuItem that presents the Action, that implements this
+    /**
+     * Returns a JMenuItem that presents the Action, that implements this
      * interface, in a MenuBar.
      * @return the JMenuItem representation for the Action
      */
@@ -122,7 +138,7 @@ public class SelectLayoutAction extends CookieAction {
         PaletteItem[] allItems = ComponentPalette.getDefault().getAllItems();
         ArrayList layoutsList = new ArrayList();
         for (int i = 0; i < allItems.length; i++) {
-            if (allItems[i].isDesignLayout()) {
+            if (allItems[i].isLayout()) {
                 layoutsList.add(allItems[i]);
             }
         }
@@ -132,7 +148,8 @@ public class SelectLayoutAction extends CookieAction {
         return layouts;
     }
 
-    /** Returns a JMenuItem that presents the Action, that implements this
+    /**
+     * Returns a JMenuItem that presents the Action, that implements this
      * interface, in a Popup Menu.
      * @return the JMenuItem representation for the Action
      */
@@ -147,7 +164,8 @@ public class SelectLayoutAction extends CookieAction {
                     menu.removeAll();
                 }
                 Node[] nodes = getActivatedNodes();
-                if (nodes.length == 0) return;
+                if (nodes.length == 0)
+                    return;
 
                 PaletteItem[] layouts = getAllLayouts();
 
@@ -158,16 +176,15 @@ public class SelectLayoutAction extends CookieAction {
                     mi.addActionListener(new LayoutActionListener(nodes, layouts[i]));
                 }
             }
-            public void menuDeselected(MenuEvent e) {
-            }
-            public void menuCanceled(MenuEvent e) {
-            }
-        }
-                                  );
+            
+            public void menuDeselected(MenuEvent e) {}
+            public void menuCanceled(MenuEvent e) {}
+        });
         return popupMenu;
     }
 
-    class LayoutActionListener implements java.awt.event.ActionListener {
+    class LayoutActionListener implements ActionListener
+    {
         private Node[] activatedNodes;
         private PaletteItem paletteItem;
 
@@ -176,31 +193,46 @@ public class SelectLayoutAction extends CookieAction {
             this.paletteItem = paletteItem;
         }
 
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (activatedNodes == null) return; // due to the swing's bug with popup menus, it can be null
+        public void actionPerformed(ActionEvent evt) {
+            if (activatedNodes == null) return;
+            // due to the Swing bug with popup menus, it can be null
+
             for (int i = 0; i < activatedNodes.length; i++) {
-                RADVisualContainer container = null;
-                FormLayoutCookie layoutCookie =(FormLayoutCookie)activatedNodes[i].getCookie(FormLayoutCookie.class);
-                if (layoutCookie != null) {
-                    container = layoutCookie.getLayoutNode().getRADContainer();
-                } else {
-                    RADComponentCookie nodeCookie =(RADComponentCookie)activatedNodes[i].getCookie(RADComponentCookie.class);
-                    if (nodeCookie != null) {
-                        if (nodeCookie.getRADComponent() instanceof RADVisualContainer) {
-                            container =(RADVisualContainer)nodeCookie.getRADComponent();
-                        }
-                    }
-                }
-
-                if (container == null) {
-                    continue;
-                }
-
+                RADVisualContainer container = getContainer(activatedNodes[i]);
+                if (container == null) continue;
+                
                 // set the selected layout on the activated container
-                //(or activated layout's parent container)
-                container.getFormManager().setDesignLayout(container, paletteItem);
+                LayoutSupport layoutSupport = null;
+                try {
+                    layoutSupport = paletteItem.createLayoutSupportInstance();
+                }
+                catch (Exception e) {
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        e.printStackTrace();
+
+                    TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                        MessageFormat.format(
+                            FormEditor.getFormBundle().getString("FMT_ERR_LayoutInit"),
+                            new Object[] { paletteItem.getItemClass().getName(),
+                                            e.getClass().getName() }),
+                        NotifyDescriptor.ERROR_MESSAGE));
+
+                    return;
+                }
+
+                if (layoutSupport == null) {
+                    TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                        MessageFormat.format(
+                            FormEditor.getFormBundle().getString("FMT_ERR_LayoutNotFound"),
+                            new Object[] { paletteItem.getItemClass().getName() }),
+                        NotifyDescriptor.ERROR_MESSAGE));
+
+                    return;
+                }
+
+                container.getFormModel().setContainerLayout(container,
+                                                            layoutSupport);
             }
         }
     }
-
 }

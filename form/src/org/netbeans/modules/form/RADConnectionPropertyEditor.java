@@ -11,30 +11,39 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+/* $Id$ */
+
 package org.netbeans.modules.form;
 
 import java.awt.*;
 import java.beans.*;
 import java.text.MessageFormat;
 
-import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+import org.openide.TopManager;
+import org.openide.options.SystemOption;
+import org.openide.explorer.propertysheet.*;
+import org.openide.explorer.propertysheet.editors.*;
 
 /**
- * RADConnectionPropertyEditor is a property editor for ListModel, which
- * encapsulates a connection to existing ListModel beans on the form
+ * RADConnectionPropertyEditor is a special property editor that can set
+ * properties (of any type) indirectly - e.g. as a property of some bean
+ * or as the result of a method call or as a code entered by the user, etc.
+ * Only the source code is generated for such property (usually) so it
+ * doesn't take effect until runtime.
  *
  * @author Ian Formanek
  */
 
 public class RADConnectionPropertyEditor
-    implements PropertyEditor,
+    implements PropertyEditor, 
                FormAwareEditor,
                XMLPropertyEditor,
                NamedPropertyEditor
 {
+
     protected PropertyChangeSupport support;
     private Class propertyType;
-    private RADComponent rcomponent;
+    private FormModel formModel = null;
     private RADConnectionDesignValue emptyValue = null;
     private RADConnectionDesignValue designValue = emptyValue;
     private Object realValue = null;
@@ -48,14 +57,10 @@ public class RADConnectionPropertyEditor
     /** If a property editor or customizer implements the FormAwareEditor
      * interface, this method is called immediately after the PropertyEditor
      * instance is created or the Customizer is obtained from getCustomizer().
-     * @param component The RADComponent representing the JavaBean being edited by this 
-     *                  property editor or customizer
-     * @param property  The RADProperty being edited by this property editor or null 
-     *                  if this interface is implemented by a customizer
+     * @param model  The FormModel representing data of opened form.
      */
-
-    public void setRADComponent(RADComponent rcomp, RADComponent.RADProperty rprop) {
-        rcomponent = rcomp;
+    public void setFormModel(FormModel model) {
+        formModel = model;
     }
 
     // -----------------------------------------------------------------------------
@@ -101,7 +106,7 @@ public class RADConnectionPropertyEditor
     }
 
     public java.awt.Component getCustomEditor() {
-        ParametersPicker pp = new ParametersPicker(rcomponent.getFormManager(), rcomponent, propertyType);
+        ParametersPicker pp = new ParametersPicker(formModel, propertyType);
         pp.setPropertyValue(designValue);
         return pp;
     }
@@ -192,7 +197,7 @@ public class RADConnectionPropertyEditor
     // ------------------------------------------
     // implementation class for FormDesignValue
 
-    public static class RADConnectionDesignValue implements FormDesignValue, java.io.Serializable {
+    public static class RADConnectionDesignValue implements FormDesignValue { //, java.io.Serializable {
         public final static int TYPE_PROPERTY = 0;
         public final static int TYPE_METHOD = 1;
         public final static int TYPE_CODE = 2;
@@ -214,7 +219,7 @@ public class RADConnectionPropertyEditor
         String requiredTypeName = null;             // used if type = TYPE_VALUE
 
         transient private boolean needsInit = false; // used for deserialization init if type = TYPE_PROPERTY or TYPE_METHOD or TYPE_BEAN
-        transient private FormManager2 formManager;  // used for deserialization init if type = TYPE_PROPERTY or TYPE_METHOD or TYPE_BEAN
+        transient private FormModel formModel;  // used for deserialization init if type = TYPE_PROPERTY or TYPE_METHOD or TYPE_BEAN
 
         static final long serialVersionUID =147134837271021412L;
         RADConnectionDesignValue(RADComponent comp) {
@@ -245,9 +250,9 @@ public class RADConnectionPropertyEditor
             type = TYPE_VALUE;
         }
 
-        private RADConnectionDesignValue(String compName, int valueType, String name, FormManager2 manager) {
+        private RADConnectionDesignValue(String compName, int valueType, String name, FormModel manager) {
             radComponentName = compName;
-            formManager = manager;
+            formModel = manager;
             if (valueType == TYPE_PROPERTY) {
                 needsInit = true;
                 type = TYPE_PROPERTY;
@@ -281,7 +286,7 @@ public class RADConnectionPropertyEditor
                 case TYPE_CODE: return FormEditor.getFormBundle().getString("CTL_CODE_CONN");
                 case TYPE_BEAN: return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_BEAN_CONN"), new Object[] { radComponentName });
             }
-            throw new InternalError();
+            throw new IllegalStateException();
         }
 
         public PropertyDescriptor getProperty() {
@@ -321,7 +326,7 @@ public class RADConnectionPropertyEditor
 
         private boolean initialize() {
             boolean retVal = false;
-            radComponent = formManager.findRADComponent(radComponentName);
+            radComponent = formModel.findRADComponent(radComponentName);
             if (radComponent != null) {
                 if (type == TYPE_BEAN) { // bean
                     retVal = true;
@@ -357,7 +362,7 @@ public class RADConnectionPropertyEditor
          * @param radComponent the radComponent in which this property is used
          * @return the real property value to be used during design-time
          */
-        public Object getDesignValue(RADComponent radComponent) {
+        public Object getDesignValue() { //RADComponent radComponent) {
             /*      if (needsInit) {
                     if (!initialize()) {
                     return IGNORED_VALUE; // failed to initialize
@@ -387,14 +392,18 @@ public class RADConnectionPropertyEditor
                 case TYPE_BEAN:
                     return FormDesignValue.IGNORED_VALUE; // [PENDING: use the value during design time]
                 case TYPE_CODE:
-                    return FormDesignValue.IGNORED_VALUE; // [T.P.] code is not a real value
+                    return FormDesignValue.IGNORED_VALUE;
                 default:
                     return FormDesignValue.IGNORED_VALUE;
             }
         }
 
+        public String getDescription() {
+            return getName();
+        }
+
         /** Returns type of this connection design value.
-        */
+         */
         public int getType() {
             return type;
         }
@@ -464,26 +473,20 @@ public class RADConnectionPropertyEditor
                 String value = attributes.getNamedItem(ATTR_VALUE).getNodeValue();
                 String valueType = attributes.getNamedItem(ATTR_REQUIRED_TYPE).getNodeValue();
                 setValue(new RADConnectionDesignValue(valueType, value));
-/*                try {
-                    Class reqType = TopManager.getDefault().currentClassLoader().loadClass(valueType);
-                    setValue(new RADConnectionDesignValue(reqType, value));
-                } catch (Exception e) {
-                    // ignore failures... and use no conn instead
-                } */
 
             } else if (VALUE_PROPERTY.equals(typeString)) {
                 String component = attributes.getNamedItem(ATTR_COMPONENT).getNodeValue();
                 String name = attributes.getNamedItem(ATTR_NAME).getNodeValue();
-                setValue(new RADConnectionDesignValue(component, RADConnectionDesignValue.TYPE_PROPERTY, name, rcomponent.getFormManager()));
+                setValue(new RADConnectionDesignValue(component, RADConnectionDesignValue.TYPE_PROPERTY, name, formModel)); //rcomponent.getFormModel()));
 
             } else if (VALUE_METHOD.equals(typeString)) {
                 String component = attributes.getNamedItem(ATTR_COMPONENT).getNodeValue();
                 String name = attributes.getNamedItem(ATTR_NAME).getNodeValue();
-                setValue(new RADConnectionDesignValue(component, RADConnectionDesignValue.TYPE_METHOD, name, rcomponent.getFormManager()));
+                setValue(new RADConnectionDesignValue(component, RADConnectionDesignValue.TYPE_METHOD, name, formModel)); //rcomponent.getFormModel()));
 
             } else if (VALUE_BEAN.equals(typeString)) {
                 String component = attributes.getNamedItem(ATTR_COMPONENT).getNodeValue();
-                setValue(new RADConnectionDesignValue(component, RADConnectionDesignValue.TYPE_BEAN, null, rcomponent.getFormManager()));
+                setValue(new RADConnectionDesignValue(component, RADConnectionDesignValue.TYPE_BEAN, null, formModel)); //rcomponent.getFormModel()));
 
             } else {
                 String code = attributes.getNamedItem(ATTR_CODE).getNodeValue();

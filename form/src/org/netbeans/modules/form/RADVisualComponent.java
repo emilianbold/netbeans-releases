@@ -15,12 +15,15 @@
 
 package org.netbeans.modules.form;
 
-import org.openide.nodes.*;
-import org.netbeans.modules.form.compat2.layouts.DesignLayout;
-
+import java.util.*;
+import java.beans.*;
 import java.awt.Component;
-import java.util.HashMap;
-import java.util.Iterator;
+//import java.lang.reflect.InvocationTargetException;
+//import java.lang.reflect.Method;
+
+import org.openide.nodes.*;
+import org.netbeans.modules.form.layoutsupport.LayoutSupport;
+import org.netbeans.modules.form.compat2.layouts.DesignLayout;
 
 /**
  *
@@ -31,9 +34,11 @@ public class RADVisualComponent extends RADComponent {
     // -----------------------------------------------------------------------------
     // Private properties
 
-    private HashMap constraints = new HashMap(10);
-    transient private Node.PropertySet[] visualPropertySet;
+    private HashMap constraints = new HashMap();
     transient private RADVisualContainer parent;
+
+    private Node.Property[] constraintsProperties;
+    private PropertyChangeListener constraintsListener;
 
     // -----------------------------------------------------------------------------
     // Initialization
@@ -60,59 +65,167 @@ public class RADVisualComponent extends RADComponent {
     }
 
     // -----------------------------------------------------------------------------
-    // Constraints management
+    // Layout constraints management
 
-    void initConstraints(HashMap map) {
-        for (java.util.Iterator it = map.keySet().iterator(); it.hasNext();) {
-            String layoutClassName =(String) it.next();
-            constraints.put(layoutClassName, map.get(layoutClassName));
-        }
-    }
-
-    public void setConstraints(Class layoutClass, DesignLayout.ConstraintsDescription constr) {
+    /** Sets component's constraints description for given layout-support class. 
+     */
+    public void setConstraintsDesc(Class layoutClass,
+                                   LayoutSupport.ConstraintsDesc constr) {
         constraints.put(layoutClass.getName(), constr);
     }
 
+    /** Gets component's constraints description for given layout-support class.
+     */
+    public LayoutSupport.ConstraintsDesc getConstraintsDesc(Class layoutClass) {
+        return (LayoutSupport.ConstraintsDesc)constraints.get(layoutClass.getName());
+    }
+
+    public LayoutSupport.ConstraintsDesc getCurrentConstraintsDesc() {
+        if (parent == null) return null;
+        LayoutSupport laySup = parent.getLayoutSupport();
+        if (laySup == null) return null;
+
+        return getConstraintsDesc(laySup.getClass());
+    }
+
+    /** Setter for attaching old version of constraints description
+     * (DesignLayout.ConstraintsDescription) to this component.
+     */ 
+    public void setConstraints(Class layoutClass,
+                               DesignLayout.ConstraintsDescription constr) {
+        constraints.put(layoutClass.getName(), constr);
+    }
+
+    /** Getter for obtaining old version of constraints description
+     * (DesignLayout.ConstraintsDescription) attached to this component.
+     */
     public DesignLayout.ConstraintsDescription getConstraints(Class layoutClass) {
         return(DesignLayout.ConstraintsDescription)constraints.get(layoutClass.getName());
     }
-
-    public Node.PropertySet[] getProperties() {
-        if (parent == null) {
-            // [PENDING] strange - not initialized yet - it is probably a bad state and this code should be removed
-            return super.getProperties();
-        }
-
-        if (visualPropertySet == null) {
-            Node.PropertySet[] inh = super.getProperties();
-            visualPropertySet = new Node.PropertySet[inh.length+1];
-            System.arraycopy(inh, 0, visualPropertySet, 0, inh.length-1);
-            visualPropertySet[visualPropertySet.length-2] =
-                new Node.PropertySet("layout", FormEditor.getFormBundle().getString("MSG_Layout"), FormEditor.getFormBundle().getString("MSG_LayoutProps")) {
-                    public Node.Property[] getProperties() {
-                        return parent.getDesignLayout().getComponentProperties(RADVisualComponent.this);
-                    }
-                };
-            visualPropertySet[visualPropertySet.length-1] = inh[inh.length-1]; // add events tab to the end
-        }
-        return visualPropertySet;
-    }
-
 
     HashMap getConstraintsMap() {
         return constraints;
     }
 
+    void setConstraintsMap(Map map) {
+        for (Iterator it = map.keySet().iterator(); it.hasNext(); ) {
+            Object layoutClassName = it.next();
+            constraints.put(layoutClassName, map.get(layoutClassName));
+        }
+    }
+
+    // ---------------
+    // Properties
+
+    protected void createPropertySets(List propSets) {
+        super.createPropertySets(propSets);
+
+        if (constraintsProperties == null)
+            createConstraintsProperties();
+
+        if (constraintsProperties.length > 0)
+            propSets.add(propSets.size() - 1,
+                         new Node.PropertySet("layout", // NOI18N
+                    FormEditor.getFormBundle().getString("CTL_LayoutTab"), // NOI18N
+                    FormEditor.getFormBundle().getString("CTL_LayoutTabHint")) { // NOI18N
+
+                public Node.Property[] getProperties() {
+                    return getConstraintsProperties();
+                }
+            });
+    }
+
+    /** Called to modify original properties obtained from BeanInfo.
+     * Properties may be added, removed etc. - due to specific needs
+     * of subclasses. Here used for adding ButtonGroupProperty.
+     */
+/*    protected void changePropertiesExplicitly(List prefProps,
+                                              List normalProps,
+                                              List expertProps) {
+
+        super.changePropertiesExplicitly(prefProps, normalProps, expertProps);
+
+        // hack for buttons - add a fake property for ButtonGroup
+//        if (getBeanInstance() instanceof javax.swing.AbstractButton)
+//            try {
+//                Node.Property prop = new ButtonGroupProperty(this);
+//                nameToProperty.put(prop.getName(), prop);
+//                if (getBeanInstance() instanceof javax.swing.JToggleButton)
+//                    prefProps.add(prop);
+//                else
+//                    normalProps.add(prop);
+//            }
+//            catch (IntrospectionException ex) {} // should not happen
+
+//        if (getBeanInstance() instanceof javax.swing.JLabel)
+//            try {
+//                PropertyDescriptor pd = new PropertyDescriptor("displayedMnemonic",
+//                    javax.swing.JLabel.class, "getDisplayedMnemonic", "setDisplayedMnemonic");
+//                normalProps.add(createProperty(pd));
+//            }
+//            catch (IntrospectionException ex) {} // should not happen
+    }*/
+
+    public Node.Property[] getConstraintsProperties() {
+        if (constraintsProperties == null)
+            createConstraintsProperties();
+        return constraintsProperties;
+    }
+
+    void createConstraintsProperties() {
+        LayoutSupport.ConstraintsDesc constr = getCurrentConstraintsDesc();
+        constraintsProperties = constr != null ?
+                                constr.getProperties() : null;
+        if (constraintsProperties == null) {
+            constraintsProperties = new Node.Property[0];
+            return;
+        }
+
+        for (int i=0; i < constraintsProperties.length; i++) {
+            if (constraintsProperties[i] instanceof FormProperty) {
+                FormProperty prop = (FormProperty)constraintsProperties[i];
+                prop.addPropertyChangeListener(getPropertyListener());
+
+                if (!(prop instanceof RADProperty)) { // usually true
+                    prop.addPropertyChangeListener(getConstraintsListener());
+                    prop.setPropertyContext(new RADProperty.RADPropertyContext(this));
+                    if (isReadOnly()) {
+                        int type = prop.getAccessType() | FormProperty.NO_WRITE;
+                        prop.setAccessType(type);
+                    }
+                }
+            }
+        }
+    }
+
+    /** Called when parent's layout is changed (contstraints are changed too).
+     */
+    void resetConstraintsProperties() {
+        constraintsProperties = null;
+        beanPropertySets = null;
+    }
+
+    private PropertyChangeListener getConstraintsListener() {
+        if (constraintsListener == null)
+            constraintsListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent ev) {
+                    getFormModel().fireFormChanged();
+//                    RADComponentNode node = getNodeReference();
+//                    if (node != null) node.fireComponentPropertiesChange();
+                }
+            };
+        return constraintsListener;
+    }
+
     // -----------------------------------------------------------------------------
     // Debug methods
 
-    public String toString() {
-        String ret = super.toString() + ", constraints: ---------------\n"; // NOI18N
-        for (Iterator it = constraints.keySet().iterator(); it.hasNext();) {
-            Object key = it.next();
-            ret = ret + "class: "+ key + ", constraints: "+constraints.get(key) + "\n"; // NOI18N
-        }
-        return ret + "---------------------------"; // NOI18N
-    }
-
+//    public String toString() {
+//        String ret = super.toString() + ", constraints: ---------------\n"; // NOI18N
+//        for (Iterator it = constraints.keySet().iterator(); it.hasNext();) {
+//            Object key = it.next();
+//            ret = ret + "class: "+ key + ", constraints: "+constraints.get(key) + "\n"; // NOI18N
+//        }
+//        return ret + "---------------------------"; // NOI18N
+//    }
 }
