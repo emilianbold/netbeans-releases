@@ -447,10 +447,14 @@ Microsystems, Inc. All Rights Reserved.
       <!-- templates for services in Lookup, should have the same subdirectory as objects under the -->
 
       <folder name="Services">
+          <attr name="simple" boolvalue="false" />
       </folder>
 
       <!-- folder for all registered filesystem templates -->
       <folder name="Mount">
+          <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
+          <attr name="simple" boolvalue="false" />
+          
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
           <file name="org-netbeans-core-ExLocalFileSystem.settings" url="ExLocalFileSystem.settings">
