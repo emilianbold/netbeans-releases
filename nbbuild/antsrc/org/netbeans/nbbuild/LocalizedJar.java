@@ -379,6 +379,7 @@ if( localeKitFiles.contains( file)) {
                     }
                 }
                 log ("Building localized jar: " + jar);
+                IOException closing = null;
                 try {
                     jar.getParentFile ().mkdirs ();
                     ZipOutputStream out = new ZipOutputStream (new FileOutputStream (jar));
@@ -432,7 +433,16 @@ if( localeKitFiles.contains( file)) {
                                       out, path, file.lastModified (), addedDirs);
                         }
                     } finally {
-                        out.close ();
+                        try {
+                            out.close ();
+                        } catch (IOException ex) {
+                            closing = ex;
+                        }
+                    }
+
+                    if (closing != null) {
+                        // if there was a closing exception and no other one
+                        throw closing;
                     }
                 } catch (IOException ioe) {
                     String msg = "Problem creating JAR: " + ioe.getMessage ();
