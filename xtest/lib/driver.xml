@@ -258,6 +258,9 @@ Microsystems, Inc. All Rights Reserved.
   <target name="install-from-installer" depends="check-ide-param" if="ide.install.type.installer">
     <antcall target="clean-ide"/>
     <copy file="${ide.install.path}" todir="${ide.installto}"/>
+    <!-- this hack is for setting 'x' bit on unices, since ant does not preserve 'x' bits :-( -->    
+    <chmod dir="${ide.installto}" perm="ugo+x" includes="*"/>
+    <!-- hack end -->
     <getfilename file="${ide.install.path}" nameExtProperty="ide.install.path.filenameext" nameProperty="ide.install.path.filename"/>
     <property name="install.paramfile" value="${ide.installto}/${ide.install.path.filename}.sp"/>
     <echo message="forteHome=${ide.installto} jdkHome=${installer.java.home} ${installer.params}" file="${install.paramfile}"/>
