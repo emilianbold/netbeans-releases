@@ -52,6 +52,7 @@ import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardValidationException;
 
 /**
@@ -62,6 +63,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     
     private static final long serialVersionUID = 1L;
     private String buildfileName = GeneratedFilesHelper.BUILD_XML_PATH;
+    private boolean imp = true;
     
     /** Create a new wizard iterator. */
     public ImportWebProjectWizardIterator () {}
@@ -81,6 +83,10 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     }
     
     public Set/*<DataObject>*/ instantiate(TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
+        //project creation cancelled
+        if (!isImport())
+            return null;
+        
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         File dirSrcF = (File) wiz.getProperty (WizardProperties.SOURCE_ROOT);
         String codename = (String) wiz.getProperty(WizardProperties.CODE_NAME);
@@ -137,6 +143,14 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     
     private void setBuildfile(String name) {
         buildfileName = name;
+    }
+    
+    private boolean isImport() {
+        return imp;
+    }
+
+    private void setImport(boolean imp) {
+        this.imp = imp;
     }
     
     private transient int index;
@@ -424,14 +438,13 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             ((ImportWebLocationsVisual) panels[1].getComponent()).initValues(webPages, javaSources, libraries);
         }
         
-        //extra finish dialog
-        
+        //extra finish dialog        
         private Dialog dialog;
-        private boolean cont;
             
         public void validate() throws WizardValidationException {
             File dirF = new File(panel.createdFolderTextField.getText());
             JButton ok = new JButton(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_OK")); //NOI18N
+            JButton cancel = new JButton(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_Cancel")); //NOI18N
             final ImportBuildfile ibf = new ImportBuildfile(dirF.getAbsolutePath(), ok);
             if ((new File(dirF, GeneratedFilesHelper.BUILD_XML_PATH)).exists()) {
                 ActionListener actionListener = new ActionListener() {
@@ -441,20 +454,19 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
                             String name = ((JButton) src).getText();
                             if (name.equals(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_OK"))) { //NOI18N
                                 setBuildfile(ibf.getBuildName());
-                                setContinue(true);
+                                setImport(true);
                                 closeDialog();
                             } else if (name.equals(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_Cancel"))) { //NOI18N
-                                setContinue(false);
-                                closeDialog();
+                                NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_CancelConfirmation"), NotifyDescriptor.YES_NO_OPTION); //NOI18N
+                                Object ret = DialogDisplayer.getDefault().notify(ndesc);
+                                if (ret == NotifyDescriptor.YES_OPTION) {
+                                    setImport(false);
+                                    closeDialog();
+                                }
                             }
                         }
                     }
                 };
-
-                ok.addActionListener(actionListener);
-
-                JButton cancel = new JButton(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_Cancel")); //NOI18N
-                cancel.addActionListener(actionListener);
 
                 DialogDescriptor descriptor = new DialogDescriptor(
                     ibf,
@@ -470,18 +482,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
                 dialog = DialogDisplayer.getDefault().createDialog(descriptor);
                 dialog.show();
             } else
-                return;
-            
-            if (!isContinue())
-                throw new WizardValidationException(ibf, "", ""); //NOI18N
-        }
-        
-        private boolean isContinue() {
-            return cont;
-        }
-        
-        private void setContinue(boolean cont) {
-            this.cont = cont;
+                return;            
         }
         
         private void closeDialog() {
