@@ -107,6 +107,7 @@
             <Component class="javax.swing.JTable" name="projectTable">
               <Properties>
                 <Property name="showHorizontalLines" type="boolean" value="false"/>
+                <Property name="showVerticalLines" type="boolean" value="false"/>
               </Properties>
             </Component>
           </SubComponents>

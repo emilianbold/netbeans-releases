@@ -21,6 +21,7 @@ import javax.swing.Timer;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.projectimport.eclipse.wizard.ProjectImporterWizard;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
 /**
@@ -88,7 +89,7 @@ public class ImportProjectAction extends CallableSystemAction {
     }
     
     public String getName() {
-        return "&Import Eclipse project"; // NOI18N
+        return NbBundle.getMessage(ImportProjectAction.class, "CTL_MenuItem"); // NOI18N
     }
     
     public HelpCtx getHelpCtx() {

@@ -74,6 +74,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
             } else {
                 return (project.hasJavaNature() ?
                     project.getName() :
+                    // TODO there has to be clear specification about non-java projects
                     project.getName() + " (non-java project)");
             }
         }
@@ -92,7 +93,8 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return (columnIndex == COLUMN_CHECKBOX
-                    && projects[rowIndex].hasJavaNature());
+                    && projects[rowIndex].hasJavaNature() &&
+                    !requiredProjects.contains(projects[rowIndex]));
         }
         
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
@@ -114,7 +116,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
     public void updateValidity() {
         if (selectedProjects == null || selectedProjects.isEmpty()) {
             // user has to select at least one project
-            setErrorMessage("At least one project has to be chosen");
+            setErrorMessage(getLocalizedMessage("MSG_ProjectIsNotChosed")); // NOI18N
             return;
         }
         String parent = destination.getText();
@@ -138,13 +140,10 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
                     isSelected, hasFocus, row, column);
             EclipseProject project = projects[row];
             if (project.hasJavaNature() && !requiredProjects.contains(project)) {
-                c.setForeground(Color.BLACK);
                 c.setEnabled(true);
             } else {
                 // required and non-java project are disabled
-                c.setForeground(Color.RED);
                 c.setEnabled(false);
-                c.setVisible(false);
             }
             return c;
         }
@@ -214,7 +213,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         try {
             workspace = WorkspaceFactory.getInstance().load(workspaceDir);
         } catch (ProjectImporterException e) {
-            setErrorMessage("The workspace in a " + workspaceDir + " is invalid");
+            setErrorMessage(getLocalizedMessage("MSG_WorkspaceIsInvalid"));
             return;
         }
         Set wsPrjs = new TreeSet();
@@ -235,8 +234,8 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
     }
     
     /**
-     * Return number of projects which will be imported (including both required
-     * and selected projects)
+     * Returns number of projects which will be imported (including both
+     * required and selected projects)
      */
     int getNumberOfImportedProject() {
         Collection all = new HashSet(selectedProjects);
@@ -245,10 +244,14 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
     }
     
     /**
-     * Return destination directory where new NetBeans projects will be stored.
+     * Returns destination directory where new NetBeans projects will be stored.
      */
     String getDestination() {
         return destination.getText();
+    }
+    
+    private String getLocalizedMessage(String key) {
+        return NbBundle.getMessage(ProjectSelectionPanel.class, key);
     }
     
     /** This method is called from within the constructor to
@@ -320,6 +323,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         projectPanel.add(projectListLabel, gridBagConstraints);
 
         projectTable.setShowHorizontalLines(false);
+        projectTable.setShowVerticalLines(false);
         projectTableSP.setViewportView(projectTable);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

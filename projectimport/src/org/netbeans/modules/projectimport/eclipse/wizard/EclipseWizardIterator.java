@@ -58,15 +58,15 @@ final class EclipseWizardIterator implements
     }
     
     /**
-     * Return number of projects which will be imported (including both required
-     * and selected projects)
+     * Returns number of projects which will be imported (including both
+     * required and selected projects)
      */
     int getNumberOfImportedProject() {
         return projectPanel.getNumberOfImportedProject();
     }
     
     /**
-     * Return destination directory where new NetBeans projects will be stored.
+     * Returns destination directory where new NetBeans projects will be stored.
      */
     String getDestination() {
         return projectPanel.getDestination();

@@ -33,12 +33,13 @@ public final class ProjectImporterWizard {
     private boolean cancelled;
     private int numberOfImportedProjects;
     
+    /** Starts Eclipse importer wizard. */
     public void start() {
         final EclipseWizardIterator iterator = new EclipseWizardIterator();
         final WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         iterator.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
                         iterator.getErrorMessage());
             }
         });
@@ -56,18 +57,29 @@ public final class ProjectImporterWizard {
         }
     }
     
+    /** Returns project selected by user with the help of the wizard. */
     public Set getProjects() {
         return projects;
     }
     
+    /**
+     * Returns number of projects which will be imported (including both 
+     * required and selected projects)
+     */
     public int getNumberOfImportedProject() {
         return numberOfImportedProjects;
     }
     
+    /**
+     * Returns destination directory where new NetBeans projects will be stored.
+     */
     public String getDestination() {
         return destination;
     }
-    
+
+    /**
+     * Returns whether user canceled the wizard.
+     */
     public boolean isCancelled() {
         return cancelled;
     }
