@@ -44,7 +44,9 @@ public class AddTableColumnDialog {
     Dialog dialog = null;
     Specification spec;
     Map ixmap;
+    Map ix_uqmap;
     String colname = null;
+    transient private static final String tempStr = new String();
     JTextField colnamefield, colsizefield, colscalefield, defvalfield;
     JTextArea checkfield;
     JComboBox coltypecombo, idxcombo;
@@ -237,7 +239,7 @@ public class AddTableColumnDialog {
             con.insets = new java.awt.Insets (0, 0, 0, 0);
             con.weightx = 0.0;
             con.weighty = 0.0;
-            pkcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintPKTitle")); //NOI18N
+            pkcheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnConstraintPKTitle")); //NOI18N
             pkcheckbox.setName(ColumnItem.PRIMARY_KEY);
             pkcheckbox.addActionListener(cbxlistener);
             subpane.add(pkcheckbox, con);
@@ -251,7 +253,7 @@ public class AddTableColumnDialog {
             con.insets = new java.awt.Insets (0, 12, 0, 0);
             con.weightx = 0.0;
             con.weighty = 0.0;
-            uniquecheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintUniqueTitle")); //NOI18N
+            uniquecheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnConstraintUniqueTitle")); //NOI18N
             uniquecheckbox.setName(ColumnItem.UNIQUE);
             uniquecheckbox.addActionListener(cbxlistener);
             subpane.add(uniquecheckbox, con);
@@ -265,7 +267,7 @@ public class AddTableColumnDialog {
             con.insets = new java.awt.Insets (0, 12, 0, 0);
             con.weightx = 0.0;
             con.weighty = 0.0;
-            nullcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintNullTitle")); //NOI18N
+            nullcheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnConstraintNullTitle")); //NOI18N
             nullcheckbox.setName(ColumnItem.NULLABLE);
             nullcheckbox.addActionListener(cbxlistener);
             subpane.add(nullcheckbox, con);
@@ -314,7 +316,7 @@ public class AddTableColumnDialog {
             con.insets = new java.awt.Insets (12, 0, 0, 0);
             con.weightx = 0.0;
             con.weighty = 0.0;
-            ixcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintIXTitle")); //NOI18N
+            ixcheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnConstraintIXTitle")); //NOI18N
             ixcheckbox.setName(ColumnItem.INDEX);
             ixcheckbox.addActionListener(cbxlistener);
             pane.add(ixcheckbox, con);
@@ -328,6 +330,7 @@ public class AddTableColumnDialog {
                 HashMap rset = new HashMap();
                 
                 ixmap = new HashMap();
+                ix_uqmap = new HashMap();
                 String ixname;
                 while (rs.next()) {
                     rset = drvSpec.getRow();
@@ -339,7 +342,7 @@ public class AddTableColumnDialog {
                             ixmap.put(ixname,ixcols);
                             boolean uq = !Boolean.valueOf( (String)rset.get( new Integer(4) ) ).booleanValue();
                             if(uq)
-                                ixmap.put( ixname+ColumnItem.UNIQUE, new String() );
+                                ix_uqmap.put( ixname, ColumnItem.UNIQUE );
                         }
 
                         ixcols.add((String) rset.get(new Integer(9)));
@@ -361,6 +364,7 @@ public class AddTableColumnDialog {
             con.weightx = 1.0;
             con.weighty = 0.0;
             idxcombo = new JComboBox(new Vector(ixmap.keySet()));
+            idxcombo.setSelectedIndex(0);
             pane.add(idxcombo, con);
 
             // Check title and textarea
@@ -374,7 +378,7 @@ public class AddTableColumnDialog {
             con.insets = new java.awt.Insets (12, 0, 0, 0);
             con.weightx = 0.0;
             con.weighty = 0.0;
-            checkcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintCheckTitle")); //NOI18N
+            checkcheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnConstraintCheckTitle")); //NOI18N
             checkcheckbox.setName(ColumnItem.CHECK);
             checkcheckbox.addActionListener(cbxlistener);
             pane.add(checkcheckbox, con);
@@ -408,10 +412,22 @@ public class AddTableColumnDialog {
                                                        boolean set = ((Boolean)nval).booleanValue();
                                                        if (pname.equals(ColumnItem.PRIMARY_KEY)) {
                                                            pkcheckbox.setSelected(set);
+                                                           //idxcombo.setEnabled(!set);
+                                                           //ixcheckbox.setEnabled(!set);
+                                                           //ixcheckbox.setSelected(set);
                                                        } else if (pname.equals(ColumnItem.INDEX)) {
                                                            ixcheckbox.setSelected(set);
                                                        } else if (pname.equals(ColumnItem.UNIQUE)) {
                                                            uniquecheckbox.setSelected(set);
+                                                           idxcombo.setEnabled(!set);
+                                                           ixcheckbox.setEnabled(!set);
+                                                           ixcheckbox.setSelected(set);
+                                                           if(set) {
+                                                               idxcombo.addItem(tempStr);
+                                                               idxcombo.setSelectedItem(tempStr);
+                                                           } else {
+                                                               idxcombo.removeItem(tempStr);
+                                                           }
                                                        } else if (pname.equals(ColumnItem.NULLABLE)) {
                                                            nullcheckbox.setSelected(set);
                                                        }
@@ -458,7 +474,7 @@ public class AddTableColumnDialog {
                                           String idxname = (String)idxcombo.getSelectedItem();
                                           String isUQ = new String();
                                           if (ixmap.containsKey(idxname)) {
-                                              if(ixmap.containsKey(idxname+ColumnItem.UNIQUE))
+                                              if(ix_uqmap.containsKey(idxname))
                                                                 isUQ = ColumnItem.UNIQUE;
                                               DropIndex dropIndexCmd = spec.createCommandDropIndex(idxname);
                                               dropIndexCmd.setTableName(tablename);
