@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -79,10 +79,10 @@ public class MainWindowOperator extends JFrameOperator {
     /** Instance of StatusTextTracer for this MainWindowOperator instance */
     private static StatusTextTracer statusTextTracer = null;
     
-    /** Creates new instance of MainWindowOperator. Waits for JFrame with
-     * title "NetBeans IDE..." or "Forte...".
+    /** Creates new instance of MainWindowOperator. It gets instance of main window
+     * Frame.
      */
-    private MainWindowOperator() {
+    protected MainWindowOperator() {
         // run in dispatch thread
         super((JFrame)new QueueTool().invokeSmoothly(new QueueTool.QueueAction("getMainWindow") {    // NOI18N
             public Object launch() {
