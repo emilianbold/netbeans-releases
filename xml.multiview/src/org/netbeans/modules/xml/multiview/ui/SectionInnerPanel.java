@@ -69,12 +69,21 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
         super.addFocusListener(l);
         if (!localFocusListenerInitialized) {
             localFocusListenerInitialized = true;
-            final Component[] components = getComponents();
-            for (int i = 0; i < components.length; i++) {
-                Component component = components[i];
-                if (component.isFocusable() && !(component instanceof JLabel)) {
-                    component.addFocusListener(localFocusListener);
-                }
+            Container container = this;
+            FocusListener focusListener = localFocusListener;
+            addFocusListenerRecursively(container, focusListener);
+        }
+    }
+
+    private void addFocusListenerRecursively(Container container, FocusListener focusListener) {
+        final Component[] components = container.getComponents();
+        for (int i = 0; i < components.length; i++) {
+            Component component = components[i];
+            if (component.isFocusable() && !(component instanceof JLabel)) {
+                component.addFocusListener(focusListener);
+            }
+            if (component instanceof Container) {
+                addFocusListenerRecursively((Container) component, focusListener);
             }
         }
     }
