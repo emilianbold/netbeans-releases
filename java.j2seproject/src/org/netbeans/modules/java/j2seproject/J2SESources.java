@@ -61,13 +61,15 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
     public SourceGroup[] getSourceGroups(final String type) {
         return (SourceGroup[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
+                Sources _delegate;
                 synchronized (J2SESources.this) {
                     if (delegate == null) {                    
                         delegate = initSources();
                         delegate.addChangeListener(J2SESources.this);
                     }
+                    _delegate = delegate;
                 }
-                return delegate.getSourceGroups(type);
+                return _delegate.getSourceGroups(type);
             }
         });
     }
