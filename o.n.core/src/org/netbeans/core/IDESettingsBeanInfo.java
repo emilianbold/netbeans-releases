@@ -92,7 +92,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
       desc[9].setShortDescription (Main.getString ("HINT_PROXY_PORT"));
 
     } catch (IntrospectionException ex) {
-      ex.printStackTrace ();
+      if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace();
     }
   }
 
@@ -214,6 +214,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  9    Gandalf   1.8         7/24/99  Ian Formanek    Printing stack trace on 
+ *       netbeans.debug.exceptions property only
  *  8    Gandalf   1.7         7/21/99  Ian Formanek    Fixed last change
  *  7    Gandalf   1.6         7/21/99  Ian Formanek    settings for proxy, 
  *       property output detail level hidden
