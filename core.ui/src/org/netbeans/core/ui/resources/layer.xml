@@ -228,6 +228,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="Toolbars">
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/core/resources/toolbarsOption.gif" />
         <folder name="Data">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-FindAction.instance"/>
