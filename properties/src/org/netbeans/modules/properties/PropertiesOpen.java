@@ -26,6 +26,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.border.LineBorder;
@@ -367,6 +368,14 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
             columnSelections.getMinSelectionIndex());
           textComment.setText(sp.getComment());
           textValue.setText(sp.getValue());
+          
+          // edit the field
+          SwingUtilities.invokeLater(new Runnable() {
+            public void run() {                                                       
+              theTable.editCellAt(rowSelections.getMinSelectionIndex(), 
+                                  columnSelections.getMinSelectionIndex());
+            }
+          });
 /*          boolean edit = theTable.editCellAt(rowSelections.getMinSelectionIndex(), 
                                              columnSelections.getMinSelectionIndex());*/
         }
