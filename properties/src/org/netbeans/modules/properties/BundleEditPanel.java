@@ -42,7 +42,7 @@ import org.openide.windows.Workspace;
 /**
  * @author  Petr Jiricka
  */
-public class BundleEditPanel extends javax.swing.JPanel {
+public class BundleEditPanel extends JPanel {
     /** PropertiesDataObject this panel presents. */
     private PropertiesDataObject obj;
 
@@ -433,11 +433,15 @@ public class BundleEditPanel extends javax.swing.JPanel {
     /** Initializes #settings variable. */
     private void initSettings() {
         try {
-            Class options = Class.forName
-                            ("org.netbeans.modules.properties.syntax.PropertiesOptions",
-                             false, this.getClass().getClassLoader());
-            Method settingsMethod = options.getMethod ("getSettings", null);
+            // Test for editor module only.
+            Class editorModule = Class.forName("org.netbeans.modules.editor.EditorModule", // NOI18N
+                false, this.getClass().getClassLoader());
+            
+            Class options = Class.forName("org.netbeans.modules.properties.syntax.PropertiesOptions", // NOI18N
+                false, this.getClass().getClassLoader());
+            Method settingsMethod = options.getMethod ("getSettings", null); // NOI18N
             settings = (PropertiesSettings)settingsMethod.invoke (options.newInstance(), null);
+        } catch (NoClassDefFoundError err) {
         } catch (ClassNotFoundException e) {
         } catch (NoSuchMethodException e) {
         } catch (InvocationTargetException e) {
