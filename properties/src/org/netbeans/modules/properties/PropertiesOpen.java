@@ -713,6 +713,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
             propDataObject.addPropertyChangeListener(WeakListener.propertyChange(
                 dataObjectListener = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
+                        if (!propDataObject.isValid()) return;
                         if (DataObject.PROP_NAME.equals(evt.getPropertyName()) || DataObject.PROP_COOKIE.equals(evt.getPropertyName())) {
                             setName(propDataObject.getNodeDelegate().getDisplayName());
                             setToolTipText(messageToolTip());
