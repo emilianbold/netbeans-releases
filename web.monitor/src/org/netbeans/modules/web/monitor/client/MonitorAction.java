@@ -93,6 +93,8 @@ public class MonitorAction extends CallableSystemAction {
             }
         }
 	tv.open();
+        tv.requestVisible();
+        tv.requestActive();        
     }
 
     public static void cleanupMonitor() {
