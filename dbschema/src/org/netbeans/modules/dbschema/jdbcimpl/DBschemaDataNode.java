@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,7 +21,7 @@ import org.netbeans.modules.dbschema.nodes.*;
 public class DBschemaDataNode extends DataNode {
 
     public DBschemaDataNode (DBschemaDataObject obj) {
-        this (obj, new SchemaRootChildren(new DefaultDBFactory(false), obj));
+        this (obj, obj.isTemplate() ? Children.LEAF : new SchemaRootChildren(new DefaultDBFactory(false), obj));
     }
 
     public DBschemaDataNode (DBschemaDataObject obj, Children ch) {
