@@ -37,6 +37,7 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JMenuOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jellytools.actions.Action;
+import org.openide.TopManager;
 
 import org.openide.src.*;
 import org.openide.cookies.SourceCookie;
@@ -606,6 +607,7 @@ public class NodeGenerator {
     private void searchForActions() {
         allRecords = new ArrayList();
         Enumeration fsystems = Repository.getDefault().fileSystems();
+        ClassLoader loader=TopManager.getDefault().currentClassLoader();
         while (fsystems.hasMoreElements()) {
             Enumeration fobjects = ((FileSystem)fsystems.nextElement()).getRoot().getData(true);
             while (fobjects.hasMoreElements()) {
@@ -618,7 +620,7 @@ public class NodeGenerator {
                         for (int i=0; i<classes.length; i++) {
                             if (isAccessible(classes[i])) {
                                 String className = classes[i].getName().getFullName();
-                                Action action = (Action)Class.forName(className).getDeclaredConstructor(null).newInstance(null);
+                                Action action = (Action)Class.forName(className, true, loader).getDeclaredConstructor(null).newInstance(null);
                                 allRecords.add(new ExistingActionRecord(action));
 //                                System.out.println(className);
                             }

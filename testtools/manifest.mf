@@ -1,6 +1,6 @@
 OpenIDE-Module: org.netbeans.modules.testtools/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/testtools/Bundle.properties
-Class-Path: ext/jemmy.jar ext/jelly2-nb.jar
+Class-Path: ext/jemmy.jar ext/jelly2-nb.jar ../lib/ext/terminalemulator.jar
 OpenIDE-Module-Specification-Version: 1.1.1
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/testtools/mf-layer.xml
