@@ -1074,7 +1074,10 @@
    <mapID target="org.openide.explorer.propertysheet.editors.FileEditor" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.JarFileEditor" url="jarpackager/jarpackager.html" />
    <mapID target="org.netbeans.core.NbAuthenticator.getPasswordAuthentication" url="pending.html" />
-
+<!--used for folder nodes in explorer, including root nodes of filesystems, such as JARs, and folders in JARs-->
+   <mapID target="org.openide.loaders.DataFolder" url="filesystems/filesystems-objects.html" />
+<!--used for root node of a Javadoc filesystem on the javadoc tab in the Explorer-->
+   <mapID target="org.netbeans.modules.javadoc.search.JavaDocNode" url="pending.html" />
 
    <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.UNCONFIG" url="pending.html" />
    <mapID target="org.openide.windows.TopComponent" url="pending.html" /> 
@@ -1085,7 +1088,11 @@
    <mapID target="org.netbeans.modules.vcs.cmdline.diff.DiffComponent" url="pending.html"/>
    <mapID target="org.netbeans.core.ui.LookupNode" url="pending.html" />
 <!--for Filesystems Settings in customizer and in Options window-->
-   <mapID target="org.netbeans.core.ui.MountNode" url="webbrowser/webbrowser.html" />
+   <mapID target="org.netbeans.core.ui.MountNode" url="filesystems/filesystems_settings.html" />
+<!--for Filesystems Settings for default filesystem-->
+   <mapID target="org.netbeans.core.projects.SystemFileSystem" url="filesystems/filesystems_settings.html" />
+<!--for Modules node in Options window-->
+   <mapID target="org.netbeans.core.ui.ModuleNode" url="pending.html" />
    <mapID target="org.netbeans.core.ui.NewTemplateWizard1" url="pending.html" />
    <mapID target="org.openide.text.CloneableEditor" url="pending.html" />
    <mapID target="org.openide.actions.ClassNamePanel" url="pending.html" />
@@ -1152,6 +1159,11 @@
 
    <mapID target="org.netbeans.modules.rmi.RMIStubCompilerType" url="rmi/settings/rmi_settings_compilernode.html" />
    <mapID target="rmi_fig" url="rmi/concepts/RMIfig.html" />	
+<!--for RMI debugger and executor type nodes in the Options window-->   
+   <mapID target="org.netbeans.modules.rmi.RMIDebugType" url="rmi/settings/rmi_settings_debuggernode.html" />
+   <mapID target="org.netbeans.modules.rmi.RMIExecutor" url="rmi/settings/rmi_settings_executionnode.html" />
+
+
   
    <!-- From JNDI module. -->
    
@@ -1194,7 +1206,7 @@
   <mapID target="org.openide.actions.RenameAction" url="pending.html" />
   <mapID target="org.openide.actions.ReorderAction" url="pending.html" />
   <mapID target="org.openide.actions.UndoAction" url="pending.html" />
-  <mapID target="org.openide.loaders.DataFolder" url="pending.html" />
+
   <mapID target="org.openide.loaders.DataFolder$NewFolder" url="pending.html" />
   <mapID target="org.openide.loaders.DefaultDataObject" url="pending.html" />
   <mapID target="org.openide.explorer.propertysheet.editors.IconEditor$IconPanel" url="pending.html" />
