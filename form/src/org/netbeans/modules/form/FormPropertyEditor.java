@@ -14,7 +14,7 @@
 package com.netbeans.developer.modules.loaders.form;
 
 import java.beans.*;
-import org.openide.explorer.propertysheet.SpecialPropertyEditor;
+import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 import org.openide.nodes.*;
 
 /** A Multiplexing PropertyEditor used in the form editor. 
@@ -22,7 +22,7 @@ import org.openide.nodes.*;
 *
 * @author Ian Formanek
 */
-public class FormPropertyEditor implements PropertyEditor, PropertyChangeListener, SpecialPropertyEditor {
+public class FormPropertyEditor implements PropertyEditor, PropertyChangeListener, EnhancedPropertyEditor {
   // -----------------------------------------------------------------------------
   // Private Variables
 
@@ -229,15 +229,15 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   }
 
   // -----------------------------------------------------------------------------
-  // SpecialPropertyEditor implementation
+  // EnhancedPropertyEditor implementation
 
   /** Get an in-place editor.
   * @return a custom property editor to be shown inside the property
   *         sheet
   */
   public java.awt.Component getInPlaceCustomEditor () {
-    if (getCurrentEditor () instanceof SpecialPropertyEditor) {
-      return ((SpecialPropertyEditor)getCurrentEditor ()).getInPlaceCustomEditor ();
+    if (getCurrentEditor () instanceof EnhancedPropertyEditor) {
+      return ((EnhancedPropertyEditor)getCurrentEditor ()).getInPlaceCustomEditor ();
     } else {
       return null;
     }
@@ -247,8 +247,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   * @return <code>true</code> if supported
   */
   public boolean hasInPlaceCustomEditor () {
-    if (getCurrentEditor () instanceof SpecialPropertyEditor) {
-      return ((SpecialPropertyEditor)getCurrentEditor ()).hasInPlaceCustomEditor ();
+    if (getCurrentEditor () instanceof EnhancedPropertyEditor) {
+      return ((EnhancedPropertyEditor)getCurrentEditor ()).hasInPlaceCustomEditor ();
     } else {
       return false;
     }
@@ -259,8 +259,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   * @return <code>true</code> if supported
   */
   public boolean supportsEditingTaggedValues () {
-    if (getCurrentEditor () instanceof SpecialPropertyEditor) {
-      return ((SpecialPropertyEditor)getCurrentEditor ()).supportsEditingTaggedValues ();
+    if (getCurrentEditor () instanceof EnhancedPropertyEditor) {
+      return ((EnhancedPropertyEditor)getCurrentEditor ()).supportsEditingTaggedValues ();
     } else {
       return false;
     }
@@ -294,6 +294,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
 /*
  * Log
+ *  9    Gandalf   1.8         6/30/99  Ian Formanek    reflecting change in 
+ *       enhanced property editors interfaces
  *  8    Gandalf   1.7         6/24/99  Ian Formanek    Improved 
  *       FormPropertyEditor towards accepting multiple editors
  *  7    Gandalf   1.6         6/22/99  Ian Formanek    Further tweaked for 

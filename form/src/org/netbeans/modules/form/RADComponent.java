@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import org.openide.explorer.propertysheet.SpecialPropertyEditor;
+import org.openide.explorer.propertysheet.editors.*;
 import org.openide.nodes.*;
 import org.openide.util.Utilities;
 
@@ -870,7 +870,7 @@ public class RADComponent {
       return new EventEditor ();
     }                               
     
-    class EventEditor extends PropertyEditorSupport implements SpecialPropertyEditor {
+    class EventEditor extends PropertyEditorSupport implements EnhancedPropertyEditor {
       public void setAsText (String string) {
         setValue(string);
 //        gotoMethod = string; // [PENDING]
@@ -900,7 +900,7 @@ public class RADComponent {
       }
     
       /**
-      * @return true if this PropertyEditor provides a special in-place custom 
+      * @return true if this PropertyEditor provides a enhanced in-place custom 
       *              property editor, false otherwise
       */
       public boolean hasInPlaceCustomEditor () {
@@ -921,6 +921,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  24   Gandalf   1.23        6/30/99  Ian Formanek    reflecting change in 
+ *       enhanced property editors interfaces
  *  23   Gandalf   1.22        6/27/99  Ian Formanek    Employed 
  *       FormDesignValue.IGNORED_VALUE, Indexed properties fixed
  *  22   Gandalf   1.21        6/27/99  Ian Formanek    !!! Caches all changed 

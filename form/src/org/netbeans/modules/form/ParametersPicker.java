@@ -19,14 +19,14 @@ import java.util.Enumeration;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.openide.explorer.propertysheet.NbCustomPropertyEditor;
+import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.Utilities;
 
 /** The ParametersPicker is a panel which allows to enter a method parameter data.
 *
 * @author  Ian Formanek
 */
-public class ParametersPicker extends javax.swing.JPanel implements NbCustomPropertyEditor {
+public class ParametersPicker extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
 
   /** Initializes the Form */
   public ParametersPicker(FormManager2 manager, RADComponent sourceComponent, Class requiredType) {
@@ -103,7 +103,7 @@ public class ParametersPicker extends javax.swing.JPanel implements NbCustomProp
   }
 
 // ----------------------------------------------------------------------------------------
-// NbCustomPropertyEditor implementation
+// EnhancedCustomPropertyEditor implementation
 
   /** Get the customized property value.
   * @return the property value
@@ -124,7 +124,7 @@ public class ParametersPicker extends javax.swing.JPanel implements NbCustomProp
   }
 
 // ----------------------------------------------------------------------------------------
-// end of NbCustomPropertyEditor implementation
+// end of EnhancedCustomPropertyEditor implementation
 
   public String getPreviewText () {
     if (!isFilled ())
@@ -447,6 +447,8 @@ public class ParametersPicker extends javax.swing.JPanel implements NbCustomProp
 
 /*
  * Log
+ *  8    Gandalf   1.7         6/30/99  Ian Formanek    reflecting change in 
+ *       enhanced property editors interfaces
  *  7    Gandalf   1.6         6/27/99  Ian Formanek    Can be used in 
  *       RADConnectionPropertyEditor as custom editor
  *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 

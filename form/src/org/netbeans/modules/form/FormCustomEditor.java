@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import org.openide.explorer.propertysheet.NbCustomPropertyEditor;
+import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.Utilities;
 
 import java.awt.BorderLayout;
@@ -28,7 +28,7 @@ import javax.swing.border.EmptyBorder;
  *
  * @author  Ian Formanek
  */
-public class FormCustomEditor extends JPanel implements NbCustomPropertyEditor {
+public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEditor {
 
 // -----------------------------------------------------------------------------
 // Private variables
@@ -104,7 +104,7 @@ public class FormCustomEditor extends JPanel implements NbCustomPropertyEditor {
   }
 
 // -----------------------------------------------------------------------------
-// NbCustomPropertyEditor implementation
+// EnhancedCustomPropertyEditor implementation
 
   /** Get the customized property value.
   * @return the property value
@@ -119,8 +119,8 @@ public class FormCustomEditor extends JPanel implements NbCustomPropertyEditor {
       editor.commitModifiedEditor ();
     }
     
-    if (currentCustomEditor instanceof NbCustomPropertyEditor) {
-      return ((NbCustomPropertyEditor)currentCustomEditor).getPropertyValue ();
+    if (currentCustomEditor instanceof EnhancedCustomPropertyEditor) {
+      return ((EnhancedCustomPropertyEditor)currentCustomEditor).getPropertyValue ();
     }
     if (currentEditor != null) {
       return currentEditor.getValue ();
@@ -151,6 +151,8 @@ public class FormCustomEditor extends JPanel implements NbCustomPropertyEditor {
 
 /*
  * Log
+ *  8    Gandalf   1.7         6/30/99  Ian Formanek    reflecting change in 
+ *       enhanced property editors interfaces
  *  7    Gandalf   1.6         6/24/99  Ian Formanek    Improved 
  *       FormPropertyEditor towards accepting multiple editors
  *  6    Gandalf   1.5         6/23/99  Ian Formanek    
