@@ -22,7 +22,9 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JFrame;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -36,6 +38,8 @@ import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.modules.editor.java.JCStorage;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.plain.PlainKit;
+import org.openide.ErrorManager;
+import org.openide.util.RequestProcessor;
 
 /**
  * "Warm-up" task for editor. Executed after IDE startup, it should
@@ -88,197 +92,230 @@ public class EditorWarmUpTask implements Runnable{
      * messages in the code and they would be shown many times
      * thank to the warmup code.
      */
-    private static final boolean disable
+    private static final boolean warmupDisabled
         = Boolean.getBoolean("netbeans.editor.warmup.disable"); // NOI18N
+
+    private static final int STATUS_INIT = 0;
+    private static final int STATUS_KITS_INITED = 1;
+    private static final int STATUS_KIT_ASSIGNED = 2;
+    private static final int STATUS_VIEWS_OPTIMIZED = 3;
+    private static final int STATUS_FINISHED = 4;
     
+    private int status = STATUS_INIT;
+
+    private JEditorPane pane;
+    private JFrame frame;
+    private Graphics bGraphics;
+    
+    private BaseKit javaKit;
+    private BaseKit plainKit;
+
+    private long startTime;
     
     public void run() {
-        long startTime = System.currentTimeMillis();
+        switch (status) {
+            case STATUS_INIT:
+                if (debug) {
+                    startTime = System.currentTimeMillis();
+                }
         
-        // initializing code completion database. Reading *.jcs files and creating memory map of available 
-        // completin classes
-        //JCStorage.getStorage();
-        if (debug){
-            System.out.println("Storage initialized:"+(System.currentTimeMillis()-startTime));
-            startTime = System.currentTimeMillis();
-        }
-        
-        // Parsing of sampledir, that is mounted by default.
-        // The autoupdate of that filesystem cannot start as it starts only after 
-        // mount action.
-        //sampleDirParsing();
-        if (debug){
-            System.out.println("Sample dir parsed:"+(System.currentTimeMillis()-startTime));
-            startTime = System.currentTimeMillis();
-        }
-        
-        // Initialization of editor settings initializers and PrintOptions.
-        EditorModule.init();        
+                // Initialization of editor settings initializers and PrintOptions.
+                EditorModule.init();        
 
-        // Init of JavaKit and JavaOptions
-        BaseKit javaKit = BaseKit.getKit(JavaKit.class);
-        BaseKit plainKit = BaseKit.getKit(PlainKit.class);
-        
-        //creating actions instances
-        javaKit.getActions();
-        
-
-        // Start of a code block that tries to force hotspot to compile
-        // the view hierarchy and related classes for faster performance
-        if (debug) {
-            System.out.println("Kit instances initialized:"+(System.currentTimeMillis()-startTime));
-            startTime = System.currentTimeMillis();
-        }
-
-        Iterator componentIterator = Registry.getComponentIterator();
-        if (componentIterator.hasNext()) { // at least one component opened
-            return ;
-        }
-        
-        // Work with artificial frame that will host an editor pane
-        final JEditorPane pane = new JEditorPane();
-        pane.setEditorKit(javaKit);
-
-        // Obtain extended component (with editor's toolbar and scrollpane)
-        EditorUI editorUI = Utilities.getEditorUI(pane);
-        if (editorUI != null) {
-            // Make sure extended component necessary classes get loaded
-            editorUI.getExtComponent();
-        }
-
-        Registry.removeComponent(pane);
-
-        // Have two documents - one empty and another one filled with many lines
-        Document emptyDoc = javaKit.createDefaultDocument();
-        Document longDoc = pane.getDocument();
-        
-        try {
-            // Check whether warmup is disabled and if so return immediately
-            if (disable) {
-                return;
-            }
-
-            // Fill the document with data.
-            // Number of lines is more important here than number of columns in a line
-            // Do one big insert instead of many small inserts
-            StringBuffer sb = new StringBuffer();
-            for (int i = ARTIFICIAL_DOCUMENT_LINE_COUNT; i > 0; i--) {
-                sb.append("int ident = 1; // comment\n"); // NOI18N
-            }
-            longDoc.insertString(0, sb.toString(), null);
-
-            // Switch between empty doc and long several times
-            // to force view hierarchy creation
-            for (int i = 0; i < VIEW_HIERARCHY_CREATION_COUNT; i++) {
-                pane.setDocument(emptyDoc);
+                // Check whether warmup is disabled and if so return immediately
+                if (warmupDisabled) {
+                    return;
+                }
                 
-                // Set long doc - causes view hierarchy to be rebuilt
-                pane.setDocument(longDoc);
-            }
+                // Init of JavaKit and JavaOptions
+                javaKit = BaseKit.getKit(JavaKit.class);
+                plainKit = BaseKit.getKit(PlainKit.class);
+        
+                //creating actions instances
+                javaKit.getActions();
+        
 
-            // Create buffered image for painting simulation
-            BufferedImage bImage = new BufferedImage(
-                IMAGE_WIDTH, IMAGE_HEIGHT, BufferedImage.TYPE_INT_RGB);
-            final Graphics bGraphics = bImage.getGraphics();
-            bGraphics.setClip(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-                    
-            // Do view-related operations
-            AbstractDocument doc = (AbstractDocument)pane.getDocument();
-            doc.readLock();
-            try {
-                final View rootView = Utilities.getDocumentView(pane);
-                LockView lockView = LockView.get(rootView);
-                lockView.lock();
+                // Start of a code block that tries to force hotspot to compile
+                // the view hierarchy and related classes for faster performance
+                if (debug) {
+                    System.out.println("Kit instances initialized: "
+                        + (System.currentTimeMillis()-startTime));
+                    startTime = System.currentTimeMillis();
+                }
+
+                Iterator componentIterator = Registry.getComponentIterator();
+                if (componentIterator.hasNext()) { // at least one component opened
+                    status = STATUS_FINISHED;
+                } else {
+                    status = STATUS_KITS_INITED;
+                    SwingUtilities.invokeLater(this); // must run in AWT
+                }
+                break;
+                
+            case STATUS_KITS_INITED: // now create editor component and assign a kit to it
+                assert SwingUtilities.isEventDispatchThread(); // This part must run in AWT
+
+                pane = new JEditorPane();
+                pane.setEditorKit(javaKit);
+
+                // Obtain extended component (with editor's toolbar and scrollpane)
+                EditorUI editorUI = Utilities.getEditorUI(pane);
+                if (editorUI != null) {
+                    // Make sure extended component necessary classes get loaded
+                    editorUI.getExtComponent();
+                }
+
+                Registry.removeComponent(pane);
+
+                status = STATUS_KIT_ASSIGNED;
+                RequestProcessor.getDefault().post(this);
+                break;
+                
+            case STATUS_KIT_ASSIGNED:
+
+                // Have two documents - one empty and another one filled with many lines
+                Document emptyDoc = javaKit.createDefaultDocument();
+                Document longDoc = pane.getDocument();
+
                 try {
-                    int viewCount = rootView.getViewCount();
+                    // Fill the document with data.
+                    // Number of lines is more important here than number of columns in a line
+                    // Do one big insert instead of many small inserts
+                    StringBuffer sb = new StringBuffer();
+                    for (int i = ARTIFICIAL_DOCUMENT_LINE_COUNT; i > 0; i--) {
+                        sb.append("int ident = 1; // comment\n"); // NOI18N
+                    }
+                    longDoc.insertString(0, sb.toString(), null);
 
-                    // Force switch the line views from estimated spans to exact measurements
-                    Runnable resetChildrenEstimatedSpans = new Runnable() {
-                        public void run() {
-                            int cnt = rootView.getViewCount();                            
-                            for (int j = 0; j < cnt; j++) {
-                                View v = rootView.getView(j);
-                                if (v instanceof EstimatedSpanView) {
-                                    ((EstimatedSpanView)v).setEstimatedSpan(false);
+                    // Switch between empty doc and long several times
+                    // to force view hierarchy creation
+                    for (int i = 0; i < VIEW_HIERARCHY_CREATION_COUNT; i++) {
+                        pane.setDocument(emptyDoc);
+
+                        // Set long doc - causes view hierarchy to be rebuilt
+                        pane.setDocument(longDoc);
+                    }
+
+                    // Create buffered image for painting simulation
+                    BufferedImage bImage = new BufferedImage(
+                        IMAGE_WIDTH, IMAGE_HEIGHT, BufferedImage.TYPE_INT_RGB);
+                    bGraphics = bImage.getGraphics();
+                    bGraphics.setClip(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+
+                    // Do view-related operations
+                    AbstractDocument doc = (AbstractDocument)pane.getDocument();
+                    doc.readLock();
+                    try {
+                        final View rootView = Utilities.getDocumentView(pane);
+                        LockView lockView = LockView.get(rootView);
+                        lockView.lock();
+                        try {
+                            int viewCount = rootView.getViewCount();
+
+                            // Force switch the line views from estimated spans to exact measurements
+                            Runnable resetChildrenEstimatedSpans = new Runnable() {
+                                public void run() {
+                                    int cnt = rootView.getViewCount();                            
+                                    for (int j = 0; j < cnt; j++) {
+                                        View v = rootView.getView(j);
+                                        if (v instanceof EstimatedSpanView) {
+                                            ((EstimatedSpanView)v).setEstimatedSpan(false);
+                                        }
+                                    }
+                                }
+                            };
+                            if (rootView instanceof org.netbeans.lib.editor.view.GapDocumentView) {
+                                ((org.netbeans.lib.editor.view.GapDocumentView)rootView).
+                                    renderWithUpdateLayout(resetChildrenEstimatedSpans);
+                            } else { // not specialized instance => run normally
+                                resetChildrenEstimatedSpans.run();
+                            }
+
+                            // Get child allocation for each line
+                            for (int j = 0; j < viewCount; j++) {
+                                Rectangle alloc = new Rectangle(0, 0,
+                                    (int)rootView.getPreferredSpan(View.X_AXIS),
+                                    (int)rootView.getPreferredSpan(View.Y_AXIS)
+                                );
+                                rootView.getChildAllocation(j, alloc);
+                            }
+
+                            // Test modelToView and viewToModel
+                            if (false) { // Disabled because of #
+                                float rootViewYSpan = rootView.getPreferredSpan(View.Y_AXIS);
+                                float maybeLineSpan = rootViewYSpan / viewCount;
+                                Point point = new Point();
+                                point.x = 5; // likely somewhere inside the first char on the line
+                                for (int j = 0; j < viewCount; j++) {
+                                    pane.modelToView(rootView.getView(j).getStartOffset());
+
+                                    point.y = (int)(j * maybeLineSpan);
+                                    int pos = pane.viewToModel(point);
                                 }
                             }
+
+                            int rootViewWidth = (int)rootView.getPreferredSpan(View.X_AXIS);
+                            int rootViewHeight = (int)rootView.getPreferredSpan(View.Y_AXIS);
+                            Rectangle alloc = new Rectangle(0, 0, rootViewWidth, rootViewHeight);
+
+                            // Paint into buffered image
+                            for (int i = PAINT_COUNT - 1; i >= 0; i--) {
+                                rootView.paint(bGraphics, alloc);
+                            }
+
+                        } finally {
+                            lockView.unlock();
                         }
-                    };
-                    if (rootView instanceof org.netbeans.lib.editor.view.GapDocumentView) {
-                        ((org.netbeans.lib.editor.view.GapDocumentView)rootView).
-                            renderWithUpdateLayout(resetChildrenEstimatedSpans);
-                    } else { // not specialized instance => run normally
-                        resetChildrenEstimatedSpans.run();
+                    } finally {
+                        doc.readUnlock();
                     }
-
-                    // Get child allocation for each line
-                    for (int j = 0; j < viewCount; j++) {
-                        Rectangle alloc = new Rectangle(0, 0,
-                            (int)rootView.getPreferredSpan(View.X_AXIS),
-                            (int)rootView.getPreferredSpan(View.Y_AXIS)
-                        );
-                        rootView.getChildAllocation(j, alloc);
-                    }
-
-                    // Test modelToView and viewToModel
-                    if (false) { // Disabled because of #
-                        float rootViewYSpan = rootView.getPreferredSpan(View.Y_AXIS);
-                        float maybeLineSpan = rootViewYSpan / viewCount;
-                        Point point = new Point();
-                        point.x = 5; // likely somewhere inside the first char on the line
-                        for (int j = 0; j < viewCount; j++) {
-                            pane.modelToView(rootView.getView(j).getStartOffset());
-
-                            point.y = (int)(j * maybeLineSpan);
-                            int pos = pane.viewToModel(point);
-                        }
-                    }
-
-                    int rootViewWidth = (int)rootView.getPreferredSpan(View.X_AXIS);
-                    int rootViewHeight = (int)rootView.getPreferredSpan(View.Y_AXIS);
-                    Rectangle alloc = new Rectangle(0, 0, rootViewWidth, rootViewHeight);
+                } catch (BadLocationException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
                     
-                    // Paint into buffered image
-                    for (int i = PAINT_COUNT - 1; i >= 0; i--) {
-                        rootView.paint(bGraphics, alloc);
-                    }
+                status = STATUS_VIEWS_OPTIMIZED;
+                SwingUtilities.invokeLater(this);
+                break;
 
-                } finally {
-                    lockView.unlock();
+            case STATUS_VIEWS_OPTIMIZED:
+                frame = new JFrame();
+                EditorUI ui = Utilities.getEditorUI(pane);
+                JComponent mainComp = null;
+                if (ui != null) {
+                    mainComp = ui.getExtComponent();
                 }
-            } finally {
-                doc.readUnlock();
-            }
-            
-            final javax.swing.JFrame frame = new javax.swing.JFrame();
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    EditorUI ui = Utilities.getEditorUI(pane);
-                    JComponent mainComp = null;
-                    if (ui != null) {
-                        mainComp = ui.getExtComponent();
-                    }
-                    if (mainComp == null) {
-                        mainComp = new javax.swing.JScrollPane(pane);
-                    }
-                    frame.getContentPane().add(mainComp);
-                    frame.pack();
-                    frame.paint(bGraphics);
-                    frame.getContentPane().removeAll();
-                    frame.dispose();
-                    pane.setEditorKit(null);
+                if (mainComp == null) {
+                    mainComp = new javax.swing.JScrollPane(pane);
                 }
-            });
+                frame.getContentPane().add(mainComp);
+                frame.pack();
+                frame.paint(bGraphics);
+                frame.getContentPane().removeAll();
+                frame.dispose();
+                pane.setEditorKit(null);
 
-        } catch (BadLocationException e) {
-        }
+                // Candidates Annotations.getLineAnnotations()
 
-        // Candidates Annotations.getLineAnnotations()
-            
-        if (debug) {
-            System.out.println("View hierarchy initialized:"+(System.currentTimeMillis()-startTime));
-            startTime = System.currentTimeMillis();
+                if (debug) {
+                    System.out.println("View hierarchy initialized: "
+                        + (System.currentTimeMillis()-startTime));
+                    startTime = System.currentTimeMillis();
+                }
+                
+                cleanup();
+                break;
+
+            default:
+                throw new IllegalStateException();
         }
-        
     }
+    
+    private void cleanup() {
+        pane = null;
+        frame = null;
+        bGraphics = null;
+        javaKit = null;
+        plainKit = null;
+    }
+
 }
