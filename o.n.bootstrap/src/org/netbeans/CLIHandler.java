@@ -158,13 +158,14 @@ public abstract class CLIHandler extends Object {
                         PrintWriter w = new PrintWriter(args.getOutputStream());
                         w.println("Unknown option: " + argv[i]); // NOI18N
                         showHelp(w, handlers);
+                        w.flush();
                         return 2;
                     }
                 }
             }
             return 0;
         } finally {
-            args.reset();
+            args.reset(failOnUnknownOptions);
         }
     }
     
@@ -235,7 +236,7 @@ public abstract class CLIHandler extends Object {
      * @return the file to be used as lock file or null parsing of args failed
      */
     static Status initialize(String[] args, ClassLoader loader, boolean doAllInit, boolean failOnUnknownOptions) {
-        return initialize(new Args(args, System.in, System.out, System.getProperty ("user.dir")), (Integer)null, allCLIs(loader), doAllInit, failOnUnknownOptions);
+        return initialize(new Args(args, System.in, System.err, System.getProperty ("user.dir")), (Integer)null, allCLIs(loader), doAllInit, failOnUnknownOptions);
     }
     
     /**
@@ -331,6 +332,7 @@ public abstract class CLIHandler extends Object {
                             if (r != 0) {
                                 // Not much to do about it.
                                 System.err.println("Post-initialization command-line options could not be run."); // NOI18N
+                                //System.err.println("r=" + r + " args=" + java.util.Arrays.asList(args.getArguments()));
                             }
                         }
                     };
@@ -538,14 +540,29 @@ public abstract class CLIHandler extends Object {
         
         Args(String[] args, InputStream is, OutputStream os, String currentDir) {
             argsBackup = args;
-            reset();
+            reset(false);
             this.is = is;
             this.os = os;
             this.currentDir = new File (currentDir);
         }
         
-        void reset() {
-            args = (String[])argsBackup.clone();
+        /**
+         * Restore the arguments list to a clean state.
+         * If not consuming arguments, it is just set to the original list.
+         * If consuming arguments, any nulled-out arguments are removed from the list.
+         */
+        void reset(boolean consume) {
+            if (consume) {
+                String[] a = args;
+                if (a == null) {
+                    a = argsBackup;
+                }
+                List l = new ArrayList(Arrays.asList(a));
+                l.removeAll(Collections.singleton(null));
+                args = (String[])l.toArray(new String[l.size()]);
+            } else {
+                args = (String[])argsBackup.clone();
+            }
         }
         
         /**
