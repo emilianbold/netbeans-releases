@@ -21,7 +21,6 @@ import org.netbeans.spi.looks.*;
 import org.openide.actions.*;
 import org.openide.cookies.*;
 import org.openide.util.Lookup;
-import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import threaddemo.model.*;
@@ -38,59 +37,57 @@ final class PhadhailLook extends DefaultLook implements PhadhailListener, Phadha
     
     public void attachTo(Object o) {
         Phadhail ph = (Phadhail)o;
-        ph.addPhadhailListener((PhadhailListener)WeakListener.create(PhadhailListener.class, this, ph));
+        ph.addPhadhailListener(this);
     }
     
-    /* XXX phrebejk: Uncomment if present in Look; then also remove WeakListener usage from attachTo:
-    public void unregister(Object o) {
+    public void detachFrom(Object o) {
         Phadhail ph = (Phadhail)o;
         ph.removePhadhailListener(this);
     }
-     */
     
-    public boolean isLeaf(Object o) {
+    public boolean isLeaf(Object o, Lookup e) {
         Phadhail ph = (Phadhail)o;
         return !ph.hasChildren();
     }
     
-    public List getChildObjects(Object o) {
+    public List getChildObjects(Object o, Lookup e) {
         Phadhail ph = (Phadhail)o;
         return ph.getChildren();
     }
     
-    public String getName(Object o) {
+    public String getName(Object o, Lookup e) {
         Phadhail ph = (Phadhail)o;
         return ph.getName();
     }
 
-    public String getDisplayName(Object o) {
+    public String getDisplayName(Object o, Lookup e) {
         Phadhail ph = (Phadhail)o;
         return ph.getPath();
     }
     
-    public boolean canRename(Object o) {
+    public boolean canRename(Object o, Lookup e) {
         return true;
     }
     
-    public void setName(Object o, String newName) {
+    public void setName(Object o, String newName, Lookup e) {
         Phadhail ph = (Phadhail)o;
         try {
             ph.rename(newName);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e.toString());
+        } catch (IOException x) {
+            throw new IllegalArgumentException(x.toString());
         }
     }
     
-    public boolean canDestroy(Object o) {
+    public boolean canDestroy(Object o, Lookup e) {
         return true;
     }
     
-    public void destroy(Object o) throws IOException {
+    public void destroy(Object o, Lookup e) throws IOException {
         Phadhail ph = (Phadhail)o;
         ph.delete();
     }
     
-    public Action[] getActions(Object o) {
+    public Action[] getActions(Object o, Lookup e) {
         return new Action[] {
             SystemAction.get(OpenAction.class),
             SystemAction.get(SaveAction.class),
@@ -103,7 +100,7 @@ final class PhadhailLook extends DefaultLook implements PhadhailListener, Phadha
         };
     }
     
-    public NewType[] getNewTypes(Object o) {
+    public NewType[] getNewTypes(Object o, Lookup e) {
         Phadhail ph = (Phadhail)o;
         if (ph.hasChildren()) {
             return new NewType[] {
@@ -139,8 +136,10 @@ final class PhadhailLook extends DefaultLook implements PhadhailListener, Phadha
             c.add(new EditorCookieItem(ph));
             c.add(new SimpleItem(sc));
             return c;
-        } else {
+        } else if (!ph.hasChildren()) {
             return Collections.singleton(new EditorCookieItem(ph));
+        } else {
+            return Collections.EMPTY_SET;
         }
     }
     
@@ -202,12 +201,12 @@ final class PhadhailLook extends DefaultLook implements PhadhailListener, Phadha
     }
     
     public void childrenChanged(PhadhailEvent ev) {
-        if (!java.awt.EventQueue.isDispatchThread()) Thread.dumpStack();//XXX
+        if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalStateException();
         refreshChildren(ev.getPhadhail());
     }
     
     public void nameChanged(PhadhailNameEvent ev) {
-        if (!java.awt.EventQueue.isDispatchThread()) Thread.dumpStack();//XXX
+        if (!java.awt.EventQueue.isDispatchThread()) throw new IllegalStateException();
         fireNameChange(ev.getPhadhail(), ev.getOldName(), ev.getNewName());
         fireDisplayNameChange(ev.getPhadhail(), ev.getOldName(), ev.getNewName());
     }
