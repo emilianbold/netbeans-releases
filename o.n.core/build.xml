@@ -83,7 +83,7 @@ Microsystems, Inc. All Rights Reserved.
     </fixcrlf>
   </target>
 
-  <target name="netbeans" depends="jars,release">
+  <target name="netbeans" depends="jars,release" description="Build everything.">
     <mkdir dir="netbeans/lib/patches"/>
     <mkdir dir="netbeans/modules"/>
   </target>
@@ -139,7 +139,7 @@ Microsystems, Inc. All Rights Reserved.
     </jar>
   </target>
 
-  <target name="clean">
+  <target name="clean" description="Clean all build products.">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
