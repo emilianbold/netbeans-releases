@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.jar.*;
 import java.util.zip.*;
 import java.net.*;
+import java.text.SimpleDateFormat;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Location;
@@ -35,6 +36,8 @@ import org.apache.tools.ant.types.ZipFileSet;
  * @author Jesse Glick
  */
 public class MakeNBM extends Task {
+    
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
     
     /** The same syntax may be used for either <samp>&lt;license&gt;</samp> or
      * <samp>&lt;description&gt;</samp> subelements.
@@ -247,6 +250,8 @@ public class MakeNBM extends Task {
     private String homepage = null;
     private String distribution = null;
     private String needsrestart = null;
+    private String moduleauthor = null;
+    private String releasedate = null;
     private Blurb license = null;
     private Blurb description = null;
     private Blurb notification = null;
@@ -301,6 +306,14 @@ public class MakeNBM extends Task {
     /** Does module need IDE restart to be installed? */
     public void setNeedsrestart (String needsrestart) {
         this.needsrestart = needsrestart;
+    }
+    /** Name of module's author. */
+    public void setModuleauthor (String author) {
+        this.moduleauthor = author;
+    }
+    /** Release date of NBM. */
+    public void setReleasedate (String date) {
+        this.releasedate = date;
     }
     /** URL where this NBM file is expected to be downloadable from. */
     public void setDistribution (String distribution) throws BuildException {
@@ -454,6 +467,13 @@ public class MakeNBM extends Task {
                 ps.println ("        downloadsize=\"0\""); //NOI18N
                 if (needsrestart != null)
                     ps.println ("        needsrestart=\"" + xmlEscape(needsrestart) + "\""); //NOI18N
+                if (moduleauthor != null)
+                    ps.println ("        moduleauthor=\"" + xmlEscape(moduleauthor) + "\""); //NOI18N
+                if (releasedate == null) {
+                    // if date is null, set today
+                    releasedate = DATE_FORMAT.format (new Date (System.currentTimeMillis ()));
+                }
+                ps.println ("        releasedate=\"" + xmlEscape(releasedate) + "\""); //NOI18N
                 ps.println (">"); //NOI18N
                 if (description != null) {
                     ps.print ("  <description>"); //NOI18N
