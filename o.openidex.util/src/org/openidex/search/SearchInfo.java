@@ -22,6 +22,7 @@ import java.util.Iterator;
  *
  * @see  SearchInfoFactory
  * @see  DataObject
+ * @since  org.openidex.util/3 3.2
  * @author  Marian Petras
  */
 public interface SearchInfo {
@@ -39,6 +40,7 @@ public interface SearchInfo {
      *
      * @return  <code>false</code> if the object is known that it cannot be
      *          searched; <code>true</code> otherwise
+     * @since  org.openidex.util/3 3.3
      */
     public boolean canSearch();
 

@@ -20,6 +20,7 @@ import org.openide.filesystems.FileObject;
  * searched and which should be skipped during search over a directory
  * structure.
  *
+ * @since  org.openidex.util/3 3.3
  * @author  Marian Petras
  */
 public interface FileObjectFilter {

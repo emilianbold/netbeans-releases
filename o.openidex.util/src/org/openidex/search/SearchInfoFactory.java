@@ -25,6 +25,7 @@ import org.openide.nodes.Node;
  * Factory for creating <code>SearchInfo</code> objects.
  *
  * @see  SearchInfo
+ * @since  org.openidex.util/3 3.3
  * @author  Marian Petras
  */
 public final class SearchInfoFactory {
