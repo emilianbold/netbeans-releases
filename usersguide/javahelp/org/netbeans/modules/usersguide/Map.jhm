@@ -664,6 +664,7 @@
 <mapID target="ant.ant-docs" url="ant/ant-docs.html" />
 <mapID target="ant.add-task" url="ant/add-task.html" />
 <mapID target="ant.input-handler" url="ant/input_handler.html" />
+<mapID target="ant.target-jdk" url="ant/target-jdk.html" />
 
 <mapID target="configure" url="configure/configure.html" />
 <mapID target="configure.options" url="configure/configure_options.html" />

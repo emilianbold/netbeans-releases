@@ -441,6 +441,7 @@
     <tocitem text="Target Java Platform Configuration" target="java.jdks.checklist" />
     <tocitem text="Cross-Compiling Between Java Platforms" target="compile.crosscompile"/>
     <tocitem text="Working With Assertions" target="java.assertions" />
+    <tocitem text="Setting the JDK for an Ant Script" target="ant.target-jdk" />
   </tocitem>
   <tocitem text="Overriding Methods" target="java.override" />
   <tocitem text="Setting Character Encoding for Java Files" target="java.encoding" />
@@ -542,6 +543,7 @@
   <tocitem text="Creating a Shortcut to a Target" target="ant.shortcut" />
   <tocitem text="Compiling Files With Ant" target="ant.compwith" />
   <tocitem text="Compiling Projects With Ant" target="ant.compproject" />
+  <tocitem text="Setting the JDK for an Ant Script" target="ant.target-jdk" />
   <tocitem text="Using Custom Ant Tasks" target="ant.custom-tasks" >
     <tocitem text="Creating a Custom Ant Task" target="ant.createtask" />
     <tocitem text="Ant Classpath and Custom Tasks" target="ant.tasks-classpath" />
