@@ -30,6 +30,8 @@ public class GridBagControlCenter extends javax.swing.JPanel {
 
     private ResourceBundle bundle;
 
+    private ActionL actionLsnr;
+
     static final long serialVersionUID =-3758289034173265028L;
     /** Creates new form GridBagControlCenter */
     public GridBagControlCenter(GridBagCustomizer customizer) {
@@ -106,6 +108,8 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
 
+        actionLsnr = new ActionL ();
+
         anchorPanel = new javax.swing.JPanel();
         anchorPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints2;
@@ -117,12 +121,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/nw.gif"))); // NOI18N
         nwButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         nwButton.setActionCommand("NW"); // NOI18N
-        nwButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                anchorButtonAction(evt);
-            }
-        }
-                                   );
+        nwButton.addActionListener(actionLsnr);
 
         gridBagConstraints2 = new java.awt.GridBagConstraints();
         anchorPanel.add(nwButton, gridBagConstraints2);
@@ -132,12 +131,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/n.gif"))); // NOI18N
         nButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         nButton.setActionCommand("N"); // NOI18N
-        nButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                anchorButtonAction(evt);
-            }
-        }
-                                  );
+        nButton.addActionListener(actionLsnr);
 
         gridBagConstraints2 = new java.awt.GridBagConstraints();
         anchorPanel.add(nButton, gridBagConstraints2);
@@ -147,12 +141,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/ne.gif"))); // NOI18N
         neButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         neButton.setActionCommand("NE"); // NOI18N
-        neButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                anchorButtonAction(evt);
-            }
-        }
-                                   );
+        neButton.addActionListener(actionLsnr);
 
         gridBagConstraints2 = new java.awt.GridBagConstraints();
         gridBagConstraints2.gridwidth = 0;
@@ -163,12 +152,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/w.gif"))); // NOI18N
         wButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         wButton.setActionCommand("W"); // NOI18N
-        wButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                anchorButtonAction(evt);
-            }
-        }
-                                  );
+        wButton.addActionListener(actionLsnr);
 
         gridBagConstraints2 = new java.awt.GridBagConstraints();
         anchorPanel.add(wButton, gridBagConstraints2);
@@ -178,12 +162,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/c.gif"))); // NOI18N
         cButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         cButton.setActionCommand("C"); // NOI18N
-        cButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                anchorButtonAction(evt);
-            }
-        }
-                                  );
+        cButton.addActionListener(actionLsnr);
 
         gridBagConstraints2 = new java.awt.GridBagConstraints();
         anchorPanel.add(cButton, gridBagConstraints2);
@@ -193,12 +172,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/e.gif"))); // NOI18N
         eButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         eButton.setActionCommand("E"); // NOI18N
-        eButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                anchorButtonAction(evt);
-            }
-        }
-                                  );
+        eButton.addActionListener(actionLsnr);
 
         gridBagConstraints2 = new java.awt.GridBagConstraints();
         gridBagConstraints2.gridwidth = 0;
@@ -209,12 +183,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/sw.gif"))); // NOI18N
         swButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         swButton.setActionCommand("SW"); // NOI18N
-        swButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                anchorButtonAction(evt);
-            }
-        }
-                                   );
+        swButton.addActionListener(actionLsnr);
 
         gridBagConstraints2 = new java.awt.GridBagConstraints();
         gridBagConstraints2.insets = new java.awt.Insets(0, 0, 4, 0);
@@ -225,12 +194,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/s.gif"))); // NOI18N
         sButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         sButton.setActionCommand("S"); // NOI18N
-        sButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                anchorButtonAction(evt);
-            }
-        }
-                                  );
+        sButton.addActionListener(actionLsnr);
 
         gridBagConstraints2 = new java.awt.GridBagConstraints();
         gridBagConstraints2.insets = new java.awt.Insets(0, 0, 4, 0);
@@ -241,12 +205,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/se.gif"))); // NOI18N
         seButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         seButton.setActionCommand("SE"); // NOI18N
-        seButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                anchorButtonAction(evt);
-            }
-        }
-                                   );
+        seButton.addActionListener(actionLsnr);
 
         gridBagConstraints2 = new java.awt.GridBagConstraints();
         gridBagConstraints2.insets = new java.awt.Insets(0, 0, 4, 0);
@@ -269,12 +228,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         horizontalFillButton.setIcon(new ImageIcon(Utilities.loadImage(
             "org/netbeans/modules/form/layoutsupport/resources/horizontal.gif"))); // NOI18N
         horizontalFillButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-        horizontalFillButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fillButtonAction(evt);
-            }
-        }
-                                               );
+        horizontalFillButton.addActionListener(actionLsnr);
 
         gridBagConstraints3 = new java.awt.GridBagConstraints();
         gridBagConstraints3.insets = new java.awt.Insets(0, 0, 4, 0);
@@ -284,12 +238,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         verticalFillButton.setIcon(new ImageIcon(Utilities.loadImage(
             "org/netbeans/modules/form/layoutsupport/resources/vertical.gif"))); // NOI18N
         verticalFillButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-        verticalFillButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fillButtonAction(evt);
-            }
-        }
-                                             );
+        verticalFillButton.addActionListener(actionLsnr);
 
         gridBagConstraints3 = new java.awt.GridBagConstraints();
         gridBagConstraints3.insets = new java.awt.Insets(0, 0, 4, 0);
@@ -323,12 +272,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
         ipadHMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         ipadHMButton.setActionCommand("HM"); // NOI18N
-        ipadHMButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ipadButtonAction(evt);
-            }
-        }
-                                       );
+        ipadHMButton.addActionListener(actionLsnr);
 
         gridBagConstraints4 = new java.awt.GridBagConstraints();
         ipadPanel.add(ipadHMButton, gridBagConstraints4);
@@ -338,12 +282,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
         ipadHPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         ipadHPButton.setActionCommand("HP"); // NOI18N
-        ipadHPButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ipadButtonAction(evt);
-            }
-        }
-                                       );
+        ipadHPButton.addActionListener(actionLsnr);
 
         gridBagConstraints4 = new java.awt.GridBagConstraints();
         gridBagConstraints4.gridwidth = 0;
@@ -362,12 +301,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
         ipadVMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         ipadVMButton.setActionCommand("VM"); // NOI18N
-        ipadVMButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ipadButtonAction(evt);
-            }
-        }
-                                       );
+        ipadVMButton.addActionListener(actionLsnr);
 
         gridBagConstraints4 = new java.awt.GridBagConstraints();
         gridBagConstraints4.insets = new java.awt.Insets(0, 0, 4, 0);
@@ -378,12 +312,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
         ipadVPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         ipadVPButton.setActionCommand("VP"); // NOI18N
-        ipadVPButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ipadButtonAction(evt);
-            }
-        }
-                                       );
+        ipadVPButton.addActionListener(actionLsnr);
 
         gridBagConstraints4 = new java.awt.GridBagConstraints();
         gridBagConstraints4.insets = new java.awt.Insets(0, 0, 4, 0);
@@ -409,12 +338,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
         topMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         topMButton.setActionCommand("tM"); // NOI18N
-        topMButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insetsButtonAction(evt);
-            }
-        }
-                                     );
+        topMButton.addActionListener(actionLsnr);
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 1;
@@ -428,12 +352,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
         topPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         topPButton.setActionCommand("tP"); // NOI18N
-        topPButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insetsButtonAction(evt);
-            }
-        }
-                                     );
+        topPButton.addActionListener(actionLsnr);
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 2;
@@ -447,12 +366,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
         leftPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         leftPButton.setActionCommand("lP"); // NOI18N
-        leftPButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insetsButtonAction(evt);
-            }
-        }
-                                      );
+        leftPButton.addActionListener(actionLsnr);
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 0;
@@ -465,12 +379,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
         leftMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         leftMButton.setActionCommand("lM"); // NOI18N
-        leftMButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insetsButtonAction(evt);
-            }
-        }
-                                      );
+        leftMButton.addActionListener(actionLsnr);
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 0;
@@ -483,12 +392,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
         rightPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         rightPButton.setActionCommand("rP"); // NOI18N
-        rightPButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insetsButtonAction(evt);
-            }
-        }
-                                       );
+        rightPButton.addActionListener(actionLsnr);
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 3;
@@ -501,12 +405,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
         rightMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         rightMButton.setActionCommand("rM"); // NOI18N
-        rightMButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insetsButtonAction(evt);
-            }
-        }
-                                       );
+        rightMButton.addActionListener(actionLsnr);
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 3;
@@ -519,12 +418,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
         bottomMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         bottomMButton.setActionCommand("bM"); // NOI18N
-        bottomMButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insetsButtonAction(evt);
-            }
-        }
-                                        );
+        bottomMButton.addActionListener(actionLsnr);
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 1;
@@ -537,12 +431,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
         bottomPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         bottomPButton.setActionCommand("bP"); // NOI18N
-        bottomPButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insetsButtonAction(evt);
-            }
-        }
-                                        );
+        bottomPButton.addActionListener(actionLsnr);
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 2;
@@ -565,12 +454,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
         HMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         HMButton.setActionCommand("HM"); // NOI18N
-        HMButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insetsButtonAction(evt);
-            }
-        }
-                                   );
+        HMButton.addActionListener(actionLsnr);
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 1;
@@ -583,12 +467,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
         HPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         HPButton.setActionCommand("HP"); // NOI18N
-        HPButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insetsButtonAction(evt);
-            }
-        }
-                                   );
+        HPButton.addActionListener(actionLsnr);
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 2;
@@ -611,12 +490,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
         VMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         VMButton.setActionCommand("VM"); // NOI18N
-        VMButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insetsButtonAction(evt);
-            }
-        }
-                                   );
+        VMButton.addActionListener(actionLsnr);
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 1;
@@ -628,12 +502,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
         VPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         VPButton.setActionCommand("VP"); // NOI18N
-        VPButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insetsButtonAction(evt);
-            }
-        }
-                                   );
+        VPButton.addActionListener(actionLsnr);
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 2;
@@ -655,12 +524,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
         BMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         BMButton.setActionCommand("BM"); // NOI18N
-        BMButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insetsButtonAction(evt);
-            }
-        }
-                                   );
+        BMButton.addActionListener(actionLsnr);
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 1;
@@ -673,12 +537,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
         BPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         BPButton.setActionCommand("BP"); // NOI18N
-        BPButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insetsButtonAction(evt);
-            }
-        }
-                                   );
+        BPButton.addActionListener(actionLsnr);
 
         gridBagConstraints5 = new java.awt.GridBagConstraints();
         gridBagConstraints5.gridx = 2;
@@ -713,12 +572,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
         gridSizeHMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         gridSizeHMButton.setActionCommand("HM"); // NOI18N
-        gridSizeHMButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                gridSizeButtonAction(evt);
-            }
-        }
-                                           );
+        gridSizeHMButton.addActionListener(actionLsnr);
 
         gridBagConstraints6 = new java.awt.GridBagConstraints();
         gridSizePanel.add(gridSizeHMButton, gridBagConstraints6);
@@ -728,12 +582,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
         gridSizeHPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         gridSizeHPButton.setActionCommand("HP"); // NOI18N
-        gridSizeHPButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                gridSizeButtonAction(evt);
-            }
-        }
-                                           );
+        gridSizeHPButton.addActionListener(actionLsnr);
 
         gridBagConstraints6 = new java.awt.GridBagConstraints();
         gridSizePanel.add(gridSizeHPButton, gridBagConstraints6);
@@ -743,12 +592,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/remainder.gif"))); // NOI18N
         gsRHButton.setMargin(new java.awt.Insets(5, 5, 5, 5));
         gsRHButton.setActionCommand("HR"); // NOI18N
-        gsRHButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                gridSizeButtonAction(evt);
-            }
-        }
-                                     );
+        gsRHButton.addActionListener(actionLsnr);
 
         gridBagConstraints6 = new java.awt.GridBagConstraints();
         gridBagConstraints6.gridwidth = 0;
@@ -767,12 +611,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/minus.gif"))); // NOI18N
         gridSizeVMButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         gridSizeVMButton.setActionCommand("VM"); // NOI18N
-        gridSizeVMButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                gridSizeButtonAction(evt);
-            }
-        }
-                                           );
+        gridSizeVMButton.addActionListener(actionLsnr);
 
         gridBagConstraints6 = new java.awt.GridBagConstraints();
         gridBagConstraints6.insets = new java.awt.Insets(0, 0, 4, 0);
@@ -783,12 +622,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/plus.gif"))); // NOI18N
         gridSizeVPButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         gridSizeVPButton.setActionCommand("VP"); // NOI18N
-        gridSizeVPButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                gridSizeButtonAction(evt);
-            }
-        }
-                                           );
+        gridSizeVPButton.addActionListener(actionLsnr);
 
         gridBagConstraints6 = new java.awt.GridBagConstraints();
         gridBagConstraints6.insets = new java.awt.Insets(0, 0, 4, 0);
@@ -799,12 +633,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
             "org/netbeans/modules/form/layoutsupport/resources/remainder.gif"))); // NOI18N
         gsRVButton.setMargin(new java.awt.Insets(5, 5, 5, 5));
         gsRVButton.setActionCommand("VR"); // NOI18N
-        gsRVButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                gridSizeButtonAction(evt);
-            }
-        }
-                                     );
+        gsRVButton.addActionListener(actionLsnr);
 
         gridBagConstraints6 = new java.awt.GridBagConstraints();
         gridBagConstraints6.gridwidth = 0;
@@ -1025,5 +854,65 @@ public class GridBagControlCenter extends javax.swing.JPanel {
         // Set remainder buttons
         gsRHButton.setSelected(remainderH);
         gsRVButton.setSelected(remainderV);
+    }
+
+    private class ActionL implements java.awt.event.ActionListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            Object src = evt.getSource();
+	    if (nwButton.equals (src)
+		|| nButton.equals (src)
+		|| neButton.equals (src)
+		|| wButton.equals (src)
+		|| cButton.equals (src)
+		|| eButton.equals (src)
+		|| swButton.equals (src)
+		|| sButton.equals (src)
+		|| seButton.equals (src)
+		) {
+                anchorButtonAction(evt);
+	    }
+            else if (horizontalFillButton.equals(src)
+		     || verticalFillButton.equals(src)
+		     )
+	    {
+                fillButtonAction(evt);
+            }
+            else if (ipadHMButton.equals(src)
+		     || ipadHPButton.equals(src)
+		     || ipadVMButton.equals(src)
+		     || ipadVPButton.equals(src)
+		     )
+	    {
+                ipadButtonAction(evt);
+            }
+            else if (BMButton.equals(src)
+		|| BPButton.equals(src)
+		|| HMButton.equals(src)
+		|| HPButton.equals(src)
+		|| VMButton.equals(src)
+		|| VPButton.equals(src)
+		|| topPButton.equals(src)
+		|| topMButton.equals(src)
+		|| leftPButton.equals(src)
+		|| leftMButton.equals(src)
+		|| rightPButton.equals(src)
+		|| rightMButton.equals(src)
+		|| bottomPButton.equals(src)
+		|| bottomMButton.equals(src)
+		)
+	    {
+                insetsButtonAction(evt);
+            }
+            else if (gridSizeHMButton.equals(src)
+		     || gridSizeHPButton.equals(src)
+		     || gsRHButton.equals(src)
+		     || gridSizeVMButton.equals(src)
+		     || gridSizeVPButton.equals(src)
+		     || gsRVButton.equals(src)
+		     )
+	    {
+                gridSizeButtonAction(evt);
+            }
+        }
     }
 }
