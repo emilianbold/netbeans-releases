@@ -215,7 +215,8 @@ public class Utils {
         Line.Set ls = getLineSet (className);
         if (ls == null) return null;
         try {
-            Line l = ls.getOriginal (lineNumber - 1);
+            //Line l = ls.getOriginal (lineNumber - 1);
+            Line l = ls.getCurrent(lineNumber - 1);
             FileSystem fs = org.openide.text.DataEditorSupport.findDataObject(l).getPrimaryFile ().getFileSystem ();
             if (fs.getCapability ().capableOf (GUIManager.DEBUG_SRC))
                 return l;
