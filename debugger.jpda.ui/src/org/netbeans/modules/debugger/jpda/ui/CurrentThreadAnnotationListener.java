@@ -132,7 +132,8 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                     SourcePath sp = (SourcePath) DebuggerManager.
                         getDebuggerManager ().getCurrentEngine ().lookupFirst 
                         (null, SourcePath.class);
-                    sp.showSource (csf, language);
+                    if (csf != null)
+                        sp.showSource (csf, language);
 
                     // annotate current line
                     currentPC = sp.annotate (ct, language);
