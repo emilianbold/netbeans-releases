@@ -1,0 +1,6 @@
+diff/src/org/netbeans/modules/diff/cmdline/Bundle.properties
+diff/src/org/netbeans/modules/diff/Bundle.properties
+diff/src/org/netbeans/modules/diff/builtin/provider/Bundle.properties
+diff/src/org/netbeans/modules/diff/builtin/visualizer/Bundle.properties
+diff/src/org/netbeans/modules/diff/builtin/Bundle.properties
+diff/src/org/netbeans/modules/merge/builtin/visualizer/Bundle.properties
