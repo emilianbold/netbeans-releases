@@ -53,6 +53,7 @@ public class ImageViewer extends CloneableTopComponent {
   * @see #requestFocus
   */
   public void open (Workspace w) {
+    if (w == null) w = org.openide.TopManager.getDefault ().getWindowManager ().getCurrentWorkspace ();
     Mode viewerMode = w.findMode(this);
     if (viewerMode == null) {
       Mode editorMode = w.findMode(EditorSupport.EDITOR_MODE);
