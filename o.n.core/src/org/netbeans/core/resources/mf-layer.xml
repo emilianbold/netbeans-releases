@@ -623,6 +623,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- settings categories UI presentation -->
     <folder name="Services">
+      <attr name="helpID" stringvalue="org.netbeans.core.ControlPanelNode" />
 
       <folder name="IDEConfiguration">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
