@@ -704,12 +704,12 @@ public class JScrollPaneOperator extends JComponentOperator
     ////////////////////////////////////////////////////////
 
     private void initOperators() {
-	if(hScrollBarOper == null && getHorizontalScrollBar().isVisible()) {
+	if(hScrollBarOper == null && getHorizontalScrollBar() != null && getHorizontalScrollBar().isVisible()) {
 	    hScrollBarOper = new JScrollBarOperator(getHorizontalScrollBar());
 	    hScrollBarOper.copyEnvironment(this);
 	    hScrollBarOper.setVisualizer(new EmptyVisualizer());
 	}
-	if(vScrollBarOper == null && getVerticalScrollBar().isVisible()) {
+	if(vScrollBarOper == null && getVerticalScrollBar() != null && getVerticalScrollBar().isVisible()) {
 	    vScrollBarOper = new JScrollBarOperator(getVerticalScrollBar());
 	    vScrollBarOper.copyEnvironment(this);
 	    vScrollBarOper.setVisualizer(new EmptyVisualizer());

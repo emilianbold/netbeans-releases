@@ -112,6 +112,12 @@ public class ComponentOperator extends Operator
     implements Timeoutable, Outputable {
 
     /**
+     * Identifier for a name property.
+     * @see #getDump
+     */
+    public static final String NAME_DPROP = "Name:";
+
+    /**
      * Identifier for a visible property.
      * @see #getDump
      */
@@ -984,7 +990,10 @@ public class ComponentOperator extends Operator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put(IS_VISIBLE_DPROP, getSource().isVisible() ? "true" : "false");
+        if(getSource().getName() != null) {
+            result.put(NAME_DPROP, getSource().getName());
+        }
+        result.put(IS_VISIBLE_DPROP, getSource().isVisible() ? "true" : "false");
 	result.put(IS_SHOWING_DPROP, getSource().isShowing() ? "true" : "false");
 	result.put(X_DPROP, Integer.toString(getSource().getX()));
 	result.put(Y_DPROP, Integer.toString(getSource().getY()));

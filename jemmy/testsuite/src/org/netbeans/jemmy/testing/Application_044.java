@@ -42,20 +42,26 @@ public class Application_044 extends TestFrame {
         getContentPane().add(colored);
 
         JButton semicolored = new JButton("Button");
+        JButton semicolore2 = new JButton("Button");
         if(noncolored.getForeground().equals(Color.blue)) {
             if(noncolored.getBackground().equals(Color.red)) {
                 semicolored.setForeground(Color.gray);
+                semicolore2.setForeground(Color.yellow);
             } else {
                 semicolored.setForeground(Color.red);
+                semicolore2.setForeground(Color.green);
             }
         } else {
             if(noncolored.getBackground().equals(Color.blue)) {
                 semicolored.setForeground(Color.red);
+                semicolore2.setForeground(Color.yellow);
             } else {
                 semicolored.setForeground(Color.blue);
+                semicolore2.setForeground(Color.red);
             }
         }
         getContentPane().add(semicolored);
+        getContentPane().add(semicolore2);
 
 	setSize(200, 200);
     }

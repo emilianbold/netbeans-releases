@@ -176,7 +176,12 @@ public class jemmy_035 extends JemmyTest {
 
 	    scroller.scrollToValues(0.5, 0.5);
 
-	    if(!checkInside(butt22, scroller)) {
+	    if(!checkInside(butt22, scroller,
+			    butt22.getWidth() / 2 - 1,
+			    butt22.getHeight() / 2 - 1,
+                            1,
+                            1)) {
+                                
 		getOutput().printErrLine("22 button is not inside scroll area!");
 		return(1);
 	    }

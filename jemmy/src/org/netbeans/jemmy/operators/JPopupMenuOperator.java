@@ -405,8 +405,12 @@ implements Outputable, Timeoutable {
     public JMenuItem pushMenu(final ComponentChooser[] choosers) {
 	return((JMenuItem)produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
-		    return(driver.pushMenu(JPopupMenuOperator.this, 
-					   JMenuOperator.converChoosers(choosers)));
+                    //TDB 1.5 menu workaround
+                    getQueueTool().waitEmpty();
+                    Object result = driver.pushMenu(JPopupMenuOperator.this, 
+                                                    JMenuOperator.converChoosers(choosers));
+                    getQueueTool().waitEmpty();
+		    return(result);
 		}
 		public String getDescription() {
 		    return("Menu pushing");
@@ -422,8 +426,12 @@ implements Outputable, Timeoutable {
     public void pushMenuNoBlock(final ComponentChooser[] choosers) {
 	produceNoBlocking(new NoBlockingAction("Menu pushing") {
 		public Object doAction(Object param) {
-		    return(driver.pushMenu(JPopupMenuOperator.this, 
-					   JMenuOperator.converChoosers(choosers)));
+                    //TDB 1.5 menu workaround
+                    getQueueTool().waitEmpty();
+                    Object result = driver.pushMenu(JPopupMenuOperator.this, 
+                                                    JMenuOperator.converChoosers(choosers));
+                    getQueueTool().waitEmpty();
+		    return(result);
 		}
 	    });
     }

@@ -140,7 +140,7 @@ public class DefaultDriverInstaller extends ArrayDriverInstaller {
     }
 
     private static LightDriver createSpinnerDriver() {
-        if(System.getProperty("java.version").startsWith("1.4")) {
+        if(System.getProperty("java.version").startsWith("1.4") || System.getProperty("java.version").startsWith("1.5")) {
             try {
                 return((LightDriver)new ClassReference("org.netbeans.jemmy.drivers.scrolling.JSpinnerDriver").
                        newInstance(null, null));

@@ -282,6 +282,9 @@ implements Outputable{
  	output.printLine("Closing window\n    " + getSource().toString());
  	output.printGolden("Closing window");
 	driver.close(this);
+	if(getVerification()) {
+            waitClosed();
+        }
     }
 
     /**
@@ -471,7 +474,8 @@ implements Outputable{
     /**Maps <code>Window.isFocused()</code> through queue. 
        @return result of the mapped method */
     public boolean isFocused() {
-        if(System.getProperty("java.version").startsWith("1.4")) {
+        if(System.getProperty("java.version").startsWith("1.4") ||
+           System.getProperty("java.version").startsWith("1.5")) {
             return(runMapping(new MapBooleanAction("isFocused") {
                     public boolean map() {
                         try {
@@ -493,7 +497,8 @@ implements Outputable{
     /**Maps <code>Window.isActive()</code> through queue. 
        @return result of the mapped method */
     public boolean isActive() {
-        if(System.getProperty("java.version").startsWith("1.4")) {
+        if(System.getProperty("java.version").startsWith("1.4") ||
+           System.getProperty("java.version").startsWith("1.5")) {
             return(runMapping(new MapBooleanAction("isActive") {
                     public boolean map() {
                         try {

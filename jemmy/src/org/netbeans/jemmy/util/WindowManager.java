@@ -17,12 +17,17 @@
 
 package org.netbeans.jemmy.util;
 
+import java.awt.Component;
+import java.awt.Dialog;
+
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Outputable;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Timeoutable;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.WindowWaiter;
+
+import org.netbeans.jemmy.operators.WindowOperator;
 
 import java.awt.Window;
 
@@ -68,6 +73,11 @@ public class WindowManager implements Timeoutable, Outputable {
      */
     public static void removeJob(WindowJob job) {
 	manager.remove(job);
+    }
+
+    public static void performJob(WindowJob job) {
+        while(manager.performJobOnce(job)) {
+        }
     }
 
     static {
@@ -124,6 +134,30 @@ public class WindowManager implements Timeoutable, Outputable {
 	}
     }
 
+    private boolean performJobOnce(WindowJob job) {
+        Window win = WindowWaiter.getWindow(job);
+        if(win != null) {
+            job.launch(win);
+            return(true);
+        } else {
+            return(false);
+        }
+    }
+
+    public static class ModalDialogChoosingJob implements WindowJob {
+        public boolean checkComponent(Component comp) {
+            return(comp instanceof Dialog &&
+                   ((Dialog)comp).isModal());
+        }
+        public Object launch(Object obj) {
+            new WindowOperator((Window)obj).close();
+            return(null);
+        }
+        public String getDescription() {
+            return("A job of closing modal dialogs");
+        }
+    }
+
     private static class JobThread extends Thread {
 	WindowJob job;
 	boolean needStop = false;
@@ -137,11 +171,8 @@ public class WindowManager implements Timeoutable, Outputable {
 	}
 	public void run() {
 	    while(!getNS()) {
-		Window win = WindowWaiter.getWindow(job);
-		if(win != null) {
-		    job.launch(win);
-		}
-		manager.timeouts.sleep("WindowManager.TimeDelta");
+                manager.performJobOnce(job);
+                manager.timeouts.sleep("WindowManager.TimeDelta");
 	    }
 	}
     }

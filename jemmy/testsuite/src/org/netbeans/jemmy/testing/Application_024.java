@@ -38,21 +38,19 @@ public class Application_024 extends TestFrame {
 	//////////////////////////////////////////////////////////////////////
 	//tree
 	//////////////////////////////////////////////////////////////////////
-	DefaultMutableTreeNode[][] subnodes = new DefaultMutableTreeNode[50][50];
-	DefaultMutableTreeNode[] nodes = new DefaultMutableTreeNode[50];
-	DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-	root.setUserObject("-1");
-	for(int i = 0; i < nodes.length; i++) {
-	    nodes[i] = new DefaultMutableTreeNode();
-	    nodes[i].setUserObject(Integer.toString(i));
-	    for(int j = 0; j < subnodes[i].length; j++) {
-		subnodes[i][j] = new DefaultMutableTreeNode();
-		subnodes[i][j].setUserObject(Integer.toString(i) + Integer.toString(j));
-		nodes[i].insert(subnodes[i][j], j);
-	    }
-	    root.insert(nodes[i], i);
-	}
-	JTree tr = new JTree(root);
+	DefaultMutableTreeNode root = new DefaultMutableTreeNode("-1");
+	DefaultMutableTreeNode node = null;
+        DefaultTreeModel model = new DefaultTreeModel(root);
+        JTree tr = new JTree(root);
+        tr.setModel(model);
+	for(int i = 0; i < 50; i++) {
+	    node = new DefaultMutableTreeNode(Integer.toString(i));
+            model.insertNodeInto(node, root, i);
+	    for(int j = 0; j < 50; j++) {
+                model.insertNodeInto(new DefaultMutableTreeNode(Integer.toString(i) + Integer.toString(j)), node, j);
+            }
+        }
+        tr.expandRow(0);
 	tr.setEditable(true);
 	tp.add("Tree Page", new JScrollPane(tr));
 
@@ -69,8 +67,8 @@ public class Application_024 extends TestFrame {
 	//text
 	//////////////////////////////////////////////////////////////////////
 	String text = "";
-	for(int i = 0; i < listItems.length; i++) {
-	    for(int j = 0; j < subnodes[i].length; j++) {
+	for(int i = 0; i < 50; i++) {
+	    for(int j = 0; j < 50; j++) {
 		text = text + Integer.toString(i) + Integer.toString(j);
 	    }
 	    text = text + "\n";

@@ -63,22 +63,32 @@ public class jemmy_044 extends JemmyTest {
 
             ImageComparator color = 
                 new ColorImageComparator(new ColorImageComparator.
-                                         ForegroundColorMap(new JButtonOperator(win, 3).
+                                         ForegroundColorMap(new JButtonOperator(win, 5).
                                                             getForeground().getRGB()),
                                          new ColorImageComparator.
                                          ForegroundColorMap(new JButtonOperator(win, 4).
                                                             getForeground().getRGB()));
 
-            if(!color.compare(images[3], images[4])) {
+            if(!color.compare(images[5], images[4])) {
+                new PNGImageSaver().save(ImageTool.subtractImage(images[5], images[4]), "result.png");
                 finalize();
                 throw(new TestCompletedException(1, "ColorImageComparator true"));
             }
-            if(color.compare(images[0], images[3])) {
+
+            color = 
+                new ColorImageComparator(new ColorImageComparator.
+                                         ForegroundColorMap(new JButtonOperator(win, 5).
+                                                            getForeground().getRGB()),
+                                         new ColorImageComparator.
+                                         ForegroundColorMap(new JButtonOperator(win, 5).
+                                                            getForeground().getRGB()));
+            if(color.compare(images[5], images[4])) {
+                new PNGImageSaver().save(ImageTool.subtractImage(images[5], images[4]), "result.png");
                 finalize();
                 throw(new TestCompletedException(1, "ColorImageComparator false"));
             }
 
-            ImageFinder strictFinder = new StrictImageFinder(images[5]);
+            ImageFinder strictFinder = new StrictImageFinder(images[6]);
             if(strictFinder.findImage(images[0], 0) == null) {
                 finalize();
                 throw(new TestCompletedException(1, "StrictImageFinder true 0"));
@@ -87,18 +97,18 @@ public class jemmy_044 extends JemmyTest {
                 finalize();
                 throw(new TestCompletedException(1, "StrictImageFinder true 1"));
             }
-            if(strictFinder.findImage(images[0], 2) != null) {
+            if(strictFinder.findImage(images[0], 3) != null) {
                 finalize();
                 throw(new TestCompletedException(1, "StrictImageFinder false 0"));
             }
 
             ImageFinder strictFinderFalse = new StrictImageFinder(images[2]);
-            if(strictFinder.findImage(images[0], 2) != null) {
+            if(strictFinderFalse.findImage(images[0], 0) != null) {
                 finalize();
-                throw(new TestCompletedException(1, "StrictImageFinder false 1"));
+                throw(new TestCompletedException(1, "StrictImageFinderFalse false 1"));
             }
 
-            ImageFinder roughFinder = new RoughImageFinder(images[5], .2);
+            ImageFinder roughFinder = new RoughImageFinder(images[6], .2);
             if(roughFinder.findImage(images[0], 3) == null) {
                 finalize();
                 throw(new TestCompletedException(1, "RoughImageFinder true 0"));
@@ -129,13 +139,14 @@ public class jemmy_044 extends JemmyTest {
     }
 
     BufferedImage[] getPictures() {
-        BufferedImage[] images = new BufferedImage[6];
+        BufferedImage[] images = new BufferedImage[7];
         images[0] = getPicture(0);
         images[1] = getPicture(1);
         images[2] = getPicture(2);
         images[3] = getPicture(3);
         images[4] = getPicture(4);
-        images[5] = getPicture(win.getSource(), "window.png");
+        images[5] = getPicture(5);
+        images[6] = getPicture(win.getSource(), "window.png");
         return(images);
     }
 

@@ -2,6 +2,7 @@ package org.netbeans.jemmy.testing;
 
 import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.operators.*;
+import org.netbeans.jemmy.util.*;
 
 import java.awt.*;
 
@@ -9,6 +10,9 @@ import org.netbeans.jemmy.util.Dumper;
 
 public class JemmyTest extends org.netbeans.jemmy.Test {
     public void finalize() {
+        PNGEncoder.captureScreen(System.getProperty("user.dir") +
+                                 System.getProperty("file.separator") +
+                                 "screen.png");
         JemmyProperties.setCurrentTimeout("QueueTool.LockTimeout", 60000);
 	Window win;
 	while((win = WindowWaiter.getWindow(new org.netbeans.jemmy.ComponentChooser() {

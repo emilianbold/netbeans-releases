@@ -55,7 +55,8 @@ public class ChoiceDriver extends LightSupportiveDriver implements ListDriver {
 		       oper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
 	KeyDriver kdriver = DriverManager.getKeyDriver(oper);
 	Timeout pushTimeout = oper.getTimeouts().create("ComponentOperator.PushKeyTimeout");
-        if(System.getProperty("java.version").startsWith("1.4")) {
+        if(System.getProperty("java.version").startsWith("1.4") ||
+           System.getProperty("java.version").startsWith("1.5")) {
             while(coper.getSelectedIndex() != index) {
                 kdriver.pushKey(oper, (index > coper.getSelectedIndex()) ? KeyEvent.VK_DOWN : KeyEvent.VK_UP, 0, pushTimeout);
             }

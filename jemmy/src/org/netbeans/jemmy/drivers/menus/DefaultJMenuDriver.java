@@ -78,8 +78,8 @@ public class DefaultJMenuDriver extends LightSupportiveDriver implements MenuDri
 	    return(push(oper, null, chooser, 0, true));
 	}
     }
-    private Object push(ComponentOperator oper, JMenuBar menuBar, 
-                        PathChooser chooser, int depth, boolean pressMouse) {
+    protected Object push(ComponentOperator oper, JMenuBar menuBar, 
+                          PathChooser chooser, int depth, boolean pressMouse) {
         try {
             oper.waitComponentVisible(true);
             oper.waitComponentEnabled();
@@ -120,10 +120,11 @@ public class DefaultJMenuDriver extends LightSupportiveDriver implements MenuDri
 	    return(item);
 	}
     }
-    private JPopupMenu waitPopupMenu(final ComponentOperator oper) {
+    protected JPopupMenu waitPopupMenu(final ComponentOperator oper) {
         return((JPopupMenu)JPopupMenuOperator.waitJPopupMenu(new ComponentChooser() {
                 public boolean checkComponent(Component comp) {
-                    return(comp == ((JMenuOperator)oper).getPopupMenu());
+                    return(comp == ((JMenuOperator)oper).getPopupMenu() &&
+                           comp.isShowing());
                 }
                 public String getDescription() {
                     return(((JMenuOperator)oper).getText() + "'s popup");
@@ -131,7 +132,7 @@ public class DefaultJMenuDriver extends LightSupportiveDriver implements MenuDri
             }).getSource());
     }
 
-    private JMenuItem waitItem(ComponentOperator oper, MenuElement element, PathChooser chooser, int depth) {
+    protected JMenuItem waitItem(ComponentOperator oper, MenuElement element, PathChooser chooser, int depth) {
 	Waiter waiter = new Waiter(new JMenuItemWaiter(element, chooser, depth));
 	waiter.setOutput(oper.getOutput().createErrorOutput());
 	waiter.setTimeouts(oper.getTimeouts());

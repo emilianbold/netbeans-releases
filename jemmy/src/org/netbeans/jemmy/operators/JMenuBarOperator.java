@@ -213,8 +213,12 @@ public class JMenuBarOperator extends JComponentOperator
         makeComponentVisible();
 	return((JMenuItem)produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
-		    return(driver.pushMenu(JMenuBarOperator.this, 
-					   JMenuOperator.converChoosers(choosers)));
+                    //TDB 1.5 menu workaround
+                    getQueueTool().waitEmpty();
+                    Object result = driver.pushMenu(JMenuBarOperator.this, 
+                                                    JMenuOperator.converChoosers(choosers));
+                    getQueueTool().waitEmpty();
+		    return(result);
 		}
 		public String getDescription() {
 		    return("Menu pushing");
@@ -231,8 +235,12 @@ public class JMenuBarOperator extends JComponentOperator
         makeComponentVisible();
 	produceNoBlocking(new NoBlockingAction("Menu pushing") {
 		public Object doAction(Object param) {
-		    return(driver.pushMenu(JMenuBarOperator.this, 
-					   JMenuOperator.converChoosers(choosers)));
+                    //TDB 1.5 menu workaround
+                    getQueueTool().waitEmpty();
+                    Object result = driver.pushMenu(JMenuBarOperator.this, 
+                                                    JMenuOperator.converChoosers(choosers));
+                    getQueueTool().waitEmpty();
+		    return(result);
 		}
 	    });
     }

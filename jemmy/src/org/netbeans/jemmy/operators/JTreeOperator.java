@@ -2491,8 +2491,10 @@ public class JTreeOperator extends JComponentOperator
                         }
 		    }
 		    TreePath path = ((JTree)comp).getPathForRow(ii);
-		    return(comparator.equals(path.getPathComponent(path.getPathCount() - 1).toString(),
-					     label));
+                    if(path != null) {
+                        return(comparator.equals(path.getPathComponent(path.getPathCount() - 1).toString(),
+                                                 label));
+                    }
 		}
 	    }
 	    return(false);
