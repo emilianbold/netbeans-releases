@@ -1,0 +1,203 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Editors"> 
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="ToolTips">
+                    <file name="org-netbeans-modules-debugger-jpda-ui-ToolTipAnnotation.instance"/>
+                </folder>
+                <folder name="Popup">
+                    <attr name="Separator7.instance/org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance" boolvalue="true"/>
+
+                    <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance"/>
+                    <attr name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true"/>
+
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+                    <attr name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance/Separator8.instance" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Actions">
+        <folder name="Debug">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+            <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
+
+            <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
+
+            <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.instance" />
+            <file name="org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance" />
+            <file name="org-netbeans-modules-debugger-ui-actions-PauseAction.instance" />
+            <file name="org-netbeans-modules-debugger-ui-actions-MakeCalleeCurrentAction.instance" />
+            <file name="org-netbeans-modules-debugger-ui-actions-MakeCallerCurrentAction.instance" />
+
+            <file name="org-netbeans-modules-debugger-ui-actions-FixAction.instance" />
+            <file name="org-netbeans-modules-debugger-ui-actions-PopTopmostCallAction.instance" />
+        </folder>
+    </folder>
+
+    <!-- Main menu -->
+    <folder name="Menu">
+        <attr name="RunProject/Debug" boolvalue="true"/>
+        <attr name="Debug/Versioning" boolvalue="true"/>
+        <attr name="Debug/Tools" boolvalue="true"/>
+
+        <folder name="Debug">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+
+            <file name="org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-KillAction.instance/Separator11.instance" boolvalue="true" />
+            <file name="Separator11.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+
+            <attr name="Separator11.instance/org-netbeans-modules-debugger-ui-actions-PauseAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-PauseAction.instance" />
+            <attr name="org-netbeans-modules-debugger-ui-actions-PauseAction.instance/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-ContinueAction.instance/Separator2.instance" boolvalue="true" />
+            <file name="Separator2.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+
+            <attr name="Separator2.instance/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepOverAction.instance/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepOutAction.instance/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance/Separator3.instance" boolvalue="true" />
+            <file name="Separator3.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+
+            <attr name="Separator3.instance/org-netbeans-modules-debugger-ui-actions-FixAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-FixAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-FixAction.instance/Separator4.instance" boolvalue="true" />
+            <file name="Separator4.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+
+            <attr name="Separator4.instance/Stack" boolvalue="true" />
+            <folder name="Stack">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/actions/Folder.gif" />
+
+                <file name="org-netbeans-modules-debugger-ui-actions-MakeCalleeCurrentAction.instance"/>
+                <attr name="org-netbeans-modules-debugger-ui-actions-MakeCalleeCurrentAction.instance/org-netbeans-modules-debugger-ui-actions-MakeCallerCurrentAction.instance" boolvalue="true" />
+                <file name="org-netbeans-modules-debugger-ui-actions-MakeCallerCurrentAction.instance"/>
+                <attr name="org-netbeans-modules-debugger-ui-actions-MakeCallerCurrentAction.instance/Separator5.instance" boolvalue="true" />
+                <file name="Separator5.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                </file>
+
+                <attr name="Separator5.instance/org-netbeans-modules-debugger-ui-actions-PopTopmostCallAction.instance" boolvalue="true" />
+                <file name="org-netbeans-modules-debugger-ui-actions-PopTopmostCallAction.instance"/>
+            </folder>
+            <attr name="Stack/Separator6.instance" boolvalue="true" />
+
+            <file name="Separator6.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+
+            <attr name="Separator6.instance/org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance" />
+            <attr name="org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance/Separator-7.instance" boolvalue="true" />
+
+        </folder>
+    </folder>
+
+    <folder name="Shortcuts">
+        <file name="CS-F8.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.AddBreakpointAction"/>
+    	</file>
+        <file name="C-F8.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.jpda.ui.actions.ToggleBreakpointAction"/>
+	    </file>
+        <file name="F4.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.RunToCursorAction"/>
+	    </file>
+        <file name="SA-F7.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.StepOutAction"/>
+	    </file>
+        <file name="F7.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.StepIntoAction"/>
+	    </file>
+        <file name="F8.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.StepOverAction"/>
+	    </file>
+        <file name="C-F5.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.ContinueAction"/>
+	    </file>
+        <file name="S-F5.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.KillAction"/>
+	    </file>
+        <file name="CA-UP.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.MakeCalleeCurrentAction"/>
+	    </file>
+        <file name="CA-DOWN.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.MakeCallerCurrentAction"/>
+	    </file>
+    </folder>
+
+    <folder name="Toolbars">
+        <file name="Debugging.xml" url="Debugging.xml">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        </file>
+        <folder name="Debug">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+
+            <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.instance" />
+        </folder>
+        <folder name="DebugFull">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.instance" />
+            <attr name="org-netbeans-modules-debugger-ui-actions-ConnectAction.instance/org-netbeans-modules-debugger-ui-actions-KillAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-KillAction.instance/org-netbeans-modules-debugger-ui-actions-PauseAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-PauseAction.instance" />
+            <attr name="org-netbeans-modules-debugger-ui-actions-PauseAction.instance/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-ContinueAction.instance/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepOverAction.instance/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepOutAction.instance/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance/org-netbeans-modules-debugger-ui-actions-FixAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-FixAction.instance" />
+            <attr name="org-netbeans-modules-debugger-ui-actions-FixAction.instance/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+        </folder>
+    </folder>
+
+</filesystem>

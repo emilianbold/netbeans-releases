@@ -1,0 +1,176 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.api.debugger.jpda;
+
+
+/**
+ * Notifies about variable change or access events.
+ *
+ * <br><br>
+ * <b>How to use it:</b>
+ * <pre style="background-color: rgb(255, 255, 153);">
+ *    DebuggerManager.addBreakpoint (FieldBreakpoint.create (
+ *        "org.netbeans.modules.editor.EditorPanel",
+ *        "state",
+ *        FieldBreakpoint.TYPE_MODIFICATION
+ *    ));</pre>
+ * This breakpoint stops when state field of EditorPanel class is modified.
+ *
+ * @author Jan Jancura
+ */
+public final class FieldBreakpoint extends JPDABreakpoint {
+
+    /** Property name constant. */
+    public static final String      PROP_FIELD_NAME = "fieldName"; // NOI18N
+    /** Property name constant. */
+    public static final String      PROP_CLASS_NAME = "className"; // NOI18N
+    /** Property name constant. */
+    public static final String      PROP_CONDITION = "condition"; // NOI18N
+    /** Property name constant. */
+    public static final String      PROP_BREAKPOINT_TYPE = "breakpointType"; // NOI18N
+    
+    /** Property type value constant. */
+    public static final int         TYPE_ACCESS = 1;
+    /** Property type value constant. */
+    public static final int         TYPE_MODIFICATION = 2;
+
+    private String                  className = "";
+    private String                  fieldName = "";
+    private int                     type = TYPE_MODIFICATION;
+    private String                  condition = ""; // NOI18N
+
+    
+    private FieldBreakpoint () {
+    }
+    
+    /**
+     * Creates a new breakpoint for given parameters.
+     *
+     * @param className class name
+     * @param fieldName name of field
+     * @param breakpointType one of constants: TYPE_ACCESS, 
+     *   TYPE_MODIFICATION
+     * @return a new breakpoint for given parameters
+     */
+    public static FieldBreakpoint create (
+        String className,
+        String fieldName,
+        int breakpointType
+    ) {
+        FieldBreakpoint b = new FieldBreakpoint ();
+        b.setClassName (className);
+        b.setFieldName (fieldName);
+        b.setBreakpointType (breakpointType);
+        return b;
+    }
+
+    /**
+     * Get name of class the field is defined in.
+     *
+     * @return the name of class the field is defined in
+     */
+    public String getClassName () {
+        return className;
+    }
+
+    /**
+     * Set name of class the field is defined in.
+     *
+     * @param className a new name of class the field is defined in
+     */
+    public void setClassName (String className) {
+        if ( (className == this.className) ||
+             ( (className != null) && 
+               (this.className != null) && 
+               this.className.equals (className)
+             )
+        ) return;
+        Object old = this.className;
+        this.className = className;
+        firePropertyChange (PROP_CLASS_NAME, old, className);
+    }
+
+    /**
+     * Returns name of field.
+     *
+     * @return a name of field
+     */
+    public String getFieldName () {
+        return fieldName;
+    }
+
+    /**
+     * Sets name of field.
+     *
+     * @param name a name of field
+     */
+    public void setFieldName (String name) {
+        if (name != null) {
+            name = name.trim();
+        }
+        if ( (name == fieldName) ||
+             ((name != null) && (fieldName != null) && fieldName.equals (name))
+        ) return;
+        String old = fieldName;
+        fieldName = name;
+        firePropertyChange (PROP_FIELD_NAME, old, fieldName);
+    }
+
+    /**
+     * Returns type of breakpoint (one of TYPE_ACCESS and TYPE_MODIFICATION).
+     *
+     * @return type of breakpoint
+     */
+    public int getBreakpointType () {
+        return type;
+    }
+
+    /**
+     * Sets type of breakpoint.
+     *
+     * @param type a new type of breakpoint
+     */
+    public void setBreakpointType (int type) {
+        if (this.type == type) return;
+        if ( (type != TYPE_MODIFICATION) &&
+                (type != TYPE_ACCESS)
+           ) throw new IllegalArgumentException  ();
+        int old = this.type;
+        this.type = type;
+        firePropertyChange (PROP_BREAKPOINT_TYPE, new Integer (old), new Integer (type));
+    }
+    
+    /**
+     * Returns condition.
+     *
+     * @return cond a condition
+     */
+    public String getCondition () {
+        return condition;
+    }
+
+    /**
+     * Sets condition.
+     *
+     * @param cond a c new condition
+     */
+    public void setCondition (String cond) {
+        if (cond != null) {
+            cond = cond.trim();
+        }
+        String old = condition;
+        condition = cond;
+        firePropertyChange (PROP_CONDITION, old, cond);
+    }
+}

@@ -1,0 +1,63 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.spi.debugger;
+
+import java.beans.PropertyChangeListener;
+import java.util.Set;
+import org.netbeans.api.debugger.DebuggerEngine;
+
+/**
+ * Represents implementation of one or more actions. 
+ *
+ * @author   Jan Jancura
+ */
+public abstract class ActionsProvider {
+    
+    /**
+     * Returns set of actions supported by this ActionsProvider.
+     *
+     * @return set of actions supported by this ActionsProvider
+     */
+    public abstract Set getActions ();
+    
+    /**
+     * Called when the action is called (action button is pressed).
+     *
+     * @param action an action which has been called
+     */
+    public abstract boolean doAction (DebuggerEngine engine, Object action);
+    
+    /**
+     * Should return a state of given action.
+     *
+     * @param action action
+     */
+    public abstract boolean isEnabled (DebuggerEngine engine, Object action);
+    
+    /**
+     * Adds property change listener.
+     *
+     * @param l new listener.
+     */
+    public abstract void addActionsProviderListener (ActionsProviderListener l);
+    
+
+    /**
+     * Removes property change listener.
+     *
+     * @param l removed listener.
+     */
+    public abstract void removeActionsProviderListener (ActionsProviderListener l);
+}
+

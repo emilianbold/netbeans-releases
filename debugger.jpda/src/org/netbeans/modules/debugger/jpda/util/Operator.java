@@ -17,7 +17,6 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequest;
-import org.netbeans.modules.debugger.jpda.JPDADebugger;
 
 /**
  * Listens for events coming from a remove VM and notifies registered objects.
@@ -45,10 +44,10 @@ import org.netbeans.modules.debugger.jpda.JPDADebugger;
 */
 public class Operator {
 
-    private boolean           resume = false;
-    private boolean           stopRequest = false;
-    private boolean           disconnected = false;
     private Thread            thread;
+
+    private static boolean verbose = 
+        System.getProperty ("netbeans.debugger.jdievents") != null;
 
     /**
      * Creates an operator for a given virtual machine. The operator will listen
@@ -63,63 +62,61 @@ public class Operator {
     */
     public Operator (
         final VirtualMachine virtualMachine,
-        final JPDADebugger debugger,
-        final Runnable starter,
+        final Executor starter,
         final Runnable finalizer
     ) {
+        if (virtualMachine == null) 
+            throw new NullPointerException ();
         thread = new Thread (new Runnable () {
          public void run () {
              EventQueue queue = virtualMachine.eventQueue ();
              try {
                  for (;;) {
                      EventSet set = queue.remove ();
-                     synchronized (debugger) {
-                         resume = false;
-                         stopRequest = false;
-                         EventIterator i = set.eventIterator ();
-                         while (i.hasNext ()) {
-                             Event e = i.nextEvent ();
-                             if ((e instanceof VMDeathEvent) ||
-                                     (e instanceof VMDisconnectEvent)
-                                ) {
-                                 disconnected = true;
+                     boolean resume = true;
+                     EventIterator i = set.eventIterator ();
+                     while (i.hasNext ()) {
+                         Event e = i.nextEvent ();
+                         if ((e instanceof VMDeathEvent) ||
+                                 (e instanceof VMDisconnectEvent)
+                            ) {
+//                             disconnected = true;
+                             if (finalizer != null) finalizer.run ();
+                             //S ystem.out.println ("EVENT: " + e); // NOI18N
+                             //S ystem.out.println ("Operator end"); // NOI18N
+                             return;
+                         }
+                         if ((e instanceof VMStartEvent) && (starter != null)) {
+                             resume = resume & starter.exec (e);
+                             //S ystem.out.println ("Operator.start VM"); // NOI18N
+                             continue;
+                         }
+                         Executor exec = null;
+                         if (e.request () == null) {
+                             //S ystem.out.println ("EVENT: " + e + " REQUEST: null"); // NOI18N
+                         } else
+                             exec = (Executor) e.request ().getProperty ("executor");
+
+                         if (verbose)
+                             printEvent (e, exec);
+
+                         // safe invocation of user action
+                         if (exec != null)
+                             try {
+                                 resume = resume & exec.exec (e);
+                             } catch (VMDisconnectedException exc) {   
+//                                 disconnected = true;
                                  if (finalizer != null) finalizer.run ();
                                  //S ystem.out.println ("EVENT: " + e); // NOI18N
                                  //S ystem.out.println ("Operator end"); // NOI18N
                                  return;
+                             } catch (Exception ex) {
+                                 ex.printStackTrace ();
                              }
-                             if ((e instanceof VMStartEvent) && (starter != null)) {
-                                 starter.run ();
-                                 //S ystem.out.println ("Operator.start VM"); // NOI18N
-                                 continue;
-                             }
-                             Executor exec = null;
-                             if (e.request () == null) {
-                                 //S ystem.out.println ("EVENT: " + e + " REQUEST: null"); // NOI18N
-                             } else
-                                 exec = (Executor) e.request ().getProperty ("executor");
-
-                             // printEvent (e, exec);
-
-                             // safe invocation of user action
-                             if (exec != null)
-                                 try {
-                                     exec.exec (e);
-                                 } catch (VMDisconnectedException exc) {   
-                                     disconnected = true;
-                                     if (finalizer != null) finalizer.run ();
-                                     //S ystem.out.println ("EVENT: " + e); // NOI18N
-                                     //S ystem.out.println ("Operator end"); // NOI18N
-                                     return;
-                                 } catch (Exception ex) {
-                                     ex.printStackTrace ();
-                                 }
-                         } // while
-                         //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
-                         //S ystem.err.println("Operator end - resume " + resume + " : stopRequest " + stopRequest);
-                         if (resume && !stopRequest)
-                             virtualMachine.resume ();
                      }
+                     //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
+                     if (resume)
+                         virtualMachine.resume ();
                  }// for
              } catch (VMDisconnectedException e) {   
              } catch (InterruptedException e) {
@@ -163,65 +160,42 @@ public class Operator {
         req.putProperty ("executor", null); // NOI18N
     }
 
-    /**
-    * Requests resume after curent event set dispatch.
-    */
-    public void resume () {
-        resume = true;
-    }
-    
-    public void destroy () {
-        //thread.stop ();
-        thread = null;
-    }
-
-    /**
-    * Requests stop after curent event set dispatch.
-    */
-    public void stopRequest () {
-        stopRequest = true;
-    }
-    
-    public boolean isDisconnected () {
-        return disconnected;
-    }
-
     private void printEvent (Event e, Executor exec) {
         try {
             if (e instanceof ClassPrepareEvent) {
-                System.out.println ("EVENT: ClassPrepareEvent " + ((ClassPrepareEvent) e).referenceType ()); // NOI18N
+                System.out.println ("\nJDI EVENT: ClassPrepareEvent " + ((ClassPrepareEvent) e).referenceType ()); // NOI18N
             } else
-                if (e instanceof ClassUnloadEvent) {
-                    System.out.println ("EVENT: ClassUnloadEvent " + ((ClassUnloadEvent) e).className ()); // NOI18N
-                } else
-                    if (e instanceof ThreadStartEvent) {
-                        try {
-                            System.out.println ("EVENT: ThreadStartEvent " + ((ThreadStartEvent) e).thread ()); // NOI18N
-                        } catch (Exception ex) {
-                            System.out.println ("EVENT: ThreadStartEvent1 " + e); // NOI18N
-                        }
-                    } else
-                        if (e instanceof ThreadDeathEvent) {
-                            try {
-                                System.out.println ("EVENT: ThreadDeathEvent " + ((ThreadDeathEvent) e).thread ()); // NOI18N
-                            } catch (Exception ex) {
-                                System.out.println ("EVENT: ThreadDeathEvent1 " + e); // NOI18N
-                            }
-                        } else
-                            if (e instanceof MethodEntryEvent) {
-                                /*        try {
-                                          System.out.println ("EVENT: MethodEntryEvent " + e);
-                                        } catch (Exception ex) {
-                                          System.out.println ("EVENT: MethodEntryEvent " + e);
-                                        }*/
-                            } else
-                                if (e instanceof BreakpointEvent) {
-                                    //        System.out.println ("EVENT: BreakpointEvent " + ((BreakpointEvent) e).thread () + " : " + ((BreakpointEvent) e).location ()); // NOI18N
-                                } else
-                                    if (e instanceof StepEvent) {
-                                        System.out.println ("EVENT: BreakpointEvent " + ((StepEvent) e).thread () + " : " + ((StepEvent) e).location ()); // NOI18N
-                                    } else
-                                        System.out.println ("EVENT: " + e + " : " + exec); // NOI18N
+            if (e instanceof ClassUnloadEvent) {
+                System.out.println ("\nJDI EVENT: ClassUnloadEvent " + ((ClassUnloadEvent) e).className ()); // NOI18N
+            } else
+            if (e instanceof ThreadStartEvent) {
+                try {
+                    System.out.println ("\nJDI EVENT: ThreadStartEvent " + ((ThreadStartEvent) e).thread ()); // NOI18N
+                } catch (Exception ex) {
+                    System.out.println ("\nJDI EVENT: ThreadStartEvent1 " + e); // NOI18N
+                }
+            } else
+            if (e instanceof ThreadDeathEvent) {
+                try {
+                    System.out.println ("\nJDI EVENT: ThreadDeathEvent " + ((ThreadDeathEvent) e).thread ()); // NOI18N
+                } catch (Exception ex) {
+                    System.out.println ("\nJDI EVENT: ThreadDeathEvent1 " + e); // NOI18N
+                }
+            } else
+            if (e instanceof MethodEntryEvent) {
+                try {
+                    System.out.println ("\nJDI EVENT: MethodEntryEvent " + e);
+                } catch (Exception ex) {
+                    System.out.println ("\nJDI EVENT: MethodEntryEvent " + e);
+                }
+            } else
+            if (e instanceof BreakpointEvent) {
+                System.out.println ("\nJDI EVENT: BreakpointEvent " + ((BreakpointEvent) e).thread () + " : " + ((BreakpointEvent) e).location ()); // NOI18N
+            } else
+            if (e instanceof StepEvent) {
+                System.out.println ("\nJDI EVENT: StepEvent " + ((StepEvent) e).thread () + " : " + ((StepEvent) e).location ()); // NOI18N
+            } else
+                System.out.println ("\nJDI EVENT: " + e + " : " + exec); // NOI18N
         } catch (Exception ex) {
         }
     }

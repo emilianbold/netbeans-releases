@@ -5,7 +5,7 @@
           "http://www.netbeans.org/dtds/tc-group2_0.dtd">
 
 <tc-group version="2.0">
-    <module name="org.netbeans.modules.debugger.core/3" spec="2.9" />
+    <module name="org.netbeans.modules.debugger.ui/1" spec="2.3"/>
     <tc-id id="callstack" />
     <open-close-behavior open="true" close="true" />
 </tc-group>

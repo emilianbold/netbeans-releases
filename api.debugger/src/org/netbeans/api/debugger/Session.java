@@ -1,0 +1,484 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.api.debugger;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+
+/** Session visually represents one process or application. It should
+ * be simple bean with properties like process ID, session name, etc.
+ * All other functionality is deleagted to current debugger engine.
+ *
+ * <p><br><table border="1" cellpadding="3" cellspacing="0" width="100%">
+ * <tbody><tr bgcolor="#ccccff">
+ * <td colspan="2"><font size="+2"><b>Description </b></font></td>
+ * </tr><tr><td align="left" valign="top" width="1%"><font size="+1">
+ * <b>Functionality</b></font></td><td>
+ *
+ * <b>Properties:</b>
+ *    Session has three standard read only properties - name ({@link #getName}),
+ *    location name ({@link #getLocationName}), and type ID 
+ *    ({@link #getTypeID}).
+ *
+ * <br><br>
+ * <b>Management of languages and engines:</b>
+ *    Debugger Core supports debugging in different languages. It means that 
+ *    each session can be debugged using different languages and 
+ *    {@link org.netbeans.api.debugger.DebuggerEngine}s. Session manages list 
+ *    of supported languages ({@link #getSupportedLanguages}) and current 
+ *    language ({@link #getCurrentLanguage}). Current language can be changed
+ *    ({@link #setCurrentLanguage}).
+ *    Each language corresponds to one 
+ *    {@link org.netbeans.api.debugger.DebuggerEngine} 
+ *    ({@link #getEngineForLanguage}). So, the current language
+ *    defines current debuggger engine ({@link #getCurrentEngine})
+ *
+ *    A support for a new debugger language can be added during a start of
+ *    debugging only. See 
+ *    {@link org.netbeans.api.debugger.DebuggerManager#startDebugging} and
+ *    {@link org.netbeans.spi.debugger.DebuggerEngineProvider}
+ *
+ * <br><br>
+ * <b>Support for aditional services:</b>
+ *    Session is final class. The standard method how to 
+ *    extend its functionality is using lookup methods ({@link #lookup} and 
+ *    {@link #lookupFirst}).
+ *    There are two ways how to register some service provider for some
+ *    type of Session:
+ *    <ul>
+ *      <li>Register 'live' instance of service provider during creation of 
+ *        new instance of Session (see method
+ *        {@link org.netbeans.spi.debugger.SessionProvider#getServices}).
+ *      </li>
+ *      <li>Register service provider in Manifest-inf/debugger/{{@link 
+ *        #getTypeID}} folder. See Debugger SPI for more information about
+ *        registration.</li>
+ *    </ul>
+ *
+ * <br>
+ * <b>Support for listening:</b>
+ *    Session propagates all changes to
+ *    {@link java.beans.PropertyChangeListener}.
+ *
+ * <br> 
+ * </td></tr><tr><td align="left" valign="top" width="1%"><font size="+1">
+ * <b>Clinents / Providers</b></font></td><td>
+ *
+ * This class is final, so it does not have any external provider.
+ * Debugger Core and UI modules are clients of this class.
+ *
+ * <br>
+ * </td></tr><tr><td align="left" valign="top" width="1%"><font size="+1">
+ * <b>Lifecycle</b></font></td><td>
+ *
+ * A new instance of Session class can be created and registerred to 
+ * {@link org.netbeans.api.debugger.DebuggerManager} during the process
+ * of starting of debugging (see
+ * {@link org.netbeans.api.debugger.DebuggerManager#startDebugging}).
+ *
+ * Session is removed automatically from 
+ * {@link org.netbeans.api.debugger.DebuggerManager} when the 
+ * number of "supported languages" ({@link #getSupportedLanguages}) is zero.
+ *
+ * </td></tr><tr><td align="left" valign="top" width="1%"><font size="+1">
+ * <b>Evolution</b></font></td><td>
+ *
+ * No method should be removed from this class, but some functionality can
+ * be added in future.
+ *
+ * </td></tr></tbody></table>
+ *
+ * @author Jan Jancura
+ */
+public final class Session extends LookupProvider {
+    
+    /** Name of property for current language. */
+    public static final String PROP_CURRENT_LANGUAGE = "currentLanguage";
+    
+    /** Name of property for the set of supported languages. */
+    public static final String PROP_SUPPORTED_LANGUAGES = "supportedLanguages";
+
+    
+    // variables ...............................................................
+    
+    private String              name;
+    private String              locationName;
+    private String              id;
+    private DebuggerEngine      currentDebuggerEngine;
+    private String              currentLanguage;
+    private String[]            languages;
+    private DebuggerEngine[]    engines;
+//    private Listener            listener;
+    private PropertyChangeSupport pcs;
+    private Lookup              lookup;
+    Lookup                      privateLookup;
+
+    
+    // initialization ..........................................................
+    
+    Session (
+        String name,
+        String locationName,
+        String id,
+        Object[] services,
+        Lookup diLookup
+    ) {
+        this.name = name;
+        this.locationName = locationName;
+        this.id = id;
+        this.languages = new String [0];
+        this.engines = new DebuggerEngine [0];
+        pcs = new PropertyChangeSupport (this);
+//        listener = new Listener ();
+        Object[] s = new Object [services.length + 1];
+        System.arraycopy (services, 0, s, 0, services.length);
+        s [s.length - 1] = this;
+        privateLookup = new Lookup.Compound (
+            new Lookup.Instance (s),
+            new Lookup.MetaInf (id, this)
+        );
+        this.lookup = new Lookup.Compound (
+            diLookup,
+            privateLookup
+        );
+    }
+
+    
+    // public interface ........................................................
+
+    /**
+     * Returns display name of this session.
+     *
+     * @return display name of this session
+     */
+    public String getName () {
+        return name;
+    }
+    
+    /**
+     * Returns identifier of type of this session. This id is used for 
+     * identification of engine during registration of services in 
+     * Meta-inf/debugger.
+     *
+     * @return identifier of type of this engine
+     */
+    public String getTypeID () {
+        return id;
+    }
+    
+    /**
+     * Returns name of location this session is running on.
+     *
+     * @return name of location this session is running on
+     */
+    public String getLocationName () {
+        return locationName;
+    }
+    
+    /**
+     * Returns current debugger engine for this session.
+     *
+     * @return current debugger engine for this session
+     */
+    public DebuggerEngine getCurrentEngine () {
+        return currentDebuggerEngine;
+    }
+    
+    /**
+     * Returns current language for this session.
+     *
+     * @return current language for this session
+     */
+    public String getCurrentLanguage () {
+        return currentLanguage;
+    }
+    
+    /**
+     * Returns set of all languages supported by this session.
+     *
+     * @return set of all languages supported by this session
+     * @see org.netbeans.spi.debugger.DebuggerEngineProvider
+     */
+    public String[] getSupportedLanguages () {
+        return languages;
+    }
+    
+    /**
+     * Kills all registerred engines / languages. This utility method calls
+     * <pre>doAction (DebuggerEngine.ACTION_KILL)</pre> method on all
+     * registerred DebuggerEngines.
+     */
+    public void kill () {
+        HashSet dead = new HashSet (Arrays.asList (engines));
+        Iterator i = dead.iterator ();
+        while (i.hasNext ())
+            ((DebuggerEngine) i.next ()).doAction (DebuggerEngine.ACTION_KILL);
+    }
+
+    /**
+     * Return DebuggerEngine registerred for given language or null.
+     *
+     * @return DebuggerEngine registerred for given language or null
+     */
+    public DebuggerEngine getEngineForLanguage (String language) {
+        int i, k = languages.length;
+        for (i = 0; i < k; i++)
+            if (languages [i].equals (language))
+                return engines [i];
+        return null;
+    }
+    
+    /**
+     * Sets current language for this session. Language should be refisterred
+     * for this session.
+     *
+     * @param language current language
+     * @see org.netbeans.spi.debugger.DebuggerEngineProvider
+     */
+    public void setCurrentLanguage (String language) {
+        int i, k = languages.length;
+        for (i = 0; i < k; i++) {
+            if (language.equals (languages [i])) {
+                Object oldL = currentLanguage;
+                Object oldE = currentDebuggerEngine;
+                currentLanguage = language;
+                currentDebuggerEngine = engines [i];
+                pcs.firePropertyChange (
+                    PROP_CURRENT_LANGUAGE,
+                    oldL, 
+                    currentLanguage
+                );
+            }
+        }
+    }
+    
+    /**
+     * Returns list of services of given type.
+     *
+     * @param service a type of service to look for
+     * @return list of services of given type
+     */
+    public List lookup (Class service) {
+        return lookup.lookup (null, service);
+    }
+    
+    /**
+     * Returns one service of given type.
+     *
+     * @param service a type of service to look for
+     * @return ne service of given type
+     */
+    public Object lookupFirst (Class service) {
+        return lookup.lookupFirst (null, service);
+    }    
+    
+    /**
+     * Returns list of services of given type from given folder.
+     *
+     * @param service a type of service to look for
+     * @return list of services of given type
+     */
+    public List lookup (String folder, Class service) {
+        return lookup.lookup (folder, service);
+    }
+    
+    /**
+     * Returns one service of given type from given folder.
+     *
+     * @param service a type of service to look for
+     * @return ne service of given type
+     */
+    public Object lookupFirst (String folder, Class service) {
+        return lookup.lookupFirst (folder, service);
+    }
+
+    
+    // support methods .........................................................
+    
+    Lookup getLookup () {
+        return lookup;
+    }
+    
+    void addLanguage (
+        String language,
+        DebuggerEngine engine
+    ) {
+        int i, k = languages.length;
+        for (i = 0; i < k; i++)
+            if (language.equals (languages [i])) {
+                engines [i] = engine;
+                return;
+            }
+        String[] newLanguages = new String [languages.length + 1];
+        DebuggerEngine[] newEngines = new DebuggerEngine [engines.length + 1];
+        System.arraycopy (languages, 0, newLanguages, 0, languages.length);
+        System.arraycopy (engines, 0, newEngines, 0, engines.length);
+        newLanguages [languages.length] = language;
+        newEngines [engines.length] = engine;
+        Object oldL = languages;
+        languages = newLanguages;
+        engines = newEngines;
+        pcs.firePropertyChange (
+            PROP_SUPPORTED_LANGUAGES,
+            oldL,
+            languages
+        );
+//        engine.addEngineListener (
+//            DebuggerEngineListener.PROP_ACTION_PERFORMED,
+//            listener
+//        );
+        if (currentLanguage == null) {
+            setCurrentLanguage (language);
+        }
+    }
+    
+    void removeEngine (
+        DebuggerEngine engine
+    ) {
+        if (engines.length == 0) return;
+        int i, k = engines.length;
+        ArrayList newLanguages = new ArrayList ();
+        ArrayList newEngines = new ArrayList ();
+        for (i = 0; i < k; i++)
+            if (!engine.equals (engines [i])) {
+                newLanguages.add (languages [i]);
+                newEngines.add (engines [i]);
+            }
+        String[] oldL = languages;
+        languages = (String[]) newLanguages.toArray 
+            (new String [newLanguages.size ()]);
+        engines = (DebuggerEngine[]) newEngines.toArray 
+            (new DebuggerEngine [newEngines.size ()]);
+        
+        pcs.firePropertyChange (
+            PROP_SUPPORTED_LANGUAGES,
+            oldL,
+            languages
+        );
+    }
+    
+    void removeLanguage (
+        String language,
+        DebuggerEngine engine
+    ) {
+        int i, k = languages.length;
+        for (i = 0; i < k; i++)
+            if (language.equals (languages [i])) {
+                if (engines [i] != engine)
+                    throw new IllegalArgumentException ();
+                break;
+            }
+        if (i >= k) return;
+        
+        String[] newLanguages = new String [k - 1];
+        DebuggerEngine[] newEngines = new DebuggerEngine [k - 1];
+        if (i > 0) {
+            System.arraycopy (languages, 0, newLanguages, 0, i);
+            System.arraycopy (engines, 0, newEngines, 0, i);
+        }
+        System.arraycopy (languages, i + 1, newLanguages, i, k - i - 1);
+        System.arraycopy (engines, i + 1, newEngines, i, k - i - 1);
+        Object oldL = languages;
+        languages = newLanguages;
+        engines = newEngines;
+        pcs.firePropertyChange (
+            PROP_SUPPORTED_LANGUAGES,
+            oldL,
+            languages
+        );
+    }
+
+    /**
+     * Returns string representation of this session.
+     *
+     * @return string representation of this session
+     */
+    public String toString () {
+        return "" + getClass ().getName () + " " + getLocationName () + ":" +
+            getName ();
+    }
+    
+    
+    // listener support ........................................................
+    
+
+    /**
+     * Adds a property change listener.
+     *
+     * @param l the listener to add
+     */
+    public void addPropertyChangeListener (PropertyChangeListener l) {
+        pcs.addPropertyChangeListener (l);
+    }
+    
+    /**
+     * Removes a property change listener.
+     *
+     * @param l the listener to remove
+     */
+    public void removePropertyChangeListener (PropertyChangeListener l) {
+        pcs.removePropertyChangeListener (l);
+    }
+    
+    /**
+     * Adds a property change listener.
+     *
+     * @param propertyName a name of property to listen on
+     * @param l the listener to add
+     */
+    public void addPropertyChangeListener (String propertyName, PropertyChangeListener l) {
+        pcs.addPropertyChangeListener (propertyName, l);
+    }
+    
+    /**
+     * Removes a property change listener.
+     *
+     * @param propertyName a name of property to stop listening on
+     * @param l the listener to remove
+     */
+    public void removePropertyChangeListener (String propertyName, PropertyChangeListener l) {
+        pcs.removePropertyChangeListener (propertyName, l);
+    }
+    
+
+    // innerclasses ............................................................
+    
+//    private class Listener extends DebuggerEngineAdapter {
+//        
+//        public void actionPerformed (
+//            DebuggerEngine engine, 
+//            Object action, 
+//            boolean success
+//        ) {
+//            if (action != DebuggerEngine.ACTION_KILL) return;
+//            removeEngine (engine);
+//        }
+//        
+//        public void actionStateChanged (
+//            DebuggerEngine engine, 
+//            Object action, 
+//            boolean enabled
+//        ) {
+//        }
+//        
+//    }
+}
+
+

@@ -21,7 +21,9 @@ package org.netbeans.modules.debugger.jpda.util;
 public interface Executor {
 
     /**
-    * Executes event.
-    */
-    public void exec (com.sun.jdi.event.Event event);
+     * Callback method from Operator.
+     *
+     * @return true if execution should be resumed after action.
+     */
+    public boolean exec (com.sun.jdi.event.Event event);
 }
