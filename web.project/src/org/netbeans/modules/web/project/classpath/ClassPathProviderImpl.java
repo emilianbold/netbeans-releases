@@ -205,6 +205,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
             if (d != null) {
                 l.add(getSourcepath(d));
             }
+            FileObject debugdocbase = getDocumentBaseDir();
+            if (debugdocbase != null) {
+                l.add(getSourcepath(debugdocbase));
+            }
             return (ClassPath[])l.toArray(new ClassPath[l.size()]);
         }
         assert false;
