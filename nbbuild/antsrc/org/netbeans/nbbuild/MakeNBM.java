@@ -566,6 +566,27 @@ public class MakeNBM extends Task {
  	
  	UpdateTracking tracking = new UpdateTracking(productDir.getAbsolutePath());
  	String files[] = tracking.getListOfNBM( codename );
+	log("Going to update module_tracking.xml record for "+codename+" in file "+file.getName(), Project.MSG_DEBUG);
+	String mtdir = (new File(productDir.getAbsolutePath())).getParent();
+	log("  attempting to use module_tracking.xml file in directory "+mtdir,Project.MSG_DEBUG);
+        ModuleTracking mt = new ModuleTracking (mtdir);
+        ModuleTracking.Module mtm = (ModuleTracking.Module) mt.getModulesByCodeName().get(codename);
+        if (mtm != null) {
+	    log("  file: \""+mtm.getNbmFileName()+"\" => \""+file.getName()+"\"",Project.MSG_DEBUG);
+            mtm.setNbmFileName(file.getName());
+	    log("  homepage: \""+mtm.getNbmHomePage()+ "\" => \"" + homepage + "\"",Project.MSG_DEBUG);
+            mtm.setNbmHomePage(homepage);
+	    log("  moduleauthor: \""+mtm.getNbmModuleAuthor()+ "\" => \"" + moduleauthor + "\"", Project.MSG_DEBUG);
+            mtm.setNbmModuleAuthor(moduleauthor);
+	    log("  needsrestart: \""+mtm.getNbmNeedsRestart()+ "\" => \"" + needsrestart + "\"", Project.MSG_DEBUG);
+            mtm.setNbmNeedsRestart(needsrestart);
+	    log("  releasedate: \""+mtm.getNbmReleaseDate() + "\" => \"" + releasedate+"\"", Project.MSG_DEBUG);
+            mtm.setNbmReleaseDate(releasedate);
+            mt.write();
+        } else {
+	    log("ModuleTracking.Module record doesn't exist for "+codename+" and file "+file.getName(), Project.MSG_DEBUG);
+        }
+        
  	ZipFileSet fs = new ZipFileSet();
  	fs.setDir( productDir );
  	for (int i=0; i < files.length; i++)

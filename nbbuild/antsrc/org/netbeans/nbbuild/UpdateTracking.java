@@ -83,6 +83,22 @@ class UpdateTracking {
         return version;
     }
     
+    public String getVersionFromFile (File utf) throws BuildException {
+        this.setTrackingFile(utf.getParentFile(), utf.getName());
+        read();
+        if ( module.getVersions().size() != 1 ) 
+            throw new BuildException ("Module described in update tracking file " + utf.getAbsolutePath() + " has got " + module.getVersions().size() + " specification versions. Correct number is 1.");
+        return ((Version) module.getVersions().get(0)).getVersion();
+    }
+    
+    public String getCodenameFromFile (File utf) throws BuildException {
+        this.setTrackingFile(utf.getParentFile(), utf.getName());
+        read();
+        if ( module.getVersions().size() != 1 ) 
+            throw new BuildException ("Module described in update tracking file " + utf.getAbsolutePath() + " has got " + module.getVersions().size() + " specification versions. Correct number is 1.");
+        return module.getCodename();
+    }
+    
     public String getVersionForCodeName( String codeName ) throws BuildException {
         module = new Module();
         module.setCodename( codeName );
