@@ -379,26 +379,33 @@ public class NbTopManager extends TopManager {
   */
   public void restart () {
     // save project
-    NbProjectOperation.storeLastProject ();
-    
-    if (ModuleInstaller.exit ()) {
-      Runtime.getRuntime().exit (RESTART_EXIT_CODE);
-    }
+    exit (RESTART_EXIT_CODE);
   }
 
-  /** The ide is left after calling this method.
-  * The method return iff Runtim.getRuntime().exit() fails
+  /** Has the same behavior like exit( 0 );
   */
-  public void exit () {
-    // save project
-    NbProjectOperation.storeLastProject ();
-
-    if (ModuleInstaller.exit ()) {
-      Runtime.getRuntime().exit (0);
+  public void exit ( ) {
+    exit( 0 );
+  }
+  
+  /** The ide is left after calling this method. All unsaved files are
+  * saved. Modules are asked to exit
+  * The method return iff Runtim.getRuntime().exit() fails
+  * JVM ends with retValue code.
+  */
+  public void exit ( int retValue ) {
+    
+    // save all open files
+    if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
+        
+      // save project
+      NbProjectOperation.storeLastProject ();
+    
+      if (ModuleInstaller.exit ()) {
+        Runtime.getRuntime().exit ( retValue );
+      }
     }
   }
-
-  
   
   
   /** The ide is left after calling this method.
@@ -479,8 +486,6 @@ public class NbTopManager extends TopManager {
     }
   }
 }
-
-
 /*
 * Log
 *  32   Corona    1.31        07/28/98 Miloslav Metelka No longer
