@@ -56,7 +56,8 @@ public class ProcedureListNodeInfo extends DatabaseNodeInfo {
     /* refresh list of procedure nodes */
     public void refreshChildren() throws DatabaseException {
 
-        Vector charr = new Vector();
+        // a problem with children of procedure node!
+        /*Vector charr = new Vector();
         DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
 
         put(DatabaseNodeInfo.CHILDREN, charr);
@@ -66,6 +67,6 @@ public class ProcedureListNodeInfo extends DatabaseNodeInfo {
         while(en.hasMoreElements()) {
                 DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
                 chil.add(new Node[] {subnode});
-        }
+        }*/
     }
 }
