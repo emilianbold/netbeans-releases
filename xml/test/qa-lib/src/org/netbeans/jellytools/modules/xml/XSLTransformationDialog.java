@@ -92,7 +92,7 @@ public class XSLTransformationDialog extends JDialogOperator {
      */
     public JComboBoxOperator cboXMLSource() {
         if (_cboXMLSource==null) {
-            _cboXMLSource = new JComboBoxOperator( this, null, 0 );
+            _cboXMLSource = new JComboBoxOperator(this, 0);
         }
         return _cboXMLSource;
     }
@@ -114,7 +114,7 @@ public class XSLTransformationDialog extends JDialogOperator {
      */
     public JComboBoxOperator cboJComboBox() {
         if (_cboJComboBox==null) {
-            _cboJComboBox = new JComboBoxOperator( this, null, 3 );
+            _cboJComboBox = new JComboBoxOperator(this, 3);
         }
         return _cboJComboBox;
     }
@@ -147,7 +147,7 @@ public class XSLTransformationDialog extends JDialogOperator {
      */
     public JComboBoxOperator cboXSLTScript() {
         if (_cboXSLTScript==null) {
-            _cboXSLTScript = new JComboBoxOperator( this, null, 1 );
+            _cboXSLTScript = new JComboBoxOperator(this, 1);
         }
         return _cboXSLTScript;
     }
@@ -180,7 +180,7 @@ public class XSLTransformationDialog extends JDialogOperator {
      */
     public JComboBoxOperator cboOutput() {
         if (_cboOutput==null) {
-            _cboOutput = new JComboBoxOperator( this, null, 2 );
+            _cboOutput = new JComboBoxOperator(this, 2);
         }
         return _cboOutput;
     }

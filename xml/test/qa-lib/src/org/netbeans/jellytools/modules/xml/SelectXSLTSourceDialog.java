@@ -46,7 +46,7 @@ public class SelectXSLTSourceDialog extends JDialogOperator {
      */
     public JTreeOperator treeTreeView() {
         if (_treeTreeView==null) {
-            _treeTreeView = new JTreeOperator( this, null, 0 );
+            _treeTreeView = new JTreeOperator(this, 0);
         }
         return _treeTreeView;
     }
@@ -90,7 +90,7 @@ public class SelectXSLTSourceDialog extends JDialogOperator {
      */
     public JComboBoxOperator cboSelect() {
         if (_cboSelect==null) {
-            _cboSelect = new JComboBoxOperator( this, null, 0 );
+            _cboSelect = new JComboBoxOperator(this, 0);
         }
         return _cboSelect;
     }
