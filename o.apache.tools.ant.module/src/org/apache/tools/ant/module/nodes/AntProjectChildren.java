@@ -83,7 +83,7 @@ public class AntProjectChildren extends ElementChildren implements ChangeListene
      * Node representing a <code>&lt;description&gt;</code> inside
      * the project.
      */
-    private static final class DescriptionNode extends ElementNode {
+    private static final class DescriptionNode extends DataTypeNode {
         public DescriptionNode(Element el) {
             super(el, Children.LEAF);
         }
@@ -96,7 +96,8 @@ public class AntProjectChildren extends ElementChildren implements ChangeListene
             setIconBase("org/apache/tools/ant/module/resources/DataTypeIcon");
         }
         protected void addProperties(Sheet.Set props) {
-            // do not include id property
+            // Just nested text.
+            props.put(new DataTypeNode.TextProperty());
         }
     }
     
