@@ -316,19 +316,10 @@ public class J2SEProjectProperties {
                                     // XXX: perhaps PATH_PARSER could return List of paths so that
                                     // tokenizing could be omitted here:
                                     String[] items = PropertyUtils.tokenizePath(newValueEncoded);
-                                    ArrayList l = new ArrayList(items.length);
-                                    for (int i=0; i<items.length; i++) {
-                                        if (i+1 == items.length) {
-                                            l.add(items[i]);
-                                        } else {
-                                            l.add(items[i]+File.pathSeparatorChar);
-                                        }
+                                    for (int i=0; i<items.length-1; i++) {
+                                        items[i] += File.pathSeparatorChar;
                                     }
-                                    if (l.size() == 0) {
-                                        // array cannot be empty:
-                                        l.add("");
-                                    }
-                                    ep.setProperty(pd.name, l);
+                                    ep.setProperty(pd.name, items);
                                 } else {
                                     ep.setProperty( pd.name, newValueEncoded );
                                 }

@@ -136,9 +136,7 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals("Two lines removed", 2, res[2]);
         
         ep2 = new EditableProperties(ep);
-        ArrayList l = new ArrayList();
-        l.add("first line;"); l.add("second line;"); l.add("third line");
-        ep2.setProperty("key21", l);
+        ep2.setProperty("key21", new String[]{"first line;", "second line;", "third line"});
         dest = getWorkDirPath()+File.separatorChar+"mod5.properties";
         saveProperties(ep2, dest);
         res = compare(filenameOfTestProperties(), dest);
@@ -157,9 +155,7 @@ public class EditablePropertiesTest extends NbTestCase {
     // test that array values are stored correctly
     public void testArrayValues() throws Exception {
         EditableProperties ep = new EditableProperties(false);
-        ArrayList l = new ArrayList();
-        l.add("1. line;"); l.add("2. line;"); l.add("3. line");
-        ep.setProperty("key1", l);
+        ep.setProperty("key1", new String[]{"1. line;", "2. line;", "3. line"});
         ep.setProperty("key2", "1. line;2. line;3. line");
         String output = getAsString(ep);
         String expected = 
@@ -179,8 +175,8 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals(expected, output);
         assertEquals(ep.getProperty("key1"), "one; two; three");
         assertEquals(ep.getProperty("key2"), "1. line;2. line;3. line");
-        l.add("one;"); l.add("more;"); l.add("line;");
-        ep.setProperty("key2", l);
+        ep.setProperty("key2", new String[]{"1. line;", "2. line;", "3. line", "one;", "more;", "line;"});
+        ep.setProperty("key", new String[0]);
         output = getAsString(ep);
         expected = 
             "key1=one; two; three"+System.getProperty("line.separator")+
@@ -190,7 +186,9 @@ public class EditablePropertiesTest extends NbTestCase {
             "    3. line\\"+System.getProperty("line.separator")+
             "    one;\\"+System.getProperty("line.separator")+
             "    more;\\"+System.getProperty("line.separator")+
-            "    line;"+System.getProperty("line.separator");
+            "    line;"+System.getProperty("line.separator")+
+            "key=\\"+System.getProperty("line.separator")+
+            ""+System.getProperty("line.separator");
         assertEquals(expected, output);
         assertEquals(ep.getProperty("key1"), "one; two; three");
         assertEquals(ep.getProperty("key2"), "1. line;2. line;3. lineone;more;line;");
@@ -277,10 +275,16 @@ public class EditablePropertiesTest extends NbTestCase {
         ep.setProperty("a a", "a space a");
         ep.setProperty("b"+(char)0x4567, "val"+(char)0x1234);
         ep.setProperty("@!#$%^", "!@#$%^&*(){}");
+        ep.setProperty("_a a", new String[]{"a space a"});
+        ep.setProperty("_b"+(char)0x4567, new String[]{"val"+(char)0x1234});
+        ep.setProperty("_@!#$%^", new String[]{"!@#$%^&*(){}"});
         String output = getAsString(ep);
-        String expected = "a\\ a=a space a"+System.getProperty("line.separator")+"b\\u4567=val\\u1234"+
-                System.getProperty("line.separator")+"@!#$%^=!@#$%^&*(){}"+
-                System.getProperty("line.separator");
+        String expected = "a\\ a=a space a"+System.getProperty("line.separator")+
+                "b\\u4567=val\\u1234"+System.getProperty("line.separator")+
+                "@!#$%^=!@#$%^&*(){}"+System.getProperty("line.separator")+
+                "_a\\ a=\\"+System.getProperty("line.separator")+"    a space a"+System.getProperty("line.separator")+
+                "_b\\u4567=\\"+System.getProperty("line.separator")+"    val\\u1234"+System.getProperty("line.separator")+
+                "_@!#$%^=\\"+System.getProperty("line.separator")+"    !@#$%^&*(){}"+System.getProperty("line.separator");
         assertEquals(expected, output);
     }
     

@@ -239,17 +239,12 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
      * (like ';' or ':' in case of path like properties) must be included in
      * the items.
      * @param key a property name; cannot be null nor empty
-     * @param value the desired value; list of Strings; cannot be null; 
-     *    cannot be empty
+     * @param value the desired value; cannot be null; can be empty array
      * @return previous value of the property or null if there was not any
      */
-    public String setProperty(String key, List/*<String>*/ value) {
-        // XXX: validate value parameter
-        if (value == null || value.size() == 0) {
-            throw new IllegalArgumentException("Parameter cannot be null nor empty array: "+value);
-        }
+    public String setProperty(String key, String[] value) {
         String result = getProperty(key);
-        put(key, value);
+        put(key, Arrays.asList(value));
         return result;
     }
 
@@ -487,12 +482,16 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
         public void setValue(List value) {
             StringBuffer val = new StringBuffer();
             ArrayList l = new ArrayList();
-            l.add(encodeUnicode(key, true)+"=\\");
+            l.add(encode(key, true)+"=\\");
             Iterator it = value.iterator();
             while (it.hasNext()) {
                 String s = (String)it.next();
                 val.append(s);
+                s = encode(s, false);
                 l.add(it.hasNext() ? INDENT+s+"\\" : INDENT+s);
+            }
+            if (l.size() == 1) {
+                l.add("");
             }
             this.value = val.toString();
             keyValueLines = l;
@@ -515,7 +514,7 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
             } else {
                 keyValueLines = new ArrayList();
                 if (key != null && value != null) {
-                    keyValueLines.add(encodeUnicode(key, true)+"="+encodeUnicode(value, false));
+                    keyValueLines.add(encode(key, true)+"="+encode(value, false));
                 }
                 l.addAll(keyValueLines);
             }
@@ -558,7 +557,7 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
                 }
                 separatorIndex++;
             }
-            key = decodeUnicode(line.substring(0, separatorIndex));
+            key = decode(line.substring(0, separatorIndex));
             line = trimLeft(line.substring(separatorIndex));
             if (line.length() == 0) {
                 value = "";
@@ -567,10 +566,10 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
             if (strictKeyValueSeparators.indexOf(line.charAt(0)) != -1) {
                 line = trimLeft(line.substring(1));
             }
-            value = decodeUnicode(line);
+            value = decode(line);
         }
         
-        private static String decodeUnicode(String input) {
+        private static String decode(String input) {
             char ch;
             int len = input.length();
             StringBuffer output = new StringBuffer(len);
@@ -607,7 +606,7 @@ public final class EditableProperties extends AbstractMap implements Cloneable {
             return output.toString();
         }
 
-        private static String encodeUnicode(String input, boolean escapeSpace) {
+        private static String encode(String input, boolean escapeSpace) {
             int len = input.length();
             StringBuffer output = new StringBuffer(len*2);
 

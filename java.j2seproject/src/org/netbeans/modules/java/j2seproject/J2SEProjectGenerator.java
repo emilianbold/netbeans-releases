@@ -74,18 +74,21 @@ public class J2SEProjectGenerator {
         // XXX the following just for testing, TBD:
         ep.setProperty("dist.dir", "dist");
         ep.setProperty("dist.jar", "${dist.dir}/" + codename + ".jar");
-        ep.setProperty("javac.classpath", Arrays.asList(new String[]{""}));
-        ep.setProperty("run.classpath", Arrays.asList(new String[]{"${javac.classpath}:","${build.classes.dir}"}));
-        ep.setProperty("debug.classpath", Arrays.asList(new String[]{"${run.classpath}"}));
+        ep.setProperty("javac.classpath", new String[0]);
+        ep.setProperty("run.classpath", new String[]{"${javac.classpath}"+File.pathSeparatorChar,
+            "${build.classes.dir}"});
+        ep.setProperty("debug.classpath", new String[]{"${run.classpath}"});
         ep.setProperty("application.args", "");
         ep.setProperty("jar.compress", "false");
         ep.setProperty("main.class", mainClass == null ? "" : mainClass );
         ep.setProperty("javac.source", "1.4");
         ep.setProperty("javac.debug", "true");
         ep.setProperty("javac.deprecation", "false");
-        ep.setProperty("javac.test.classpath", Arrays.asList(new String[]{"${javac.classpath}:","${build.classes.dir}:","${libs.junit.classpath}"}));
-        ep.setProperty("run.test.classpath", Arrays.asList(new String[]{"${javac.test.classpath}:","${build.test.classes.dir}"}));
-        ep.setProperty("debug.test.classpath", Arrays.asList(new String[]{"${run.test.classpath}"}));
+        ep.setProperty("javac.test.classpath", new String[]{"${javac.classpath}"+File.pathSeparatorChar,
+            "${build.classes.dir}"+File.pathSeparatorChar,"${libs.junit.classpath}"});
+        ep.setProperty("run.test.classpath", new String[]{"${javac.test.classpath}"+File.pathSeparatorChar,
+            "${build.test.classes.dir}"});
+        ep.setProperty("debug.test.classpath", new String[]{"${run.test.classpath}"});
         ep.setProperty("src.dir", "src");
         ep.setProperty("test.src.dir", "test");
         ep.setProperty("build.dir", "build");
