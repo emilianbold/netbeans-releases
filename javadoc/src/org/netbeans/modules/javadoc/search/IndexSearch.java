@@ -66,7 +66,7 @@ public class IndexSearch
     private static IndexSearch indexSearch;
 
     /** Search engine */
-    private SearchEngine searchEngine = null;
+    private JavadocSearchEngine searchEngine = null;
 
     /** The state of the window is stored in hidden options of DocumentationSettings */
     DocumentationSettings ds = DocumentationSettings.getDefault();
@@ -515,8 +515,8 @@ public class IndexSearch
         if ( searchEngine == null ) {
             if ( searchComboBox.getEditor().getItem().toString() != null &&
                     searchComboBox.getEditor().getItem().toString().length() > 0 ) {
-                searchEngine = new SearchEngine();
-                searchEngine.go();
+                searchEngine = JavadocSearchEngine.getDefault();
+                go();
             }
         }
         else {
@@ -637,96 +637,49 @@ public class IndexSearch
     }
 
 
-    private class SearchEngine {
 
-        private ArrayList tasks;
+    void go() {
+        String toFind = new String( searchComboBox.getEditor().getItem().toString() );
 
-        private DocFileSystem[] docSystems;
-        private IndexSearchThread.DocIndexItemConsumer diiConsumer;
+        // Alocate array for results
+        results = new ArrayList();
 
-        SearchEngine() {
-            docSystems = DocFileSystem.getFolders();
-            tasks = new ArrayList( docSystems.length );
+        //Clear all models
+        referenceModel = null;
+        typeModel = null;
+        alphaModel = null;
 
-            diiConsumer = new IndexSearchThread.DocIndexItemConsumer() {
-                              public void addDocIndexItem( final DocIndexItem dii ) {
-                                  results.add( dii );
-                                  /*
-                                  javax.swing.SwingUtilities.invokeLater( new Runnable() {
-                                    public void run() {
-                                      ((DefaultListModel)resultsList.getModel()).addElement( dii );
-                                    }
-                              } ) ;*/
-                              }
+        // Try to find this string in Combo
 
-                              public void indexSearchThreadFinished( IndexSearchThread t ) {
-                                  tasks.remove( t );
-                                  if ( tasks.isEmpty() )
-                                      searchStoped();
-                              }
-                          };
-        }
-
-        /** Starts searching */
-
-        void go() {
-
-            if ( docSystems.length <= 0 ) {
-                TopManager.getDefault().notify( new NotifyDescriptor.Message( ResourceUtils.getBundledString( "MSG_NoDoc" ) ) );   //NOI18N
-                searchStoped();
-                return;
-            }
-
-            String toFind = new String( searchComboBox.getEditor().getItem().toString() );
-
-            // Alocate array for results
-            results = new ArrayList();
-
-            //Clear all models
-            referenceModel = null;
-            typeModel = null;
-            alphaModel = null;
-
-            // Try to find this string in Combo
-
-            for ( int i = 0; i < searchComboBox.getItemCount(); i++ ) {
-                if ( searchComboBox.getItemAt( i ).toString().equals( toFind ) || i >= 10 ) {
-                    searchComboBox.removeItemAt( i );
-                }
-            }
-
-            searchComboBox.insertItemAt( toFind, 0 );
-            searchComboBox.getEditor().setItem( toFind );
-
-            resultsList.setModel( waitModel );
-            //((DefaultListModel)resultsList.getModel()).clear();
-
-            for( int i = 0; i < docSystems.length; i++ ) {
-                //IndexSearchThread searchThread = new SearchThreadJdk12( toFind,  docSystems[i].getIndexFile() , diiConsumer );
-                try {
-                    JavaDocFSSettings setting = new JavaDocFSSettings( docSystems[i].getIndexFile().getFileSystem() );
-                    //System.out.println(setting.getSearchTypeEngine().getName());
-                    IndexSearchThread searchThread = setting.getSearchTypeEngine().getSearchThread( toFind,  docSystems[i].getIndexFile() , diiConsumer );
-
-                    tasks.add( searchThread );
-                    searchThread.go();
-                }
-                catch(org.openide.filesystems.FileStateInvalidException fsEx){
-                    fsEx.printStackTrace();
-                }
-            }
-            searchButton.setText( STR_STOP );
-        }
-
-        /** Stops the search */
-
-        void stop() {
-            for( int i = 0; i < tasks.size(); i++ ) {
-                SearchThreadJdk12 searchThread = (SearchThreadJdk12)tasks.get( i );
-                searchThread.finish();
+        for ( int i = 0; i < searchComboBox.getItemCount(); i++ ) {
+            if ( searchComboBox.getItemAt( i ).toString().equals( toFind ) || i >= 10 ) {
+                searchComboBox.removeItemAt( i );
             }
         }
 
+        searchComboBox.insertItemAt( toFind, 0 );
+        searchComboBox.getEditor().setItem( toFind );
+
+        resultsList.setModel( waitModel );
+        //((DefaultListModel)resultsList.getModel()).clear();
+
+        try {
+            searchEngine.search(new String[]{toFind}, new JavadocSearchEngine.SearchEngineCallback(){
+                public void finished(){
+                    searchStoped();
+                }
+                public void addItem(DocIndexItem item){
+                    results.add(item);
+                }
+            });
+        }
+        catch(NoJavadocException noJdc){
+            TopManager.getDefault().notify( new NotifyDescriptor.Message( noJdc.getMessage() ) );   //NOI18N
+            searchStoped();
+            return;
+        }
+        
+        searchButton.setText( STR_STOP );
     }
 
     DefaultListModel generateModel( java.util.Comparator comp ) {
@@ -796,9 +749,6 @@ public class IndexSearch
         resultsList.revalidate();
         resultsList.repaint();
     }
-
-
-
 }
 
 /*
