@@ -741,6 +741,10 @@ public class NbEditorKit extends ExtKit {
             }
 
             BaseKit kit = (target == null) ? BaseKit.getKit(BaseKit.class) : Utilities.getKit(target);
+            if (!(kit instanceof BaseKit)) { //bugfix of #45101
+                kit = BaseKit.getKit(BaseKit.class);
+                target = null;
+            }
             if (kit == null) return;
             boolean foldingEnabled = (target == null) ? false :
                 ((Boolean)Settings.getValue(Utilities.getKitClass(target), SettingsNames.CODE_FOLDING_ENABLE)).booleanValue();
