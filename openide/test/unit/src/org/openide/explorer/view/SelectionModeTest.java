@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import javax.swing.JList;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.openide.*;
@@ -119,11 +120,13 @@ public class SelectionModeTest extends NbTestCase {
         discontiguousSelection = new Node[] {one2, two1};
         
         // wait bit for TreeView.addNotify is called
-        synchronized (this) {
-            try {
-                wait (1000);
-            } catch (InterruptedException ie) {
-            }
+        try {
+            SwingUtilities.invokeAndWait (new Runnable () {
+                public void run () {
+                }
+            });
+        } catch (InvocationTargetException ite) {
+        } catch (InterruptedException ie) {
         }
 
         mgr = p.getExplorerManager();
