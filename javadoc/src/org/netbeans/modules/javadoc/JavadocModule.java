@@ -18,6 +18,7 @@ import java.beans.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import org.openide.filesystems.FileSystemCapability;
@@ -56,7 +57,11 @@ public class JavadocModule extends ModuleInstall {
     public void uninstalled() {
         Collection c;
         synchronized (JavadocModule.class) {
-            c = new ArrayList(floatingTopComponents);
+            if (floatingTopComponents != null) {
+                c = new ArrayList(floatingTopComponents);
+            } else {
+                c = Collections.EMPTY_SET;
+            }
         }
         for (Iterator it = c.iterator(); it.hasNext();) {
             TopComponent tc = (TopComponent)it.next();
