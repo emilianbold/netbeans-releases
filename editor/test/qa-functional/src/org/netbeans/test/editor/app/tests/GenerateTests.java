@@ -128,7 +128,7 @@ public class GenerateTests extends Object {
         result.println("super(name);");
         result.println("}");
         result.println("public void tearDown() throws Exception {");
-        result.println("    assertFile(\"Output does not match golden file.\", getGoldenFile(), new File(getWorkDir(), this.getName() + \".ref\"), null, new LineDiff(false));");
+        result.println("    assertFile(\"Output does not match golden file.\", getGoldenFile(), new File(getWorkDir(), this.getName() + \".ref\"), new File(getWorkDir(), this.getName() + \".diff\"), new LineDiff(false));");
         result.println("}");
         TestCallAction[] tcas=test.getCallActions();
         

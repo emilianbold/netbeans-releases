@@ -32,7 +32,7 @@ public class CompletionPerformer extends NbTestCase {
         super(name);
     }
     public void tearDown() throws Exception {
-        assertFile("Output does not match golden file.", getGoldenFile(), new File(getWorkDir(), this.getName() + ".ref"), null, new LineDiff(false));
+        assertFile("Output does not match golden file.", getGoldenFile(), new File(getWorkDir(), this.getName() + ".ref"), new File(getWorkDir(), this.getName() + ".diff"), new LineDiff(false));
     }
     
     /**
