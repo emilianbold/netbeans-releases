@@ -160,10 +160,10 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             } else if (CompositeLook.class.equals(look.getClass())
                    &&  "Web-Look".equals (look.getName ())) {   // NOI18N
                 wellKnown = look;                    
+                break;
             } else {
                 // System.out.println ("\tand using as default"); // NOI18N
                 defaultLook = look;
-                break;
             }
         }
 
