@@ -33,6 +33,8 @@ import org.openide.loaders.*;
 import org.openide.util.Mutex;
 import org.openide.windows.*;
 import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.*;
 
 /** Support for associating an editor and a Swing {@link Document} to a data object.
 * 
@@ -51,7 +53,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     * @param env environment to pass to 
     */
     public DataEditorSupport (DataObject obj, CloneableEditorSupport.Env env) {
-        super (env, org.openide.util.lookup.Lookups.singleton (obj));
+        super (env, createLookup(obj));
         this.obj = obj;
     }
     
@@ -588,5 +590,28 @@ public class DataEditorSupport extends CloneableEditorSupport {
         }
         
     } // end of DataNodeListener
+    
+    /* Create a special lookup implementation that contains a DataObject and its
+     * primary fileobject. If the file is moved, the FileObject is replaced,
+     * while the DataObject keeps the identity.
+     */
+    private static Lookup createLookup(final DataObject dobj) {
+	final InstanceContent ic = new InstanceContent();
+	Lookup l = new AbstractLookup(ic);
+	dobj.addPropertyChangeListener(new PropertyChangeListener() {
+	    public void propertyChange(PropertyChangeEvent ev) {
+		String propName = ev.getPropertyName();
+		if (propName == null || propName == DataObject.PROP_PRIMARY_FILE) {
+		    updateLookup(dobj, ic);
+		}
+	    }
+	});
+	updateLookup(dobj,ic);
+	return l;
+    }
+    
+    private static void updateLookup(DataObject d, InstanceContent ic) {
+	ic.set(Arrays.asList(new Object[] { d, d.getPrimaryFile() }), null);
+    }
     
 }
