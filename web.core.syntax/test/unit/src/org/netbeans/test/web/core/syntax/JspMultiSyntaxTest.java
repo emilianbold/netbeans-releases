@@ -95,6 +95,10 @@ public class JspMultiSyntaxTest extends NbTestCase {
         dumpTokensForContent("<html><%-- text \n new line --%></html>\n");
     }
     
+    public void testSimpleJspTag() {
+        dumpTokensForContent("</jsp:useBean id=\"sss\">");
+    }
+    
     //helper methods -----------
     
     private void dumpTokensForContent(String content) {
