@@ -32,6 +32,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.Border;
@@ -63,14 +64,14 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListener;
 
-
+import org.netbeans.core.projects.SessionManager;
 
 /** Dialog which lets the user select which open files to close.
  *
  * @author  Ian Formanek, Petr Hrebejk
  */
 
-class ExitDialog extends JPanel implements java.awt.event.ActionListener {
+public class ExitDialog extends JPanel implements java.awt.event.ActionListener {
 
 
     private static JButton[] exitOptions;
@@ -281,7 +282,7 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
         boolean shutdown = innerShowDialogImpl(activatedNodes);
         
         if(shutdown && showPending) {
-            return showPendingTasks();
+            return showPendingTasks(true, 0);
         }
         else {
             return shutdown;
@@ -393,9 +394,12 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
     /** Shows dialog which waits for finishing of pending tasks,
      * (currently actions only) and offers to user to leave IDE 
      * immediatelly interrupting those tasks.
+     * @param buttons if <code>true</code>, buttons will be visible
+     * @param timeout timeout (in msec.) for the dialog 
      * @return <code>true</code> if to continue with the action
-     * <code>false</code> if the action to cancel */
-    private static boolean showPendingTasks() {
+     * <code>false</code> if the action to cancel
+     */
+    public static boolean showPendingTasks(boolean buttons, final long timeout) {
         if(getPendingTasks().isEmpty()) {
             return true;
         }
@@ -413,7 +417,6 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
                 if(ExplorerManager.PROP_EXPLORED_CONTEXT.equals(evt.getPropertyName())) {
                     if(getPendingTasks().isEmpty()) {
                         dialog[0].setVisible(false);
-                        dialog[0].dispose();
                     }
                 }
             }
@@ -430,10 +433,12 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
             panel,
             NbBundle.getBundle(ExitDialog.class).getString("CTL_PendingTitle"),
             true, // modal
-            new Object[] {
-                exitOption,
-                DialogDescriptor.CANCEL_OPTION
-            },
+            buttons ?
+                new Object[] {
+                    exitOption,
+                    DialogDescriptor.CANCEL_OPTION
+                }
+            :   new Object [] {},
             null,
             DialogDescriptor.DEFAULT_ALIGN,
             null,
@@ -441,26 +446,40 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
                 public void actionPerformed(ActionEvent evt) {
                     if(evt.getSource() == exitOption) {
                         killPendingTasks();
-                        
                         dialog[0].setVisible(false);
-                        dialog[0].dispose();
                     }
                 }
             }
         );
 
         if(!getPendingTasks().isEmpty()) {
+            Thread watchDog = new Thread () {
+                public void run () {
+                    try {
+                        sleep (timeout);
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
+                    
+                    if (dialog[0].isVisible ()) {
+                        dialog[0].setVisible(false);
+                    }
+                }
+            };
             root.addNodeListener(new NodeAdapter() {
                 public void childrenRemoved(NodeMemberEvent evt) {
                     if(getPendingTasks().isEmpty()) {
                         dialog[0].setVisible(false);
-                        dialog[0].dispose();
                     }
                 }
             });
 
             dialog[0] = TopManager.getDefault().createDialog(dd);
+
+            if (timeout > 0) watchDog.start ();
             dialog[0].show();
+            dialog[0].dispose();
+            watchDog.interrupt ();
 
             if(dd.getValue() == DialogDescriptor.CANCEL_OPTION) {
                 return false;
@@ -475,7 +494,14 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
      * for pending dialog root node children. Currently it gets pending
      * actions only. */
     private static Collection getPendingTasks() {
-        return ModuleActions.INSTANCE.getRunningActions();
+        Collection c = new LinkedList();
+        
+        c.addAll(ModuleActions.INSTANCE.getRunningActions());
+        if (SessionManager.getDefault().hasLockedFiles()) {
+            c.add(NbBundle.getMessage(ExitDialog.class, "LBL_savingSettings")); //NOI18N
+        }
+        
+        return c;
         
         // [PENDING] When it'll be added another types of tasks (locks etc.)
         // add them here to the list. Then you need to create also a nodes
@@ -505,27 +531,37 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
         
         /** Constructs new children. */
         public PendingChildren() {
-            ModuleActions.INSTANCE.addPropertyChangeListener(WeakListener.propertyChange(
-                propertyListener = new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if(ModuleActions.PROP_RUNNING_ACTIONS.equals(evt.getPropertyName())) {
-                            setKeys(getPendingTasks());
-                        }
+            propertyListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (ModuleActions.PROP_RUNNING_ACTIONS.equals(evt.getPropertyName()) ||
+                        SessionManager.PROP_FILELOCKS.equals(evt.getPropertyName ()))
+                    {
+                        setKeys(getPendingTasks());
                     }
-                },
-                ModuleActions.INSTANCE
-            ));
+                }
+            };
+
+            ModuleActions.INSTANCE.addPropertyChangeListener(
+                WeakListener.propertyChange(propertyListener, ModuleActions.INSTANCE)
+            );
+            SessionManager.getDefault().addPropertyChangeListener(
+                WeakListener.propertyChange(propertyListener, SessionManager.getDefault())
+            );
         }
 
         /** Implements superclass abstract method. Creates nodes from key.
          * @return <code>PendingActionNode</code> if key is of 
          * <code>Action</code> type otherwise <code>null</code> */
         protected Node[] createNodes(Object key) {
+            Node n = null;
             if(key instanceof Action) {
-                return new Node[] {new PendingActionNode((Action)key)};
+                n = new PendingActionNode((Action)key);
             }
-            
-            return null;
+            if (key instanceof String) {
+                n = new AbstractNode(Children.LEAF);
+                n.setName((String)key);
+            }
+            return n == null ? null : new Node[] { n };
         }
 
         /** Implements superclass abstract method. */

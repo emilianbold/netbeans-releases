@@ -405,7 +405,7 @@ public abstract class NbTopManager extends TopManager {
     * @exception UserCancelException if the selection is interrupted by the user
     */
     public void openProject (ProjectCookie project) throws IOException, UserCancelException {
-        if (showExitDialog (null)) {
+        if (ExitDialog.showDialog (null, true)) {
             NbProjectOperation.setOpeningProject (project);
         }
         else {
