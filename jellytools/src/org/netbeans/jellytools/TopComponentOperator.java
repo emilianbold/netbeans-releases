@@ -427,4 +427,22 @@ public class TopComponentOperator extends JComponentOperator {
         }
         return null;
     }
+
+    /**
+     * Waits the topcomponent to be closed.
+     */
+    public void waitClosed() {
+	getOutput().printLine("Wait topcomponent to be closed \n    : "+
+			      getSource().toString());
+	getOutput().printGolden("Wait topcomponent to be closed");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(!comp.isVisible());
+		}
+		public String getDescription() {
+		    return("Closed topcomponent");
+		}
+	    });
+    }
+
 }
