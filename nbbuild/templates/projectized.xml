@@ -335,20 +335,10 @@ Microsystems, Inc. All Rights Reserved.
         </java>
     </target>
 
-    <!-- XXX this target does not belong here! Should be in nbbuild/build.xml. -->
-    <!-- apisupport/project could call it there for the debug action. -->
-    <!-- But it is not specific to this module at all, so it does not belong here. -->
-    <!-- Cf. "Build and Try" action which runs nbbuild/build.xml#all-* then #tryme. -->
+    <!-- apisupport/project could calls this for the debug action. -->
+    <!-- You can also call it directly from the nbbuild/misc pseudoproject. -->
     <target name="debug" depends="netbeans">
-        <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
-            <classpath>
-                <fileset dir="${netbeans.dest.dir}">
-                    <include name="**/*.jar"/>
-                </fileset>
-            </classpath>
-        </nbjpdastart>
-        <property name="debug.server" value="n"/>
-        <ant dir="${nb_all}/nbbuild" target="tryme"/>
+        <ant dir="${nb_all}/nbbuild" target="tryme-debug"/>
     </target>
 
     <target name="debug-test-single" depends="init,test-init,test-build,do-debug-test-single"/>

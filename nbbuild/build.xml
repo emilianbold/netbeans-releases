@@ -2319,7 +2319,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
 
   <!-- build javadoc for selected modules -->
-  <target name="build-javadoc" depends="set-config-to-javadoc,init" description="Builds Javadoc documentation for modules; pass -Dmoduleconfig=javadoc and on branches e.g. -Djavadoc.web.root=http://www.netbeans.org/download/release35/javadoc">
+  <target name="build-javadoc" depends="set-config-to-javadoc,init" description="Builds Javadoc documentation for modules; on branches pass e.g. -Djavadoc.web.root=http://www.netbeans.org/download/release35/javadoc">
       <ant dir="." target="merge">
           <property name="modules" value="${modules}"/>
           <property name="fixedmodules" value="${fixedmodules}"/>
@@ -2783,6 +2783,17 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     <property name="tryme.debug.args" value="-J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=${debug.server},address=${debug.port}" />
   </target>
           
+  <target name="tryme-debug" description="Start IDE in debugger. May only be called from within IDE.">
+    <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
+      <classpath>
+        <fileset dir="${netbeans.dest.dir}">
+          <include name="**/*.jar"/>
+        </fileset>
+      </classpath>
+    </nbjpdastart>
+    <property name="debug.server" value="n"/>
+    <antcall target="tryme"/>
+  </target>
           
   <target name="tryme" depends="init,maybe-build-nozip,tryme-setup-debug-args"
           description="Try running the IDE interactively (build it first if needed).
