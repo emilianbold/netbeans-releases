@@ -227,6 +227,9 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-web-execution-JspExecPerformer$Factory.instance">
             <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.JspExecPerformer$Factory.getJspFactory" />
         </file>    
+        <file name="org-netbeans-modules-web-execution-JspServletExecPerformer$Factory.instance">
+             <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.JspServletExecPerformer$Factory.getJspServletFactory" />
+        </file>    
         <file name="org-netbeans-modules-web-execution-HtmlExecPerformer$Factory.instance">
             <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.HtmlExecPerformer$Factory.getHtmlFactory" />
         </file>    
