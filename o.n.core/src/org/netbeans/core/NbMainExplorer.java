@@ -133,6 +133,8 @@ implements ItemListener, Runnable {
     
     // initialize managing of cut/copy/paste/delete actions
     actions = new ExplorerActions();
+
+    refreshRoots ();
   }
 
   /** Clones the explorer 
@@ -677,6 +679,8 @@ implements ItemListener, Runnable {
 
 /*
 * Log
+*  33   Gandalf   1.32        8/20/99  Ian Formanek    Fixed bug with explorer 
+*       when starting clean IDE
 *  32   Gandalf   1.31        8/19/99  David Simonek   cut/copy/paste/delete 
 *       actions enabling hopefully fixed
 *  31   Gandalf   1.30        8/18/99  David Simonek   bugfix #3463, #3461  
