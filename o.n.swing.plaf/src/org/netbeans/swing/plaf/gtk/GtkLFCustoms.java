@@ -104,6 +104,8 @@ public class GtkLFCustoms extends LFCustoms {
             VIEW_TAB_DISPLAYER_UI, /* blueprint ? "org.netbeans.swing.tabcontrol.plaf.GtkViewTabDisplayerUI" : */
                 "org.netbeans.swing.tabcontrol.plaf.WinClassicViewTabDisplayerUI", //NOI18N
             SLIDING_TAB_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.SlidingTabDisplayerButtonUI", //NOI18N
+            SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.GtkSlidingButtonUI", //NOI18N
+
 
             DESKTOP_BACKGROUND, ThemeValue.functioning() ? new ThemeValue (ThemeValue.REGION_BUTTON, ThemeValue.LIGHT, Color.GRAY) : (Object) Color.GRAY,
             EXPLORER_MINISTATUSBAR_BORDER, BorderFactory.createEmptyBorder(),
