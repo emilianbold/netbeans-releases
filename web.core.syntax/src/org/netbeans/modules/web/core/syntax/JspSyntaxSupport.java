@@ -621,7 +621,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 {"autoFlush", "buffer", "contentType", "errorPage", "extends",  // NOI18N 
                  "import", "info", "isErrorPage", "isThreadSafe", "language", "pageEncoding", "session"});  // NOI18N
             directiveJspData.put("taglib", new String[]    // NOI18N
-            {"prefix", "uri"}); // NOI18N
+            {"prefix", "uri", "tagdir"}); // NOI18N
             
         }
         
