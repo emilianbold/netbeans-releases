@@ -171,21 +171,34 @@ public abstract class NbTopManager extends TopManager {
             TopSecurityManager.exit(1);
         }
 
-        // System property jdk.home points to the JDK root directory. 
-        // This is for JDKs which does not have jre directory (currently Mac OS X)
-        {   String jdkHome=System.getProperty("java.home");  // NOI18N
+        // In the past we derived ${jdk.home} from ${java.home} by appending
+        // "/.." to the end of ${java.home} assuming that JRE is under JDK
+        // directory.  It does not always work.  On MacOS X JDK and JRE files
+        // are mixed together, thus ${jdk.home} == ${java.home}.  In several
+        // Linux distros JRE and JDK are installed at the same directory level
+        // with ${jdk.home}/jre a symlink to ${java.home}, which means
+        // ${java.home}/.. != ${jdk.home}.
+        //
+        // Now the launcher can set ${jdk.home} explicitly because it knows
+        // best where the JDK is.
         
-            if (jdkHome!=null) {
-                if (Utilities.getOperatingSystem()!=Utilities.OS_MAC) {
-                    jdkHome+=File.separator+"..";  // NOI18N
-                }
-                System.setProperty ("jdk.home",jdkHome);  // NOI18N
+        String jdkHome = System.getProperty("jdk.home");  // NOI18N
+        
+        if (jdkHome == null) {
+            jdkHome = System.getProperty("java.home");  // NOI18N
+            
+            if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
+                jdkHome += File.separator + "..";  // NOI18N
             }
+                
+            System.setProperty("jdk.home", jdkHome);  // NOI18N
         }
+
         // read environment properties from external file, if any
         readEnvMap ();
 
         // initialize the URL factory
+        // XXX(-ttran) why this?
         Object o = org.openide.execution.NbClassLoader.class;
     }
     
