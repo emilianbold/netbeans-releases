@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,6 +29,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -177,6 +178,7 @@ public final class ProjectManager {
                     // Read access, but still needs to synch on the cache since there
                     // may be >1 reader.
                     try {
+                        boolean wasSomeSuchProject;
                     synchronized (dir2Proj) {
                         Object o;
                         do {
@@ -199,6 +201,7 @@ public final class ProjectManager {
                             }
                         } while (o == LOADING_PROJECT);
                         assert o != LOADING_PROJECT;
+                        wasSomeSuchProject = (o == SOME_SUCH_PROJECT);
                         if (o == NO_SUCH_PROJECT) {
                             if (ERR.isLoggable(ERR_LVL)) {
                                 ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": NO_SUCH_PROJECT");
@@ -237,6 +240,9 @@ public final class ProjectManager {
                             } else {
                                 dir2Proj.put(projectDirectory, NO_SUCH_PROJECT);
                                 resetLP = true;
+                                if (wasSomeSuchProject) {
+                                    ERR.log(ErrorManager.WARNING, "Directory " + FileUtil.getFileDisplayName(projectDirectory) + " was initially claimed to be a project folder but really was not");
+                                }
                                 return null;
                             }
                         }
@@ -326,6 +332,12 @@ public final class ProjectManager {
      * will return false), for example if there is trouble loading the project.
      * False negatives are possible only if there are bugs in the project factory.</p>
      * <p>Acquires read access.</p>
+     * <p class="nonnormative">
+     * You do <em>not</em> need to call this method if you just plan to call {@link #findProject}
+     * afterwards. It is intended for only those clients which would discard the
+     * result of {@link #findProject} other than to check for null, and which
+     * can also tolerate false positives.
+     * </p>
      * @param projectDirectory a directory which may be some project's top directory
      * @return true if the directory is likely to contain a project according to
      *              some registered {@link ProjectFactory}
