@@ -93,17 +93,39 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
           allEditors[i].setValue (editor.getValue ());
           indexToSelect = i;
         } else {
-          Object defValue = editor.getRADProperty ().getDefaultValue ();
-          if (defValue != null) {
-            allEditors[i].setValue (defValue);
+          Object currValue = editor.getValue ();
+          boolean valueSet = false;
+          if (currValue != null) {
+            if (editor.getPropertyType ().isAssignableFrom (currValue.getClass ())) {
+              allEditors[i].setValue (currValue); // current value is of the real property type
+              valueSet = true;
+            } else if (currValue instanceof FormDesignValue) {
+              Object desValue = ((FormDesignValue)currValue).getDesignValue (editor.getRADComponent ());
+              if (desValue != FormDesignValue.IGNORED_VALUE) {
+                allEditors[i].setValue (desValue); // current value is of the real property type
+                valueSet = true;
+              }
+            }
+          } 
+          if (!valueSet) {
+            Object defValue = editor.getRADProperty ().getDefaultValue ();
+            if (defValue != null) {
+              allEditors[i].setValue (defValue);
+            }
           }
         }
 
+        String tabName;
+        if (allEditors[i] instanceof NamedPropertyEditor) {
+          tabName = ((NamedPropertyEditor)allEditors[i]).getDisplayName ();
+        } else {
+          tabName = Utilities.getShortClassName (allEditors[i].getClass ());
+        }
         if (allEditors[i].supportsCustomEditor ()) {
-          tabs.addTab (Utilities.getShortClassName (allEditors[i].getClass ()), allCustomEditors[i] = allEditors[i].getCustomEditor ());
+          tabs.addTab (tabName, allCustomEditors[i] = allEditors[i].getCustomEditor ());
         } else {
           // [FUTURE - add property sheet line component]
-          tabs.addTab (Utilities.getShortClassName (allEditors[i].getClass ()), allCustomEditors[i] = new JLabel ("PropertyEditor does not support custom editing"));
+          tabs.addTab (tabName, allCustomEditors[i] = new JLabel ("PropertyEditor does not support custom editing"));
         }
       }
 
@@ -174,6 +196,8 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
 /*
  * Log
+ *  14   Gandalf   1.13        8/17/99  Ian Formanek    Furhet improved value 
+ *       used for multiple editors, employed NamedPropertyEditor
  *  13   Gandalf   1.12        8/17/99  Ian Formanek    Fixed work with multiple
  *       property editors
  *  12   Gandalf   1.11        8/10/99  Ian Formanek    Generated Serial Version
