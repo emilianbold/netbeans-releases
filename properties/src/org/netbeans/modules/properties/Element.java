@@ -267,9 +267,7 @@ public abstract class Element extends Object implements Serializable {
         
         /** Comment element. */
         private CommentElem comment;
-
-        private Node itemNode;
-
+        
         /** Parent of this element - active element has a non-null parent. */
         private PropertiesStructure parent;
 
@@ -329,14 +327,6 @@ public abstract class Element extends Object implements Serializable {
         /** Returns the comment element for this item. */
         public CommentElem getCommentElem() {
             return comment;
-        }
-
-        Node getItemNode() {
-            return itemNode;
-        }
-
-        void setItemNode(Node node) {
-            itemNode = node;
         }
 
         /** Updates the element fields. This method is called after reparsing.

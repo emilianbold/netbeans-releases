@@ -204,15 +204,11 @@ class PropertiesParser {
         if(firstNull)
             return null;
 
-        int len = comment.length();
-        int from = 0;
-        if (len > 0) {
-            if (comment.charAt(len - 1) == '\n')
-                len--;
-            if (comment.charAt(0) == '#')
-                from = 1;
-        }
-        String comHelp = comment.substring(from, len);
+        String comHelp;
+        comHelp = comment.toString();
+        if(comment.length() > 0)
+            if(comment.charAt(comment.length() - 1) == '\n')
+                comHelp = comment.substring(0, comment.length() - 1);
 
         commE = new Element.CommentElem(createBiasBounds(begPos, keyPos), comHelp);
         // fl now contains the line after the comment or  null if none exists
@@ -251,7 +247,7 @@ class PropertiesParser {
             String line = positionMap.getString();
 
             // Find start of key
-            len = line.length();
+            int len = line.length();
             int keyStart;
             for(keyStart=0; keyStart<len; keyStart++) {
                 if(UtilConvert.whiteSpaceChars.indexOf(line.charAt(keyStart)) == -1)

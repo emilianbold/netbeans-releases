@@ -61,27 +61,20 @@ public class PropertiesStructure extends Element {
             Element.ItemElem curItem;
             Element.ItemElem oldItem;
 
-            Map newItems = new HashMap();
+            Map new_items = struct.items;
             Map changed  = new HashMap();
             Map inserted = new HashMap();
             Map deleted  = new HashMap();
 
-            for(Iterator it = struct.items.values().iterator(); it.hasNext(); ) {
+            for(Iterator it = new_items.values().iterator(); it.hasNext(); ) {
                 curItem = (Element.ItemElem)it.next();
                 curItem.setParent(this);
                 oldItem = getItem(curItem.getKey());
                 if (oldItem == null) {
                     inserted.put(curItem.getKey(), curItem);
-                    newItems.put(curItem.getKey(), curItem);
-                }
-                else {
-                    if (!curItem.equals(oldItem)) {
+                } else {
+                    if (!curItem.equals(oldItem))
                         changed.put(curItem.getKey(), curItem);
-                        newItems.put(curItem.getKey(), curItem);
-                    }
-                    else {
-                        newItems.put(oldItem.getKey(), oldItem);
-                    }
                     items.remove(oldItem.getKey());
                 }
             }
@@ -91,7 +84,7 @@ public class PropertiesStructure extends Element {
                 structChanged = true;
 
             // assign the new structure
-            items = newItems;
+            items = new_items;
 
             // Update bounds.
             this.bounds = struct.getBounds();
@@ -168,10 +161,6 @@ public class PropertiesStructure extends Element {
                 if (item == null)
                     return false;
                 item.setKey(newKey);
-                items.remove(oldKey);
-                items.put(newKey, item);
-                if (item.getItemNode() != null)
-                    item.getItemNode().setName(newKey);
                 return true;
             }
             else
