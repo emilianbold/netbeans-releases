@@ -28,6 +28,7 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
@@ -82,6 +83,19 @@ implements ExPropertyEditor, PropertyChangeListener {
      */
     public synchronized void attachEnv(PropertyEnv env) {
         Object obj = env.getFeatureDescriptor ().getValue (PROP_SUPERCLASS);
+        /*
+         //Some debugging code - not working correctly for default diff 
+         //engine, though it is passing correct values.  Possibly recent
+         //changes to Lookup caused this?
+        if ("Default Diff Engine".equals(env.getFeatureDescriptor().getDisplayName())) {
+            System.err.println(System.identityHashCode(this) + " got " + obj + " as superclass from " + env.getFeatureDescriptor() + " = " + env.getFeatureDescriptor().getDisplayName() + Thread.currentThread());
+            Exception e = new Exception();
+            e.fillInStackTrace();
+            StackTraceElement[] s = e.getStackTrace();
+            System.err.println("Caller: " + s[1].getFileName() + ":" + s[1].getLineNumber());
+            System.err.println("Caller: " + s[2].getFileName() + ":" + s[2].getLineNumber());
+        }
+         */
         if (obj instanceof Class) {
             template = new Lookup.Template ((Class)obj);
         } else {
@@ -140,7 +154,15 @@ implements ExPropertyEditor, PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
         Node[] arr = customEditor.getExplorerManager ().getSelectedNodes ();
         if (arr.length != 1) {
-            setValue (null);
+            //Commenting the line below out - the Diff module causes a write
+            //to the folder.  This will cause the tree to be rebuilt, and 
+            //BeanTreeView will post setting the selection to null to the
+            //event thread.  This causes an NPE in the diff module (perhaps it
+            //should handle null by restoring the default).  Since there
+            //is no reasonable way for the user to set the tree to have no
+            //selection, should do no harm to simply do nothing here.
+            
+//            setValue (null);
             return;
         }
         
@@ -155,7 +177,9 @@ implements ExPropertyEditor, PropertyChangeListener {
             }
 
             if (accept) {
-                setValue (ic.instanceCreate ());
+                synchronized (customEditor.getTreeLock()) {
+                    setValue (ic.instanceCreate ());
+                }
                 return;
             }
         } catch (ClassNotFoundException ex) {
@@ -263,21 +287,33 @@ implements ExPropertyEditor, PropertyChangeListener {
     public synchronized Component getCustomEditor () {
         if (customEditor != null) {
             ExplorerManager em = customEditor.getExplorerManager ();
-            em.removePropertyChangeListener (this);
             selectNode (em, getValue ());
-            em.addPropertyChangeListener (this);
-            
             return customEditor;
         }
         
-        ExplorerPanel panel = new ExplorerPanel ();
+        final ExplorerPanel panel = new ExplorerPanel () {
+            //Fix for listener leak
+            //If editor was displayed once and the value set, then displayed
+            //again, listener would be added twice.
+            public void addNotify() {
+                super.addNotify();
+                getExplorerManager().addPropertyChangeListener(ObjectEditor.this);
+            }
+            public void removeNotify() {
+                getExplorerManager().removePropertyChangeListener(ObjectEditor.this);
+                super.removeNotify();
+            }
+        };
         ExplorerManager em = panel.getExplorerManager ();
-        panel.add (new BeanTreeView ());
+        BeanTreeView btv = new BeanTreeView();
+        btv.getAccessibleContext().setAccessibleName(
+            NbBundle.getMessage(ObjectEditor.class, "ACSN_ObjectTree")); //NOI18N
+        btv.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getMessage(ObjectEditor.class, "ACSD_ObjectTree")); //NOI18N
+        panel.add (btv);
         em.setRootContext (root ());
         
         selectNode (em, getValue ());
-        
-        em.addPropertyChangeListener (this);
         
         return customEditor = panel;
     }
