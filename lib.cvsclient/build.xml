@@ -12,50 +12,61 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="javacvs/libmodule">
+  <import file="../../nbbuild/default.xml"/> 
 
-  <property name="nbm_alias" value="nb_ide"/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" location="../../nbbuild/standard-nbm-license.txt"/>
+  <target name="init" depends="default.init">
+    <patternset id="javacvs/libmodule.files">
+      <include name="${nb.modules/autoload.dir}/cvslib.jar"/>
+    </patternset>
+  </target>
 
-  <taskdef classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar" name="makenbm"/>
-  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
-
-  <target name="compile">
+  <target name="compile" depends="init"> 
     <javac debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" destdir="../libsrc" srcdir="../libsrc"/>
   </target>
 
   <target depends="compile" name="jars">
-    <mkdir dir="netbeans/modules/autoload"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" filtering="on" tofile="manifest-subst.mf"/>
     <taskdef classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar" name="locjar"/>
-    <locjar basedir="../libsrc" compress="false" excludesfile="../../nbbuild/standard-jar-excludes.txt" jarfile="netbeans/modules/autoload/cvslib.jar" manifest="manifest-subst.mf">
-    </locjar>
+    <jar basedir="../libsrc" 
+         compress="false" 
+         excludesfile="../../nbbuild/standard-jar-excludes.txt" 
+         jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/cvslib.jar" 
+         manifest="manifest-subst.mf"/>
   </target>
 
   <target depends="jars" name="netbeans">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/cvslib.jar">
+       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+         <patternset refID="javacvs/libmodule.files"/>
+       </fileset>
+    </genlist>
   </target>
 
   <target depends="netbeans" name="nbm">
-    <makenbm distribution="http://${dist.base}/cvslib.nbm" file="cvslib.nbm" homepage="http://javacvs.${homepage.base}/" module="netbeans/modules/autoload/cvslib.jar" topdir=".">
+    <makenbm distribution="http://${dist.base}/cvslib.nbm" 
+             productdir="${netbeans.dest.dir}/${cluster.dir}"
+             file="cvslib.nbm" 
+             homepage="http://javacvs.${homepage.base}/" 
+             module="${nb.modules/autoload.dir}/cvslib.jar">
       <license file="${license.file}"/>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>
 
-  <target name="clean">
+  <target name="clean" depends="init">
     <delete>
       <fileset dir="../libsrc">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="javacvs/libmodule.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="cvslib.nbm"/>
-    <delete dir="netbeans"/>
     <delete dir="javadoc"/>
-    <delete dir="Info"/>
   </target>
 
   <target name="javadoc" description="Build cvs library module API documentation.">

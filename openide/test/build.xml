@@ -13,6 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="openide tests" basedir="." default="all">
+    <import file="../../nbbuild/default-properties.xml"/>
 
     <!-- Ant property. Value 'ignore' means that system classpath is ignored
          and only classpath specified in build file is used. -->
@@ -220,30 +221,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========================= -->
     
     <target name="prepare-compile-classpath"
-         depends="jarcompile-classpath,srccompile-classpath,idecompile-classpath"/>
+         depends="srccompile-classpath,idecompile-classpath"/>
     
-    <target name="jarcompile-classpath" depends="which-classpath" if="jarcode.classpath">
-        <echo message="Using jars classpath for compilation."/>
-    	<!-- this classpath will be used for compiling tests against jars -->
-	<path id="compiletest.classpath">        
-	    <!-- If you need e.g. openide.jar, write this:
-	           <pathelement location="../netbeans/lib/openide.jar"/>
- 	      -->
-                <pathelement location="../openide-13javac-workaround.jar"/>
-                <pathelement location="../netbeans/lib/openide.jar"/>
-                <!-- XXX -->
-                <pathelement location="../loaders/netbeans/lib/openide-loaders.jar"/>
-                <pathelement location="../compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-                <pathelement location="../execution/netbeans/modules/autoload/openide-execution.jar"/>
-                <pathelement location="../io/netbeans/modules/autoload/openide-io.jar"/>
-
-                <fileset dir="../../core/netbeans/lib">
-            		<include name="core.jar"/>
-            		<include name="ext/*.jar"/>
-                </fileset>             
-	</path>
-    </target>
-        
     <target name="srccompile-classpath" depends="which-classpath" if="srccode.classpath">
         <echo message="Using srcs classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against sources -->
@@ -273,11 +252,8 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="../execution/src/"/>
                 <pathelement location="../io/src/"/>
                 <pathelement location="../windows/src/"/>
-                
+                <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
                 <pathelement location="../../core/src/"/>
-                <fileset dir="../../core/netbeans/lib">
-            		<include name="ext/*.jar"/>
-                </fileset>             
 	</path>
     </target>
     
@@ -290,20 +266,15 @@ Microsystems, Inc. All Rights Reserved.
 	         If you need e.g. your tested module, write this:
 	           <pathelement location="${netbeans.home}/modules/somemodule.jar"/>
  	      -->
-             <fileset dir="${netbeans.home}/lib">
-            		<include name="core.jar"/>
-                        <include name="openide.jar"/>
-            		<include name="ext/*.jar"/>
-             </fileset>             
+	     <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+             <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
+             <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
              <!-- XXX -->
-             <fileset dir="${netbeans.home}/lib">
-                    <include name="openide-loaders.jar" />
-             </fileset>
-             <fileset dir="${netbeans.home}/modules/autoload">
-                     <include name="openide-*.jar"/>
-                     <include name="core-*.jar"/>
-             </fileset>
-             
+             <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+             <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
+             <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+             <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
+             <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
    	</path>
     </target>
     
@@ -312,39 +283,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ================================== -->
     
     <target name="prepare-codetest-classpath" 
-            depends="jartest-classpath,srctest-classpath,idetest-classpath"/>
-    
-    <target name="jartest-classpath" depends="which-classpath" if="jarcode.classpath">
-        <echo message="Using jars classpath."/>
-        <!-- this classpath will be used for executing tests against jars -->
-	<path id="codetest.classpath">
-       	    <!-- If you need e.g. openide.jar, write this:
-	           <pathelement location="../netbeans/lib/openide.jar"/>
- 	      -->
-                <pathelement location="../openide-13javac-workaround.jar"/>
-                <pathelement location="../netbeans/lib/openide.jar"/>
-                <!-- XXX -->
-                <pathelement location="../loaders/netbeans/lib/openide-loaders.jar"/>
-                <pathelement location="../compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-                <pathelement location="../execution/netbeans/modules/autoload/openide-execution.jar"/>
-                <pathelement location="../io/netbeans/modules/autoload/openide-io.jar"/>
-                
-                <fileset dir="../../core/netbeans/lib">
-            		<include name="core.jar"/>
-            		<include name="ext/*.jar"/>
-                </fileset>             
-                <fileset dir="../../core/windows/netbeans/modules">
-            		<include name="core-windows.jar"/>
-                </fileset>             
-                
-                <!-- Cf. #36294: XMLUtilTest.testNamespaces requires Xerces to pass -->
-                <fileset dir="../../libs/external">
-                    <include name="xerces-*.jar"/>
-                    <include name="xml-commons-dom-ranges-*.jar"/>
-                </fileset>
-    	</path>
-    </target>
-        
+            depends="srctest-classpath,idetest-classpath"/>
+       
     <target name="srctest-classpath" depends="which-classpath" if="srccode.classpath">
         <echo message="Using srcs classpath."/>
         <!-- this classpath will be used for executing tests against sources -->
@@ -354,7 +294,7 @@ Microsystems, Inc. All Rights Reserved.
 	         If you need e.g. sources of your tested module, write this:
 	           <pathelement location="../src"/>
  	      -->
-                <pathelement location="../openide-13javac-workaround.jar"/>
+                <pathelement location="${nb_all}/openide-13javac-workaround.jar"/>
                 <pathelement location="../src/"/>
                 <pathelement location="../../core/src/"/>
                 <!-- XXX -->
@@ -363,15 +303,11 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="../execution/src/"/>
                 <pathelement location="../io/src/"/>
                 
-                <fileset dir="../../core/netbeans/lib">
-            		<include name="core.jar"/> <!-- for the manifest -->
-            		<include name="ext/*.jar"/>
-                </fileset>             
-                <fileset dir="../../core/windows/netbeans/modules">
-            		<include name="core-windows.jar"/>
-                </fileset>             
-                <pathelement location="../netbeans/lib/openide.jar"/> <!-- for the manifest -->
-                <pathelement location="../loaders/netbeans/lib/openide-loaders.jar"/> <!-- for the manifest -->
+                <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/> <!-- for the manifest -->
+                <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/> <!-- for the manifest -->
+                <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/> <!-- for the manifest -->
+                <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
+                <pathelement location="${core/windows.dir}/${nb.modules.dir}/core-windows.jar"/>
 
                 <fileset dir="../../libs/external">
                     <include name="xerces-*.jar"/>
@@ -390,23 +326,18 @@ Microsystems, Inc. All Rights Reserved.
 	         If you need e.g. your tested module, write this:
 	           <pathelement location="${netbeans.home}/modules/somemodule.jar"/>
  	      --> 
-             <fileset dir="${netbeans.home}/lib">
-            		<include name="core.jar"/>
-                        <include name="openide.jar"/>
-                        <include name="openide-loaders.jar"/>
-            		<include name="ext/*.jar"/>
-             </fileset>             
-             <fileset dir="${netbeans.home}/modules">
-            		<include name="core-windows.jar"/>
-             </fileset>
-             <!-- XXX -->
-             <fileset dir="${netbeans.home}/modules/autoload">
-                     <include name="openide-*.jar"/>
-                     <include name="core-*.jar"/>
-             </fileset>
-
+	     <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+             <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
+             <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+             <pathelement location="${core/windows.dir}/${nb.modules.dir}/core-windows.jar"/>
+             <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+             <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
+             <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+             <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
+             <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
+             <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
                 
-             <fileset dir="${netbeans.home}/modules/autoload/ext">
+             <fileset dir="${libs/xerces.dir}/${nb.modules/autoload.dir}/ext">
                   <include name="xerces-*.jar"/>
                   <include name="xml-commons-dom-ranges-*.jar"/>
             </fileset>

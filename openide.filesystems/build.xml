@@ -13,6 +13,13 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="openide/fs" default="netbeans" basedir=".">
+  <import file="../../nbbuild/default.xml"/>
+
+  <target name="boot">
+    <ant antfile="${nb_all}/core/build.xml" dir="${nb_all}/core" target="boot" />
+    <property file="${moduleCluster.file}"/>
+  </target>
+
   <property name="nbroot" location="../.." />
 
   <property name="nbm_alias" value="nb_ide"/>
@@ -27,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
     <pathelement location="${nbroot}/openide/util/netbeans/lib/openide-util.jar" />
   </path>
   
-  <target name="compile" >
+  <target name="compile" depends="init">
     <ant dir="${nbroot}/openide" target="do-lib-javac" inheritRefs="true" >
       <property name="localdir" location="src" />
       <property name="selector" value="openide.fs" />
@@ -40,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <enhanceclass basedir="src" >
         <classpath>
-            <pathelement location="${nbroot}/core/netbeans/lib/ext/boot.jar"/>
+            <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
             <!-- See xtest/instance/build-clover.xml for explanation: -->
             <pathelement location="${nbroot}/core/netbeans/lib/ext/clover.jar"/>
         </classpath>

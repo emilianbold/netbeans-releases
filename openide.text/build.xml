@@ -13,7 +13,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="openide/text" default="netbeans" basedir=".">
-  <property name="nbroot" location="../.." />
+  <import file="../../nbbuild/default.xml"/>
+
+  <property name="nbroot" location="${nb_all}" />
 
   <property name="nbm_alias" value="nb_ide"/>
   <property name="homepage.base" value="netbeans.org"/>
@@ -30,9 +32,10 @@ Microsystems, Inc. All Rights Reserved.
        <pathelement location="${nbroot}/openide/awt/netbeans/lib/openide-awt.jar"/>
        <pathelement location="${nbroot}/openide/dialogs/netbeans/lib/openide-dialogs.jar"/>
        <pathelement location="${nbroot}/openide/options/netbeans/lib/openide-options.jar"/>
+       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
   </path>
   
-  <target name="compile" >
+  <target name="compile" depends="init">
     <ant dir="${nbroot}/openide" target="do-lib-javac" inheritRefs="true" >
       <property name="localdir" location="src" />
       <property name="selector" value="openide.text" />
@@ -64,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${nbroot}/openide/dialogs/netbeans/lib/openide-dialogs.jar"/>
             <pathelement location="${nbroot}/openide/options/netbeans/lib/openide-options.jar"/>
             <pathelement location="${nbroot}/openide/util/netbeans/lib/openide-util.jar"/>
-            <pathelement location="${nbroot}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
+            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
           </classpath>  
         </javac>
 

@@ -13,57 +13,58 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="extbrowser" default="netbeans" basedir=".">
+  <import file="../nbbuild/default.xml"/> 
 
-  <property name="nbm_alias" value="nb_ide"/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
+  <target name="init" depends="default.init">
+    <patternset id="extbrowser.files">
+      <include name="${nb.modules.dir}/extbrowser.jar"/>
+      <include name="${nb.modules.dir}/bin/extbrowser.dll"/>
+    </patternset>
+    <path id="cp">
+      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
+      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+      <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+    </path>
+  </target>
 
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-
-  <target name="compile">
+  <target name="compile" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/netbeans/modules/extbrowser/"/>
-      <classpath>
-        <!--<pathelement location="patches"/>-->
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-      </classpath>
+      <classpath refID="cp"/>
     </javac>
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/extbrowser.jar"
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/extbrowser.jar"
          manifest="manifest-subst.mf"
          basedir="src"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="false">
-      <locale name="ja"/>
-    </locjar>
+	 compress="false"/>
   </target>
 
-  <target name="release">
-    <copy todir="netbeans">
-      <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt">
+  <target name="release" depends="init">
+    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}">
+      <fileset dir="release/modules" excludesfile="../nbbuild/standard-jar-excludes.txt">
         <exclude name="**/sources/*"/>
       </fileset>
     </copy>
   </target>
 
   <target name="netbeans" depends="jars,release">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/extbrowser.jar">
+       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+         <patternset refID="extbrowser.files"/>
+       </fileset>
+    </genlist>
   </target>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="extbrowser.nbm"
-             topdir="."
-             module="netbeans/modules/extbrowser.jar"
+             productdir="${netbeans.dest.dir}/${cluster.dir}"
+             module="${nb.modules.dir}/extbrowser.jar"
 	     homepage="http://extbrowser.${homepage.base}/"
 	     distribution="http://${dist.base}/extbrowser.nbm">
       <license file="${license.file}"/>
@@ -71,17 +72,18 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="clean">
+  <target name="clean" depends="init">
     <delete>
       <fileset dir="src">
         <include name="org/netbeans/modules/extbrowser/*.class"/>
       </fileset>
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="extbrowser.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="extbrowser.nbm"/>
-    <delete dir="netbeans"/>
     <delete dir="javadoc"/>
-    <delete dir="Info"/>
   </target>
 
   <!-- This target will only work *inside* the IDE! -->
@@ -89,7 +91,7 @@ Microsystems, Inc. All Rights Reserved.
     <nbinstaller action="reinstall" module="netbeans/modules/extbrowser.jar"/>
   </target>
 
-  <target name="javadoc" description="Build extbrowser module API documentation.">
+  <target name="javadoc" depends="init" description="Build extbrowser module API documentation.">
     <tstamp/>
     <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
     <echo message="Build extbrowser module API documentation..."/>
@@ -108,13 +110,7 @@ Microsystems, Inc. All Rights Reserved.
       <sourcepath>
         <pathelement location="src"/>
       </sourcepath>
-      <classpath>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-        <pathelement location="../httpserver/netbeans/modules/httpserver.jar"/>
-      </classpath>
+      <classpath refID="cp"/>
     </javadoc>    
   </target>
 

@@ -13,51 +13,51 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="servletapi" basedir="." default="netbeans">
+  <import file="../../nbbuild/default.xml"/>
 
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
-  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
-
-  <property name="nb_root" location="../.."/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" value="${nb_root}/nbbuild/standard-nbm-license.txt"/>
-  <property name="nbm_alias" value="nb_ide"/>
-
-  <target name="init">
+  <target name="init" depends="default.init">
+    <patternset id="httpserver/servletapi.files">
+      <include name="${nb.modules/autoload.dir}/servletapi.jar"/>
+      <include name="${nb.modules/autoload.dir}/ext/servlet-2.2.jar"/>
+    </patternset>
     <ant dir="../external" target="unscramble"/>
+    <path id="cp">
+    </path>
   </target>
 
-  <target name="jars">
-    <mkdir dir="netbeans/modules/autoload"/>
+  <target name="jars" depends="init">
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/autoload/servletapi.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
-            excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
-            compress="false">
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/servletapi.jar"
+         manifest="manifest-subst.mf"
+         basedir="src"
+         excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
+         compress="false">
       <include name="org/netbeans/modules/servletapi/"/>
-      <locale name="ja"/>
-    </locjar>
+    </jar>
   </target>
 
   <target name="release" depends="init">
-    <mkdir dir="netbeans/modules/autoload/ext"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
     <copy file="../external/servlet-2.2.jar"
-          tofile="netbeans/modules/autoload/ext/servlet-2.2.jar"/>
+          tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext/servlet-2.2.jar"/>
   </target>
 
   <target name="netbeans" depends="jars,release" description="Builds the module">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/servletapi.jar">
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="httpserver/servletapi.files"/>
+      </fileset>
+    </genlist>
   </target>
 
   <target name="nbm" depends="netbeans" description="Prepare the module for distribution via Auto Update.">
     <makenbm file="servletapi.nbm"
-             topdir="."
-           module="netbeans/modules/autoload/servletapi.jar"
-           homepage="http://httpserver.${homepage.base}/"
-           distribution="http://${dist.base}/servletapi.nbm">
+             productdir="${netbeans.dest.dir}/${cluster.dir}"
+             module="${nb.modules/autoload.dir}/servletapi.jar"
+             homepage="http://httpserver.${homepage.base}/"
+             distribution="http://${dist.base}/servletapi.nbm">
       <license name="servletapi-license.txt">
         <text>For the integration module:</text>
         <file location="${license.file}"/>
@@ -68,15 +68,16 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="clean" description="Clean all build products.">
+  <target name="clean" depends="init" description="Clean all build products.">
         <delete>
             <fileset dir="../src">
                 <include name="org/netbeans/modules/servletapi/**/*.class"/>
             </fileset>
+            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+                <patternset refID="httpserver/servletapi.files"/>
+            </fileset>
         </delete>
         <delete file="manifest-subst.mf"/>
-        <delete dir="netbeans"/>
-        <delete dir="Info"/>
         <delete file="servletapi.nbm"/>
   </target>
 

@@ -14,65 +14,58 @@ Microsystems, Inc. All Rights Reserved.
 
 
 <project name="db" default="netbeans" basedir=".">
+  <import file="../nbbuild/default.xml"/> 
 
-  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-
-  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-
-  <target name="init">
+  <target name="init" depends="default.init">
+    <patternset id="db.files">
+      <include name="${nb.modules.dir}/db.jar"/>
+      <include name="${nb.modules.dir}/ext/ddl.jar"/>
+      <include name="${nb.modules/docs.dir}/db.jar"/>
+    </patternset>
+    <path id="cp">
+      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
+      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+      <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
+      <pathelement location="${openidex.dir}/${nb.modules.dir}/openidex.jar"/>
+    </path>
     <tstamp/>
     <property name="buildnumber" value="${DSTAMP}-${TSTAMP}"/>
     <echo message="buildnumber = ${buildnumber}"/>
   </target>
 
-  <target name="precompile">
+  <target name="precompile" depends="init">
     <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath>
-        <pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-      </classpath>
+      <classpath refId="cp"/>
     </javac>
   </target>
 
-  <target name="compile" depends="precompile">
+  <target name="compile" depends="init,precompile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
+        <path refID="cp"/>
         <pathelement path="libsrc"/>
-        <pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-        <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-        <pathelement location="../openidex/netbeans/modules/openidex.jar"/>
       </classpath>
     </javac>
   </target>
 
   <target name="jars" depends="init,compile">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/db.jar"
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/db.jar"
          manifest="manifest-subst.mf"
          basedir="src"
          excludesfile="../nbbuild/standard-jar-excludes.txt"
-         compress="false">
-      <locale name="ja"/>
-    </locjar>
-    <mkdir dir="netbeans/modules/ext"/>
-    <locjar jarfile="netbeans/modules/ext/ddl.jar"
+         compress="false"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/ddl.jar"
          basedir="libsrc"
          excludesfile="../nbbuild/standard-jar-excludes.txt"
-         compress="false">
-      <locale name="ja"/>
-    </locjar>
+         compress="false"/>
   </target>
 
-  <target name="javahelp">
+  <target name="javahelp" depends="init"> 
     <mkdir dir="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch2"/>
     <jhindexer basedir="javahelp/org/netbeans/modules/db/docs/"
                db="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch2">
@@ -88,23 +81,25 @@ Microsystems, Inc. All Rights Reserved.
     </jhindexer>
     <mkdir dir="javahelp/org/netbeans/modules/usersguide"/>
     <copy file="../usersguide/javahelp/org/netbeans/modules/usersguide/ide.css" tofile="javahelp/org/netbeans/modules/usersguide/ide.css"/>
-    <mkdir dir="netbeans/modules/docs"/>
-    <locjar jarfile="netbeans/modules/docs/db.jar"
-            compress="true">
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}"/>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/db.jar"
+         compress="true">
       <fileset dir="javahelp" excludesfile="../nbbuild/standard-jar-excludes.txt" excludes="org/netbeans/modules/usersguide/"/>
-      <locale name="ja"/>
-    </locjar>
+    </jar>
   </target>
 
   <target name="netbeans" depends="jars,javahelp">
-    <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/db.jar">
+       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+         <patternset refID="db.files"/>
+       </fileset>
+    </genlist>
   </target>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="db.nbm"
-             topdir="."
-             module="netbeans/modules/db.jar"
+             productdir="${netbeans.dest.dir}/${cluster.dir}"
+             module="${nb.modules.dir}/db.jar"
     	     homepage="http://db.${homepage.base}/"
              distribution="http://${dist.base}/db.nbm">
       <license file="${license.file}"/>
@@ -112,22 +107,21 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="clean">
+  <target name="clean" depends="init">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
         <include name="**/*.jar"/>
       </fileset>
-    </delete>
-    <delete>
       <fileset dir="libsrc">
         <include name="**/*.class"/>
+      </fileset>
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="db.files"/>
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="db.nbm"/>
-    <delete dir="netbeans"/>
-    <delete dir="Info"/>
     <delete dir="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch"/>
     <delete dir="javahelp/org/netbeans/modules/usersguide"/>
   </target>

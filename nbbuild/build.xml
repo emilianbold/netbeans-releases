@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?> 
+<!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -22,6 +23,7 @@ ToDo:
 -->
 
 <project name="nbbuild" default="all" basedir=".">
+  <import file="default-properties.xml"/>
 
   <!-- First things first: read the user's and/or -->
   <!-- the site's build properties files.         -->
@@ -494,7 +496,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module metrics..."/>
     <ant dir="../metrics" target="netbeans"/>
   </target>
-  <target name="all-monitor" depends="all-openide,all-web/core,all-schema2beans/rt,all-html,all-httpserver,all-tomcatint/tomcat5/bundled">
+  <target name="all-monitor" depends="all-openide,all-web/core,all-schema2beans/rt,all-html,all-httpserver,all-tomcatint/tomcat5/bundled,all-httpserver/servletapi,all-web/servletapi23">
     <echo message="Building module monitor..."/>
     <ant dir="../monitor" target="netbeans"/>
   </target>
@@ -1027,31 +1029,42 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Java: ${java.vendor} ${java.version} in ${java.home}; for NetBeans: ${jdkhome}"/>
     <echo message="Classpath: ${java.class.path}"/>
   </target>
-
-  <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
-  <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
-
-  <target name="build-nozip" depends="delete-and-merge" description="Build the IDE but do not create a final ZIP file.">
+  
+  <target name="create-module-xmls-for-one-cluster" >
     <taskdef name="createmodulexml" classname="org.netbeans.nbbuild.CreateModuleXML" classpath="nbantext.jar"/>
-    <mkdir dir="${netbeans.dest}/system/Modules"/>
-    <mkdir dir="${netbeans.dest}/modules/autoload"/>
-    <mkdir dir="${netbeans.dest}/modules/eager"/>
-    <createmodulexml xmldir="${netbeans.dest}/system/Modules">
-      <enabled dir="${netbeans.dest}/modules">
+    <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
+    <loadproperties srcFile="cluster.properties" />
+    <loadproperties srcFile="directories.properties" />
+    <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
+    
+    <mkdir dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.system.dir}/Modules"/>
+    <mkdir dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.modules.dir}/autoload"/>
+    <mkdir dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.modules.dir}/eager"/>
+    <createmodulexml xmldir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.system.dir}/Modules">
+      <enabled dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.modules.dir}">
         <include name="*.jar"/>
         <!-- Just to test that we can in fact preconfigure some disabled modules: -->
         <exclude name="icebrowser.jar"/>
       </enabled>
-      <disabled dir="${netbeans.dest}/modules">
+      <disabled dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.modules.dir}">
         <include name="icebrowser.jar"/>
       </disabled>
-      <autoload dir="${netbeans.dest}/modules/autoload">
+      <autoload dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.modules.dir}/autoload">
         <include name="*.jar"/>
       </autoload>
-      <eager dir="${netbeans.dest}/modules/eager">
+      <eager dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.modules.dir}/eager">
         <include name="*.jar"/>
       </eager>
     </createmodulexml>
+  </target>
+
+  <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
+  <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
+
+  <target name="build-nozip" depends="merge" description="Build the IDE but do not create a final ZIP file.">
+    <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
+    <loadproperties srcFile="cluster.properties" />
+    <repeat target="create-module-xmls-for-one-cluster" name="one.cluster.name" values="${clusters.list}" /> 
     <echo file="${netbeans.dest}/build_info">NetBeans dev build
 ------------------
 Number:   ${buildnumber}

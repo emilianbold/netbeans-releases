@@ -72,6 +72,29 @@ class UpdateTracking {
         return version;
     }
     
+    public String[] getListOfNBM( String codeName ) {
+        module = new Module();
+        module.setCodename( codeName );
+        File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
+        trackingFile = new File(directory, getTrackingFileName());
+
+        if (!trackingFile.exists() || !trackingFile.isFile())
+            return null;
+        
+        read();
+        
+        if ( module.getVersions().size() != 1 ) 
+            return null;
+        
+        List files = ((Version) module.getVersions().get(0)).getFiles();
+        String [] listFiles = new String[ files.size() ];
+        for (int i=0; i < files.size(); i++) {
+            listFiles[i] = (((ModuleFile) files.get(i)).getName());
+        }
+        
+        return listFiles;
+    }
+
     public void removeLocalized( String locale ) {
         File updateDirectory = new File( nbPath, TRACKING_DIRECTORY );
         File[] trackingFiles = updateDirectory.listFiles( new FileFilter() { // Get only *.xml files
@@ -112,13 +135,11 @@ class UpdateTracking {
         }
         
         //document.getDocumentElement().normalize();
-        String trackingFileName = module.getCodenamebase();
-        trackingFileName = trackingFileName.replace('.', '-') + ".xml";
         File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
         if (!directory.exists()) {
             directory.mkdirs();
         }
-        trackingFile = new File(directory, trackingFileName);
+        trackingFile = new File(directory, getTrackingFileName());
         try {
 	    OutputStream os = new FileOutputStream(trackingFile);
             XMLUtil.write(document, os);
@@ -128,6 +149,12 @@ class UpdateTracking {
             trackingFile.delete();
             throw new BuildException("Could not write update tracking file", e);
         }        
+    }
+
+    private String getTrackingFileName() {
+        String trackingFileName = module.getCodenamebase();
+        trackingFileName = trackingFileName.replace('.', '-') + ".xml";
+        return trackingFileName;
     }
 
     /** Scan through org.w3c.dom.Document document. */

@@ -13,7 +13,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="openide/compat" default="netbeans" basedir=".">
-  <property name="nbroot" location="../.." />
+  <import file="../../nbbuild/default.xml"/>
+
+  <property name="nbroot" location="${nb_all}" />
 
   <property name="nbm_alias" value="nb_ide"/>
   <property name="homepage.base" value="netbeans.org"/>
@@ -34,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
     <pathelement location="${nbroot}/openide/awt/netbeans/lib/openide-awt.jar" />
   </path>
   
-  <target name="compile" >
+  <target name="compile" depends="init">
     <ant dir="${nbroot}/openide" target="do-lib-javac" inheritRefs="true" >
       <property name="include" value="**/*$$*.java" />
       <property name="localdir" location="src" />
@@ -110,7 +112,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${nbroot}/openide/options/netbeans/lib/openide-options.jar"/>
                 <pathelement location="${nbroot}/openide/explorer/netbeans/lib/openide-explorer.jar"/>
                 <pathelement location="${nbroot}/openide/fs/netbeans/lib/openide-fs.jar"/>
-                <pathelement location="${nbroot}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
+                <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
            </classpath>
         </javac>
 

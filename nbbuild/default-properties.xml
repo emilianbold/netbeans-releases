@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<project name="default-properties" default="netbeans" basedir=".">
+  <dirname property="nb_all" file="${ant.file.default-properties}/.."/>
+
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="license.file" location="${nb_all}/nbbuild/standard-nbm-license.txt"/>
+  <property name="nbm_alias" value="nb_ide"/>
+
+  <property name="clusters.list.file" location="${nb_all}/nbbuild/cluster.properties"/>
+  <property name="netbeans.dest.dir" location="${nb_all}/nbbuild"/>
+  <property name="moduleCluster.file" location="${netbeans.dest.dir}/moduleCluster.properties"/>
+  <property name="directoryList.file" location="${nb_all}/nbbuild/directories.properties"/>
+
+  <property file="${clusters.list.file}"/>
+  <property file="${moduleCluster.file}"/>
+  <property file="${directoryList.file}"/>
+</project>

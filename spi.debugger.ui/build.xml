@@ -13,70 +13,56 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="debuggercore" default="netbeans" basedir=".">
+  <import file="../nbbuild/default.xml"/> 
 
-  <property name="nbm_alias" value="nb_ide"/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+  <target name="init" depends="default.init">
+    <patternset id="debuggercore.files">
+      <include name="${nb.modules/autoload.dir}/debuggerCore.jar"/>
+    </patternset>
 
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
+    <path id="cp">
+      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
+      <pathelement location="${jdkhome}/lib/tools.jar"/>
+      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+      <pathelement location="${java/srcmodel.dir}/${nb.modules/autoload.dir}/java-src-model.jar"/>
+      <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
+      <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+      <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
+      <pathelement location="${debuggercore/oldapi.dir}/${nb.modules/autoload.dir}/openide-debugger.jar"/>
+    </path>
+  </target>
 
-  <target name="setup-jdkhome-1">
-    <!-- Note: user-configured -Djavahome=... will always override this: -->
-    <property name="javahome" location="${java.home}"/>
-    <available property="javahome-valid" file="${javahome}/lib/tools.jar"/>
-  </target>
-  <target name="setup-jdkhome-2" depends="setup-jdkhome-1" if="javahome-valid">
-    <property name="jdkhome" value="${javahome}"/>
-    <property name="jdkhome-valid" value="true"/>
-  </target>
-  <target name="setup-jdkhome-3" depends="setup-jdkhome-1" unless="javahome-valid">
-    <property name="jdkhome" location="${javahome}/.."/>
-    <available property="jdkhome-valid" file="${jdkhome}/lib/tools.jar"/>
-  </target>
-  <target name="setup-jdkhome" depends="setup-jdkhome-2,setup-jdkhome-3" unless="jdkhome-valid">
-    <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
-  </target>
-  
-  <target name="compile" depends="setup-jdkhome">
+  <target name="compile" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="${jdkhome}/lib/tools.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-        <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
-        <pathelement location="../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-        <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-        <pathelement location="oldapi/netbeans/modules/autoload/openide-debugger.jar"/>
-      </classpath>
+      <classpath refID="cp"/>
     </javac>
   </target>
+
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules/autoload"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-    <locjar jarfile="netbeans/modules/autoload/debuggerCore.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
-	    excludesfile="../nbbuild/standard-jar-excludes.txt"
-	    compress="false">
-      <locale name="ja"/>
-    </locjar>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/debuggerCore.jar"
+         manifest="manifest-subst.mf"
+         basedir="src"
+	 excludesfile="../nbbuild/standard-jar-excludes.txt"
+	 compress="false"/>
   </target>
 
    
   <target name="netbeans" depends="jars" description="Build everything.">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/debuggerCore.jar">
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="debuggercore.files"/>
+      </fileset>
+    </genlist>
   </target>
 
   <target name="nbm" depends="netbeans" description="Build NBM.">
     <makenbm file="debuggercore.nbm"
-             topdir="."
-             module="netbeans/modules/autoload/debuggerCore.jar"
+             productdir="${netbeans.dest.dir}/${cluster.dir}"
+             module="${nb.modules/autoload.dir}/debuggerCore.jar"
 	     homepage="http://debuggercore.${homepage.base}/"
 	     distribution="http://${dist.base}/debuggercore.nbm">
       <license file="${license.file}"/>
@@ -84,20 +70,22 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
   
-  <target name="clean" description="Clean everything.">
+  <target name="clean" depends="init" description="Clean everything.">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="debuggercore.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="debuggercore.nbm"/>
-    <delete dir="netbeans"/>
     <delete dir="javadoc"/>
     <delete dir="Info"/>
   </target>
 
-  <target name="javadoc" depends="setup-jdkhome" description="Build debuggercore module API documentation.">
+  <target name="javadoc" depends="init" description="Build debuggercore module API documentation.">
     <tstamp/>
     <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
     <echo message="Build debuggercore module API documentation..."/>
@@ -116,15 +104,7 @@ Microsystems, Inc. All Rights Reserved.
       <sourcepath>
         <pathelement location="src"/>
       </sourcepath>
-      <classpath>
-        <!-- this classpath probably should be the same as for compilation -->
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="${jdkhome}/lib/tools.jar"/>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-	<pathelement location="../debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
-      </classpath>
+      <classpath refID="cp"/>
     </javadoc>    
   </target>
 

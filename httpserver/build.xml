@@ -13,22 +13,20 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="httpserver" default="netbeans" basedir=".">
+  <import file="../nbbuild/default.xml"/>
 
-  <property name="nbm_alias" value="nb_ide"/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+  <target name="init" depends="default.init">
+    <patternset id="httpserver.files">
+      <include name="${nb.modules.dir}/httpserver.jar"/>
+      <include name="${nb.modules.dir}/ext/webserver*.jar"/>
+    </patternset>
 
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-
-  <target name="init">
     <ant dir="external" target="unscramble"/>
-    <path id="httpserver-cp">
-      <pathelement location="../openide/openide-13javac-workaround.jar"/>
-      <pathelement location="../openide/netbeans/lib/openide.jar"/>
-      <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
+
+    <path id="cp">
+      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
+      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
       <fileset dir="external">
         <include name="webserver*.jar"/>
         <include name="servlet-2.2.jar"/>
@@ -38,34 +36,39 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="compile" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath refid="httpserver-cp"/>
+      <classpath refid="cp"/>
     </javac>
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/httpserver.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
-	    excludesfile="../nbbuild/standard-jar-excludes.txt"
-	    compress="false">
-      <locale name="ja"/>
-    </locjar>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/httpserver.jar"
+         manifest="manifest-subst.mf"
+         basedir="src"
+	 excludesfile="../nbbuild/standard-jar-excludes.txt"
+	 compress="false"/>
   </target>
 
   <target name="netbeans" depends="jars,release">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/httpserver.jar">
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="httpserver.files"/>
+      </fileset>
+    </genlist>
   </target>
 
   <target name="release" depends="init">
+<!-- Doesn't make sense to me to create directory and then copy the files from it.
+    It can be probably used for developers to add files to build, but then they should add
+    those file to httpserver.files patternset, so I'm commenting this out for now
     <mkdir dir="release"/>
     <copy todir="netbeans" includeEmptyDirs="false">
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-    </copy>
-    <mkdir dir="netbeans/modules/ext"/>
-    <copy todir="netbeans/modules/ext">
+    </copy>-->
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext">
       <fileset dir="external">
         <include name="webserver*.jar"/>
       </fileset>
@@ -74,8 +77,8 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="nbm" depends="netbeans">
     <makenbm file="httpserver.nbm"
-             topdir="."
-             module="netbeans/modules/httpserver.jar"
+             productdir="${netbeans.dest.dir}/${cluster.dir}"
+             module="${nb.modules.dir}/httpserver.jar"
 	     homepage="http://httpserver.${homepage.base}/"
 	     distribution="http://${dist.base}/httpserver.nbm">
       <license name="httpserver-module-license.txt">
@@ -88,17 +91,18 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="clean">
+  <target name="clean" depends="init">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="httpserver.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="httpserver.nbm"/>
-    <delete dir="netbeans"/>
     <delete dir="javadoc"/>
-    <delete dir="Info"/>
   </target>
 
   <!-- This target will only work *inside* the IDE! -->
@@ -106,7 +110,7 @@ Microsystems, Inc. All Rights Reserved.
     <nbinstaller action="reinstall" module="netbeans/modules/httpserver.jar"/>
   </target>
 
-  <target name="javadoc" description="Build httpserver module API documentation.">
+  <target name="javadoc" depends="init" description="Build httpserver module API documentation.">
     <tstamp/>
     <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
     <echo message="Build httpserver module API documentation..."/>
@@ -125,7 +129,7 @@ Microsystems, Inc. All Rights Reserved.
       <sourcepath>
         <pathelement location="src"/>
       </sourcepath>
-      <classpath refid="httpserver-cp"/>
+      <classpath refid="cp"/>
     </javadoc>    
   </target>
 

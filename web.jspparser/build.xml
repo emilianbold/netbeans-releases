@@ -13,25 +13,34 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="web_jspparser" default="netbeans" basedir=".">
+  <import file="../../nbbuild/default.xml"/> 
 
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
-  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
-
-  <property name="nb_root" location="../.."/>
-  <property name="core_root" location="../core"/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" value="../../nbbuild/standard-nbm-license.txt"/>
-  <property name="nbm_alias" value="nb_ide"/>
-
-  <target name="init">
+  <target name="init" depends="default.init">
     <ant dir="../external" target="unscramble"/>
     <property file="../spec-vers.properties"/>
     <filter token="CORE_SPEC_VERS_SUBST" value="${web.core.specification.version}"/>
     <filter token="SERVLET24_SPEC_VERS_SUBST" value="${web.servletapi24.specification.version}"/>
     <filter token="JSPPARSER_SPEC_VERS_SUBST" value="${web.jspparser.specification.version}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <patternset id="web/jspparser.files">
+      <include name="${nb.modules/autoload.dir}/jsp-parser.jar"/>
+      <include name="${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"/>
+      <include name="${nb.modules/autoload.dir}/ext/jasper-compiler-5.0.19.jar"/>
+      <include name="${nb.modules/autoload.dir}/ext/jasper-runtime-5.0.19.jar"/>
+      <include name="${nb.modules/autoload.dir}/ext/commons-logging-api.jar"/>
+      <include name="${nb.modules/autoload.dir}/ext/commons-el.jar"/>
+    </patternset>
+    <path id="cp">
+      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
+      <pathelement location="${web/servletapi24.dir}/${nb.modules/autoload.dir}/ext/servlet-api-2.4.jar"/>
+      <pathelement location="../external/jsp-api-2.0.jar"/>
+      <pathelement location="../external/jasper-compiler-5.0.19.jar"/>
+      <pathelement location="../external/jasper-runtime-5.0.19.jar"/>
+      <pathelement location="../external/commons-logging-api.jar"/>
+      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+      <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> <!-- used only indirectly -->
+    </path>
   </target>
 
   <target name="compile" depends="init">
@@ -40,49 +49,33 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/netbeans/modules/web/jsps/"/>
       <include name="org/netbeans/modules/web/jspparser_ext/"/>
       <include name="org/apache/jasper/"/>
-      <classpath>
-        <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
-        <fileset dir="${nb_root}/core/external">
-          <include name="xml-apis*.jar"/>
-        </fileset>
-        <pathelement location="../external/jsp-api-2.0.jar"/>
-        <pathelement location="../external/servlet-api-2.4.jar"/>
-        <pathelement location="../external/jasper-compiler-5.0.19.jar"/>
-        <pathelement location="../external/jasper-runtime-5.0.19.jar"/>
-        <pathelement location="../external/commons-logging-api.jar"/>
-        <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
-	<pathelement location="${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
-        <pathelement location="${nb_root}/openide/io/netbeans/modules/autoload/openide-io.jar"/> <!-- used only indirectly -->
-       <!-- <pathelement location="${nb_root}/openide/registry/netbeans/modules/org-netbeans-modules-registry.jar"/> -->
-      </classpath>
+      <classpath refID="cp"/>
     </javac>
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules/autoload/ext"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/autoload/jsp-parser.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
-	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
-	    compress="false">
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/jsp-parser.jar"
+         manifest="manifest-subst.mf"
+         basedir="src"
+         excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
+         compress="false">
       <include name="org/netbeans/modules/web/jspparser/"/>
       <include name="org/netbeans/modules/web/jsps/"/>
-      <locale name="ja"/>
-    </locjar>
-    <locjar jarfile="netbeans/modules/autoload/ext/jsp-parser-ext.jar"
-            basedir="src"
-	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
-	    compress="false">
+    </jar>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"
+         basedir="src"
+         excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
+         compress="false">
       <include name="org/netbeans/modules/web/jspparser_ext/"/>
       <include name="org/apache/jasper/"/>
-      <locale name="ja"/>
-    </locjar>
+    </jar>
   </target>
 
-  <target name="release">
-    <mkdir dir="netbeans/modules/autoload/ext"/>
-    <copy todir="netbeans/modules/autoload/ext">
+  <target name="release" depends="init">
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
+    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext">
       <fileset dir="../external">
         <include name="jasper-compiler-5.0.19.jar"/>
         <include name="jasper-runtime-5.0.19.jar"/>
@@ -93,36 +86,40 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars,release">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/jsp-parser.jar">
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="web/jspparser.files"/>
+      </fileset>
+    </genlist>
   </target>
 
   <target name="nbm" depends="netbeans">
-    <delete dir="Info"/>
     <makenbm file="web-jspparser.nbm"
-             topdir="."
-             module="netbeans/modules/autoload/jsp-parser.jar"
+             productdir="${netbeans.dest.dir}/${cluster.dir}"
+             module="${nb.modules/autoload.dir}/jsp-parser.jar"
 	     homepage="http://web.${homepage.base}/"
 	     distribution="http://${dist.base}/web-jspparser.nbm">
       <license name="jspparser-license.txt">
         <text>For the JSP Parser module:</text>
         <file location="${license.file}"/>
         <text>For the Jasper compiler and runtime:</text>
-        <file location="${nb_root}/nbbuild/external/apache-license.txt"/>
+        <file location="${nb_all}/nbbuild/external/apache-license.txt"/>
       </license>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>
 
-  <target name="clean">
+  <target name="clean" depends="init">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="web/jspparser.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="web-jspparser.nbm"/>
-    <delete dir="Info"/>
-    <delete dir="netbeans"/>
   </target>
 
   <target name="test-build" depends="compile">

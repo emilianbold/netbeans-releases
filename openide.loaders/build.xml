@@ -13,19 +13,13 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="openide/loaders" default="netbeans" basedir=".">
+    <import file="../../nbbuild/default.xml"/>
 
-    <property name="nb_all" value="../.."/>
-
-    <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-
-    <property name="nbm_alias" value="nb_ide"/>
-    <property name="homepage.base" value="netbeans.org"/>
-    <property name="dist.base" value="www.netbeans.org/download/nbms/alpha/dev"/>
-    <property name="license.file" value="${nb_all}/nbbuild/standard-nbm-license.txt"/>
-
-    <path id="cp">
+    <target name="init" depends="default.init">
+      <patternset id="openide/loaders.files">
+        <include name="${nb.lib.dir}/openide-loaders.jar"/>
+      </patternset>
+      <path id="cp">
         <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${nb_all}/openide/fs/netbeans/lib/openide-fs.jar"/>
         <pathelement location="${nb_all}/openide/util/netbeans/lib/openide-util.jar"/>
@@ -38,17 +32,19 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_all}/openide/explorer/netbeans/lib/openide-explorer.jar"/>
         <pathelement location="${nb_all}/openide/modules/netbeans/lib/openide-modules.jar"/>
         <!-- By transitivity from text and explorer; needed for Javadoc, apparently: -->
-        <pathelement location="${nb_all}/openide/options/netbeans/lib/openide-options.jar"/>
-    </path>
-  
-    <target name="compile">
+<!--        <pathelement location="${nb_all}/openide/options/netbeans/lib/openide-options.jar"/>-->
+        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+      </path>
+    </target>
+ 
+    <target name="compile" depends="init">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
             <classpath refid="cp"/>
         </javac>
         <taskdef name="enhanceclass" classname="org.netbeans.nbbuild.NbEnhanceClass" classpath="../../nbbuild/nbantext.jar"/>
         <enhanceclass basedir="src">
             <classpath>
-                <pathelement location="${nb_all}/core/netbeans/lib/ext/boot.jar"/>
+                <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
                 <!-- See xtest/instance/build-clover.xml for explanation: -->
                 <pathelement location="${nb_all}/core/netbeans/lib/ext/clover.jar"/>
             </classpath>
@@ -78,27 +74,29 @@ Microsystems, Inc. All Rights Reserved.
         </enhanceclass>
     </target>
 
-    <target name="jars" depends="compile">
-        <mkdir dir="netbeans/lib"/>
+    <target name="jars" depends="init,compile">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/lib/openide-loaders.jar"
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide-loaders.jar"
                 manifest="manifest-subst.mf"
                 basedir="src"
 	        excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
-	        compress="false">
-            <locale name="ja"/>
-        </locjar>
+	        compress="false"/>
     </target>
 
     <target name="netbeans" depends="jars" description="Build module.">
-        <genlist targetname="nbm" outputfiledir="netbeans"/>
+        <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.lib.dir}/openide-loaders.jar">
+          <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+             <patternset refID="openide/loaders.files"/>
+          </fileset>
+        </genlist>
     </target>
 
     <target name="nbm" depends="netbeans" description="Build NBM.">
         <makenbm file="openide-loaders.nbm"
-                 topdir="."
-                 module="netbeans/lib/openide-loaders.jar"
+                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 module="${nb.lib.dir}/openide-loaders.jar"
                  homepage="http://openide.${homepage.base}/"
                  distribution="http://${dist.base}/openide-loaders.nbm">
             <license file="${license.file}"/>
@@ -106,7 +104,7 @@ Microsystems, Inc. All Rights Reserved.
         </makenbm>
     </target>
 
-    <target name="javadoc" description="Build Javadoc.">
+    <target name="javadoc" depends="init" description="Build Javadoc.">
         <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
             <property name="javadoc.base" location="."/>
             <property name="javadoc.name" value="LoadersAPI"/>
@@ -120,16 +118,17 @@ Microsystems, Inc. All Rights Reserved.
         </ant>
     </target>
   
-    <target name="clean" description="Clean build products.">
+    <target name="clean" depends="init" description="Clean build products.">
         <delete>
             <fileset dir="src">
                 <include name="**/*.class"/>
             </fileset>
+            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+              <patternset refID="openide/loaders.files"/>
+            </fileset>
         </delete>
         <delete file="manifest-subst.mf"/>
         <delete file="openide-loaders.nbm"/>
-        <delete dir="netbeans"/>
-        <delete dir="Info"/>
         <delete dir="javadoc"/>
     </target>
     

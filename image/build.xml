@@ -13,47 +13,48 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="image" default="netbeans" basedir=".">
+  <import file="../nbbuild/default.xml"/>
+  
+  <target name="init" depends="default.init">
+    <patternset id="image.files">
+      <include name="${nb.modules.dir}/image.jar"/>
+    </patternset>
+    <path id="cp">
+      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
+      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+    </path>
+  </target>
 
-  <property name="nbm_alias" value="nb_ide"/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
-
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-
-  <target name="compile">
+  <target name="compile" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-      </classpath>
+      <classpath refID="cp"/>
     </javac>
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/image.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
-	    excludesfile="../nbbuild/standard-jar-excludes.txt"
-	    compress="false">
-      <locale name="ja"/>
-    </locjar>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/image.jar"
+         manifest="manifest-subst.mf"
+         basedir="src"
+	 excludesfile="../nbbuild/standard-jar-excludes.txt"
+	 compress="false"/>
   </target>
 
   <target name="netbeans" depends="jars">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/image.jar">
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="image.files"/>
+      </fileset>
+    </genlist>
   </target>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="image.nbm"
-             topdir="."
-             module="netbeans/modules/image.jar"
+             productdir="${netbeans.dest.dir}/${cluster.dir}"
+             module="${nb.modules.dir}/image.jar"
 	     homepage="http://image.${homepage.base}/"
 	     distribution="http://${dist.base}/image.nbm">
       <license file="${license.file}"/>
@@ -73,23 +74,24 @@ Microsystems, Inc. All Rights Reserved.
     <nbinstaller module="test/image.jar" action="reinstall"/>
   </target>
 
-  <target name="clean">
+  <target name="clean" depends="init">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="image.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="image.nbm"/>
-    <delete dir="netbeans"/>
-    <delete dir="Info"/>
   </target>
 
   <target name="real-clean" depends="clean">
     <delete dir="test"/>
   </target>
 
-  <target name="javadoc" description="Build image module API documentation.">
+  <target name="javadoc" depends="init" description="Build image module API documentation.">
     <tstamp/>
     <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
     <echo message="Build image module API documentation..."/>
@@ -108,12 +110,7 @@ Microsystems, Inc. All Rights Reserved.
       <sourcepath>
         <pathelement location="src"/>
       </sourcepath>
-      <classpath>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-      </classpath>
+      <classpath refID="cp"/>
     </javadoc>    
   </target>
 

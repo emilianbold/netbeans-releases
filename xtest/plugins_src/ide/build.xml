@@ -14,6 +14,8 @@ Microsystems, Inc. All Rights Reserved.
 
 <!-- build script for IDE XTest plugin -->
 <project basedir="." default="all" name="XTest IDE plugin">
+    <import file="../../../nbbuild/default-properties.xml"/>
+
     <target name="all">
         <!-- WRITEME -->
     </target>
@@ -22,16 +24,14 @@ Microsystems, Inc. All Rights Reserved.
     <target name="compile">
         <path id="basecp">
             <pathelement location="${nball.cvs.root}/openide/openide-13javac-workaround.jar"/>
-            <fileset dir="${nball.cvs.root}/openide/netbeans/lib">
-                <include name="openide*.jar" />
-            </fileset>
-            <pathelement location="${nball.cvs.root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
-            <pathelement location="${nball.cvs.root}/core/netbeans/lib/core.jar"/>
-            <pathelement location="${nball.cvs.root}/core/netbeans/lib/ext/boot.jar"/>
-            <pathelement location="${nball.cvs.root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-            <pathelement location="${nball.cvs.root}/openide/io/netbeans/modules/autoload/openide-io.jar"/>
-            <pathelement location="${nball.cvs.root}/core/output/netbeans/modules/autoload/core-output.jar"/>
-            <pathelement location="${nball.cvs.root}/core/execution/netbeans/modules/autoload/core-execution.jar"/>
+            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar" />
+            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar" />
+            <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+            <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
+            <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+            <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
+            <pathelement location="${core/output.dir}/${nb.modules/autoload.dir}/core-output.jar"/>
+            <pathelement location="${core/execution.dir}/${nb.modules/autoload.dir}/core-execution.jar"/>
             <!-- use junit with already compiled extensions -->        
             <pathelement location="../../lib/xtest.jar"/>
             <pathelement location="../../lib/xtest-junit-testrunner.jar"/>

@@ -13,47 +13,40 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="libs/xerces" default="netbeans" basedir=".">
+    <import file="../../nbbuild/default.xml"/> 
 
     <property name="libs_root" location=".."/>
 
-    <property name="nbroot" location="${libs_root}/.."/>
-    <property name="nbext_root" location="${nbroot}/nbbuild"/>
-
     <property file="${libs_root}/public.properties"/>
+    <property name="apache-license.file" location="${nb_all}/nbbuild/external/apache-license.txt"/>
 
-    <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
-    <property name="apache-license.file" location="${nbroot}/nbbuild/external/apache-license.txt"/>
-    <property name="homepage.base" value="libs.netbeans.org"/>
-    <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-    <property name="nbm_alias" value="nb_ide"/>
-
-    <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
-    <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
-    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
-
-    <target name="init">
+    <target name="init" depends="default.init">
         <property file="${libs_root}/public.properties"/>
         <filter token="XERCES_SPEC_VERS_SUBST" value="${libs.xerces.specification.version}"/>
         <filter token="XERCES_IMPL_VERS_SUBST" value="${libs.xerces.implementation.version}"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <ant dir="../external" target="unscramble"/>
+        <patternset id="libs/xerces.files">
+          <include name="${nb.modules/autoload.dir}/nb-xerces-wrapper.jar"/>
+          <include name="${nb.modules/autoload.dir}/ext/${libs.xerces.jar}"/>
+          <include name="${nb.modules/autoload.dir}/ext/xml-commons-dom-ranges-*.jar"/>
+        </patternset>
     </target>
 
     <target name="jars" depends="init">
-        <mkdir dir="netbeans/modules"/>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}"/>
 
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/modules/autoload/nb-xerces-wrapper.jar"
-                manifest="manifest-subst.mf"
-                compress="false">
-            <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
-            <locale name="ja"/>
-        </locjar>    
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/nb-xerces-wrapper.jar"
+             manifest="manifest-subst.mf"
+             compress="false">
+            <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+        </jar>    
     </target>
 
     <target name="release" depends="init">
-        <mkdir dir="netbeans/modules/autoload/ext"/>
-        <copy todir="netbeans/modules/autoload/ext">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext">
             <fileset dir="../external">
                 <include name="${libs.xerces.jar}"/>
                 <include name="xml-commons-dom-ranges-*.jar"/>
@@ -62,14 +55,17 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="jars, release">
-        <genlist targetname="nbm" outputfiledir="netbeans"/>
+       <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/nb-xerces-wrapper.jar">
+          <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+             <patternset refID="libs/xerces.files"/>
+          </fileset>
+       </genlist>
     </target>
 
     <target name="nbm" depends="netbeans">
-        <delete dir="Info"/>
-        <makenbm file="${libs_root}/xerces.nbm"
-                 topdir="."
-                 module="netbeans/modules/autoload/nb-xerces-wrapper.jar"
+        <makenbm file="xerces.nbm"
+                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 module="${nb.modules/autoload.dir}/nb-xerces-wrapper.jar"
                  homepage="http://${homepage.base}/#xerces"
                  distribution="http://${dist.base}/xerces.nbm">
             <license name="xerces-license.txt">
@@ -84,11 +80,14 @@ Microsystems, Inc. All Rights Reserved.
         </makenbm>
     </target>
 
-    <target name="clean">
+    <target name="clean" depends="init">
         <delete file="manifest-subst.mf"/>
-        <delete file="${libs_root}/xerces.nbm"/>
-        <delete dir="netbeans"/>
-        <delete dir="Info"/>
+        <delete file="xerces.nbm"/>
+        <delete>
+            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+              <patternset refID="libs/xerces.files"/>
+            </fileset>
+        </delete>
     </target>
 
     <target name="all" depends="clean, nbm"/>

@@ -13,6 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="Unit tests" basedir="." default="all">
+    <import file="../../nbbuild/default-properties.xml"/>
 
     <!-- =================== -->
     <!-- Setting classpathes -->
@@ -126,9 +127,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- this "switch" will decide how to create classpath -->
     <target name="which-classpath">
-        <condition property="jarcode.classpath">
-            <equals arg1="${xtest.source.location}" arg2="jar"/>
-        </condition>
         <condition property="srccode.classpath">
             <equals arg1="${xtest.source.location}" arg2="src"/>
         </condition>
@@ -142,29 +140,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========================= -->
     
     <target name="prepare-compile-classpath"
-         depends="jarcompile-classpath,srccompile-classpath,idecompile-classpath"/>
+         depends="srccompile-classpath,idecompile-classpath"/>
     
-    <target name="jarcompile-classpath" depends="which-classpath" if="jarcode.classpath">
-        <echo message="Using jars classpath for compilation."/>
-    	<!-- this classpath will be used for compiling tests against jars -->
-	<path id="compiletest.classpath">        
-	    	<pathelement location="../../openide/openide-13javac-workaround.jar"/>
-	    	<pathelement location="../netbeans/lib/core.jar"/>
-                <pathelement location="../term/netbeans/modules/autoload/terminalemulator.jar"/>
-	    	<fileset dir="../../openide/netbeans/lib">
-                    <include name="openide*.jar"/>
-             	</fileset>
-                <!-- XXX -->
-                <pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-                <pathelement location="../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-                <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-                <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-
-             	<pathelement path="${junit.path}"/>
-	    	<pathelement path="${xerces.path}"/>
-	</path>
-    </target>
-        
     <target name="srccompile-classpath" depends="which-classpath" if="srccode.classpath">
         <echo message="Using srcs classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against sources -->
@@ -175,14 +152,12 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- XXX -->
                 <pathelement location="../bootstrap/src/"/>
                 
-	        <fileset dir="../../openide/netbeans/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
+                <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
                 <!-- XXX -->
-                <pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-                <pathelement location="../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-                <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-                <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
+                <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+                <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
+                <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+                <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
 
 	        <pathelement path="${junit.path}"/>
 		<pathelement path="${xerces.path}"/>
@@ -194,17 +169,15 @@ Microsystems, Inc. All Rights Reserved.
     	<!-- this classpath will be used for compiling tests against installed IDE -->
     	<path id="compiletest.classpath">        
     		<pathelement location="${xtest.home}/lib/openide-13javac-workaround.jar"/>
-	        <pathelement location="${netbeans.home}/lib/core.jar"/>
-		<pathelement location="${netbeans.home}/lib/ext/boot.jar"/>
-	        <fileset dir="${netbeans.home}/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
+	        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+		<pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
+                <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
                 <!-- XXX -->
-                <fileset dir="${netbeans.home}/modules/autoload">
-                    <include name="openide-*.jar"/>
-                    <include name="core-*.jar"/>
-                    <include name="terminalemulator.jar"/>
-                </fileset>
+                <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+                <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
+                <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+                <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
+		<pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
                 
 	        <pathelement path="${junit.path}"/>
 		<pathelement path="${xerces.path}"/>
@@ -216,70 +189,43 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ================================== -->
     
     <target name="prepare-codetest-classpath" 
-            depends="jartest-classpath,srctest-classpath,idetest-classpath"/>
+            depends="srctest-classpath,idetest-classpath"/>
     
-    <target name="jartest-classpath" depends="which-classpath" if="jarcode.classpath">
-        <echo message="Using jars classpath."/>
-        <!-- this classpath will be used for executing tests against jars -->
-	<path id="codetest.classpath">
-        	<fileset dir="../netbeans/lib">
-            		<include name="core.jar"/>
-            		<include name="ext/*.jar"/>
-        	</fileset>
-        	<pathelement location="../../openide/netbeans/lib/openide.jar"/>
-                <!-- XXX -->
-                <pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-                <pathelement location="../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-                <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-                <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-                <pathelement location="../output/netbeans/modules/autoload/core-output.jar"/>
-                <pathelement location="../execution/netbeans/modules/autoload/core-execution.jar"/>
-                <pathelement location="../compiler/netbeans/modules/autoload/core-compiler.jar"/>
-                <pathelement location="../windows/netbeans/modules/core-windows.jar"/>
-    	</path>
-    </target>
-        
     <target name="srctest-classpath" depends="which-classpath" if="srccode.classpath">
         <echo message="Using srcs classpath."/>
         <!-- this classpath will be used for executing tests against sources -->
     	<path id="codetest.classpath">
         <!-- Working sources should take precedence over core.jar: -->
            <pathelement location="../src"/>
-        	<fileset dir="../netbeans/lib">
-              	    <!-- But loading core.jar means its manifest is available to module system: -->
-           	    <include name="core.jar"/>
-           	    <include name="ext/*.jar"/>
-        	</fileset>
-           <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+	   <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+           <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
+           <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+
             <!-- XXX -->
-            <pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-            <pathelement location="../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-            <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-            <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-            <pathelement location="../output/src"/>
-            <pathelement location="../execution/src"/>
-            <pathelement location="../compiler/src"/>
-            <pathelement location="../windows/src"/>
-    	</path>
+           <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+           <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
+           <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+           <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
+           <pathelement location="../output/src"/>
+           <pathelement location="../execution/src"/>
+           <pathelement location="../compiler/src"/>
+           <pathelement location="../windows/src"/>
+   	</path>
     </target>
     
     <target name="idetest-classpath" depends="which-classpath" if="idecode.classpath">
         <echo message="Using IDE classpath."/>
         <!-- this classpath will be used for executing tests against installed IDE -->
     	<path id="codetest.classpath">
-        	<fileset dir="${netbeans.home}/lib">
-            		<include name="core.jar"/>
-            		<include name="ext/*.jar"/>
-        	</fileset>
-        	<pathelement location="${netbeans.home}/lib/openide.jar"/>
-                <pathelement location="${netbeans.home}/lib/openide-loaders.jar"/>        
-                <!-- XXX -->
-                <fileset dir="${netbeans.home}/modules/autoload">
-                    <include name="openide-*.jar"/>
-                    <include name="core-*.jar"/>
-                    <include name="terminalemulator.jar"/>
-                </fileset>
-                
+	   <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+           <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
+           <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+           <!-- XXX -->
+           <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+           <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
+           <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+           <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
+           <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
     	</path>
     </target>
     

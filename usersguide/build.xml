@@ -13,25 +13,25 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="usersguide" default="netbeans" basedir=".">
+  <import file="../nbbuild/default.xml"/> 
 
-  <property name="nbm_alias" value="nb_ide"/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+  <target name="init" depends="default.init">
+    <patternset id="usersguide.files">
+      <include name="${nb.modules.dir}/usersguide.jar"/>
+      <include name="${nb.modules/docs.dir}/usersguide.jar"/>
+      <include name="${nb.beans.dir}/TimerBean.jar"/>
+      <include name="${nb.sources.dir}/org/netbeans/examples/lib/timerbean/**"/>
+    </patternset>
+    <path id="cp">
+      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
+      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+    </path>
+  </target>
 
-  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-
-  <target name="compile">
+  <target name="compile" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-      </classpath>
+      <classpath refID="cp"/>
     </javac>
     <!-- #24191: always turn on debug info for these sources -->
     <javac destdir="demosrc" srcdir="demosrc" deprecation="true" debug="true">
@@ -49,30 +49,31 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="tojar">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/usersguide.jar"
-            manifest="manifest-subst.mf"
-	    excludesfile="../nbbuild/standard-jar-excludes.txt"
-	    compress="false"
-            basedir="src">
-      <locale name="ja"/>
-    </locjar>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/usersguide.jar"
+         manifest="manifest-subst.mf"
+	 excludesfile="../nbbuild/standard-jar-excludes.txt"
+	 compress="false"
+         basedir="src"/>
   </target>
 
-  <target name="release">
-    <copy todir="netbeans">
-      <fileset dir="release"/>
+  <target name="release" depends="init">
+    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.beans.dir}">
+      <fileset dir="release/beans"/>
+    </copy>
+    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.sources.dir}">
+      <fileset dir="release/sources"/>
     </copy>
   </target>
 
-  <target name="javahelp">
+  <target name="javahelp" depends="init">
     <mkdir dir="javahelp/org/netbeans/modules/usersguide/JavaHelpSearch2"/>
     <jhindexer basedir="javahelp/org/netbeans/modules/usersguide"
                db="javahelp/org/netbeans/modules/usersguide/JavaHelpSearch2">
       <classpath>
-        <fileset dir="../nbbuild/external">
+        <fileset dir="${nb_all}/nbbuild/external">
           <include name="jhall*.jar"/>
         </fileset>
       </classpath>
@@ -82,8 +83,8 @@ Microsystems, Inc. All Rights Reserved.
       <exclude name="pending.html"/>
       <exclude name="ja/"/>
     </jhindexer>
-    <mkdir dir="netbeans/modules/docs"/>
-    <locjar jarfile="netbeans/modules/docs/usersguide.jar"
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}"/>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/usersguide.jar"
 	    compress="true">
       <fileset dir="javahelp" excludesfile="../nbbuild/standard-jar-excludes.txt">
         <!-- Temporary files, or preprocessing scripts: -->
@@ -95,20 +96,23 @@ Microsystems, Inc. All Rights Reserved.
         <exclude name="**/usergdto.xml"/>
         <exclude name="org/netbeans/modules/usersguide/ide.css"/>
       </fileset>
-      <locale name="ja"/>
-    </locjar>
-    <mkdir dir="netbeans/docs/org/netbeans/modules/usersguide"/>
-    <copy file="javahelp/org/netbeans/modules/usersguide/ide.css" tofile="netbeans/docs/org/netbeans/modules/usersguide/ide.css"/>
+    </jar>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/org/netbeans/modules/usersguide"/>
+    <copy file="javahelp/org/netbeans/modules/usersguide/ide.css" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/org/netbeans/modules/usersguide/ide.css"/>
   </target>
 
   <target name="netbeans" depends="jars,release,javahelp">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/usersguide.jar">
+       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+         <patternset refID="usersguide.files"/>
+       </fileset>
+    </genlist>
   </target>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="usersguide.nbm"
-             topdir="."
-             module="netbeans/modules/usersguide.jar"
+             productdir="${netbeans.dest.dir}/${cluster.dir}"
+             module="${nb.modules.dir}/usersguide.jar"
 	     homepage="http://usersguide.${homepage.base}/"
 	     distribution="http://${dist.base}/usersguide.nbm">
       <license file="${license.file}"/>
@@ -116,17 +120,18 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="clean">
+  <target name="clean" depends="init">
     <delete file="manifest-subst.mf"/>
     <delete file="usersguide.nbm"/>
-    <delete dir="netbeans"/>
-    <delete dir="Info"/>
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
       <fileset dir="demosrc">
         <include name="**/*.class"/>
+      </fileset>
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="usersguide.files"/>
       </fileset>
     </delete>
     <delete dir="javahelp/org/netbeans/modules/usersguide/JavaHelpSearch2"/>
@@ -137,8 +142,8 @@ Microsystems, Inc. All Rights Reserved.
   <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors.">
     <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
       <classpath>
-        <pathelement location="../nbbuild/nbantext.jar"/>
-        <fileset dir="../nbbuild/external">
+        <pathelement location="${nb_all}/nbbuild/nbantext.jar"/>
+        <fileset dir="${nb_all}/nbbuild/external">
           <include name="jhall*.jar"/>
         </fileset>
       </classpath>
@@ -150,7 +155,7 @@ Microsystems, Inc. All Rights Reserved.
     </checkhelpsets>
   </target>
 
-  <target name="javadoc" description="Build usersguide module API documentation.">
+  <target name="javadoc" depends="init" description="Build usersguide module API documentation.">
     <tstamp/>
     <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
     <echo message="Build usersguide module API documentation..."/>
@@ -169,12 +174,7 @@ Microsystems, Inc. All Rights Reserved.
       <sourcepath>
         <pathelement location="src"/>
       </sourcepath>
-      <classpath>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-      </classpath>
+      <classpath refID="cp"/>
     </javadoc>    
   </target>
 

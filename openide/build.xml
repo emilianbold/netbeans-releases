@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?><!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="iso-8859-1"?><!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -17,13 +17,13 @@ Microsystems, Inc. All Rights Reserved.
 <!-- Not clear how to solve this. Try rerunning build if it happens. -->
 
 <project name="openide" default="netbeans" basedir=".">
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
+  <import file="../nbbuild/default.xml"/>
 
-  <property name="nbm_alias" value="nb_ide"/>
-
-  <target name="init">
+  <target name="init" depends="default.init">
+    <patternset id="openide.files">
+      <include name="${nb.lib.dir}/openide.jar"/>
+      <include name="${nb.system.dir}/ModuleAutoDeps/org-openide.xml"/>
+    </patternset>
     <ant dir="../core/external" target="unscramble"/>
     <path id="openide-cp">
       <!-- nothing -->
@@ -134,10 +134,9 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="old-jars" depends="compile,13javac-workaround,vers-prep,loaders_32143-compat" description="Create JAR files.">
-    <mkdir dir="netbeans/lib"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="netbeans/lib/openide.jar" manifest="manifest-subst.mf" compress="false" duplicate="preserve" >
-      
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide.jar" manifest="manifest-subst.mf" compress="false" duplicate="preserve" >
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="windows/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="explorer/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
@@ -147,7 +146,6 @@ Microsystems, Inc. All Rights Reserved.
            <!-- But include patch files -->
            <include name="**/$$*$$Patch$$.class" />
       </fileset>
-      
     </jar>
   </target>
 
@@ -162,21 +160,24 @@ Microsystems, Inc. All Rights Reserved.
      <ant antfile="build.xml" target="openide-compat" dir="text" />
   </target>
   
-  <target name="release">
-    <copy todir="netbeans" includeEmptyDirs="false">
+  <target name="release" depends="init">
+    <copy todir="${netbeans.dest.dir}/${cluster.dir}" includeEmptyDirs="false">
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
   </target>
 
-  <target name="netbeans" depends="jars-from-libs,release,libs,loaders_32143-compat" description="Build everything needed for inclusion in the IDE.">
-<!--    <genlist targetname="nbm" outputfiledir="netbeans"/> -->
+  <target name="netbeans" depends="init,jars-from-libs,release,libs,loaders_32143-compat" description="Build everything needed for inclusion in the IDE.">
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.lib.dir}/openide.jar">
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="openide.files"/>
+      </fileset>
+    </genlist>
   </target>
 
   <target name="nbm" depends="netbeans">
-    <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
     <makenbm file="openide.nbm"
-             topdir="."
-             module="netbeans/lib/openide.jar"
+             productdir="${netbeans.dest.dir}/${cluster.dir}"
+             module="${nb.lib.dir}/openide.jar"
 	     homepage="http://openide.${homepage.base}/"
 	     distribution="http://${dist.base}/openide.nbm">
       <license file="${license.file}"/>
@@ -373,10 +374,11 @@ Microsystems, Inc. All Rights Reserved.
       <property name="javadoc.files" value="${selector}" />
     </ant>
   </target>
+
   <!-- Build whole openide.jar from separate libraries -->
-  <target name="jars-from-libs" depends="libs,vers-prep,loaders_32143-compat" description="Create JAR files from copied directories." unless="no-openide.jar">
-    <property name="openide.jar" value="netbeans/lib/openide.jar" />
-    <mkdir dir="netbeans/lib"/>
+  <target name="jars-from-libs" depends="init,libs,vers-prep,loaders_32143-compat" description="Create JAR files from copied directories." unless="no-openide.jar">
+    <property name="openide.jar" value="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide.jar" />
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="${openide.jar}" manifest="manifest-subst.mf" compress="false" duplicate="fail" >
       
@@ -810,7 +812,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     </zip>
   </target>
 
-  <target name="clean" description="Remove all build products." depends="libs-clean">
+  <target name="clean" description="Remove all build products." depends="init,libs-clean">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
@@ -821,15 +823,16 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       <fileset dir=".">
         <include name="*-subst.mf"/>
       </fileset>
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="openide.files"/>
+      </fileset>
     </delete>
-    <delete dir="netbeans"/>
     <delete file="openide-13javac-workaround.jar"/>
     <delete dir="javadoc"/>
     <delete file="nb-api-tutorial.zip"/>
     <!-- PENDING
     <delete dir="standalone"/>
     -->
-    <delete dir="Info"/>
     <delete file="openide.nbm"/>
     <ant dir="api/examples" target="clean"/>
   </target>

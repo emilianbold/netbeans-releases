@@ -13,39 +13,36 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="xml/tax" default="netbeans" basedir=".">
+    <import file="../../nbbuild/default.xml"/> 
 
     <property name="lib_root" location="lib"/>
     <property name="xml_root" location=".."/>
     <property name="api_root" location="${xml_root}/api"/>
 
-    <property name="nbroot" location="${xml_root}/.."/>
-    <property name="nbext_root" location="${nbroot}/nbbuild"/>
+    <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nb_all}/nbbuild/nbantext.jar"/>
 
-    <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
-    <property name="homepage.base" value="netbeans.org"/>
-    <property name="dist.base" value="www.netbeans.org/download/nbms/40/xml"/>
-    <property name="nbm_alias" value="nb_ide"/>
+    <target name="init" depends="default.init">
+      <patternset id="xml/tax.files">
+        <include name="${nb.modules/autoload.dir}/xml-tax.jar"/>
+        <include name="${nb.modules/autoload.dir}/ext/tax.jar"/>
+        <include name="${nb.modules/autoload.dir}/ext/xerces2.jar"/>
+      </patternset>
+      <path id="cp">
+         <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
+         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+         <pathelement location="${lib_root}/src"/>
+         <pathelement location="${xml/api.dir}/${nb.modules/autoload.dir}/xml-api.jar"/>
+         <pathelement location="${xml/core.dir}/${nb.modules/autoload.dir}/xml-core.jar"/>
+      </path>
+    </target>
 
-    <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
-    <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
-    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
-    <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
-
-    <property name="build.compiler.debug" value="on"/>
-
-    <target name="compile">
+    <target name="compile" depends="init">
         <for-each locations="lib"/>
 
         <echo message="Compiling TAX module classes..."/>
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-            <classpath>        
-                <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
-                <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
-                <pathelement location="${nbroot}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
-                <pathelement location="${lib_root}/src"/>
-                <pathelement location="${api_root}/src/"/>
-                <pathelement location="../core/src/"/>
-            </classpath>
+            <classpath refID="cp"/>
         </javac>
 
         <for-each locations="compat"/>
@@ -53,34 +50,32 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="jars" depends="compile">
         <for-each locations="lib"/>
-        <mkdir dir="netbeans/modules/autoload"/>   
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}"/>
         <property file="${xml_root}/spec-vers.properties"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf">
             <filterchain>
                 <expandproperties/>
             </filterchain>
         </copy>
-        <locjar jarfile="netbeans/modules/autoload/xml-tax.jar"
-                manifest="manifest-subst.mf"
-                compress="false">
-            <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
-            <fileset dir="compat/src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
-            <locale name="ja"/>
-        </locjar>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/xml-tax.jar"
+             manifest="manifest-subst.mf"
+             compress="false">
+            <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="compat/src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+        </jar>
     </target>
 
     <target name="release">
         <for-each locations="lib"/>
     </target>
 
-    <target name="javahelp">
-        <!-- It is a part of core module now. -->
-    </target>
-
-    <target name="netbeans" depends="jars,release,javahelp">
-        <for-each locations="lib"/>
-
-        <genlist targetname="nbm" outputfiledir="netbeans"/>
+    <target name="netbeans" depends="jars,release">
+       <for-each locations="lib"/>
+       <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/xml-tax.jar">
+          <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+             <patternset refID="xml/tax.files"/>
+          </fileset>
+       </genlist>
     </target>
 
     <target name="reload" depends="compile" description="Test module inside running IDE (API Support with Ant required).">
@@ -88,43 +83,43 @@ Microsystems, Inc. All Rights Reserved.
 
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
         <jar jarfile="test/xml-tax-test.jar" manifest="manifest-subst.mf" compress="false">
-            <fileset dir="src" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
-            <fileset dir="${lib_root}/src" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="${lib_root}/src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
         </jar>
         <nbinstaller module="test/xml-tax-test.jar" action="reinstall"/>
     </target>
     
     
     <target name="nbm" depends="netbeans">
-        <delete dir="Info"/>
-        <makenbm file="../xml-tax.nbm"
-                 topdir="."
+        <makenbm file="xml-tax.nbm"
+                 productdir="${netbeans.dest.dir}/${cluster.dir}"
                  needsrestart="false"
-                 module="netbeans/modules/autoload/xml-tax.jar"
+                 module="${nb.modules/autoload.dir}/xml-tax.jar"
                  homepage="http://xml.${homepage.base}/tax/"
                  distribution="http://${dist.base}/xml-tax.nbm">
              <license name="xml-tax-license.txt">
                  <text>For the Tree API for XML ("TAX") module itself:</text>
                  <file location="${license.file}"/>
                  <text>For the Apache's XML Parser (Xerces):</text>
-                 <file location="${nbroot}/nbbuild/external/apache-license.txt"/>
+                 <file location="${nb_all}/nbbuild/external/apache-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
     </target>
 
-    <target name="clean">
+    <target name="clean" depends="init">
         <for-each locations="lib"/>
 
         <delete>
             <fileset dir="src">
                 <include name="**/*.class"/>
             </fileset>
+            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+              <patternset refID="xml/tax.files"/>
+            </fileset>
         </delete>
         <delete file="manifest-subst.mf"/>
-        <delete file="../xml-tax.nbm"/>
-        <delete dir="netbeans"/>
-        <delete dir="Info"/>
+        <delete file="xml-tax.nbm"/>
 
         <for-each locations="compat"/>
     </target>

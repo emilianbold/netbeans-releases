@@ -13,6 +13,13 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="openide/nodes" default="netbeans" basedir=".">
+  <import file="../../nbbuild/default.xml"/>
+
+  <target name="boot">
+    <ant antfile="${nb_all}/core/build.xml" dir="${nb_all}/core" target="boot" />
+    <property file="${moduleCluster.file}"/>
+  </target>
+
   <property name="nbroot" location="../.." />
 
   <property name="nbm_alias" value="nb_ide"/>
@@ -29,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
     <pathelement location="${nbroot}/openide/dialogs/netbeans/lib/openide-dialogs.jar" />
   </path>
   
-  <target name="compile" >
+  <target name="compile" depends="init">
     <ant dir="${nbroot}/openide" target="do-lib-javac" inheritRefs="true" >
       <property name="localdir" location="src" />
       <property name="selector" value="openide.nodes" />
@@ -38,11 +45,10 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="patch" depends="compile" >
     <taskdef name="enhanceclass" classname="org.netbeans.nbbuild.NbEnhanceClass" classpath="${nbroot}/nbbuild/nbantext.jar"/>
-    <ant antfile="${nbroot}/core/build.xml" dir="${nbroot}/core" target="boot" />
     
     <enhanceclass basedir="src" >
         <classpath>
-            <pathelement location="${nbroot}/core/netbeans/lib/ext/boot.jar"/>
+            <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
             <!-- See xtest/instance/build-clover.xml for explanation: -->
             <pathelement location="${nbroot}/core/netbeans/lib/ext/clover.jar"/>
         </classpath>

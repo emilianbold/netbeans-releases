@@ -322,50 +322,6 @@ public class NbMerge extends Task {
             suppressedlocales.add (s.locale);
         }        
 
-        mergemodules = new Vector ();
-        mergemodules.addAll(builtmodules);
-        if (mergedependentmodules) {
-            for ( int i = 0; i < builttargets.size(); i++) {
-                String target = (String) builttargets.elementAt(i);
-                if (target.startsWith(targetprefix)) {
-                    String module = target.substring(targetprefix.length());
-                    if ( mergemodules.indexOf(module) < 0 ) {
-                        mergemodules.addElement(module);
-                    }
-                }
-            }
-        }
-
-        // merge the data
-        for (int j = 0; j < topdirs.size (); j++) {
-            File topdir = (File) topdirs.get (j);
-            for (int i = 0; i < mergemodules.size (); i++) {
-                String module = (String) mergemodules.elementAt (i);
-                File netbeans = new File (new File (topdir, module), "netbeans");
-                if (! netbeans.exists ()) {
-                    log ("Build product dir " + netbeans + " does not exist, skipping...", Project.MSG_WARN);
-                    continue;
-                }
-                Copy copy = (Copy) project.createTask ("copy");
-                FileSet fs = new FileSet ();
-                fs.setDir (netbeans);
-                it = suppressedlocales.iterator ();
-                while (it.hasNext ()) {
-                    String locale = (String) it.next ();
-                    fs.createExclude ().setName ("**/*_" + locale);
-                    fs.createExclude ().setName ("**/*_" + locale + ".*");
-                    fs.createExclude ().setName ("**/*_" + locale + "/");
-                }
-                copy.addFileset (fs);
-                copy.setTodir (dest);
-                copy.setIncludeEmptyDirs (true);
-                copy.init ();
-                copy.setLocation (location);
-                copy.execute ();
-            }
-        }
-        log("mergedmodules=" + mergemodules);
-        it = suppressedlocales.iterator ();
         UpdateTracking tr = new UpdateTracking( dest.getAbsolutePath() );
         log ( dest.getAbsolutePath() );
         while (it.hasNext ()) {

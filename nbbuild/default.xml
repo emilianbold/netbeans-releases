@@ -1,0 +1,50 @@
+<project name="default" default="init" basedir=".">
+  <import file="default-properties.xml"/>
+  <taskdef name="jhindexer"
+         classname="org.netbeans.nbbuild.JHIndexer"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+  <taskdef name="makenbm"
+         classname="org.netbeans.nbbuild.MakeNBM"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+  <taskdef name="genlist"
+         classname="org.netbeans.nbbuild.MakeListOfNBM"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+  <taskdef name="setcluster"
+         classname="org.netbeans.nbbuild.SetCluster"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+  <taskdef name="getmodulename"
+         classname="org.netbeans.nbbuild.GetModuleName"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+
+  <target name="init" depends="setup-jdkhome">
+    <!-- Gets the module name -->
+    <getmodulename name="module.name" root="${nb_all}"/>
+
+    <setcluster name="cluster.dir" module="${module.name}" list="${clusters.list}"/>
+
+    <!-- Creating the output directory -->
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}"/>
+
+    <!-- Writing the module's cluster to property file -->
+    <propertyfile file="${moduleCluster.file}">
+      <entry  key="${module.name}.dir" value="$${netbeans.dest.dir}/${cluster.dir}"/>
+    </propertyfile>
+  </target>
+
+  <target name="setup-jdkhome-1">
+    <!-- Note: user-configured -Djavahome=... will always override this: -->
+    <property name="javahome" location="${java.home}"/>
+    <available property="javahome-valid" file="${javahome}/lib/tools.jar"/>
+  </target>
+  <target name="setup-jdkhome-2" depends="setup-jdkhome-1" if="javahome-valid">
+    <property name="jdkhome" value="${javahome}"/>
+    <property name="jdkhome-valid" value="true"/>
+  </target>
+  <target name="setup-jdkhome-3" depends="setup-jdkhome-1" unless="javahome-valid">
+    <property name="jdkhome" location="${javahome}/.."/>
+    <available property="jdkhome-valid" file="${jdkhome}/lib/tools.jar"/>
+  </target>
+  <target name="setup-jdkhome" depends="setup-jdkhome-2,setup-jdkhome-3" unless="jdkhome-valid">
+    <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
+  </target>
+</project>

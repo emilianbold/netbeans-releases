@@ -13,72 +13,76 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="editor" default="netbeans" basedir=".">
+  <import file="../nbbuild/default.xml"/> 
+  
+  <target name="init" depends="default.init">
+    <patternset id="editor.files">
+      <include name="${nb.modules.dir}/editor.jar"/>
+      <include name="${nb.modules.dir}/ext/nb-editor.jar"/>
+      <include name="${nb.system.dir}/ParserDB/jdk14.jcb"/>
+      <include name="${nb.system.dir}/ParserDB/jdk14.jcs"/>
+    </patternset>
+    <path id="cp">
+      <pathelement location="../openide/openide-13javac-workaround.jar"/>
+      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+      <!-- XXX illegal dependency on core! -->
+      <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+      <pathelement location="${java/srcmodel.dir}/${nb.modules/autoload.dir}/java-src-model.jar"/>
+      <pathelement location="${debuggercore/oldapi.dir}/${nb.modules/autoload.dir}/openide-debugger.jar"/>
+      <pathelement location="libsrc"/>
+    </path>
+    <path id="libcp">
+      <pathelement location="../openide/openide-13javac-workaround.jar"/>
+      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+    </path>
+  </target>
 
-  <property name="nbm_alias" value="nb_ide"/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
-
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
-
-  <target name="compile">
+  <target name="compile" depends="init">
     <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <!-- We need Openide-util library. Namely RequestProcessor. -->
-      <classpath>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-      </classpath>
+      <classpath refID="libcp"/>
     </javac>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath>
-       <!-- XXX illegal dependency on core! -->
-       <pathelement location="../core/netbeans/lib/core.jar"/>
-       <pathelement location="libsrc"/>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-        <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
-        <pathelement location="../debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/>
-      </classpath>
+      <classpath refID="cp"/>
     </javac>
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-    <locjar jarfile="netbeans/modules/editor.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
-	    excludesfile="../nbbuild/standard-jar-excludes.txt"
-	    compress="false">
-      <locale name="ja"/>
-    </locjar>
-    <mkdir dir="netbeans/modules/ext"/>
-    <locjar jarfile="netbeans/modules/ext/nb-editor.jar"
-            basedir="libsrc"
-	    excludesfile="../nbbuild/standard-jar-excludes.txt"
-	    compress="false">
-      <locale name="ja"/>
-    </locjar>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/editor.jar"
+         manifest="manifest-subst.mf"
+         basedir="src"
+	 excludesfile="../nbbuild/standard-jar-excludes.txt"
+	 compress="false"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nb-editor.jar"
+         basedir="libsrc"
+	 excludesfile="../nbbuild/standard-jar-excludes.txt"
+	 compress="false"/>
   </target>
 
-  <target name="release">
-    <copy todir="netbeans" includeEmptyDirs="false">
+  <target name="release" depends="init">
+    <copy todir="${netbeans.dest.dir}/${cluster.dir}" includeEmptyDirs="false">
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
   </target>
 
   <target name="netbeans" depends="jars,release">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/editor.jar">
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="editor.files"/>
+      </fileset>
+    </genlist>
   </target>
 
 
   <target name="nbm" depends="netbeans">
     <makenbm file="editor.nbm"
-             topdir="."
-             module="netbeans/modules/editor.jar"
+             productdir="${netbeans.dest.dir}/${cluster.dir}"
+             module="${nb.modules.dir}/editor.jar"
 	     homepage="http://editor.${homepage.base}/"
 	     distribution="http://${dist.base}/editor.nbm">
       <license file="${license.file}"/>
@@ -86,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="clean">
+  <target name="clean" depends="init">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
@@ -96,23 +100,16 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="libsrc">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="editor.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="editor.nbm"/>
-    <delete dir="netbeans"/>
     <delete dir="javadoc"/>
-    <delete dir="Info"/>
   </target>
 
-  <path id="cp">
-    <pathelement location="src" />
-    <pathelement location="libsrc"/>
-    <pathelement location="../openide/openide-13javac-workaround.jar"/>
-    <pathelement location="../openide/netbeans/lib/openide.jar"/>
-    <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-  </path>
-
-  <target name="javadoc" description="Build editor module API documentation.">
+  <target name="javadoc" depends="init" description="Build editor module API documentation.">
      <selector id="editor_javadoc_files" >
        <or>
          <filename name="src/**/*.java" />

@@ -14,51 +14,40 @@ Microsystems, Inc. All Rights Reserved.
 
 
 <project name="monitor" default="netbeans" basedir=".">
+  <import file="../nbbuild/default.xml"/>
 
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/>
-
-  <property name="nb_root" location=".."/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
-  <property name="nbm_alias" value="nb_ide"/>
-  <property name="storepass" value="?"/>
-
-  <property name="servlet22" 
-     location="${nb_root}/httpserver/external/servlet-2.2.jar"/>
-  <property name="servlet23" 
-     location="${nb_root}/web/external/servlet-2.3.jar"/>
-
-  <target name="setup-jdkhome-1">
-    <!-- Note: user-configured -Djavahome=... will always override this: -->
-    <property name="javahome" location="${java.home}"/>
-    <available property="javahome-valid" file="${javahome}/lib/tools.jar"/>
-  </target>
-  <target name="setup-jdkhome-2" depends="setup-jdkhome-1" if="javahome-valid">
-    <property name="jdkhome" value="${javahome}"/>
-    <property name="jdkhome-valid" value="true"/>
-  </target>
-  <target name="setup-jdkhome-3" depends="setup-jdkhome-1" unless="javahome-valid">
-    <property name="jdkhome" location="${javahome}/.."/>
-    <available property="jdkhome-valid" file="${jdkhome}/lib/tools.jar"/>
-  </target>
-  <target name="setup-jdkhome" depends="setup-jdkhome-2,setup-jdkhome-3" unless="jdkhome-valid">
-    <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
+  <target name="init" depends="default.init">
+    <patternset id="monitor.files">
+      <include name="${nb.modules.dir}/module.jar"/>
+      <include name="${nb.modules.dir}/ext/httpmonitor.jar"/>
+    </patternset>
+    <path id="core-cp">
+      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
+      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+      <pathelement location="${schema2beans/rt.dir}/${nb.modules/autoload.dir}/schema2beans.jar"/>
+      <pathelement location="${httpserver/servletapi.dir}/${nb.modules/autoload.dir}/ext/servlet-2.2.jar"/>
+    </path>
+    <path id="server-cp">
+      <pathelement location="${schema2beans/rt.dir}/${nb.modules/autoload.dir}/schema2beans.jar"/>
+      <pathelement location="${web/servletapi23.dir}/${nb.modules/autoload.dir}/ext/servlet-2.3.jar"/>
+    </path>
   </target>
 
   <!-- These are the primary targets. -->
 
   <target name="netbeans" depends="jars,javahelp,copy-to-tomcat5">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/monitor.jar">
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="monitor.files"/>
+      </fileset>
+    </genlist>
   </target>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="monitor.nbm"
-             topdir="."
-	     module="netbeans/modules/monitor.jar"
+             productdir="${netbeans.dest.dir}/${cluster.dir}"
+	     module="${nb.modules.dir}/monitor.jar"
 	     homepage="http://monitor.${homepage.base}/"
 	     distribution="http://${dist.base}/monitor.nbm">
       <license file="${license.file}" />
@@ -66,21 +55,22 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="clean">
+  <target name="clean" depends="init">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="monitor.files"/>
+      </fileset>
     </delete>
-    <delete dir="netbeans"/>
-    <delete dir="Info"/>
-   <delete dir="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch2"/>
-   <delete file="monitor.nbm"/>	
-   <delete file="manifest-subst.mf"/>	
+    <delete dir="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch2"/>
+    <delete file="monitor.nbm"/>	
+    <delete file="manifest-subst.mf"/>	
   </target>
 
   <!-- These are the secondary targets. -->
- <target name="javahelp">
+ <target name="javahelp" depends="init">
     <mkdir dir="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch2"/>
     <jhindexer basedir="javahelp/org/netbeans/modules/web/monitor/docs/"
                db="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch2">
@@ -94,12 +84,11 @@ Microsystems, Inc. All Rights Reserved.
       <exclude name="ja/"/>
       <exclude name="credits.html"/>
     </jhindexer>
-    <mkdir dir="netbeans/modules/docs"/>
-    <locjar jarfile="netbeans/modules/docs/monitor.jar"
-            compress="true">
-      <fileset dir="javahelp" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
-      <locale name="ja"/>
-    </locjar>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}"/>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/monitor.jar"
+         compress="true">
+      <fileset dir="javahelp" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+    </jar>
   </target>
 
   <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors.">
@@ -130,31 +119,26 @@ Microsystems, Inc. All Rights Reserved.
     The need for this target will be removed when we move the the
     projects based deployment of the monitor. 
     --> 
-    <copy file="${nb_root}/schema2beans/rt/netbeans/modules/autoload/schema2beans.jar" tofile="${nb_root}/tomcatint/tomcat5/bundled/netbeans/jakarta-tomcat-5.0.19/common/lib/schema2beans.jar"/>
-    <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="${nb_root}/tomcatint/tomcat5/bundled/netbeans/jakarta-tomcat-5.0.19/common/lib/httpmonitor.jar"/>
+    <copy file="${schema2beans/rt.dir}/${nb.modules/autoload.dir}/schema2beans.jar" 
+          tofile="${tomcatint/tomcat5/bundled.dir}/jakarta-tomcat-5.0.19/common/lib/schema2beans.jar"/>
+    <copy file="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/httpmonitor.jar"
+          tofile="${tomcatint/tomcat5/bundled.dir}/jakarta-tomcat-5.0.19/common/lib/httpmonitor.jar"/>
   </target>
 
   <target name="bundled-tomcat5-check">
     <available property="tomcat5-bundled" 
-    file="${nb_root}/tomcatint/tomcat5/bundled/netbeans/modules/eager/tomcat5-bundled.jar"/>
+    file="${tomcatint/tomcat5/bundled.dir}/${nb.modules/eager.dir}/tomcat5-bundled.jar"/>
   </target>
 
   <target name="compile"
-	  depends="setup-jdkhome, compile-core, compile-server"/>
+	  depends=" compile-core, compile-server"/>
 
-  <target name="compile-core">
+  <target name="compile-core" depends="init">
     <javac srcdir="src" destdir="src"
        deprecation="${build.compiler.deprecation}" 
        debug="${build.compiler.debug}"
        includes="**/MonitorModule.java,**/monitor/data/*,**/monitor/client/**">
-
-       <classpath>
-         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
-         <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
-         <pathelement location="${nb_root}/schema2beans/rt/netbeans/modules/autoload/schema2beans.jar"/>
-         <pathelement location="${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
-         <pathelement location="${servlet22}"/>
-       </classpath>
+       <classpath refID="core-cp"/>
      </javac>
   </target>
 
@@ -164,43 +148,21 @@ Microsystems, Inc. All Rights Reserved.
        debug="${build.compiler.debug}"
        includes="**/monitor/server/**"
        excludes="**/SCCS/**, **/CVS/**">
-
-       <classpath>
-         <pathelement location="${nb_root}/schema2beans/rt/netbeans/modules/autoload/schema2beans.jar"/>
-         <pathelement location="${servlet23}"/>	
-       </classpath>
+       <classpath refID="server-cp"/>
      </javac>
   </target>
 
-<!--
-  <target name="compile-catalina" if="tomcat4-bundled" depends="bundled-tomcat4-check">
-    <javac srcdir="src" destdir="src"
-         deprecation="${build.compiler.deprecation}" 
-	 debug="${build.compiler.debug}"
-	 includes="**/monitor/catalina/**">
-       <classpath>
-          <pathelement location="${servlet23}"/>
-          <pathelement location="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/server/lib/catalina.jar"/> 
-       </classpath>
-     </javac>
-  </target>
--->  
-
-  <target name="jars" depends="compile,module-jars">
-  </target>
-
-  <target name="module-jars">
-    <mkdir dir="netbeans/modules"/>
+  <target name="jars" depends="compile">
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf"
           filtering="on"/>
 
-    <locjar jarfile="netbeans/modules/monitor.jar"
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/monitor.jar"
          manifest="manifest-subst.mf"
          compress="false">
-      <locale name="ja"/>
       <fileset dir="src">
-        <patternset excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt">
+        <patternset excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">
           <include name="org/netbeans/modules/web/monitor/client/"/>
           <include name="org/netbeans/modules/web/monitor/data/"/>
           <include name="org/netbeans/modules/web/monitor/resources/"/>
@@ -209,45 +171,22 @@ Microsystems, Inc. All Rights Reserved.
           <include name="org/netbeans/modules/web/monitor/Bundle_*.properties"/>
         </patternset>
       </fileset>
-    </locjar>
+    </jar>
  
  <!-- NOTE: this is not an IDE module. It is deployed on the execution 
       server. It will not be deployed correctly if we build a separate 
       version for another language --> 
-    <mkdir dir="netbeans/modules/ext"/>
-    <jar jarfile="netbeans/modules/ext/httpmonitor.jar"
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/httpmonitor.jar"
          compress="false">
 	<fileset dir="src">
-        <patternset excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt">
+        <patternset excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">
 	  <include name="org/netbeans/modules/web/monitor/server/"/>
           <include name="org/netbeans/modules/web/monitor/data/"/>
         </patternset>
       </fileset>
     </jar>
   </target>
-
-<!--
-  <target name="catalina-jar" if="tomcat5-bundled" depends="bundled-tomcat5-check">
- - NOTE: this is not an IDE module. It is deployed on the execution 
-      server. It will not be deployed correctly if we build a separate 
-      version for another language. 
-      This jar file will no longer be required when we switch to J2EE
-      1.4. 
-   -
-  <jar jarfile="netbeans/modules/ext/monitor-valve.jar"
-         compress="false">
-      <fileset dir="src">
-        <patternset excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt">
-          <include name="org/netbeans/modules/web/monitor/catalina/MonitorValve**"/> 
-
-          <include name="org/netbeans/modules/web/monitor/catalina/DispatchListener**"/>	
-        </patternset>
-      </fileset>
-
-    </jar>
-  </target>
--->
-
 </project>
 
 

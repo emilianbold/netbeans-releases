@@ -13,22 +13,33 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="junit" default="netbeans" basedir=".">
+  <import file="../nbbuild/default.xml"/> 
 
-  <property name="nbm_alias" value="nb_ide"/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="module.license.file" location="${nb_all}/nbbuild/standard-nbm-license.txt"/>
 
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-  
-  <property name="build.compiler.deprecation" value="off"/>
-  <property name="build.compiler.debug" value="off"/>  
-
-  <property name="module.license.file" location="../nbbuild/standard-nbm-license.txt"/>
-
-  <target name="init">
+  <target name="init" depends="default.init">
     <ant dir="external" target="unscramble"/>
+    <patternset id="junit.files">
+      <include name="${nb.modules.dir}/junit.jar"/>
+      <include name="${nb.modules.dir}/ext/juni-testrunnert.jar"/>
+      <include name="${nb.modules/docs.dir}/junit-module-help.jar"/>
+      <include name="${nb.docs.dir}/junit-3.8.1-api.zip"/>
+      <include name="${nb.modules.dir}/ext/junit*.jar"/>
+      <include name="${nb.system.dir}/ParserDB/JUnit-*.jc?"/>
+    </patternset>
+    <path id="cp">
+      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
+      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+      <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
+      <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+      <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
+      <pathelement location="${java/srcmodel.dir}/${nb.modules/autoload.dir}/java-src-model.jar"/>
+      <pathelement location="${debuggercore/oldapi.dir}/${nb.modules/autoload.dir}/openide-debugger.jar"/>
+      <fileset dir="external">
+        <include name="junit*.jar"/>
+      </fileset>
+    </path>
   </target>
   
 
@@ -38,44 +49,29 @@ Microsystems, Inc. All Rights Reserved.
            debug="${build.compiler.debug}"
            source="1.4">
       <exclude name="org/netbeans/junit/**"/>
-      <classpath>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-        <pathelement location="../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-        <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-        <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
-        <pathelement location="../debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/>
-        <fileset dir="external">
-          <include name="junit*.jar"/>
-        </fileset>
-      </classpath>
+      <classpath refID="cp"/>
     </javac>
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules"/>
-    <mkdir dir="netbeans/modules/ext"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/junit.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
-            excludesfile="../nbbuild/standard-jar-excludes.txt"
-            compress="false"
-	    includes="org/netbeans/modules/junit/**"
-            excludes="org/netbeans/modules/junit/testrunner/**">
-    </locjar>
-    <locjar jarfile="netbeans/modules/ext/junit-testrunner.jar"
-            basedir="src"
-            excludesfile="../nbbuild/standard-jar-excludes.txt"
-            compress="false"
-	    includes="org/netbeans/modules/junit/testrunner/**">            
-    </locjar>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/junit.jar"
+         manifest="manifest-subst.mf"
+         basedir="src"
+         excludesfile="../nbbuild/standard-jar-excludes.txt"
+         compress="false"
+	 includes="org/netbeans/modules/junit/**"
+         excludes="org/netbeans/modules/junit/testrunner/**"/>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/junit-testrunner.jar"
+         basedir="src"
+         excludesfile="../nbbuild/standard-jar-excludes.txt"
+         compress="false"
+	 includes="org/netbeans/modules/junit/testrunner/**"/>
   </target>
 
-  <target name="javahelp">
+  <target name="javahelp" depends="init">
     <!-- XXX consider running jhindexer too -->
     <mkdir dir="javahelp/org/netbeans/modules/junit/docs/JavaHelpSearch"/>
     <jhindexer basedir="javahelp/org/netbeans/modules/junit/docs/"
@@ -90,25 +86,25 @@ Microsystems, Inc. All Rights Reserved.
     </jhindexer>
     <mkdir dir="javahelp/org/netbeans/modules/usersguide"/>
     <copy file="../usersguide/javahelp/org/netbeans/modules/usersguide/ide.css" tofile="javahelp/org/netbeans/modules/usersguide/ide.css"/>
-    <mkdir dir="netbeans/modules/docs"/>    
-    <locjar jarfile="netbeans/modules/docs/junit-module-help.jar" compress="true">
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}"/>    
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/junit-module-help.jar" compress="true">
     	<fileset dir="javahelp" excludesfile="../nbbuild/standard-jar-excludes.txt" excludes="org/netbeans/modules/usersguide/"/>
-    </locjar>
+    </jar>
     
   </target>
   
-  <target name="parserdb">
-  	<mkdir dir="netbeans/system/ParserDB"/>
-  	<copy toDir="netbeans/system/ParserDB">
-  		<fileset dir="parserdb"/>
-  	</copy>
+  <target name="parserdb" depends="init">
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB"/>
+    <copy toDir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB">
+      <fileset dir="parserdb"/>
+    </copy>
   </target>
 
   <target name="release" depends="init">
-    <mkdir dir="netbeans/docs"/>
-    <copy file="external/junit-3.8.1-api.zip" todir="netbeans/docs"/>
-    <mkdir dir="netbeans/modules/ext"/>
-    <copy todir="netbeans/modules/ext">
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
+    <copy file="external/junit-3.8.1-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext">
       <fileset dir="external">
         <include name="junit*.jar"/>
       </fileset>
@@ -116,14 +112,17 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars,javahelp,parserdb,release">
-    <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/junit.jar">
+       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+         <patternset refID="junit.files"/>
+       </fileset>
+    </genlist>
   </target>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="junit.nbm"
-             topdir="."
-             module="netbeans/modules/junit.jar"
+             productdir="${netbeans.dest.dir}/${cluster.dir}"
+             module="${nb.modules.dir}/junit.jar"
 	     homepage="http://junit.${homepage.base}/"
 	     distribution="http://${dist.base}/junit.nbm">
       <license name="junit-license.txt">
@@ -136,16 +135,17 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="clean">
+  <target name="clean" depends="init">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="junit.files"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
-    <delete dir="netbeans"/>
     <delete file="junit.nbm"/>
-    <delete dir="Info"/>
     <delete dir="javahelp/org/netbeans/modules/junit/docs/JavaHelpSearch"/>	
     <delete dir="javahelp/org/netbeans/modules/usersguide"/>
   </target>
