@@ -16,6 +16,7 @@ package com.netbeans.developer.modules.httpserver;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectInput;
 import java.util.ResourceBundle;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -91,6 +92,9 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   private static int lastUsedName = 0;
   /** map names of servlets to paths */
   private static HashMap nameMap = new HashMap();
+                                        
+  /** Used to remember the state of the running property during the deserialization */                                      
+  private boolean pendingRunning = true;
 
   public HttpServerSettings() {
   }
@@ -139,6 +143,13 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
       HttpServerModule.stopHTTPServer();
       HttpServerModule.initHTTPServer();
     }
+  }           
+    
+  /** Reads from the serialized state */  
+  public void readExternal (ObjectInput in)
+  throws IOException, ClassNotFoundException {
+    super.readExternal(in);
+    setRunning(pendingRunning);
   }
   
   /** Returns a relative directory URL with a leading and a trailing slash */
@@ -159,6 +170,10 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   
   /** setter for running status */
   public void setRunning(boolean running) {
+    if (getProperty("loadingExternal") != null) {
+      pendingRunning = running;
+      return;
+    }
     inited = true;
     if (this.running == running)
       return;
@@ -413,6 +428,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  15   Gandalf   1.14        8/9/99   Petr Jiricka    Fixed bug with multiple 
+ *       restarts of the server on IDE startup
  *  14   Gandalf   1.13        7/3/99   Petr Jiricka    
  *  13   Gandalf   1.12        7/3/99   Petr Jiricka    
  *  12   Gandalf   1.11        6/25/99  Petr Jiricka    Removed debug prints

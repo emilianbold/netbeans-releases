@@ -91,11 +91,11 @@ public class HttpServerModule implements ModuleInstall {
                 config = new NbServer(HttpServerSettings.OPTIONS);
                 server = new HttpServer(config);
                 HttpServerSettings.OPTIONS.runSuccess();
+                // this is not a debug message, this is a server startup message
                 System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
                   getString("CTL_ServerStarted"), new Object[] {new Integer(HttpServerSettings.OPTIONS.getPort())}));
               } catch (Exception ex) {
                 // couldn't start
-                //ex.printStackTrace();
                 serverThread = null;
                 inSetRunning = false;
                 HttpServerSettings.OPTIONS.runFailure();
@@ -113,7 +113,6 @@ public class HttpServerModule implements ModuleInstall {
           HttpServerSettings.OPTIONS.wait(HttpServerSettings.SERVER_STARTUP_TIMEOUT);
         }
         catch (Exception e) {
-          // e.printStackTrace();
         }
       }  
       finally {  
@@ -140,6 +139,7 @@ public class HttpServerModule implements ModuleInstall {
             serverThread.stop();
           } 
           serverThread = null;
+          // this is not a debug message, this is a server shutdown message
           System.out.println(NbBundle.getBundle(HttpServerModule.class).
             getString("CTL_ServerStopped"));
         }  
@@ -155,6 +155,8 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  19   Gandalf   1.18        8/9/99   Petr Jiricka    Fixed bug with multiple 
+ *       restarts of the server on IDE startup
  *  18   Gandalf   1.17        7/24/99  Petr Jiricka    
  *  17   Gandalf   1.16        7/3/99   Petr Jiricka    
  *  16   Gandalf   1.15        7/3/99   Petr Jiricka    
