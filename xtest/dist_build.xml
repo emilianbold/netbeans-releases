@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
     	   <available file="lib/xerces.jar"/>
     	   <available file="lib/xalan.jar"/>
     	   <available file="lib/xtest-ext.jar"/>
-    	   <available file="lib/patches/testmain.jar"/>
+    	   <available file="lib/xtest-ide.jar"/>
     	</and>
      </condition>
   </target>
