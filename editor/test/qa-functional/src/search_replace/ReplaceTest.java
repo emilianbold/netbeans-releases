@@ -265,6 +265,40 @@ public class ReplaceTest extends EditorTestCase {
         }
     }
     
+    /**
+     * TC6 - Replace in Selection Only
+     */
+    public void testReplaceInSelectionOnly() {
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+            EditorOperator editor = getDefaultSampleEditorOperator();
+            
+            editor.select(20, 24);
+            new ReplaceAction().perform();
+            Replace replace = new Replace();
+            
+            // check only selected checkboxes
+            uncheckAll();
+            replace.cbSearchSelection().doClick();            
+            replace.cboFindWhat().clearText();
+            replace.cboFindWhat().typeText("testWord");
+            replace.cboReplaceWith().clearText();
+            replace.cboReplaceWith().typeText("xxxxXxxx");
+            replace.replaceAll();
+            // check status bar
+            waitForLabel("5 of 5 items replaced");
+
+            replace.close();
+
+            ref(editor.getText());
+            compareReferenceFiles();
+            
+        } finally {
+            closeFileWithDiscard();
+        }
+    }      
+    
     /**     
      * Unchecks all checkboxes in find dialog.
      */
