@@ -308,7 +308,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         protected Node[] createNodes(Object key) {
             if (key instanceof DataObject) {
                 DataObject dobj = (DataObject)key;
-                if (isTemplate(dobj) && isRightCategory (project, dobj.getPrimaryFile ())) {
+                if (isTemplate(dobj) && OpenProjectList.isRecommended (project, dobj.getPrimaryFile ())) {
                     return new Node[] {
                         new FilterNode (dobj.getNodeDelegate(),Children.LEAF)
                     };
@@ -401,37 +401,6 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         return false;
     }
     
-    private static boolean isRightCategory (Project p, FileObject primaryFile) {
-        if (getRecommendedTypes (p) == null || getRecommendedTypes (p).length == 0) {
-            // if no recommendedTypes are supported (i.e. freeform) -> disaply all templates
-            return true;
-        }
-        
-        Object o = primaryFile.getAttribute ("templateCategory"); // NOI18N
-        if (o != null) {
-            assert o instanceof String : primaryFile + " attr templateCategory = " + o;
-            Iterator categoriesIt = getCategories ((String)o).iterator ();
-            boolean ok = false;
-            while (categoriesIt.hasNext ()) {
-                String category = (String)categoriesIt.next ();
-                if (Arrays.asList (getRecommendedTypes (p)).contains (category)) {
-                    ok = true;
-                    break;
-                }
-            }
-            return ok;
-        } else {
-            // issue 43958, if attr 'templateCategorized' is not set => all is ok
-            // no category set, ok display it
-            return true;
-        }
-    }
-
-    private static String[] getRecommendedTypes (Project project) {
-        RecommendedTemplates rt = (RecommendedTemplates)project.getLookup().lookup( RecommendedTemplates.class );
-        return rt == null ? null :rt.getRecommendedTypes();
-    }
-    
     private boolean hasChildren (Project p, DataObject folder) { 
         if (!(folder instanceof DataFolder)) {
             return false;
@@ -441,7 +410,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         DataObject[] ch = f.getChildren ();
         boolean ok = false;
         for (int i = 0; i < ch.length; i++) {
-            if (isTemplate (ch[i]) && isRightCategory (p, ch[i].getPrimaryFile ())) {
+            if (isTemplate (ch[i]) && OpenProjectList.isRecommended(p, ch[i].getPrimaryFile ())) {
                 // XXX: how to filter link to Package template in each java types folder?
                 if (!(ch[i] instanceof DataShadow)) {
                     ok = true;
@@ -456,13 +425,4 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         
     }
     
-    private static List getCategories (String source) {
-        ArrayList categories = new ArrayList ();
-        StringTokenizer cattok = new StringTokenizer (source, ","); // NOI18N
-        while (cattok.hasMoreTokens ()) {
-            categories.add (cattok.nextToken ().trim ());
-        }
-        return categories;
-    }
-
 }

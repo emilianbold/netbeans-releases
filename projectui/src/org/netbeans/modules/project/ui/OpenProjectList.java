@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -408,7 +410,7 @@ public final class OpenProjectList {
             if ( fo == null ) {
                 it.remove(); // Does not exists remove
             }
-            else if ( isRecommended( fo, rtNames ) ) {
+            else if ( isRecommended( project, fo ) ) {
                 result.add( fo );
                 privilegedTemplates.remove( templateName ); // Not to have it twice
             }
@@ -431,17 +433,46 @@ public final class OpenProjectList {
                
     }
     
-    private static boolean isRecommended( FileObject fo, String rtNames[] ) {
-        
-        for (int i = 0; i < rtNames.length; i++) {
-            if ( Boolean.TRUE.equals( fo.getAttribute( rtNames[i] ) ) ) {
-                return true;
-            }
+    static boolean isRecommended (Project p, FileObject primaryFile) {
+        if (getRecommendedTypes (p) == null || getRecommendedTypes (p).length == 0) {
+            // if no recommendedTypes are supported (i.e. freeform) -> disaply all templates
+            return true;
         }
         
-        return false;
+        Object o = primaryFile.getAttribute ("templateCategory"); // NOI18N
+        if (o != null) {
+            assert o instanceof String : primaryFile + " attr templateCategory = " + o;
+            Iterator categoriesIt = getCategories ((String)o).iterator ();
+            boolean ok = false;
+            while (categoriesIt.hasNext ()) {
+                String category = (String)categoriesIt.next ();
+                if (Arrays.asList (getRecommendedTypes (p)).contains (category)) {
+                    ok = true;
+                    break;
+                }
+            }
+            return ok;
+        } else {
+            // issue 43958, if attr 'templateCategorized' is not set => all is ok
+            // no category set, ok display it
+            return true;
+        }
+    }
+
+    private static String[] getRecommendedTypes (Project project) {
+        RecommendedTemplates rt = (RecommendedTemplates)project.getLookup().lookup( RecommendedTemplates.class );
+        return rt == null ? null :rt.getRecommendedTypes();
     }
     
+    private static List getCategories (String source) {
+        ArrayList categories = new ArrayList ();
+        StringTokenizer cattok = new StringTokenizer (source, ","); // NOI18N
+        while (cattok.hasMoreTokens ()) {
+            categories.add (cattok.nextToken ().trim ());
+        }
+        return categories;
+    }
+
     // Private innerclasses ----------------------------------------------------
     
     /** Maintains recent project list
