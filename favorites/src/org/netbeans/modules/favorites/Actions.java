@@ -15,6 +15,9 @@ package org.netbeans.modules.favorites;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -22,10 +25,13 @@ import javax.swing.ImageIcon;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -135,11 +141,11 @@ public final class Actions extends Object {
 
             for (int i = 0; i < arr.length; i++) {
                 DataObject shad = (DataObject) arr[i].getCookie (DataObject.class);
+                //Disable when node is not shadow in Favorites folder.
                 if (shad == null || shad.getFolder() != Favorites.getFolder()) {
                     return false;
                 }
             }
-
             return true;
         }
 
@@ -207,8 +213,19 @@ public final class Actions extends Object {
 
             for (int i = 0; i < arr.length; i++) {
                 DataObject dataObject = (DataObject) arr[i].getCookie (DataObject.class);
+                //Action is disabled for root folder eg:"/" on Linux or "C:" on Win
                 if (dataObject == null) {
                     return false;
+                }
+                FileObject fo = dataObject.getPrimaryFile();
+                if (fo != null) {
+                    File file = FileUtil.toFile(fo);
+                    if (file != null) {
+                        if (file.getParent() == null) {
+                            //It is root: disable.
+                            return false;
+                        }
+                    }
                 }
 
                 // Fix #14740 disable action on SystemFileSystem.
@@ -220,7 +237,6 @@ public final class Actions extends Object {
                     return false;
                 }
             }
-
             return true;
         }
 
@@ -253,20 +269,57 @@ public final class Actions extends Object {
         * @param activatedNodes gives array of actually activated nodes.
         */
         protected void performAction (Node[] activatedNodes) {
-            org.openide.loaders.DataFolder f = Favorites.getFolder();
-
+            DataFolder f = Favorites.getFolder();
+            
+            DataObject [] arr = f.getChildren();
+            List listAdd = new ArrayList();
             for (int i = 0; i < activatedNodes.length; i++) {
                 DataObject obj = (DataObject)activatedNodes[i].getCookie (DataObject.class);
                 if (obj != null) {
                     try {
                         Favorites.ensureShadowsWork (obj.getPrimaryFile());
-                        obj.createShadow (f);
+                        listAdd.add(obj.createShadow (f));
                     } catch (java.io.IOException ex) {
                         ErrorManager.getDefault().notify(ex);
                     }
                 }
             }
-
+            //This is done to set desired order of nodes in view
+            List listDest = new ArrayList();
+            if (listAdd.size() > 0) {
+                //Insert new nodes just before last (root) node
+                DataObject root = null;
+                //Find root
+                for (int i = 0; i < arr.length; i++) {
+                    FileObject fo = arr[i].getPrimaryFile();
+                    if ("Favorites/Root.instance".equals(fo.getPath())) { //NOI18N
+                        root = arr[i];
+                    }
+                }
+                if (root != null) {
+                    for (int i = 0; i < arr.length; i++) {
+                        if (!root.equals(arr[i])) {
+                            listDest.add(arr[i]);
+                        }
+                    }
+                    listDest.addAll(listAdd);
+                    listDest.add(root);
+                } else {
+                    //Root not found. It should not happen because root is defined in layer
+                    for (int i = 0; i < arr.length; i++) {
+                        listDest.add(arr[i]);
+                    }
+                    listDest.addAll(listAdd);
+                }
+                //Set desired order
+                DataObject [] newOrder = (DataObject []) listDest.toArray(new DataObject[listDest.size()]);
+                try {
+                    f.setOrder(newOrder);
+                } catch (java.io.IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+            
             org.openide.windows.TopComponent projectsTab = Tab.findDefault();
             projectsTab.open();
             projectsTab.requestActive();
