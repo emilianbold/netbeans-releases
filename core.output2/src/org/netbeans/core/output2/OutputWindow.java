@@ -107,6 +107,10 @@ public class OutputWindow extends AbstractOutputWindow {
     public Object readResolve() throws java.io.ObjectStreamException {
         return getDefault();
     }
+    
+    public String getToolTipText() {
+        return getDisplayName();
+    }
 
     Controller getController() {
         return controller;
