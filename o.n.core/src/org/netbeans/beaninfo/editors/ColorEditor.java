@@ -155,15 +155,17 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
     // main methods .......................................................................................
 
     public Object getValue () {
-        return color;
+        if (color == null) return null;
+        return new Color(color.getRGB());
     }
 
     public void setValue (Object object) {
         if (object != null) {
-            if (!(object instanceof Color)) throw new IllegalArgumentException (object.toString ());
             if (object instanceof SuperColor) color = (SuperColor) object;
-            else color = new SuperColor ((Color) object);
+            else if (object instanceof Color)
+                color = new SuperColor((Color) object);
         }
+        else color = null;
         support.firePropertyChange ("", null, null); // NOI18N
     }
 
@@ -248,19 +250,27 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
         return true;
     }
 
-    public void paintValue (Graphics g, Rectangle rectangle) {
-        Color color = g.getColor ();
+    public void paintValue(Graphics g, Rectangle rectangle) {
+        Color color = g.getColor();
+        int px;
+
         if (this.color != null) {
-            g.setColor (Color.black);
-            g.drawRect (rectangle.x + 6, rectangle.y + rectangle.height / 2 - 5 , 10, 10);
-            g.setColor (this.color);
-            g.fillRect (rectangle.x + 7, rectangle.y + rectangle.height / 2 - 4 , 9, 9);
+            g.setColor(Color.black);
+            g.drawRect(rectangle.x + 6, rectangle.y + rectangle.height / 2 - 5 , 10, 10);
+            g.setColor(this.color);
+            g.fillRect(rectangle.x + 7, rectangle.y + rectangle.height / 2 - 4 , 9, 9);
+            g.setColor(Color.black);
+            px = 18;
         }
-        g.setColor (Color.black);
-        FontMetrics fm = g.getFontMetrics ();
-        g.drawString (getAsText (), rectangle.x + 22, rectangle.y +
-                      (rectangle.height - fm.getHeight ()) / 2 + fm.getAscent ());
-        g.setColor (color);
+        else {
+            g.setColor(new Color(0, 0, 128));
+            px = 0;
+        }
+
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(getAsText(), rectangle.x + px + 4, rectangle.y +
+                      (rectangle.height - fm.getHeight()) / 2 + fm.getAscent());
+        g.setColor(color);
     }
 
     public boolean supportsCustomEditor () {
@@ -600,37 +610,3 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
     }
 
 }
-
-/*
- * Log
- *  22   Gandalf   1.21        1/13/00  Petr Jiricka    i18n
- *  21   Gandalf   1.20        1/13/00  Petr Jiricka    i18n
- *  20   Gandalf   1.19        12/8/99  Petr Nejedly    Enabled setValue(null)
- *  19   Gandalf   1.18        11/26/99 Patrik Knakal   
- *  18   Gandalf   1.17        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  17   Gandalf   1.16        8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  16   Gandalf   1.15        7/30/99  Ian Formanek    Fixed bug 2480 - Color 
- *       attribute can have haxedecimal values but int is expected.
- *  15   Gandalf   1.14        7/13/99  Ian Formanek    Fixed readFromXML
- *  14   Gandalf   1.13        7/12/99  Ian Formanek    Implements 
- *       XMLPropertyEditor
- *  13   Gandalf   1.12        7/8/99   Jesse Glick     Context help.
- *  12   Gandalf   1.11        6/28/99  Ian Formanek    throws 
- *       IllegalArgumentException if not passed Color instance in setValue
- *  11   Gandalf   1.10        6/27/99  Ian Formanek    Ignores non-Color values
- *  10   Gandalf   1.9         6/8/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  9    Gandalf   1.8         4/16/99  Libor Martinek  
- *  8    Gandalf   1.7         3/4/99   Jan Jancura     QuickSorter removed
- *  7    Gandalf   1.6         3/4/99   Jan Jancura     bundle moved
- *  6    Gandalf   1.5         2/5/99   David Simonek   
- *  5    Gandalf   1.4         2/5/99   Petr Hamernik   bugfix
- *  4    Gandalf   1.3         2/4/99   David Simonek   bugfix #1038
- *  3    Gandalf   1.2         2/4/99   Petr Hamernik   
- *  2    Gandalf   1.1         1/6/99   Ian Formanek    some cotemporarily 
- *       commented out to compile under JDK 1.2
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- */
