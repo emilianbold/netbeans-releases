@@ -148,8 +148,29 @@ class OpenFile extends Object {
           if (fo != null) {
             return fo;
           } else {
-            TopManager.getDefault ().notify (new NotifyDescriptor.Message ("Should have found " + fileName + " in " + root));
-            return null;
+            // Most likely, file was just created and is not yet in folder cache. Refresh each segment.
+            FileObject currentPoint = fs.getRoot ();
+            StringTokenizer resourceTok = new StringTokenizer (resource, "/");
+            String currentResource = "";
+            while (resourceTok.hasMoreTokens ()) {
+              if (currentPoint == null || currentPoint.isData ()) {
+                // [PENDING] use bundles
+                TopManager.getDefault ().notify (new NotifyDescriptor.Message ("Did not find " + fileName + " in " + root + " (non-directory path component?)"));
+                return null;
+              } else {
+                currentPoint.refresh ();
+                if (currentResource.length () > 0) currentResource += '/';
+                currentResource += resourceTok.nextToken ();
+                currentPoint = fs.findResource (currentResource);
+              }
+            }
+            if (currentPoint != null && currentPoint.isData ()) {
+              return currentPoint;
+            } else {
+              // [PENDING] use bundles
+              TopManager.getDefault ().notify (new NotifyDescriptor.Message ("Did not find " + fileName + " in " + root));
+              return null;
+            }
           }
         }
       }
