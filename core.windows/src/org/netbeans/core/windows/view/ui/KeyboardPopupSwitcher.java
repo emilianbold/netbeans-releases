@@ -75,7 +75,7 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
     private static int reverseKey = KeyEvent.VK_SHIFT;
     private static int releaseKey;
     
-    /** Indicates whether the next item is previous or next one. */
+    /** Indicates whether an item to be selected is previous or next one. */
     private boolean fwd = true;
     
     private static AWTEventListener interruper = new Interrupter();

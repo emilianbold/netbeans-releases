@@ -8,6 +8,9 @@ package org.netbeans.swing.tabcontrol;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -35,8 +38,9 @@ public class TabListPopupAction extends AbstractAction {
             Point p = new Point(jc.getWidth(), jc.getHeight());
             SwingUtilities.convertPointToScreen(p, jc);
             if (!ButtonPopupSwitcher.isShown()) {
-                ButtonPopupSwitcher.selectItem(createSwitcherItems(displayer),
-                        p.x, p.y);
+                SwitcherTableItem[] items = createSwitcherItems(displayer);
+                Arrays.sort(items);
+                ButtonPopupSwitcher.selectItem(items, p.x, p.y);
             }
             //Other portion of issue 37847, looks funny if the
             //button becomes pressed

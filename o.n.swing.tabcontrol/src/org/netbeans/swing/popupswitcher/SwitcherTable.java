@@ -74,9 +74,6 @@ public class SwitcherTable extends JTable {
      */
     private boolean needCalcRowHeight = true;
     
-    /** Indicate selecting direction */
-    private boolean fwd = true;
-    
     /**
      * Creates a new instance of SwitcherTable. Created table will be as high
      * as possible. Height will be used during the number of row computing.

@@ -22,7 +22,7 @@ import javax.swing.Icon;
  *
  * @author mkrauskopf
  */
-public class SwitcherTableItem {
+public class SwitcherTableItem implements Comparable {
     
     /** Item's description */
     private String name;
@@ -61,6 +61,8 @@ public class SwitcherTableItem {
     /**
      * Calls <code>activate()</code> method of <code>Activable</code> interface
      * which has to be passed in a constructor.
+     *
+     * @see SwitcherTableItem.Activable#activate
      */
     public void activate() {
         activable.activate();
@@ -76,6 +78,11 @@ public class SwitcherTableItem {
         return icon;
     }
     
+    /** Returns item's activable object */
+    public Activable getActivable() {
+        return activable;
+    }
+    
     /** Returns whether this item is active or not. */
     public boolean isActive() {
         return active;
@@ -87,10 +94,60 @@ public class SwitcherTableItem {
     }
     
     /**
+     * Returns true if the <code>name</code> and <code>activable</code> are the
+     * same as passed one.
+     */
+    public boolean equals(Object o) {
+        if (o == this)
+            return true;
+        if (o instanceof SwitcherTableItem) {
+            SwitcherTableItem item = (SwitcherTableItem) o;
+            boolean result = item.getName().equals(name) &&
+                    item.getActivable().equals(activable);
+            return result;
+        } else {
+            return false;
+        }
+    }
+    
+    /**
+     * Returns a hash code value for the item.
+     *
+     * @return int hashcode
+     */
+    public int hashCode() {
+        return (name == null ? 1 : name.hashCode()) * activable.hashCode();
+    }
+    
+    /**
+     * Compares items based on theirs <code>name</code>s. Items which has
+     * null-name will be last.
+     */
+    public int compareTo(Object o) {
+        String name1 = getName();
+        String name2 = null;
+        if (o instanceof SwitcherTableItem) {
+            name2 = ((SwitcherTableItem) o).getName();
+        }
+        if (name2 == null) {
+            return (name1 == null ? 0 : -1);
+        } else {
+            return (name1 == null ? 1 : name1.compareToIgnoreCase(name2));
+        }
+    }
+    
+    /**
      * This interface has to be implemented and passed to the
      * <code>SwitcherTableItem</code> constructor.
      */
     public static interface Activable {
+        /**
+         * Here should be code witch <em>activate</em> this item. The method
+         * <code>SwitcherTableItem.activate()</code> conveniently call this
+         * method. So you never need to call this method directly.
+         *
+         * @see SwitcherTableItem#activate
+         */
         void activate();
     }
 }
