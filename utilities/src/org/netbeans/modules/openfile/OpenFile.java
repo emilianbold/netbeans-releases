@@ -361,15 +361,3 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
     server ();
   }
 }
-
-/*
-* Log
-*  4    Gandalf   1.3         5/22/99  Jesse Glick     Handling options, and 
-*       doc.
-*  3    Gandalf   1.2         5/22/99  Jesse Glick     Support for opening 
-*       archive files, and also better display for root folders.
-*  2    Gandalf   1.1         5/22/99  Jesse Glick     If Java file does not 
-*       exist in mounted fs, tries to mount it in the correct package.
-*  1    Gandalf   1.0         5/19/99  Jesse Glick     
-* $
-*/
