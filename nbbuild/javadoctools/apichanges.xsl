@@ -374,7 +374,7 @@ committed to CVS for legal reasons. You need to download it:
         <xsl:variable name="apiname" select="@name"/>
         <xsl:variable name="def" select="/apichanges/apidefs/apidef[@name = $apiname]"/>
         <xsl:if test="count($def) = 0 or count($def) > 1">
-            <xsl:message terminate="yes">Unknown API: <xsl:value-of select="$apiname"/></xsl:message>
+            <xsl:message terminate="yes">Unknown API: <xsl:value-of select="$apiname"/> (in #<xsl:call-template name="change-id"><xsl:with-param name="node" select=".."/></xsl:call-template>)</xsl:message>
         </xsl:if>
         <xsl:apply-templates select="$def/node()"/>
     </xsl:template>
