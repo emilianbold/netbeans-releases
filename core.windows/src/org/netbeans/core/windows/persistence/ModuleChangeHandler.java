@@ -13,6 +13,7 @@
 
 package org.netbeans.core.windows.persistence;
 
+import java.util.Iterator;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.ErrorManager;
@@ -39,6 +40,12 @@ class ModuleChangeHandler implements FileChangeListener {
     
     private FileObject groupsModuleFolder;
     
+    private FileObject componentsModuleFolder;
+    
+    /** List of <FileObject> which contains file objects of tc refs waiting
+     * for their related settings files to be processed */
+    private List tcRefsWaitingOnSettings;
+    
     /** Creates a new instance of ModuleChangeHandler */
     public ModuleChangeHandler() {
     }
@@ -51,6 +58,7 @@ class ModuleChangeHandler implements FileChangeListener {
         
         modesModuleFolder = pm.getModesModuleFolder();
         groupsModuleFolder = pm.getGroupsModuleFolder();
+        componentsModuleFolder = pm.getComponentsModuleFolder();
         try {
             fs = modesModuleFolder.getFileSystem();
         } catch (FileStateInvalidException exc) {
@@ -92,6 +100,12 @@ class ModuleChangeHandler implements FileChangeListener {
             log("++ GROUP ++");
             return true;
         }
+        
+        if (parent.getPath().equals(componentsModuleFolder.getPath())) {
+            log("++ COMPONENT ++");
+            return true;
+        }
+        
         parent = parent.getParent();
         if (parent == null) {
             return false;
@@ -165,12 +179,19 @@ class ModuleChangeHandler implements FileChangeListener {
                 log("++ process GROUP ADD ++");
                 addGroup(fo.getName());
             }
+        } else if (parent1.getPath().equals(componentsModuleFolder.getPath())) {
+            if (!fo.isFolder() && PersistenceManager.COMPONENT_EXT.equals(fo.getExt())) {
+                log("++ process COMPONENT ADD ++");
+                addComponent(fo);
+            }
         }
+        
+        
         FileObject parent2 = parent1.getParent();
         if (parent2.getPath().equals(modesModuleFolder.getPath())) {
             if (!fo.isFolder() && PersistenceManager.TCREF_EXT.equals(fo.getExt())) {
                 log("++ process tcRef ADD ++");
-                addTCRef(parent1.getName(), fo.getName());
+                processTCRef(parent1.getName(), fo);
             }
         } else if (parent2.getPath().equals(groupsModuleFolder.getPath())) {
             if (!fo.isFolder() && PersistenceManager.TCGROUP_EXT.equals(fo.getExt())) {
@@ -250,6 +271,25 @@ class ModuleChangeHandler implements FileChangeListener {
         }
     }
     
+    /** Adds tcref if related settings file was already copied, shcedules for
+     * later processing otherwise
+     */
+    private void processTCRef (final String modeName, FileObject tcRefFO) {
+        FileObject localSettings = PersistenceManager.getDefault().
+                getComponentsLocalFolder().getFileObject(tcRefFO.getName(),
+                PersistenceManager.COMPONENT_EXT);
+        if (localSettings != null) {
+            // OK, settings file already processed, go on and add tc ref
+            addTCRef(modeName, tcRefFO.getName());
+        } else {
+            // alas, settings file not yet ready, postpone tc ref adding
+            if (tcRefsWaitingOnSettings == null) {
+                tcRefsWaitingOnSettings = new ArrayList(5);
+            }
+            tcRefsWaitingOnSettings.add(tcRefFO);
+        }
+    }
+    
     private void addTCRef (final String modeName, String tcRefName) {
         log("addTCRef modeName:" + modeName
         + " tcRefName:" + tcRefName);
@@ -280,6 +320,38 @@ class ModuleChangeHandler implements FileChangeListener {
                 }
             });
         }
+    }
+
+    /** Copies settings file into local directory if needed and also triggers
+     * related tc ref adding if needed (if tc ref was "waiting")
+     */
+    private void addComponent(FileObject fo) {
+        log("addComponent settingsName:" + fo.getNameExt());
+        PersistenceManager.getDefault().copySettingsFileIfNeeded(fo);
+        // now process tc ref if it is waiting for us
+        FileObject waitingTcRef = findWaitingTcRef(fo);
+        if (waitingTcRef != null) {
+            tcRefsWaitingOnSettings.remove(waitingTcRef);
+            addTCRef(waitingTcRef.getParent().getName(), waitingTcRef.getName());
+        }
+    }
+
+    /** Finds and returns tcRef related to given settingsFo. List of "waiting"
+     * tcRefs is searched. Returns null if related tc ref is not found.
+     */
+    private FileObject findWaitingTcRef (FileObject settingsFo) {
+        if (tcRefsWaitingOnSettings == null) {
+            return null;
+        }
+        FileObject curTcRef;
+        String settingsName = settingsFo.getName();
+        for (Iterator iter = tcRefsWaitingOnSettings.iterator(); iter.hasNext(); ) {
+            curTcRef = (FileObject)iter.next();
+            if (settingsName.equals(curTcRef.getName())) {
+                return curTcRef;
+            }
+        }
+        return null;
     }
     
     private void removeMode (final String modeName) {

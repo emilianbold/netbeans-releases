@@ -68,6 +68,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     public static final String TCREF_EXT = "wstcref"; // NOI18N
     public static final String GROUP_EXT = "wsgrp"; // NOI18N
     public static final String TCGROUP_EXT = "wstcgrp"; // NOI18N
+    public static final String COMPONENT_EXT = "settings"; // NOI18N
     
     /** default base name for noname top components */
     private static final String DEFAULT_TC_NAME = "untitled_tc"; // NOI18N
@@ -1197,6 +1198,16 @@ public final class PersistenceManager implements PropertyChangeListener {
                 "EXC_CopyFails", destFolder);
             ErrorManager.getDefault().annotate(exc, annotation);
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+        }
+    }
+
+    /** Copies given file object into Local Components folder (Windows2Local/Components)
+     * if it doesn't exist already
+     */
+    void copySettingsFileIfNeeded (FileObject fo) {
+        FileObject localSettingsFO = getComponentsLocalFolder().getFileObject(fo.getNameExt());
+        if (localSettingsFO == null) {
+            copySettingsFile(fo);
         }
     }
     
