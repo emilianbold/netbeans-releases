@@ -123,6 +123,10 @@ is divided into following sections:
                     <isfalse value="${{javadoc.preview}}"/>
                 </condition>
                 <available file="${{meta.inf}}/MANIFEST.MF" property="has.custom.manifest"/>
+                <condition property="classes.dir" value="${{build.ear.classes.dir}}">
+                    <isset property="dist.ear.dir"/>
+                </condition>
+                <property name="classes.dir" value="${{build.classes.dir}}"/>
             </target>
 
             <target name="post-init">
@@ -357,7 +361,7 @@ is divided into following sections:
             </xsl:call-template>
 
             <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service|/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-service-clients/ejbjarproject2:web-service-client">
-				<target name="wscompile-init" depends="do-compile">
+				<target name="wscompile-init" depends="init">
 					<taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
 					  <classpath path="${{wscompile.classpath}}"/>
 					</taskdef>
@@ -520,10 +524,6 @@ is divided into following sections:
             
             <target name="do-compile">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
-                <condition property="classes.dir" value="${{build.ear.classes.dir}}">
-                    <isset property="dist.ear.dir"/>
-                </condition>
-                <property name="classes.dir" value="${{build.classes.dir}}"/>
                 <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service">
                     <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
                     <delete> 
