@@ -11,26 +11,30 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* $Id$ */
-
 package org.netbeans.modules.form;
 
 import java.util.Vector;
+import javax.swing.JList;
+import javax.swing.DefaultListModel;
+
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
+
 /**
  *
  * @author  Pavel Buzek
- * @version
  */
 public class EventCustomEditor extends javax.swing.JPanel {
 
     static final long serialVersionUID =-4825059521634962952L;
+
     /** Creates new form EventCustomEditor */
     public EventCustomEditor(RADComponent.EventProperty eventProperty) {
         this.eventProperty = eventProperty;
         changes = eventProperty.new HandlerSetChange();
+
         initComponents();
+        enableButtons();
     }
 
     /** This method is called from within the constructor to
@@ -40,30 +44,29 @@ public class EventCustomEditor extends javax.swing.JPanel {
      */
     private void initComponents() {//GEN-BEGIN:initComponents
         jScrollPane1 = new javax.swing.JScrollPane();
-        Vector h = eventProperty.event.getHandlers();
-        for (int i=0, n=h.size(); i<n; i++) {
-            handlersModel.addElement(((EventsManager.EventHandler)(h.get(i))).getName());
+        Vector h = eventProperty.event.getHandlers ();
+        for (int i=0, n=h.size (); i<n; i++) {
+            handlersModel.addElement (((EventsManager.EventHandler) (h.get (i))).getName ());
         }
         handlersList = new javax.swing.JList();
-        handlersList.setModel(handlersModel);
+        handlersList.setModel (handlersModel);
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         setPreferredSize(new java.awt.Dimension(300, 300));
-
-
+        
+        
         handlersList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                handlersListValueChanged(evt);
-            }
-        }
-                                              );
-
-        jScrollPane1.setViewportView(handlersList);
-
-
+              public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                  handlersListValueChanged(evt);
+              }
+          }
+          );
+          jScrollPane1.setViewportView(handlersList);
+          
+          
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridheight = 4;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
@@ -72,16 +75,16 @@ public class EventCustomEditor extends javax.swing.JPanel {
         gridBagConstraints1.weightx = 0.9;
         gridBagConstraints1.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints1);
-
-        addButton.setLabel(FormEditor.getFormBundle().getString("CTL_EE_ADD"));
+        
+        
+        addButton.setText(FormEditor.getFormBundle ().getString ("CTL_EE_ADD"));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         }
-                                    );
-
-
+        );
+        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 0;
@@ -90,16 +93,16 @@ public class EventCustomEditor extends javax.swing.JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints1.weightx = 0.1;
         add(addButton, gridBagConstraints1);
-
-        removeButton.setLabel(FormEditor.getFormBundle().getString("CTL_EE_REMOVE"));
+        
+        
+        removeButton.setText(FormEditor.getFormBundle ().getString ("CTL_EE_REMOVE"));
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         }
-                                       );
-
-
+        );
+        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 1;
@@ -108,16 +111,16 @@ public class EventCustomEditor extends javax.swing.JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints1.weightx = 0.1;
         add(removeButton, gridBagConstraints1);
-
-        editButton.setLabel(FormEditor.getFormBundle().getString("CTL_EE_RENAME"));
+        
+        
+        editButton.setText(FormEditor.getFormBundle ().getString ("CTL_EE_RENAME"));
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editButtonActionPerformed(evt);
             }
         }
-                                     );
-
-
+        );
+        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 2;
@@ -126,37 +129,60 @@ public class EventCustomEditor extends javax.swing.JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints1.weightx = 0.1;
         add(editButton, gridBagConstraints1);
-
+        
     }//GEN-END:initComponents
 
     private void handlersListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_handlersListValueChanged
         // Add your handling code here:
-        if (handlersList.isSelectionEmpty()) {
-            removeButton.setEnabled(false);
-            editButton.setEnabled(false);
-        } else {
-            removeButton.setEnabled(true);
-            editButton.setEnabled(true);
-        }
+        enableButtons();
     }//GEN-LAST:event_handlersListValueChanged
 
+    private void enableButtons() {
+        if (handlersList.isSelectionEmpty()) {
+            removeButton.setEnabled(false);
+        } else {
+            removeButton.setEnabled(true);
+        }
+        editButton.setEnabled(handlersList.getSelectedIndices().length == 1);
+    }
+        
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
         // Add your handling code here:
-        NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine(FormEditor.getFormBundle().getString("CTL_EE_RENAME_LABEL"), FormEditor.getFormBundle().getString("CTL_EE_RENAME_CAPTION"));
-        Object[] handlers = handlersList.getSelectedValues();
-        for (int i=0, n=handlers.length; i<n; i++) {
-            nd.setInputText((String)handlers[i]);
+        int i = handlersList.getSelectedIndex();
+        if (i >= 0) {
+            String oldName = (String) handlersModel.get(i);
+            NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine(FormEditor.getFormBundle().getString("CTL_EE_RENAME_LABEL"),
+                                                   FormEditor.getFormBundle().getString("CTL_EE_RENAME_CAPTION"));
+            nd.setInputText(oldName);
+
             if (TopManager.getDefault().notify(nd).equals(NotifyDescriptor.OK_OPTION)) {
-                if (org.openide.util.Utilities.isJavaIdentifier(nd.getInputText())) {
-                    changes.getRenamedOldNames().add(handlers[i]);
-                    changes.getRenamedNewNames().add(nd.getInputText());
-                    int pos = handlersModel.indexOf(handlers[i]);
-                    handlersModel.remove(pos);
-                    handlersModel.add(pos, nd.getInputText());
-                } else {
-                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(FormEditor.getFormBundle().getString("CTL_EE_NOT_IDENTIFIER"), NotifyDescriptor.WARNING_MESSAGE);
+                String newName = nd.getInputText();
+                if (newName.equals(oldName)) return; // no change
+
+                if (!org.openide.util.Utilities.isJavaIdentifier(newName)) { // invalid name
+                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(FormEditor.getFormBundle().getString("CTL_EE_NOT_IDENTIFIER"), NotifyDescriptor.ERROR_MESSAGE);
                     TopManager.getDefault().notify(msg);
+                    return;
                 }
+
+                if (handlersModel.indexOf(newName) >= 0) { // already exists
+                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(FormEditor.getFormBundle().getString("CTL_EE_ALREADY_EXIST"), NotifyDescriptor.INFORMATION_MESSAGE);
+                    TopManager.getDefault().notify(msg);
+                    return;
+                }
+
+                int ii = changes.getAdded().indexOf(oldName);
+                if (ii >= 0) { // a newly added handler was renamed
+                    changes.getAdded().set(ii,newName);
+                }
+                else {
+                    changes.getRenamedOldNames().add(oldName);
+                    changes.getRenamedNewNames().add(newName);
+                }
+
+                handlersModel.set(i,newName);
+                handlersList.setSelectedIndex(i);
+                enableButtons();
             }
         }
     }//GEN-LAST:event_editButtonActionPerformed
@@ -164,9 +190,25 @@ public class EventCustomEditor extends javax.swing.JPanel {
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         // Add your handling code here:
         Object[] handlers = handlersList.getSelectedValues();
-        for (int i=0, n=handlers.length; i<n; i++) {
-            changes.getRemoved().add(handlers[i]);
+        for (int i=0; i < handlers.length; i++) {
+            int ii = changes.getAdded().indexOf(handlers[i]);
+            if (ii >= 0) { // the handler was previously added - cancel it
+                changes.getAdded().remove(ii);
+            }
+            else {
+                ii = changes.getRenamedNewNames().indexOf(handlers[i]);
+                String toRemove;
+                if (ii >= 0) { // the handler was previously renamed - cancel it
+                    changes.getRenamedNewNames().remove(ii);
+                    toRemove = (String) changes.getRenamedOldNames().get(ii);
+                    changes.getRenamedOldNames().remove(ii);
+                }
+                else toRemove = (String) handlers[i];
+
+                changes.getRemoved().add(toRemove);
+            }
             handlersModel.removeElement(handlers[i]);
+            enableButtons();
         }
     }//GEN-LAST:event_removeButtonActionPerformed
 
@@ -174,13 +216,29 @@ public class EventCustomEditor extends javax.swing.JPanel {
         // Add your handling code here:
         NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine(FormEditor.getFormBundle().getString("CTL_EE_ADD_LABEL"), FormEditor.getFormBundle().getString("CTL_EE_ADD_CAPTION"));
         if (TopManager.getDefault().notify(nd).equals(NotifyDescriptor.OK_OPTION)) {
-            if (org.openide.util.Utilities.isJavaIdentifier(nd.getInputText())) {
-                changes.getAdded().add(nd.getInputText());
-                handlersModel.addElement(nd.getInputText());
-            } else {
-                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(FormEditor.getFormBundle().getString("CTL_EE_NOT_IDENTIFIER"), NotifyDescriptor.WARNING_MESSAGE);
+            String newHandler = nd.getInputText();
+            if (!org.openide.util.Utilities.isJavaIdentifier(newHandler)) {
+                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(FormEditor.getFormBundle().getString("CTL_EE_NOT_IDENTIFIER"), NotifyDescriptor.ERROR_MESSAGE);
                 TopManager.getDefault().notify(msg);
+                return;
             }
+
+            if (handlersModel.indexOf(newHandler) >= 0) {
+                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(FormEditor.getFormBundle().getString("CTL_EE_ALREADY_EXIST"), NotifyDescriptor.INFORMATION_MESSAGE);
+                TopManager.getDefault().notify(msg);
+                return;
+            }
+                
+            int ir = changes.getRemoved().indexOf(newHandler);
+            if (ir >= 0) {
+                changes.getRemoved().remove(ir);
+            }
+            else {
+                changes.getAdded().add(newHandler);
+            }
+            handlersModel.addElement(newHandler);
+            handlersList.setSelectedIndex(handlersModel.size() - 1);
+            enableButtons();
         }
     }//GEN-LAST:event_addButtonActionPerformed
 
@@ -203,6 +261,6 @@ public class EventCustomEditor extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     RADComponent.EventProperty eventProperty;
-    javax.swing.DefaultListModel handlersModel = new javax.swing.DefaultListModel();
+    javax.swing.DefaultListModel handlersModel = new DefaultListModel();
     RADComponent.EventProperty.HandlerSetChange changes;
 }

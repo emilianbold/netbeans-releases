@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* $Id$ */
-
 package org.netbeans.modules.form;
 
 import org.openide.explorer.propertysheet.editors.*;
@@ -574,17 +572,11 @@ public class RADComponent {
                         }
 
                         HandlerSetChange change =(HandlerSetChange) val;
-                        if (change.hasAdded()) {
-                            for (Iterator iter = change.getAdded().iterator(); iter.hasNext();) {
-                                String handlerName =(String) iter.next();
-                                if (!Utilities.isJavaIdentifier(handlerName)) {
-                                    TopManager.getDefault().notify(new NotifyDescriptor.Message(java.text.MessageFormat.format(FormEditor.getFormBundle().getString("FMT_MSG_InvalidJavaIdentifier"), new Object [] {handlerName}), NotifyDescriptor.ERROR_MESSAGE));
-                                    continue;
-                                }
-                                // adding event handler
-                                formManager.getEventsManager().addEventHandler(event, handlerName);
-                                EventsManager.EventHandler handler =(EventsManager.EventHandler) event.getHandlers().get(event.getHandlers().size() -1);
-                                formManager.fireEventAdded(RADComponent.this, handler);
+                        if (change.hasRemoved()) {
+                            for (Iterator iter = change.getRemoved().iterator(); iter.hasNext();) {
+                                EventsManager.EventHandler handler =(EventsManager.EventHandler) handlersByName.get((String) iter.next());
+                                formManager.getEventsManager().removeEventHandler(event, handler);
+                                formManager.fireEventRemoved(RADComponent.this, handler);
                             }
                         }
                         if (change.hasRenamed()) {
@@ -598,11 +590,17 @@ public class RADComponent {
                                 formManager.fireEventRenamed(RADComponent.this, handler, oldName);
                             }
                         }
-                        if (change.hasRemoved()) {
-                            for (Iterator iter = change.getRemoved().iterator(); iter.hasNext();) {
-                                EventsManager.EventHandler handler =(EventsManager.EventHandler) handlersByName.get((String) iter.next());
-                                formManager.getEventsManager().removeEventHandler(event, handler);
-                                formManager.fireEventRemoved(RADComponent.this, handler);
+                        if (change.hasAdded()) {
+                            for (Iterator iter = change.getAdded().iterator(); iter.hasNext();) {
+                                String handlerName =(String) iter.next();
+                                if (!Utilities.isJavaIdentifier(handlerName)) {
+                                    TopManager.getDefault().notify(new NotifyDescriptor.Message(java.text.MessageFormat.format(FormEditor.getFormBundle().getString("FMT_MSG_InvalidJavaIdentifier"), new Object [] {handlerName}), NotifyDescriptor.ERROR_MESSAGE));
+                                    continue;
+                                }
+                                // adding event handler
+                                formManager.getEventsManager().addEventHandler(event, handlerName);
+                                EventsManager.EventHandler handler =(EventsManager.EventHandler) event.getHandlers().get(event.getHandlers().size() -1);
+                                formManager.fireEventAdded(RADComponent.this, handler);
                             }
                         }
                         String newSelectedHandler = ""; // NOI18N
