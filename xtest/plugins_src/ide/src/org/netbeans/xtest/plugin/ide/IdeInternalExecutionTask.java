@@ -26,7 +26,6 @@ import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Commandline;
 import org.apache.tools.ant.types.CommandlineJava;
 import org.apache.tools.ant.types.Path;
-import org.openide.util.Lookup;
 
 /** Task intended to run functional test class in IDE's JVM. It gets
  * IDE's system class loader, adds given classpath and invokes main method
