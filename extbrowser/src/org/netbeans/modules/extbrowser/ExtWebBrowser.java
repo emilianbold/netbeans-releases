@@ -28,7 +28,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
 
     private static final long serialVersionUID = -3021027901671504127L;
     
-    public static final String PROP_BROWSER_NAME = "name"; // NOI18N
+    public static final String PROP_DESCRIPTION = "description"; // NOI18N
     public static final String PROP_BROWSER_EXECUTABLE = "browserExecutable"; // NOI18N
     
     /** command that executes the browser. Used in an old version. */
@@ -52,7 +52,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
     /** Getter for browser name
      *  @return browserName name of browser
      */
-    public String getName () {
+    public String getDescription () {
         return NbBundle.getMessage (ExtWebBrowser.class, "CTL_ExternalBrowser");
     }
     

@@ -37,11 +37,11 @@ public class ExtWebBrowserBeanInfo extends SimpleBeanInfo {
         if (properties == null) {
             try {
                 properties = new PropertyDescriptor [] {
-                    new PropertyDescriptor (ExtWebBrowser.PROP_BROWSER_NAME, ExtWebBrowser.class, "getName", null),    // NOI18N
+                    new PropertyDescriptor (ExtWebBrowser.PROP_DESCRIPTION, ExtWebBrowser.class, "getDescription", null),    // NOI18N
                     new PropertyDescriptor (ExtWebBrowser.PROP_BROWSER_EXECUTABLE, ExtWebBrowser.class, "getBrowserExecutable", "setBrowserExecutable")    // NOI18N
                 };
-                properties[0].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_browserName"));
-                properties[0].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_browserName"));
+                properties[0].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_Description"));
+                properties[0].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_Description"));
                 properties[1].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_browserExecutable"));
                 properties[1].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_browserExecutable"));
             } catch (IntrospectionException ie) {

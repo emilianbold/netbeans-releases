@@ -50,14 +50,14 @@ public class SimpleExtBrowserBeanInfo extends SimpleBeanInfo {
         if (properties == null) {
             try {
                 properties = new PropertyDescriptor [] {
-                    new PropertyDescriptor ("name", SimpleExtBrowser.class, "getName", "setName"),    // NOI18N
-                    new PropertyDescriptor ("process", SimpleExtBrowser.class, "getProcess", "setProcess")    // NOI18N
+                    new PropertyDescriptor (SimpleExtBrowser.PROP_DESCRIPTION, SimpleExtBrowser.class, "getDescription", "setDescription"),    // NOI18N
+                    new PropertyDescriptor (SimpleExtBrowser.PROP_BROWSER_EXECUTABLE, SimpleExtBrowser.class, "getBrowserExecutable", "setBrowserExecutable")    // NOI18N
                 };
                 
-                properties[0].setDisplayName (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "PROP_browserName"));
-                properties[0].setShortDescription (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "HINT_browserName"));
-                properties[1].setDisplayName (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "PROP_process"));
-                properties[1].setShortDescription (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "HINT_process"));
+                properties[0].setDisplayName (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "PROP_Description"));
+                properties[0].setShortDescription (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "HINT_Description"));
+                properties[1].setDisplayName (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "PROP_browserExecutable"));
+                properties[1].setShortDescription (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "HINT_browserExecutable"));
 
             } catch (IntrospectionException ie) {
                 if (Boolean.getBoolean ("netbeans.debug.exceptions"))

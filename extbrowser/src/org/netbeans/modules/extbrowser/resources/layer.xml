@@ -17,29 +17,75 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Services">
     <folder name="Browsers">
 
-      <file name="SimpleExtBrowser.ser" url="SimpleExtBrowser.ser">
+      <file name="SimpleExtBrowser.settings">
+            <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.extbrowser/1" spec="0.3"/>
+    <instanceof class="org.openide.util.SharedClassObject"/>
+    <instanceof class="java.lang.Object"/>
+    <instanceof class="org.openide.awt.HtmlBrowser$Factory"/>
+    <instanceof class="java.io.Serializable"/>
+    <instance class="org.netbeans.modules.extbrowser.SimpleExtBrowser"/>
+</settings>
+            ]]>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
       </file>
-      <file name="UnixWebBrowser.ser" url="UnixWebBrowser.ser">
+      <file name="UnixWebBrowser.settings">
+            <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.extbrowser/1" spec="0.3"/>
+    <instanceof class="org.openide.util.SharedClassObject"/>
+    <instanceof class="java.lang.Object"/>
+    <instanceof class="org.openide.awt.HtmlBrowser$Factory"/>
+    <instanceof class="java.io.Serializable"/>
+    <instance class="org.netbeans.modules.extbrowser.ExtWebBrowser"/>
+    <instance class="org.netbeans.modules.extbrowser.UnixWebBrowser"/>
+</settings>
+            ]]>
         <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.UnixWebBrowser.isHidden"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
       </file>
-      <file name="WinWebBrowser.ser" url="WinWebBrowser.ser">
+      <file name="WinWebBrowser.settings">
+            <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.extbrowser/1" spec="0.3"/>
+    <instanceof class="org.openide.util.SharedClassObject"/>
+    <instanceof class="java.lang.Object"/>
+    <instanceof class="org.openide.awt.HtmlBrowser$Factory"/>
+    <instanceof class="java.io.Serializable"/>
+    <instance class="org.netbeans.modules.extbrowser.ExtWebBrowser"/>
+    <instance class="org.netbeans.modules.extbrowser.UnixWebBrowser"/>
+</settings>
+            ]]>
         <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.WinWebBrowser.isHidden"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
       </file>
-      <attr name="SimpleExtBrowser.ser/SwingBrowser.ser" boolvalue="true"/>
-      <attr name="SimpleExtBrowser.ser/IceBrowser.ser" boolvalue="true"/>
-      <attr name="UnixWebBrowser.ser/SimpleExtBrowser.ser" boolvalue="true"/>
-      <attr name="WinWebBrowser.ser/SimpleExtBrowser.ser" boolvalue="true"/>
-      <attr name="UnixWebBrowser.ser/WinWebBrowser.ser" methodvalue="org.netbeans.modules.extbrowser.ExtHtmlBrowser.isUnixFirst"/>
+      <attr name="SimpleExtBrowser.settings/SwingBrowser.ser" boolvalue="true"/>
+      <attr name="SimpleExtBrowser.settings/IceBrowser.ser" boolvalue="true"/>
+      <attr name="UnixWebBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
+      <attr name="WinWebBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
+      <attr name="WinWebBrowser.settings/UnixWebBrowser.settings" methodvalue="org.openide.util.Utilities.isWindows"/>
     </folder>
   </folder>
 
   <folder name="Templates">
     <folder name="Services">
       <folder name="Browsers">
-        <file name="org-netbeans-modules-extbrowser-SimpleExtBrowser.instance">
+        <file name="SimpleExtBrowser.settings">
+          <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.extbrowser/1" spec="0.3"/>
+    <instanceof class="org.openide.util.SharedClassObject"/>
+    <instanceof class="java.lang.Object"/>
+    <instanceof class="org.openide.awt.HtmlBrowser$Factory"/>
+    <instanceof class="java.io.Serializable"/>
+    <instance class="org.netbeans.modules.extbrowser.SimpleExtBrowser"/>
+</settings>
+            ]]>
           <attr name="template" boolvalue="true"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
         </file>

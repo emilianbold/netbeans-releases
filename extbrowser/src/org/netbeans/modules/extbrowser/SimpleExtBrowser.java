@@ -35,7 +35,8 @@ import org.netbeans.modules.httpserver.WrapperServlet;
  */
 public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializable {
     
-    public static final String PROP_NAME = "BrowserName";   // NOI18N
+    public static final String PROP_DESCRIPTION = "description";   // NOI18N
+    public static final String PROP_BROWSER_EXECUTABLE = "browserExecutable"; // NOI18N
     
     private static NbProcessDescriptor DEFAULT_EXTERNAL_BROWSER = new NbProcessDescriptor(
         // empty string for process
@@ -48,6 +49,7 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
     /** process descriptor for browser */
     private NbProcessDescriptor process;
     
+    /** holds description of browser */
     protected String name;
     
     private PropertyChangeSupport pcs;
@@ -64,7 +66,7 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
      *
      * @return Value of property name.
      */
-    public java.lang.String getName () {
+    public java.lang.String getDescription () {
         if (name == null) {
             try {
                 return Introspector.getBeanInfo (getClass ()).getBeanDescriptor ().getDisplayName ();
@@ -82,11 +84,11 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
     /** Setter for property name.
      * @param name New value of property name.
      */
-    public void setName (java.lang.String name) {
+    public void setDescription (java.lang.String name) {
         if (!name.equals (this.name)) {
             String old = this.name;
             this.name = name;
-            pcs.firePropertyChange (PROP_NAME, old, name);
+            pcs.firePropertyChange (PROP_DESCRIPTION, old, name);
         }
     }
 
@@ -99,13 +101,15 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
     }
     
     /** getter for process property */
-    public NbProcessDescriptor getProcess() {
+    public NbProcessDescriptor getBrowserExecutable () {
         return process;
     }
 
     /** setter for process property */
-    public void setProcess(NbProcessDescriptor process) {
+    public void setBrowserExecutable (NbProcessDescriptor process) {
+        NbProcessDescriptor old = this.process;
         this.process = process;
+        pcs.firePropertyChange (PROP_BROWSER_EXECUTABLE, old, process);
     }
 
     /**
