@@ -221,7 +221,8 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         DataFolder df = DataFolder.findFolder(fo);
         
 //        W w = new W(drv, df, drv.getName());
-        W w = new W(drv, df, drv.getClassName());
+        String fileName = drv.getClassName().replace('.', '_'); //NOI18N
+        W w = new W(drv, df, fileName);
         df.getPrimaryFile().getFileSystem().runAtomicAction(w);
         return w.holder;
     }
