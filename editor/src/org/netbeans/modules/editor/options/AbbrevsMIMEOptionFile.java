@@ -112,9 +112,9 @@ public class AbbrevsMIMEOptionFile extends MIMEOptionFile{
             // setAbbrevMap without saving to XML
             if (propagate){
                 base.setAbbrevMap(mapa, false);
-                setLoaded(true);
             }
         }
+        if (propagate) setLoaded(true);
     }
     
     /** Save settings to XML file

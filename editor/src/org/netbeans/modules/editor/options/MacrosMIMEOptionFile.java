@@ -113,9 +113,9 @@ public class MacrosMIMEOptionFile extends MIMEOptionFile{
             // setMacroMap without saving to XML
             if (propagate){
                 base.setMacroMap(mapa, false);
-                setLoaded(true);
             }
         }
+        if (propagate) setLoaded(true);        
     }
     
     /** Save settings to XML file 

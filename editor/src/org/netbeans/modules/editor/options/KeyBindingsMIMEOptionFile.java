@@ -142,9 +142,9 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
             // setKeybMap without saving to XML
             if (propagate){
                 base.setKeyBindingList(new ArrayList(mapa.values()), false);
-                setLoaded(true);
             }
         }
+        if (propagate) setLoaded(true);        
     }
     
     /** Save settings to XML file 
