@@ -14,6 +14,7 @@
 package org.openide.awt;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
@@ -264,7 +265,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
     }
 
     /** Menu based on the folder content whith lazy items creation. */
-    private static class LazyMenu extends JMenuPlus implements NodeListener {
+    private static class LazyMenu extends JMenuPlus implements NodeListener, Runnable {
 	DataFolder master;
 	boolean icon;
 	MenuFolder slave;
@@ -289,6 +290,12 @@ public class MenuBar extends JMenuBar implements Externalizable {
 		    n.getIcon (java.beans.BeanInfo.ICON_COLOR_16x16)));
 	}
 
+        /** Update the properties. Exported via Runnable interface so it
+         * can be rescheduled. */
+        public void run() {
+		updateProps();
+        }
+
         /** If the display name changes, than change the name of the menu.*/
         public void propertyChange (java.beans.PropertyChangeEvent ev) {
             if (
@@ -296,7 +303,12 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 Node.PROP_NAME.equals (ev.getPropertyName ()) ||
                 Node.PROP_ICON.equals (ev.getPropertyName ())
             ) {
-		updateProps();
+                // update the properties in AWT queue
+                if (EventQueue.isDispatchThread ()) {
+                    updateProps(); // do the update synchronously
+                } else {
+                    EventQueue.invokeLater (this);
+                }
             }
         }
 
