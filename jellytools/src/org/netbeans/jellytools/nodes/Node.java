@@ -208,10 +208,11 @@ public class Node {
         return getText().endsWith(linkSuffix);
     }
     
-    /** verifies is node is still present
+    /** verifies if node is still present. It expands parent path of the node
+     * during verification.
      * @return boolean true when node is still present */    
     public boolean isPresent() {
-        tree().expandPath(treePath);
+        tree().expandPath(treePath.getParentPath());
         return tree().getRowForPath(treePath)>=0;
     }
     
