@@ -435,7 +435,7 @@ public class MakeNBM extends MatchingTask {
 		    // Strip major release number if any.
 		    int idx = codenamebase.lastIndexOf ('/');
 		    if (idx != -1) codenamebase = codenamebase.substring (0, idx);
-		    ps.println ("<module codenamebase=\"" + codenamebase + "\"");
+		    ps.println ("<module codenamebase=\"" + xmlEscape(codenamebase) + "\"");
 		    if (homepage != null)
                         ps.println ("        homepage=\"" + xmlEscape(homepage) + "\"");
 		    if (distribution != null)
@@ -449,20 +449,18 @@ public class MakeNBM extends MatchingTask {
 		    }
 		    ps.println ("        downloadsize=\"0\"");
                     if (needsrestart != null)
-                        ps.println ("        needsrestart=\"" + needsrestart + "\"");
+                        ps.println ("        needsrestart=\"" + xmlEscape(needsrestart) + "\"");
 		    ps.println (">");
 		    if (description != null) {
 			ps.print ("  <description>");
 			ps.print (description.getText ());
 			ps.println ("</description>");
                     }
-
                     if (notification != null) {
                         ps.print("  <module_notification>");
                         ps.print(notification.getText());
                         ps.println("</module_notification>");
 		    }
-
 		    if (externalPackages != null) {
 			Enumeration exp = externalPackages.elements();
 			while (exp.hasMoreElements()) {
@@ -472,11 +470,11 @@ public class MakeNBM extends MatchingTask {
 				externalPackage.startUrl == null)
 				throw new BuildException("Must define name, targetname, starturl for external package");
 			    ps.print("  <external_package ");
-			    ps.print("name=\""+externalPackage.name+"\" ");
-			    ps.print("target_name=\""+externalPackage.targetName+"\" ");
-			    ps.print("start_url=\""+externalPackage.startUrl+"\"");
+			    ps.print("name=\""+xmlEscape(externalPackage.name)+"\" ");
+			    ps.print("target_name=\""+xmlEscape(externalPackage.targetName)+"\" ");
+			    ps.print("start_url=\""+xmlEscape(externalPackage.startUrl)+"\"");
 			    if (externalPackage.description != null)
-				ps.print(" description=\""+externalPackage.description+"\"");
+				ps.print(" description=\""+xmlEscape(externalPackage.description)+"\"");
 			    ps.println("/>");
 			}
 		    }

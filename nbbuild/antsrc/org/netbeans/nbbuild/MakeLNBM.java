@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -444,13 +444,13 @@ public class MakeLNBM extends MatchingTask {
 			throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
 		      // Strip major release number if any.
 		      codenamebase = getCodenameBase( codenamebase) ;
-		      ps.println ("<module codenamebase=\"" + codenamebase + "\"");
+		      ps.println ("<module codenamebase=\"" + xmlEscape(codenamebase) + "\"");
 		    }
 		    else {
 		      ps.print( "<module ");
 		      if( modInfo != null && !modInfo.trim().equals( "")) {
 			String codenamebase = getCodenameBase( modInfo) ;
-			ps.println( "codenamebase=\"" + codenamebase + "\"");
+			ps.println( "codenamebase=\"" + xmlEscape(codenamebase) + "\"");
 		      }
 		      else {
 			ps.println( "") ;
@@ -469,7 +469,7 @@ public class MakeLNBM extends MatchingTask {
 		    }
 		    ps.println ("        downloadsize=\"0\"");
                     if (needsrestart != null)
-                        ps.println ("        needsrestart=\"" + needsrestart + "\"");
+                        ps.println ("        needsrestart=\"" + xmlEscape(needsrestart) + "\"");
 		    ps.println (">");
 		    if (description != null) {
 			ps.print ("  <description>");
@@ -513,22 +513,22 @@ public class MakeLNBM extends MatchingTask {
 		      // Write the l10n tag and lang/branding codes. //
 		      ps.println("  <l10n ");
 		      if( langCode != null && !langCode.trim().equals( "")) {
-			ps.println( "        langcode=\"" + langCode + "\"") ;
+			ps.println( "        langcode=\"" + xmlEscape(langCode) + "\"") ;
 		      }
 		      if( brandingCode != null && !brandingCode.trim().equals( "")) {
-			ps.println( "        brandingcode=\"" + brandingCode + "\"") ;
+			ps.println( "        brandingcode=\"" + xmlEscape(brandingCode) + "\"") ;
 		      }
 
 		      // Write the major version if possible. //
 		      majorver = getMajorVer( modInfo) ;
 		      if( majorver != null && !majorver.trim().equals( "")) {
-			ps.println( "        module_major_version=\"" + majorver + "\"") ;
+			ps.println( "        module_major_version=\"" + xmlEscape(majorver) + "\"") ;
 		      }
 
 		      // Write the spec version if possible. //
 		      specver = getSpecVer( modInfo) ;
 		      if( specver != null && !specver.trim().equals( "")) {
-			ps.println( "        module_spec_version=\"" + specver + "\"") ;
+			ps.println( "        module_spec_version=\"" + xmlEscape(specver) + "\"") ;
 		      }
 
 		      // Read localizing bundle and write relevant attr's. //
@@ -559,11 +559,11 @@ public class MakeLNBM extends MatchingTask {
 				externalPackage.startUrl == null)
 				throw new BuildException("Must define name, targetname, starturl for external package");
 			    ps.print("  <external_package ");
-			    ps.print("name=\""+externalPackage.name+"\" ");
-			    ps.print("target_name=\""+externalPackage.targetName+"\" ");
-			    ps.print("start_url=\""+externalPackage.startUrl+"\"");
+			    ps.print("name=\""+xmlEscape(externalPackage.name)+"\" ");
+			    ps.print("target_name=\""+xmlEscape(externalPackage.targetName)+"\" ");
+			    ps.print("start_url=\""+xmlEscape(externalPackage.startUrl)+"\"");
 			    if (externalPackage.description != null)
-				ps.print(" description=\""+externalPackage.description+"\"");
+				ps.print(" description=\""+xmlEscape(externalPackage.description)+"\"");
 			    ps.println("/>");
 			}
 		    }
@@ -820,7 +820,7 @@ public class MakeLNBM extends MatchingTask {
 			       PrintWriter ps) {
     boolean ret = false ;
     if( val != null) {
-      ps.println( name + "=\"" + val + "\"") ;
+      ps.println( name + "=\"" + xmlEscape(val) +"\"") ;
       ret = true ;
     }
     return( ret) ;
