@@ -837,7 +837,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module filecopy..."/>
     <ant dir="../filecopy" target="netbeans"/>
   </target>
-  <target name="all-form" depends="init,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-ant/project,all-java/api,all-java/project,all-java,all-java/srcmodel,all-java/platform">
+  <target name="all-form" depends="init,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-ant/project,all-java/api,all-java/project,all-java,all-java/srcmodel,all-java/platform,all-editor/fold">
     <echo message="Building module form..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
