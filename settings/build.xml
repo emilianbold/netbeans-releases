@@ -82,16 +82,28 @@ Microsystems, Inc. All Rights Reserved.
       <delete dir="SettingsAPIs"/>
     </target>
 
-    <target name="real-clean" depends="clean">
+    <target name="real-clean" depends="clean,clean-javadoc">
         <delete dir="reload"/>
     </target>
 
+    <target name="clean-javadoc">
+      <delete dir="javadoc"/>
+      <delete dir="SettingsAPIs"/>
+    </target>
+
+    <target name="javadoc" description="Create Settings API documentation." depends="clean-javadoc,settingsapis">
+      <copy todir="javadoc">
+        <fileset dir="SettingsAPIs"/>
+      </copy>
+    </target>
+
     <!-- Settings API documentation -->
-    <target name="javadoc" description="Create Settings API documentation.">
+    <target name="settingsapis" description="Create Settings API documentation.">
         <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.3/docs/api"/>
         <property name="openide-docs-location" value="http://www.netbeans.org/download/apis"/>
         <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 2002 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
         <echo message="Build Settings API documentation..."/>
+        <delete dir="SettingsAPIs"/>
         <mkdir dir="SettingsAPIs"/>
         <javadoc destdir="SettingsAPIs"
                  packagenames="org.netbeans.spi.settings"
@@ -111,6 +123,9 @@ Microsystems, Inc. All Rights Reserved.
               <fileset dir="${nb_all}/openide/netbeans/lib">
                 <include name="openide*.jar" />
               </fileset>
+              <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
+              <pathelement location="${binroot}/core/release/lib/ext/${xmlparser}"/>
+              <pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
             </classpath>
             <link href="${jdk-docs-location}"
                   offline="true"

@@ -87,7 +87,7 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
   
-  <target name="javadoc">
+  <target name="javadoc" depends="clean-javadoc">
     <delete dir="javadoc"/>
     <mkdir dir="javadoc"/>
     <tstamp/>
@@ -152,6 +152,12 @@ Microsystems, Inc. All Rights Reserved.
     <replace dir="javadoc" token="@DATE@" value="${TODAY}">
 	<include name="**/*.html"/>
     </replace>
+  </target>
+
+  <target name="real-clean" depends="clean,clean-javadoc"/>
+
+  <target name="clean-javadoc">
+    <delete dir="javadoc"/>
   </target>
 
   <target name="clean">

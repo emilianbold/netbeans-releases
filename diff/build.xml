@@ -74,7 +74,11 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="javadoc" depends="diff-apis"/>
+  <target name="javadoc" depends="clean-javadoc,diff-apis">
+    <copy todir="javadoc">
+      <fileset dir="DiffAPIs"/>
+    </copy>
+  </target>
 
   <!-- Diff API documentation -->
   <target name="diff-apis" description="Create Diff API documentation.">
@@ -100,6 +104,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${nbroot}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
+        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
       <link href="${jdk-docs-location}"
             offline="true"
@@ -113,6 +118,12 @@ Microsystems, Inc. All Rights Reserved.
     <zip zipfile="DiffAPIs.zip" basedir="DiffAPIs"/>
   </target>
 
+  <target name="real-clean" depends="clean,clean-javadoc"/>
+
+  <target name="clean-javadoc">
+    <delete dir="javadoc"/>
+    <delete dir="DiffAPIs"/>
+  </target>
 
   <target name="clean">
     <delete>
