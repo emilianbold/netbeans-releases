@@ -708,7 +708,7 @@ public abstract class NbTopManager extends TopManager {
         }
         // save all open files
         try {
-            if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
+            if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog(null, true) ) {
                 if (getModuleSystem().shutDown()) {
                     // save project
                     NbProjectOperation.storeLastProject ();

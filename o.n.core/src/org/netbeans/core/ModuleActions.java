@@ -15,16 +15,22 @@ package org.netbeans.core;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.*;
 import java.util.*;
 import javax.swing.Action;
 import javax.swing.event.*;
 
 import org.openide.actions.ActionManager;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.*;
+import org.openide.util.WeakListener;
+
 
 /** Holds list of all actions added by modules.
 *
@@ -32,6 +38,10 @@ import org.openide.util.*;
 */
 public class ModuleActions extends ActionManager
 /*implements PropertyChangeListener*/ {
+    
+    /** Property name of currently running actions. */
+    static String PROP_RUNNING_ACTIONS = "runningActions"; // NOI18N
+    
     /** array of all actions added by modules */
     private static SystemAction[] array;
     /** of (ModuleItem, List (SystemAction)) */
@@ -42,6 +52,12 @@ public class ModuleActions extends ActionManager
     private int rpCounter = 0;
     /** pool of _unused_ processor threads */
     private Set requestProcessors = new HashSet (4); // Set<Reference<RequestProcessor>>
+
+    /** Map of currently running actions, (maps action event to action) */
+    private Map runningActions = new HashMap(4);
+    /** Map of currently running processors of running actions,
+     * (maps action event to processor) */
+    private Map runningProcessors = new HashMap(4);
     
     /** instance */
     static final ModuleActions INSTANCE = new ModuleActions ();
@@ -82,7 +98,16 @@ public class ModuleActions extends ActionManager
                          ((e.getSource () instanceof Node) ||
                           (e.getSource () instanceof Node[])))) {
                         //System.err.println ("invokeAction -> run: " + a);
-                        a.actionPerformed (e);
+                              
+                        try {
+                            addRunningAction(rp, a, e);
+
+                            a.actionPerformed (e);
+                        } finally {
+                            removeRunningAction(e);
+                            
+                            INSTANCE.firePropertyChange(PROP_RUNNING_ACTIONS, null, null);
+                        }
                     } else {
                         //System.err.println ("invokeAction -> beep: " + a);
                         Mutex.EVENT.readAccess (new Runnable () {
@@ -131,6 +156,58 @@ public class ModuleActions extends ActionManager
         INSTANCE.firePropertyChange(PROP_CONTEXT_ACTIONS, null, null);
     }
 
+    /** Adds action to <code>runningAction</code> map using event as a key.
+     * @param rp <code>RequestProcessor</code> which runs the actio task
+     * @param action action to put in map 
+     * @param evt action event used as key in the map */
+    private void addRunningAction(RequestProcessor rp, Action action, ActionEvent evt) {
+        // Ignore actions which are marked, currently exit action.
+        // When the pending dialog will be used for switching project and
+        // also unmounting FS's mark also those actions with this flag.
+        if(action.getValue("ModuleActions.ignore") != null) { // NOI18N
+            return;
+        }
+        
+        synchronized(runningActions) {
+            runningActions.put(evt, action);
+            runningProcessors.put(evt, rp);
+        }
+    }
+    
+    /** Removes action from <code>runningAction</code> map for key.
+     * @param evt action event used as a key in map */
+    private void removeRunningAction(ActionEvent evt) {
+        synchronized(runningActions) {
+            runningActions.remove(evt);
+            runningProcessors.remove(evt);
+        }
+    }
+
+    /** Gets collection of currently running actions. */
+    static Collection getRunningActions() {
+        synchronized(INSTANCE.runningActions) {
+            return new ArrayList(INSTANCE.runningActions.values());
+        }
+    }
+    
+    /** Tries to stop all processors executing currently running
+     * action tasks. */
+    static void killRunningActions() {
+        Set processors;
+        // Synchronize according runningActions lock.
+        synchronized(INSTANCE.runningActions) {
+            processors = new HashSet(INSTANCE.runningProcessors.values());
+        }
+        
+        for(Iterator it = processors.iterator(); it.hasNext(); ) {
+            RequestProcessor rp = (RequestProcessor)it.next();
+            
+            if(rp != null) {
+                rp.stop();
+            }
+        }
+    }
+    
     /** Change enabled property of an action
     *
     public void propertyChange (PropertyChangeEvent ev) {
