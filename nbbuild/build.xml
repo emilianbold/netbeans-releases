@@ -3071,7 +3071,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
   </target>
 
   <target name="check-for-build"  >
-    <available property="have-build" file="${netbeans.dest}/bin/netbeans"/>
+    <available property="have-build" file="${netbeans.dest.dir}/bin/netbeans"/>
   </target>
   <target name="maybe-build-nozip" depends="check-for-build" unless="have-build">
     <ant dir="." target="build-nozip"/>
