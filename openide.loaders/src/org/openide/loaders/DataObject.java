@@ -502,8 +502,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     */
     public final DataObject copy (final DataFolder f) throws IOException {
         final DataObject[] result = new DataObject[1];
-        FileSystem fs = f.getPrimaryFile ().getFileSystem ();
-        invokeAtomicAction (fs, new FileSystem.AtomicAction () {
+        invokeAtomicAction (f.getPrimaryFile (), new FileSystem.AtomicAction () {
                                 public void run () throws IOException {
                                     result[0] = handleCopy (f);
                                 }
@@ -528,8 +527,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     public final void delete () throws IOException {
         synchronized ( synchObject() ) {
             // the object is ready to be closed
-            FileSystem fs = getPrimaryFile ().getFileSystem ();
-            invokeAtomicAction (fs, new FileSystem.AtomicAction () {
+            invokeAtomicAction (getPrimaryFile (), new FileSystem.AtomicAction () {
                     public void run () throws IOException {
                         handleDelete ();
                         item.deregister(false);
@@ -573,8 +571,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             files[0] = getPrimaryFile ();
             
             // executes atomic action with renaming
-            FileSystem fs = files[0].getFileSystem ();
-            invokeAtomicAction (fs, new FileSystem.AtomicAction () {
+            invokeAtomicAction (files[0].getParent(), new FileSystem.AtomicAction () {
                     public void run () throws IOException {
                         files[1] = handleRename (name);
                         if (files[0] != files[1])
@@ -609,8 +606,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
 
             // executes atomic action for moving
             old = getPrimaryFile ();
-            FileSystem fs = old.getFileSystem ();
-            invokeAtomicAction (fs, new FileSystem.AtomicAction () {
+            invokeAtomicAction (df.getPrimaryFile(), new FileSystem.AtomicAction () {
                                     public void run () throws IOException {
                                         FileObject mf = handleMove (df);
                                         item.changePrimaryFile (mf);
@@ -653,8 +649,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     public final DataShadow createShadow (final DataFolder f) throws IOException {
         final DataShadow[] result = new DataShadow[1];
 
-        FileSystem fs = f.getPrimaryFile ().getFileSystem ();
-        invokeAtomicAction (fs, new FileSystem.AtomicAction () {
+        invokeAtomicAction (f.getPrimaryFile (), new FileSystem.AtomicAction () {
                                 public void run () throws IOException {
                                     result[0] =  handleCreateShadow (f);
                                 }
@@ -691,8 +686,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     ) throws IOException {
         final DataObject[] result = new DataObject[1];
 
-        FileSystem fs = f.getPrimaryFile ().getFileSystem ();
-        invokeAtomicAction (fs, new FileSystem.AtomicAction () {
+        invokeAtomicAction (f.getPrimaryFile (), new FileSystem.AtomicAction () {
                                 public void run () throws IOException {
                                     result[0] = handleCreateFromTemplate (f, name);
                                 }
@@ -739,13 +733,13 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     
     /** Invokes atomic action. 
      */
-    private void invokeAtomicAction (FileSystem fs, FileSystem.AtomicAction action) throws IOException {
+    private void invokeAtomicAction (FileObject target, FileSystem.AtomicAction action) throws IOException {
         if (this instanceof DataFolder) {
             // action is slow
-            fs.runAtomicAction(action);
+            target.getFileSystem().runAtomicAction(action);
         } else {
             // it is quick, make it block DataObject recognition
-            DataObjectPool.getPOOL ().runAtomicAction (fs, action);
+            DataObjectPool.getPOOL ().runAtomicAction (target, action);
         }
     }
      

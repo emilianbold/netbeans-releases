@@ -151,7 +151,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     //
     private Thread atomic;
     private RequestProcessor priviledged;
-    public void runAtomicAction (FileSystem fs, FileSystem.AtomicAction action) 
+    public void runAtomicAction (FileObject target, FileSystem.AtomicAction action) 
     throws java.io.IOException {
         Thread prev;
         synchronized (this) {
@@ -163,7 +163,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         }
         
         try {
-            fs.runAtomicAction(action);
+            target.getFileSystem ().runAtomicAction(action);
         } finally {
             synchronized (this) {
                 atomic = prev;

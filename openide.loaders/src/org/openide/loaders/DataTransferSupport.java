@@ -165,7 +165,7 @@ abstract class DataTransferSupport {
             nd.setInputText (name);
 
             if (NotifyDescriptor.OK_OPTION == DialogDisplayer.getDefault ().notify (nd)) {
-                DataObjectPool.getPOOL().runAtomicAction (trg.getPrimaryFile ().getFileSystem (), new FileSystem.AtomicAction () {
+                DataObjectPool.getPOOL().runAtomicAction (trg.getPrimaryFile (), new FileSystem.AtomicAction () {
                             public void run () throws IOException {
                                 FileObject fo = trg.getPrimaryFile ().createData (nd.getInputText (), "ser"); // NOI18N
                                 FileLock lock = fo.lock ();
