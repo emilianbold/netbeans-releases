@@ -23,6 +23,12 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
+/* Form Note:
+* the source in guarded section has been changes without updating the .form file:
+* - codeArea is instance of JEditorPane (was JTextArea)
+* - codeArea.setContentType ("text/x-java"); was added
+*/
+
 /** The ParametersPicker is a panel which allows to enter a method parameter data.
 *
 * @author  Ian Formanek
@@ -341,8 +347,9 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
     codeScrollPane = new javax.swing.JScrollPane ();
 
-      codeArea = new javax.swing.JTextArea ();
+      codeArea = new javax.swing.JEditorPane ();
       codeArea.setEnabled (false);
+      codeArea.setContentType ("text/x-java");
       codeArea.addCaretListener (new javax.swing.event.CaretListener () {
           public void caretUpdate (javax.swing.event.CaretEvent evt) {
             updateState (evt);
@@ -430,7 +437,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
   private javax.swing.JButton methodDetailsButton;
   private javax.swing.JRadioButton codeButton;
   private javax.swing.JScrollPane codeScrollPane;
-  private javax.swing.JTextArea codeArea;
+  private javax.swing.JEditorPane codeArea;
 // End of variables declaration//GEN-END:variables
 
   private FormManager2 manager;
@@ -450,6 +457,9 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
 /*
  * Log
+ *  10   Gandalf   1.9         7/11/99  Ian Formanek    JEditorPane instead of 
+ *       JTextArea for user code (WARNING: in guarded code, so opening the form 
+ *       will destroy this change)
  *  9    Gandalf   1.8         7/8/99   Jesse Glick     Context help.
  *  8    Gandalf   1.7         6/30/99  Ian Formanek    reflecting change in 
  *       enhanced property editors interfaces
