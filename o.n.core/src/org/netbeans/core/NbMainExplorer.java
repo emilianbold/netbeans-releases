@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -929,6 +929,11 @@ public final class NbMainExplorer extends CloneableTopComponent {
             );
         }
         
+        protected void componentShowing() {
+            super.componentShowing();
+            view.setRootVisible(false);
+        }
+
         public static synchronized RepositoryTab getDefaultRepositoryTab() {
             if (DEFAULT == null) {
                 DEFAULT = new RepositoryTab();
@@ -1120,7 +1125,9 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
     }
 
-    /** Special class for projects tab in main explorer */
+    /** Special class for projects tab in main explorer
+     * @deprecated Now unused.
+     */
     public static class ProjectsTab extends RepositoryTab {
         static final long serialVersionUID =-8178367548546385799L;
         
