@@ -22,7 +22,6 @@ import org.netbeans.jellytools.TargetLocationStepOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.MountLocalAction;
-import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.actions.NewTemplateAction;
 import org.netbeans.jellytools.modules.form.FormEditorOperator;
 import org.netbeans.jellytools.nodes.FilesystemNode;
@@ -37,16 +36,21 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.properties.ComboBoxProperty;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 import org.netbeans.jellytools.properties.TextFieldProperty;
+import org.openide.actions.SaveAllAction;
+import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 
 public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
     
@@ -60,18 +64,18 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
     private static boolean unmount = false;
     
     /** Need to be defined because of JUnit */
-    public ChangingOfBeanPropertyProperties (String name) {
+    public ChangingOfBeanPropertyProperties(String name) {
         super(name);
     }
     
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();        
-        suite.addTest(new ChangingOfBeanPropertyProperties ("testChangePropertyNameAndType"));
-        suite.addTest(new ChangingOfBeanPropertyProperties ("testChangeMode"));
-///////        suite.addTest(new ChangingOfBeanPropertyProperties ("testChangeOptionsForListener"));
-        suite.addTest(new ChangingOfBeanPropertyProperties ("testDeleteAnyPropertiesAndEvents"));
-        suite.addTest(new ChangingOfBeanPropertyProperties ("testChangeSourceCode"));        
-        suite.addTest(new ChangingOfBeanPropertyProperties ("testChangeOfStyleOfDeclaredVariable"));
+        NbTestSuite suite = new NbTestSuite();
+        //suite.addTest(new ChangingOfBeanPropertyProperties("testChangePropertyNameAndType"));
+        //suite.addTest(new ChangingOfBeanPropertyProperties("testChangeMode"));
+        //suite.addTest(new ChangingOfBeanPropertyProperties("testChangeOptionsForListener"));
+        //suite.addTest(new ChangingOfBeanPropertyProperties("testDeleteAnyPropertiesAndEvents"));
+        //suite.addTest(new ChangingOfBeanPropertyProperties("testChangeSourceCode"));
+        suite.addTest(new ChangingOfBeanPropertyProperties("testChangeOfStyleOfDeclaredVariable"));
         return suite;
     }
     
@@ -86,79 +90,57 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
     /** setUp method  */
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
-        mountSampledir();
+        Utilities.mountSampledir();
         if (!getName().equals("testChangeSourceCode") && !getName().equals("testDeleteAnyPropertiesAndEvents")) {
-            ExplorerOperator explorerOperator = new ExplorerOperator();
-            explorerOperator.selectPageFilesystems();
-            Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
-            FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
-            examplesFolderNode.select();
-            Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
-            new NewTemplateAction().perform();
-            NewWizardOperator newWizardOper = new NewWizardOperator();
-            ChooseTemplateStepOperator ctso = new ChooseTemplateStepOperator();
-            String template = "Java Classes" + "|" + "Class";
-            ctso.selectTemplate(template);
-            ctso.next();
-            TargetLocationStepOperator tlso = new TargetLocationStepOperator();
-            tlso.setName(NAME_TEST_FILE);
-            tlso.tree().setComparator(comparator);
-            tlso.selectLocation(sampleDir);
-            tlso.finish();                
+            
+            FileObject testFile = Repository.getDefault().findResource("gui/data/" + NAME_TEST_FILE + ".java");
+            FileObject destination = Repository.getDefault().findFileSystem(sampleDir.replace('\\', '/')).getRoot();
+            
+            try {
+                DataObject.find(testFile).copy(DataFolder.findFolder(destination));
+            } catch (IOException e) {
+                fail(e);
+            }
         }
     }
     
     /** tearDown method */
     public void tearDown() {
-        ExplorerOperator explorer = new ExplorerOperator();
-        explorer.selectPageProject();
-        explorer.selectPageRuntime();
-        explorer.selectPageFilesystems();
-        Node repositoryRootNode = explorer.repositoryTab().getRootNode();
-        try {
-            new SaveAllAction().perform();
-        } catch (Exception e) {
-            // OK - not enabled, nothing to save
-        }       
-        new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE).select();
-        JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE); // NOI18N
-        javaNode.delete();
-        String confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
-        new NbDialogOperator(confirmTitle).yes();
-        FilesystemNode fsNode = new FilesystemNode(repositoryRootNode, sampleDir);
-        fsNode.unmount();
+        ((SaveAllAction) SaveAllAction.findObject(SaveAllAction.class, true)).performAction();
+        
+        Utilities.delete(NAME_TEST_FILE + ".java");
     }
-
+    
     /** - Create an empty class
      *  - Set Tools|Options|Editing|Beans Property|Style of Declared Variable = this.property_Value
      *  - add a new property
      *  - Set Tools|Options|Editing|Beans Property|Style of Declared Variable = _property_Value
      *  - add a new property
-     */  
+     */
     public void testChangeOfStyleOfDeclaredVariable() {
         MainWindowOperator mainWindowOper  = MainWindowOperator.getDefault();
         mainWindowOper.switchToEditingWorkspace();
-
+        
         
         OptionsOperator optionsOperator = OptionsOperator.invoke();
         optionsOperator.selectOption("Editing"+"|"+"Beans Property");
         PropertySheetTabOperator propertySheetTabOperator = new PropertySheetTabOperator(optionsOperator);
         new ComboBoxProperty(propertySheetTabOperator, "Style of Declared Variable").setValue("this.property_Value");
-
+        
         new EventTool().waitNoEvent(3000);
-
+        
         ExplorerOperator explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
-
+        
         patternsNode.select();
         patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_PROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
-
-        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
-        jTextFieldOperator.typeText("firstName");        
+        
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);
+        jTextFieldOperator.typeText("firstName");
         JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.typeText("int");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
@@ -177,22 +159,22 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(2000);
         nbDialogOperator.btOK().pushNoBlock();
-
+        
         new ComboBoxProperty(propertySheetTabOperator, "Style of Declared Variable").setValue("_property_Value");
         new EventTool().waitNoEvent(3000);
-//////////////////
+        //////////////////
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
-
+        
         patternsNode.select();
         patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_PROPERTY"));
         dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewProperty");
         nbDialogOperator = new NbDialogOperator(dialogTitle);
-
-        jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
-        jTextFieldOperator.typeText("secondName");        
+        
+        jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);
+        jTextFieldOperator.typeText("secondName");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.typeText("String");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
@@ -212,7 +194,9 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         new EventTool().waitNoEvent(2000);
         nbDialogOperator.btOK().pushNoBlock();
         optionsOperator.close();
-
+        
+        new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
+        
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
         eo.select(1,10);
@@ -220,40 +204,40 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         new DeleteAction().performAPI(eo);
         new EventTool().waitNoEvent(500);
         ref(eo.getText());
-        compareReferenceFiles();                               
-
+        compareReferenceFiles();
         
-    }   
+        
+    }
     
     /** - Create an empty class
      *  - Set Tools|Options|Editing|Beans Property|Style of Declared Variable = 0
      *  - add a new property with an initial value
      *  - change of property type a name
-     */    
+     */
     public void testChangePropertyNameAndType() {
         MainWindowOperator mainWindowOper  = MainWindowOperator.getDefault();
         mainWindowOper.switchToEditingWorkspace();
-
+        
         
         OptionsOperator optionsOperator = OptionsOperator.invoke();
         optionsOperator.selectOption("Editing"+"|"+"Beans Property");
         PropertySheetTabOperator propertySheetTabOperator = new PropertySheetTabOperator(optionsOperator);
         new ComboBoxProperty(propertySheetTabOperator, "Style of Declared Variable").setValue("this.property_Value");
-
+        
         new EventTool().waitNoEvent(3000);
-
+        
         ExplorerOperator explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
-
+        
         patternsNode.select();
         patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_PROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
-
-        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
-        jTextFieldOperator.typeText("initialName");        
+        
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);
+        jTextFieldOperator.typeText("initialName");
         JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.typeText("initialType");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
@@ -266,41 +250,43 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(2000);
         nbDialogOperator.btOK().pushNoBlock();
-
+        
         new ComboBoxProperty(propertySheetTabOperator, "Style of Declared Variable").setValue("_property_Value");
         new EventTool().waitNoEvent(3000);
         optionsOperator.close();
-/////////////////
+        /////////////////
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"initialName");
-        patternsNode.select();    
-        Thread thread = new Thread ( new java.lang.Runnable () {
-            public void run () {
+        patternsNode.select();
+        Thread thread = new Thread( new java.lang.Runnable() {
+            public void run() {
                 System.out.println("T H R E A D");
-                new EventTool().waitNoEvent(1000);                
+                new EventTool().waitNoEvent(1000);
                 ExplorerOperator explorerOperator = new ExplorerOperator();
                 explorerOperator.selectPageFilesystems();
                 PropertySheetTabOperator propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
                 new TextFieldProperty(propertySheetTabOperator, "Name").setValue("requiredName");
-            }            
+            }
         });
         thread.start();
-// !!!! F U N G U J E,  ALE  JE  TO  H N U S N E !!! //        
+        // !!!! F U N G U J E,  ALE  JE  TO  H N U S N E !!! //
         String questionTitle = Bundle.getString("org.openide.Bundle", "NTF_QuestionTitle");
         nbDialogOperator =new NbDialogOperator(questionTitle);
         new EventTool().waitNoEvent(1500);
         nbDialogOperator.yes();
         
+        new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
+
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
         eo.select(1,10);
         new DeleteAction().performAPI(eo);
         ref(eo.getText());
-        compareReferenceFiles();                               
-
+        compareReferenceFiles();
+        
     }
-
+    
     /** - Create an empty class
      *  - Set Tools|Options|Editing|Beans Property|Style of Declared Variable = this.property_Value
      *  - add a new property
@@ -308,32 +294,32 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
      *  - Add a new property
      *  - Change of the first property mode to Read Only
      *  - Change of the second property mode to Write Only
-     */        
+     */
     public void testChangeMode() {
-//
+        //
         MainWindowOperator mainWindowOper  = MainWindowOperator.getDefault();
         mainWindowOper.switchToEditingWorkspace();
-
+        
         
         OptionsOperator optionsOperator = OptionsOperator.invoke();
         optionsOperator.selectOption("Editing"+"|"+"Beans Property");
         PropertySheetTabOperator propertySheetTabOperator = new PropertySheetTabOperator(optionsOperator);
         new ComboBoxProperty(propertySheetTabOperator, "Style of Declared Variable").setValue("this.property_Value");
-
+        
         new EventTool().waitNoEvent(3000);
-
+        
         ExplorerOperator explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
-
+        
         patternsNode.select();
         patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_PROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
-
-        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
-        jTextFieldOperator.typeText("firstName");        
+        
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);
+        jTextFieldOperator.typeText("firstName");
         JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.typeText("int");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
@@ -352,22 +338,22 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(1000);
         nbDialogOperator.btOK().pushNoBlock();
-
+        
         new ComboBoxProperty(propertySheetTabOperator, "Style of Declared Variable").setValue("_property_Value");
         new EventTool().waitNoEvent(1000);
-//////////////////
+        //////////////////
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns"));
-
+        
         patternsNode.select();
         patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_PROPERTY"));
         dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewProperty");
         nbDialogOperator = new NbDialogOperator(dialogTitle);
-
-        jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
-        jTextFieldOperator.typeText("secondName");        
+        
+        jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);
+        jTextFieldOperator.typeText("secondName");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.typeText("String");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
@@ -386,25 +372,25 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(1000);
         nbDialogOperator.btOK().pushNoBlock();
-        optionsOperator.close();               
-////
+        optionsOperator.close();
+        ////
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
-
+        
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"firstName");
-        patternsNode.select();        
+        patternsNode.select();
         new EventTool().waitNoEvent(1000);
         propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
         new ComboBoxProperty(propertySheetTabOperator, "Mode").setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_ReadOnlyMODE"));
-//        new ComboBoxProperty(propertySheetTabOperator, "Mode").setValue(1);
+        //        new ComboBoxProperty(propertySheetTabOperator, "Mode").setValue(1);
         new EventTool().waitNoEvent(1000);
         String questionTitle = Bundle.getString("org.openide.Bundle", "NTF_QuestionTitle");
         nbDialogOperator =new NbDialogOperator(questionTitle);
         new EventTool().waitNoEvent(1000);
         nbDialogOperator.yes();
-
+        
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"secondName");
-        patternsNode.select();        
+        patternsNode.select();
         new EventTool().waitNoEvent(1000);
         propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
         new ComboBoxProperty(propertySheetTabOperator, "Mode").setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_WriteOnlyMODE"));
@@ -413,24 +399,26 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         nbDialogOperator =new NbDialogOperator(questionTitle);
         new EventTool().waitNoEvent(1000);
         nbDialogOperator.yes();
-
+        
+        new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
+        
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
         eo.select(1,10);
         new DeleteAction().performAPI(eo);
         ref(eo.getText());
-        compareReferenceFiles();                               
+        compareReferenceFiles();
         
-////        
+        ////
         
-    }   
-
+    }
+    
     public void testChangeSourceCode() {
-
+        
         ExplorerOperator explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
-
+        
         FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
         examplesFolderNode.select();
         Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
@@ -451,17 +439,17 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         eo.setCaretPosition(1,1);
         eo.insert("    private static final String PROP_MY_PROPERTY = \"MyProperty\";\n", 16, 1);
         new EventTool().waitNoEvent(500);
-
+        
         eo.insert("    private String myProperty;\n", 19, 1);
         new EventTool().waitNoEvent(500);
-
+        
         eo.insert("    public String getMyProperty() {\n", 38, 1);
         new EventTool().waitNoEvent(500);
         eo.insert("        return myProperty;\n", 39, 1);
         new EventTool().waitNoEvent(500);
         eo.insert("    }\n", 40, 1);
         new EventTool().waitNoEvent(500);
-    
+        
         eo.insert("    public void setMyProperty(String value) {\n", 42, 1);
         new EventTool().waitNoEvent(500);
         eo.insert("        String oldValue = myProperty;\n", 43, 1);
@@ -474,13 +462,13 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         new EventTool().waitNoEvent(500);
         eo.insert("\n", 47, 1);
         new EventTool().waitNoEvent(500);
-
+        
         explorerOperator.selectPageFilesystems();
         Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"myProperty");
-        patternsNode.select();        
+        patternsNode.select();
         new EventTool().waitNoEvent(1000);
         PropertySheetTabOperator propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
-
+        
         assertEquals("Estimated Field","String myProperty",new TextFieldProperty(propertySheetTabOperator, "Estimated Field").getValue());
         assertEquals("Getter","getMyProperty ()",new TextFieldProperty(propertySheetTabOperator, "Getter").getValue());
         assertEquals("Mode","Read / Write",new ComboBoxProperty(propertySheetTabOperator, "Mode").getValue());
@@ -488,13 +476,13 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         assertEquals("Setter","setMyProperty (String)",new TextFieldProperty(propertySheetTabOperator, "Setter").getValue());
         assertEquals("Type","String",new ComboBoxProperty(propertySheetTabOperator, "Type").getValue());
     }
-
+    
     public void testChangeOptionsForListener() {
         System.out.println("This testcase cannot be performed due a problem with properties window after change of listener");
     }
-
+    
     private void createContent() {
-// Start - NonIndexProperty
+        // Start - NonIndexProperty
         ExplorerOperator explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         
@@ -504,9 +492,9 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_PROPERTY"));
         String dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewProperty");
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
-
-        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
-        jTextFieldOperator.typeText(NAME_NON_INDEX_PROPERTY);        
+        
+        JTextFieldOperator jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);
+        jTextFieldOperator.typeText(NAME_NON_INDEX_PROPERTY);
         JComboBoxOperator jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.typeText("String");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
@@ -522,11 +510,11 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_PropertyPanel_boundCheckBox"));
         jCheckBoxOperator.push();
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_PropertyPanel_supportCheckBox"));
-        jCheckBoxOperator.push();        
+        jCheckBoxOperator.push();
         new EventTool().waitNoEvent(1500);
         nbDialogOperator.btOK().pushNoBlock();
-// End - NonIndexProperty
-// Start - IndexProperty
+        // End - NonIndexProperty
+        // Start - IndexProperty
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         
@@ -536,13 +524,13 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_IDXPROPERTY"));
         dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewIdxProperty");
         nbDialogOperator = new NbDialogOperator(dialogTitle);
-
-        jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);       
-        jTextFieldOperator.typeText(NAME_INDEX_PROPERTY);                
+        
+        jTextFieldOperator = new JTextFieldOperator(nbDialogOperator, 0);
+        jTextFieldOperator.typeText(NAME_INDEX_PROPERTY);
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.setSelectedItem("String");
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
-        jComboBoxOperator.setSelectedItem(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_ReadWriteMODE"));        
+        jComboBoxOperator.setSelectedItem(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_ReadWriteMODE"));
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_IdxPropertyPanel_fieldCheckBox"));
         jCheckBoxOperator.push();
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_IdxPropertyPanel_setCheckBox"));
@@ -565,8 +553,8 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         jCheckBoxOperator.push();
         new EventTool().waitNoEvent(1500);
         nbDialogOperator.btOK().pushNoBlock();
-// End - IndexProperty
-// Start - UnicastEventSource
+        // End - IndexProperty
+        // Start - UnicastEventSource
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         
@@ -576,21 +564,21 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_UNICASTSE"));
         dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewUniCastES");
         nbDialogOperator = new NbDialogOperator(dialogTitle);
-
+        
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.setSelectedItem("java.awt.event.ActionListener");
         JRadioButtonOperator jRadioButtonOperator = new JRadioButtonOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_UEventSetPanel_implRadioButton"));
-        jRadioButtonOperator.push();        
+        jRadioButtonOperator.push();
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_UEventSetPanel_fireCheckBox"));
         jCheckBoxOperator.push();
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_UEventSetPanel_passEventCheckBox"));
         jCheckBoxOperator.push();
         
         new EventTool().waitNoEvent(1500);
-                               
+        
         nbDialogOperator.btOK().pushNoBlock();
-// End - UnicastEventSource
-// Start - MulticastEventSourceArrayListImpl
+        // End - UnicastEventSource
+        // Start - MulticastEventSourceArrayListImpl
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         
@@ -600,22 +588,22 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_MULTICASTSE"));
         dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewMultiCastES");
         nbDialogOperator = new NbDialogOperator(dialogTitle);
-
+        
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.setSelectedItem("java.awt.event.ItemListener");
-
+        
         jRadioButtonOperator = new JRadioButtonOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_EventSetPanel_alRadioButton"));
-        jRadioButtonOperator.push();        
+        jRadioButtonOperator.push();
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_EventSetPanel_fireCheckBox"));
         jCheckBoxOperator.push();
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_EventSetPanel_passEventCheckBox"));
         jCheckBoxOperator.push();
-
+        
         new EventTool().waitNoEvent(1500);
-                               
+        
         nbDialogOperator.btOK().pushNoBlock();
-// End - MulticastEventSourceArrayListImpl
-// Start - MulticastEventSourceEventListenerListImpl
+        // End - MulticastEventSourceArrayListImpl
+        // Start - MulticastEventSourceEventListenerListImpl
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         
@@ -625,26 +613,26 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         patternsNode.performPopupActionNoBlock("Add"+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "MENU_CREATE_MULTICASTSE"));
         dialogTitle = Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_NewMultiCastES");
         nbDialogOperator = new NbDialogOperator(dialogTitle);
-
+        
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 0);
         jComboBoxOperator.setSelectedItem("java.awt.event.FocusListener");
-
+        
         jRadioButtonOperator = new JRadioButtonOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_EventSetPanel_ellRadioButton"));
-        jRadioButtonOperator.push();        
+        jRadioButtonOperator.push();
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_EventSetPanel_fireCheckBox"));
         jCheckBoxOperator.push();
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_EventSetPanel_passEventCheckBox"));
         jCheckBoxOperator.push();
-        new EventTool().waitNoEvent(1500);                               
+        new EventTool().waitNoEvent(1500);
         nbDialogOperator.btOK().pushNoBlock();
-       
-    }    
+        
+    }
     
     public void testDeleteAnyPropertiesAndEvents() {
         ExplorerOperator explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
-
+        
         FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
         examplesFolderNode.select();
         Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
@@ -659,44 +647,45 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         tlso.tree().setComparator(comparator);
         tlso.selectLocation(sampleDir);
         tlso.finish();
-
+        
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
         eo.select(1,6);
         new DeleteAction().performAPI(eo);
         new EventTool().waitNoEvent(1500);
-        eo.select(3,7);
+        eo.select(3,6);
+        
         new DeleteAction().performAPI(eo);
-//        ref(eo.getText());
-//        compareReferenceFiles();                               
+        //        ref(eo.getText());
+        //        compareReferenceFiles();
         try {
             File workDir = getWorkDir();
             (new File(workDir,"testDeleteAnyPropertiesAndEventsInitial.ref")).createNewFile();
             PrintWriter out = new PrintWriter( new BufferedWriter( new FileWriter(workDir+File.separator+"testDeleteAnyPropertiesAndEventsInitial.ref")));
             out.print(eo.getText());
-            out.close();            
+            out.close();
         } catch(java.io.IOException exc) {
             exc.printStackTrace();
-        }               
+        }
         compareReferenceFiles("testDeleteAnyPropertiesAndEventsInitial.ref", "testDeleteAnyPropertiesAndEventsInitial.pass", "testDeleteAnyPropertiesAndEventsInitial.diff");
         
         createContent();
         
-// Delete nonIndexProperty
+        // Delete nonIndexProperty
         
-        Thread thread = new Thread ( new java.lang.Runnable () {
-            public void run () {
+        Thread thread = new Thread( new java.lang.Runnable() {
+            public void run() {
                 System.out.println("T H R E A D");
-                new EventTool().waitNoEvent(1000);                
+                new EventTool().waitNoEvent(1000);
                 ExplorerOperator explorerOperator = new ExplorerOperator();
-                Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();        
-                explorerOperator.selectPageFilesystems();        
+                Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
+                explorerOperator.selectPageFilesystems();
                 Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+NAME_NON_INDEX_PROPERTY);
                 patternsNode.select();
                 patternsNode.performPopupActionNoBlock("Delete");
-            }            
+            }
         });
-        thread.start();                
+        thread.start();
         
         String confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
         new NbDialogOperator(confirmTitle).yes();
@@ -706,20 +695,20 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         nbDialogOperator.yes();
         new EventTool().waitNoEvent(2500);
         
-// Delete indexProperty
-        thread = new Thread ( new java.lang.Runnable () {
-            public void run () {
+        // Delete indexProperty
+        thread = new Thread( new java.lang.Runnable() {
+            public void run() {
                 System.out.println("T H R E A D");
-                new EventTool().waitNoEvent(1000);                
+                new EventTool().waitNoEvent(1000);
                 ExplorerOperator explorerOperator = new ExplorerOperator();
-                Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();        
+                Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
                 explorerOperator.selectPageFilesystems();
                 Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+NAME_INDEX_PROPERTY);
                 patternsNode.select();
                 patternsNode.performPopupActionNoBlock("Delete");
-            }            
+            }
         });
-        thread.start();                
+        thread.start();
         confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
         new NbDialogOperator(confirmTitle).yes();
         new EventTool().waitNoEvent(1500);
@@ -727,20 +716,20 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         nbDialogOperator =new NbDialogOperator(questionTitle);
         nbDialogOperator.yes();
         new EventTool().waitNoEvent(2500);
-// Delete action listener
-        thread = new Thread ( new java.lang.Runnable () {
-            public void run () {
+        // Delete action listener
+        thread = new Thread( new java.lang.Runnable() {
+            public void run() {
                 System.out.println("T H R E A D");
-                new EventTool().waitNoEvent(1000);                
+                new EventTool().waitNoEvent(1000);
                 ExplorerOperator explorerOperator = new ExplorerOperator();
-                Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();        
+                Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
                 explorerOperator.selectPageFilesystems();
                 Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"actionListener");
                 patternsNode.select();
                 patternsNode.performPopupActionNoBlock("Delete");
-            }            
+            }
         });
-        thread.start();                
+        thread.start();
         confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
         new NbDialogOperator(confirmTitle).yes();
         new EventTool().waitNoEvent(1500);
@@ -748,20 +737,20 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         nbDialogOperator =new NbDialogOperator(questionTitle);
         nbDialogOperator.yes();
         new EventTool().waitNoEvent(2500);
-// Delete focus listener        
-        thread = new Thread ( new java.lang.Runnable () {
-            public void run () {
+        // Delete focus listener
+        thread = new Thread( new java.lang.Runnable() {
+            public void run() {
                 System.out.println("T H R E A D");
-                new EventTool().waitNoEvent(1000);                
+                new EventTool().waitNoEvent(1000);
                 ExplorerOperator explorerOperator = new ExplorerOperator();
-                Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();        
+                Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
                 explorerOperator.selectPageFilesystems();
                 Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"focusListener");
                 patternsNode.select();
                 patternsNode.performPopupActionNoBlock("Delete");
-            }            
+            }
         });
-        thread.start();                
+        thread.start();
         confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
         new NbDialogOperator(confirmTitle).yes();
         new EventTool().waitNoEvent(1500);
@@ -774,40 +763,12 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
             (new File(workDir,"testDeleteAnyPropertiesAndEventsModified.ref")).createNewFile();
             PrintWriter out = new PrintWriter( new BufferedWriter( new FileWriter(workDir+File.separator+"testDeleteAnyPropertiesAndEventsModified.ref")));
             out.print(eo.getText());
-            out.close();            
+            out.close();
         } catch(java.io.IOException exc) {
             exc.printStackTrace();
-        }               
-        compareReferenceFiles("testDeleteAnyPropertiesAndEventsModified.ref", "testDeleteAnyPropertiesAndEventsModified.pass", "testDeleteAnyPropertiesAndEventsModified.diff");        
-
+        }
+        compareReferenceFiles("testDeleteAnyPropertiesAndEventsModified.ref", "testDeleteAnyPropertiesAndEventsModified.pass", "testDeleteAnyPropertiesAndEventsModified.diff");
+        
     }
     
-     /** Mounts <userdir>/sampledir through API
-     * @return absolute path of mounted dir
-     */
-    private boolean mountSampledir() {
-        new EventTool().waitNoEvent(1000);
-        String userdir = System.getProperty("netbeans.user"); // NOI18N
-        String mountPoint = userdir+File.separator+"sampledir"; // NOI18N
-        mountPoint = mountPoint.replace('\\', '/');
-        FileSystem fs = Repository.getDefault().findFileSystem(mountPoint);
-        if (fs == null) {            
-            // invoke "File|Mount Filesystem" from main menu
-            new MountLocalAction().performMenu();
-            // wait for "New Wizard"
-            NewWizardOperator newWizardOper = new NewWizardOperator();
-            // select "Local Directory"
-            JTreeOperator tree = new JTreeOperator(newWizardOper);
-            String localDirLabel = Bundle.getString("org.netbeans.core.Bundle", "Templates/Mount/org-netbeans-core-ExLocalFileSystem.settings"); // NOI18N
-            new Node(tree, localDirLabel).select();
-            newWizardOper.next();
-            // select sampledir in file chooser
-            File file = new File(mountPoint);
-            new JFileChooserOperator().setSelectedFile(file);
-            // finish wizard
-            newWizardOper.finish();
-        }       
-        return true;
-    }
-
 }

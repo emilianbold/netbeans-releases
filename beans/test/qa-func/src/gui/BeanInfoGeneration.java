@@ -71,12 +71,11 @@ public class BeanInfoGeneration extends JellyTestCase {
         System.out.println("########  "+getName()+"  #######");
         Utilities.mountSampledir();
         
-        FileObject testFile = Repository.getDefault().findResource("gui/data/TestFile.java");
+        FileObject testFile = Repository.getDefault().findResource("gui/data/" + NAME_TEST_FILE + ".java");
         FileObject destination = Repository.getDefault().findFileSystem(sampleDir.replace('\\', '/')).getRoot();
         
         try {
             DataObject.find(testFile).copy(DataFolder.findFolder(destination));
-            //JavaDataObject.find(testFile.copy(destination, NAME_TEST_FILE , "java"))).getSource().prepare().waitFinished();
         } catch (IOException e) {
             fail(e);
         }

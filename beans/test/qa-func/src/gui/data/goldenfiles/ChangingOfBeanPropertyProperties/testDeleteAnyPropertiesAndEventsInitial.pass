@@ -1,4 +1,3 @@
-
 import java.beans.*;
 
 public class TestFile extends Object implements java.io.Serializable {

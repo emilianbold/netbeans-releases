@@ -21,7 +21,6 @@ import org.netbeans.jellytools.TargetLocationStepOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.MountLocalAction;
-import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.actions.NewTemplateAction;
 import org.netbeans.jellytools.modules.form.FormEditorOperator;
 import org.netbeans.jellytools.nodes.FilesystemNode;
@@ -33,10 +32,15 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
 import java.io.File;
+import java.io.IOException;
+import org.openide.actions.SaveAllAction;
+import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 
 
 public class CreateNewNonIndexedProperty extends JellyTestCase {
@@ -81,47 +85,23 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
     /** setUp method  */
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
-        mountSampledir();
-        ExplorerOperator explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();
-        Node repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
-        FolderNode examplesFolderNode = new FolderNode(repositoryRootNode.tree(), sampleDir); // NOI18N
-        examplesFolderNode.select();
-        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
-        new NewTemplateAction().perform();
-        NewWizardOperator newWizardOper = new NewWizardOperator();
-        ChooseTemplateStepOperator ctso = new ChooseTemplateStepOperator();
-        String template = "Java Classes" + "|" + "Class";
-        ctso.selectTemplate(template);
-        ctso.next();
-        TargetLocationStepOperator tlso = new TargetLocationStepOperator();
-        new EventTool().waitNoEvent(500);
-        tlso.setName(NAME_TEST_FILE);
-        new EventTool().waitNoEvent(500);
-        tlso.tree().setComparator(comparator);
-        tlso.selectLocation(sampleDir);
-        tlso.finish();                
+        Utilities.mountSampledir();
+        
+        FileObject testFile = Repository.getDefault().findResource("gui/data/" + NAME_TEST_FILE + ".java");
+        FileObject destination = Repository.getDefault().findFileSystem(sampleDir.replace('\\', '/')).getRoot();
+        
+        try {
+            DataObject.find(testFile).copy(DataFolder.findFolder(destination));
+        } catch (IOException e) {
+            fail(e);
+        }
     }
     
     /** tearDown method */
     public void tearDown() {
-        ExplorerOperator explorer = new ExplorerOperator();
-        explorer.selectPageProject();
-        explorer.selectPageRuntime();
-        explorer.selectPageFilesystems();
-        Node repositoryRootNode = explorer.repositoryTab().getRootNode();
-        try {
-            new SaveAllAction().perform();
-        } catch (Exception e) {
-            // OK - not enabled, nothing to save
-        }       
-        new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE).select();
-        JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE); // NOI18N
-        javaNode.delete();
-        String confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
-        new NbDialogOperator(confirmTitle).yes();
-        FilesystemNode fsNode = new FilesystemNode(repositoryRootNode, sampleDir);
-        fsNode.unmount();
+        ((SaveAllAction) SaveAllAction.findObject(SaveAllAction.class, true)).performAction();
+        
+        Utilities.delete(NAME_TEST_FILE + ".java");
     }
 
     
@@ -157,7 +137,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
                        
         nbDialogOperator.btOK().pushNoBlock();
 
-        new EventTool().waitNoEvent(1000);
+        new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
@@ -197,7 +177,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         jComboBoxOperator.setSelectedItem("Double");
                        
         nbDialogOperator.btOK().pushNoBlock();
-        new EventTool().waitNoEvent(1000);
+        new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
@@ -254,6 +234,8 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         jComboBoxOperator = new JComboBoxOperator(nbDialogOperator, 1);
         jComboBoxOperator.setSelectedItem("Read / Write");
         nbDialogOperator.btOK().pushNoBlock();
+        
+        new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
@@ -287,6 +269,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         jCheckBoxOperator.push();
         nbDialogOperator.btOK().pushNoBlock();
 
+        new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
@@ -323,6 +306,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
 
         nbDialogOperator.btOK().pushNoBlock();
 
+        new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
@@ -359,6 +343,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
 
         nbDialogOperator.btOK().pushNoBlock();
 
+        new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
@@ -397,6 +382,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
 
         nbDialogOperator.btOK().pushNoBlock();
 
+        new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
@@ -435,6 +421,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
 
         nbDialogOperator.btOK().pushNoBlock();
 
+        new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
@@ -478,6 +465,7 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         new EventTool().waitNoEvent(2000);
 
         nbDialogOperator.btOK().pushNoBlock();
+        new JavaNode(repositoryRootNode, sampleDir + "|" + NAME_TEST_FILE).open();
 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
@@ -488,34 +476,4 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
 //                                       
     }
 
-    /** Mounts <userdir>/sampledir through API
-     * @return absolute path of mounted dir
-     */
-    private boolean mountSampledir() {
-        new EventTool().waitNoEvent(1000);
-        String userdir = System.getProperty("netbeans.user"); // NOI18N
-        String mountPoint = userdir+File.separator+"sampledir"; // NOI18N
-        mountPoint = mountPoint.replace('\\', '/');
-        FileSystem fs = Repository.getDefault().findFileSystem(mountPoint);
-        if (fs == null) {            
-            // invoke "File|Mount Filesystem" from main menu
-            new MountLocalAction().performMenu();
-            // wait for "New Wizard"
-            NewWizardOperator newWizardOper = new NewWizardOperator();
-            // select "Local Directory"
-            JTreeOperator tree = new JTreeOperator(newWizardOper);
-            String localDirLabel = Bundle.getString("org.netbeans.core.Bundle", "Templates/Mount/org-netbeans-core-ExLocalFileSystem.settings"); // NOI18N
-            new Node(tree, localDirLabel).select();
-            newWizardOper.next();
-            // select sampledir in file chooser
-            File file = new File(mountPoint);
-            new JFileChooserOperator().setSelectedFile(file);
-            // finish wizard
-            newWizardOper.finish();
-        }       
-        return true;
-    }
-    
 }
-
-
