@@ -405,7 +405,7 @@ public final class BeanInstaller
      */
     private static JarFileSystem createJarForFile(File jarFile) {
         try {
-            JarFileSystem jar = new JarFileSystem();
+            JarFileSystem jar = new GlobalJarFileSystem();
             jar.setJarFile(jarFile);
             return jar;
         }
@@ -486,6 +486,7 @@ public final class BeanInstaller
         }
 
         // 1. load list of already installed beans
+        
         FileInputStream fis2 = null;
         Properties alreadyInstalled = new Properties();
         try {
@@ -497,35 +498,49 @@ public final class BeanInstaller
         }
 
         // 2. process local beans
+        
         Properties details = new Properties();
         FileInputStream fis = null;
         try {
-            details.load(fis = new FileInputStream(localBase + "beans.properties")); // NOI18N
+            details.load(fis = new FileInputStream(
+                             localBase + "beans.properties")); // NOI18N
         } catch (IOException e) {
-            if (System.getProperty("netbeans.debug.exceptions") != null)
-                System.err.println(e.getMessage());
             // ignore in this case
         } finally {
-            if (fis != null) try { fis.close(); } catch (IOException e) { /* ignore */ };
+            if (fis != null)
+                try {
+                    fis.close();
+                }
+                catch (IOException e) {
+                    /* ignore */
+                };
         }
 
         // 3. process global beans
+        
         if (globalBase != null) {
             FileInputStream fis3 = null;
             try {
                 Properties globalDetails = new Properties();
-                globalDetails.load(fis3 = new FileInputStream(globalBase + "beans.properties")); // NOI18N
+                globalDetails.load(fis3 = new FileInputStream(
+                                       globalBase + "beans.properties")); // NOI18N
                 for (Enumeration e = globalDetails.propertyNames(); e.hasMoreElements();) {
                     String propName =(String)e.nextElement();
-                    if (details.get(propName) == null) { // if not present in the local list, copy the <name, value> to it
+                    if (details.get(propName) == null) {
+                        // if not present in the local list, copy the <name, value> to it
                         details.put(propName, globalDetails.get(propName));
                     }
                 }
             } catch (IOException e) {
-                if (System.getProperty("netbeans.debug.exceptions") != null) e.printStackTrace();
                 // ignore in this case
             } finally {
-                if (fis3 != null) try { fis3.close(); } catch (IOException e) { /* ignore */ };
+                if (fis3 != null)
+                    try {
+                        fis3.close();
+                    }
+                    catch (IOException e) {
+                        /* ignore */
+                    };
             }
         }
 
@@ -557,15 +572,20 @@ public final class BeanInstaller
                 fos = new FileOutputStream(localBase + "installed.properties"); // NOI18N
                 alreadyInstalled.store(fos, org.netbeans.modules.form.FormEditor.getFormBundle().getString("MSG_InstalledArchives"));
             } catch (IOException e) {
-                if (System.getProperty("netbeans.debug.exceptions") != null) e.printStackTrace();
-                // ignore
+                if (System.getProperty("netbeans.debug.exceptions") != null)
+                    e.printStackTrace();
             } finally {
-                if (fos != null) try { fos.close(); } catch (IOException e) { /* ignore */ };
+                if (fos != null)
+                    try {
+                        fos.close();
+                    }
+                    catch (IOException e) {
+                        /* ignore */
+                    };
             }
         }
 
         return modified;
-
     }
 
     /**

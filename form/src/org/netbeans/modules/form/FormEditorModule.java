@@ -33,12 +33,9 @@ import java.io.File;
  *
  * @author Ian Formanek
  */
-public class FormEditorModule extends ModuleInstall {
-
-    private transient Node lastProjectDesktop;
-    private transient PropertyChangeListener projectListener = null;
-
-    static final long serialVersionUID =1573432625099425394L;
+public class FormEditorModule extends ModuleInstall
+{
+    private static final long serialVersionUID = 1573432625099425394L;
     
     // XXX(-tdt) hack around failure of loading TimerBean caused by package
     // renaming com.netbeans => org.netbeans AND the need to preserve user's
@@ -80,19 +77,14 @@ public class FormEditorModule extends ModuleInstall {
                 }
             });
     }
-    
+
     /** Module installed again. */
+    
     public void restored() {
         Beans.setDesignTime(true);
-
+        BeanInstaller.autoLoadBeans();
         timerBeanHack();
         
-        lastProjectDesktop = TopManager.getDefault().getPlaces().nodes().projectDesktop();
-        if (projectListener == null) {
-            projectListener = new ProjectChangeListener();
-            TopManager.getDefault().addPropertyChangeListener(projectListener);
-        }
-
         // register standard persistence managers
         PersistenceManager.registerManager(new TuborgPersistenceManager());
         PersistenceManager.registerManager(new GandalfPersistenceManager());
@@ -118,31 +110,6 @@ public class FormEditorModule extends ModuleInstall {
             org.netbeans.modules.form.editors.KeyStrokeEditor.class);
     }
 
-    /** Module was uninstalled. */
-    public void uninstalled() {
-        if (projectListener != null) {
-            TopManager.getDefault().removePropertyChangeListener(projectListener);
-            projectListener = null;
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // Listener class responding to project changes and updating Component Palette.
-
-    private class ProjectChangeListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent ev) {
-            if (TopManager.PROP_PLACES.equals(ev.getPropertyName())) {
-                Node projectDesktop = TopManager.getDefault().getPlaces().nodes().projectDesktop();
-                if (projectDesktop != lastProjectDesktop) {
-                    lastProjectDesktop = projectDesktop;
-                    BeanInstaller.autoLoadBeans();
-                    if (ComponentPalette.isCreated())
-                        ComponentPalette.getDefault().updatePalette();
-                }
-            }
-        }
-    }
-
     static String[] getDefaultAWTComponents() {
         return defaultAWTComponents;
     }
@@ -150,38 +117,6 @@ public class FormEditorModule extends ModuleInstall {
     static String[] getDefaultAWTIcons() {
         return defaultAWTIcons;
     }
-
-/*    static String[] getDefaultSwingComponents() {
-        return defaultSwingComponents;
-    }
-    static String[] getDefaultSwingIcons() {
-        return defaultSwingIcons;
-    }
-    
-    static String[] getDefaultSwing2Components() {
-        return defaultSwing2Components;
-    }
-
-    static String[] getDefaultSwing2Icons() {
-        return defaultSwing2Icons;
-    }
-    
-    static String[] getDefaultLayoutsComponents() {
-        return defaultLayoutsComponents;
-    }
-    static String[] getDefaultLayoutsIcons() {
-        return defaultLayoutsIcons;
-    }
-    
-    static String[] getDefaultBorders() {
-        return defaultBorders;
-    }
-    static String[] getDefaultBordersIcons() {
-        return defaultBordersIcons;
-    } */
-    
-    // -----------------------------------------------------------------------------
-    // Default Palette contents
 
     /** The default AWT Components */
     private final static String[] defaultAWTComponents = new String[] {
@@ -216,131 +151,4 @@ public class FormEditorModule extends ModuleInstall {
         "/org/netbeans/beaninfo/awt/menubar.gif", // NOI18N
         "/org/netbeans/beaninfo/awt/popupmenu.gif", // NOI18N
     };
-    
-    /** The default Swing Components */
-/*    private final static String[] defaultSwingComponents = new String[] {
-        "javax.swing.JLabel", // NOI18N
-        "javax.swing.JButton", // NOI18N
-        "javax.swing.JCheckBox", // NOI18N
-        "javax.swing.JRadioButton", // NOI18N
-        "javax.swing.ButtonGroup", //  NOI18N
-        "javax.swing.JComboBox", // NOI18N
-        "javax.swing.JList", // NOI18N
-        "javax.swing.JTextField", // NOI18N
-        "javax.swing.JTextArea", // NOI18N
-        "javax.swing.JToggleButton", // NOI18N
-        "javax.swing.JPanel", // NOI18N
-        "javax.swing.JTabbedPane", // NOI18N
-        "javax.swing.JScrollBar", // NOI18N
-        "javax.swing.JScrollPane", // NOI18N
-        "javax.swing.JMenuBar", // NOI18N
-        "javax.swing.JPopupMenu", // NOI18N
-    }; */
-
-    /** The default Swing icons */
-/*    private final static String[] defaultSwingIcons = new String[] {
-        "/javax/swing/beaninfo/images/JLabelColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JButtonColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JCheckBoxColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JRadioButtonColor16.gif", // NOI18N
-        "/org/netbeans/modules/form/resources/ButtonGroup16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JComboBoxColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JListColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JTextFieldColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JTextAreaColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JToggleButtonColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JPanelColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JTabbedPaneColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JScrollBarColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JScrollPaneColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JMenuBarColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JPopupMenuColor16.gif" // NOI18N
-    }; */
-
-    /** The default Swing Components - Swing2 category */
-/*    private final static String[] defaultSwing2Components = new String[] {
-        "javax.swing.JSlider", // NOI18N
-        "javax.swing.JProgressBar", // NOI18N
-        "javax.swing.JSplitPane", // NOI18N
-        "javax.swing.JPasswordField", // NOI18N
-        "javax.swing.JSeparator", // NOI18N
-        "javax.swing.JTextPane", // NOI18N
-        "javax.swing.JEditorPane", // NOI18N
-        "javax.swing.JTree", // NOI18N
-        "javax.swing.JTable", // NOI18N
-        "javax.swing.JToolBar", // NOI18N
-        "javax.swing.JInternalFrame", // NOI18N
-        "javax.swing.JLayeredPane", // NOI18N
-        "javax.swing.JDesktopPane", // NOI18N
-        "javax.swing.JOptionPane", // NOI18N
-    }; */
-
-    /** The default Swing icons - Swing2 category */
-/*    private final static String[] defaultSwing2Icons = new String[] {
-        "/javax/swing/beaninfo/images/JSliderColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JProgressBarColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JSplitPaneColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JPasswordFieldColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JSeparatorColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JTextPaneColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JEditorPaneColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JTreeColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JTableColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JToolBarColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JInternalFrameColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JLayeredPaneColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JDesktopPaneColor16.gif", // NOI18N
-        "/javax/swing/beaninfo/images/JOptionPaneColor16.gif" // NOI18N
-    }; */
-
-    /** The default Swing Components - beans category */
-//    private final static String[] defaultBeansComponents = new String[] {
-//        // for future use.
-//    };
-
-    /** The default Layout Components */
-/*    private final static String[] defaultLayoutsComponents = new String[] {
-        "org.netbeans.modules.form.layoutsupport.FlowLayoutSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.BorderLayoutSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.GridLayoutSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.CardLayoutSupport", // NOI18N
-//        "org.netbeans.modules.form.layoutsupport.AbsoluteLayoutSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.GridBagLayoutSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.BoxLayoutSupport", // NOI18N
-    }; */
-
-    /** The default Layout Components */
-/*    private final static String[] defaultLayoutsIcons = new String[] {
-        "/org/netbeans/beaninfo/swing/FlowLayout.gif", // NOI18N
-        "/org/netbeans/beaninfo/swing/BorderLayout.gif", // NOI18N
-        "/org/netbeans/beaninfo/swing/GridLayout.gif", // NOI18N
-        "/org/netbeans/beaninfo/swing/CardLayout.gif", // NOI18N
-//        "/org/netbeans/modules/form/layoutsupport/resources/AbsoluteLayout.gif", // NOI18N
-        "/org/netbeans/beaninfo/swing/GridBagLayout.gif", // NOI18N
-        "/org/netbeans/beaninfo/swing/BoxLayout.gif", // NOI18N
-    }; */
-
-    /** The default Swing Borders */
-/*    private final static String[] defaultBorders = new String[] {
-        "javax.swing.border.BevelBorder", // NOI18N
-        "javax.swing.border.CompoundBorder", // NOI18N
-        "javax.swing.border.EmptyBorder", // NOI18N
-        "javax.swing.border.EtchedBorder", // NOI18N
-        "javax.swing.border.LineBorder", // NOI18N
-        "javax.swing.border.MatteBorder", // NOI18N
-        "javax.swing.border.SoftBevelBorder", // NOI18N
-        "javax.swing.border.TitledBorder" // NOI18N
-    }; */
-
-    /** The default Swing Borders */
-/*    private final static String[] defaultBordersIcons = new String[] {
-        "/org/netbeans/beaninfo/swing/bevelBorder.gif", // NOI18N
-        "/org/netbeans/beaninfo/swing/compoundBorder.gif", // NOI18N
-        "/org/netbeans/beaninfo/swing/emptyBorder.gif", // NOI18N
-        "/org/netbeans/beaninfo/swing/etchedBorder.gif", // NOI18N
-        "/org/netbeans/beaninfo/swing/lineBorder.gif", // NOI18N
-        "/org/netbeans/beaninfo/swing/matteBorder.gif", // NOI18N
-        "/org/netbeans/beaninfo/swing/softBevelBorder.gif", // NOI18N
-        "/org/netbeans/beaninfo/swing/titledBorder.gif" // NOI18N
-    }; */
 }
