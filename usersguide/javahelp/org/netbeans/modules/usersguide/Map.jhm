@@ -222,7 +222,6 @@
 <mapID target="compile.messages" url="compile/messages.html" />
 <mapID target="compile.disable" url="compile/disable.html" />
 <mapID target="compile.delete" url="compile/delete.html" />
-<mapID target="compile.types" url="compile/types_jump.html" />
 <mapID target="compile.options.jump" url="compile/options_jump.html" />
 <mapID target="compile.default" url="compile/default.html" />
 <mapID target="compile.external" url="compile/external.html" />
@@ -245,12 +244,11 @@
 <mapID target="run.locale" url="run/locale.html" />
 <mapID target="run.vm_arguments" url="run/vm_arguments.html" />
 <mapID target="run.executor.options" url="run/executor_options.html" />
-<mapID target="run.executors" url="run/executors.html" />
 <mapID target="run.project" url="run/project.html" />
 <mapID target="run.external" url="run/external.html" />
 <mapID target="run.internal" url="run/internal.html" />
 <mapID target="run.applet" url="run/applet.html" />
-<mapID target="run.jsp" url="run/jsp.html" />
+<mapID target="run.localeexecutor" url="run/locale_executor.html" />
 <mapID target="run.new" url="run/new.html" />
 <mapID target="run.remove" url="run/remove.html" />
 <mapID target="run.template" url="run/template.html" />
@@ -313,7 +311,13 @@
 
 <mapID target="debug.overview" url="debug/debug.html" />
 <mapID target="debug.workspace" url="debug/environment/workspace.html" />
-<mapID target="debug.debugger.window" url="debug/environment/debug_window.html" />
+<mapID target="debug.window.sessions" url="debug/environment/sessions_view.html" />
+<mapID target="debug.window.breakpoints" url="debug/environment/breakpoints_view.html" />
+<mapID target="debug.window.threads" url="debug/environment/threads_view.html" />
+<mapID target="debug.window.callstack" url="debug/environment/callstack_view.html" />
+<mapID target="debug.window.classes" url="debug/environment/classes_view.html" />
+<mapID target="debug.window.watches" url="debug/environment/watches_view.html" />
+<mapID target="debug.window.variables" url="debug/environment/variables_view.html" />
 <mapID target="debug.options" url="debug/environment/options.html" />
 <mapID target="debug.toolbar" url="debug/environment/toolbar.html" />
 <mapID target="debug.attachvm.window" url="debug/environment/attachvm_window.html" />
@@ -340,9 +344,7 @@
 <mapID target="debug.running.end" url="debug/running/running_end.html" />
 <mapID target="debug.attach" url="debug/running/attach.html" />
 
-<mapID target="debug.variables.jump" url="debug/variables/variables_jump.html" />
 <mapID target="debug.variables.value" url="debug/variables/value.html" />
-<mapID target="debug.variables.modify" url="debug/variables/modify.html" />
 
 <mapID target="debug.watches.jump" url="debug/watches/watch_jump.html" />
 <mapID target="debug.watch" url="debug/watches/watch.html" />
@@ -370,10 +372,7 @@
 <mapID target="debug.sessions.finishsession" url="debug/sessions/finishsession.html" />
 <mapID target="debug.sessions.restart" url="debug/sessions/restartsession.html" />
 
-<mapID target="debug.jpda" url="debug/jpda/jpda.html" />
-
 <mapID target="debug.debugger.jump" url="debug/debugger/debugger_jump.html" />
-<mapID target="debug.debugger.configure" url="debug/debugger/configure.html" />
 <mapID target="debug.debugger.default" url="debug/debugger/default.html" />
 <mapID target="debug.debugger.jdk" url="debug/debugger/jdk.html" />
 <mapID target="debug.debugger.applet" url="debug/debugger/applet.html" />
@@ -395,6 +394,7 @@
 <mapID target="javadoc.search.path" url="javadoc/search_path.html" />
 <mapID target="javadoc.case.sensitive" url="javadoc/case_sensitive.html" />
 <mapID target="javadoc.addcomment" url="javadoc/addcomment.html" />
+<mapID target="javadoc.accuracy" url="javadoc/accuracy.html" />
 <mapID target="javadoc.jdkdocs" url="javadoc/jdkdocs.html" />
 <mapID target="javadoc.search.window" url="javadoc/search_window.html" />
 <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
@@ -543,39 +543,49 @@
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
 <mapID target="shortcuts.menus" url="shortcuts/menucuts.html" />
 
+<mapID target="accessibility.home" url="accessibility/accessibility_home.html" />
+<mapID target="accessibility.stylesheet" url="accessibility/stylesheet.html" />
+
+
 <!--Open Image dialog available from icon property editors (and other places?)-->
 <mapID target="csh.openimage" url="pending.html" />
 
 <!--CSH-->
 
-<mapID target="NetbeansDebuggerSessionNode" url="debug/sessions/sessions.html" />
-<mapID target="NetbeansDebuggerBreakpointsRootNode" url="debug/breakpoint/breakpoint_set.html" />
-<mapID target="NetbeansDebuggerCallStackRootNode" url="debug/environment/callstacktab.html" />
-<mapID target="NetbeansDebuggerThreadsRootNode" url="debug/threads/threads_jump.html" />
-<mapID target="NetbeansDebuggerVariablesRootNode" url="debug/variables/variables_jump.html" />
-<mapID target="NetbeansDebuggerWatchesRootNode" url="debug/watches/watch_jump.html" />
-<mapID target="NetbeansDebuggerClassesRootNode" url="debug/environment/classestab.html" />
+<mapID target="org.netbeans.core.services.CompilerTypes" url="compile/options_jump.html" />
+<mapID target="org.netbeans.core.services.ExecutorTypes" url="run/executor_options.html" />
+<mapID target="org.netbeans.core.services.DebuggerTypes" url="debug/debugger/debugger_jump.html" />
+<mapID target="org.netbeans.core.services.Browsers" url="pending.html" />
 
-<mapID target="NetbeansDebuggerBreakpointNode" url="debug/breakpoint/breakpoint_set.html" />
 
-<mapID target="NetbeansDebuggerSessionThreadNode" url="debug/threads/threads_jump.html" />
-<mapID target="NetbeansDebuggerThreadGroupNode" url="debug/threads/threads_jump.html" />
-<mapID target="NetbeansDebuggerThreadNode" url="debug/threads/threads_jump.html" />
+<mapID target="NetbeansDebuggerSessionNode" url="debug/environment/sessions_view.html" />
+<mapID target="NetbeansDebuggerBreakpointsRootNode" url="debug/environment/breakpoints_view.html" />
+<mapID target="NetbeansDebuggerCallStackRootNode" url="debug/environment/callstack_view.html" />
+<mapID target="NetbeansDebuggerThreadsRootNode" url="debug/environment/threads_view.html" />
+<mapID target="NetbeansDebuggerVariablesRootNode" url="debug/environment/variables_view.html" />
+<mapID target="NetbeansDebuggerWatchesRootNode" url="debug/environment/watches_view.html" />
+<mapID target="NetbeansDebuggerClassesRootNode" url="debug/environment/classes_view.html" />
 
-<mapID target="NetbeansDebuggerCallStackLineNode" url="debug/environment/callstacktab.html" />
-<mapID target="NetbeansDebuggerWatchNode" url="debug/watches/modify.html" />
-<mapID target="NetbeansDebuggerVariableNode" url="debug/variables/value.html" />
+<mapID target="NetbeansDebuggerBreakpointNode" url="debug/environment/breakpoints_view.html" />
 
-<mapID target="NetbeansDebuggerPackageNode" url="debug/environment/classestab.html" />
-<mapID target="NetbeansDebuggerClassNode" url="debug/environment/classestab.html" />
-<mapID target="NetbeansDebuggerFieldNode" url="debug/environment/classestab.html" />
-<mapID target="NetbeansDebuggerConstructorNode" url="debug/environment/classestab.html" />
-<mapID target="NetbeansDebuggerMethodsNode" url="debug/environment/classestab.html" />
+<mapID target="NetbeansDebuggerSessionThreadNode" url="debug/environment/threads_view.html" />
+<mapID target="NetbeansDebuggerThreadGroupNode" url="debug/environment/threads_view.html" />
+<mapID target="NetbeansDebuggerThreadNode" url="debug/environment/threads_view.html" />
 
-<mapID target="NetbeansDebuggerOwnedMonitorsNode " url="debug/threads/threads_jump.html" />
-<mapID target="NetbeansDebuggerMonitorNode" url="debug/threads/threads_jump.html" />
-<mapID target="NetbeansDebuggerCallStackNode" url="debug/threads/callstack.html" />
-<mapID target="NetbeansDebuggerLocalsRootNode" url="debug/threads/variables.html" />
+<mapID target="NetbeansDebuggerCallStackLineNode" url="debug/environment/callstack_view.html" />
+<mapID target="NetbeansDebuggerWatchNode" url="debug/environment/watches_view.html" />
+<mapID target="NetbeansDebuggerVariableNode" url="debug/environment/variables_view.html" />
+
+<mapID target="NetbeansDebuggerPackageNode" url="debug/environment/classes_view.html" />
+<mapID target="NetbeansDebuggerClassNode" url="debug/environment/classes_view.html" />
+<mapID target="NetbeansDebuggerFieldNode" url="debug/environment/classes_view.html" />
+<mapID target="NetbeansDebuggerConstructorNode" url="debug/environment/classes_view.html" />
+<mapID target="NetbeansDebuggerMethodsNode" url="debug/environment/classes_view.html" />
+
+<mapID target="NetbeansDebuggerOwnedMonitorsNode " url="debug/environment/threads_view.html" />
+<mapID target="NetbeansDebuggerMonitorNode" url="debug/environment/threads_view.html" />
+<mapID target="NetbeansDebuggerCallStackNode" url="debug/environment/threads_view.html" />
+<mapID target="NetbeansDebuggerLocalsRootNode" url="debug/environment/threads_view.html" />
 
 <mapID target="execution.view.window" url="run/workspace.html" />
 <mapID target="set.arguments.window" url="run/arguments.html" />
@@ -618,7 +628,7 @@
   <mapID target="org.openide.actions.UndockAction" url="pending.html" />
   <mapID target="org.openide.actions.WorkspaceSwitchAction" url="pending.html" />
   <mapID target="org.openide.awt.HtmlBrowser$BrowserComponent" url="pending.html" />
-  <mapID target="org.openide.execution.ProcessExecutor" url="pending.html" />
+  <mapID target="org.openide.execution.ProcessExecutor" url="run/external.html" />
   <mapID target="org.openide.execution.ThreadExecutor" url="run/internal.html" />
   <mapID target="org.netbeans.modules.apisupport.lite" url="modules/newmodule.html" />
   <mapID target="org.netbeans.modules.apisupport.lite.Wizard" url="modules/newmodule.html" />
@@ -867,7 +877,7 @@
    <mapID target="org.netbeans.modules.debugger.jpda.JPDADebuggerType" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.debug.ToolsDebuggerType" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.debug.ToolsDebugger11Type" url="debug/debugger/jdk.html" />
-   <mapID target="org.netbeans.modules.debugger.delegator.DefaultDebuggerType" url="pending.html" />
+   <mapID target="org.netbeans.modules.debugger.delegator.DefaultDebuggerType" url="debug/debugger/default.html" />
 
    <mapID target="org.netbeans.beaninfo.editors.NbProcessDescriptorCustomEditor" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.options.BaseOptionsBeanInfo$KeyBindingListPropertyEditor" url="shortcuts/kybdshortcuts.html" />

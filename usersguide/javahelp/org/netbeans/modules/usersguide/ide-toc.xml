@@ -205,9 +205,9 @@
 </tocitem>
 
 
-<tocitem text="Compiling and Running Programs" target="compile.run.jump">>
+<tocitem text="Compiling and Running Programs" target="compile.run.jump">
   <tocitem text="Compiling Programs" target="compile.jump">
-    <tocitem text="Compiling a Project or File" target="compile.program" />
+    <tocitem text="Compiling a Program" target="compile.program" />
     <tocitem text="Correcting Errors in Source Code" target="compile.error" />
     <tocitem text="Stopping a Compile" target="compile.stop"/>
     <tocitem text="Specifying a Target Directory for Class Files" target="compile.output"/>
@@ -216,38 +216,34 @@
     <tocitem text="Deleting .class Files" target="compile.delete"/>
   </tocitem>
   <tocitem text="Setting Compiler Options" target="compile.options.jump">
+    <tocitem text="External Compiler" target="compile.external"/>
+    <tocitem text="Internal Compiler" target="compile.internal"/>
+    <tocitem text="Fastjavac Compiler" target="compile.fastjavac"/>
+    <tocitem text="Jikes Compiler" target="compile.jikes"/>
     <tocitem text="Specifying the Default Compiler" target="compile.default"/>
-    <tocitem text="Setting Compiler Properties" target="compile.types">
-      <tocitem text="External Compiler" target="compile.external"/>
-      <tocitem text="Internal Compiler" target="compile.internal"/>
-      <tocitem text="Fastjavac Compiler" target="compile.fastjavac"/>
-      <tocitem text="Jikes Compiler" target="compile.jikes"/>
-    </tocitem>
     <tocitem text="Defining a New Compiler Type" target="compile.new"/>
     <tocitem text="Setting a Compiler Type in a Template" target="compile.template" />
     <tocitem text="Removing a Compiler Type" target="compile.remove"/>
   </tocitem>
   <tocitem text="Running Programs" target="run.jump">
     <tocitem text="The Running Workspace" target="run.workspace" />
-    <tocitem text="Running a Project" target="run.run" />
+    <tocitem text="Running a Program" target="run.run" />
     <tocitem text="Running and Debugging an Applet" target="run.debug.applet" />
+    <tocitem text="Specifying the Main Class to Run for a Project" target="run.mainclass" />
     <tocitem text="Running a Class When the IDE Starts" target="run.startup" />
     <tocitem text="Running Java Sources in a Specific Locale" target="run.locale" />
   </tocitem>
   <tocitem text="Setting Run Arguments" target="run.options.jump" >
-    <tocitem text="Specifying the Main Class to Run for a Project" target="run.mainclass" />
     <tocitem text="Specifying Arguments for Program Execution" target="run.arguments" />
     <tocitem text="Passing Arguments to the Java Virtual Machine" target="run.vm_arguments" />
     <tocitem text="Setting Runtime Options for the Environment" target="run.options" />
   </tocitem>
   <tocitem text="Setting Executor Options" target="run.executor.options">
+    <tocitem text="External Executor" target="run.external"/>
+    <tocitem text="Internal Executor" target="run.internal"/>
+    <tocitem text="Applet Executor" target="run.applet"/>
+    <tocitem text="Locale Executor" target="run.localeexecutor"/>
     <tocitem text="Specifying the Default Executor" target="run.project" />
-    <tocitem text="Setting Executor Properties" target="run.executors">
-      <tocitem text="External Executor" target="run.external"/>
-      <tocitem text="Internal Executor" target="run.internal"/>
-      <tocitem text="Applet Executor" target="run.applet"/>
-      <tocitem text="JSP Executor" target="run.jsp"/>
-    </tocitem>
     <tocitem text="Defining a New Executor Type" target="run.new" />
     <tocitem text="Setting an Executor Type in a Template" target="run.template" />
     <tocitem text="Removing an Executor Type" target="run.remove" />
@@ -256,22 +252,24 @@
         
 
 <tocitem text="Debugging Programs" target="debug.overview">
-  <tocitem text="Using the Debug Workspace" target="debug.workspace">
-    <tocitem text="Debugger Window" target="debug.debugger.window"></tocitem>
-    <tocitem text="Attach to VM Dialog Box" target="debug.attachvm.window"></tocitem>
-    <tocitem text="Add Breakpoint Dialog Box" target="debug.add.breakpoint" />
-    <tocitem text="Add Watch Dialog Box" target="debug.watch.window" />
+  <tocitem text="The Debug Workspace" target="debug.workspace">
+    <tocitem text="Sessions View" target="debug.window.sessions"></tocitem>
+    <tocitem text="Breakpoints View" target="debug.window.breakpoints"></tocitem>
+    <tocitem text="Threads View" target="debug.window.threads"></tocitem>
+    <tocitem text="Call Stack View" target="debug.window.callstack"></tocitem>
+    <tocitem text="Watches View" target="debug.window.watches"></tocitem>
+    <tocitem text="Variables View" target="debug.window.variables"></tocitem>
+    <tocitem text="Classes View" target="debug.window.classes"></tocitem>
     <tocitem text="Configuring the Debug Toolbar" target="debug.toolbar"></tocitem>
     <tocitem text="Setting Debugging Options for the Environment" target="debug.options"></tocitem>
   </tocitem>
+  <tocitem text="Starting a Debugging Session" target="debug.running.debugger" />
   <tocitem text="Running Your Program in the Debugger" target="debug.running.jump">
-     <tocitem text="Starting a Debugging Session" target="debug.running.debugger" />
      <tocitem text="Running to the First Line of the Program" target="debug.running.first" />
      <tocitem text="Running to the Cursor Location" target="debug.running.cursor" />
      <tocitem text="Stepping Through Your Program" target="debug.step" />
      <tocitem text="Pausing a Program" target="debug.running.pause" />
      <tocitem text="Continuing a Program in the Debugger" target="debug.running.resume" />
-     <tocitem text="Attaching the Debugger to a Running Process" target="debug.attach" />
      <tocitem text="Finishing a Debugging Session" target="debug.running.end" />
   </tocitem>
   <tocitem text="Setting Breakpoints" target="debug.breakpoint">
@@ -285,18 +283,6 @@
      <tocitem text="Disabling a Breakpoint" target="debug.breakpoint.enable" />
      <tocitem text="Removing a Breakpoint" target="debug.breakpoint.remove" />
   </tocitem>
-  <tocitem text="Examining Variables" target="debug.variables.jump">
-     <tocitem text="Viewing Variables in the Current Context" target="debug.variables.value" />
-     <tocitem text="Modifying a Variable From the Variables Tab" target="debug.variables.modify" />
-  </tocitem>
-  <tocitem text="Watching Variables and Expressions" target="debug.watches.jump">
-     <tocitem text="Watching the Value of a Variable or Expression" target="debug.watch" />
-     <tocitem text="Creating a Fixed Watch" target="debug.watch.fix" />
-     <tocitem text="Modifying a Variable from the Watches Tab" target="debug.watch.modify" />
-     <tocitem text="Deleting a Watch Variable or Expression" target="debug.watch.delete" />
-   </tocitem>
-  <tocitem text="Examining Classes" target="debug.environment.classes" />
-  <tocitem text="Viewing the Call Stack" target="debug.environment.callstack" />
   <tocitem text="Examining Threads" target="debug.threads.jump">
     <tocitem text="Suspending Execution of a Thread" target="debug.threads.suspend" />
     <tocitem text="Resuming Execution of a Thread" target="debug.threads.resume" />
@@ -305,19 +291,30 @@
     <tocitem text="Viewing the Call Stack for a Thread" target="debug.threads.callstack" />
     <tocitem text="Changing the Current Thread" target="debug.threads.change" />
   </tocitem>
- <tocitem text="Debugging Multiple Sessions" target="debug.sessions.jump">
+  <tocitem text="Viewing the Call Stack" target="debug.environment.callstack" />
+  <tocitem text="Watching Variables and Expressions" target="debug.watches.jump">
+     <tocitem text="Watching the Value of a Variable or Expression" target="debug.watch" />
+     <tocitem text="Creating a Fixed Watch" target="debug.watch.fix" />
+     <tocitem text="Modifying a Variable from the Watches Tab" target="debug.watch.modify" />
+     <tocitem text="Deleting a Watch Variable or Expression" target="debug.watch.delete" />
+   </tocitem>
+  <tocitem text="Modifying Variables" target="debug.variables.value"/>
+  <tocitem text="Examining Classes" target="debug.environment.classes" />
+  <tocitem text="Attaching the Debugger to a Running Process" target="debug.attach" />
+  <tocitem text="Debugging Multiple Sessions" target="debug.sessions.jump">
     <tocitem text="Starting Multiple Sessions" target="debug.sessions.start" />
     <tocitem text="Making a Session Persistent" target="debug.sessions.persistent" />
     <tocitem text="Finishing or Destroying a Session" target="debug.sessions.finishsession" />
     <tocitem text="Restarting a Persistent Session" target="debug.sessions.restart" />
   </tocitem>
-  <tocitem text="Working With Debugger Types" target="debug.debugger.jump">
+  <tocitem text="Setting Debugger Options" target="debug.debugger.jump">
+    <tocitem text="Default Debugger (JPDA)" target="debug.debugger.project_default"/>
+    <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
+    <tocitem text="JDK 1.1 Debugger" target="debug.debugger.jdk"/>
     <tocitem text="Specifying the Default Debugger" target="debug.debugger.project_default"/>
-    <tocitem text="Configuring a Debugger Type" target="debug.debugger.configure"/>
     <tocitem text="Defining a New Debugger Type" target="debug.service.new"/>
     <tocitem text="Setting a Debugger Type in a Template" target="debug.debugger.template" />
     <tocitem text="Removing a Debugger Type" target="debug.service.remove"/>
-    <tocitem text="Installing the Java Platform Debugger Architecture" target="debug.jpda" />
   </tocitem>
 </tocitem>
 
@@ -339,21 +336,19 @@
   <tocitem text="Working With Javadoc Documentation" target="javadoc.jump">
     <tocitem text="Format of a Javadoc Comment" target="javadoc.comment"/>
     <tocitem text="Searching Through Javadoc-Generated Documentation" target="javadoc.search"/>
-    <tocitem text="Mounting Javadoc Documentation in the IDE" target="javadoc.search.path"/>
+    <tocitem text="Mounting a Javadoc Filesystem" target="javadoc.search.path"/>
     <tocitem text="Turning Off Exact Case Matching" target="javadoc.case.sensitive"/>
     <tocitem text="Browsing the Javadoc Documentation of the JDK" target="javadoc.jdkdocs"/>
     <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
     <tocitem text="Adding a Javadoc Comment to Source Code" target="javadoc.addcomment"/>
+    <tocitem text="Checking Javadoc Comments for Accuracy" target="javadoc.accuracy"/>
     <tocitem text="Specifying an Output Directory for Javadoc Files" target="javadoc.output"/>
     <tocitem text="Searching Internationalized Javadoc Documentation" target="javadoc.searchengine"/>
-    <tocitem text="Specifying the Default Javadoc Executor" target="javadoc.executor">
-      <tocitem text="External Javadoc Executor" target="javadoc.externaljavadoc"/>
-      <tocitem text="Internal Javadoc Executor" target="javadoc.internaljavadoc"/>
-      </tocitem>
     <tocitem text="Modifying Doclet Properties" target="javadoc.doclet"/>
     <tocitem text="Specifying a Style Sheet for Javadoc Documentation" target="javadoc.stylesheet"/>
-    <tocitem text="Javadoc Index Search" target="javadoc.search.window"/>
-    <tocitem text="Auto Comment Tool" target="javadoc.auto.comment"/>
+    <tocitem text="Specifying the Default Javadoc Executor" target="javadoc.executor"/>
+    <tocitem text="External Javadoc Executor" target="javadoc.externaljavadoc"/>
+    <tocitem text="Internal Javadoc Executor" target="javadoc.internaljavadoc"/>
   </tocitem>
   <tocitem text="Using the JAR Packager" target="jarpackager">
     <tocitem text="Creating a JAR File" target="jarpackager.creating" />
@@ -553,7 +548,7 @@
 </tocitem>
 
 
-<tocitem text="Configuring the Environment">
+<tocitem text="Configuring the Environment" target="configure">
   <tocitem text="Managing Modules" target="modules.manage">
     <tocitem text="Creating an IDE Module" target="ide.newmodule" />
     <tocitem text="Enabling or Disabling a Module" target="configure.module" />
@@ -579,30 +574,31 @@
     <tocitem text="Docking and Undocking Views" target="workspace.dock"/>
     <tocitem text="Cloning the Source Editor or Web Browser" target="workspace.clone"/>
   </tocitem>
-  <tocitem text="Configuring the IDE" target="configure" >
-    <tocitem text="Using the Setup Wizard After Startup" target="configure.setup" />
-    <tocitem text="Configuring Menus" target="configure.menu" >
-      <tocitem text="Customizing the Display of Commands in a Menu" target="configure.menucommands" />
-      <tocitem text="Customizing the Contextual Menu for an Object" target="configure.popup" />
-      <tocitem text="Adding a Menu to the Main Window" target="configure.menucreate" />
-      <tocitem text="Removing a Menu From the Main Window" target="configure.menudelete" />
-    </tocitem>
-    <tocitem text="Configuring Toolbars" target="configure.toolbar" >
-      <tocitem text="Customizing the Display of Commands in a Toolbar" target="configure.tbcommands" />
-      <tocitem text="Moving and Hiding a Toolbar" target="configure.tbmove" />
-      <tocitem text="Saving a Toolbar Configuration" target="configure.tbsave" />
-      <tocitem text="Adding a Toolbar to the Main Window" target="configure.tbcreate" />
-      <tocitem text="Removing a Toolbar From the Main Window" target="configure.tbdelete" />
-    </tocitem>
-    <tocitem text="Customizing the Output Window" target="configure.output" />
-    <tocitem text="Configuring System Settings" target="configure.system.settings" />
+  <tocitem text="Configuring Menus" target="configure.menu" >
+    <tocitem text="Customizing the Display of Commands in a Menu" target="configure.menucommands" />
+    <tocitem text="Customizing the Contextual Menu for an Object" target="configure.popup" />
+    <tocitem text="Adding a Menu to the Main Window" target="configure.menucreate" />
+    <tocitem text="Removing a Menu From the Main Window" target="configure.menudelete" />
   </tocitem>
+  <tocitem text="Configuring Toolbars" target="configure.toolbar" >
+    <tocitem text="Customizing the Display of Commands in a Toolbar" target="configure.tbcommands" />
+    <tocitem text="Moving and Hiding a Toolbar" target="configure.tbmove" />
+    <tocitem text="Saving a Toolbar Configuration" target="configure.tbsave" />
+    <tocitem text="Adding a Toolbar to the Main Window" target="configure.tbcreate" />
+    <tocitem text="Removing a Toolbar From the Main Window" target="configure.tbdelete" />
+  </tocitem>
+  <tocitem text="Using the Setup Wizard After Startup" target="configure.setup" />
+  <tocitem text="Configuring System Settings" target="configure.system.settings" />
+  <tocitem text="Customizing the Output Window" target="configure.output" />
   <tocitem text="Keyboard Shortcuts" target="shortcuts.kybd">
     <tocitem text="Menu Shortcuts" target="shortcuts.menus" />
     <tocitem text="Editor Shortcuts" target="shortcuts.editor" />
   </tocitem>
 </tocitem>
 
+<tocitem text="Accessibility" target="accessibility.home">
+  <tocitem text="Specifying a Style Sheet" target="accessibility.stylesheet">
+</tocitem>
 
 </toc>
 
