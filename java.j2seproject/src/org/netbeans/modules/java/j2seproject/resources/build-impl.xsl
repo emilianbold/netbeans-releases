@@ -11,6 +11,15 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
+<!--
+XXX should not have changed /1 to /2 for URI of *all* macrodefs; only the ones
+that actually changed semantically as a result of supporting multiple compilation
+units. E.g. <j2seproject:property/> did not change at all, whereas
+<j2seproject:javac/> did. Need to only update URIs where necessary; otherwise we
+cause gratuitous incompatibilities for people overriding macrodef targets. Also
+we will need to have an upgrade guide that enumerates all build script incompatibilities
+introduced by support for multiple source roots. -jglick
+-->
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:p="http://www.netbeans.org/ns/project/1"

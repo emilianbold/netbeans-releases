@@ -31,13 +31,6 @@ import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
-
-
-
-
-
-
-
 public class J2SESources implements Sources, PropertyChangeListener  {
 
     private final AntProjectHelper helper;
@@ -124,6 +117,7 @@ public class J2SESources implements Sources, PropertyChangeListener  {
         }
         final ChangeListener[] finalListeners = _listeners;
         //XXX: Has to be fired asynchronously, otherwise causes deadlock with Children's mutex
+        // XXX That is NOT a valid reason to fire asynch changes. Fix the deadlock on the node side if necessary. -jglick
         RequestProcessor.getDefault().post(
                 new Runnable () {
                     public void run () {

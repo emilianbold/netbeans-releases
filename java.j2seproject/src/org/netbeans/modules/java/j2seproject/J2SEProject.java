@@ -21,7 +21,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -182,6 +181,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     
     // Package private methods -------------------------------------------------
 
+    // XXX should not be synchronized; should be using PM.mutex()
     /**
      * Returns the source roots of this project
      * @return project's source roots
@@ -256,6 +256,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         }
     }
 
+    // XXX should we rather be using XSLT?
     private static void copyDocument (Document doc, Element from, Element to) {
         NodeList nl = from.getChildNodes();
         int length = nl.getLength();

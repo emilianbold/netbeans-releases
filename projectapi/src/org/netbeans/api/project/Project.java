@@ -78,7 +78,7 @@ public interface Project extends Lookup.Provider {
      * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/SourceLevelQueryImplementation.html"><code>SourceLevelQueryImplementation</code></a></li>
      * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/JavadocForBinaryQueryImplementation.html"><code>JavadocForBinaryQueryImplementation</code></a></li>
      * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/AccessibilityQueryImplementation.html"><code>AccessibilityQueryImplementation</code></a></li>
-     * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/UnitTestForSourceQueryImplementation.html"><code>UnitTestForSourceQueryImplementation</code></a></li>
+     * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/MultipleRootsUnitTestForSourceQueryImplementation.html"><code>MultipleRootsUnitTestForSourceQueryImplementation</code></a></li>
      * <li><a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/ProjectXmlSavedHook.html"><code>ProjectXmlSavedHook</code></a></li>
      * <li><a href="@ANT/PROJECT@/org/netbeans/spi/project/ant/AntArtifactProvider.html"><code>AntArtifactProvider</code></a></li>
      * </ol>

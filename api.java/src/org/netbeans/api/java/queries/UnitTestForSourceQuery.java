@@ -22,12 +22,14 @@ import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplemen
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
+// XXX missing @since on findUnitTests and findSources -jglick
+
 /**
  * Query to find Java package root of unit tests for Java package root of 
  * sources and vice versa.
  *
- * @see org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation
- * @author David Konecny
+ * @see org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation
+ * @author David Konecny, Tomas Zezula
  * @since org.netbeans.api.java/1 1.4
  */
 public class UnitTestForSourceQuery {

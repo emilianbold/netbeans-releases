@@ -119,6 +119,7 @@ public class J2SEProjectGenerator {
         data.appendChild(minant);
         Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
         Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+        // XXX no! should *not* be using namespace-qualified attributes, only elements!
         root.setAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"id","src.dir");   //NOI18N
         root.setAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_src.dir"));
         sourceRoots.appendChild(root);

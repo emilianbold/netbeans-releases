@@ -15,8 +15,7 @@ package org.netbeans.spi.java.queries;
 import java.net.URL;
 import org.openide.filesystems.FileObject;
 
-
-
+// XXX missing @since tag -jglick
 
 /**
  * Query to find Java package roots of unit tests for Java package root of

@@ -32,14 +32,12 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
-
-
-
-
+// XXX should not use synchronization, rather PM.mutex() -jglick
 
 /**
- * This class represents a project source roots. It is used to obtain rotos as Ant properties, FileObjects
+ * This class represents a project source roots. It is used to obtain roots as Ant properties, FileObject's
  * or URLs.
+ * @author Tomas Zezula
  */
 public final class SourceRoots {
 
@@ -206,10 +204,11 @@ public final class SourceRoots {
             NodeList roots = ((Element)nl.item(0)).getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root");    //NOI18N
             for (int i=0; i<roots.getLength(); i++) {
                 Element root = (Element) roots.item(i);
-                String value = root.getAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"id");  //NOI18N
-                assert value.length()>0:"Illegal project.xml";
+                // XXX do *not* use namespace-qualified attributes -jglick
+                String value = root.getAttributeNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "id");  //NOI18N
+                assert value.length() > 0 : "Illegal project.xml";
                 rootProps.add(value);
-                value = root.getAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"name");  //NOI18N
+                value = root.getAttributeNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");  //NOI18N
                 rootNames.add (value);
             }
         }
