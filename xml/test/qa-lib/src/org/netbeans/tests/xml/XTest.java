@@ -15,6 +15,7 @@ package org.netbeans.tests.xml;
 import java.io.PrintWriter;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Utilities;
 import org.openide.util.io.NullOutputStream;
 
 /**
@@ -58,11 +59,28 @@ public abstract class XTest extends NbTestCase {
         }
     }
     
+    /** @depricated use getPackegeName() */
     protected String packageName() {
+        return  getPackageName();
+    }
+    
+    protected String getPackageName() {
         if (packageName == null) {
             packageName = this.getClass().getPackage().getName();
         }
         return packageName;
+    }
+
+    protected String getPackageName(String separator) {
+        String name = getPackageName();
+        name = org.openide.util.Utilities.replaceString(name, ".", separator);
+        return name;
+    }
+
+    protected String getDataPackageName(String separator) {
+        String name = getPackageName(separator);
+        name += separator + "data";
+        return name;
     }
     
     
@@ -76,7 +94,7 @@ public abstract class XTest extends NbTestCase {
     
     protected String getFilesystemName() throws FileStateInvalidException {
         if (fsName == null) {
-            fsName = TestUtil.findFileObject(packageName(), null, null).getFileSystem().getDisplayName();
+            fsName = TestUtil.findFileObject(packageName(), Utilities.getShortClassName(this.getClass()), "class").getFileSystem().getDisplayName();
         }
         return fsName;
     }
