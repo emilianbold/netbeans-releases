@@ -38,7 +38,7 @@ import org.openide.util.HelpCtx;
  * Object that represents one file containing an image.
  * @author Petr Hamernik, Jaroslav Tulach, Ian Formanek
  */
-public class ImageDataObject extends MultiDataObject {
+public class ImageDataObject extends MultiDataObject implements CookieSet.Factory {
     
     /** Generated serialized version UID. */
     static final long serialVersionUID = -6035788991669336965L;
@@ -46,9 +46,6 @@ public class ImageDataObject extends MultiDataObject {
     /** Base for image resource. */
     private static final String IMAGE_ICON_BASE = "org/netbeans/modules/image/imageObject"; // NOI18N
 
-    /** Helper variable. Speeds up <code>DataObject</code> recognition. */
-    private transient boolean cookiesInitialized = false;
-    
     
     /** Constructor.
     * @param pf primary file object for this data object
@@ -57,8 +54,18 @@ public class ImageDataObject extends MultiDataObject {
     */
     public ImageDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
+        
+        getCookieSet().add(ImageOpenSupport.class, this);
     }
 
+
+    /** Implements <code>CookieSet.Factory</code> interface. */
+    public Node.Cookie createCookie(Class clazz) {
+        if(clazz.isAssignableFrom(ImageOpenSupport.class))
+            return new ImageOpenSupport(getPrimaryEntry());
+        else
+            return null;
+    }
     
     /** Help context for this object.
     * @return the help context
@@ -104,47 +111,5 @@ public class ImageDataObject extends MultiDataObject {
         node.setDefaultAction (SystemAction.get (OpenAction.class));
         return node;
     }
-    
-    /** Overrides superclass method. */
-    public CookieSet getCookieSet() {
-        synchronized(this) {
-            if (!cookiesInitialized) {
-                initCookieSet();
-            }
-        }
-        
-        return super.getCookieSet();
-    }
 
-    /**
-     * Overrides superclass method. 
-     * Look for a cookie in the current cookie set matching the requested class.
-     * @param type the class to look for
-     * @return an instance of that class, or <code>null</code> if this class of cookie
-     *    is not supported
-     */
-    public Node.Cookie getCookie(Class type) {
-        if (CompilerCookie.class.isAssignableFrom(type)) {
-            return null;
-        }
-        
-        synchronized(this) { 
-            if(!cookiesInitialized) {
-                initCookieSet();
-            }
-        }
-        
-        return super.getCookie(type);
-    }
-    
-    /** Initializes cookie set. */
-    private synchronized void initCookieSet() {
-        // Necessary to set flag before add cookieSet method, cause
-        // it fires property event change and some Cookie action in its
-        // enable method could call initCookieSet again. 
-        
-        cookiesInitialized = true;
-        super.getCookieSet().add(new ImageOpenSupport(getPrimaryEntry()));
-    }
-    
 }
