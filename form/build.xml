@@ -35,6 +35,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
         <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
+        <pathelement location="../java/api/netbeans/modules/autoload/java-api.jar"/>
         <pathelement location="../java/netbeans/modules/java.jar"/>
         <fileset dir="../core/external">
           <include name="xml-apis*.jar" />

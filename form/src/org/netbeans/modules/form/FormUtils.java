@@ -24,9 +24,9 @@ import java.text.MessageFormat;
 import java.security.*;
 
 import org.openide.util.*;
-import org.openide.execution.NbClassLoader;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+import org.netbeans.api.java.classpath.ClassPath;
 
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
 
@@ -921,9 +921,10 @@ public class FormUtils
     // ---------
 
     public static ClassLoader getClassLoader() {
-        NbClassLoader loader = new NbClassLoader();
-        loader.setDefaultPermissions(getAllPermissions());
-        return loader;
+        // we keep the classloader to have the same instance as long as possible
+        FormEditorSupport.userClassLoader =
+            ClassPath.getClassPath(null, ClassPath.EXECUTE).getClassLoader(true);
+        return FormEditorSupport.userClassLoader;
     }
 
     private static PermissionCollection allPermission;
