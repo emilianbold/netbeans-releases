@@ -418,9 +418,9 @@
 <mapID target="junit_runningtests" url="junit/junit_runningtests.html" />	
 <mapID target="junit_configuringsettings" url="junit/junit_configuringsettings.html" />
 
-<!--VCS map ids-->
+<!--old VCS map ids-->
 
-<mapID target="vcs.overview" url="vcs-nb/vcs_overview.html" />
+<!--<mapID target="vcs.overview" url="vcs-nb/vcs_overview.html" />
 <mapID target="vcs.output" url="vcs-nb/vcs_output.html" />
 <mapID target="vcs.annotate" url="vcs-nb/vcs_annotate.html" />
 <mapID target="vcs.diffs" url="vcs-nb/vcs_diffs.html" />
@@ -462,7 +462,23 @@
 <mapID target="vcsgeneric.custom-cvs" url="vcs-nb/vcsgeneric/vcsgeneric_custom-cvs.html" />
 <mapID target="vcsgeneric.filesystemproperties" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />
 <mapID target="vcsgeneric.newprofile" url="vcs-nb/vcsgeneric/vcsgeneric_newprofile.html" />
-<mapID target="vcs.revexplorer" url="vcs-nb/vcs_revexplorer.html" />
+<mapID target="vcs.revexplorer" url="vcs-nb/vcs_revexplorer.html" />-->
+
+<!--new VCS map ids-->
+
+<mapID target="vcs.about" url="vcs-nb/vcs_about.html" />
+<mapID target="vcs.overview" url="vcs-nb/vcs_overview.html" />
+<mapID target="vcs.quickref" url="vcs-nb/vcs_quickref.html" />
+<mapID target="vcs.checkout" url="vcs-nb/vcs_checkout.html" />
+<mapID target="vcs.commit" url="vcs-nb/vcs_commit.html" />
+<mapID target="vcs.configure" url="vcs-nb/vcs_configure.html" />
+<mapID target="vcs.cvs" url="vcs-nb/vcs_cvs.html" />
+<mapID target="vcs.cvscommands" url="vcs-nb/vcs_cvscommands.html" />
+<mapID target="vcs.diff" url="vcs-nb/vcs_diff.html" />
+<mapID target="vcs.groups" url="vcs-nb/vcs_groups.html" />
+<mapID target="vcs.merge" url="vcs-nb/vcs_merge.html" />
+<mapID target="vcs.patch" url="vcs-nb/vcs_patch.html" />
+<mapID target="vcs.repositorysetup" url="vcs-nb/vcs_repositorysetup.html" />
 
 
 <mapID target="webbrowser.swing" url="webbrowser/swingbrowser.html" />
@@ -780,9 +796,11 @@
    <mapID target="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer" url="filesystems/filesystems_diff.html" />
    <mapID target="org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer" url="filesystems/filesystems_diff.html" />
    <mapID target="org.netbeans.modules.diff.builtin.DefaultDiff" url="filesystems/filesystems_diff.html" />
-   <mapID target="org.netbeans.modules.merge.Merge.visualizers" url="vcs-nb/cvs-nb/cvs_merge-resolve.html" />
-   <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/cvs-nb/cvs_merge-resolve.html" />
-
+   <!--QUESTION(tm) : remap these ids to new merge doc?-->
+   <!--<mapID target="org.netbeans.modules.merge.Merge.visualizers" url="vcs-nb/cvs-nb/cvs_merge-resolve.html" />
+   <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/cvs-nb/cvs_merge-resolve.html" />-->
+   <mapID target="org.netbeans.modules.merge.Merge.visualizers" url="vcs-nb/vcs_merge.html" />
+   <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/vcs_merge.html" />-->
 
   
     
@@ -1030,6 +1048,8 @@
    <mapID target="org.openide.loaders.NewObjectPanel" url="objects/objects_new.html" />
    <mapID target="org.openide.loaders.ClassNamePanel" url="objects/objects_new.html" />
 
+<!--QUESTION(tm) : should these ids be remapped to new docs or removed?
+
    <mapID target="vcsgeneric.profile.cvs.commit" url="vcs-nb/cvs-nb/args/args_commit.html" />
    <mapID target="vcsgeneric.profile.cvs.update" url="vcs-nb/cvs-nb/args/args_update.html" />
    <mapID target="vcsgeneric.profile.cvs.addDir" url="vcs-nb/cvs-nb/args/args_add.html" />
@@ -1040,8 +1060,10 @@
    <mapID target="vcsgeneric.profile.cvs.checkout" url="vcs-nb/cvs-nb/args/args_checkout.html" />
    <mapID target="vcsgeneric.profile.cvs.addTag" url="vcs-nb/cvs-nb/args/args_tag.html" />
    <mapID target="vcsgeneric.profile.cvs.diffG" url="vcs-nb/cvs-nb/args/args_diff.html" />
-   <mapID target="vcsgeneric.profile.cvs.diffT" url="vcs-nb/cvs-nb/args/args_diff.html" />
+   <mapID target="vcsgeneric.profile.cvs.diffT" url="vcs-nb/cvs-nb/args/args_diff.html" />-->
    
+<!--QUESTION(tm) : should these ids be remapped to new docs or removed?  
+
    <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeMainNode" url="vcs-nb/vcs_commands_node.html" />
    <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode" url="vcs-nb/vcs_commands_node.html" />
    <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeCommandNode" url="vcs-nb/vcs_commands_node.html" />
@@ -1056,43 +1078,43 @@
    <mapID target="org.netbeans.modules.vcscore.search.VcsSearchType" url="objects/search/search_status.html" />
    <mapID target="VCS_VariableEditor" url="vcs-nb/vcsgeneric/vcsgeneric_newprofile.html" />
    <mapID target="VCS_CommandEditor" url="vcs-nb/vcsgeneric/vcsgeneric_newprofile.html" />
-   <mapID target="org.netbeans.modules.vcs.advanced.VcsCustomizer" url="vcs-nb/vcsgeneric/vcsgeneric_customizer.html" />
+   <mapID target="org.netbeans.modules.vcs.advanced.VcsCustomizer" url="vcs-nb/vcsgeneric/vcsgeneric_customizer.html" />-->
 
    <mapID target="org.netbeans.modules.vcs.RetrievingDialog" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.nodes.DebuggerView" url="pending.html" />
    <mapID target="org.netbeans.modules.group.CreateGroupAction" url="pending.html" />
 
-   <mapID target="org.netbeans.modules.vcs.advanced.profilesSettings.VcsSettingsNode" url="vcs-nb/vcsgeneric/vcsgeneric_newprofile.html" />
+   <!--<mapID target="org.netbeans.modules.vcs.advanced.profilesSettings.VcsSettingsNode" url="vcs-nb/vcsgeneric/vcsgeneric_newprofile.html" />-->
    
    <!--VCS CSH and VCS property sheet helpIDs-->
-   <mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem_properties" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />
-   <mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem_expert" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />
-   <mapID target="org.netbeans.modules.vcscore.grouping.MainVcsGroupNode_properties" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />
-   <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupNode_properties" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />
+   <!--<mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem_properties" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />-->
+   <!--<mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem_expert" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />-->
+   <!--<mapID target="org.netbeans.modules.vcscore.grouping.MainVcsGroupNode_properties" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />-->
+   <!--<mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupNode_properties" url="vcs-nb/vcsgroups/vcs_groupsproperties.html" />-->
    
    <!--Begin helpIDs for Versioning Explorer-->
    <!--Generic VCS FS node-->
-   <mapID target="org.netbeans.modules.vcscore.VcsVersioningSystem" url="pending.html" />
+   <!--<mapID target="org.netbeans.modules.vcscore.VcsVersioningSystem" url="pending.html" />-->
    <!--Generic VCS properties and expert tabs-->
-   <mapID target="org.netbeans.modules.vcscore.VcsVersioningSystem_properties" url="pending.html" />
-   <mapID target="org.netbeans.modules.vcscore.VcsVersioningSystem_expert" url="pending.html" />
+   <!--<mapID target="org.netbeans.modules.vcscore.VcsVersioningSystem_properties" url="pending.html" />-->
+   <!--<mapID target="org.netbeans.modules.vcscore.VcsVersioningSystem_expert" url="pending.html" />-->
 
    <!--Begin helpIDs for VCS Commands nodes in Runtime window-->
    <!--helpID for the properties sheet of FS nodes in Runtime window-->
-   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode_properties" url="vcs-nb/vcs_commands_node.html" />
+   <!--<mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode_properties" url="vcs-nb/vcs_commands_node.html" />-->
    <!--helpID for the properties sheet of Generic VCS commands on Runtime window-->
-   <mapID target="org.netbeans.modules.vcscore.runtime.VcsRuntimeCommand_properties" url="vcs-nb/vcs_commands_node.html" />
+   <!--<mapID target="org.netbeans.modules.vcscore.runtime.VcsRuntimeCommand_properties" url="vcs-nb/vcs_commands_node.html" />-->
    <!--csh for VCS Generic mount wizard-->
-   <mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.ProfilePanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
-   <mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.AdvancedPanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
-   <mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.EnvironmentPanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
+   <!--<mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.ProfilePanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />-->
+   <!--<mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.AdvancedPanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />-->
+   <!--<mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.EnvironmentPanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />-->
    <!--csh for Verify VCS Group-->
-   <mapID target="org.netbeans.modules.vcscore.ui.VerifyGroupPanel" url="vcs-nb/vcsgroups/vcs_groupsresolve.html" />
-   <mapID target="org.netbeans.modules.diff.PatchAction" url="vcs-nb/vcs_diffs.html" />
+   <!--<mapID target="org.netbeans.modules.vcscore.ui.VerifyGroupPanel" url="vcs-nb/vcsgroups/vcs_groupsresolve.html" />-->
+   <!--<mapID target="org.netbeans.modules.diff.PatchAction" url="vcs-nb/vcs_diffs.html" />-->
    <!--csh for filesystems-->
-   <mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />
+   <!--<mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />-->
    <!--csh for versioning menu items-->
-   <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupMenuAction" url="vcs-nb/vcsgroups/vcs_groups.html" />
+   <!--<mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupMenuAction" url="vcs-nb/vcsgroups/vcs_groups.html" />-->
 
    <!--csh for java actions-->
    <mapID target="org.netbeans.modules.java.imptool.ImpToolAction" url="java/imt/import.html" />
