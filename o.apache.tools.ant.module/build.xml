@@ -1,51 +1,20 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
 
-<!--@(#)build.xml-->
-<!--Ant project for the Ant Module for Sun's Forte For Java IDE-->
-<!--@author Jayme Edwards-->
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
 
-<project name="Ant Module" default="netbeans" basedir=".">
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
 
-<!-- Older build code deprecated since the IDE has a standard build scheme now:
-  <target name="setProps">
-    <property name="build.compiler" value="classic"/>
-    <property name="dist.classes" value="classes"/>
-    <property name="module.package" value="org${file.separator}apache${file.separator}tools${file.separator}ant${file.separator}module"/>
-    <property name="module.classes" value="${dist.classes}${file.separator}${module.package}"/>
-    <property name="module.javahelp" value="javahelp${file.separator}${module.package}${file.separator}docs"/>
-    <property name="module.templates" value="tojar${file.separator}${module.package}"/>
-    <property name="module.jar" value="tojar${file.separator}${module.package}${file.separator}templates.jar"/>
-    <property name="module.libs" value=".${file.separator}release${file.separator}lib"/>
-    <property name="module.ext" value="${module.libs}${file.separator}ext"/>
-    <property name="module.src" value="src"/>
-    <property name="build.classpath" value="${module.src};${module.ext}${file.separator}ant.jar;${module.ext}${file.separator}xml.jar;${module.ext}${file.separator}xerces.jar;${module.ext}${file.separator}xalan.jar;${module.ext}${file.separator}openide.jar"/>
-  </target>
-  <target name="preClean" depends="setProps">
-    <delete dir="${dist.classes}"/>
-  </target>
-  <target name="postClean" depends="setProps">
-    <delete dir="${dist.classes}"/>
-  </target>
-  <target name="prepare" depends="setProps">
-    <mkdir dir="${dist.classes}"/>
-  </target>
-  <target name="build" depends="setProps">
-    <echo message="compiling with classpath: ${build.classpath}"/>
-    <javac srcdir="${module.src}" destdir="${dist.classes}" classpath="${build.classpath}"/>
-  </target>
-  <target name="packTemplates" depends="setProps">
-    <jar jarfile="${module.classes}${file.separator}templates.jar" basedir="${module.jar}" includes="Ant/**"/>
-  </target>
-  <target name="packModule" depends="setProps">
-    <copy todir="${module.classes}${file.separator}docs">
-      <fileset dir="${module.javahelp}"/>
-    </copy>
-    <jar jarfile="${module.libs}${file.separator}antmodule.jar" basedir="${dist.classes}" manifest="manifest.mf" includes="${module.package}${file.separator}**" excludes="**/*.jar.MAKEME"/>
-  </target>
-  <target name="all" depends="preClean,prepare,build,packTemplates,packModule,postClean"/>
+Contributor(s): Jayme C. Edwards, Jesse Glick.
 -->
 
-  <!-- For including in an IDE build: -->
+<project name="ant" default="netbeans" basedir=".">
 
   <property name="binroot" value=".."/>
   <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/>
@@ -83,19 +52,23 @@
   </target>
 
   <target name="javahelp">
-    <copy todir="netbeans/docs" includeEmptyDirs="false">
-      <fileset dir="javahelp"/>
-    </copy>
-    <mkdir dir="netbeans/docs/org/apache/tools/ant/module/docs/JavaHelpSearch"/>
+    <copy file="Ant_License" tofile="javahelp/org/apache/tools/ant/module/docs/LICENSE"/>
+    <mkdir dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
+    <unzip src="ant-docs.zip" dest="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
     <jhindexer basedir="javahelp/org/apache/tools/ant/module/docs"
-               db="netbeans/docs/org/apache/tools/ant/module/docs/JavaHelpSearch"
+               db="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch"
                jhall="${binroot}/nbbuild/lib/jhall.jar">
       <include name="**/*.html"/>
+      <exclude name="JavaHelpSearch/"/>
       <exclude name="config-dep.html"/>
       <exclude name="config-prop.html"/>
       <exclude name="config-targ.html"/>
       <exclude name="credits.html"/>
     </jhindexer>
+    <mkdir dir="netbeans"/>
+    <copy todir="netbeans/docs" includeEmptyDirs="false">
+      <fileset dir="javahelp"/>
+    </copy>
   </target>
 
   <target name="netbeans" depends="jars,release,javahelp"/>
@@ -133,6 +106,9 @@
     <delete file="ant.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
+    <delete dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch"/>
+    <delete file="javahelp/org/apache/tools/ant/module/docs/LICENSE"/>
+    <delete dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
   </target>
 
 </project>
