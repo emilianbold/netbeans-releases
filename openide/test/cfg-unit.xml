@@ -137,6 +137,8 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- run also wizard's tests -->
                 <include name="org/openide/WizardDescTest.class"/>
                 <include name="org/openide/InstantiatingIteratorTest.class"/>
+		<!-- excluded because issue #46587, issue #46589-->
+		<exclude name="org/openide/WizardDescriptorOrderTest.class"/>
                 
                 <!-- run also window system tests -->
                 <include name="org/openide/windows/*Test.class"/>
