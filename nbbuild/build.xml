@@ -417,7 +417,7 @@ workspaceswitcher
     <echo message="Starting a build for NetBeans (build ${buildnum}, config '${moduleconfig}') ..."/>
     <echo message="Selected modules: ${modules}"/>
     <echo message="OS: ${os.name} ${os.version}  Locale: ${user.language}_${user.region}"/>
-    <echo message="Java: ${java.vendor} ${java.version} in ${jdkhome}"/>
+    <echo message="Java: ${java.vendor} ${java.version} in ${java.home}; for NetBeans: ${jdkhome}"/>
     <echo message="Classpath: ${java.class.path}"/>
   </target>
 
