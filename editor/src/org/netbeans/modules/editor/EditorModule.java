@@ -73,8 +73,6 @@ import org.netbeans.editor.AnnotationTypes;
 public class EditorModule extends ModuleInstall 
 implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable  {
 
-    private static Hashtable origKitMapping;
-    
     /** PrintOptions to be installed */
     Class[] printOpts = new Class[] {
         PlainPrintOptions.class,
@@ -126,10 +124,8 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
             Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
             keyField.setAccessible(true);
             Object key = keyField.get(JEditorPane.class);
-            origKitMapping = (Hashtable)sun.awt.AppContext.getAppContext().get(key);
-            Hashtable kitMapping = (origKitMapping != null)
-                ? new HackMap(origKitMapping) : new HackMap();
-            sun.awt.AppContext.getAppContext().put(key, kitMapping);
+            Hashtable kitMapping = (Hashtable)sun.awt.AppContext.getAppContext().get(key);
+            sun.awt.AppContext.getAppContext().put(key, new HackMap(kitMapping));
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -177,7 +173,8 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
             Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
             keyField.setAccessible(true);
             Object key = keyField.get(JEditorPane.class);
-            sun.awt.AppContext.getAppContext().put(key, origKitMapping);
+            HackMap kitMapping = (HackMap)sun.awt.AppContext.getAppContext().get(key);
+            sun.awt.AppContext.getAppContext().put(key, kitMapping.getOriginal());
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -244,22 +241,18 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
     }
 
     private static class HackMap extends Hashtable {
+        
+        private static final Object NULL = new Object();
 
-	private Map delegate;
+	private Hashtable delegate;
 
-        HackMap() {
-	    this( new Hashtable() );
+        HackMap(Hashtable h) {
+            delegate = h;
         }
 
-        HackMap(java.util.Map m) {
-	    m.remove("text/plain");
-	    m.remove("text.html");
-            delegate = m;
-        }
-
-        private EditorKit findKit(String type) {
+        private Object findKit(String type) {
             FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Editors/" + type + "/EditorKit.instance");
-            if (fo == null) return null;
+            if (fo == null) return NULL;
 
             DataObject dobj;
             try {
@@ -274,31 +267,43 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
             catch (IOException e) {}
             catch (ClassNotFoundException e) {}
 
-            return null;
+            return NULL;
         }
         
         public synchronized Object get(Object key) {
-            Object retVal = delegate.get(key);
-	    // we have to return null if remove was called before for that key
-	    // to allow overrides. JEditorPane will do the lookup
-	    // in its classs name database and it will
-	    // then call put() on us with new instance of the kit. 
-	    if (retVal == null && key instanceof String && super.get(key) == null) {
+            Object retVal = super.get(key);
+
+	    if (retVal == null && key instanceof String) {
 		retVal = findKit((String)key);
 	    }
+
+            if (retVal == NULL) {
+                retVal = null;
+            }
+
+            if (retVal == null && delegate != null) {
+                retVal = delegate.get(key);
+            }
+
             return retVal;
         }
         
         public synchronized Object put(Object key, Object value) {
-            // maybe so some processing before
+            if (delegate == null) {
+                delegate = new Hashtable();
+            }
+
             return delegate.put(key,value);
         }
 
         public synchronized Object remove(Object key) {
-	    // mark this type as removed to allow overrides
-	    super.put(key,key);
-            return delegate.remove(key);
+            return (delegate != null) ? delegate.remove(key) : null;
         }
+        
+        Hashtable getOriginal() {
+            return delegate;
+        }
+
     }
     
 }
