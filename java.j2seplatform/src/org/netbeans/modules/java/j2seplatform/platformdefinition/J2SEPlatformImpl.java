@@ -125,7 +125,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
     /**
      * @return  a descriptive, human-readable name of the platform
      */
-    public final String getDisplayName() {
+    public String getDisplayName() {
         return displayName;
     }
 
@@ -133,9 +133,19 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * Alters the human-readable name of the platform
      * @param name the new display name
      */
-    public final void setDisplayName(String name) {
+    public void setDisplayName(String name) {
         this.displayName = name;
         firePropertyChange(PROP_DISPLAY_NAME, null, null); // NOI18N
+    }
+    
+    /**
+     * Alters the human-readable name of the platform without firing
+     * events. This method is an internal contract to allow lazy creation
+     * of display name
+     * @param name the new display name
+     */
+    final protected void internalSetDisplayName (String name) {
+        this.displayName = name;
     }
 
 

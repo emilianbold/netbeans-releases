@@ -109,9 +109,9 @@ public final class JavaPlatformManager {
     public JavaPlatform[] getPlatforms (String platformDisplayName, Specification platformSpec) {
         JavaPlatform[] platforms = getInstalledPlatforms();
         Collection/*<JavaPlatform>*/ result = new ArrayList ();
-        for (int i = 0; i < platforms.length; i++) {
-            String name = platforms[i].getDisplayName();
-            Specification spec = platforms[i].getSpecification();
+        for (int i = 0; i < platforms.length; i++) {            
+            String name = platformDisplayName == null ? null : platforms[i].getDisplayName(); //Don't ask for display name when not needed
+            Specification spec = platformSpec == null ?  null : platforms[i].getSpecification(); //Don't ask for platform spec when not needed
             if ((platformDisplayName==null || name.equalsIgnoreCase(platformDisplayName)) &&
                 (platformSpec == null || compatible (spec, platformSpec))) {
                 result.add(platforms[i]);

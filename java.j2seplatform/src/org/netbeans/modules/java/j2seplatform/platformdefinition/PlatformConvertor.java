@@ -60,6 +60,8 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         // Might be used, though currently not (cf. #46901):
         "javadoc", // NOI18N
     };
+    
+    private static final String PLATFORM_DTD_ID = "-//NetBeans//DTD Java PlatformDefinition 1.0//EN"; // NOI18N
 
     private PlatformConvertor() {}
 
@@ -143,7 +145,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 is.setSystemId(holder.getPrimaryFile().getURL().toExternalForm());
                 reader.setContentHandler(handler);
                 reader.setErrorHandler(handler);
-                reader.setEntityResolver(EntityCatalog.getDefault());
+                reader.setEntityResolver(handler);
 
                 reader.parse(is);
             } catch (SAXException ex) {
@@ -421,7 +423,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         void write(PrintWriter pw) throws IOException {
             pw.println("<?xml version='1.0'?>");
             pw.println(
-            "<!DOCTYPE platform PUBLIC '-//NetBeans//DTD Java PlatformDefinition 1.0//EN' 'http://www.netbeans.org/dtds/java-platformdefinition-1_0.dtd'>");
+            "<!DOCTYPE platform PUBLIC '"+PLATFORM_DTD_ID+"' 'http://www.netbeans.org/dtds/java-platformdefinition-1_0.dtd'>");
             pw.println("<platform name='"
                 + XMLUtil.toAttributeValue(instance.getDisplayName()) +
                 "' default='" + (defaultPlatform ? "yes" : "no") +
@@ -488,7 +490,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     static final String ATTR_PROPERTY_NAME = "name"; // NOI18N
     static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
     
-    static class H extends org.xml.sax.helpers.DefaultHandler {
+    static class H extends org.xml.sax.helpers.DefaultHandler implements EntityResolver {
         Map     properties;
         Map     sysProperties;
         List    sources;
@@ -570,6 +572,16 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 this.buffer.append(chars, start, length);
             }
         }
+        
+        public org.xml.sax.InputSource resolveEntity(String publicId, String systemId)
+        throws SAXException {
+            if (PLATFORM_DTD_ID.equals (publicId)) {
+                return new org.xml.sax.InputSource (new ByteArrayInputStream (new byte[0]));
+            } else {
+                return null; // i.e. follow advice of systemID
+            }
+        }
+        
     }
 
 }

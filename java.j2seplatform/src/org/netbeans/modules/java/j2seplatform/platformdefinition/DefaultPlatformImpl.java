@@ -62,13 +62,25 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
     }
     
     private DefaultPlatformImpl(List installFolders, Map platformProperties, Map systemProperties, List sources, List javadoc) {
-        super(NbBundle.getMessage(DefaultPlatformImpl.class,"TXT_DefaultPlatform"),DEFAULT_PLATFORM_ANT_NAME,
+        super(null,DEFAULT_PLATFORM_ANT_NAME,
               installFolders, platformProperties, systemProperties, sources, javadoc);
     }
 
     public void setAntName(String antName) {
-        //Not used by default platform
-        //antName == null
+        throw new UnsupportedOperationException (); //Default platform ant name can not be changed
+    }
+    
+    public String getDisplayName () {
+        String displayName = super.getDisplayName();
+        if (displayName == null) {
+            displayName = NbBundle.getMessage(DefaultPlatformImpl.class,"TXT_DefaultPlatform");
+            this.internalSetDisplayName (displayName);
+        }
+        return displayName;
+    }
+    
+    public void setDisplayName(String name) {
+        throw new UnsupportedOperationException (); //Default platform name can not be changed
     }
 
     public ClassPath getStandardLibraries() {
