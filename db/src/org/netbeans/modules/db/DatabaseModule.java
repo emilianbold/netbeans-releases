@@ -23,6 +23,9 @@ import org.openide.loaders.InstanceDataObject;
 import org.openide.modules.*;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
+import org.openide.nodes.Node;
+import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
+import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 
 /**
 * DB module.
@@ -60,10 +63,27 @@ public class DatabaseModule extends ModuleInstall {
     
     public void uninstalled() {
         System.setProperty("pointbase.ini", System.getProperty("netbeans.home") + java.io.File.separator + "pointbase" + java.io.File.separator + "pointbase.ini");
+
+        // closing all open connection
+        try {
+            Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().getNodes();
+            for (int i = 0; i < n.length; i++)
+                if (n[i] instanceof ConnectionNode)
+                    ((ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo()).disconnect();
+        } catch (Exception exc) {
+            //connection not closed
+        }
     }
     
     public void restored() {
         System.setProperty("pointbase.ini", System.getProperty("netbeans.home") + java.io.File.separator + "pointbase" + java.io.File.separator + "pointbase.ini");
+    }
+
+    public boolean closing () {
+        
+        // method is called because of closing connections
+        uninstalled();
+        return true;
     }
 
 }
