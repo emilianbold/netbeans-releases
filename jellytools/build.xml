@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${core/output.dir}/${nb.modules.dir}/org-netbeans-core-output.jar"/>
         <pathelement location="../jemmy/jemmy.jar"/>
         <pathelement location="../xtest/external/junit-3.8.1.jar"/>
-        <pathelement location="../xtest/nbjunit/netbeans/modules/ext/nbjunit.jar"/>
+        <pathelement location="${xtest/nbjunit.dir}/${nb.modules.dir}/ext/nbjunit.jar"/>
       </path>
     </target>
 
