@@ -32,7 +32,7 @@ public class DriverSpecification {
     
     private DatabaseMetaData dmd;
     
-    private boolean mixedCaseIndentifiers, upperCaseIndentifiers;
+    private boolean mixedCaseIndentifiers, upperCaseIndentifiers, lowerCaseIndentifiers;
 
     private ResultSet rs;
 
@@ -95,8 +95,10 @@ public class DriverSpecification {
         
         try {
             mixedCaseIndentifiers = dmd.storesMixedCaseIdentifiers();
-            if (!mixedCaseIndentifiers)
+            if (!mixedCaseIndentifiers) {
                 upperCaseIndentifiers = dmd.storesUpperCaseIdentifiers();
+                lowerCaseIndentifiers = dmd.storesLowerCaseIdentifiers();
+            }
         } catch (SQLException exc) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 exc.printStackTrace();
@@ -104,7 +106,14 @@ public class DriverSpecification {
     }
     
     private String caseConversion(String pattern) {
-        return upperCaseIndentifiers ? pattern.toUpperCase() : pattern.toLowerCase();
+        if (upperCaseIndentifiers ^ lowerCaseIndentifiers) {
+            if (upperCaseIndentifiers)
+                return pattern.toUpperCase();
+            if (lowerCaseIndentifiers)
+                return pattern.toLowerCase();
+        }
+        
+        return pattern;
     }
 
     public void getTables(String tableNamePattern, String[] types) {
