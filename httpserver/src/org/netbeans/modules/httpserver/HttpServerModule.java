@@ -215,7 +215,8 @@ System.out.println("is " + MyHttpServer.class.getResourceAsStream("server.proper
     
     public void start() throws HttpServerException {
       File wd = NbClassPath.toFile(
-        TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot());
+                                   TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot());
+      wd = new File(wd, "httpwork");
         
       try {
         java.lang.reflect.Field ff = HttpServer.class.getDeclaredField("isWorkDirPersistent");
@@ -291,6 +292,8 @@ System.out.println("security check OK 2");
 
 /*
  * Log
+ *  34   Gandalf   1.33        12/1/99  Ales Novak      bugfix - working 
+ *       directory is not system - system is deleted no more
  *  33   Gandalf   1.32        11/27/99 Patrik Knakal   
  *  32   Gandalf   1.31        11/25/99 Petr Jiricka    - Another 
  *       security-related fix - for URLs starting with an allowed substring but 
