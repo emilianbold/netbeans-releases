@@ -708,6 +708,7 @@ public class NbEditorKit extends ExtKit {
                 getString(generateFoldPopupAction));
             addAction(target, menu, BaseKit.collapseFoldAction);
             addAction(target, menu, BaseKit.expandFoldAction);
+            setAddSeparatorBeforeNextAction(true);
             addAction(target, menu, BaseKit.collapseAllFoldsAction);
             addAction(target, menu, BaseKit.expandAllFoldsAction);
             // By default add separator before next actions (can be overriden if unwanted)
