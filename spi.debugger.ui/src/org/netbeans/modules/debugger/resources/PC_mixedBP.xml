@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     description_key='HINT_PC_MIXED_BREAKPOINTS'
     localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
     visible='true' 
-    glyph='nbresloc:/org/netbeans/modules/debugger/resources/multibreakpoint+pcglyph.gif'
+    glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/MultiBreakpoint+PC.gif'
     highlight='0xBDE6AA' 
     type='line'>
 

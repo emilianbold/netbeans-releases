@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     description_key='HINT_DISABLED_CONDITIONAL_BREAKPOINT'
     localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
     visible='true' 
-    glyph='nbresloc:/org/netbeans/modules/debugger/resources/disabledcondbreakpointglyph.gif'
+    glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/DisabledConditionalBreakpoint.gif'
     highlight='0xDCDCD8' 
     type='line'
 />
