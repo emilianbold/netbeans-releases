@@ -29,7 +29,7 @@ import org.openide.util.NbBundle;
 */
 final class NbErrorManager extends ErrorManager {
     /** maps Throwables to java.util.List (Ann) */
-    private Map map = new WeakHashMap (11);
+    private static Map map = new WeakHashMap (11);
 
     /** The writer to the log file*/
     private PrintWriter logWriter = null;
@@ -37,7 +37,7 @@ final class NbErrorManager extends ErrorManager {
    /** assciates each thread with the lastly notified throwable
     * (Thread, Reference (Throwable))
     */
-    private Map lastException = new WeakHashMap (27);
+    private static Map lastException = new WeakHashMap (27);
 
     /** Minimum value of severity to write message to the log file*/
     private int minLogSeverity = ErrorManager.INFORMATIONAL;
@@ -45,8 +45,7 @@ final class NbErrorManager extends ErrorManager {
     /** Prefix preprended to customized loggers, if any. */
     private String prefix = null;
     
-    /** Creates new NbExceptionManager. */
-    public NbErrorManager() {
+    static {
         System.setProperty("sun.awt.exception.handler", "org.netbeans.core.NbErrorManager$AWTHandler");
     }
 
@@ -125,6 +124,7 @@ final class NbErrorManager extends ErrorManager {
                 }
             }
         }
+        lastException.remove (Thread.currentThread ());
 
         Exc ex = new Exc (t, severity, ann);
 
@@ -385,6 +385,7 @@ final class NbErrorManager extends ErrorManager {
         public void printStackTrace (PrintWriter pw) {
             /*Heaeder */
             pw.print (getDate ());
+            pw.print (": "); // NOI18N
             pw.print (getClassName ());
             pw.print (": "); // NOI18N
             pw.print (getMessage ());
