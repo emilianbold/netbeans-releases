@@ -30,8 +30,6 @@ import org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint;
  */
 public class Context {
 
-    public static final String LINE = "line";
-
     private static EditorContext editorContext;
     
     private static EditorContext getContext () {
@@ -41,7 +39,6 @@ public class Context {
         }
         return editorContext;
     }
-
     
     // EditorContext methods .................................................
     
@@ -88,6 +85,10 @@ public class Context {
         getContext ().removeAnnotation (annotation);
     }
     
+    public static int getLineNumber (Object annotation, Object timeStamp) {
+        return getContext ().getLineNumber (annotation, timeStamp);
+    }
+    
     /**
      * Returns number of line currently selected in editor or <code>null</code>.
      *
@@ -96,15 +97,6 @@ public class Context {
     public static int getCurrentLineNumber () {
         return getContext ().getCurrentLineNumber ();
     }
-
-//    /**
-//     * Returns name of class currently selected in editor or <code>null</code>.
-//     *
-//     * @return name of class currently selected in editor or <code>null</code>
-//     */
-//    public static String getCurrentClassName () {
-//        return getContext ().getCurrentClassName ();
-//    }
 
     /**
      * Returns URL of source currently selected in editor or <code>null</code>.
@@ -115,39 +107,30 @@ public class Context {
         return getContext ().getCurrentURL ();
     }
 
-//    /**
-//     * Returns name of method currently selected in editor or <code>null</code>.
-//     *
-//     * @return name of method currently selected in editor or <code>null</code>
-//     */
-//    public static String getCurrentMethodName () {
-//        return getContext ().getCurrentMethodName ();
-//    }
-//
-//    /**
-//     * Returns name of field currently selected in editor or <code>null</code>.
-//     *
-//     * @return name of field currently selected in editor or <code>null</code>
-//     */
-//    public static String getCurrentFieldName () {
-//        return getContext ().getCurrentFieldName ();
-//    }
-
-//    /**
-//     * Returns identifier currently selected in editor or <code>null</code>.
-//     *
-//     * @return identifier currently selected in editor or <code>null</code>
-//     */
-//    public static String getSelectedIdentifier () {
-//        return getContext ().getSelectedIdentifier ();
-//    }
-
     public static void addPropertyChangeListener (PropertyChangeListener l) {
         getContext ().addPropertyChangeListener (l);
     }
 
     public static void removePropertyChangeListener (PropertyChangeListener l) {
         getContext ().removePropertyChangeListener (l);
+    }    
+    
+    /**
+     * Creates a new time stamp.
+     *
+     * @param timeStamp a new time stamp
+     */
+    public static void createTimeStamp (Object timeStamp) {
+        getContext ().createTimeStamp (timeStamp);
+    }
+
+    /**
+     * Disposes given time stamp.
+     *
+     * @param timeStamp a time stamp to be disposed
+     */
+    public static void disposeTimeStamp (Object timeStamp) {
+        getContext ().disposeTimeStamp (timeStamp);
     }    
     
     // utility methods .........................................................
@@ -174,10 +157,6 @@ public class Context {
         );
     }
 
-    public static String getDefaultType() {
-        return LINE;
-    }
-
     public static Object annotate(JspLineBreakpoint b) {
         String url = b.getURL ();
         int lineNumber = b.getLineNumber ();
@@ -197,20 +176,6 @@ public class Context {
             annotationType,
             null
         );
-    }
-    
-    public static String getRelativePath (
-        String className
-    ) {
-        int i = className.indexOf ('$');
-        if (i > 0) className = className.substring (0, i);
-        String sourceName = className.replace 
-            ('.', '/') + ".java";
-        return sourceName;
-    }
-    
-    private static String convertSlash (String original) {
-        return original.replace (File.separatorChar, '/');
     }
 
 }

@@ -14,6 +14,7 @@ package org.netbeans.modules.web.debug;
 
 import java.beans.*;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
@@ -30,7 +31,8 @@ import org.netbeans.modules.web.debug.breakpoints.*;
  */
 public class JspBreakpointAnnotationListener extends DebuggerManagerAdapter {
     
-    private static HashMap breakpointToAnnotation = new HashMap ();
+    private HashMap breakpointToAnnotation = new HashMap ();
+    private boolean listen = true;
     
     public String[] getProperties () {
         return new String[] {DebuggerManager.PROP_BREAKPOINTS};
@@ -42,6 +44,7 @@ public class JspBreakpointAnnotationListener extends DebuggerManagerAdapter {
     public void propertyChange (PropertyChangeEvent e) {
         String propertyName = e.getPropertyName ();
         if (propertyName == null) return;
+        if (!listen) return;
         if ( (!propertyName.equals (JspLineBreakpoint.PROP_CONDITION)) &&
              (!propertyName.equals (JspLineBreakpoint.PROP_URL)) &&
              (!propertyName.equals (JspLineBreakpoint.PROP_LINE_NUMBER)) &&
@@ -78,7 +81,7 @@ public class JspBreakpointAnnotationListener extends DebuggerManagerAdapter {
     
     // helper methods ..........................................................
     
-    private static void annotate (JspLineBreakpoint b) {
+    private void annotate (JspLineBreakpoint b) {
         // remove old annotation
         Object annotation = breakpointToAnnotation.get (b);
         if (annotation != null)
@@ -88,9 +91,32 @@ public class JspBreakpointAnnotationListener extends DebuggerManagerAdapter {
         // add new one
         annotation = Context.annotate (b);
         breakpointToAnnotation.put (b, annotation);
+        
+        DebuggerEngine de = DebuggerManager.getDebuggerManager ().
+            getCurrentEngine ();
+        Object timeStamp = null;
+        if (de != null)
+            timeStamp = de.lookupFirst (null, JPDADebugger.class);
+        update (b, timeStamp);        
+    }
+
+    public void updateJspLineBreakpoints () {
+        Iterator it = breakpointToAnnotation.keySet ().iterator (); 
+        while (it.hasNext ()) {
+            JspLineBreakpoint lb = (JspLineBreakpoint) it.next ();
+            update (lb, null);
+        }
     }
     
-    private static void removeAnnotation(JspLineBreakpoint b) {
+    private void update (JspLineBreakpoint b, Object timeStamp) {
+        Object annotation = breakpointToAnnotation.get (b);
+        int ln = Context.getLineNumber (annotation, timeStamp);
+        listen = false;
+        b.setLineNumber (ln);
+        listen = true;
+    }
+    
+    private void removeAnnotation(JspLineBreakpoint b) {
         Object annotation = breakpointToAnnotation.remove (b);
         if (annotation != null)
             Context.removeAnnotation (annotation);
