@@ -59,13 +59,16 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
             org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
             org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory");
         
-        JMenuBarOperator menuBar = new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar());
+        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
+        JMenuBarOperator menuBar = new JMenuBarOperator(mainWindow.getJMenuBar());
         JMenuItemOperator menuItem = menuBar.showMenuItem(MENU,"|");
         
         if(menuItem.isSelected())
             menuItem.push();
-        else
+        else {
             menuItem.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+            mainWindow.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+        }
         
     }
     
