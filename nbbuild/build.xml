@@ -257,7 +257,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module diff..."/>
     <ant dir="../diff" target="netbeans"/>
   </target>
-  <target name="all-extbrowser" depends="all-openide,all-httpserver,all-openide/deprecated">
+  <target name="all-extbrowser" depends="all-openide">
     <echo message="Building module extbrowser..."/>
     <ant dir="../extbrowser" target="netbeans"/>
   </target>
@@ -274,7 +274,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module freestylebrowser..."/>
     <ant dir="../freestylebrowser" target="netbeans"/>
   </target>
-  <target name="all-html" depends="all-openide,all-openide/deprecated">
+  <target name="all-html" depends="all-openide ">
     <echo message="Building module html..."/>
     <ant dir="../html" target="netbeans"/>
   </target>
