@@ -114,7 +114,7 @@ public class TargetServer {
             return false;
         }
         
-        if (!instance.getIncrementalDeployment().canFileDeploy(targetz[0], deployable))
+        if (deployable == null || !instance.getIncrementalDeployment().canFileDeploy(targetz[0], deployable))
             return false;
         
         return true;
@@ -127,7 +127,7 @@ public class TargetServer {
             return false;
         }
         
-        if (!instance.getIncrementalDeployment().canFileDeploy(targetModules[0].getTarget(), deployable))
+        if (deployable == null || !instance.getIncrementalDeployment().canFileDeploy(targetModules[0].getTarget(), deployable))
             return false;
         
         return true;
@@ -565,7 +565,10 @@ public class TargetServer {
         }
         
         File plan = dtarget.getConfigurationFile();
-        DeployableObject deployable = dtarget.getDeploymentConfigurationProvider().getDeployableObject(null);
+        DeployableObject deployable = null;
+        DeploymentConfigurationProvider dcp = dtarget.getDeploymentConfigurationProvider();
+        if (dcp != null)
+            deployable = dcp.getDeployableObject(null);    
 
         // undeploy if necessary
         handleAutoUndeploy(ui);
