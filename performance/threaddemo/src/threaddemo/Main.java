@@ -101,37 +101,48 @@ public final class Main extends JFrame {
         System.runFinalization();
         System.gc();
         final Phadhail model;
+        final String modelType;
         if (synchButton.isSelected()) {
             model = Phadhails.synchronous(root);
+            modelType = "Synchronous";
         } else if (lockedButton.isSelected()) {
             model = Phadhails.locked(root);
+            modelType = "Locked";
         } else if (spunButton.isSelected()) {
             model = Phadhails.spun(root);
+            modelType = "Spun";
         } else if (swungButton.isSelected()) {
             model = Phadhails.swung(root);
+            modelType = "Swung";
         } else {
             throw new IllegalStateException();
         }
         Component view;
+        final String viewType;
         if (nodeButton.isSelected()) {
             view = PhadhailViews.nodeView(model);
+            viewType = "Node";
         } else if (lookNodeButton.isSelected()) {
             view = PhadhailViews.lookNodeView(model);
+            viewType = "Look Node";
         } else if (lookButton.isSelected()) {
             view = PhadhailViews.lookView(model);
+            viewType = "Look";
         } else if (rawButton.isSelected()) {
             view = PhadhailViews.rawView(model);
+            viewType = "Raw";
         } else {
             throw new IllegalStateException();
         }
-        final JFrame frame = new JFrame(model.getPath());
+        final JFrame frame = new JFrame();
         // For the benefit of Swung model which will produce the root path asynch:
         final PhadhailListener l = new PhadhailListener() {
             public void nameChanged(PhadhailNameEvent ev) {
-                frame.setTitle(model.getPath());
+                frame.setTitle(modelType + " " + viewType + ": " + model.getPath());
             }
             public void childrenChanged(PhadhailEvent ev) {}
         };
+        l.nameChanged(null);
         model.addPhadhailListener(l);
         frame.getContentPane().add(view);
         frame.addWindowListener(new WindowAdapter() {
