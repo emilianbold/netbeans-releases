@@ -31,8 +31,8 @@ public class GetResultsTask extends Task {
     
     private File resultsDir;
     private String summaryProperty;
-    private String isFailedproperty;
-    private boolean onlyUnexpected = true;
+    private boolean onlyWhenFailed = false;
+    private boolean ignoreExpected = true;
     private String mailReportProperty;
     
     private XTestResultsReport report;
@@ -45,26 +45,27 @@ public class GetResultsTask extends Task {
         this.summaryProperty = summaryProperty;
     }
     
-    public void setIsFailedProperty(String isFailedproperty) {
-        this.isFailedproperty = isFailedproperty;
+    public void setOnlyWhenFailed(boolean onlyWhenFailed) {
+        this.onlyWhenFailed = onlyWhenFailed;
     }
 
     public void setMailReportProperty(String mailReportProperty) {
         this.mailReportProperty = mailReportProperty;
     }
-    
-    public void setOnlyUnexpected(boolean onlyUnexpected) {
-        this.onlyUnexpected = onlyUnexpected;
+
+    public void setIgnoreExpected(boolean ignoreExpected) {
+        this.ignoreExpected = ignoreExpected;
     }
     
     
     
     public void execute() throws BuildException {
         
-        if (!resultsDir.isDirectory()) {
-            log("Cannot print out results summary, supplied result directory is not valid");
-            return;
-        }
+        if (resultsDir == null || !resultsDir.isDirectory()) 
+            throw new BuildException("Supplied result directory is not valid");
+        if (mailReportProperty == null) 
+            throw new BuildException("Property mailReportProperty is empty");
+            
         XTestResultsReport report = null;
         try {
             File reportFile = new File(ResultsUtils.getXMLResultDir(resultsDir),PEConstants.TESTREPORT_XML_FILE);
@@ -77,11 +78,13 @@ public class GetResultsTask extends Task {
             return;
         }
         
+        boolean failed = false;
         if (report != null) {
             if (report.xmlel_TestRun != null) {
                 TestRun testRun = report.xmlel_TestRun[report.xmlel_TestRun.length-1];
                 if (testRun == null) {
                     log("Unable to find results. Weird ");
+                    return;
                 }
                 // print out the values
                 double successRate = 0.0;
@@ -102,27 +105,30 @@ public class GetResultsTask extends Task {
                 if (testRun.getTestsError() > 0)
                     message += ", "+testRun.getTestsError()+" error";
 
-                getProject().setProperty(this.summaryProperty, message);
+                if (summaryProperty != null) {
+                    getProject().setProperty(this.summaryProperty, message);
+                }
                 // set property only if some tests failed
-                if(onlyUnexpected) {
+                if(ignoreExpected) {
                     // ignore expected fails
                     if(unexpectedFails != 0 || testRun.getTestsError() != 0) {
-                        getProject().setProperty(this.isFailedproperty, "true");
+                        failed = true;
                     }
                 } else {
                     if(testRun.getTestsFail() != 0 || testRun.getTestsError() != 0) {
-                        getProject().setProperty(this.isFailedproperty, "true");
+                        failed = true;
                     }
                 }
             }
         }
         
         try {
+            if (!onlyWhenFailed || (onlyWhenFailed && failed)) {
+                File txtResults = transformToTxtReport(resultsDir, onlyWhenFailed);
 
-            File txtResults = transformToTxtReport(resultsDir);
-            
-            if (mailReportProperty != null) {
-               getProject().setProperty(mailReportProperty, txtResults.getAbsolutePath());
+                if (mailReportProperty != null) {
+                   getProject().setProperty(mailReportProperty, txtResults.getAbsolutePath());
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -131,9 +137,8 @@ public class GetResultsTask extends Task {
         
     }
     
-     public File transformToTxtReport(File resultsDir) throws TransformerException, IOException, ClassNotFoundException {
+     public File transformToTxtReport(File resultsDir, boolean onlyFailures) throws TransformerException, IOException, ClassNotFoundException {
         XTestResultsReport wholeReport = ResultsUtils.loadXTestResultsReport(resultsDir, true);
-        
         File txtresultsDir = new File(resultsDir, PEConstants.TXTRESULTS_DIR);
         if (!txtresultsDir.exists())
             txtresultsDir.mkdirs();
@@ -143,6 +148,7 @@ public class GetResultsTask extends Task {
         if (xtestHome == null)
             throw new BuildException ("xtest.home is not set!");
         Transformer transformer = TransformXMLTask.getTransformer(XSLUtils.getXSLFile(new File(xtestHome),"txtreport.xsl"));
+        transformer.setParameter("onlyFailures", Boolean.toString(onlyFailures));
         TransformXMLTask.transform(wholeReport.toDocument(), txtResult, transformer);
         return txtResult;
     }

@@ -105,7 +105,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="mail-results" unless="xtest.no.mail.results">
         <property name="xtest.mail.from" value="xtest"/>
-    	<property name="xtest.mail.mailhost" value="localhost"/>        
+    	<property name="xtest.mail.mailhost" value="localhost"/>   
+    	<property name="xtest.mail.ignore.expected" value="false"/>     
         <antcall target="mail-all-result"/>
         <antcall target="mail-failed-result"/>
     </target>
@@ -113,24 +114,25 @@ Microsystems, Inc. All Rights Reserved.
     <target name="mail-all-result" if="xtest.mail.results.to">
         <antcall target="send-mail">
            <param name="xtest.mail.to" value="${xtest.mail.results.to}"/>
-           <param name="is.failed" value="true"/>
+           <param name="when.failed" value="false"/>
         </antcall>
     </target>
 
     <target name="mail-failed-result" if="xtest.mail.failed.to">
         <antcall target="send-mail">
            <param name="xtest.mail.to" value="${xtest.mail.failed.to}"/>
+           <param name="when.failed" value="true"/>
         </antcall>
     </target>
 
     <target name="send-mail" depends="init">
     	<getResults resultsDir="${xtest.results}" summaryProperty="summary" 
-                    isFailedProperty="is.failed" onlyUnexpected="true" 
+                    onlyWhenFailed="${when.failed}" ignoreExpected="${xtest.mail.ignore.expected}" 
                     mailReportProperty="xtest.mail.report"/> 
 	<antcall target="send-mail2"/>
     </target>    
 
-    <target name="send-mail2" if="is.failed">
+    <target name="send-mail2" if="xtest.mail.report">
         <mail from="${xtest.mail.from}" tolist="${xtest.mail.to}" 
               subject="XTest Results: ${summary}" files="${xtest.mail.report}"
               mailhost="${xtest.mail.mailhost}"/>     
