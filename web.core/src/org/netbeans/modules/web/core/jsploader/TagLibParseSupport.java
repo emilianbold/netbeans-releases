@@ -338,7 +338,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                         for (int i = 0; i < locResult.getErrors().length; i ++){
                             JspParserAPI.ErrorDescriptor err = locResult.getErrors()[i];
                             annotations.annotate(new ErrorAnnotation.ErrorInfo[] {
-                                    new ErrorAnnotation.ErrorInfo(err.getErrorMessage(), 
+                                    new ErrorAnnotation.ErrorInfo(translate(err.getErrorMessage()), 
                                             err.getLine(), 
                                             err.getColumn(),
                                             ErrorAnnotation.JSP_ERROR)
@@ -373,8 +373,15 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                                                               locResult.isParsingSuccess());
                 }
             }
+            
+            
         }
         
+        private String translate (String text){
+            String value = text.replaceAll("&lt;", "<");
+            value = value.replaceAll("&gt;", ">");
+            return value;
+        }
         
         private void changeIcon (boolean error){
             org.openide.loaders.DataObject dObject = null;
