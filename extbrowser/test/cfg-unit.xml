@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="Extbrowser unit tests configuration">
 
-	<testbag testattribs="stable" executor="code" compiler="default-compiler" name="Stable extbrowser unit tests">
+	<testbag testattribs="stable" executor="ide" compiler="default-compiler" name="Stable extbrowser unit tests">
  		<testset dir="unit/src">
 			<patternset>
 				<include name="**/*.class"/>
@@ -22,8 +22,8 @@ Microsystems, Inc. All Rights Reserved.
  		</testset>
 	</testbag>
 
-	<executor name="code" antfile="build-unit.xml" target="runcodetest"/> 
-	<executor name="ide" antfile="build-unit.xml" target="runidetest"/> 
+    <executor name="unit" antfile="build-unit.xml" target="run-unit-test"/>
+    <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
 
 	<compiler name="default-compiler" default="true" antfile="build-unit.xml" target="default-compiler"/>
 

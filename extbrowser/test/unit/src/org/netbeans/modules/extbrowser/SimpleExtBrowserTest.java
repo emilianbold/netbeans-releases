@@ -26,7 +26,6 @@ import java.net.URL;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
-import org.openide.execution.ExecInfo;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -46,15 +45,15 @@ public class SimpleExtBrowserTest extends NbTestCase {
         junit.textui.TestRunner.run(suite());
     }
     
-    /** Test of getDescription method, of class org.netbeans.modules.extbrowser.SimpleExtBrowser. */
-    public void testGetDescription () {
-        if (testObject.getDescription () == null)
-            fail ("SimpleExtBrowser.getDescription () returns <null>.");
+    /** Test of getName method, of class org.netbeans.modules.extbrowser.SimpleExtBrowser. */
+    public void testGetName () {
+        if (testObject.getName () == null)
+            fail ("SimpleExtBrowser.getName () returns <null>.");
     }
     
-    /** Test of setDescription method, of class org.netbeans.modules.extbrowser.SimpleExtBrowser. */
-    public void testSetDescription () {
-        testObject.setDescription ("Dummy");
+    /** Test of setNamemethod, of class org.netbeans.modules.extbrowser.SimpleExtBrowser. */
+    public void testSetName () {
+        testObject.setName ("Dummy");
     }
     
     /** Test of createHtmlBrowserImpl method, of class org.netbeans.modules.extbrowser.SimpleExtBrowser. */

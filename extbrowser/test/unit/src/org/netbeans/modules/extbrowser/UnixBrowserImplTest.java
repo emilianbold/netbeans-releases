@@ -24,7 +24,6 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 import org.openide.*;
 import org.openide.awt.HtmlBrowser;
-import org.openide.execution.ExecInfo;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -122,7 +121,7 @@ public class UnixBrowserImplTest extends NbTestCase {
     
     protected void setUp () {
         if (org.openide.util.Utilities.isUnix ())
-            testObject = new UnixWebBrowser ().createHtmlBrowserImpl ();
+            testObject = new ExtWebBrowser ().createHtmlBrowserImpl ();
     }
 
 }

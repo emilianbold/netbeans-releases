@@ -53,18 +53,22 @@ public class NbDdeBrowserImplTest extends NbTestCase {
         junit.textui.TestRunner.run(suite());
     }
     
+    private NbDdeBrowserImpl getDDEBrowserImpl() {
+        return (NbDdeBrowserImpl)((DelegatingWebBrowserImpl)testObject).getImplementation();
+    }
+    
     /** Test of getBrowserPath method, of class org.netbeans.modules.extbrowser.NbDdeBrowserImpl. */
     public void testGetBrowserPath () throws NbBrowserException {
         if (!org.openide.util.Utilities.isWindows ())
             return;
-        ((NbDdeBrowserImpl)testObject).getBrowserPath ("IEXPLORE");
+        getDDEBrowserImpl().getBrowserPath ("IEXPLORE");
     }
     
     /** Test of getDefaultOpenCommand method, of class org.netbeans.modules.extbrowser.NbDdeBrowserImpl. */
     public void testGetDefaultOpenCommand () throws NbBrowserException {
         if (!org.openide.util.Utilities.isWindows ())
             return;
-        ((NbDdeBrowserImpl)testObject).getDefaultOpenCommand ();
+        getDDEBrowserImpl().getDefaultOpenCommand ();
     }
     
     /** Test of backward method, of class org.netbeans.modules.extbrowser.NbDdeBrowserImpl. */
@@ -141,11 +145,11 @@ public class NbDdeBrowserImplTest extends NbTestCase {
     // Add test methods here, they have to start with 'test' name.
     // for example: 
     // public void testHello() {}
-    protected HtmlBrowser.Impl testObject;
+    protected ExtBrowserImpl testObject;
     
     protected void setUp () {
         if (org.openide.util.Utilities.isWindows ())
-            testObject = new WinWebBrowser ().createHtmlBrowserImpl ();
+            testObject = (ExtBrowserImpl)new ExtWebBrowser ().createHtmlBrowserImpl ();
     }
 
 }

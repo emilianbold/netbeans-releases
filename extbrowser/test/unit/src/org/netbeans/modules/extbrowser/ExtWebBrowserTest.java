@@ -41,10 +41,11 @@ public class ExtWebBrowserTest extends NbTestCase {
     }
     
     /** Test of getDescription method, of class org.netbeans.modules.extbrowser.ExtWebBrowser. */
-    public void testGetDescription () {
-        if (testObject.getDescription () == null)
-            fail ("ExtWebBrowser.getDescription () returns <null>.");
+/*    public void testGetName () {
+        if (testObject.getName () == null)
+            fail ("ExtWebBrowser.getName () returns <null>.");
     }
+ */
     
     /** Test of getBrowserExecutable method, of class org.netbeans.modules.extbrowser.ExtWebBrowser. */
     public void testGetBrowserExecutable () {
@@ -58,18 +59,19 @@ public class ExtWebBrowserTest extends NbTestCase {
     }
     
     /** Test of isStartWhenNotRunning method, of class org.netbeans.modules.extbrowser.ExtWebBrowser. */
-    public void testIsStartWhenNotRunning () {
+    /*public void testIsStartWhenNotRunning () {
         testObject.isStartWhenNotRunning ();
-    }
+    } */
     
     /** Test of setStartWhenNotRunning method, of class org.netbeans.modules.extbrowser.ExtWebBrowser. */
-    public void testSetStartWhenNotRunning () {
+    /*public void testSetStartWhenNotRunning () {
         testObject.setStartWhenNotRunning (true);
-    }
+    } */
     
     /** Test of defaultBrowserExecutable method, of class org.netbeans.modules.extbrowser.ExtWebBrowser. */
     public void testDefaultBrowserExecutable () {
-        testObject.defaultBrowserExecutable ();
+        if (testObject.defaultBrowserExecutable () == null)
+            fail ("ExtWebBrowser.defaultBrowserExecutable () failed.");
     }
     
     /** Test of createHtmlBrowserImpl method, of class org.netbeans.modules.extbrowser.ExtWebBrowser. */
@@ -89,6 +91,16 @@ public class ExtWebBrowserTest extends NbTestCase {
         testObject.removePropertyChangeListener (new PropertyChangeListener () {
             public void propertyChange (PropertyChangeEvent evt) {}
         });
+    }
+    
+    /** Test of getDDEServer method, of class org.netbeans.modules.extbrowser.ExtWebBrowser. */
+    public void testGetDDEServer () {
+        testObject.getDDEServer ();
+    }
+    
+    /** Test of setDDEServer method, of class org.netbeans.modules.extbrowser.ExtWebBrowser. */
+    public void testSetDDEServer () {
+        testObject.setDDEServer ("NETSCAPE");
     }
     
     public static Test suite () {
