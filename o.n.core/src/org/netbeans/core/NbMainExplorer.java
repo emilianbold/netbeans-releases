@@ -83,6 +83,10 @@ public final class NbMainExplorer extends CloneableTopComponent
   
   /** Listener which tracks changes on the root nodes (which are displayed as tabs) */
   private transient RootsListener rootsListener;
+  /** weak roots listener */
+  private transient PropertyChangeListener weakRootsL;
+  /** true if listener to ide setiings properly initialized */
+  private transient boolean listenerInitialized;
 
   /** Minimal initial height of this top component */
   public static final int MIN_HEIGHT = 150;
@@ -93,11 +97,8 @@ public final class NbMainExplorer extends CloneableTopComponent
   public NbMainExplorer () {
     // listening on changes of roots
     rootsListener = new RootsListener();
-    PropertyChangeListener l = 
-      WeakListener.propertyChange(rootsListener, TopManager.getDefault());
-    TopManager.getDefault().addPropertyChangeListener(l);
-    IDESettings ideS = (IDESettings)IDESettings.findObject(IDESettings.class);
-    ideS.addPropertyChangeListener(l);
+    weakRootsL = WeakListener.propertyChange(rootsListener, TopManager.getDefault());
+    TopManager.getDefault().addPropertyChangeListener(weakRootsL);
   }
 
   public HelpCtx getHelpCtx () {
@@ -166,6 +167,15 @@ public final class NbMainExplorer extends CloneableTopComponent
   * will reflect new nodes. Called when content of "roots" nodes is changed.
   */
   final void refreshRoots () {
+    // attach listener to the ide settings if possible
+    if (!listenerInitialized) {
+      IDESettings ideS = (IDESettings)IDESettings.findObject(IDESettings.class);
+      if (ideS != null) {
+        ideS.addPropertyChangeListener(weakRootsL);
+        listenerInitialized = true;
+      }
+    }
+    
     List curRoots = getRoots ();
     // first of all we have to close top components for
     // the roots that are no longer present in the roots content
@@ -779,6 +789,8 @@ public final class NbMainExplorer extends CloneableTopComponent
 
 /*
 * Log
+*  50   Gandalf   1.49        1/9/00   David Simonek   modified initialization 
+*       of the WindowManagerImpl
 *  49   Gandalf   1.48        1/5/00   Jaroslav Tulach Newly created objects are
 *       selected in explorer
 *  48   Gandalf   1.47        12/23/99 David Simonek   special tabs for projects
