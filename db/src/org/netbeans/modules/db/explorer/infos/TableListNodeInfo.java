@@ -78,9 +78,8 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
                     info.put(DatabaseNode.TABLE, info.getName());
                 else
                     throw new Exception(bundle.getString("EXC_UnableToCreateNodeInformationForTable")); // NOI18N
-
-                DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
-                chld.createSubnode(info, true);
+                // refersh list of tables
+                refreshChildren();
             }
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
