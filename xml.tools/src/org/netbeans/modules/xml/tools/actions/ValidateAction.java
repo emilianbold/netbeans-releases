@@ -25,6 +25,7 @@ import org.netbeans.modules.xml.core.*;
 import org.netbeans.modules.xml.core.actions.*;
 
 import org.netbeans.api.xml.cookies.*;
+import org.openide.util.RequestProcessor;
 
 /**
  * Validates XML file sending results to output window.
@@ -53,18 +54,9 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
 
         if (nodes == null) return;
 
-        InputOutputReporter console = new InputOutputReporter();
-        
-        for (int i = 0; i<nodes.length; i++) {
-            Node node = nodes[i];
-            ValidateXMLCookie cake = (ValidateXMLCookie) node.getCookie(ValidateXMLCookie.class);
-            if (cake == null) continue;
-            console.setNode(node); //??? how can console determine which editor to highlight
-            cake.validateXML(console);
-        }
-        
-        console.message(Util.THIS.getString("MSG_XML_valid_end"));
-        console.moveToFront();
+        RequestProcessor.postRequest(
+               new ValidateAction.RunAction (nodes)
+        );
     }
 
     /** Human presentable name. */
@@ -85,4 +77,26 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
         return false;
     }
 
+    private class RunAction implements Runnable{
+        private Node[] nodes;
+
+        RunAction (Node[] nodes){
+            this.nodes = nodes;
+        }
+
+        public void run() {
+            InputOutputReporter console = new InputOutputReporter();
+
+            for (int i = 0; i<nodes.length; i++) {
+                Node node = nodes[i];
+                ValidateXMLCookie cake = (ValidateXMLCookie) node.getCookie(ValidateXMLCookie.class);
+                if (cake == null) continue;
+                console.setNode(node); //??? how can console determine which editor to highlight
+                cake.validateXML(console);
+            }
+
+            console.message(Util.THIS.getString("MSG_XML_valid_end"));
+            console.moveToFront();
+       }
+    }
 }
