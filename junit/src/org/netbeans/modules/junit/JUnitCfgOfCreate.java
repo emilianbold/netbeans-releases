@@ -86,6 +86,8 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     private boolean singlePackage;
     /** whether a single class is selected */
     private boolean singleClass;
+    /** test class name specified in the form (or <code>null</code>) */
+    private String testClassName;
     /** registered change listeners */
     private List changeListeners;
     /** */
@@ -273,6 +275,8 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         
         if (returned == btnOK) {
             rememberCheckBoxStates();
+            testClassName = (tfClassName != null) ? tfClassName.getText() 
+                                                  : null;
             return true;
         }
         return false;
@@ -286,6 +290,17 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      */
     boolean isSingleClass() {
         return singleClass;
+    }
+    
+    /**
+     * Returns the class name entered in the text-field.
+     *
+     * @return  class name entered in the form,
+     *          or <code>null</code> if the form did not contain
+     *          the field for entering class name
+     */
+    String getTestClassName() {
+        return testClassName;
     }
     
     /** resource bundle used during initialization of this panel */

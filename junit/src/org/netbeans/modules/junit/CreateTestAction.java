@@ -109,6 +109,7 @@ public class CreateTestAction extends TestAction {
             }
             final boolean singleClass = (nodes.length == 1)
                                         && cfg.isSingleClass();
+            String testClassName = singleClass ? cfg.getTestClassName() : null;
             
             final FileObject targetFolder = cfg.getTargetFolder();
             final ClassPath testClassPath = ClassPathSupport.createClassPath(
@@ -143,12 +144,15 @@ public class CreateTestAction extends TestAction {
             
             try {
                 if (singleClass) {
+                    assert testClassName != null;
+                    
                     FileObject fo = getTestFileObject(nodes[0]);
                     if (fo != null) {
                         try {
                             results = createSingleTest(
                                     testClassPath,
                                     fo,
+                                    testClassName,
                                     doTestTempl,
                                     null,              //parent suite
                                     progress,
@@ -413,6 +417,7 @@ public class CreateTestAction extends TestAction {
                 } else {
                     return createSingleTest(testClassPath,
                                             foSource,
+                                            null,      //use the default clsname
                                             doTestT,
                                             parentSuite,
                                             progress,
@@ -424,6 +429,7 @@ public class CreateTestAction extends TestAction {
         public static CreationResults createSingleTest(
                 ClassPath testClassPath,
                 FileObject foSource,
+                String testClassName,
                 DataObject doTestT,
                 LinkedList parentSuite,
                 ProgressIndicator progress,
@@ -431,9 +437,15 @@ public class CreateTestAction extends TestAction {
             
             // create tests for all classes in the source
             Resource srcRc = JavaModel.getResource(foSource);
-            CreationResults result = new CreationResults(srcRc.getChildren()
-                                                         .size());
+            String packageName = (testClassName == null)
+                                 ? srcRc.getPackageName()
+                                 : null;            //will be built if necessary
             List srcChildren = srcRc.getChildren();
+            CreationResults result = new CreationResults(srcChildren.size());
+
+            /* used only if (testClassName != null): */
+            boolean defClassProcessed = false;
+
             Iterator scit = srcChildren.iterator();
             while (scit.hasNext()) {
                 Element el = (Element)scit.next();
@@ -456,13 +468,30 @@ public class CreateTestAction extends TestAction {
                 // find the test class, if it exists or create one
                 // from active template
                 try {
-                    //PENDING - test class name:
-                    DataObject doTarget = getTestClass(
-                            testClassPath,
-                            TestUtil.getTestClassFullName(
-                                    theClass.getSimpleName(),
-                                    packageName(theClass.getName())),
-                            doTestT);
+                    String testResourceName;
+                    String srcClassNameShort = theClass.getSimpleName();
+                    if (testClassName == null) {
+                        testResourceName = TestUtil.getTestClassFullName(
+                                srcClassNameShort,
+                                packageName);
+                    } else if (!defClassProcessed
+                              && srcClassNameShort.equals(foSource.getName())) {
+                        /* main Java class: */
+                        testResourceName = testClassName.replace('.', '/');
+                        defClassProcessed = true;
+                    } else {
+                        if (packageName == null) {
+                            packageName = packageName(testClassName);
+                        }
+                        testResourceName = TestUtil.getTestClassFullName(
+                                srcClassNameShort,
+                                packageName);
+                    }
+                    
+                    /* find or create the test class DataObject: */
+                    DataObject doTarget = getTestClass(testClassPath,
+                                                       testResourceName,
+                                                       doTestT);
 
                     // generate the test of current node
                     Resource tgtRc = JavaModel.getResource(
