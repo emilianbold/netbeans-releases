@@ -731,7 +731,7 @@ public class WebProjectProperties {
         while (propKeys.hasNext()) {
             String key = (String) propKeys.next();
             if (key.endsWith(".libdirs") || key.endsWith(".libfiles") || //NOI18N
-                    key.contains(".libdir.") || key.contains(".libfile.")) { //NOI18N
+                    (key.indexOf(".libdir.") > 0) || (key.indexOf(".libfile.") > 0)) { //NOI18N
                 exLibs.add(key);
             }
         }
