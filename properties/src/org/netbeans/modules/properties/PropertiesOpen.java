@@ -16,10 +16,12 @@ package com.netbeans.developer.modules.loaders.properties;
 import java.io.IOException;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
+import java.util.*;          
+import java.text.MessageFormat;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import javax.swing.JTable;
+import javax.swing.JPanel;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JLabel;
@@ -31,6 +33,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.border.LineBorder;
 import javax.swing.table.TableColumn;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
  
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
@@ -58,7 +62,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
   PropertiesDataObject obj;
   PropertyChangeListener modifL;
   
-  JTable theTable = null;
+  private PropertiesTableModel tableModel = null;
 
   /** Constructor */
   public PropertiesOpen(PropertiesFileEntry fe) {
@@ -72,9 +76,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
   * @return the cloneable top component for this support
   */
   protected CloneableTopComponent createCloneableTopComponent () {
-    PropertiesTableModel ptm = new PropertiesTableModel(obj);
-    
-    return new PropertiesCloneableTopComponent(obj, ptm/*, ptcm*/);
+    return new PropertiesCloneableTopComponent(obj);
   }
   
   PropertiesFileEntry getEntry() {         
@@ -89,8 +91,61 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
   public synchronized boolean hasOpenComponent() {
     java.util.Enumeration en = allEditors.getComponents ();
     return en.hasMoreElements ();
-  }  
+  }
+  
+  public PropertiesTableModel getTableModel() {
+    if (tableModel == null)
+      tableModel = new PropertiesTableModel(obj);
+    return tableModel;
+  }
                                                                        
+
+  private void closeDocuments() {
+    closeEntry((PropertiesFileEntry)obj.getPrimaryEntry());
+    for (Iterator it = obj.secondaryEntries().iterator(); it.hasNext(); ) {
+      closeEntry((PropertiesFileEntry)it.next());
+    }
+  }
+  
+  private void closeEntry(PropertiesFileEntry entry) {
+    PropertiesEditorSupport pes = entry.getPropertiesEditor();
+    if (pes.hasOpenEditorComponent())
+      return;
+    else {
+      pes.close(); // PENDING - shouldn't close the editor support
+      entry.getHandler().reparseNowBlocking();
+    }  
+  }
+
+  /** Should test whether all data is saved, and if not, prompt the user
+  * to save.
+  *
+  * @return <code>true</code> if everything can be closed
+  */
+  protected boolean canClose () {
+    SaveCookie savec = (SaveCookie) obj.getCookie(SaveCookie.class);
+    if (savec != null) {
+      MessageFormat format = new MessageFormat(NbBundle.getBundle(PropertiesOpen.class).getString("MSG_SaveFile"));
+      String msg = format.format(new Object[] { obj.getName()});
+      NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_CANCEL_OPTION);
+      Object ret = TopManager.getDefault().notify(nd);
+  
+      if (NotifyDescriptor.CANCEL_OPTION.equals(ret))
+        return false;
+      
+      if (NotifyDescriptor.YES_OPTION.equals(ret)) {
+        try {
+          savec.save();
+        }
+        catch (IOException e) {
+          TopManager.getDefault().notifyException(e);
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   /** Class for opening at a given key. */                                                                     
   public class PropertiesOpenAt implements OpenCookie {
     
@@ -122,39 +177,31 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     }
   }
 
-  public class PropertiesCloneableTopComponent extends CloneableTopComponent {                                
+  public static class PropertiesCloneableTopComponent extends CloneableTopComponent {                                
     
-    private static final int DEFAULT_TABLE_WIDTH = 600;
-    private static final int DEFAULT_KEY_WIDTH   = 150;
-    
-    private ListSelectionModel rowSelections;
-    private ListSelectionModel columnSelections;
-
-    private JTextArea textComment;
-    private JTextArea textValue;
-    private JButton removeButton;
-    private JButton addButton;
-    private JLabel labelComment;
-    private JLabel labelValue;
-  
-    private DataObject dobj;
-    private PropertyChangeListener cookieL;
-    private PropertiesTableModel ptm;
+    private PropertiesDataObject dobj;
+    private transient PropertyChangeListener cookieL;
 //    PropertiesTableColumnModel ptcm;
 
     /** The string which will be appended to the name of top component
     * when top component becomes modified */
     protected String modifiedAppendix = " *";
-
+                      
+    /** Default constructor for deserialization */                  
+    public PropertiesCloneableTopComponent() {
+    }
+    
     /** Constructor
     * @param obj data object we belong to
     */
-    public PropertiesCloneableTopComponent (final DataObject obj, PropertiesTableModel ptm/*, PropertiesTableColumnModel ptcm*/) {
+    public PropertiesCloneableTopComponent (final PropertiesDataObject obj) {
       super (obj);
       dobj  = obj;               
+      initMe();
+    }
+    
+    private void initMe() {
       setName(dobj.getNodeDelegate().getDisplayName());
-      this.ptm  = ptm;
-//      this.ptcm = ptcm;                
       
       // listen to saving
       dobj.addPropertyChangeListener(new WeakListener.PropertyChange(cookieL =
@@ -178,247 +225,15 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       GridBagConstraints c = new GridBagConstraints();
       setLayout (gridbag);
       
-      textComment = new JTextArea();
-      textValue = new JTextArea();
-
-      theTable = new JTable(ptm/*, ptcm*/);
-
-
-      // set the cell editor
-      JTextField textField = new JTextField();
-      textField.setBorder(new LineBorder(Color.black));
-      theTable.setDefaultEditor(PropertiesTableModel.StringPair.class, 
-        new PropertiesTableCellEditor(textField, textComment, textValue));
-      // PENDING      
-//      PropertiesCellEditor ed = new PropertiesCellEditor(new PropertyDisplayer());
-//      table.setDefaultEditor(PropertiesTableModel.CommentValuePair.class, ed);
-//      table.setDefaultEditor(String.class, DefaultCellEditor.class);
-
-      // include in a scroll pane
-      JScrollPane scrollPane = new JScrollPane(theTable);
-      theTable.setPreferredScrollableViewportSize(new Dimension(DEFAULT_TABLE_WIDTH, 300));
-      theTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-      theTable.setCellSelectionEnabled(true);
-
-      // set the column widths
-      TableColumn column = null;
-      for (int i = 0; i < theTable.getColumnModel().getColumnCount(); i++) {
-        column = theTable.getColumnModel().getColumn(i);
-        if (i == 0)
-          column.setPreferredWidth(DEFAULT_KEY_WIDTH);
-        else  
-          column.setPreferredWidth(((int)theTable.getPreferredScrollableViewportSize().getWidth() - 
-            DEFAULT_KEY_WIDTH - scrollPane.getInsets().left - scrollPane.getInsets().right) / 
-            (theTable.getColumnModel().getColumnCount() - 1));
-      }
-      
-      // selection listeners
-      rowSelections = theTable.getSelectionModel();
-      rowSelections.addListSelectionListener(
-        new ListSelectionListener() {
-          public void valueChanged(ListSelectionEvent e) {
-            rowSelections = (ListSelectionModel)e.getSource();
-            selectionChanged();
-          }
-        });
-      columnSelections = theTable.getColumnModel().getSelectionModel();
-      columnSelections.addListSelectionListener(
-        new ListSelectionListener() {
-          public void valueChanged(ListSelectionEvent e) {
-            columnSelections = (ListSelectionModel)e.getSource();
-            selectionChanged();
-          }
-        });
-        
-      // property change listener - listens to editing state of the table
-      theTable.addPropertyChangeListener(new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          if (evt.getPropertyName().equals("tableCellEditor")) {
-            updateEnabled();
-          }
-        }
-      });
-      
       c.fill = GridBagConstraints.BOTH;
       c.weightx = 1.0;
       c.weighty = 1.0;
       c.gridwidth = GridBagConstraints.REMAINDER; 
-      gridbag.setConstraints(scrollPane, c);
-      add (scrollPane);
-      
-      labelComment = new JLabel(PropertiesSettings.getString("LBL_CommentLabel"));
-      c.insets = new Insets(3, 3, 3, 3);
-      c.fill = GridBagConstraints.NONE;
-      c.weightx = 0.0;
-      c.weighty = 0.0;
-      c.gridwidth = 1;
-      gridbag.setConstraints(labelComment, c);
-      add (labelComment);
-                                      
-      textComment.setRows (2);
-      textComment.setLineWrap(true);
-      c.fill = GridBagConstraints.HORIZONTAL;
-      c.weightx = 1.0;         
-      c.gridwidth = GridBagConstraints.REMAINDER; 
-      scrollPane = new JScrollPane(textComment);
-      gridbag.setConstraints(scrollPane, c);
-      add (scrollPane);
-
-      labelValue = new JLabel(PropertiesSettings.getString("LBL_ValueLabel"));
-      c.fill = GridBagConstraints.NONE;
-      c.weightx = 0.0;
-      c.gridwidth = 1;
-      gridbag.setConstraints(labelValue, c);
-      add (labelValue);
-                                      
-      textValue.setRows (2);
-      textValue.setLineWrap(true);
-      c.fill = GridBagConstraints.HORIZONTAL;
-      c.weightx = 1.0;         
-      c.gridwidth = GridBagConstraints.REMAINDER; 
-      scrollPane = new JScrollPane(textValue);
-      gridbag.setConstraints(scrollPane, c);
-      add (scrollPane);
-      
-      // add property button
-      addButton = new JButton(PropertiesSettings.getString("LBL_AddPropertyButton"));
-      c.insets = new Insets(0, 0, 0, 0);
-      c.weightx = 1;
-      c.gridwidth = 2;
-      gridbag.setConstraints(addButton, c);
-      add (addButton);
-      addButton.addActionListener(
-        new ActionListener() {
-          public void actionPerformed(ActionEvent evt) {
-            NewPropertyDialog dia = new NewPropertyDialog();
-            Dialog d = dia.getDialog();
-            d.setVisible(true);
-            if (dia.getOKPressed ()) {                            
-              if (((PropertiesFileEntry)((MultiDataObject)dobj).getPrimaryEntry()).
-                    getHandler().getStructure().addItem(
-                    dia.getKeyText(), dia.getValueText(), dia.getCommentText()))
-                ;
-              else {
-                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                  java.text.MessageFormat.format(
-                    NbBundle.getBundle(PropertiesLocaleNode.class).getString("MSG_KeyExists"),
-                    new Object[] {dia.getKeyText()}),
-                  NotifyDescriptor.ERROR_MESSAGE);
-                TopManager.getDefault().notify(msg);
-              }  
-            }
-          }
-        }
-      );  
-
-      // remove row button
-      removeButton = new JButton(PropertiesSettings.getString("LBL_RemovePropertyButton"));
-      c.insets = new Insets(0, 0, 0, 0);
-      c.weightx = 1;
-      c.gridwidth = GridBagConstraints.REMAINDER; 
-      gridbag.setConstraints(removeButton, c);
-      add (removeButton);
-      removeButton.addActionListener(
-        new ActionListener() {
-          public void actionPerformed(ActionEvent evt) {
-            PropertiesTableModel.StringPair sp = 
-              (PropertiesTableModel.StringPair)theTable.getModel().getValueAt(rowSelections.getMinSelectionIndex(), 0);
-            NotifyDescriptor.Confirmation msg = new NotifyDescriptor.Confirmation(
-              java.text.MessageFormat.format(
-                NbBundle.getBundle(PropertiesOpen.class).getString("MSG_DeleteKeyQuestion"),
-                new Object[] {sp.getValue()}),
-              NotifyDescriptor.OK_CANCEL_OPTION);
-              if (TopManager.getDefault().notify(msg).equals(NotifyDescriptor.OK_OPTION)) {
-                for (int i=0; i < ((PropertiesDataObject)dobj).getBundleStructure().getEntryCount(); i++) {
-                  PropertiesFileEntry entry = ((PropertiesDataObject)dobj).getBundleStructure().getNthEntry(i);
-                  if (entry != null) {
-                    PropertiesStructure ps = entry.getHandler().getStructure();
-                    if (ps != null) {
-                      ps.deleteItem(sp.getValue());
-                    }
-                  }  
-                }  
-              }
-          }
-        }
-      );  
-      
-      // enable or disable the fields based on selection
-      textComment.setEditable(false);
-      textComment.setEnabled(false);
-      textValue.setEditable(false);
-      textValue.setEnabled(false);
-//      selectionChanged();
+      JPanel mainPanel = new BundleEditPanel(dobj, dobj.getOpenSupport().getTableModel());
+      gridbag.setConstraints(mainPanel, c);
+      add (mainPanel);
     }
     
-    private void selectionChanged() {  
-      // label for the key/value
-      if (columnSelections.isSelectionEmpty() || (columnSelections.getMaxSelectionIndex() > 0))
-        labelValue.setText(NbBundle.getBundle(PropertiesOpen.class).getString("LBL_ValueLabel"));
-      else
-        labelValue.setText(NbBundle.getBundle(PropertiesOpen.class).getString("LBL_KeyLabel"));
-      
-      // remove button
-      if (rowSelections.isSelectionEmpty() || 
-          rowSelections.getMinSelectionIndex()    != rowSelections.getMaxSelectionIndex()) {
-        removeButton.setEnabled(false);
-      }
-      else {
-        removeButton.setEnabled(true);
-      }
-    
-      // fields at the bottom
-      if (rowSelections.isSelectionEmpty() || columnSelections.isSelectionEmpty() ||
-          rowSelections.getMinSelectionIndex()    != rowSelections.getMaxSelectionIndex() ||
-          columnSelections.getMinSelectionIndex() != columnSelections.getMaxSelectionIndex()) {
-        if (!theTable.isEditing()) {
-          textComment.setText("");
-          textValue.setText("");
-        }  
-      }
-      else {                         
-        if (!theTable.isEditing()) {
-          PropertiesTableModel.StringPair sp = 
-            (PropertiesTableModel.StringPair)theTable.getModel().getValueAt(rowSelections.getMinSelectionIndex(), 
-            columnSelections.getMinSelectionIndex());
-          textComment.setText(sp.getComment());
-          textValue.setText(sp.getValue());
-          
-/*          boolean edit = theTable.editCellAt(rowSelections.getMinSelectionIndex(), 
-                                             columnSelections.getMinSelectionIndex());*/
-        }
-
-        // the selection is ok - edit, if not already editing this field
-        if (theTable.getEditingRow()    != rowSelections.getMinSelectionIndex() || 
-            theTable.getEditingColumn() != columnSelections.getMinSelectionIndex()) {
-          SwingUtilities.invokeLater(new Runnable() {
-            public void run() {                                                       
-              theTable.editCellAt(rowSelections.getMinSelectionIndex(), 
-                                  columnSelections.getMinSelectionIndex());
-            }
-          });
-        }  
-      }    
-    }                                              
-    
-    /** Updates the enabled status of the fields */
-    private void updateEnabled() {
-      // always edit value
-      textValue.setEditable(theTable.isEditing());
-      textValue.setEnabled(theTable.isEditing());
-      // sometimes edit the comment
-      if (theTable.isEditing()) {    
-        PropertiesTableModel.StringPair sp = 
-          (PropertiesTableModel.StringPair)theTable.getCellEditor().getCellEditorValue();
-        textComment.setEditable(sp.isCommentEditable());
-        textComment.setEnabled(sp.isCommentEditable());
-      }
-      else {
-        textComment.setEditable(false);
-        textComment.setEnabled(false);
-      }  
-    }
-
     /** Set the name of this top component. Handles saved/not saved state.
     * Notifies the window manager.
     * @param displayName the new display name
@@ -436,6 +251,19 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       super.setName(saveAwareName);
     }
   
+    /** When closing last view, also close the document.
+     * @return <code>true</code> if close succeeded
+    */
+    protected boolean closeLast () {
+      if (!dobj.getOpenSupport().canClose ()) {
+        // if we cannot close the last window
+        return false;
+      }
+      dobj.getOpenSupport().closeDocuments();
+      
+      return true;
+    }
+
     /** Is called from the clone method to create new component from this one.
     * This implementation only clones the object by calling super.clone method.
     * @return the copy of this object
@@ -443,12 +271,12 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     protected CloneableTopComponent createClonedObject () {
     
       String PROPERTIES_MODE = "com.netbeans.developer.modules.loaders.properties";
-      PropertiesCloneableTopComponent pctc = new PropertiesCloneableTopComponent (dobj, ptm/*, ptcm*/);
+      PropertiesCloneableTopComponent pctc = new PropertiesCloneableTopComponent (dobj);
       Workspace cur = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
       Mode m = cur.findMode(PROPERTIES_MODE);
       if (m == null) {
         m = cur.createMode(PROPERTIES_MODE, 
-                           NbBundle.getBundle(PropertiesModule.class).getString("LAB_PropertiesModeName"),
+                           NbBundle.getBundle(PropertiesOpen.class).getString("LAB_PropertiesModeName"),
                            null);
       } 
       // PENDING
@@ -474,6 +302,28 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     */
     protected void componentDeactivated () {
     }
+
+    /** Serialize this top component.
+    * Subclasses wishing to store state must call the super method, then write to the stream.
+    * @param out the stream to serialize to
+    */
+    public void writeExternal (ObjectOutput out)
+                throws IOException {
+      super.writeExternal(out);            
+      out.writeObject(dobj);
+    }
+
+    /** Deserialize this top component.
+    * Subclasses wishing to store state must call the super method, then read from the stream.
+    * @param in the stream to deserialize from
+    */
+    public void readExternal (ObjectInput in)
+                throws IOException, ClassNotFoundException {
+      super.readExternal(in);            
+      dobj = (PropertiesDataObject)in.readObject();
+      initMe();
+    }
+
   }
 
 
