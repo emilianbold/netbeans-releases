@@ -320,7 +320,7 @@ public class NbTopManager extends TopManager {
   /** @return the workspace pool for this manager
   */
   public WorkspacePool getWorkspacePool () {
-    return CoronaWorkspacePool.getDefault ();
+    return NbWorkspacePool.getDefault ();
   }
 
   /** Provides access to data loader pool.
@@ -351,7 +351,7 @@ public class NbTopManager extends TopManager {
   public void removePropertyChangeListener (PropertyChangeListener l) {
     change.removePropertyChangeListener (l);
   }
-  
+
 }
 
 
