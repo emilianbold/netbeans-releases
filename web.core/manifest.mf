@@ -22,7 +22,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1,org.netbeans.mod
   org.netbeans.modules.projects/1 > 1.13,
   org.netbeans.modules.web.jspparser/2,
   org.netbeans.modules.web.core.syntax/1,
-  org.netbeans.api.web.dd/1 = @DDAPI_BUILD_NUMBER_SUBST@
+  org.netbeans.api.web.dd/1 = @DDAPI_IMPL_VERSION@
 OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine, org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
 
 Name: org/netbeans/modules/web/dd/DDDataLoader.class

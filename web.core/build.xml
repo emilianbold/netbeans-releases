@@ -26,8 +26,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="init">
     <ant dir="../external" target="unscramble"/>
-    <property name="ddapi.implementation.version" value="${buildnumber}"/>
-    <filter token="DDAPI_BUILD_NUMBER_SUBST"  value="${ddapi.implementation.version}"/>
   </target>
 
   <target name="compile" depends="init">
@@ -64,8 +62,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
+    <property file="${nb_root}/web/spec-vers.properties"/>
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <filter token="DDAPI_IMPL_VERSION" value="${ddap.impl.version}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/modules/jsp.jar"
             manifest="manifest-subst.mf"
