@@ -50,6 +50,14 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src"/>
     </testbag>
 
+    <testbag testattribs="code,dev" executor="code" name="testbag_dev" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <!-- Add your own code tests -->
+            </patternset>
+        </testset>
+    </testbag>
+    
     <executor name="ide" antfile="build.xml" target="runidetest"/>
     <executor name="code" antfile="build.xml" target="runcodetest"/>
     
