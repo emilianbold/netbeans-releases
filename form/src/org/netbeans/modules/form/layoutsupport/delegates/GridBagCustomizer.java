@@ -66,7 +66,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
     private GBComponentProxy[] gbcProxies;
 
     // Customizer components
-    private org.openide.awt.SplittedPanel splitPanel;
+    private JSplitPane splitPane;
     private JPanel designPanel;
 
     private GridBagControlCenter controlCenter;
@@ -132,14 +132,6 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         setBorder(new javax.swing.border.EmptyBorder(4, 0, 8, 0));
         setLayout(new BorderLayout()); // [PENDING]
 
-        splitPanel = new org.openide.awt.SplittedPanel();
-        //splitPanel.setLayout(new java.awt.FlowLayout());
-        splitPanel.setSplitType(org.openide.awt.SplittedPanel.HORIZONTAL);
-        splitPanel.setSplitAbsolute(true);
-        splitPanel.setSplitPosition(org.openide.awt.SplittedPanel.FIRST_PREFERRED);
-        splitPanel.setSplitDragable(true);
-        splitPanel.setSplitTypeChangeEnabled(true);
-
         propertySheet = new PropertySheet();
         try {
             propertySheet.setSortingMode(PropertySheet.UNSORTED);
@@ -154,7 +146,6 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         panel.add(propertySheet, BorderLayout.CENTER);
         controlCenter = new GridBagControlCenter(this);
         panel.add(controlCenter, BorderLayout.SOUTH);
-        splitPanel.add(panel, org.openide.awt.SplittedPanel.ADD_FIRST);
 
         designScrollPane = new javax.swing.JScrollPane();
         designPanel = new JPanel() {
@@ -203,9 +194,15 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         designLayeredPane.setBackground((java.awt.Color) javax.swing.UIManager.getDefaults().get("desktop")); // NOI18N
 
         designScrollPane.setViewportView(designLayeredPane);
-        splitPanel.add(designScrollPane, org.openide.awt.SplittedPanel.ADD_SECOND);
+        
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        splitPane.setLeftComponent(panel);
+        splitPane.setRightComponent(designScrollPane);
+        splitPane.setUI(new javax.swing.plaf.basic.BasicSplitPaneUI());
+        splitPane.setBorder(BorderFactory.createEmptyBorder());
+        splitPane.setContinuousLayout(true);
 
-        add(splitPanel, BorderLayout.CENTER);
+        add(splitPane, BorderLayout.CENTER);
 
         getAccessibleContext().setAccessibleDescription(GridBagLayoutSupport.getBundleHack().getString("ACSD_GridBagCustomizer"));
         HelpCtx.setHelpIDString(this, "gui.layouts.gbcustomizer"); // NOI18N
