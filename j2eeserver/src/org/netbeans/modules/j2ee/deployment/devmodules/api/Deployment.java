@@ -60,13 +60,14 @@ public final class Deployment {
         DeploymentTargetImpl target = new DeploymentTargetImpl(jmp, clientModuleUrl);
 
         String err;
-        ServerString server = target.getServer();
-        J2eeModule module = target.getModule();
         TargetModule[] modules = null;
         DeployProgressMonitor progress = new DeployProgressMonitor(false, true, logger);  // modeless with stop/cancel buttons
         progress.startProgressUI(MAX_DEPLOY_PROGRESS);
-        
+
         try {
+            ServerString server = target.getServer(); //will throw exception if bad server id
+            J2eeModule module = target.getModule();
+        
             if (module == null) {
                 err = NbBundle.getMessage (Deployment.class, "MSG_NoJ2eeModule"); //NOI18N
                 progress.addError(err);

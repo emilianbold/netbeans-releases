@@ -58,7 +58,7 @@ public class Deploy extends Task implements Deployment.Logger {
                 getProject().setProperty("client.url", clientUrl);
             }
         } catch (Exception ex) {
-            throw new BuildException(ex.getLocalizedMessage());
+            throw new BuildException(ex);
         }
     }
 

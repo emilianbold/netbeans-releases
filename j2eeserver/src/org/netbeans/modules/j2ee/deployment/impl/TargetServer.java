@@ -31,9 +31,6 @@ import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationPro
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import java.util.*;
 import java.io.*;
 import javax.enterprise.deploy.model.DeployableObject;
@@ -406,7 +403,8 @@ public class TargetServer {
             DeploymentStatus status = progressEvent.getDeploymentStatus();
             StateType state = status.getState();
 
-            if (state == StateType.COMPLETED) {
+            if (state == StateType.COMPLETED ||
+                state == StateType.RELEASED) {
                 // this check is to avoid NPE is case the handler is misused, e.g.,
                 // firing event multiple times and asynchronously
                 if (po != null) {
@@ -555,7 +553,7 @@ public class TargetServer {
             }
         }
         
-        // handle increment or redeploy
+        // handle increment or standard redeploy
         if (redeployTargetModules != null && redeployTargetModules.length > 0) {
             if (incremental != null && canFileDeploy(redeployTargetModules, deployable)) {
                 AppChangeDescriptor acd = distributeChanges(redeployTargetModules[0], ui);
@@ -663,10 +661,10 @@ public class TargetServer {
         TargetModuleID[] tmIDs = (TargetModuleID[]) undeployTMIDs.toArray(new TargetModuleID[undeployTMIDs.size()]);
         ui.addMessage(NbBundle.getMessage(TargetServer.class, "MSG_Undeploying"));
     
-        ProgressObject po = instance.getDeploymentManager().stop(tmIDs);
+        ProgressObject po = /*instance.getDeploymentManager().stop(tmIDs);
         handleProgressIgnoreFail(ui, po);
         
-        po = instance.getDeploymentManager().undeploy(tmIDs);
+        po = */instance.getDeploymentManager().undeploy(tmIDs);
         handleProgressIgnoreFail(ui, po);
     }
 

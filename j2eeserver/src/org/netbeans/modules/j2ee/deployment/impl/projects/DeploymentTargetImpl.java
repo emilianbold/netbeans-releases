@@ -158,7 +158,12 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     
     public ServerString getServer() {
         if (server == null) {
-            server = new ServerString (ServerRegistry.getInstance ().getServerInstance (moduleProvider.getServerInstanceID ()));
+            String instanceID = moduleProvider.getServerInstanceID ();
+            ServerInstance inst = ServerRegistry.getInstance ().getServerInstance (instanceID);
+            if (inst == null) {
+                throw new RuntimeException(NbBundle.getMessage(DeploymentTargetImpl.class, "MSG_TargetServerNotFound",instanceID));
+            }
+            server = new ServerString(inst);
         }
         return server;
     }
