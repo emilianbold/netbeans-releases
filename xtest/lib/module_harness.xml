@@ -296,23 +296,13 @@ Microsystems, Inc. All Rights Reserved.
         
         <echo message="ARGUMENTS = ${args}"/>
 
-        <!--
-        <copy file="${xtest.home}/lib/patches/testmain.jar" todir="${netbeans.home}/lib/patches"/>
-        -->
-        <!--
-        <copy file="${xtest.home}/lib/xtest-ide.jar" todir="${netbeans.home}/lib"/>
-        <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.home}/lib/ext"/>
-        <copy file="${xtest.home}/lib/xtest-ext.jar" todir="${netbeans.home}/lib/ext"/>
-        <copy file="${xtest.home}/lib/junit.jar" todir="${netbeans.home}/lib/ext"/>
-        <copy file="${xtest.home}/lib/junit-ext.jar" todir="${netbeans.home}/lib/ext"/>
-        -->
+
         <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.home}/lib"/>
         <copy file="${xtest.home}/lib/xtest-ext.jar" todir="${netbeans.home}/lib"/>
         <copy file="${xtest.home}/lib/junit.jar" todir="${netbeans.home}/lib"/>
         <copy file="${xtest.home}/lib/junit-ext.jar" todir="${netbeans.home}/lib"/>
- 	<antcall target="copy-user-jars"/>
- 	
 
+        <antcall target="copy-user-jars"/>
 
         <ideexec dir="${netbeans.home}/bin" executable="${netbeans.home}/bin/runide.exe" 
               os="Windows 95 Windows 98 Windows Me Windows NT Windows 2000 Windows XP"
@@ -326,10 +316,6 @@ Microsystems, Inc. All Rights Reserved.
             <arg line="runide.sh ${args}"/>
         </ideexec>
 
-        <!--
-        <delete file="${netbeans.home}/lib/patches/testmain.jar"/>
-        <delete file="${netbeans.home}/lib/xtest-ide.jar"/>
-        -->
         <delete file="${netbeans.home}/lib/xtest.jar"/>
         <delete file="${netbeans.home}/lib/xtest-ext.jar"/>
         <delete file="${netbeans.home}/lib/junit.jar"/>
