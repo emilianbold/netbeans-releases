@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -490,6 +490,10 @@ public class J2SEProjectProperties {
      */
     private String relativizeLibraryClasspath(String property, File projectDir) {
         String value = PropertyUtils.getGlobalProperties().getProperty(property);
+        // bugfix #42852, check if the classpath property is set, otherwise return null
+        if (value == null) {
+            return null;
+        }
         String[] paths = PropertyUtils.tokenizePath(value);
         StringBuffer sb = new StringBuffer();
         for (int i=0; i<paths.length; i++) {
