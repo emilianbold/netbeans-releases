@@ -16,8 +16,10 @@
 package org.apache.tools.ant.module.run;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.Map; // override org.apache.tools.ant.Map
+
 import org.openide.*;
 import org.openide.execution.ExecutorTask;
 import org.openide.loaders.DataObject;
@@ -39,6 +41,21 @@ import org.apache.tools.ant.module.api.IntrospectedInfo;
 /** Executes an Ant Target asynchronously in the IDE.
  */
 public class TargetExecutor implements Runnable {
+    
+    /** Constructor for DemuxOutputStream if available: (Project, boolean) */
+    private static Constructor demuxOutputStream = null;
+    // Use reflection so the same code will compile & run with either Ant 1.3 or 1.4.
+    static {
+        try {
+            Class c = Class.forName("org.apache.tools.ant.DemuxOutputStream"); // NOI18N
+            demuxOutputStream = c.getConstructor(new Class[] {Project.class, Boolean.TYPE});
+            AntModule.err.log("Congratulations, you are using Ant 1.4");
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable t) {
+            AntModule.err.log("Bummer, you are using Ant 1.3: " + t);
+        }
+    }
 
     private AntProjectCookie pcookie;
     private InputOutput io;
@@ -244,13 +261,23 @@ public class TargetExecutor implements Runnable {
         // Interesting fact: Project.build{Started,Finished} is protected!
         // So it must be fired directly on the listener. Poor API design IMHO.
         logger.buildStarted (new BuildEvent (project));
-        /* Ant 1.4:
-        // Save & restore system output streams.
-        PrintStream sysout = System.out;
-        PrintStream syserr = System.err;
-        System.setOut(new PrintStream(new DemuxOutputStream(project, false)));
-        System.setErr(new PrintStream(new DemuxOutputStream(project, true)));
-         */
+        // Save & restore system output streams under 1.4.
+        PrintStream sysout = null, syserr = null;
+        if (demuxOutputStream != null) {
+            try {
+                OutputStream demux1 = (OutputStream)demuxOutputStream.newInstance(new Object[] {project, Boolean.FALSE});
+                OutputStream demux2 = (OutputStream)demuxOutputStream.newInstance(new Object[] {project, Boolean.TRUE});
+                sysout = System.out;
+                syserr = System.err;
+                System.setOut(new PrintStream(demux1));
+                System.setErr(new PrintStream(demux2));
+            } catch (Exception e) {
+                // InvocationTarget, etc.
+                AntModule.err.notify(ErrorManager.WARNING, e);
+                // And don't try it again.
+                demuxOutputStream = null;
+            }
+        }
         try {
             // Execute the configured project
             //writer.println("#4"); // NOI18N
@@ -275,11 +302,11 @@ public class TargetExecutor implements Runnable {
             BuildEvent ev = new BuildEvent (project);
             ev.setException (t);
             logger.buildFinished (ev);
-        /* Ant 1.4:
         } finally {
-            System.setOut(sysout);
-            System.setErr(syserr);
-         */
+            if (demuxOutputStream != null) {
+                System.setOut(sysout);
+                System.setErr(syserr);
+            }
         }
 
         // Now check to see if the Project defined any cool new custom tasks.
