@@ -62,7 +62,7 @@ public class JavaResourceHolder extends ResourceHolder {
             return null;
 
         Element.ItemElem item = getItem(key);
-        return item == null ? null : UtilConvert.unicodesToChars(item.getValue());
+        return item == null ? null : item.getValue();
     }
 
     /** Implemenst superclass abstract method. Gets comment for specified key. 
@@ -100,10 +100,10 @@ public class JavaResourceHolder extends ResourceHolder {
     public void addProperty(Object key, Object value, String comment, boolean forceNewValue) {
         if(resource == null || key == null) return;
 
-        String keyValue     = UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapePropertiesSpecialChars(key.toString())));
-        String valueValue   = value == null ? null : UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapeLineContinuationChar(UtilConvert.escapeOutsideSpaces(value.toString()))));
-        String commentValue = comment == null ? null : UtilConvert.charsToUnicodes(comment);
-
+        String keyValue     = key.toString();
+        String valueValue   = value == null ? null : value.toString();
+        String commentValue = comment;
+        
         // write to bundle primary file
         BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
         PropertiesStructure propStructure = bundleStructure.getNthEntry(0).getHandler().getStructure();
