@@ -42,32 +42,16 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
 
     public JavadocForBinaryQuery.Result findJavadoc(final URL b) {
         class R implements JavadocForBinaryQuery.Result {
+
+            private Library lib;
+
+            public R (Library lib) {
+                this.lib = lib;
+            }
+
             public URL[] getRoots() {
-                LibraryManager lm = LibraryManager.getDefault();
-                Library[] libs = lm.getLibraries();
-                for (int i=0; i<libs.length; i++) {
-                    String type = libs[i].getType();
-                    if (!J2SELibraryTypeProvider.LIBRARY_TYPE.equalsIgnoreCase(type)) {
-                        continue;
-                    }
-                    List jars = libs[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH);    //NOI18N
-                    Iterator it = jars.iterator();
-                    while (it.hasNext()) {
-                        URL entry = (URL)it.next();
-                        FileObject file = URLMapper.findFileObject (entry);
-                        if (file != null) {
-                            try {
-                                if (b.equals(file.getURL())) {
-                                    List l = libs[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC);
-                                    return (URL[])l.toArray(new URL[l.size()]);
-                                }
-                            } catch (FileStateInvalidException e) {
-                                ErrorManager.getDefault().notify (e);
-                            }
-                        }
-                    }
-                }
-                return new URL[0];
+                List l = lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC);
+                return (URL[])l.toArray(new URL[l.size()]);
             }
             public void addChangeListener(ChangeListener l) {
                 // XXX not implemented
@@ -76,7 +60,31 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                 // XXX not implemented
             }
         }
-        return new R();
+
+        LibraryManager lm = LibraryManager.getDefault();
+        Library[] libs = lm.getLibraries();
+        for (int i=0; i<libs.length; i++) {
+            String type = libs[i].getType();
+            if (!J2SELibraryTypeProvider.LIBRARY_TYPE.equalsIgnoreCase(type)) {
+                continue;
+            }
+            List jars = libs[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH);    //NOI18N
+            Iterator it = jars.iterator();
+            while (it.hasNext()) {
+                URL entry = (URL)it.next();
+                FileObject file = URLMapper.findFileObject (entry);
+                if (file != null) {
+                    try {
+                        if (b.equals(file.getURL())) {
+                            return new R(libs[i]);
+                        }
+                    } catch (FileStateInvalidException e) {
+                        ErrorManager.getDefault().notify (e);
+                    }
+                }
+            }
+        }
+        return null;
     }
 
 }

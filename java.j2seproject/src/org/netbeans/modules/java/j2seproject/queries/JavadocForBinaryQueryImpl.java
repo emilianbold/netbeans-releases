@@ -41,13 +41,14 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
     public JavadocForBinaryQuery.Result findJavadoc(final URL binaryRoot) {
         class R implements JavadocForBinaryQuery.Result {
             public URL[] getRoots() {
-                URL result = getJavadoc(binaryRoot, "build.classes.dir", "dist.javadoc.dir");   //NOI18N
-                if (result != null) {
-                    return new URL[]{result};
-                }
-                result = getJavadoc(binaryRoot,"dist.jar", "dist.javadoc.dir"); //NOI18N
-                if (result != null) {
-                    return new URL[]{result};
+                String javadocDir = evaluator.getProperty("dist.javadoc.dir");      //NOI18N
+                if (javadocDir != null) {
+                    File f = helper.resolveFile(javadocDir);
+                    try {
+                        return new URL[] {f.toURI().toURL()};
+                    } catch (MalformedURLException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
                 }
                 return new URL[0];
             }
@@ -58,11 +59,13 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                 // XXX not implemented
             }
         }
-        return new R();
+        if (isRootOwner(binaryRoot, "build.classes.dir") || isRootOwner (binaryRoot, "dist.jar")) { //NOI18N
+            return new R();
+        }
+        return null;
     }
 
-
-    private URL getJavadoc(URL binaryRoot, String binaryProperty, String javadocProperty) {
+    private boolean isRootOwner (URL binaryRoot, String binaryProperty) {
         try {
             if (FileUtil.getArchiveFile(binaryRoot) != null) {
                 binaryRoot = FileUtil.getArchiveFile(binaryRoot);
@@ -75,19 +78,41 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                     assert !url.toExternalForm().endsWith("/") : f;
                     url = new URL(url.toExternalForm() + "/");
                 }
-                if (url.equals(binaryRoot) || 
-                        binaryRoot.toExternalForm().startsWith(url.toExternalForm())) {
-                    String javadocDir = evaluator.getProperty(javadocProperty);
-                    if (javadocDir != null) {
-                        f = helper.resolveFile(javadocDir);
-                        return f.toURI().toURL();
-                    }
-                }
+                return url.equals(binaryRoot) ||
+                        binaryRoot.toExternalForm().startsWith(url.toExternalForm());
             }
         } catch (MalformedURLException malformedURL) {
             ErrorManager.getDefault().notify(malformedURL);
         }
-        return null;
+        return false;
     }
+
+//    private URL getJavadoc(URL binaryRoot, String binaryProperty, String javadocProperty) {
+//        try {
+//            if (FileUtil.getArchiveFile(binaryRoot) != null) {
+//                binaryRoot = FileUtil.getArchiveFile(binaryRoot);
+//            }
+//            String outDir = evaluator.getProperty(binaryProperty);
+//            if (outDir != null) {
+//                File f = helper.resolveFile (outDir);
+//                URL url = f.toURI().toURL();
+//                if (!f.exists() && !f.getPath().toLowerCase().endsWith(".jar")) {
+//                    assert !url.toExternalForm().endsWith("/") : f;
+//                    url = new URL(url.toExternalForm() + "/");
+//                }
+//                if (url.equals(binaryRoot) ||
+//                        binaryRoot.toExternalForm().startsWith(url.toExternalForm())) {
+//                    String javadocDir = evaluator.getProperty(javadocProperty);
+//                    if (javadocDir != null) {
+//                        f = helper.resolveFile(javadocDir);
+//                        return f.toURI().toURL();
+//                    }
+//                }
+//            }
+//        } catch (MalformedURLException malformedURL) {
+//            ErrorManager.getDefault().notify(malformedURL);
+//        }
+//        return null;
+//    }
     
 }

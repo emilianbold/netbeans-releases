@@ -48,19 +48,15 @@ public class JavadocForBinaryQuery {
             throw new IllegalArgumentException("File URL pointing to " + // NOI18N
                 "JAR is not valid classpath entry. Use jar: URL. Was: "+binary); // NOI18N
         }
-        List/*<Result>*/ results = new ArrayList();
+        
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {
             Result r = ((JavadocForBinaryQueryImplementation) it.next()).findJavadoc(binary);
             if (r != null) {
-                results.add(r);
+                return r;
             }
         }
-        if (!results.isEmpty()) {
-            return new ProxyResult(results);
-        } else {
-            return EMPTY_RESULT;
-        }
+        return EMPTY_RESULT;        
     }
 
     /**
@@ -101,63 +97,6 @@ public class JavadocForBinaryQuery {
         }
         public void addChangeListener(ChangeListener l) {}
         public void removeChangeListener(ChangeListener l) {}
-    }
-    
-    private static final class ProxyResult implements Result, ChangeListener {
-        
-        private final List/*<Result>*/ delegates;
-        private List/*<ChangeListener>*/ listeners = null;
-        private final ChangeListener listener = WeakListeners.change(this, null);
-        
-        ProxyResult(List/*<Result>*/ delegates) {
-            this.delegates = delegates;
-        }
-        
-        public URL[] getRoots() {
-            List/*<URL>*/ roots = new ArrayList();
-            Iterator it = delegates.iterator();
-            while (it.hasNext()) {
-                Result r = (Result) it.next();
-                roots.addAll(Arrays.asList(r.getRoots()));
-            }
-            return (URL[]) roots.toArray(new URL[roots.size()]);
-        }
-        
-        public void addChangeListener(ChangeListener l) {
-            if (listeners == null) {
-                listeners = new ArrayList();
-                Iterator it = delegates.iterator();
-                while (it.hasNext()) {
-                    Result r = (Result) it.next();
-                    r.addChangeListener(listener);
-                }
-            }
-            listeners.add(l);
-        }
-        
-        public void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
-            if (listeners.isEmpty()) {
-                listeners = null;
-                Iterator it = delegates.iterator();
-                while (it.hasNext()) {
-                    Result r = (Result) it.next();
-                    r.removeChangeListener(listener);
-                }
-            }
-        }
-        
-        public void stateChanged(ChangeEvent e) {
-            if (listeners == null) {
-                return;
-            }
-            ChangeEvent e2 = new ChangeEvent(this);
-            Iterator it = listeners.iterator();
-            while (it.hasNext()) {
-                ((ChangeListener) it.next()).stateChanged(e2);
-            }
-        }
-        
-    }
+    }    
     
 }
