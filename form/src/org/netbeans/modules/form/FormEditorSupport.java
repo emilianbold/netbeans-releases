@@ -328,7 +328,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     /** Loads the DesignForm from the .form file.
      * @return true if the form was correcly loaded, false if any error occured
      */
-    protected boolean loadForm() {
+    public boolean loadForm() {
         return loadFormInternal(null);
     }
 
