@@ -37,6 +37,7 @@ import org.openide.nodes.Node;
 import org.openide.src.ClassElement;
 import org.openide.src.SourceElement;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 
@@ -49,6 +50,7 @@ public class MainClassChooser extends JPanel {
     private static final Node NO_CLASSES_NODE = new AbstractNode (Children.LEAF);
     private ChangeListener changeListener;
     private String dialogSubtitle = null;
+    private Set possibleMainClasses;
             
     /** Creates new form MainClassChooser */
     public MainClassChooser (FileObject sourcesRoot) {
@@ -62,9 +64,15 @@ public class MainClassChooser extends JPanel {
         NO_CLASSES_NODE.setName (NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE")); // NOI18N
     }
     
-    private void initClassesView (FileObject sourcesRoot) {
+    private void initClassesView (final FileObject sourcesRoot) {
+        possibleMainClasses = null;
         jMainClassList.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
-        jMainClassList.setListData (getAllMainClasses (sourcesRoot));
+        jMainClassList.setListData (getWarmupList ());
+        RequestProcessor.getDefault ().post (new Runnable () {
+            public void run () {
+                jMainClassList.setListData (getAllMainClasses (sourcesRoot));
+            }
+        });
         jMainClassList.addListSelectionListener (new ListSelectionListener () {
             public void valueChanged (ListSelectionEvent evt) {
                 if (changeListener != null) {
@@ -93,6 +101,10 @@ public class MainClassChooser extends JPanel {
         }
     }
     
+    private Object[] getWarmupList () {
+        return new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_WARMUP_MESSAGE")}; // NOI18N
+    }
+    
     // XXX temporary obtain the main classes in project's sources
     // should be used some query to java sources
     private Object[] getAllMainClasses (FileObject sourcesRoot) {
@@ -109,12 +121,21 @@ public class MainClassChooser extends JPanel {
                     DataObject classDo = DataObject.find (fo);
                     result.add (getMainMethod (classDo.getCookie (SourceCookie.class), null));
                 } catch (DataObjectNotFoundException ex) {
-                    // already checked, must passes
+                    // already checked, must passed
                     assert false : fo;
                 }
             }
         }
-        return result.toArray ();
+        possibleMainClasses = result;
+        if (result.isEmpty ()) {
+            return new Object[] {NO_CLASSES_NODE.getDisplayName ()};
+        } else {
+            return result.toArray ();
+        }
+    }
+    
+    private boolean isValidMainClassName (String name) {
+        return possibleMainClasses.contains (name);
     }
 
 
@@ -123,7 +144,12 @@ public class MainClassChooser extends JPanel {
      * @return name of class or null if no class with the main method is selected
      */    
     public String getSelectedMainClass () {
-        return (String)jMainClassList.getSelectedValue ();
+        String name = (String)jMainClassList.getSelectedValue ();
+        if (isValidMainClassName (name)) {
+            return name;
+        } else {
+            return null;
+        }
     }
     
     public void addChangeListener (ChangeListener l) {
