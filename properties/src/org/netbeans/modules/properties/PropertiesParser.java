@@ -347,9 +347,6 @@ class PropertiesParser {
   */
   private static class PropertiesRead {
          
-    // PENDING - remove debug
-    private OutputStream debugOutput;
-    
     /** The underlaying reader. */
     private Reader reader;
                         
@@ -363,11 +360,6 @@ class PropertiesParser {
     private PropertiesRead() {    
       peekChar = -1;
       position = 0;                                              
-      // PENDING - remove debug
-      try {
-        debugOutput = new FileOutputStream("c:\\debug.properties");
-      }
-      catch (Exception e) {}
     }
     
     /** Creates the reader from the text. */
@@ -395,10 +387,6 @@ class PropertiesParser {
       peekChar = -1;
       if (character != -1)
         position++;       
-
-      // PENDING - remove debug
-      if (character >= 0)  
-        debugOutput.write(character);  
 
       return character;  
     }     
@@ -492,8 +480,6 @@ class PropertiesParser {
     /** Closes the stream */
     public void close() throws IOException {
       reader.close();
-      // PENDING - remove debug
-      debugOutput.close();
     }            
     
     
