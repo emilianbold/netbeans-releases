@@ -82,9 +82,12 @@ Microsystems, Inc. All Rights Reserved.
         <exclude name="**/forte4j_help_fcs.jhm"/>
         <exclude name="**/usergdix.xml"/>
         <exclude name="**/usergdto.xml"/>
+        <exclude name="org/netbeans/modules/usersguide/ide.css"/>
       </fileset>
       <locale name="ja"/>
     </locjar>
+    <mkdir dir="netbeans/docs/org/netbeans/modules/usersguide"/>
+    <copy file="javahelp/org/netbeans/modules/usersguide/ide.css" tofile="netbeans/docs/org/netbeans/modules/usersguide/ide.css"/>
   </target>
 
   <target name="netbeans" depends="jars,javahelp">
