@@ -121,7 +121,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                         String message = MessageFormat.format(bundle.getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); // NOI18N
                         if(con.getDriver().equals(PointbasePlus.DRIVER))
                             if(exc.getErrorCode()==PointbasePlus.ERR_SERVER_REJECTED)
-                                message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message}); // NOI18N
+                                message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, con.getDatabase()}); // NOI18N
                         TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                         dlg.setSelectedComponent(basePanel);
                         dlg.setException(new DatabaseException("Unable to obtain schema. "+exc.getMessage())); // NOI18N
