@@ -623,6 +623,7 @@ the ${netbeans.dest}/bin/ directory.
   </target>
 
   <target name="bootstrap-javadoc"
+          depends="check-for-binaries"
           description="Generate Javadoc for Ant extensions.">
     <mkdir dir="www/nbantext-javadoc"/>
     <tstamp/>
@@ -640,7 +641,16 @@ the ${netbeans.dest}/bin/ directory.
              author="false"
              version="false"
              bottom="Built on ${TODAY}"
-    />
+    >
+      <classpath>
+        <!-- Needed for CheckLinks: -->
+        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
+        <!-- For running inside IDE, to pick up ant.jar -->
+        <pathelement location="${binroot}/nbbuild/lib/ant.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+        <pathelement location="${binroot}/nbbuild/lib/jhall.jar"/>
+      </classpath>
+    </javadoc>
   </target>
 
   <target name="check-licenses" depends="bootstrap" description="Check whether Sun Public License is in every source file.">
@@ -681,6 +691,30 @@ the ${netbeans.dest}/bin/ directory.
         <exclude name="ant/javahelp/org/apache/tools/ant/module/docs/ant-docs/"/>
       </fileset>
     </checklicense>
+  </target>
+
+  <target name="check-dbl-checked-locking" depends="bootstrap" description="Check sources for uses of double-checked locking.">
+    <taskdef name="findbad" classname="org.netbeans.nbbuild.FindBadConstructions" classpath="nbantext.jar:${binroot}/core/release/lib/ext/regexp.jar"/>
+    <echo message="Looking for source files, will take a moment..."/>
+    <findbad>
+      <fileset dir="..">
+        <include name="**/*.java"/>
+      </fileset>
+      <construction regexp="\r?\n.*if \((.+)\) \{.*\r?\n.*synchronized \(.+\) \{.*\r?\n.*if \(\1\) \{.*\r?\n" message="Possible double-checked locking (remove outer test)" showmatch="0"/>
+    </findbad>
+  </target>
+
+  <target name="check-bundle-snafus" depends="bootstrap" description="Check bundles for undoubled ' in message formats and style errors.">
+    <taskdef name="findbad" classname="org.netbeans.nbbuild.FindBadConstructions" classpath="nbantext.jar:${binroot}/core/release/lib/ext/regexp.jar"/>
+    <echo message="Looking for bundles, will take a moment..."/>
+    <findbad>
+      <fileset dir="..">
+        <include name="**/*.properties"/>
+      </fileset>
+      <construction regexp="\{\d+\}.*[^']'([^'{}]|$)|[^']'[^'{}].*\{\d+\}" message="Undoubled ' in message format (double it to escape it)" showmatch="0"/>
+      <!-- [Cc]an't|[Cc]ouldn't|[Dd]on't|[Dd]oesn't|[Dd]idn't|[Ww]on't|[Ss]houldn't|[Hh]asn't|[Hh]aven't|[Oo]ughtn't|[Aa]ren't|[Ii]sn't|[Ww]asn't -->
+      <construction regexp="\b[A-Za-z][a-z]+n't\b" message="Contraction (spell it out)" showmatch="0"/>
+    </findbad>
   </target>
 
   <target name="real-clean" depends="clean"
