@@ -66,16 +66,6 @@ public class PropertiesCustomEditor extends javax.swing.JPanel implements Enhanc
         return props;
     }
     
-    /** Returns preferredSize as the preferred height and the width of the panel */
-    public java.awt.Dimension getPreferredSize() {
-        int screenWidth = org.openide.util.Utilities.getScreenSize().width;
-        
-        if (super.getPreferredSize().width >= screenWidth)
-            return new java.awt.Dimension(screenWidth - 50, super.getPreferredSize().height);
-        else
-            return super.getPreferredSize();
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

@@ -657,7 +657,8 @@ public class BundleEditPanel extends JPanel {
          * minimal width of column is 1/10 of screen width. */
         private void adjustColumnWidths() {
             // The least initial width of column (1/10 of screen witdh).
-            int columnWidth = Toolkit.getDefaultToolkit().getScreenSize().width/10;
+            Rectangle screenBounds = org.openide.util.Utilities.getUsableScreenBounds();
+            int columnWidth = screenBounds.width / 10;
             
             // Try to set widths according parent (viewport) width.
             int totalWidth = 0;

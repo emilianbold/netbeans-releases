@@ -186,7 +186,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             frameViewer.setTitle(jh.getModel().getHelpSet().getTitle());
             frameViewer.pack();
         }
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension screenSize = Utilities.getUsableScreenBounds().getSize();
         Dimension frameSize = frameViewer.getSize();
         // #11018: have mercy on little screens
         if (frameSize.width > screenSize.width) {
@@ -198,8 +198,8 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             frameViewer.setSize(frameSize);
         }
         // Now center it.
-        frameViewer.setLocation((screenSize.width - frameSize.width) / 2,
-                                (screenSize.height - frameSize.height) / 2);
+        frameViewer.setBounds(Utilities.findCenterBounds(frameSize));
+
         frameViewer.setState(Frame.NORMAL);
         if (frameViewer.isVisible()) {
             frameViewer.repaint();

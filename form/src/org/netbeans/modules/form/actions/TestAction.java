@@ -126,14 +126,7 @@ public class TestAction extends CallableSystemAction {
             }
             else frame.pack();
 
-            // set location
-            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            Dimension frameSize = frame.getSize();
-            frame.setLocation(screenSize.width+20 > frameSize.width ?
-                              (screenSize.width - frameSize.width) / 2 : 0,
-                              screenSize.height+20 > frameSize.height ?
-                              (screenSize.height - frameSize.height) / 2 : 0);
-            // show it
+            frame.setBounds(org.openide.util.Utilities.findCenterBounds(frame.getSize()));
             frame.show();
         }
         catch (Exception ex) {
