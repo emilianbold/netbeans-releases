@@ -80,8 +80,10 @@ public class NbModuleProjectTest extends TestBase {
         assertEquals("right module.classpath", cpS.toString(), eval.getProperty("module.classpath"));
         assertEquals("right core.dir", file("nbbuild/netbeans/platform4"),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("core.dir")));
+        /* Will not work in branches:
         assertEquals("right apisupport/project.dir", file("nbbuild/netbeans/ide4"),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("apisupport/project.dir")));
+         */
         assertEquals("right module JAR", file("nbbuild/netbeans/ide4/modules/org-netbeans-modules-java-project.jar"),
             javaProjectProject.getHelper().resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")));
         // Synch w/ nbbuild/directories.properties:
