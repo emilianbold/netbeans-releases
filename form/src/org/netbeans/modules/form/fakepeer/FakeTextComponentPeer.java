@@ -10,6 +10,8 @@
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
+ 
+/* $Id$ */
 
 package org.netbeans.modules.form.fakepeer;
 
@@ -24,7 +26,7 @@ import javax.swing.plaf.basic.BasicGraphicsUtils;
  */
 
 class FakeTextComponentPeer extends FakeComponentPeer
-            implements TextComponentPeer
+    implements TextComponentPeer
 {
     private String _text;
 

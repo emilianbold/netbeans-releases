@@ -10,6 +10,8 @@
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
+ 
+/* $Id$ */
 
 package org.netbeans.modules.form.fakepeer;
 
@@ -40,7 +42,7 @@ abstract class FakeContainerPeer extends FakeComponentPeer implements ContainerP
     }
 
     public Insets insets() {
-        if(_insets == null)
+        if (_insets == null)
             _insets = new Insets(0, 0, 0, 0);
         return _insets;
     }

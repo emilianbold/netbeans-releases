@@ -10,6 +10,8 @@
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
+ 
+/* $Id$ */
 
 package org.netbeans.modules.form;
 
@@ -22,16 +24,6 @@ import org.openide.nodes.Node;
 public interface RADComponentCookie extends Node.Cookie {
 
     /** Provides access to form editor node */
-    public RADComponent getRADComponent ();
+    public RADComponent getRADComponent();
 
 }
-
-/*
- * Log
- *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  1    Gandalf   1.0         5/20/99  Ian Formanek    
- * $
- */

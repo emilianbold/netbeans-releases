@@ -10,6 +10,8 @@
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
+ 
+/* $Id$ */
 
 package org.netbeans.modules.form;
 
@@ -23,13 +25,5 @@ import java.beans.PropertyEditor;
 public interface NamedPropertyEditor extends PropertyEditor {
 
     /** @return display name of the property editor */
-    public String getDisplayName ();
+    public String getDisplayName();
 }
-
-/*
- * Log
- *  2    Gandalf   1.1         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  1    Gandalf   1.0         8/17/99  Ian Formanek    
- * $
- */

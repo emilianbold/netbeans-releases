@@ -10,6 +10,8 @@
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
+ 
+/* $Id$ */
 
 package org.netbeans.modules.form;
 
@@ -51,14 +53,14 @@ public class PersistenceObjectRegistry
     }
 
     public static Object createInstance(String name)
-    throws InstantiationException, IllegalAccessException, ClassNotFoundException
+        throws InstantiationException, IllegalAccessException, ClassNotFoundException
     {
         return loadClass(name).newInstance();
     }
 
     public static Class loadClass(String name) throws ClassNotFoundException {
         name = Utilities.translate(name);
-        String classname = (String) _nameToClassname.get(name);
+        String classname =(String) _nameToClassname.get(name);
         if (classname == null)
             classname = name;
         return TopManager.getDefault().currentClassLoader().loadClass(classname);
@@ -71,7 +73,7 @@ public class PersistenceObjectRegistry
     public static String getPrimaryName(Class clazz) {
         String classname = clazz.getName();
 
-        String name = (String) _classToPrimaryName.get(classname);
+        String name =(String) _classToPrimaryName.get(classname);
         return name != null ? name : classname;
     }
 

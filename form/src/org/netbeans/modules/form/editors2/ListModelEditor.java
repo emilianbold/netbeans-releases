@@ -10,6 +10,8 @@
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
+ 
+/* $Id$ */
 
 package org.netbeans.modules.form.editors2;
 
@@ -22,7 +24,7 @@ public class ListModelEditor extends Object {
 
     public static class NbListModel extends AbstractListModel implements java.io.Serializable {
         static final long serialVersionUID =-1806930448622666787L;
-        public NbListModel (String[] data) {
+        public NbListModel(String[] data) {
             this.data = data;
         }
 
@@ -33,16 +35,3 @@ public class ListModelEditor extends Object {
     }
 
 }
-
-/*
- * Log
- *  3    Gandalf   1.2         11/27/99 Patrik Knakal   
- *  2    Gandalf   1.1         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  1    Gandalf   1.0         4/12/99  Ian Formanek    
- * $
- */
-
-
-
-

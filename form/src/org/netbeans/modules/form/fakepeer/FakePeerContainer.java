@@ -10,6 +10,8 @@
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
+ 
+/* $Id$ */
 
 package org.netbeans.modules.form.fakepeer;
 
@@ -56,10 +58,10 @@ class FakePeerContainer extends Container
         for (int i = 0; i < ncomponents; i++) {
             Component comp = components[i];
             if (comp != null &&
-                    comp.getPeer() instanceof FakePeer &&
-                    comp.isVisible()) {
+                comp.getPeer() instanceof FakePeer &&
+                comp.isVisible()) {
                 Rectangle cr = comp.getBounds();
-                if (( clip == null ) || cr.intersects(clip)) {
+                if ((clip == null) || cr.intersects(clip)) {
                     Graphics cg = g.create(cr.x, cr.y, cr.width, cr.height);
                     cg.setFont(comp.getFont());
                     try {
@@ -74,9 +76,9 @@ class FakePeerContainer extends Container
             }
             if (comp instanceof Container) {
                 Rectangle cr = comp.getBounds();
-                if (( clip == null ) || cr.intersects(clip)) {
+                if ((clip == null) || cr.intersects(clip)) {
                     Graphics cg = g.create(cr.x, cr.y, cr.width, cr.height);
-                    paintFakePeersRecursively(cg, (Container) comp);
+                    paintFakePeersRecursively(cg,(Container) comp);
                     cg.dispose();
                 }
             }

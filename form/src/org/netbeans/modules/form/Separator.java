@@ -10,20 +10,14 @@
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
+ 
+/* $Id$ */
 
 package org.netbeans.modules.form;
 
 /** Separator is a dummy class representing separator in AWT menus.
-*
-* @author Ian Formanek
-*/
+ *
+ * @author Ian Formanek
+ */
 public class Separator {
 }
-
-/*
- * Log
- *  2    Gandalf   1.1         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  1    Gandalf   1.0         9/6/99   Ian Formanek    
- * $
- */

@@ -10,6 +10,8 @@
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
+ 
+/* $Id$ */
 
 package org.netbeans.modules.form.actions;
 
@@ -21,40 +23,40 @@ import org.openide.util.actions.*;
 import org.netbeans.modules.form.palette.BeanInstaller;
 
 /** InstallToPalette action - enabled on RADContainerNodes and RADLayoutNodes.
-*
-* @author   Ian Formanek
-*/
+ *
+ * @author   Ian Formanek
+ */
 public class InstallToPaletteAction extends CookieAction {
     static final long serialVersionUID =-7793615112675198529L;
     /** generated Serialized Version UID */
     //  static final long serialVersionUID = -5280204757097896304L;
 
     /** @return the mode of action. Possible values are disjunctions of MODE_XXX
-    * constants. */
+     * constants. */
     protected int mode() {
         return MODE_ALL;
     }
 
     /** Creates new set of classes that are tested by the cookie.
-    *
-    * @return list of classes the that the cookie tests
-    */
-    protected Class[] cookieClasses () {
+     *
+     * @return list of classes the that the cookie tests
+     */
+    protected Class[] cookieClasses() {
         return new Class[] { InstanceCookie.class };
     }
 
     /** Test for enablement based on the cookies of selected nodes.
-    * Generally subclasses should not override this except for strange
-    * purposes, and then only calling the super method and adding a check.
-    * Just use {@link #cookieClasses} and {@link #mode} to specify
-    * the enablement logic.
-    * @param activatedNodes the set of activated nodes
-    * @return <code>true</code> to enable
-    */
-    protected boolean enable (Node[] activatedNodes) {
-        if (super.enable (activatedNodes)) {
+     * Generally subclasses should not override this except for strange
+     * purposes, and then only calling the super method and adding a check.
+     * Just use {@link #cookieClasses} and {@link #mode} to specify
+     * the enablement logic.
+     * @param activatedNodes the set of activated nodes
+     * @return <code>true</code> to enable
+     */
+    protected boolean enable(Node[] activatedNodes) {
+        if (super.enable(activatedNodes)) {
             for (int i = 0; i < activatedNodes.length; i++) {
-                if (activatedNodes[i].getCookie (DataObject.class) == null) {
+                if (activatedNodes[i].getCookie(DataObject.class) == null) {
                     return false;
                 }
             }
@@ -65,53 +67,39 @@ public class InstallToPaletteAction extends CookieAction {
     }
 
     /** Human presentable name of the action. This should be
-    * presented as an item in a menu.
-    * @return the name of the action
-    */
+     * presented as an item in a menu.
+     * @return the name of the action
+     */
     public String getName() {
-        return org.openide.util.NbBundle.getBundle (InstallToPaletteAction.class).getString ("ACT_InstallToPalette");
+        return org.openide.util.NbBundle.getBundle(InstallToPaletteAction.class).getString("ACT_InstallToPalette");
     }
 
     /** Help context where to find more about the action.
-    * @return the help context for this action
-    */
+     * @return the help context for this action
+     */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(InstallToPaletteAction.class);
     }
 
     /** Icon resource.
-    * @return name of resource for icon
-    */
-    protected String iconResource () {
+     * @return name of resource for icon
+     */
+    protected String iconResource() {
         return "/org/openide/resources/actions/empty.gif"; // NOI18N
     }
 
     /**
-    * Standard perform action extended by actually activated nodes.
-    *
-    * @param activatedNodes gives array of actually activated nodes.
-    */
-    protected void performAction (Node[] activatedNodes) {
+     * Standard perform action extended by actually activated nodes.
+     *
+     * @param activatedNodes gives array of actually activated nodes.
+     */
+    protected void performAction(Node[] activatedNodes) {
         InstanceCookie[] cookies = new InstanceCookie[activatedNodes.length];
         for (int i = 0; i < activatedNodes.length; i++) {
-            cookies[i] = (InstanceCookie)activatedNodes[i].getCookie (InstanceCookie.class);
+            cookies[i] =(InstanceCookie)activatedNodes[i].getCookie(InstanceCookie.class);
         }
-        //XXX BeanInstaller.installBeans (cookies);
+        //XXX BeanInstaller.installBeans(cookies);
         BeanInstaller.installBeans(activatedNodes);// XXX(-tdt)
     }
 
 }
-
-/*
- * Log
- *  6    Gandalf   1.5         3/7/00   Tran Duc Trung  fix #5791: cannot add 
- *       serialized bean to component palette
- *  5    Gandalf   1.4         1/5/00   Ian Formanek    NOI18N
- *  4    Gandalf   1.3         11/27/99 Patrik Knakal   
- *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  2    Gandalf   1.1         7/22/99  Ian Formanek    Is enabled only on 
- *       reasonable objects
- *  1    Gandalf   1.0         7/18/99  Ian Formanek    
- * $
- */

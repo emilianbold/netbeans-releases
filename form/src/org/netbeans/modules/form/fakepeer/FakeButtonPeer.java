@@ -10,6 +10,8 @@
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
+ 
+/* $Id$ */
 
 package org.netbeans.modules.form.fakepeer;
 
@@ -46,7 +48,7 @@ class FakeButtonPeer extends FakeComponentPeer implements ButtonPeer
     private class Delegate extends Component
     {
         public void paint(Graphics g) {
-            Button target = (Button) _target;
+            Button target =(Button) _target;
 
             Dimension sz = target.getSize();
 
@@ -74,13 +76,13 @@ class FakeButtonPeer extends FakeComponentPeer implements ButtonPeer
             FontMetrics fm = g.getFontMetrics();
             int w = fm.stringWidth(label);
             int h = fm.getHeight() - fm.getDescent();
-            int x = (sz.width - w) / 2;
+            int x =(sz.width - w) / 2;
 
-            g.drawString(label, x, (sz.height - h) / 2 + h);
+            g.drawString(label, x,(sz.height - h) / 2 + h);
         }
 
         public Dimension getMinimumSize() {
-            String label = ((Button)_target).getLabel();
+            String label =((Button)_target).getLabel();
 
             FontMetrics fm = this.getFontMetrics(_target.getFont());
             int w = fm.stringWidth(label);

@@ -10,6 +10,8 @@
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
+ 
+/* $Id$ */
 
 package org.netbeans.modules.form.fakepeer;
 
@@ -236,11 +238,11 @@ abstract class FakeComponentPeer implements FakePeer
             g.fillRect(0, 0, sz.width, sz.height);
 
             javax.swing.plaf.basic.BasicGraphicsUtils.drawLoweredBezel(
-                g, 0, 0, sz.width, sz.height,
-                SystemColor.controlShadow,
-                SystemColor.controlDkShadow,
-                SystemColor.controlHighlight,
-                SystemColor.controlLtHighlight);
+                    g, 0, 0, sz.width, sz.height,
+                    SystemColor.controlShadow,
+                    SystemColor.controlDkShadow,
+                    SystemColor.controlHighlight,
+                    SystemColor.controlLtHighlight);
 
             g.setFont(new Font("Dialog", Font.BOLD, 12));
 
@@ -251,12 +253,12 @@ abstract class FakeComponentPeer implements FakePeer
             int w = fm.stringWidth(className);
             int h = fm.getHeight() - fm.getDescent();
 
-            int x = (sz.width - w) / 2;
+            int x =(sz.width - w) / 2;
 
             //        g.setColor(Color.white);
-            //        g.drawString(className, x+1, (sz.height - h) / 2 + h + 1);
+            //        g.drawString(className, x+1,(sz.height - h) / 2 + h + 1);
             g.setColor(Color.black);
-            g.drawString(className, x, (sz.height - h) / 2 + h);
+            g.drawString(className, x,(sz.height - h) / 2 + h);
 
         }
 

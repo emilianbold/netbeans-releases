@@ -10,6 +10,8 @@
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
+ 
+/* $Id$ */
 
 package org.netbeans.modules.form.fakepeer;
 
@@ -45,7 +47,7 @@ class FakeLabelPeer extends FakeComponentPeer implements LabelPeer
 
     private class Delegate extends Component {
         public void paint(Graphics g) {
-            Label target = (Label) _target;
+            Label target =(Label) _target;
 
             Dimension sz = target.getSize();
             Color c;
@@ -73,13 +75,13 @@ class FakeLabelPeer extends FakeComponentPeer implements LabelPeer
             if (alignment == Label.RIGHT)
                 x = sz.width - w;
             else if (alignment == Label.CENTER)
-                x = (sz.width - w) / 2;
+                x =(sz.width - w) / 2;
 
-            g.drawString(label, x, (sz.height - h) / 2 + h);
+            g.drawString(label, x,(sz.height - h) / 2 + h);
         }
 
         public Dimension getMinimumSize() {
-            String label = ((Label)_target).getText();
+            String label =((Label)_target).getText();
 
             FontMetrics fm = this.getFontMetrics(_target.getFont());
             int w = fm.stringWidth(label);

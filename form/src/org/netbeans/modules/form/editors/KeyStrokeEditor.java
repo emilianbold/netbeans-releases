@@ -10,6 +10,8 @@
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
+ 
+/* $Id$ */
 
 package org.netbeans.modules.form.editors;
 
@@ -24,24 +26,24 @@ import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 
 public class KeyStrokeEditor extends PropertyEditorSupport
-            implements XMLPropertyEditor
+    implements XMLPropertyEditor
 {
     public String getJavaInitializationString() {
-        KeyStroke key = (KeyStroke) getValue();
+        KeyStroke key =(KeyStroke) getValue();
         int mods = key.getModifiers();
         StringBuffer modsText = new StringBuffer();
 
-        if (0 != (mods
-                  & (InputEvent.ALT_MASK | InputEvent.SHIFT_MASK | InputEvent.CTRL_MASK))) {
-            if (0 != (mods & InputEvent.ALT_MASK))
+        if (0 !=(mods
+                 &(InputEvent.ALT_MASK | InputEvent.SHIFT_MASK | InputEvent.CTRL_MASK))) {
+            if (0 !=(mods & InputEvent.ALT_MASK))
                 modsText.append("java.awt.event.InputEvent.ALT_MASK");
-            if (0 != (mods & InputEvent.SHIFT_MASK)) {
-                if (modsText.length() > 0 )
+            if (0 !=(mods & InputEvent.SHIFT_MASK)) {
+                if (modsText.length() > 0)
                     modsText.append(" | ");
                 modsText.append("java.awt.event.InputEvent.SHIFT_MASK");
             }
-            if (0 != (mods & InputEvent.CTRL_MASK)) {
-                if (modsText.length() > 0 )
+            if (0 !=(mods & InputEvent.CTRL_MASK)) {
+                if (modsText.length() > 0)
                     modsText.append(" | ");
                 modsText.append("java.awt.event.InputEvent.CTRL_MASK");
             }
@@ -50,11 +52,11 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             modsText.append("0");
 
         return "javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent."
-               + getVirtualkeyName(key.getKeyCode()) + ", " + modsText.toString() + ")";
+            + getVirtualkeyName(key.getKeyCode()) + ", " + modsText.toString() + ")";
     }
 
     public String getAsText() {
-        KeyStroke key = (KeyStroke) getValue();
+        KeyStroke key =(KeyStroke) getValue();
         return keyStrokeAsString(key);
     }
 
@@ -72,10 +74,10 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             Field f = fields[i];
             int modifiers = f.getModifiers();
             if (Modifier.isPublic(modifiers)
-                    && Modifier.isStatic(modifiers)
-                    && Modifier.isFinal(modifiers)
-                    && f.getType() == Integer.TYPE
-                    && f.getName().startsWith("VK_")) {
+                && Modifier.isStatic(modifiers)
+                && Modifier.isFinal(modifiers)
+                && f.getType() == Integer.TYPE
+                && f.getName().startsWith("VK_")) {
                 try {
                     if (f.getInt(KeyEvent.class) == keycode) {
                         return f.getName();
@@ -95,7 +97,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         int mods = 0;
         int keycode = 0;
 
-        while(st.hasMoreTokens() && (token = st.nextToken()) != null) {
+        while (st.hasMoreTokens() &&(token = st.nextToken()) != null) {
             if ("alt".equalsIgnoreCase(token))
                 mods |= InputEvent.ALT_MASK;
             else if ("shift".equalsIgnoreCase(token))
@@ -145,22 +147,22 @@ public class KeyStrokeEditor extends PropertyEditorSupport
     public static final String XML_KEYSTROKE = "KeyStroke"; // NOI18N
     public static final String ATTR_KEY = "key"; // NOI18N
 
-    public void readFromXML (org.w3c.dom.Node element) throws java.io.IOException {
-        if (!XML_KEYSTROKE.equals(element.getNodeName ())) {
-            throw new java.io.IOException ();
+    public void readFromXML(org.w3c.dom.Node element) throws java.io.IOException {
+        if (!XML_KEYSTROKE.equals(element.getNodeName())) {
+            throw new java.io.IOException();
         }
-        org.w3c.dom.NamedNodeMap attributes = element.getAttributes ();
+        org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
         try {
-            String value = attributes.getNamedItem (ATTR_KEY).getNodeValue();
+            String value = attributes.getNamedItem(ATTR_KEY).getNodeValue();
             setAsText(value);
         } catch (Exception e) {
-            throw new java.io.IOException ();
+            throw new java.io.IOException();
         }
     }
 
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         org.w3c.dom.Element el = doc.createElement(XML_KEYSTROKE);
-        el.setAttribute (ATTR_KEY, getAsText());
+        el.setAttribute(ATTR_KEY, getAsText());
         return el;
     }
 
@@ -168,11 +170,11 @@ public class KeyStrokeEditor extends PropertyEditorSupport
     // custom editor
     //
 
-    public boolean supportsCustomEditor () {
+    public boolean supportsCustomEditor() {
         return true;
     }
 
-    public java.awt.Component getCustomEditor () {
+    public java.awt.Component getCustomEditor() {
         return new CustomEditor();
     }
 
@@ -202,10 +204,10 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             add(_keyGrabber = new KeyGrabberField());
 
             _keyGrabber.addActionListener(new ActionListener() {
-                                              public void actionPerformed(ActionEvent ev) {
-                                                  setAsText(_keyGrabber.getText());
-                                              }
-                                          });
+                    public void actionPerformed(ActionEvent ev) {
+                        setAsText(_keyGrabber.getText());
+                    }
+                });
 
             // fill in virtual key list
 
@@ -217,34 +219,34 @@ public class KeyStrokeEditor extends PropertyEditorSupport
                     Field f = fields[i];
                     int modifiers = f.getModifiers();
                     if (Modifier.isPublic(modifiers)
-                            && Modifier.isStatic(modifiers)
-                            && Modifier.isFinal(modifiers)
-                            && f.getType() == Integer.TYPE
-                            && f.getName().startsWith("VK_")) {
+                        && Modifier.isStatic(modifiers)
+                        && Modifier.isFinal(modifiers)
+                        && f.getType() == Integer.TYPE
+                        && f.getName().startsWith("VK_")) {
                         list.add(f.getName());
                     }
                 }
                 _virtualKeys = new String[list.size()];
                 for (int i = 0; i < list.size(); i++) {
-                    _virtualKeys[i] = (String) list.get(i);
+                    _virtualKeys[i] =(String) list.get(i);
                 }
             }
             _virtualKey.addItem("");
             for (int i = 0; i < _virtualKeys.length; i++)
                 _virtualKey.addItem(_virtualKeys[i]);
 
-            KeyStroke key = (KeyStroke) getValue();
+            KeyStroke key =(KeyStroke) getValue();
             if (key != null)
                 setKeyStroke(key);
 
             // listeners
 
             ItemListener il = new ItemListener() {
-                                  public void itemStateChanged(ItemEvent e) {
-                                      if (e.getStateChange() == ItemEvent.SELECTED)
-                                          virtualKeyChanged();
-                                  }
-                              };
+                    public void itemStateChanged(ItemEvent e) {
+                        if (e.getStateChange() == ItemEvent.SELECTED)
+                            virtualKeyChanged();
+                    }
+                };
             _virtualKey.addItemListener(il);
             _ctrl.addItemListener(il);
             _alt.addItemListener(il);
@@ -256,9 +258,9 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         }
 
         private void setKeyStroke(KeyStroke key) {
-            _ctrl.setSelected(0 != (InputEvent.CTRL_MASK & key.getModifiers()));
-            _alt.setSelected(0 != (InputEvent.ALT_MASK & key.getModifiers()));
-            _shift.setSelected(0 != (InputEvent.SHIFT_MASK & key.getModifiers()));
+            _ctrl.setSelected(0 !=(InputEvent.CTRL_MASK & key.getModifiers()));
+            _alt.setSelected(0 !=(InputEvent.ALT_MASK & key.getModifiers()));
+            _shift.setSelected(0 !=(InputEvent.SHIFT_MASK & key.getModifiers()));
 
             int keycode = key.getKeyCode();
             String keyName = getVirtualkeyName(keycode);
@@ -269,7 +271,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         }
 
         private void virtualKeyChanged() {
-            String keyName = (String) _virtualKey.getSelectedItem();
+            String keyName =(String) _virtualKey.getSelectedItem();
             if ("".equals(keyName)) {
                 _keyGrabber.setText("");
                 return;
@@ -304,8 +306,8 @@ public class KeyStrokeEditor extends PropertyEditorSupport
                 else if (e.getID() == KeyEvent.KEY_PRESSED) {
                     int keycode = e.getKeyCode();
                     if (keycode != KeyEvent.VK_CONTROL
-                            && keycode != KeyEvent.VK_ALT
-                            && keycode != KeyEvent.VK_SHIFT) {
+                        && keycode != KeyEvent.VK_ALT
+                        && keycode != KeyEvent.VK_SHIFT) {
                         KeyStroke key = KeyStroke.getKeyStroke(keycode, e.getModifiers());
                         setKeyStroke(key);
                     }

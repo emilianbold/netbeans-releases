@@ -10,6 +10,8 @@
  * Developer of the Original Code is Sun Microsystems, Inc. Portions
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
+ 
+/* $Id$ */
 
 package org.netbeans.modules.form;
 
@@ -22,13 +24,13 @@ import java.util.HashMap;
 import javax.swing.*;
 
 /**
-*
-* @author Ian Formanek
-*/
+ *
+ * @author Ian Formanek
+ */
 public class RADMenuComponent extends RADMenuItemComponent implements ComponentContainer {
 
     /** Hashtable, where keys are Integer(T_XXX), and values are Class[] - supported NewTypes
-    * for the different menu types */
+     * for the different menu types */
     static HashMap supportedNewMenu;
     /** Init supportedNewMenu table. */
     static {
@@ -50,16 +52,16 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     // Initialization
 
     /** Support for new types that can be created in this node.
-    * @return array of new type operations that are allowed
-    */
-    public NewType[] getNewTypes () {
-        Class[] classes = (Class []) supportedNewMenu.get(new Integer(getMenuItemType ()));
+     * @return array of new type operations that are allowed
+     */
+    public NewType[] getNewTypes() {
+        Class[] classes =(Class []) supportedNewMenu.get(new Integer(getMenuItemType()));
 
         if (classes == null)
             return RADComponent.NO_NEW_TYPES;
 
         NewType separator = createSeparatorNewType();
-        NewType[] types = new NewType[classes.length + ((separator != null) ? 1 : 0)];
+        NewType[] types = new NewType[classes.length +((separator != null) ? 1 : 0)];
 
         for (int i = 0; i < classes.length; i++) {
             types[i] = new NewMenuType(classes[i]);
@@ -73,22 +75,22 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     // -----------------------------------------------------------------------------
     // SubComponents Management
 
-    public RADComponent[] getSubBeans () {
-        RADComponent[] components = new RADComponent [subComponents.size ()];
-        subComponents.toArray (components);
+    public RADComponent[] getSubBeans() {
+        RADComponent[] components = new RADComponent [subComponents.size()];
+        subComponents.toArray(components);
         return components;
     }
 
-    public void initSubComponents (RADComponent[] initComponents) {
-        subComponents = new ArrayList (initComponents.length);
+    public void initSubComponents(RADComponent[] initComponents) {
+        subComponents = new ArrayList(initComponents.length);
         for (int i = 0; i < initComponents.length; i++) {
-            subComponents.add (initComponents[i]);
-            ((RADMenuItemComponent)initComponents[i]).initParent (this);
-            addVisualMenu ((RADMenuItemComponent)initComponents[i]);
+            subComponents.add(initComponents[i]);
+            ((RADMenuItemComponent)initComponents[i]).initParent(this);
+            addVisualMenu((RADMenuItemComponent)initComponents[i]);
         }
     }
 
-    public void reorderSubComponents (int[] perm) {
+    public void reorderSubComponents(int[] perm) {
         // XXX(-tdt) must make a copy of the component list, otherwise removing
         // menu separator will break
 
@@ -101,148 +103,148 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
             int from = i;
             int to = perm[i];
             if (from == to) continue;
-            Object value = list.remove (from);
+            Object value = list.remove(from);
             if (from < to) {
-                list.add (to - 1, value);
+                list.add(to - 1, value);
             } else {
-                list.add (to, value);
+                list.add(to, value);
             }
         }
 
         // remove and re-add in new order
 
         for (int i = 0, n = list.size(); i < n; i++)
-            remove((RADMenuItemComponent) list.get (i));
+            remove((RADMenuItemComponent) list.get(i));
         for (int i = 0, n = list.size(); i < n; i++)
-            add((RADMenuItemComponent) list.get (i));
+            add((RADMenuItemComponent) list.get(i));
 
-        getFormManager ().fireComponentsReordered (this);
+        getFormManager().fireComponentsReordered(this);
     }
 
-    public void add (RADComponent comp) {
-        if (!(comp instanceof RADMenuItemComponent)) throw new IllegalArgumentException ();
-        subComponents.add (comp);
-        ((RADMenuItemComponent)comp).initParent (this);
-        addVisualMenu ((RADMenuItemComponent) comp);
-        ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
+    public void add(RADComponent comp) {
+        if (!(comp instanceof RADMenuItemComponent)) throw new IllegalArgumentException();
+        subComponents.add(comp);
+        ((RADMenuItemComponent)comp).initParent(this);
+        addVisualMenu((RADMenuItemComponent) comp);
+        ((RADChildren)getNodeReference().getChildren()).updateKeys();
     }
 
-    public void remove (RADComponent comp) {
+    public void remove(RADComponent comp) {
         if (!(comp instanceof RADMenuItemComponent))
             throw new IllegalArgumentException();
-        removeVisualMenu ((RADMenuItemComponent)comp);
-        subComponents.remove (comp);
-        ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
+        removeVisualMenu((RADMenuItemComponent)comp);
+        subComponents.remove(comp);
+        ((RADChildren)getNodeReference().getChildren()).updateKeys();
     }
 
-    public int getIndexOf (RADComponent comp) {
-        return subComponents.indexOf (comp);
+    public int getIndexOf(RADComponent comp) {
+        return subComponents.indexOf(comp);
     }
 
     /**  Adds the menu represented by the node */
-    private void addVisualMenu (RADMenuItemComponent comp) {
+    private void addVisualMenu(RADMenuItemComponent comp) {
         Object o = getBeanInstance();
         Object m = comp.getBeanInstance();
-        Object dto = getDesignTimeMenus (getFormManager ()).getDesignTime (o);
-        Object dtm = getDesignTimeMenus (getFormManager ()).getDesignTime (m);
+        Object dto = getDesignTimeMenus(getFormManager()).getDesignTime(o);
+        Object dtm = getDesignTimeMenus(getFormManager()).getDesignTime(m);
 
-        switch (getMenuItemType ()) {
-        case T_MENUBAR:
-            ((MenuBar)o).add((Menu)m);
-            ((JMenuBar)dto).add ((JMenu) dtm);
-            ((JMenuBar)dto).validate();
-            break;
-        case T_MENU:
-            if (comp.getMenuItemType () == T_SEPARATOR) {
-                ((Menu)o).addSeparator();
-                ((JMenu)dto).addSeparator();
-            } else {
-                ((Menu)o).add((MenuItem)m);
-                ((JMenu)dto).add((JMenuItem)dtm);
-            }
-            break;
-        case T_POPUPMENU:
-            if (comp.getMenuItemType () == T_SEPARATOR) {
-                ((Menu)o).addSeparator();
-                ((JMenu)dto).addSeparator();
-            } else {
-                ((Menu)o).add((MenuItem)m);
-                ((JPopupMenu)dto).add((JMenuItem)dtm);
-            }
-            break;
-        case T_JMENUBAR:
-            ((JMenuBar)o).add((JMenu)m);
-            ((JMenuBar)o).validate();
-            break;
-        case T_JMENU:
-            if (comp.getMenuItemType () == T_JSEPARATOR) {
-                ((JMenu)o).addSeparator();
-            } else {
-                ((JMenu)o).add((JMenuItem)m);
-            }
-            break;
-        case T_JPOPUPMENU:
-            if (comp.getMenuItemType () == T_JSEPARATOR) {
-                ((JPopupMenu)o).addSeparator();
-            } else {
-                ((JPopupMenu)o).add((JMenuItem)m);
-            }
-            break;
+        switch (getMenuItemType()) {
+            case T_MENUBAR:
+                ((MenuBar)o).add((Menu)m);
+                ((JMenuBar)dto).add((JMenu) dtm);
+                ((JMenuBar)dto).validate();
+                break;
+            case T_MENU:
+                if (comp.getMenuItemType() == T_SEPARATOR) {
+                    ((Menu)o).addSeparator();
+                    ((JMenu)dto).addSeparator();
+                } else {
+                    ((Menu)o).add((MenuItem)m);
+                    ((JMenu)dto).add((JMenuItem)dtm);
+                }
+                break;
+            case T_POPUPMENU:
+                if (comp.getMenuItemType() == T_SEPARATOR) {
+                    ((Menu)o).addSeparator();
+                    ((JMenu)dto).addSeparator();
+                } else {
+                    ((Menu)o).add((MenuItem)m);
+                    ((JPopupMenu)dto).add((JMenuItem)dtm);
+                }
+                break;
+            case T_JMENUBAR:
+                ((JMenuBar)o).add((JMenu)m);
+                ((JMenuBar)o).validate();
+                break;
+            case T_JMENU:
+                if (comp.getMenuItemType() == T_JSEPARATOR) {
+                    ((JMenu)o).addSeparator();
+                } else {
+                    ((JMenu)o).add((JMenuItem)m);
+                }
+                break;
+            case T_JPOPUPMENU:
+                if (comp.getMenuItemType() == T_JSEPARATOR) {
+                    ((JPopupMenu)o).addSeparator();
+                } else {
+                    ((JPopupMenu)o).add((JMenuItem)m);
+                }
+                break;
         }
     }
 
     /**  Removes the menu represented by the node */
-    private void removeVisualMenu (RADMenuItemComponent comp) {
+    private void removeVisualMenu(RADMenuItemComponent comp) {
         Object o = getBeanInstance();
         Object m = comp.getBeanInstance();
-        Object dto = getDesignTimeMenus (getFormManager ()).getDesignTime (o);
-        Object dtm = getDesignTimeMenus (getFormManager ()).getDesignTime (m);
+        Object dto = getDesignTimeMenus(getFormManager()).getDesignTime(o);
+        Object dtm = getDesignTimeMenus(getFormManager()).getDesignTime(m);
 
-        switch (getMenuItemType ()) {
-        case T_MENUBAR:
-            ((MenuBar)o).remove((Menu)m);
-            ((JMenuBar)dto).remove((JMenu)dtm);
-            ((JMenuBar)dto).validate();
-            break;
-        case T_MENU:
-            if (comp.getMenuItemType () == T_SEPARATOR) {
-                ((Menu)o).remove (subComponents.indexOf(comp));
-                ((JMenu)dto).remove (subComponents.indexOf(comp));
-            } else {
-                ((Menu)o).remove((MenuItem)m);
-                ((JMenu)dto).remove((JMenuItem)dtm);
-            }
-            break;
-        case T_POPUPMENU:
-            if (comp.getMenuItemType () == T_SEPARATOR) {
-                ((Menu)o).remove (subComponents.indexOf(comp));
-                // PENDING - dont know how to get reference to JPopupMenu.Separator
-                // so it is not supported by getDesignTimeMenu () !!
-                //((JPopupMenu)dto).remove((JPopupMenu.Separator)dtm);
-            } else {
-                ((Menu)o).remove((MenuItem)m);
-                ((JPopupMenu)dto).remove((JMenuItem)dtm);
-            }
-            break;
-        case T_JMENUBAR:
-            ((JMenuBar)o).remove((JMenu)m);
-            ((JMenuBar)o).validate();
-            break;
-        case T_JMENU:
-            if (comp.getMenuItemType () == T_JSEPARATOR) {
-                ((JMenu)o).remove (subComponents.indexOf(comp));
-            } else {
-                ((JMenu)o).remove((JMenuItem)m);
-            }
-            break;
-        case T_JPOPUPMENU:
-            if (comp.getMenuItemType () == T_JSEPARATOR) {
-                //XXX(-tdt) ((JPopupMenu)o).remove((JPopupMenu.Separator)m);
-                ((JPopupMenu)o).remove (subComponents.indexOf(comp));
-            } else {
-                ((JPopupMenu)o).remove((JMenuItem)m);
-            }
-            break;
+        switch (getMenuItemType()) {
+            case T_MENUBAR:
+                ((MenuBar)o).remove((Menu)m);
+                ((JMenuBar)dto).remove((JMenu)dtm);
+                ((JMenuBar)dto).validate();
+                break;
+            case T_MENU:
+                if (comp.getMenuItemType() == T_SEPARATOR) {
+                    ((Menu)o).remove(subComponents.indexOf(comp));
+                    ((JMenu)dto).remove(subComponents.indexOf(comp));
+                } else {
+                    ((Menu)o).remove((MenuItem)m);
+                    ((JMenu)dto).remove((JMenuItem)dtm);
+                }
+                break;
+            case T_POPUPMENU:
+                if (comp.getMenuItemType() == T_SEPARATOR) {
+                    ((Menu)o).remove(subComponents.indexOf(comp));
+                    // PENDING - dont know how to get reference to JPopupMenu.Separator
+                    // so it is not supported by getDesignTimeMenu() !!
+                    //((JPopupMenu)dto).remove((JPopupMenu.Separator)dtm);
+                } else {
+                    ((Menu)o).remove((MenuItem)m);
+                    ((JPopupMenu)dto).remove((JMenuItem)dtm);
+                }
+                break;
+            case T_JMENUBAR:
+                ((JMenuBar)o).remove((JMenu)m);
+                ((JMenuBar)o).validate();
+                break;
+            case T_JMENU:
+                if (comp.getMenuItemType() == T_JSEPARATOR) {
+                    ((JMenu)o).remove(subComponents.indexOf(comp));
+                } else {
+                    ((JMenu)o).remove((JMenuItem)m);
+                }
+                break;
+            case T_JPOPUPMENU:
+                if (comp.getMenuItemType() == T_JSEPARATOR) {
+                    //XXX(-tdt)((JPopupMenu)o).remove((JPopupMenu.Separator)m);
+                    ((JPopupMenu)o).remove(subComponents.indexOf(comp));
+                } else {
+                    ((JPopupMenu)o).remove((JMenuItem)m);
+                }
+                break;
         }
     }
 
@@ -253,46 +255,46 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     // Innerclasses
 
     /** @return NewType for creating separator or null if this node doesn't support it.
-    */
+     */
     private NewType createSeparatorNewType() {
-        int type = getMenuItemType ();
-        return ((type == T_MENU) || (type == T_POPUPMENU) ||
-                (type == T_JMENU) || (type == T_JPOPUPMENU)) ? new NewSeparatorType() : null;
+        int type = getMenuItemType();
+        return((type == T_MENU) ||(type == T_POPUPMENU) ||
+               (type == T_JMENU) ||(type == T_JPOPUPMENU)) ? new NewSeparatorType() : null;
     }
 
     /** NewType class for creating the separator */
     private class NewSeparatorType extends NewType {
 
         /** Help context for the creation action.
-        * @return the help context
-        */
+         * @return the help context
+         */
         public org.openide.util.HelpCtx getHelpCtx() {
             return new org.openide.util.HelpCtx(this.getClass());
         }
 
         /** Display name for the creation action. This should be
-        * presented as an item in a menu.
-        *
-        * @return the name of the action
-        */
+         * presented as an item in a menu.
+         *
+         * @return the name of the action
+         */
         public String getName() {
-            return FormEditor.getFormBundle ().getString("CTL_separator");
+            return FormEditor.getFormBundle().getString("CTL_separator");
         }
 
         /** Create the object.
-        * @exception IOException if something fails
-        */
-        public void create () throws IOException {
-            RADMenuItemComponent newSeparatorComp = new RADMenuItemComponent ();
-            newSeparatorComp.initialize (getFormManager ());
-            if ((getMenuItemType () == T_MENU) || (getMenuItemType () == T_POPUPMENU)) {
-                newSeparatorComp.setComponent (org.netbeans.modules.form.Separator.class);
+         * @exception IOException if something fails
+         */
+        public void create() throws IOException {
+            RADMenuItemComponent newSeparatorComp = new RADMenuItemComponent();
+            newSeparatorComp.initialize(getFormManager());
+            if ((getMenuItemType() == T_MENU) ||(getMenuItemType() == T_POPUPMENU)) {
+                newSeparatorComp.setComponent(org.netbeans.modules.form.Separator.class);
             } else {
-                newSeparatorComp.setComponent (JSeparator.class);
+                newSeparatorComp.setComponent(JSeparator.class);
             }
-            getFormManager ().addNonVisualComponent (newSeparatorComp, RADMenuComponent.this);
-            //XXX(-tdt) addVisualMenu (newSeparatorComp);
-            getFormManager ().selectComponent (newSeparatorComp, false);
+            getFormManager().addNonVisualComponent(newSeparatorComp, RADMenuComponent.this);
+            //XXX(-tdt) addVisualMenu(newSeparatorComp);
+            getFormManager().selectComponent(newSeparatorComp, false);
             return;
         }
     }
@@ -309,13 +311,13 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         }
 
         /** Display name for the creation action. This should be
-        * presented as an item in a menu.
-        *
-        * @return the name of the action
-        */
+         * presented as an item in a menu.
+         *
+         * @return the name of the action
+         */
         public String getName() {
             String s = item.getName();
-            if (FormEditor.getFormSettings ().getShortBeanNames()) {
+            if (FormEditor.getFormSettings().getShortBeanNames()) {
                 int index = s.lastIndexOf('.');
                 if (index != -1)
                     return s.substring(index + 1);
@@ -324,9 +326,9 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         }
 
         /** Create the object.
-        * @exception IOException if something fails
-        */
-        public void create () throws IOException {
+         * @exception IOException if something fails
+         */
+        public void create() throws IOException {
             RADMenuItemComponent newMenuComp;
 
             if ((RADMenuItemComponent.recognizeType(item) & MASK_CONTAINER) == 0) {
@@ -336,42 +338,19 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
                 newMenuComp = new RADMenuComponent();
             }
 
-            newMenuComp.initialize (RADMenuComponent.this.getFormManager());
-            newMenuComp.setComponent (item);
+            newMenuComp.initialize(RADMenuComponent.this.getFormManager());
+            newMenuComp.setComponent(item);
             if (newMenuComp instanceof RADMenuComponent) {
-                ((RADMenuComponent)newMenuComp).initSubComponents (new RADComponent[0]);
+                ((RADMenuComponent)newMenuComp).initSubComponents(new RADComponent[0]);
             }
-            RADMenuComponent.this.getFormManager().addNonVisualComponent (newMenuComp, RADMenuComponent.this);
+            RADMenuComponent.this.getFormManager().addNonVisualComponent(newMenuComp, RADMenuComponent.this);
 
             // for some components, we initialize their properties with some non-default values
             // e.g. a label on buttons, checkboxes
-            FormEditor.defaultMenuInit (newMenuComp);
-            addVisualMenu (newMenuComp);
+            FormEditor.defaultMenuInit(newMenuComp);
+            addVisualMenu(newMenuComp);
 
-            RADMenuComponent.this.getFormManager().selectComponent (newMenuComp, false);
+            RADMenuComponent.this.getFormManager().selectComponent(newMenuComp, false);
         }
     }
 }
-
-/*
- * Log
- *  10   Gandalf   1.9         3/7/00   Tran Duc Trung  FIX #5894: cannot 
- *       reorder menu items if there is a separator among them
- *  9    Gandalf   1.8         12/8/99  Pavel Buzek     
- *  8    Gandalf   1.7         12/2/99  Pavel Buzek     AWT menu is displayed in
- *       form at design time (a swing equivalent is created for each awt menu 
- *       and displyed instead)
- *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  6    Gandalf   1.5         10/9/99  Ian Formanek    Fixed bug 4411 - Delete 
- *       of a jMenuItem does not work. (No action is performed.)
- *  5    Gandalf   1.4         9/6/99   Ian Formanek    Correctly works with 
- *       separators - fixes bug 3703 - When a new separator is created usng New 
- *       > Separator in a menu, an exception is thrown.
- *  4    Gandalf   1.3         7/14/99  Ian Formanek    Fixed problem with 
- *       appearance of loaded menus
- *  3    Gandalf   1.2         7/9/99   Ian Formanek    Menu editor improvements
- *  2    Gandalf   1.1         7/5/99   Ian Formanek    improved
- *  1    Gandalf   1.0         7/3/99   Ian Formanek    
- * $
- */
