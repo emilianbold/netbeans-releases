@@ -8,29 +8,23 @@ package org.netbeans.modules.web.debug.util;
 
 import java.util.*;
 
-import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
-import javax.swing.text.Caret;
-import javax.swing.text.StyledDocument;
+import javax.swing.*;
+import javax.swing.text.*;
 
 import org.openide.ErrorManager;
-import org.openide.nodes.Node;
-import org.openide.nodes.PropertySupport;
-import org.openide.util.actions.SystemAction;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
-import org.openide.text.NbDocument;
-import org.openide.text.Line;
+import org.openide.nodes.*;
+import org.openide.filesystems.*;
+import org.openide.text.*;
 import org.openide.loaders.DataObject;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.src.*;
+import org.openide.cookies.*;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
+
 import org.openide.filesystems.Repository;
 
-import org.netbeans.modules.web.core.jsploader.JspLoader;
-import org.netbeans.modules.web.core.jsploader.JspDataObject;
-
+import org.netbeans.modules.web.core.jsploader.*;
+import java.net.URL;
 
 /**
  *
@@ -51,29 +45,28 @@ public class Utils {
         List jsps = new Vector();
         Enumeration e, fsenum;
         
-        fsenum = Repository.getDefault().getFileSystems();
-        getEM().log("fsystems: " + fsenum);
+//        getEM().log("fsystems: " + fsenum);
 
-        while (fsenum.hasMoreElements()) {
-            FileSystem fs = (FileSystem)fsenum.nextElement();
-            getEM().log("fsystem: " + fs);
-            if (fs.findResource("WEB-INF") != null) {
-                FileObject f = fs.getRoot();
-                try {
-                    e = f.getFileSystem().getRoot().getChildren(true);
-                    getEM().log("children: " + e);
-                    while (e.hasMoreElements()) {
-                        FileObject ch = (FileObject)e.nextElement();
-                        getEM().log("ch: " + ch);
-                        if (!ch.isFolder() && !ch.isRoot() && !ch.isVirtual() && ch.isValid() && JspLoader.JSP_MIME_TYPE.equals(ch.getMIMEType())) {
-                            String ctx = "";                                    
-                            FileObject root = ch.getFileSystem().getRoot();
-                            DataObject data = null;
-                            try {
-                                data = DataObject.find(root);
-                            } catch (Exception excep) {
-                                // don't care
-                            }
+//        while (fsenum.hasMoreElements()) {
+//            FileSystem fs = (FileSystem)fsenum.nextElement();
+//            getEM().log("fsystem: " + fs);
+//            if (fs.findResource("WEB-INF") != null) {
+//                FileObject f = fs.getRoot();
+//                try {
+//                    e = f.getFileSystem().getRoot().getChildren(true);
+//                    getEM().log("children: " + e);
+//                    while (e.hasMoreElements()) {
+//                        FileObject ch = (FileObject)e.nextElement();
+//                        getEM().log("ch: " + ch);
+//                        if (!ch.isFolder() && !ch.isRoot() && !ch.isVirtual() && ch.isValid() && JspLoader.JSP_MIME_TYPE.equals(ch.getMIMEType())) {
+//                            String ctx = "";                                    
+//                            FileObject root = ch.getFileSystem().getRoot();
+//                            DataObject data = null;
+//                            try {
+//                                data = DataObject.find(root);
+//                            } catch (Exception excep) {
+//                                // don't care
+//                            }
 //                            if ((data instanceof WebContextObject) && (data!=null)) {
 //                                ctx = ((WebContextObject)data).getContextPath();
 //                                String idStr = ctx + " : " + ch.getPath();
@@ -81,14 +74,14 @@ public class Utils {
 //                                    jsps.add(idStr);
 //                                }
 //                            }
-                        }
-                    }
-                } catch (FileStateInvalidException fe) {
-                    // just continue with other fsystem
-                }
-            }
+//                        }
+//                    }
+//                } catch (FileStateInvalidException fe) {
+//                    // just continue with other fsystem
+//                }
+//            }
             
-        }
+//        }
         //Arrays.
         getEM().log("jsps : " + jsps);
         Object[] sorted = jsps.toArray();
@@ -176,62 +169,20 @@ public class Utils {
             return null;
         }
     }
-    
-    public static Line getCurrentLine () {
-        EditorCookie e = getCurrentEditorCookie ();
-        if (e == null) {
-            return null;
-        }
-        JEditorPane ep = getCurrentEditor (e);
-        if (ep == null) {
-            return null;
-        }
-        StyledDocument d = e.getDocument ();
-        if (d == null) {
-            return null;
-        }
-        Line.Set ls = e.getLineSet ();
-        if (ls == null) {
-            return null;
-        }
-        Caret c = ep.getCaret ();
-        if (c == null) {
-            return null;
-        }
-        Line l = ls.getCurrent( NbDocument.findLineNumber(d, c.getDot()));
-        if ( (l == null) ||
-             (org.openide.text.DataEditorSupport.findDataObject(l) == null) ||
-             (org.openide.text.DataEditorSupport.findDataObject(l).getPrimaryFile () == null)
-        ) {
-            return null;
-        }
-        try {
-            FileSystem fs = org.openide.text.DataEditorSupport.findDataObject(l).getPrimaryFile ().getFileSystem ();
-//            if (fs.getCapability ().capableOf (GUIManager.DEBUG_SRC)) {
-//                return l;
-//            }
-            if (fs.isHidden()) {
-                return null;
-            }
-            return l;
-        } catch (FileStateInvalidException ex) {
-            return null;
-        }
-    }
-    
+        
     /** 
      * Returns current editor component instance.
      *
      * @return current editor component instance
      */
     public static EditorCookie getCurrentEditorCookie () {
-//        AddBreakpointAction aba = (AddBreakpointAction) AddBreakpointAction.get(AddBreakpointAction.class);
-//        Node[] nodes = aba.getActivatedNodes ();
-//        if ( (nodes == null) || (nodes.length != 1)) {
-            return null;
-//        }
-//        Node n = nodes [0];
-//        return (EditorCookie) n.getCookie(EditorCookie.class);
+        Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
+        if ( (nodes == null) ||
+             (nodes.length != 1) ) return null;
+        Node n = nodes [0];
+        return (EditorCookie) n.getCookie (
+            EditorCookie.class
+        );
     }
     
     /** 
@@ -259,10 +210,6 @@ public class Utils {
         prop.setDisplayName(dispName);
         prop.setShortDescription(shortDesc);
         return prop;
-    }
-    
-    public static String getServletClassName(DataObject o) {
-        return "";
     }
     
     /**
@@ -293,7 +240,7 @@ public class Utils {
     */
     public static Line.Set getLineSet (String jspName, String ctxRoot) {
         getEM().log("Utils.getLineSet for: " + jspName + ", " + ctxRoot);
-        Enumeration files = Repository.getDefault().findAllResources(jspName);
+        Enumeration files = null; //Repository.getDefault().findAllResources(jspName); TODO
         if ((files == null) || (!files.hasMoreElements())) {
             return null;
         }
@@ -381,7 +328,7 @@ public class Utils {
         }
     }    
 
-    public static Boolean isScriptlet(StyledDocument doc, JEditorPane ep, int offset) {
+    public static boolean isScriptlet(StyledDocument doc, JEditorPane ep, int offset) {
         String t;
         int line = NbDocument.findLineNumber(doc, offset);
         int col = NbDocument.findLineColumn(doc, offset);
@@ -404,20 +351,19 @@ public class Utils {
                     }
                     while (identStart > 0) {
                         if ((t.charAt(identStart) == '%') && (t.charAt(identStart-1) == '<')) {
-                            return Boolean.TRUE;
+                            return true;
                         }
                         if ((t.charAt(identStart) == '>') && (t.charAt(identStart-1) == '%')) {
-                            return Boolean.FALSE;
+                            return false;
                         }                    
                         identStart--;
                     }
                 }
                 line--;
             }
-            return Boolean.FALSE;
         } catch (javax.swing.text.BadLocationException e) {
-            return Boolean.FALSE;
         }
+        return false;
     }        
     
     public static String getELIdentifier(StyledDocument doc, JEditorPane ep, int offset) {
@@ -503,14 +449,14 @@ public class Utils {
         );
     }
 
-    public static Boolean isScriptlet() {
+    public static boolean isScriptlet() {
         EditorCookie e = getCurrentEditorCookie ();
         if (e == null) {
-            return null;
+            return false;
         }
         JEditorPane ep = getCurrentEditor (e);
         if (ep == null) {
-            return null;
+            return false;
         }
         return isScriptlet(
             e.getDocument (),
@@ -519,13 +465,24 @@ public class Utils {
         );
     }
   
-//    public static void setViewVisibility (final GUIManager.View v, final boolean visible) {
-//        SwingUtilities.invokeLater (new Runnable () {
-//            public void run () {
-//                DebuggerWindow dw = DebuggerWindowPerformer.getDebuggerWindow ();
-//                dw.setVisible (v, visible);
-//            }
-//        });
-//    }
+    public static ImageIcon getIcon (String iconBase) {
+        String n = iconBase + ".gif"; // NOI18N
+        if (n.startsWith ("/")) {
+            n = n.substring (1);
+        }
+        ClassLoader currentClassLoader = (ClassLoader) Lookup.getDefault ().
+            lookup (ClassLoader.class);
+        URL url = currentClassLoader.getResource (n);
+        if (url == null) {
+            System.out.println (
+            "Icon: " + n +  // NOI18N
+            " does not exist!" // NOI18N
+            );
+            url = Utils.class.getResource (
+            "org/openide/resources/actions/properties.gif" // NOI18N
+            );
+        }
+        return new ImageIcon (url);
+    }
     
 }
