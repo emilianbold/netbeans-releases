@@ -11,14 +11,18 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!-- replace when submitting module to open source. -->
-<!--     debug="${build.compiler.debug}"-->
 
 <project name="classfile" default="netbeans" basedir=".">
+  <property name="binroot" location=".."/>
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
+
+  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
+
   <target name="compile">
-    <javac srcdir="src" destdir="src" 
-     deprecation="${build.compiler.deprecation}" 
-     debug="true">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
     </javac>
   </target>
 
@@ -26,30 +30,26 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/modules" />
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="classfile.jar" 
+    <jar jarfile="netbeans/modules/classfile.jar" 
      manifest="manifest-subst.mf" 
      basedir="src" 
-     excludesfile="jar-excludes.txt" 
+     excludesfile="../nbbuild/standard-jar-excludes.txt" 
      compress="false"/>
   </target>
 
   <target name="netbeans" depends="jars"/>
 
-  <taskdef name="makenbm" 
-   classname="org.netbeans.nbbuild.MakeNBM" 
-   classpath="/proj/jackpot/netbeans/src/nbbuild/nbantext.jar"/>
-
   <target name="nbm" depends="netbeans">
     <makenbm file="classfile.nbm"
              topdir="."
 	     manifest="manifest-subst.mf"
-	     homepage="http://classfile.netbeans.org/"
-	     distribution="http://www.netbeans.org/download/nbms/40/classfile.nbm">
-      <license file="/proj/jackpot/netbeans/src/nbbuild/standard-nbm-license.txt"/>
+	     homepage="http://classfile.${homepage.base}/"
+	     distribution="http://${dist.base}/classfile.nbm">
+      <license file="${license.file}"/>
       <description>
         Query all aspects of specified classfiles.
       </description>
-      <signature keystore="?" storepass="${storepass}" alias="nb_ide"/>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
     </makenbm>
   </target>
 
@@ -64,6 +64,10 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="classfile.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
+  </target>
+
+  <target name="real-clean" depends="clean">
+    <delete dir="test"/>
   </target>
 
 </project>
