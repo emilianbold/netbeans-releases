@@ -565,7 +565,9 @@ Microsystems, Inc. All Rights Reserved.
                         uri="nbresboot:/org/netbeans/core/resources/helpsetref-1_0.dtd"/>
                 <public publicId="-//NetBeans//DTD Help Context 1.0//EN"
                         uri="nbresboot:/org/netbeans/core/resources/helpcontext-1_0.dtd"/>
-
+                <!-- Session settings -->
+                <public publicId="-//NetBeans//DTD Session settings 1.0//EN"
+                        uri="nbresboot:/org/netbeans/core/resources/sessionsettings-1_0.dtd" />
             </catalog>    
             ]]>
             <!-- Optimization only: -->
