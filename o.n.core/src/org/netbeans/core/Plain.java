@@ -38,6 +38,7 @@ public class Plain extends NbTopManager implements Runnable {
 
   /** Creates new Plain. */
   public Plain() {
+      if (Boolean.getBoolean("org.netbeans.core.Plain.CULPRIT")) Thread.dumpStack(); // NOI18N
   }
   
     private ModuleSystem moduleSystem;
