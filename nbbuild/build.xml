@@ -122,9 +122,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <!-- Overridable. Note: need not necessarily be a number at all): -->
     <property name="buildnum" value="dev-${buildnumber}"/>
     <!-- Best to leave this alone, though, unless you know what you are doing: -->
-    <property name="sanitystart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true ${sanitystart.args.additional}"/>
-    <!-- But this it is OK to change: -->
-    <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true ${tryme.args.additional}"/>
+    <property name="sanitystart.args" value="-J-Dnetbeans.close=true"/>
 
   </target>
 
