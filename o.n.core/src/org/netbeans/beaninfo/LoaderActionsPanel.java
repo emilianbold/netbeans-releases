@@ -39,14 +39,12 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
   /** Creates new form LoaderActionsPanel */
   public LoaderActionsPanel (PropertyEditor pe) {
     initComponents ();
-    // [PENDING] are buttons still ragged right?
     model = new DefaultListModel ();
     SystemAction[] actions = (SystemAction[]) pe.getValue ();
     if (actions == null) actions = new SystemAction[] { };
     for (int i = 0; i < actions.length; i++)
       model.addElement (actions[i]);
     list.setModel (model);
-    if (actions.length == 0) removeButton.setEnabled (false);
     mgr = explorerPanel.getExplorerManager ();
     mgr.setRootContext (new ActionsPoolNode ());
     mgr.addPropertyChangeListener (new PropertyChangeListener () {
@@ -71,6 +69,7 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
     beanTreeView2 = new org.openide.explorer.view.BeanTreeView ();
     jScrollPane1 = new javax.swing.JScrollPane ();
     list = new javax.swing.JList ();
+    jPanel2 = new javax.swing.JPanel ();
     jPanel1 = new javax.swing.JPanel ();
     addButton = new javax.swing.JButton ();
     separatorButton = new javax.swing.JButton ();
@@ -78,9 +77,11 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
     upButton = new javax.swing.JButton ();
     downButton = new javax.swing.JButton ();
     setLayout (new java.awt.BorderLayout ());
-    setPreferredSize (new java.awt.Dimension(600, 300));
+    setPreferredSize (new java.awt.Dimension(600, 500));
 
     splitPane.setDividerLocation (300);
+    splitPane.setDividerSize (5);
+    splitPane.setLastDividerLocation (300);
 
   
         beanTreeView2.setDefaultActionAllowed (false);
@@ -107,68 +108,92 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
 
     add (splitPane, java.awt.BorderLayout.CENTER);
 
-    jPanel1.setLayout (new java.awt.GridLayout (5, 1, 5, 5));
 
-      addButton.setToolTipText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton1.toolTipText"));
-      addButton.setText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton1.text"));
-      addButton.setEnabled (false);
-      addButton.addActionListener (new java.awt.event.ActionListener () {
-        public void actionPerformed (java.awt.event.ActionEvent evt) {
-          addButtonActionPerformed (evt);
+      jPanel1.setLayout (new java.awt.GridBagLayout ());
+      java.awt.GridBagConstraints gridBagConstraints1;
+      jPanel1.setBorder (new javax.swing.border.EtchedBorder());
+  
+        addButton.setToolTipText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton1.toolTipText"));
+        addButton.setText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton1.text"));
+        addButton.setEnabled (false);
+        addButton.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            addButtonActionPerformed (evt);
+          }
         }
-      }
-      );
-  
-      jPanel1.add (addButton);
-  
-      separatorButton.setToolTipText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton2.toolTipText"));
-      separatorButton.setText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton2.text"));
-      separatorButton.addActionListener (new java.awt.event.ActionListener () {
-        public void actionPerformed (java.awt.event.ActionEvent evt) {
-          separatorButtonActionPerformed (evt);
+        );
+    
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel1.add (addButton, gridBagConstraints1);
+    
+        separatorButton.setToolTipText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton2.toolTipText"));
+        separatorButton.setText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton2.text"));
+        separatorButton.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            separatorButtonActionPerformed (evt);
+          }
         }
-      }
-      );
-  
-      jPanel1.add (separatorButton);
-  
-      removeButton.setToolTipText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton3.toolTipText"));
-      removeButton.setText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton3.text"));
-      removeButton.addActionListener (new java.awt.event.ActionListener () {
-        public void actionPerformed (java.awt.event.ActionEvent evt) {
-          removeButtonActionPerformed (evt);
+        );
+    
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 1;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel1.add (separatorButton, gridBagConstraints1);
+    
+        removeButton.setToolTipText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton3.toolTipText"));
+        removeButton.setText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton3.text"));
+        removeButton.setEnabled (false);
+        removeButton.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            removeButtonActionPerformed (evt);
+          }
         }
-      }
-      );
-  
-      jPanel1.add (removeButton);
-  
-      upButton.setToolTipText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton4.toolTipText"));
-      upButton.setText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton4.text"));
-      upButton.setEnabled (false);
-      upButton.addActionListener (new java.awt.event.ActionListener () {
-        public void actionPerformed (java.awt.event.ActionEvent evt) {
-          upButtonActionPerformed (evt);
+        );
+    
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 2;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel1.add (removeButton, gridBagConstraints1);
+    
+        upButton.setToolTipText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton4.toolTipText"));
+        upButton.setText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton4.text"));
+        upButton.setEnabled (false);
+        upButton.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            upButtonActionPerformed (evt);
+          }
         }
-      }
-      );
-  
-      jPanel1.add (upButton);
-  
-      downButton.setToolTipText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton5.toolTipText"));
-      downButton.setText (org.openide.util.NbBundle.getBundle(LoaderActionsPanel.class).getString("LoaderActionsPanel.jButton5.text"));
-      downButton.setEnabled (false);
-      downButton.addActionListener (new java.awt.event.ActionListener () {
-        public void actionPerformed (java.awt.event.ActionEvent evt) {
-          downButtonActionPerformed (evt);
+        );
+    
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 3;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel1.add (upButton, gridBagConstraints1);
+    
+        downButton.setToolTipText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton5.toolTipText"));
+        downButton.setText (java.util.ResourceBundle.getBundle("com/netbeans/developer/impl/beaninfo/Bundle").getString("LoaderActionsPanel.jButton5.text"));
+        downButton.setEnabled (false);
+        downButton.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            downButtonActionPerformed (evt);
+          }
         }
-      }
-      );
-  
-      jPanel1.add (downButton);
+        );
+    
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 4;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel1.add (downButton, gridBagConstraints1);
+    
+      jPanel2.add (jPanel1);
   
 
-    add (jPanel1, java.awt.BorderLayout.EAST);
+    add (jPanel2, java.awt.BorderLayout.EAST);
 
   }//GEN-END:initComponents
 
@@ -179,6 +204,8 @@ private void listValueChanged (javax.swing.event.ListSelectionEvent evt) {//GEN-
       upButton.setEnabled (false);
       removeButton.setEnabled (false);
     } else {
+      // [PENDING] remove button enabled after removing last action
+      // but it is harmless to press it
       removeButton.setEnabled (true);
       downButton.setEnabled (index != model.getSize () - 1);
       upButton.setEnabled (index != 0);
@@ -207,7 +234,10 @@ private void removeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN
   int index = list.getSelectedIndex ();
   if (index == -1) return;
   model.remove (index);
-  list.setSelectedIndices (new int[] { });
+  if (model.getSize () == 0)
+    list.setSelectedIndices (new int[] { });
+  else
+    list.setSelectedIndex (Math.min (index, model.getSize () - 1));
   }//GEN-LAST:event_removeButtonActionPerformed
 
 private void separatorButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_separatorButtonActionPerformed
@@ -229,6 +259,7 @@ private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FI
   private org.openide.explorer.view.BeanTreeView beanTreeView2;
   private javax.swing.JScrollPane jScrollPane1;
   private javax.swing.JList list;
+  private javax.swing.JPanel jPanel2;
   private javax.swing.JPanel jPanel1;
   private javax.swing.JButton addButton;
   private javax.swing.JButton separatorButton;
@@ -305,7 +336,6 @@ private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FI
       label.setIcon (new ImageIcon (SystemAction.class.getClassLoader ().getResource
         ("org/openide/resources/actions/empty.gif"))); // NOI18N
     }
-    // [PENDING] this does not seem to work:
     if (isSelected) {
       label.setBackground(list.getSelectionBackground());
       label.setForeground(list.getSelectionForeground());
@@ -315,12 +345,14 @@ private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FI
     }
     label.setEnabled(list.isEnabled());
     label.setFont(list.getFont());
+    label.setOpaque (true);
     return label;
   }
 }
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/13/00  Jesse Glick     Much nicer-looking.
  *  2    Gandalf   1.1         1/13/00  Jaroslav Tulach I18N
  *  1    Gandalf   1.0         1/13/00  Jesse Glick     
  * $
