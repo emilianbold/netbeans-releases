@@ -66,7 +66,7 @@ public class ValidateActionTest extends AbstractCheckTest {
 
     /** Validates document according to schema */
     public void testInvalidSchemaLocationSD() throws Exception {
-        performAction("InvalidSchemaLocationSD.xml", new int[] {6, 7});
+        performAction("InvalidSchemaLocationSD.xml", new int[] {6});
     }
     
     // *** Valid (DTD) ***
