@@ -37,10 +37,8 @@ public class StructHandler extends Element /*implements TaskListener*/ {
     /** Appropriate properties file entry. */
     private PropertiesFileEntry pfe;
 
-    /** If the parsing is in progress this variable is set
-    * to the parsing task.
-    */
-    Task parsingTask;
+    /** Keeps parsing task. */
+    RequestProcessor.Task parsingTask;
 
     /** Soft reference to the data */
     SoftReference dataRef;
@@ -128,12 +126,24 @@ public class StructHandler extends Element /*implements TaskListener*/ {
 
     // ======================== Package private part ================================
 
-    /** Starts the parsing if the this class is 'dirty' and status is true
-    * and parsing is not running yet.
+    /** Starts the parsing task if the status is true
+    * and cancels previous parsing task if it is not running yet.
     */
     void autoParse() {
-        if (getStatus())
-            reparseNowBlocking();
+        if (getStatus()) {
+            // If there is previous parsing task waiting, cancel it.
+            if(parsingTask != null)
+                parsingTask.cancel();
+            // Request parsing time to start after 500 milliseconds.
+            parsingTask = RequestProcessor.postRequest(
+                    new Runnable() {
+                        public void run() {
+                            reparseNowBlocking();
+                        }
+                    },
+                    500 // Time to wait before start the parsing task.
+                );
+        }
     }
 
     /** When parser finishes its job, it has to call this method to inform
