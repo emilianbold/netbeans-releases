@@ -57,4 +57,8 @@ public class DeleteAllAction extends NodeAction {
     public boolean enable(Node[] nodes) {
 	return true;
     }
+
+    public boolean asynchronous() { 
+	return false; 
+    } 
 } // DeleteAllAction

@@ -59,4 +59,7 @@ public class ReplayAction extends NodeAction {
 	MonitorAction.getController().replayTransaction(nodes[0]);
     }
 
+    public boolean asynchronous() { 
+	return false; 
+    } 
 } // ReplayAction

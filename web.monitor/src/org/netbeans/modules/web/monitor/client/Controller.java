@@ -23,13 +23,27 @@
 
 package  org.netbeans.modules.web.monitor.client;
 
-import java.util.*;
-import java.io.*;
-import java.net.*;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.net.URL;
 
 import java.text.MessageFormat; 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import javax.swing.SwingUtilities;
 
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -48,7 +62,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Children.SortedArray;
-import org.openide.options.*;
+import org.openide.options.SystemOption;
 import org.openide.util.HttpServer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -57,7 +71,6 @@ import org.netbeans.modules.web.monitor.server.Constants;
 import org.netbeans.modules.web.monitor.data.*;
 
 class Controller  {
-
 
     // REPLAY strings - must be coordinated with server.MonitorFilter
     final static String REPLAY="netbeans.replay"; //NOI18N
@@ -1291,7 +1304,7 @@ class Controller  {
 	return md;
     }
 
-    private void showReplay(URL url) throws UnknownHostException,
+    private void showReplay(final URL url) throws UnknownHostException,
 	                                    IOException {
 	
 	if(debug) 
@@ -1335,17 +1348,21 @@ class Controller  {
 	if(debug) log("showReplay(): reaching the end..."); // NOI18N
 
 	if(browser == null) 
-	    browser = 
-		new HtmlBrowser.BrowserComponent(getFactory(), true, true);
-	
-	if(browser != null) {
-	    browser.setURL(url);
-	    browser.open();
-	    if(!browser.isShowing()) browser.setVisible(true);
-	    
-	}
-    }
 
+        // window system code must be run in AWT thread
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run () {
+		browser = 
+		    new HtmlBrowser.BrowserComponent(getFactory(), true, true);
+		
+		if(browser != null) {
+		    browser.setURL(url);
+		    browser.open();
+		    if(!browser.isShowing()) browser.setVisible(true);
+		}
+	    }});
+    }
+    
     /* 
      * Get a factory objects for browsers. 
      */

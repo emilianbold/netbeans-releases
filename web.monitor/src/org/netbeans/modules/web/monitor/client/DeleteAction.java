@@ -60,4 +60,7 @@ public class DeleteAction extends NodeAction {
 	return true;
     }
 
+    public boolean asynchronous() { 
+	return false; 
+    } 
 } // DeleteAction

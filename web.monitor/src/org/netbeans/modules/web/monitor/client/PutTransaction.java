@@ -13,12 +13,19 @@
 
 package org.netbeans.modules.web.monitor.client; 
 
-import java.io.*;
-import java.text.*;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
-import javax.servlet.*;
-import javax.servlet.http.*;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.swing.SwingUtilities;
 
 import org.openide.filesystems.FileAlreadyLockedException;

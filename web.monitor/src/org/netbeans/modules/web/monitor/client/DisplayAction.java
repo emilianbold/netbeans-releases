@@ -62,4 +62,8 @@ public class DisplayAction extends NodeAction {
     public void performAction(Node[] nodes) { 
 	TransactionView.getInstance().displayTransaction(nodes[0]);
     }
+
+    public boolean asynchronous() { 
+	return false; 
+    } 
 } // DisplayAction
