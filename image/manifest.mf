@@ -1,7 +1,7 @@
 OpenIDE-Module: com.netbeans.developer.modules.loaders.image/1
 OpenIDE-Module-Name: Image
-OpenIDE-Module-Specification-Version: 0.9.1
-OpenIDE-Module-Implementation-Version: 0.9.1
+OpenIDE-Module-Specification-Version: 0.9.2
+OpenIDE-Module-Implementation-Version: 0.9.2
 
 Name: com/netbeans/developer/modules/loaders/image/ImageDataLoader.class
 OpenIDE-Module-Class: Loader
