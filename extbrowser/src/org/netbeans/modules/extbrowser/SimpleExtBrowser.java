@@ -151,8 +151,10 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
                 this.url = url;
             } catch (IOException ex) {
                 TopManager.getDefault().notify(
-                new NotifyDescriptor.Exception(ex,
-                    NbBundle.getBundle(SimpleExtBrowser.class).getString("EXC_Invalid_Processor")
+                new NotifyDescriptor.Confirmation(
+                    NbBundle.getBundle(SimpleExtBrowser.class).getString("EXC_Invalid_Processor"),
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE
                     )
                 );
             }
@@ -223,8 +225,11 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
     /** Default format that can format tags related to execution. Currently this is only the URL.
      */
     private static class BrowserFormat extends org.openide.execution.ProcessExecutor.Format {
+        
+        private static final long serialVersionUID = 5990981835151848381L;
         /** Tag replaced with the URL */
-        public static final String TAG_URL = "URL"; // NOI18N
+        public static final String TAG_URL = "URL";  // NOI18N
+        
         
         /** @param info exec info about class to execute
          * @param classPath to substitute instead of CLASSPATH

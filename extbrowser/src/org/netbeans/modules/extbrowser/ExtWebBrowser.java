@@ -30,12 +30,16 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
     
     public static final String PROP_DESCRIPTION = "description"; // NOI18N
     public static final String PROP_BROWSER_EXECUTABLE = "browserExecutable"; // NOI18N
+    public static final String PROP_START_IF_NOT_RUNNING = "startIfNotRunning"; // NOI18N
     
     /** command that executes the browser. Used in an old version. */
     private String executable;
     
     /** Holds value of property browserExecutable. */
     private NbProcessDescriptor browserExecutable;
+
+    /** value of property startIfNotRunning */
+    private boolean startIfNotRunning = true;
     
     protected transient PropertyChangeSupport pcs;
     
@@ -75,6 +79,23 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
         pcs.firePropertyChange (PROP_BROWSER_EXECUTABLE, old, browserExecutable);
     }
     
+    /** Getter for property startIfNotRunning.
+     * @return Value of property startIfNotRunning.
+     */
+    public boolean isStartWhenNotRunning () {
+        return startIfNotRunning;
+    }
+
+    /** Setter for property startIfNotRunning.
+     * @param s New value of property startIfNotRunning.
+     */
+    public void setStartWhenNotRunning (boolean s) {
+        if (s != startIfNotRunning) {
+            startIfNotRunning = s;
+            pcs.firePropertyChange (PROP_START_IF_NOT_RUNNING, !startIfNotRunning, startIfNotRunning);
+        }
+    }
+
     /** Default command for browser execution.
      *  Can be overriden to return browser that suits to platform and settings.
      *

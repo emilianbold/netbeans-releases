@@ -21,6 +21,8 @@ package org.netbeans.modules.extbrowser;
  */
 public class NbBrowserException extends java.lang.Exception {
 
+    private static final long serialVersionUID = 8883382856731051881L;
+    
     /**
      * Creates new <code>NbBrowserException</code> without detail message.
      */

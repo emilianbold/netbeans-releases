@@ -194,14 +194,14 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         try {
             String cmd = getDefaultOpenCommand ();
             if (cmd != null) {
-                if (cmd.toUpperCase ().indexOf (ExtBrowserSettings.IEXPLORE) >= 0)
-                    return ExtBrowserSettings.IEXPLORE;
+                if (cmd.toUpperCase ().indexOf (WinWebBrowser.IEXPLORE) >= 0)
+                    return WinWebBrowser.IEXPLORE;
 
-                if (cmd.toUpperCase ().indexOf (ExtBrowserSettings.NETSCAPE) >= 0)
-                    return ExtBrowserSettings.NETSCAPE;
+                if (cmd.toUpperCase ().indexOf (WinWebBrowser.NETSCAPE) >= 0)
+                    return WinWebBrowser.NETSCAPE;
                 
-                if (cmd.toUpperCase ().indexOf (ExtBrowserSettings.MOZILLA) >= 0)
-                    return ExtBrowserSettings.MOZILLA;
+                if (cmd.toUpperCase ().indexOf (WinWebBrowser.MOZILLA) >= 0)
+                    return WinWebBrowser.MOZILLA;
             }
         }
         catch (Exception ex) {
@@ -209,7 +209,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, ex);
         }
         // guess IE
-        return ExtBrowserSettings.IEXPLORE;
+        return WinWebBrowser.IEXPLORE;
     }
     
     
@@ -308,7 +308,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 // activate browser window (doesn't work on Win9x)
                 if (!win9xHack (task) && !mozillaHack (task)) {
                     // IE problem
-                    if (task.browser.realDDEServer().equals(ExtBrowserSettings.IEXPLORE))
+                    if (task.browser.realDDEServer().equals(WinWebBrowser.IEXPLORE))
                         winID = "0xFFFFFFFF";   // NOI18N
                     else
                         winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: task.browser.currWinID).toUpperCase(); // NOI18N
@@ -338,7 +338,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 }
 
 
-                if (task.browser.realDDEServer().equals(ExtBrowserSettings.IEXPLORE)) {
+                if (task.browser.realDDEServer().equals(WinWebBrowser.IEXPLORE)) {
                     winID = (hasNoWindow && !win9xHack(task))? "0": "-1";   // NOI18N
                 }
                 else
@@ -363,7 +363,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 }
                     
                 if (data != null && data.length >= 4) {
-                    if (!task.browser.realDDEServer().equals(ExtBrowserSettings.IEXPLORE)) {
+                    if (!task.browser.realDDEServer().equals(WinWebBrowser.IEXPLORE)) {
                         task.browser.currWinID=DdeBrowserSupport.getDWORDAtOffset(data, 0);
                         if (task.browser.currWinID < 0) task.browser.currWinID = -task.browser.currWinID;
                     }
@@ -391,13 +391,13 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
          * Checks for IExplorer & Win9x combination.
          */
         private boolean win9xHack (DisplayTask task) {
-            return task.browser.realDDEServer().equals(ExtBrowserSettings.IEXPLORE)
+            return task.browser.realDDEServer().equals(WinWebBrowser.IEXPLORE)
                    && (Utilities.getOperatingSystem() == Utilities.OS_WIN98 
                       ||  Utilities.getOperatingSystem() == Utilities.OS_WIN95);
         }
 
         private boolean mozillaHack (DisplayTask task) {
-            return task.browser.realDDEServer().equals(ExtBrowserSettings.MOZILLA);
+            return task.browser.realDDEServer().equals(WinWebBrowser.MOZILLA);
         }
         
         /** 
@@ -407,7 +407,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
          */
         private void startBrowser(DisplayTask task) throws NbBrowserException, java.io.IOException, InterruptedException {
             String b;
-            if (ExtBrowserSettings.OPTIONS.isStartWhenNotRunning()) {
+            if (task.browser.winBrowserFactory.isStartWhenNotRunning()) {
                 NbProcessDescriptor cmd = task.browser.winBrowserFactory.getBrowserExecutable();
                 // setStatusMessage(bundle.getString("MSG_Running_command")+cmd);
                 cmd.exec();
