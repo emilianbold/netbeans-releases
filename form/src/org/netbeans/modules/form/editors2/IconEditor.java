@@ -755,6 +755,28 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
             }
         }
         
+        private java.util.List getRoots(ClassPath cp) {
+            ArrayList l = new ArrayList(cp.entries().size());
+            Iterator eit = cp.entries().iterator();
+            while(eit.hasNext()) {
+                ClassPath.Entry e = (ClassPath.Entry)eit.next();
+                
+                // try to map it to sources
+                URL url = e.getURL();
+                SourceForBinaryQuery.Result r= SourceForBinaryQuery.findSourceRoots(url);
+                FileObject [] fos = r.getRoots();
+                if (fos.length > 0) {
+                    for (int i = 0 ; i < fos.length; i++) l.add(fos[i]);
+                } else {
+                    if (e.getRoot()!=null)
+                        l.add(e.getRoot()); // add the class-path location
+                                            // directly
+                }
+            }
+            
+            return l;
+        }
+        
         /**
          * Obtains icon resource from the user.
          *
@@ -763,24 +785,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
         private String selectResource() {
             FileObject formFile = formModel.getFormDataObject().getFormFile();
             ClassPath executeClassPath = ClassPath.getClassPath(formFile, ClassPath.EXECUTE);
-            java.util.List roots = new LinkedList();
-            FileObject[] executeRoots = (executeClassPath == null) ? new FileObject[0] : executeClassPath.getRoots();
-            for (int i=0; i<executeRoots.length; i++) {
-                URL url = null;
-                FileObject[] srcRoots = null;
-                try {
-                    url = executeRoots[i].getURL();
-                    SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(url);
-                    srcRoots = result.getRoots();
-                    for (int j=0; j<srcRoots.length; j++) {
-                        roots.add(srcRoots[j]);
-                    }
-                } catch (FileStateInvalidException fsiex) {}
-                if ((url == null) || (srcRoots.length == 0)) {
-                    roots.add(executeRoots[i]);
-                }
-            }
-            
+            java.util.List roots = (executeClassPath == null) ? Collections.EMPTY_LIST : getRoots(executeClassPath);
             Project project = FileOwnerQuery.getOwner(formFile);
             Node nodes[] = new Node[roots.size()];
             int selRoot = -1;
