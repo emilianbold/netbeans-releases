@@ -283,6 +283,7 @@
     <tocitem text="Setting Breakpoints">
       <tocitem text="Breakpoints in the IDE" target="debug.breakpoint"/>
       <tocitem text="Setting Java Breakpoints" >
+        <tocitem text="Setting a Java Breakpoint" target="debug.breakpoint.java" />
         <tocitem text="Setting a Line Breakpoint" target="debug.breakpoint.line" />
         <tocitem text="Setting a Method Breakpoint" target="debug.breakpoint.method" />
         <tocitem text="Setting an Exception Breakpoint" target="debug.breakpoint.exception" />

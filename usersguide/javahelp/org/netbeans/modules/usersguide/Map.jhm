@@ -391,8 +391,6 @@
 <mapID target="editing.completion.manager" url="editing/parserdatabase_customizer.html" />
 
 
-<mapID target="debug.overview" url="debug/debug.html" />
-<mapID target="debug.workspace" url="debug/environment/workspace.html" />
 <mapID target="debug.toolbar" url="debug/environment/toolbar.html" />
 <mapID target="debug.menu" url="debug/environment/debug_menu.html" />
 <mapID target="debug.output.window" url="debug/environment/debug_output.html" />
@@ -437,7 +435,6 @@
 <mapID target="debug.breakpoint.remove" url="debug/breakpoint/breakpoint_remove.html" />
 <mapID target="debug.add.breakpoint" url="debug/breakpoint/breakpoint_window.html" />
 
-<mapID target="debug.running.jump" url="debug/running/running_jump.html" />
 <mapID target="debug.running.cursor" url="debug/running/running_cursor.html" />
 <mapID target="debug.running.resume" url="debug/running/running_resume.html" />
 <mapID target="debug.running.pause" url="debug/running/pause.html" />
@@ -450,7 +447,6 @@
 <mapID target="debug.watch.delete" url="debug/watches/delete_watch.html" />
 <mapID target="debug.watch.window" url="debug/watches/watch_window.html" />
 
-<mapID target="debug.callstack.jump" url="debug/callstack/callstack_jump.html" />
 <mapID target="debug.callstack.callingmethod" url="debug/callstack/calling_method.html" />
 <mapID target="debug.callstack.pop" url="debug/callstack/pop.html" />
 
@@ -462,7 +458,6 @@
 <mapID target="debug.threads.change" url="debug/threads/change.html" />
 <mapID target="debug.threads.source" url="debug/threads/source.html" />
 
-<mapID target="debug.debugger.customize" url="debug/debugger/configure_jump.html" />
 <mapID target="debug.debugger.jump" url="debug/debugger/debugger_jump.html" />
 <mapID target="debug.debugger.default" url="debug/debugger/default.html" />
 <mapID target="debug.debugger.applet" url="debug/debugger/applet.html" />
