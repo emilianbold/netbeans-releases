@@ -14,11 +14,11 @@
     <xsl:template match="/">
         <html>
             <head>
-                <title>API Questions</title>
+                <title>Arch Questions</title>
             </head>
             <body>
             
-                <H1>API Answers for <xsl:value-of select="api-answers/@module" /><xsl:text> module</xsl:text></H1>
+                <H1>Arch Answers for <xsl:value-of select="api-answers/@module" /><xsl:text> module</xsl:text></H1>
                 
                 <xsl:variable name="qver" select="substring-before(substring-after(api-answers/api-questions/@version,'Revision: '),' $')" />
                 <xsl:variable name="aver" select="substring-before(substring-after(api-answers/@version,'Revision:'),' $')" />
@@ -105,7 +105,7 @@
         <xsl:variable name="value" select="@id" />
     
         <p/>
-        <b>Question (<xsl:value-of select="@id"/>):</b> <em><xsl:value-of select="." /></em>
+        <b>Question (<xsl:value-of select="@id"/>):</b> <em><xsl:apply-templates select="./node()" /></em>
         <p/>
         
         <xsl:choose>
