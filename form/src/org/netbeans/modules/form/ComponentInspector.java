@@ -67,7 +67,7 @@ public class ComponentInspector extends TopComponent
 
     /** The icon for ComponentInspector */
     private static final String iconURL =
-        "org/netbeans/modules/form/resources/inspector.gif"; // NOI18N
+        "org/netbeans/modules/form/resources/inspector.png"; // NOI18N
 
     private static ComponentInspector instance;
 

@@ -34,7 +34,7 @@ public class InspectorAction extends AbstractAction {
     public InspectorAction() {
         putValue(NAME, NbBundle.getMessage(InspectorAction.class, "CTL_InspectorAction"));
         putValue(SMALL_ICON, new ImageIcon(
-            Utilities.loadImage("org/netbeans/modules/form/resources/inspector.gif"))); // NOI18N
+            Utilities.loadImage("org/netbeans/modules/form/resources/inspector.png"))); // NOI18N
     }
 
 
