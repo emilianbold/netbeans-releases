@@ -18,30 +18,22 @@ package org.netbeans.modules.properties;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.IOException;
-import java.io.NotActiveException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.TreeSet;
 
-import org.openide.*;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.CompilerCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeListener;
-import org.openide.text.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
-import org.openide.windows.*;
+import org.openide.util.HelpCtx;
+import org.openide.util.WeakListener;
 
 
 /** 
@@ -88,9 +80,12 @@ public final class PropertiesDataObject extends MultiDataObject {
     
     /** Overrides superclass method. */
     public CookieSet getCookieSet() {
-        if(!cookiesInitialized) {
-            initCookieSet();
+        synchronized(this) {
+            if(!cookiesInitialized) {
+                initCookieSet();
+            }
         }
+        
         return super.getCookieSet();
     }
     
@@ -107,18 +102,17 @@ public final class PropertiesDataObject extends MultiDataObject {
             return null;
         }
         
-        if(!cookiesInitialized) {
-            initCookieSet();
+        synchronized(this) {
+            if(!cookiesInitialized) {
+                initCookieSet();
+            }
         }
+        
         return super.getCookie(type);
     }
 
     /** Helper method. Actually lazilly creating cookie when first asked.*/
     private synchronized void initCookieSet() {
-        if (cookiesInitialized) {
-            return;
-        }
-        
         // Necessary to set flag before add cookieSet method, cause
         // it fires property event change and some Cookie action in its
         // enable method could call initCookieSet again. 
@@ -177,8 +171,8 @@ public final class PropertiesDataObject extends MultiDataObject {
     /** Help context for this object.
     * @return help context
     */
-    public org.openide.util.HelpCtx getHelpCtx () {
-        return new org.openide.util.HelpCtx (PropertiesDataObject.class);
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx (PropertiesDataObject.class);
     }
 
     /** Comparator used for ordering secondary files, works over file names */

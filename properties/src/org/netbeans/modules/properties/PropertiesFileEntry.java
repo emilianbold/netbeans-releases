@@ -11,55 +11,37 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
 
-import java.awt.BorderLayout;
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.datatransfer.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.BeanInfo;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
-import java.util.Enumeration;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.TreeSet;
-import java.util.AbstractCollection;
 import java.util.ResourceBundle;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.Comparator;
 import java.util.ArrayList;
 
-import javax.swing.*;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-
-import org.openide.loaders.*;
-import org.openide.*;
 import org.openide.cookies.CompilerCookie;
 import org.openide.cookies.EditCookie;
-import org.openide.util.datatransfer.*;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.*;
-import org.openide.util.enum.*;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.actions.Presenter;
-import org.openide.nodes.*;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.nodes.Children;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
+import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListener;
 
 
-/** This entry defines utility methods for finding out locale-specific data about entries.
-*/
+/** This entry defines utility methods for finding out locale-specific data about entries. */
 public class PropertiesFileEntry extends PresentableFileEntry {
 
     /** Basic name of bundle .properties file. */
@@ -89,9 +71,12 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     
     /** Overrides superclass method. */
     public CookieSet getCookieSet() {
-        if (!cookiesInitialized) {
-            initCookieSet();
+        synchronized(this) {
+            if (!cookiesInitialized) {
+                initCookieSet();
+            }
         }
+        
         return super.getCookieSet();
     }
     
@@ -108,8 +93,10 @@ public class PropertiesFileEntry extends PresentableFileEntry {
             return null;
         }
         
-        if(!cookiesInitialized) {
-            initCookieSet();
+        synchronized(this) {
+            if(!cookiesInitialized) {
+                initCookieSet();
+            }
         }
         
         return super.getCookie(clazz);
@@ -117,10 +104,6 @@ public class PropertiesFileEntry extends PresentableFileEntry {
 
     /** Helper method. Actually lazilly creating cookie when first asked.*/
     private synchronized void initCookieSet() {
-        if(cookiesInitialized) {
-            return;
-        }
-        
         // Necessary to set flag before add cookieSet method, cause
         // it fires property event change and some Cookie action in its
         // enable method could call initCookieSet again. 
@@ -134,7 +117,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         return new PropertiesLocaleNode(this);
     }
 
-    /** Constructs children for this file entry */
+    /** Constructs children for this file entry. */
     public Children getChildren() {
         return new PropKeysChildren();
     }
