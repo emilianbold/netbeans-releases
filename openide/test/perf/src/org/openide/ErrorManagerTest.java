@@ -99,6 +99,30 @@ public class ErrorManagerTest extends Benchmark {
         }
     }    
 
+    public void testNull16Disabled() throws Exception {
+        int count = getIterationCount();
+
+        while( count-- > 0 ) {
+            // do the stuff here, 
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+	    if(disabled != null) disabled.log("Logging event #" + count);
+        }
+    }    
+
     public static void main(String[] args) {
 	simpleRun( ErrorManager.class );
     }
