@@ -22,6 +22,7 @@ import org.netbeans.api.debugger.ActionsManager;
 
 
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
@@ -76,6 +77,14 @@ public class StartActionProvider extends ActionsProvider {
                     try {
                         VirtualMachine virtualMachine = cookie.
                             getVirtualMachine ();
+                        
+                        // PATCH #46295 JSP breakpoint isn't reached during 
+                        // second debugging
+                        if (cookie instanceof AttachingDICookie) {
+                            virtualMachine.resume ();
+                        }
+                        // PATCHEND Hanz
+                        
                         Operator o = createOperator (virtualMachine);
                         o.start ();
                         debuggerImpl.setRunning (
