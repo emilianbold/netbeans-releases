@@ -55,6 +55,7 @@ public class ServerInstance implements Node.Cookie {
     private Map targets; // keyed by target name, valued by ServerTarget
     private boolean managerStartedByIde = false;
     private ServerTarget coTarget = null;
+    private boolean commandSucceed = false;
     
     // PENDING how to manage connected/disconnected servers with the same manager?
     // maybe concept of 'default unconnected instance' is broken?
@@ -131,6 +132,7 @@ public class ServerInstance implements Node.Cookie {
         startServer = null;
         findJSPServlet = null;
         coTarget = null;
+        targets = null;
     }
     
     public void remove() {
@@ -141,7 +143,7 @@ public class ServerInstance implements Node.Cookie {
             String targetName = (String) i.next();
             getServerTarget(targetName).stop(ui);
         }
-        stop();
+        stop(ui);
         ServerRegistry.getInstance().removeServerInstance(getUrl());
     }
     
@@ -227,8 +229,14 @@ public class ServerInstance implements Node.Cookie {
     //---------- State API's:  running, debuggable, startedByIDE -----------
     long lastCheck = 0;
     boolean isRunning = false;
+    public boolean isReallyRunning() {
+        return isRunningWithinMillis(0);
+    }
     public boolean isRunning() {
-        if (System.currentTimeMillis() - lastCheck < 2000) 
+        return isRunningWithinMillis(2000);
+    }
+    public boolean isRunningWithinMillis(long millisecs) {
+        if (System.currentTimeMillis() - lastCheck < millisecs) 
             return isRunning;
         StartServer ss = getStartServer();
         try {
@@ -295,7 +303,7 @@ public class ServerInstance implements Node.Cookie {
      * @return true if successful.
      */
     public boolean start(DeployProgressUI ui) {
-        return _start(ui);
+        return startTarget(null, ui);
     }
 
     /**
@@ -320,32 +328,30 @@ public class ServerInstance implements Node.Cookie {
         return startTarget(target, ui, true);
     }
     
-    // Note: these 2 state transiont APIs are mainly for registry actions with no existing progress UI
-    
     /**
-     * Start admin server.
+     * Start admin server, mainly for registry actions with no existing progress UI
      */
-    public boolean start() {
+    private void start() {
         if (isRunning())
-            return true;
+            return;
         
         if (! RequestProcessor.getDefault().isRequestProcessorThread()) {
             //PENDING maybe a modal dialog instead of async is needed here
             RequestProcessor.Task t = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    _start();
+                    start(null);
                 }
             }, 0, Thread.MAX_PRIORITY);
-            return false;
+            return;
         } else {
             String title = NbBundle.getMessage(ServerInstance.class, "LBL_StartServerProgressMonitor", getUrl());
             final DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
             ui.startProgressUI(5);
-            if (_start(ui)) {
+            if (start(ui)) {
                 ui.recordWork(5);
-                return true;
+                return;
             }
-            return false;
+            return;
         }
     }
     
@@ -353,26 +359,16 @@ public class ServerInstance implements Node.Cookie {
      * Stop admin server.
      */
     public void stop(DeployProgressUI ui) {
-        _stop(ui);
+        if (isReallyRunning()) {
+            _stop(ui);
+        }
     }
 
-    public void stop() {
-        String title = NbBundle.getMessage(ServerInstance.class, "LBL_StopServerProgressMonitor", getUrl());
-        DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
-        ui.startProgressUI(10);
-        _stop(ui);
-        //TESTING
-        //_test_stop(getCoTarget().getTarget(), ui);
-        ui.recordWork(10);
-    }
-    
     //------------------------------------------------------------
-    // state-machine core
+    // multiplexor state-machine core
     private boolean startTarget(Target target, DeployProgressUI ui, boolean debugMode) {
-        StartServer ss = getStartServer();
-        String error = checkStartServer(ss);
-        if (error != null) {
-            handleStartServerError(ui, error);
+        StartServer ss = checkForSupportStartDM(ui);
+        if (ss == null) {
             return false;
         }
         
@@ -380,27 +376,31 @@ public class ServerInstance implements Node.Cookie {
             if (debugMode) {
                 if (ss.isDebuggable(target)) { // imply ss.isRunning() true in
                     return true;
-                } else if (ss.isRunning()) {
-                    if (! _stop(ui))
+                } else if (isReallyRunning()) {
+                    if (! _stop(ui)) {
                         return false;
+                    }
                 }
+                
                 return _startDebug(target, ui);
-            }
-            else if (isRunning()) {
-                //System.out.println("INFO: Server "+getUrl()+" is already running!");
+            
+            } else if (isReallyRunning()) {
                 return true;
-            } else {
-                return _start(ui);
             }
+
+            return _start(ui);
+
         } else { // not also target server
-            if (! ss.isRunning()) {
-                if (! _start(ui))
+            // make sure admin is running
+            if (! isReallyRunning()) {
+                if (! _start(ui)) {
                     return false;
+                }
             }
             if (debugMode) {
-                if (ss.isDebuggable(target))
+                if (ss.isDebuggable(target)) {
                     return true;
-                else {
+                } else {
                     return _startDebug(target, ui);
                 }
             } else {
@@ -410,136 +410,169 @@ public class ServerInstance implements Node.Cookie {
     }
     
     //------------------------------------------------------------
-    // state-transition atomic operations
+    // state-transition atomic operations (always do-it w/o checking state)
     //------------------------------------------------------------
     // startDeploymentManager
     private synchronized boolean _start(DeployProgressUI ui) {
-        if (isRunning())
-            return true;
-        
+        output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StartingServer", url));
+
         DeployProgressUI.CancelHandler ch = getCancelHandler();
-        ui.addCancelHandler(ch);
+        ProgressObject po = null;
+        StartProgressHandler handler = new StartProgressHandler();
+        if (ui != null) {
+            ui.addCancelHandler(ch);
+        }
         
         try {
-            StartServer ss = getStartServer();
-            String errorMessage = checkStartDM(ss);
-            if (errorMessage != null) {
-                handleStartServerError(ui, errorMessage);
-                return false;
+            setCommandSucceeded(false);
+            po = getStartServer().startDeploymentManager();
+            if (ui != null) {
+                ui.setProgressObject(po);
+            }
+            po.addProgressListener(handler);
+            
+            String error = null;
+            if (isProgressing(po)) {
+                // wait until done or cancelled
+                boolean done = sleep();
+                if (! done) {
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", url);
+                } else if (! hasCommandSucceeded()) {
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerFailed", url);
+                } else if (ui != null && ui.checkCancelled()) {
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerCanceled");
+                }
+            } else if (hasFailed(po)) {
+                error = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerCanceled");
             }
             
-            ProgressObject po = ss.startDeploymentManager();
-            
-            ui.setProgressObject(po);
-            po.addProgressListener(new StartProgressHandler());
-            
-            // wait until done or cancelled
-            boolean done = sleep();
-            if (! done) {
-                ui.addMessage(NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", url));
-                return false;
-            } else if (! isRunning()) {
-                ui.addMessage(NbBundle.getMessage(ServerInstance.class, "MSG_StartedServerFailedPing", url));
-                return false;
-            } else if (ui.checkCancelled()) {
-                ui.addMessage(NbBundle.getMessage(ServerInstance.class, "MSG_StartServerCanceled"));
+            if (error != null) {
+                outputError(ui, error);
                 return false;
             }
+
+            output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StartedServer", url));
             managerStartedByIde = true;
             refresh(true);
             return true;
             
         } finally {
-            ui.removeCancelHandler(ch);
+            if (ui != null) {
+                ui.removeCancelHandler(ch);
+                ui.setProgressObject(null);
+            }
+            if (po != null) {
+                po.removeProgressListener(handler);
+            }
         }
     }
 
-
-    private synchronized void _start() {
-        if (isRunning())
-            return;
-        
-        StartServer ss = getStartServer();
-        String errorMessage = checkStartDM(ss);
-        if (errorMessage != null) {
-            handleStartServerError(null, errorMessage);
-            return;
-        }
-        
-        showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StartingServer", url));
-        ProgressObject po = ss.startDeploymentManager();
-        po.addProgressListener(new StartProgressHandler());
-        
-        // wait until done or cancelled
-        boolean done = sleep();
-        if (! done ) {
-            showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", url));
-        } else if (! isRunning()) {
-            showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StartedServerFailedPing", url));
-        } else {
-            showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StartedServer", url));
-            managerStartedByIde = true;
-            refresh(true);
-        }
-    }
-    
     // startDebugging
     private synchronized boolean _startDebug(Target target, DeployProgressUI ui) {
+        output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StartingDebugServer", url));
+        
         DeployProgressUI.CancelHandler ch = getCancelHandler();
-        ui.addCancelHandler(ch);
+        ProgressObject po = null;
+        StartProgressHandler handler = new StartProgressHandler();
+        if (ui != null) {
+            ui.addCancelHandler(ch);
+        }
         
         try {
-            StartServer ss = getStartServer();
-            ProgressObject po = ss.startDebugging(target);
-            ui.setProgressObject(po);
-            po.addProgressListener(new StartProgressHandler());
+            setCommandSucceeded(false);
+            po = getStartServer().startDebugging(target);
+            if (ui != null) {
+                ui.setProgressObject(po);
+            }
+            po.addProgressListener(handler);
             
-            // wait until done or cancelled
-            boolean done = sleep();
-            if (! done)
-                showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugTimeout", url));
-            
-            if (ui.checkCancelled() || ! done)
+            String error = null;
+            if (isProgressing(po)) {
+                // wait until done or cancelled
+                boolean done = sleep();
+                if (! done) {
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugTimeout", url);
+                } else if (! hasCommandSucceeded()) {
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugFailed", url);
+                } else if (ui != null && ui.checkCancelled()) {
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugCancelled");
+                }
+            } else if (hasFailed(po)) {
+                error = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugCancelled");
+            }
+
+            if (error != null) {
+                outputError(ui, error);
                 return false;
-            
+            }
+
+            output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StartedDebugServer", url));
             managerStartedByIde = true;
             refresh(true);
             return true;
             
         } finally {
-            ui.removeCancelHandler(ch);
+            if (ui != null) {
+                ui.removeCancelHandler(ch);
+                ui.setProgressObject(null);
+            }
+            if (po != null) {
+                po.removeProgressListener(handler);
+            }
         }
     }
     // stopDeploymentManager
     private synchronized boolean _stop(DeployProgressUI ui) {
+        output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StoppingServer", url));
+        
         DeployProgressUI.CancelHandler ch = getCancelHandler();
-        ui.addCancelHandler(ch);
+        StartProgressHandler handler = new StartProgressHandler();
+        ProgressObject po = null;
+        if (ui != null) {
+            ui.addCancelHandler(ch);
+        }
         
         try {
-            StartServer ss = getStartServer();
-            ProgressObject po = ss.stopDeploymentManager();
-            ui.setProgressObject(po);
-            po.addProgressListener(new StartProgressHandler());
-            
-            // wait until done or cancelled
-             boolean done = sleep();
-            if (! done) {
-                String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", url);
-                ErrorManager.getDefault().log(ErrorManager.EXCEPTION, msg);
-                showStatusText(msg);
+            setCommandSucceeded(false);
+            po = getStartServer().stopDeploymentManager();
+            if (ui != null) {
+                ui.setProgressObject(po);
             }
-            if (ui.checkCancelled() || ! done)
-                return false;
+            po.addProgressListener(handler);
             
-            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_ServerStopped", url);
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, msg);
-            showStatusText(msg);
+            String error = null;
+            if (isProgressing(po)) {
+                // wait until done or cancelled
+                boolean done = sleep();
+                if (! done) {
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", url);
+                } else if (ui != null && ui.checkCancelled()) {
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerCancelled", url);
+                } else if (! hasCommandSucceeded()) {
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerFailed", url);
+                }
+            } else if (hasFailed(po)) {
+                error = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerFailed", url);
+            }
+            
+            if (error != null) {
+                outputError(ui, error);
+                return false;
+            }
+            
+            output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_ServerStopped", url));
             managerStartedByIde = false;
             refresh(false);
             return true;
             
         } finally {
-            ui.removeCancelHandler(ch);
+            if (ui != null) {
+                ui.removeCancelHandler(ch);
+                ui.setProgressObject(null);
+            }
+            if (po != null) {
+                po.removeProgressListener(handler);
+            }
         }
     }
     
@@ -574,24 +607,38 @@ public class ServerInstance implements Node.Cookie {
     public void reportError(String errorText) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errorText));
     }
-    
-    private boolean handleStartServerError(DeployProgressUI ui, String errorMessage) {
-        // Precondition: ui needs to have cancel handler added
-        if (ui != null)
-            ui.addError(errorMessage);
-        
-        //sleepTillCancel();
-        return false;
+    private void output(DeployProgressUI ui, String msg) {
+        if (ui != null) {
+            ui.addMessage(msg);
+        } else {
+            showStatusText(msg);
+        }
     }
-    
+    private void outputError(DeployProgressUI ui, String msg) {
+        if (ui != null) {
+            ui.addError(msg);
+        } else {
+            showStatusText(msg);
+        }
+    }
     private String checkStartServer(StartServer ss) {
         if (ss == null)
             return NbBundle.getMessage(ServerInstance.class, "MSG_PluginHasNoStartServerClass", getServer());
         return null;
     }
     
+    private StartServer checkForSupportStartDM(DeployProgressUI ui) {
+        StartServer ss = getStartServer();
+        String errorMessage = checkStartDM(ss);
+        if (errorMessage != null) {
+            outputError(ui, errorMessage);
+            return null;
+        } 
+        return ss;
+    }
+    
     private String checkStartDM(StartServer ss) {
-        if (! ss.supportsStartDeploymentManager()) {
+        if (ss != null && ! ss.supportsStartDeploymentManager()) {
             return NbBundle.getMessage(ServerInstance.class, "MSG_StartingThisServerNotSupported", getUrl());
         }
         return null;
@@ -602,13 +649,23 @@ public class ServerInstance implements Node.Cookie {
     }
     
     private class StartProgressHandler implements ProgressListener {
+        boolean completed = false;
         public StartProgressHandler() {
         }
         public void handleProgressEvent(ProgressEvent progressEvent) {
             DeploymentStatus status = progressEvent.getDeploymentStatus();
             StateType state = status.getState();
-            if (state != StateType.RUNNING)
+            if (status.isCompleted()) {
+                completed = true;
+                ServerInstance.this.setCommandSucceeded(true);
                 ServerInstance.this.wakeUp();
+            } else if (status.isFailed()) {
+                completed = false;
+                ServerInstance.this.wakeUp();
+            }
+        }
+        public boolean isCompleted() {
+            return completed;
         }
     }
     private DeployProgressUI.CancelHandler getCancelHandler() {
@@ -715,5 +772,23 @@ public class ServerInstance implements Node.Cookie {
     
     public String toString () {
         return getDisplayName ();
+    }
+    
+    public static boolean isProgressing(ProgressObject po) {
+        StateType state = po.getDeploymentStatus().getState();
+        System.out.println("isProgressing(): "+state.toString());
+        return (state == StateType.RUNNING || state == StateType.RELEASED);
+    }
+    public static boolean hasFailed(ProgressObject po) {
+        StateType state = po.getDeploymentStatus().getState();
+        System.out.println("hasFailed(): "+state.toString());
+        return (state == StateType.FAILED);
+    }
+    
+    private synchronized boolean hasCommandSucceeded() {
+        return commandSucceed;
+    }
+    private synchronized void setCommandSucceeded(boolean val) {
+        commandSucceed = val;
     }
 }
