@@ -563,9 +563,10 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("J2SE_INSTALL_DIR=")) {
                 line = "J2SE_INSTALL_DIR=" + origJ2SEInstallDir;
-            }
-            else if (line.startsWith("J2SE_NAME=")) {
-                line = "J2SE_NAME=" + installerName;
+            } else if (line.startsWith("J2SE_INSTALLER_NAME=")) {
+                line = "J2SE_INSTALLER_NAME=" + installerName;
+            } else if (line.startsWith("J2SE_VER=")) {
+                line = "J2SE_VER=" + resolveString("$L(org.netbeans.installer.Bundle,JDK.version)");
             }
             writer.write(line + System.getProperty("line.separator"));
         }
