@@ -188,6 +188,7 @@ Microsystems, Inc. All Rights Reserved.
 				<package>org.netbeans.modules.websvc.core</package>
 				<package>org.netbeans.modules.websvc.core.webservices.ui</package>
 			</public-packages>
+                        <javadoc/>
 		</data>
 	</configuration>
 </project>
