@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!--
+@author: Rudolf Balada <Rudolf.Balada@sun.com>
+-->
+<project basedir="." default="changelog" name="cvs_changelog">
+
+    <property name="product" value="NetBeansIDE"/>
+    <property name="inputxml" value="./Changelog.xml"/>
+    <property name="outputfile" value="./Changelog.html"/>
+    <property name="stylesheet" value="changelog_html.xsl"/>
+    <property name="fromdate" value=""/>
+    <property name="todate" value=""/>
+    <property name="branch" value=""/>
+    <property name="cvsroot" value=":pserver:anoncvs@cvs.netbeans.org:/cvs"/>
+    
+    <target name="init-module-list">
+        <!-- Read the user property file at first -->
+        <property file="../user.build.properties"/>
+
+        <!-- Read standard property file -->
+        <property file="../build.properties"/>
+
+        <!-- Define modules. -->
+        <!-- The following is not permitted by Ant: -->
+        <!-- <property name="modules" value="${config.modules.${moduleconfig}}"/> -->
+        <!-- So this is a little trick to do it anyway. -->
+        <echo file="moduledefs-tmp.properties">optmodules=$${config.modules.${moduleconfig}}
+fixedmodules=$${config.fixedmodules.${moduleconfig}}
+</echo>
+        <property file="moduledefs-tmp.properties"/>
+        <property name="modules" value="${fixedmodules},${optmodules}"/>
+    </target>
+
+    <target name="init" depends="init-module-list">
+        <ant dir=".." target="bootstrap"/>
+        <!-- following line implies dependency on openide! -->
+        <ant dir=".." target="all-javacvs"/>
+    </target>
+
+    <target name="validate">
+        <xmlvalidate file="${inputxml}"/>
+    </target>
+
+    <target name="convert" depends="init,clean">
+        <filter token="BRANCH" value="${branch}"/>
+        <filter token="FROMDATETIME" value="${fromdate}"/>
+        <filter token="TODATETIME" value="${todate}"/>
+        <filter token="PRODUCT" value="${product}"/>
+        <copy file="${stylesheet}" tofile="subst-${stylesheet}" filtering="on"/>
+	<style destdir="." in="${inputxml}" out="${outputfile}" style="subst-${stylesheet}" processor="trax"/>
+    </target>
+
+    <target name="compile" depends="clean,init-module-list">
+        <javac debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" srcdir="src" destdir="src">
+            <classpath>
+                <pathelement location="../external/ant-1.4.1.jar"/>
+                <pathelement location="../../javacvs/netbeans/modules/ext/cvslib.jar"/>
+            </classpath>
+            <include name="org/netbeans/nbbuild/changelog/CvsChangelog.java"/>
+        </javac>
+    </target>
+    
+    <target name="jars" depends="compile">
+        <taskdef classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbantext.jar" name="locjar"/>
+        <locjar basedir="src" compress="false" excludesfile="../standard-jar-excludes.txt" jarfile="nbantchangelog.jar"/>
+    </target>
+
+    <target name="doxmlchangelog" depends="jars">
+        <taskdef name="cvschangelogg" classname="org.netbeans.nbbuild.changelog.CvsChangelog" classpath="../../javacvs/netbeans/modules/ext/cvslib.jar:./nbantchangelog.jar"/>
+        <cvschangelogg cvsroot="${cvsroot}" topdir="../../" fromdate="${fromdate}" todate="${todate}" branch="${branch}" modules="${modules}"/>
+    </target>
+
+    <target name="changelog" depends="doxmlchangelog"/>
+    
+    <target name="clean">
+        <delete>
+          <fileset dir="src">
+            <include name="**/*.class"/>
+          </fileset>
+        </delete>
+        <delete file="nbantchangelog.jar"/>
+        <delete file="${outputfile}"/>
+        <delete file="subst-${stylesheet}"/>
+        <delete file="moduledefs-tmp.properties"/>
+    </target>
+
+</project>
