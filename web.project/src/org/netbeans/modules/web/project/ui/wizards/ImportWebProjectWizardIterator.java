@@ -452,13 +452,9 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
                 };
 
                 ok.addActionListener(actionListener);
-//                ok.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewNextFetchButtonA11yDesc")); //NOI18N
-//                ok.setMnemonic(bundle.getString("FetchNextFetchButton_Mnemonic").charAt(0)); //NOI18N
 
                 JButton cancel = new JButton(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_Cancel")); //NOI18N
                 cancel.addActionListener(actionListener);
-//                cancel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewAllFetchButtonA11yDesc")); //NOI18N
-//                cancel.setMnemonic(bundle.getString("FetchAllFetchButton_Mnemonic").charAt(0)); //NOI18N
 
                 DialogDescriptor descriptor = new DialogDescriptor(
                     ibf,
