@@ -56,10 +56,6 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
         }
     }
 
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (IdxPropertyPatternNode.class);
-    }
-
     /* Creates property set for this node */
     protected Sheet createSheet () {
 

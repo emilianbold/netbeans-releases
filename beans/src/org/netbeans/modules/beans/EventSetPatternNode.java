@@ -45,10 +45,6 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
         superSetName( pattern.getName() );
     }
 
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (EventSetPatternNode.class);
-    }
-
     /** Sets the name of Pattern, to new value */
     protected void setPatternName( String name ) throws SourceException {
         

@@ -135,10 +135,6 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
         return ICON_AFFECTING_PROPERTIES;
     }
 
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (PatternNode.class);
-    }
-
     /** Test whether this node can be renamed.
     * The default implementation assumes it can if this node is {@link #writeable}.
     *

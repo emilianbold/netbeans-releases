@@ -109,10 +109,6 @@ public class  PatternGroupNode extends AbstractNode {
         }
     }
 
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (PatternGroupNode.class);
-    }
-
     /** Set all actions for this node.
     * @param actions new list of actions
     */
@@ -146,11 +142,6 @@ public class  PatternGroupNode extends AbstractNode {
                    */
                    public String getName() {
                        return name;
-                   }
-
-                   /** Help context */
-                   public org.openide.util.HelpCtx getHelpCtx() {
-                       return new org.openide.util.HelpCtx (PatternGroupNode.class.getName () + "." + name); // NOI18N
                    }
 
                    /** Creates new element */
@@ -283,7 +274,6 @@ public class  PatternGroupNode extends AbstractNode {
                                        NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
                                        NotifyDescriptor.OK_OPTION,                           // Default
                                        DialogDescriptor.BOTTOM_ALIGN,                        // Align
-                                       //new HelpCtx (PatternGroupNode.class.getName () + ".dialogMultiCastES"), // Help // NOI18N
                                        new HelpCtx (HelpCtxKeys.BEAN_EVENTSETS_HELP), // Help // NOI18N
                                        eventSetPanel );
             dd.setClosingOptions( new Object[]{} );

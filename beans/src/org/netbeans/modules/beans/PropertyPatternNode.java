@@ -60,10 +60,6 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
         }
     }
 
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (PropertyPatternNode.class);
-    }
-
     /** Gets the localized string name of property pattern type i.e.
      * "Indexed Property", "Property".
      */
