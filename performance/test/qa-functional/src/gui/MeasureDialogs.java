@@ -7,15 +7,15 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui;
 
+import gui.window.*;
 
 import org.netbeans.junit.NbTestSuite;
-import gui.window.*;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -31,21 +31,21 @@ public class MeasureDialogs  {
         //remove from test run for NB4.1        suite.addTest(new About("measureTime", "About dialog open"));
         //remove from test run for NB4.1        suite.addTest(new About_2("measureTime", "About details open"));
         
-        suite.addTest(new SetupWizard("measureTime", "Setup Wizard open"));
+//TODO issue 56091, Robot doesn't work on JDK1.5.0        suite.addTest(new SetupWizard("measureTime", "Setup Wizard open"));
         //remove from test run for NB4.1        suite.addTest(new SetupWizard_2("measureTime", "Setup Wizard next open"));
         //remove from test run for NB4.1        suite.addTest(new SetupWizard_3("measureTime", "Setup Wizard next next open"));
         
-        suite.addTest(new KeyboardShortcuts("measureTime", "Keyboard Shortcut dialog open"));
+//TODO issue 56091, Robot doesn't work on JDK1.5.0        suite.addTest(new KeyboardShortcuts("measureTime", "Keyboard Shortcut dialog open"));
         //remove from test run for NB4.1        suite.addTest(new KeyboardShortcuts_2("measureTime", "Keyboard Shortcut shortcuts open"));
  
-        suite.addTest(new Options("measureTime", "Options dialog open"));
+//TODO issue 56091, Robot doesn't work on JDK1.5.0        suite.addTest(new Options("measureTime", "Options dialog open"));
  
         suite.addTest(new NewProjectDialog("measureTime", "New Project dialog open"));
         suite.addTest(new NewFileDialog("measureTime", "New File dialog open"));
         suite.addTest(new OpenProjectDialog("measureTime", "Open Project dialog open"));
         suite.addTest(new OpenFileDialog("measureTime", "Open File dialog open"));
  
-        suite.addTest(new UpdateCenter("measureTime", "Update Center wizard open"));
+//TODO issue 56091, Robot doesn't work on JDK1.5.0        suite.addTest(new UpdateCenter("measureTime", "Update Center wizard open"));
         //remove from test run for NB4.1        suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
         
         suite.addTest(new VersioningManager("measureTime", "Versioning Manager open"));
@@ -73,9 +73,9 @@ public class MeasureDialogs  {
         suite.addTest(new MountXMLCatalogDialog("measureTime", "Mount XML Catalog dialog open"));
         
         suite.addTest(new FindInProjects("measureTime", "Find in Projects dialog open"));
-        suite.addTest(new ProjectPropertiesWindow("measureTime", "Project Properties window open"));
+//TODO issue 56091, Robot doesn't work on JDK1.5.0        suite.addTest(new ProjectPropertiesWindow("measureTime", "Project Properties window open"));
  
-        suite.addTest(new DeleteFileDialog("measureTime", "Delete Object dialog open"));
+//TODO issue 56091, Robot doesn't work on JDK1.5.0        suite.addTest(new DeleteFileDialog("measureTime", "Delete Object dialog open"));
         
         suite.addTest(new AttachDialog("measureTime", "Attach dialog open"));
         suite.addTest(new NewBreakpointDialog("measureTime", "New Breakpoint dialog open"));
@@ -83,16 +83,16 @@ public class MeasureDialogs  {
 
 //TODO Javadoc Index Search isn't TopComponent        suite.addTest(new JavadocIndexSearch("measureTime", "Javadoc Index Search open"));
         
-        suite.addTest(new JavaPlatformManager("measureTime", "Java Platform Manager open"));
-        suite.addTest(new LibrariesManager("measureTime", "Libraries Manager open"));
+//TODO issue 56091, Robot doesn't work on JDK1.5.0        suite.addTest(new JavaPlatformManager("measureTime", "Java Platform Manager open"));
+//TODO issue 56091, Robot doesn't work on JDK1.5.0        suite.addTest(new LibrariesManager("measureTime", "Libraries Manager open"));
         
         // dialogs and windows which first open a file in the editor
-        suite.addTest(new OverrideMethods("measureTime", "Override and Implement Methods dialog open"));
+//TODO issue 56091, Robot doesn't work on JDK1.5.0        suite.addTest(new OverrideMethods("measureTime", "Override and Implement Methods dialog open"));
         suite.addTest(new GotoClassDialog("measureTime", "Go To Class dialog open"));
         suite.addTest(new GotoLineDialog("measureTime", "Go to Line dialog open"));
-        suite.addTest(new AutoCommentWindow("measureTime", "Auto Comment Tool open"));
+//TODO issue 56091, Robot doesn't work on JDK1.5.0        suite.addTest(new AutoCommentWindow("measureTime", "Auto Comment Tool open"));
         suite.addTest(new FindInSourceEditor("measureTime", "Find in Source Editor dialog open"));
-        suite.addTest(new InternationalizeDialog("measureTime", "Internationalize dialog open"));
+//TODO issue 56091, Robot doesn't work on JDK1.5.0        suite.addTest(new InternationalizeDialog("measureTime", "Internationalize dialog open"));
         
 //TODO        suite.addTest(new DocumentsDialog("measureTime", "Documents dialog open"));
         
