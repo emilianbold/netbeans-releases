@@ -38,10 +38,10 @@ import org.openide.util.Utilities;
 public class LibrariesChooser extends javax.swing.JPanel {
 
     /** Creates new form LibrariesChooser */
-    public LibrariesChooser() {
+    public LibrariesChooser(Collection alreadySelectedLibs, String j2eePlatform) {
         initComponents();
         jList1.setPrototypeCellValue("0123456789012345678901234");      //NOI18N
-        jList1.setModel(new LibrariesListModel());
+        jList1.setModel(new LibrariesListModel(alreadySelectedLibs, j2eePlatform));
         jList1.setCellRenderer(new LibraryRenderer());
     }
 
@@ -145,8 +145,24 @@ public class LibrariesChooser extends javax.swing.JPanel {
     private static final class LibrariesListModel extends AbstractListModel implements PropertyChangeListener {
 
         private Library[] cache;
+        /** No of libs in LibraryManager when last refreshed */
+        private int numberOfLibs;
+        private Collection alreadySelectedLibs;
+        private String j2eePlatform;
+        private static ArrayList filter13 = new ArrayList ();
+        private static ArrayList filter14 = new ArrayList ();
+        
+        static {
+            filter13.add (LibraryManager.getDefault().getLibrary("servlet24"));
+            filter13.add (LibraryManager.getDefault().getLibrary("jsp20"));
+            filter13.add (LibraryManager.getDefault().getLibrary("jstl11"));
+            filter14.add (LibraryManager.getDefault().getLibrary("servlet23"));
+            filter14.add (LibraryManager.getDefault().getLibrary("jstl"));
+        }
 
-        public LibrariesListModel () {
+        public LibrariesListModel (Collection alreadySelectedLibs, String j2eePlatform) {
+            this.j2eePlatform = j2eePlatform;
+            this.alreadySelectedLibs = alreadySelectedLibs;
             LibraryManager manager = LibraryManager.getDefault();
             manager.addPropertyChangeListener((PropertyChangeListener)WeakListeners.create(PropertyChangeListener.class,
                     this, manager));
@@ -172,9 +188,9 @@ public class LibrariesChooser extends javax.swing.JPanel {
         }
 
         public synchronized void propertyChange(PropertyChangeEvent evt) {
-            int oldSize = this.cache == null ? 0 : this.cache.length;
+            int oldSize = this.cache == null ? 0 : numberOfLibs;
             this.cache = createLibraries();
-            int newSize = this.cache.length;
+            int newSize = numberOfLibs;
             this.fireContentsChanged(this, 0, Math.min(oldSize-1,newSize-1));
             if (oldSize > newSize) {
                 this.fireIntervalRemoved(this,newSize,oldSize-1);
@@ -193,6 +209,19 @@ public class LibrariesChooser extends javax.swing.JPanel {
 
         private Library[] createLibraries () {
             Library[] libs = LibraryManager.getDefault().getLibraries();
+            numberOfLibs = libs.length;
+            ArrayList asList = new ArrayList ();
+            Collection filterOut = j2eePlatform.equals("1.3") ? filter13 : filter14;
+            for (int i = 0; i < libs.length; i++) {
+                if (alreadySelectedLibs.contains(libs [i])) {
+                    continue;
+                }
+                if (filterOut.contains (libs[i])) {
+                    continue;
+                }
+                asList.add(libs [i]);
+            }
+            libs = (Library[]) asList.toArray(new Library [asList.size()]);
             Arrays.sort(libs, new Comparator () {
                 public int compare (Object o1, Object o2) {
                     assert (o1 instanceof Library) && (o2 instanceof Library);

@@ -48,6 +48,7 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         this.webProperties = webProperties;        
         vps = new VisualPropertySupport(webProperties);
         vws = new VisualWarIncludesSupport( webProperties.getProject(),
+                                            (String) webProperties.get(WebProjectProperties.J2EE_PLATFORM),
                                             jListAddContent,
                                             jButtonAddJar,
                                             jButtonAddLib,

@@ -32,6 +32,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         vps = new VisualPropertySupport(webProperties);
         vcs = new VisualClasspathSupport(
             webProperties.getProject(),
+            (String) webProperties.get(WebProjectProperties.J2EE_PLATFORM),
             jTableClasspath,
             jButtonAddJar,
             jButtonAddLibrary,
