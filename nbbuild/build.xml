@@ -286,6 +286,7 @@ workspaceswitcher
           description="Create a virgin build that has never been started.">
     <!-- zip task not well suited to making final build, as it does not set +x bits -->
     <!-- so on Unix try to use native ZIP first -->
+    <delete file="NetBeans-${buildnumber}-virgin.zip"/>
     <exec executable="zip" dir="." os="Linux SunOS Solaris" failonerror="false">
       <arg value="-r"/>
       <arg value="NetBeans-${buildnumber}-virgin.zip"/>
@@ -348,6 +349,7 @@ Date: ${TODAY}
 
   <target name="depucelee" depends="firststart"
           description="Create a complete build, including first start and final ZIP file.">
+    <delete file="NetBeans-${buildnumber}.zip"/>
     <exec executable="zip" dir="." os="Linux SunOS Solaris" failonerror="false">
       <arg value="-r"/>
       <arg value="NetBeans-${buildnumber}.zip"/>
