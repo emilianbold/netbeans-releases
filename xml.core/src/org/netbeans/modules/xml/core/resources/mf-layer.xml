@@ -125,6 +125,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="XMLSchema.xml" url="schema-mime-resolver.xml">
                 &localize-it;
             </file>
+            <file name="xslt-mime-resolver.xml" url="xslt-mime-resolver.xml">
+                &localize-it;
+            </file>
         </folder>
         
 

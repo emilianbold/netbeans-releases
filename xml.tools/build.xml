@@ -49,6 +49,7 @@ Microsystems, Inc. All Rights Reserved.
         <property file="${xml_root}/spec-vers.properties"/>
         <filter token="TOOLS_SPEC_VERS_SUBST" value="${xml.tools.specification.version}"/>
         <filter  token="CORE_SPEC_VERS_SUBST" value="${xml.core.specification.version}"/>
+        <filter  token="JAXP_SPEC_VERS_SUBST" value="${xml.jaxp.specification.version}"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     </target>
 

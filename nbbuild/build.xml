@@ -489,6 +489,16 @@ ToDo:
       <ant dir="../xml/core" target="netbeans"/>
   </target>
 
+  <target name="all-xml/core/xalan">
+      <echo message="Building module xml/core/xalan..."/>
+      <ant dir="../xml/core/xalan" target="netbeans"/>
+  </target>
+
+  <target name="all-xml/core/jaxp">
+      <echo message="Building module xml/core/jaxp..."/>
+      <ant dir="../xml/core/jaxp" target="netbeans"/>
+  </target>
+
   <target name="all-xml/catalog" depends="all-openide,all-xml/core">
       <echo message="Building module xml/catalog..."/>
       <ant dir="../xml/catalog" target="netbeans"/>
@@ -514,7 +524,7 @@ ToDo:
       <ant dir="../xml/css" target="netbeans"/>
   </target>
 
-  <target name="all-xml" depends="all-xml/tax,all-xml/core,all-xml/catalog,all-xml/tools,all-xml/text-edit,all-xml/tree-edit,all-xml/css"/>
+  <target name="all-xml" depends="all-xml/tax,all-xml/core/xalan,all-xml/core/jaxp,all-xml/core,all-xml/catalog,all-xml/tools,all-xml/text-edit,all-xml/tree-edit,all-xml/css"/>
 
   <target name="all-treefs" depends="all-openide">
     <echo message="Building module treefs..."/>
