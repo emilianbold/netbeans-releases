@@ -82,6 +82,12 @@ public class SectionNodePanel extends SectionPanel {
         return innerPanel;
     }
 
+    protected void closeInnerPanel() {
+        if (getFoldButton().isVisible()) {
+            super.closeInnerPanel();
+        }
+    }
+
     /**
      * Method of NodeSectionPanel interface
      */

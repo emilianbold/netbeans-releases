@@ -15,6 +15,7 @@
 package org.netbeans.modules.xml.multiview.ui;
 
 import org.netbeans.modules.xml.multiview.cookies.ErrorLocator;
+import org.netbeans.modules.xml.multiview.Utils;
 import org.openide.nodes.Node;
 
 import javax.swing.*;
@@ -107,13 +108,14 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         filler.setVisible(true);
         innerPanel.addFocusListener(sectionFocusListener);
         add(innerPanel, gridBagConstraints);
+        Utils.scrollToVisible(this);
     }
 
     protected SectionInnerPanel createInnerpanel() {
         return sectionView.getInnerPanelFactory().createInnerPanel(key);
     }
 
-    private void closeInnerPanel() {
+    protected void closeInnerPanel() {
         if (innerPanel != null) {
             innerPanel.removeFocusListener(sectionFocusListener);
             remove(innerPanel);
