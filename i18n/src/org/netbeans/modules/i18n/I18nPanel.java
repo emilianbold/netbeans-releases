@@ -34,6 +34,7 @@ import org.openide.util.WeakListener;
 import org.openide.util.Lookup;
 import org.netbeans.api.javahelp.Help;
 import org.netbeans.api.project.Project;
+import javax.swing.BoxLayout;
 
 
 /**
@@ -79,13 +80,13 @@ public class I18nPanel extends JPanel {
      * @param withButtons if panel with replace, skip ect. buttons should be added */
     public I18nPanel(PropertyPanel propertyPanel, boolean withButtons, Project project) {
         this.project = project;
+        this.propertyPanel = propertyPanel;   
 
         // Init bundle.
         bundle = I18nUtil.getBundle();
         
-        this.propertyPanel = propertyPanel;
-        
         initComponents();
+        myInitComponents();
         initAccessibility();        
         
         if(!withButtons)
@@ -93,33 +94,33 @@ public class I18nPanel extends JPanel {
         
         // create empty panel
         emptyPanel = new EmptyPropertyPanel();
-        propertyPanelShown = true;
+        contentsShown = true;
 
         showBundleMessage("TXT_SearchingForStrings");
     }
 
 
-    private boolean propertyPanelShown;
+    private boolean contentsShown;
 
     public void showBundleMessage(String bundleKey) {
 
         emptyPanel.setBundleText(bundleKey);
-        if (propertyPanelShown) {
-            propertyPanelPlaceholder.remove(propertyPanel);
-            propertyPanelPlaceholder.add(emptyPanel);
-            propertyPanelPlaceholder.validate();
-            propertyPanelPlaceholder.repaint();
-            propertyPanelShown = false;
+        if (contentsShown) {
+            contentsPanelPlaceholder.remove(contentsPanel);
+            contentsPanelPlaceholder.add(emptyPanel);
+            contentsPanelPlaceholder.validate();
+            contentsPanelPlaceholder.repaint();
+            contentsShown = false;
         }
     }
 
     public void showPropertyPanel() {
-        if (!propertyPanelShown) {
-            propertyPanelPlaceholder.remove(emptyPanel);
-            propertyPanelPlaceholder.add(propertyPanel);
-            propertyPanelPlaceholder.validate();
-            propertyPanelPlaceholder.repaint();
-            propertyPanelShown = true;
+        if (!contentsShown) {
+            contentsPanelPlaceholder.remove(emptyPanel);
+            contentsPanelPlaceholder.add(contentsPanel);
+            contentsPanelPlaceholder.validate();
+            contentsPanelPlaceholder.repaint();
+            contentsShown = true;
         }
     }
 
@@ -241,8 +242,6 @@ public class I18nPanel extends JPanel {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        resourcePanel = createResourcePanel();
-        propertyPanelPlaceholder = new javax.swing.JPanel();
         fillPanel = new javax.swing.JPanel();
         buttonsPanel = new javax.swing.JPanel();
         replaceButton = new javax.swing.JButton();
@@ -250,24 +249,13 @@ public class I18nPanel extends JPanel {
         infoButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         helpButton = new javax.swing.JButton();
+        contentsPanelPlaceholder = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        add(resourcePanel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(propertyPanelPlaceholder, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -302,13 +290,38 @@ public class I18nPanel extends JPanel {
         buttonsPanel.add(helpButton);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(17, 0, 11, 11);
         add(buttonsPanel, gridBagConstraints);
 
+        contentsPanelPlaceholder.setLayout(new javax.swing.BoxLayout(contentsPanelPlaceholder, javax.swing.BoxLayout.Y_AXIS));
+
+        contentsPanelPlaceholder.setPreferredSize(new java.awt.Dimension(520, 460));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(contentsPanelPlaceholder, gridBagConstraints);
+
     }//GEN-END:initComponents
+
+    private void myInitComponents() {
+        resourcePanel = createResourcePanel();
+        contentsPanel = new JPanel();
+        contentsPanel.setLayout(new BoxLayout(contentsPanel, BoxLayout.Y_AXIS));
+
+        contentsPanel.add(resourcePanel);
+        contentsPanel.add(propertyPanel);
+        contentsShown = true;
+        contentsPanelPlaceholder.add(contentsPanel);
+    }
 
   private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
       HelpCtx help = new HelpCtx(I18nUtil.HELP_ID_AUTOINSERT);
@@ -336,14 +349,17 @@ public class I18nPanel extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttonsPanel;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JPanel contentsPanelPlaceholder;
     private javax.swing.JPanel fillPanel;
     private javax.swing.JButton helpButton;
     private javax.swing.JButton infoButton;
-    private javax.swing.JPanel propertyPanelPlaceholder;
     private javax.swing.JButton replaceButton;
-    private javax.swing.JPanel resourcePanel;
     private javax.swing.JButton skipButton;
     // End of variables declaration//GEN-END:variables
-    private PropertyPanel propertyPanel;
+
     private EmptyPropertyPanel emptyPanel;
+    private javax.swing.JPanel resourcePanel;
+    private javax.swing.JPanel propertyPanel;
+    private javax.swing.JPanel contentsPanel;
+
 }

@@ -29,10 +29,12 @@ public class EmptyPropertyPanel extends javax.swing.JPanel {
         theLabel = new javax.swing.JLabel();
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(Box.createVerticalStrut(50));
+        add(Box.createVerticalStrut(100));
 
         theLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         theLabel.setText("....");
+        theLabel.setAlignmentX(0.5f);
+        theLabel.setAlignmentY(0.5f);
         add(theLabel);
     }
     
