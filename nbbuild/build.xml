@@ -108,7 +108,13 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../xml/external" target="unscramble"/>
   </target>
 
-  <target name="init" depends="init-module-list,maybe-pre-unscramble">
+  <target name="set-buildnumber" unless="buildnumber">
+    <tstamp>
+    	<format property="buildnumber" pattern="yyyyMMddHHmm"/>
+    </tstamp>
+  </target>
+
+  <target name="init" depends="init-module-list,maybe-pre-unscramble,set-buildnumber">
     <tstamp>
     	<format property="buildnumber" pattern="yyyyMMddHHmm"/>
     </tstamp>
