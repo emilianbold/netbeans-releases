@@ -2460,7 +2460,7 @@ the ${netbeans.dest}/bin/ directory.
   </target>
   
   <target name="merge" depends="build-messaging">
-    <mkdir dir="${netbeans.dest}"/>
+    <mkdir dir="${netbeans.dest.dir}"/>
     <nbmerge failonerror="${stop.when.broken.modules}" 
              dest="${netbeans.dest}" 
              topdir=".." 
@@ -2557,7 +2557,7 @@ the ${netbeans.dest}/bin/ directory.
 
     <!-- package the misc files -->
     <zip destfile="${netbeans.build.dir}/zips/${clusters.prefix}-misc-${buildnum}.zip" update="true" duplicate="preserve">
-      <zipfileset dir="${netbeans.dest}" filemode="755">
+      <zipfileset dir="${netbeans.dest.dir}" filemode="755">
          <include name="bin/netbeans"/>
       </zipfileset>
       <zipfileset dir="${netbeans.dest.dir}">
