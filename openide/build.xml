@@ -430,7 +430,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="text" />
   </target>        
 
-  <target name="lib-util" >
+  <target name="lib-util" depends="13javac-workaround" >
         <ant dir="util" />
   </target>        
   
