@@ -19,6 +19,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
 		<include name="org/netbeans/tax/XMLCloneTest.class"/>
 		<include name="org/netbeans/tax/EncodingTest.class"/>
+		<include name="org/netbeans/tax/FactoryTest.class"/>
 		<include name="org/netbeans/tax/io/TreeBuilderTest.class"/>
             </patternset>
         </testset>
