@@ -238,7 +238,7 @@ public class LocalsTreeModel implements TreeModel {
             if ((thisR != null) && includeThis) {
                 if (from == 0)
                     locals [i++] = getThis (thisR, "");
-                j--;
+                if (j > 0) j--;
             }
             for (; i < k; i++) {
                 LocalVariable lv = (LocalVariable) l.get (j++);
