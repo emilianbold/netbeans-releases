@@ -290,8 +290,14 @@ public final class NbMainExplorer extends CloneableTopComponent {
         NbPlaces places = NbPlaces.getDefault();
         // build the list of roots
         LinkedList result = new LinkedList();
-        // repository goes first
+  
+        //repository goes first
+/*         
+        #47032:  Netbeans hangs for 30 seconds during startup - so commented out
+        Moreover there isn't any ExlorerTab dedicated to show this repository root. 
         result.add(RepositoryNodeFactory.getDefault().repository(DataFilter.ALL));
+*/
+        
         // roots added by modules (javadoc etc...)
         result.addAll(Arrays.asList(places.roots()));
         // runtime
