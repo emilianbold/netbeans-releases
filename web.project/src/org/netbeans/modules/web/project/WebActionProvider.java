@@ -298,7 +298,7 @@ class WebActionProvider implements ActionProvider {
             p.setProperty("jpda.address", address);
         
             if (command.equals (COMMAND_DEBUG)) {
-                p.setProperty("client.urlPart", project.getWebModule().getUrl());
+//                p.setProperty("client.urlPart", project.getWebModule().getUrl());
             } else { //COMMAND_DEBUG_SINGLE
                 FileObject[] files = findJsps( context );
                 // debug jsp
