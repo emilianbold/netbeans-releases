@@ -43,7 +43,10 @@ public class ExtensionListEditor extends Object implements PropertyEditor, Strin
     *     modified value.
     */
     public void setValue(Object value) {
-        this.value = (ExtensionList)((ExtensionList)value).clone ();
+        if ( value != null )
+            this.value = (ExtensionList)((ExtensionList)value).clone ();
+        else
+            this.value = null;
         support.firePropertyChange (null, null, null);
     }
 
