@@ -354,6 +354,7 @@ public final class EclipseProject implements Comparable {
                 }
             }
         }
+        logger.info("Cannot resolve link: " + entry.getRawPath()); // NOI18N
         return null;
     }
     

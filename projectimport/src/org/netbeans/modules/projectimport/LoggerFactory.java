@@ -34,7 +34,8 @@ public class LoggerFactory {
     private static LoggerFactory factory = new LoggerFactory();
     
     // used level
-    private static final Level LEVEL = Level.FINE;
+    // TODO: mkrauskopf: this have to be customized (e.g. with a system property)
+    private static final Level LEVEL = Level.INFO;
     
     // TOTO: mkrauskopf - enhance this
     private static final int MAX_LEVEL_LENGTH = Level.WARNING.getName().length();

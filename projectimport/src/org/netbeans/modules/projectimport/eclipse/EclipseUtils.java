@@ -29,8 +29,8 @@ public class EclipseUtils {
      */
     public static boolean isRegularProject(File projectDir) {
         return projectDir.isDirectory() &&
-                new File(projectDir, EclipseProject.PROJECT_FILE).isFile() &&
-                new File(projectDir, EclipseProject.CLASSPATH_FILE).isFile();
+                new File(projectDir, EclipseProject.PROJECT_FILE).isFile(); // &&
+//                new File(projectDir, EclipseProject.CLASSPATH_FILE).isFile();
     }
     
     /**

@@ -15,6 +15,8 @@ package org.netbeans.modules.projectimport.eclipse;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.logging.Logger;
+import org.netbeans.modules.projectimport.LoggerFactory;
 import org.netbeans.modules.projectimport.ProjectImporterException;
 
 /**
@@ -25,6 +27,10 @@ import org.netbeans.modules.projectimport.ProjectImporterException;
  * @author mkrauskopf
  */
 final class ProjectFactory {
+    
+    /** Logger for this class. */
+    private static final Logger logger =
+            LoggerFactory.getDefault().createLogger(ProjectFactory.class);
     
     /** singleton */
     private static ProjectFactory instance = new ProjectFactory();
@@ -40,7 +46,7 @@ final class ProjectFactory {
      * Loads a project contained in the given <code>projectDir</code> and tries
      * if there is workspace in the parent directory (which works only for
      * eclipse internal projects)
-     * 
+     *
      * @throws ProjectImporterException if project in the given
      *     <code>projectDir</code> is not a valid Eclipse project.
      */
@@ -56,7 +62,7 @@ final class ProjectFactory {
     
     /**
      * Loads a project contained in the given <code>projectDir</code>.
-     * 
+     *
      * @throws ProjectImporterException if project in the given
      *     <code>projectDir</code> is not a valid Eclipse project.
      */
@@ -73,15 +79,22 @@ final class ProjectFactory {
     
     /**
      * Fullfill given <code>project</code> with all needed information.
-     * 
+     *
      * @throws ProjectImporterException if project in the given
      *     <code>projectDir</code> is not a valid Eclipse project.
      */
     void load(EclipseProject project) throws ProjectImporterException {
         ProjectParser.parse(project);
-        project.setClassPath(ClassPathParser.parse(project.getClassPathFile()));
-        for (Iterator it = project.getClassPath().getEntries().iterator(); it.hasNext(); ) {
-            project.setAbsolutePathForEntry((ClassPathEntry) it.next());
+        File cpFile = project.getClassPathFile();
+        // non-java project doesn't need to have a classpath file
+        if (cpFile != null && cpFile.exists()) {
+            project.setClassPath(ClassPathParser.parse(cpFile));
+            for (Iterator it = project.getClassPath().getEntries().iterator(); it.hasNext(); ) {
+                project.setAbsolutePathForEntry((ClassPathEntry) it.next());
+            }
+        } else {
+            logger.finer("Project " + project.getName() + // NOI18N
+                    " doesn't have java nature."); // NOI18N
         }
     }
 }
