@@ -66,17 +66,6 @@ H2 {
   color:#D20005;
 }
 
-H3.tutorial {
-	  font-family: Arial, "Arial CE", "Lucida Grande CE", lucida, "Helvetica CE", sans-serif;
-	  font-size: 13px;
-	  font-weight:bold;
-	  padding-bottom:0px;
-	  margin-bottom:0px;
-	  border-bottom:1px solid #AFAFAF;
-	  color:#0E1B55;
-	  clear:both;
-}
-
 H3 {
   font-family: Arial, "Arial CE", "Lucida Grande CE", lucida, "Helvetica CE", sans-serif;
   font-size: 13px;
@@ -92,6 +81,17 @@ h4 {
 }
 
 H5 {
+  font-family: Arial, "Arial CE", "Lucida Grande CE", lucida, "Helvetica CE", sans-serif;
+  font-size: 13px;
+  font-weight:bold;
+  padding-bottom:0px;
+  margin-bottom:0px;
+  border-bottom:1px solid #AFAFAF;
+  color:#0E1B55;
+  clear:both;
+}
+
+H3.tutorial {
   font-family: Arial, "Arial CE", "Lucida Grande CE", lucida, "Helvetica CE", sans-serif;
   font-size: 13px;
   font-weight:bold;
@@ -956,7 +956,11 @@ OTHER STYLES
 .examplecode {
   font-family: "Courier New", monospace;
   background-color: #ffffcc;
- 
+}
+
+/*style for tutorials*/
+.indent {
+  margin-left:15px;
 }
 
 
@@ -967,16 +971,8 @@ OTHER STYLES
   line-height: 1.2em;
 }
 
-samp,code,tt {
+pre,samp,code,tt {
   font-family: "Courier New", monospace;
- 
-  
-}
-
-pre
-{
-	 background-color: #ffffcc;
-	 padding:5px 5px 5px 5px;
 }
 
 .titlec {
@@ -990,10 +986,3 @@ pre
   color:#D20005;
 }
 
-/*style for tutorials*/
-.indent {
-	margin-left:15px;
-}
-
-li {margin-bottom:5px;}
-	
