@@ -14,6 +14,7 @@
 package org.netbeans.modules.editor;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
@@ -210,6 +211,8 @@ public class NbEditorUI extends ExtEditorUI {
         private Action systemAction;
 
         private PropertyChangeListener enabledPropertySyncL;
+        
+        private boolean listeningOnTCRegistry;
 
 
         SystemActionUpdater(String editorActionName, boolean updatePerformer,
@@ -295,6 +298,20 @@ public class NbEditorUI extends ExtEditorUI {
                 ea.actionPerformed(new ActionEvent(component, 0, "")); // NOI18N
             }
         }
+        
+        private void startTCRegistryListening() {
+            if (!listeningOnTCRegistry) {
+                listeningOnTCRegistry = true;
+                TopComponent.getRegistry().addPropertyChangeListener(this);
+            }
+        }
+        
+        private void stopTCRegistryListening() {
+            if (listeningOnTCRegistry) {
+                listeningOnTCRegistry = false;
+                TopComponent.getRegistry().removePropertyChangeListener(this);
+            }
+        }
 
         public synchronized void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
@@ -308,24 +325,30 @@ public class NbEditorUI extends ExtEditorUI {
                     editorDeactivated();
             } else if (EditorUI.COMPONENT_PROPERTY.equals(propName)) {
                 JTextComponent component = (JTextComponent)evt.getNewValue();
-                TopComponent.Registry regs = TopComponent.getRegistry();
 
                 if (component != null) { // just installed
                     component.addPropertyChangeListener(this);
-                    regs.addPropertyChangeListener(this);
+                    if (component.isDisplayable()) {
+                        startTCRegistryListening();
+                    }
 
                 } else { // just deinstalled
                     component = (JTextComponent)evt.getOldValue();
-
                     component.removePropertyChangeListener(this);
-                    regs.removePropertyChangeListener(this);
+                    stopTCRegistryListening();
                 }
 
                 reset();
 
             } else if ("editorKit".equals(propName)) { // NOI18N
-
                 reset();
+
+            } else if ("ancestor".equals(propName)) {
+                if (((Component)evt.getSource()).isDisplayable()) { // now displayable
+                    startTCRegistryListening();
+                } else { // not displayable
+                    stopTCRegistryListening();
+                }
             }
         }
 
