@@ -74,10 +74,7 @@ public class Hacks {
                 if ( "org.openide.actions.NewTemplateAction".equals( className ) ) {
                     newActions.add( PlaceHolderAction.NewFile.get( PlaceHolderAction.NewFile.class ) );
                 }
-                else if ( ! "org.openide.actions.BuildAction".equals( className ) &&
-                     ! "org.openide.actions.BuildAllAction".equals( className ) &&
-                     ! "org.openide.actions.CompileAction".equals( className ) &&
-                     ! "org.openide.actions.CompileAllAction".equals( className ) ) {
+                else {
                     newActions.add( defaultActions[i]);
                 }
             }
@@ -169,6 +166,7 @@ public class Hacks {
     /**
      * Set the disk roots by default to ignore the same junk files that Ant
      * itself ignores by default.
+     * CURRENTLY UNUSED: cf #40400
      * @author Jesse Glick
      */
     static void setDefaultExcludesList() {
@@ -182,38 +180,4 @@ public class Hacks {
     private static final String DEFAULT_EXCLUDES_REGEXP =
         "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store))$|^\\.[#_]|~$"; // NOI18N
     
-    /**
-     * Turn on file extensions.
-     * @author Jesse Glick
-     */
-    static void showFileExtensions() {
-        DataNode.setShowFileExtensions(true);
-    }
-    
-    /**
-     * Open *.properties as text by default.
-     * @author Jesse Glick
-     */
-    static void editPropertiesNotOpen() {
-        try {
-            Class c = Thread.currentThread().getContextClassLoader().loadClass(
-                "org.netbeans.modules.properties.PropertiesDataLoader"); // NOI18N
-            DataLoader l = (DataLoader)SharedClassObject.findObject(c, true);
-            SystemAction[] actions = l.getActions();
-            assert actions.length > 0;
-            SystemAction edit = SystemAction.get(EditAction.class);
-            if (edit != actions[0]) {
-                int idx = Arrays.asList(actions).indexOf(edit);
-                assert idx != -1;
-                SystemAction[] actions2 = (SystemAction[])actions.clone();
-                SystemAction tmp = actions2[0];
-                actions2[0] = edit;
-                actions2[idx] = tmp;
-                l.setActions(actions2);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 }

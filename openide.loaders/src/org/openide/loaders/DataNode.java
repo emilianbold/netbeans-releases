@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -46,7 +46,7 @@ public class DataNode extends AbstractNode {
     private PropL propL;
 
     /** should file extensions be displayed? */
-    private static boolean showFileExtensions = false;
+    private static boolean showFileExtensions = true;
 
     /** Create a data node for a given data object.
     * The provided children object will be used to hold all child nodes.

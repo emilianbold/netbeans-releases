@@ -7,13 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.properties;
-
 
 import java.io.IOException;
 
@@ -25,7 +23,6 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.io.SafeException;
-
 
 /** 
  * Data loader which recognizes properties files.
@@ -71,11 +68,14 @@ public final class PropertiesDataLoader extends MultiFileLoader {
                                    "PROP_PropertiesLoader_Name");       //NOI18N
     }
     
-    /** */
     protected SystemAction[] defaultActions() {
         return new SystemAction[] {
-            SystemAction.get(OpenAction.class),
+            // Open as text by default, but leave the ability to open
+            // the table view, and the ability to customize the
+            // default. First item in the list serves as the default
+            // action by default.
             SystemAction.get(EditAction.class),
+            SystemAction.get(OpenAction.class),
             SystemAction.get(FileSystemAction.class),
             null,
             SystemAction.get(CutAction.class),
