@@ -349,6 +349,14 @@ public class MakeNBM extends MatchingTask {
         if (manifest != null && module != null)
             throw new BuildException("cannot set both manifest and module for makenbm", location);
 
+    File file;
+    String rootDir = getProject ().getProperty ("nbm.target.dir");
+    if (rootDir != null) {
+        file = new File (rootDir, this.file.getName ());
+    } else {
+        file = this.file;
+    }
+
 	// If desired, override the license and/or URL. //
         overrideURLIfNeeded() ;
 	overrideLicenseIfNeeded() ;
@@ -544,6 +552,7 @@ public class MakeNBM extends MatchingTask {
 	long jarModified = file.lastModified (); // may be 0
 	//log ("Ensuring existence of NBM file " + file);
 	Jar jar = (Jar) project.createTask ("jar"); //NOI18N
+    
 	jar.setJarfile (file);
 	//jar.setBasedir (topdir.getAbsolutePath ());
         jar.setCompress(true);

@@ -908,6 +908,8 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <!-- It's good idea to call merge target before this one.
            NbMerge.java can set property "modules" to the list of realy
            built modules (excluding fixedmodules which must build everytime). -->
+      <mkdir dir="nbms" />
+      <property name="nbm.target.dir" location="nbms" />
       <for-each startdir=".." target="nbm" locations="${allmodules}"/>
   </target>
   <target name="nbm"/><!-- dummy target -->
