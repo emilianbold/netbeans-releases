@@ -184,7 +184,7 @@
     <tocitem text="Developing Enterprise Beans" >
         <tocitem text="About Enterprise Beans" >
             <tocitem text="About Enterprise Beans" target="about_ejbs" />
-            <tocitem text="Working With Enterprise Beans" target="tbd" />
+            <tocitem text="Working With Enterprise Beans" target="ejb_process" />
             <tocitem text="Enterprise Bean Tasks: Quick Reference" target="tbd" />
             <tocitem text="About Entity Beans" target="about_entity_beans" />
             <tocitem text="About Session Beans" target="about_session_beans" />
@@ -204,6 +204,7 @@
         </tocitem>
         <tocitem text="Configuring EJB Modules" >
             <tocitem text="About Configuring EJB Modules" target="config_ejb_about" />
+            <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />
             <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
             <tocitem text="Configuring EJB Deployment Descriptors" target="config_ejb_dd" />
             <tocitem text="About Container-Managed Relationships" target="about_ejb_relationship" /> 
@@ -215,7 +216,7 @@
             <tocitem text="Deploying an EJB Module" target="deploy_ejb" />
         </tocitem>
         <tocitem text="Debugging and Testing EJB Modules" >
-            <tocitem text="Debugging an EJB Module" target="tbd" />
+            <tocitem text="Debugging an EJB Module" target="debug_ejb" />
             <tocitem text="Testing an EJB Module" target="tbd" />
         </tocitem>
 </tocitem>

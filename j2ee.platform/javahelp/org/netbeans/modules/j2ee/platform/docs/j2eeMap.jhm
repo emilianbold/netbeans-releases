@@ -169,6 +169,7 @@
     <mapID target="about_session_beans" url="ejb/general/about_session_beans.html" />
     <mapID target="about_deployment_descriptors" url="ejb/general/about_deployment_descriptors.html" />
     <mapID target="about_ejbs" url="ejb/general/about_ejbs.html" />
+    <mapID target="ejb_process" url="ejb/general/ejb_process.html" />
 
     <mapID target="create_ejb" url="ejb/editing/create_ejb.html" />
     <mapID target="create_ejb_project" url="ejb/editing/create_ejb_project.html" />
@@ -180,26 +181,36 @@
     <mapID target="define_select_method" url="ejb/editing/define_select_method.html" />
     <mapID target="call_ejb" url="ejb/editing/call_ejb.html" />
 
-    <mapID target="add_ejb_to_j2ee_app" url="ejb/configuring/add_ejb_to_j2ee_app.html" />
-
     <mapID target="build_ejb" url="ejb/deploy/build_ejb.html" />
     <mapID target="deploy_ejb" url="ejb/deploy/deploy_ejb.html" />
 
+    <mapID target="debug_ejb" url="ejb/debug/debug_ejb.html" />
+
+    <mapID target="add_ejb_to_j2ee_app" url="ejb/configuring/add_ejb_to_j2ee_app.html" />
     <mapID target="config_ejb_about" url="ejb/configuring/config_ejb_about.html" />
     <mapID target="ejb_relationship" url="ejb/configuring/ejb_relationship.html" />
     <mapID target="about_ejb_relationship" url="ejb/configuring/about_ejb_relationship.html" />
     <mapID target="config_ejb_dd" url="ejb/configuring/config_ejb_dd.html" />
-    
-    <!-- EJB Module from Existing Sources Project Wizard dialog box csh -->
 
+    <!-- EJB Module CSH -->  
+      
+    <!-- EJB Module from Existing Sources Project Wizard dialog box csh: -->
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.ImportLocation" url="ejb/csh/ejb_with_source_wizard1.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelSourceFolders" url="enterprise/csh/ejb_with_source_wizard2.html" />
     
 
-    <!-- EJB Module from Existing Sources Project Wizard dialog box csh -->
-
+    <!-- EJB Module from Existing Sources Project Wizard dialog box csh: -->
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelConfigureProject" url="ejb/csh/ejb_new_wizard.html" />
 
+    <!-- Standard EJB Module project properties dialog box: -->
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarCustomizer" url="ejb/csh/stand-ejb-properties-sources.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerLibraries" url="ejb/csh/stand-ejb-properties-libraries.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerCompile" url="ejb/csh/stand-ejb-properties-compile.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerJar" url="ejb/csh/stand-ejb-properties-packaging.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerJavadoc" url="ejb/csh/stand-ejb-properties-javadoc.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerRun" url="ejb/csh/stand-ejb-properties-run.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerSources" url="ejb/csh/stand-ejb-properties-sources.html" />
+    
     <!-- End of EJB help -->
 
 </map>
