@@ -7,19 +7,34 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.junit;
 
+import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
 import java.util.ResourceBundle;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.TitledBorder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
-import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.util.HelpCtx;
@@ -46,101 +61,66 @@ public class JUnitCfgOfCreate extends JPanel {
     
     /** Creates new form JUnitCfgOfCreate */
     private JUnitCfgOfCreate() {
-        // init components
-        initComponents();
-        // add mnemonics (this has to be here, because of I18N and inability of the form editor
-        addMnemonicsAndAD();
+        initBundle();
         
-//        cmdMount.addActionListener(new JUnitCfgOfCreate.CmdMountListener());
-    }
-    
-    
-    private static char getMnemonics(ResourceBundle rb, String key) {
-        return rb.getString(key).charAt(0);
-    }
-    
-    private static int getMnemonicsIndex(ResourceBundle rb, String key) {
-        String mnemonicsValue = rb.getString(key);
-        try {            
-            return Integer.parseInt(mnemonicsValue);
-        } catch (NumberFormatException nfe) {
-            // oops, there was a problem -> error message
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, nfe);
-            // and return no mnemonics
-            return -1;
+        try {
+            initComponents();
+            addAccessibleDescriptions();
+            setBorder(BorderFactory.createEmptyBorder(12, 12, 0, 11));
+        } finally {
+            unlinkBundle();
         }
     }
-        
-    private void addMnemonicsAndAD() {
+    
+    private void addAccessibleDescriptions() {
         
         // window
         this.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.AD"));
         
         // check boxes
-        this.chkPublic.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkPublic.mne"));
         this.chkPublic.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkPublic.toolTip"));
         this.chkPublic.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkPublic.AD"));        
         
-        this.chkProtected.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkProtected.mne"));
         this.chkProtected.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkProtected.toolTip"));
         this.chkProtected.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkProtected.AD"));        
         
-        this.chkPackage.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkPackage.mne"));
         this.chkPackage.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkPackage.toolTip"));
         this.chkPackage.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkPackage.AD"));
         
-        this.chkComments.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkComments.mne"));
         this.chkComments.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkComments.toolTip"));        
         this.chkComments.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkComments.AD"));
         
-        this.chkContent.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkContent.mne"));
         this.chkContent.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkContent.toolTip"));
         this.chkContent.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkContent.AD"));
         
-        this.chkJavaDoc.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkJavaDoc.mne"));
         this.chkJavaDoc.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkJavaDoc.toolTip"));
         this.chkJavaDoc.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkJavaDoc.AD"));
         
         
-        this.chkExceptions.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkExceptions.mne"));
         this.chkExceptions.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkExceptions.toolTip"));
         this.chkExceptions.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkExceptions.AD"));
         
-        this.chkAbstractImpl.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkAbstractImpl.mne"));
         this.chkAbstractImpl.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkAbstractImpl.toolTip"));
         this.chkAbstractImpl.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkAbstractImpl.AD"));
         
-        this.chkPackagePrivateClasses.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkPackagePrivateClasses.mne"));
         this.chkPackagePrivateClasses.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkPackagePrivateClasses.toolTip"));
         this.chkPackagePrivateClasses.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkPackagePrivateClasses.AD"));
         
-        this.chkGenerateSuites.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkGenerateSuites.mne"));
         this.chkGenerateSuites.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkGenerateSuites.toolTip"));
         this.chkGenerateSuites.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkGenerateSuites.AD"));
         
-        this.chkEnabled.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkEnabled.mne"));
         this.chkEnabled.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkEnabled.toolTip"));
         this.chkEnabled.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkEnabled.AD"));
         
-        // buttons
-//       this.cmdMount.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.cmdMount.mne"));
-        
         // labels
         
-        this.lblSuiteClass.setDisplayedMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.lblSuiteClass.mne"));
-        this.lblSuiteClass.setLabelFor(cboSuiteClass);
         this.cboSuiteClass.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.cboSuiteClass.AD"));
         this.cboSuiteClass.getAccessibleContext().setAccessibleName(bundle.getString("JUnitCfgOfCreate.cboSuiteClass.AN"));
         
-        this.lblTestClass.setDisplayedMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.lblTestClass.mne"));
-        this.lblTestClass.setLabelFor(cboTestClass);
         this.cboTestClass.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.cboTestClass.AD"));
         this.cboTestClass.getAccessibleContext().setAccessibleName(bundle.getString("JUnitCfgOfCreate.cboTestClass.AN"));
         
     }
-    
-    //public static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.junit.Bundle");
-    public static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.junit.Bundle");
     
     private void fillTemplates() {
         Pair        item;
@@ -192,11 +172,14 @@ public class JUnitCfgOfCreate extends JPanel {
         cfg.chkGenerateSuites.setSelected(JUnitSettings.getDefault().isGenerateSuiteClasses());        
         cfg.chkEnabled.setSelected(JUnitSettings.getDefault().isCfgCreateEnabled());
         cfg.chkPackagePrivateClasses.setSelected(JUnitSettings.getDefault().isIncludePackagePrivateClasses());
+        cfg.chkSetUp.setSelected(JUnitSettings.getDefault().isGenerateSetUp());
+        cfg.chkTearDown.setSelected(JUnitSettings.getDefault().isGenerateTearDown());
         
         // display dialog
         DialogDescriptor descriptor = new DialogDescriptor (
             cfg,
-            bundle.getString("JUnitCfgOfCreate.Title")
+            NbBundle.getMessage(JUnitCfgOfCreate.class,
+                                "JUnitCfgOfCreate.Title")               //NOI18N
         );
         descriptor.setHelpCtx(new HelpCtx(JUnitCfgOfCreate.class));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
@@ -227,6 +210,8 @@ public class JUnitCfgOfCreate extends JPanel {
             JUnitSettings.getDefault().setCfgCreateEnabled(cfg.chkEnabled.isSelected());
             JUnitSettings.getDefault().setGenerateSuiteClasses(cfg.chkGenerateSuites.isSelected());
             JUnitSettings.getDefault().setIncludePackagePrivateClasses(cfg.chkPackagePrivateClasses.isSelected());
+            JUnitSettings.getDefault().setGenerateSetUp(cfg.chkSetUp.isSelected());
+            JUnitSettings.getDefault().setGenerateTearDown(cfg.chkTearDown.isSelected());
             
             return true;
         }
@@ -234,201 +219,311 @@ public class JUnitCfgOfCreate extends JPanel {
         return false;
     }
     
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /** resource bundle used during initialization of this panel */
+    public ResourceBundle bundle;
+    
+    /**
+     * Loads a resource bundle so that it can be used during intialization
+     * of this panel.
+     *
+     * @see  #unlinkBundle
      */
-    private void initComponents() {//GEN-BEGIN:initComponents
-        java.awt.GridBagConstraints gridBagConstraints;
+    private void initBundle() {
+        bundle = NbBundle.getBundle(JUnitCfgOfCreate.class);
+    }
+    
+    /**
+     * Nulls the resource bundle so that it is not held in memory when it is
+     * not used.
+     *
+     * @see  #initBundle
+     */
+    private void unlinkBundle() {
+        bundle = null;
+    }
+    
+    /**
+     * This method is called from within the constructor to initialize the form.
+     */
+    private void initComponents() {
+        createTemplatesPanel();
+        createOptionsPanel();
+        composeWholePanel();
+    }
+    
+    /**
+     * Creates a panel for choosing templates.
+     * The created panel is stored in variable {@link #jpTemplates jpTemplates}.
+     */
+    private void createTemplatesPanel() {
+        
+        /* create the components: */
+        JLabel lblSuiteClass = new JLabel();
+        JLabel lblTestClass = new JLabel();
+        cboSuiteClass = new JComboBox();
+        cboTestClass = new JComboBox();
+        
+        /* set texts: */
+        Mnemonics.setLocalizedText(
+               lblSuiteClass,
+               bundle.getString("JUnitCfgOfCreate.lblSuiteClass.text"));//NOI18N
+        Mnemonics.setLocalizedText(
+                lblTestClass,
+                bundle.getString("JUnitCfgOfCreate.lblTestClass.text"));//NOI18N
+        
+        /* set label-for: */
+        lblSuiteClass.setLabelFor(cboSuiteClass);
+        lblTestClass.setLabelFor(cboTestClass);
+        
+        /* set layout: */
+        GridBagConstraints gbc = new GridBagConstraints();
+        GridBagLayout gbl = new GridBagLayout();
+        jpTemplates = new SizeRestrictedPanel(gbl, false, true);
+        
+        gbc.anchor = GridBagConstraints.WEST;
+        
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0.0d;
+        gbc.insets = new Insets(0, 0, 5, 12);
+        jpTemplates.add(lblSuiteClass, gbc);
+        
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0d;
+        gbc.insets = new Insets(0, 0, 5, 0);
+        jpTemplates.add(cboSuiteClass, gbc);
+        
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 0.0d;
+        gbc.insets = new Insets(0, 0, 0, 12);
+        jpTemplates.add(lblTestClass, gbc);
+        
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        gbc.weightx = 1.0d;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        jpTemplates.add(cboTestClass, gbc);
+    }
+    
+    /**
+     * Creates a panel containing controls for settings code generation options.
+     * The created panel is stored in variable {@link #jpCodeGen jpCodeGen}.
+     */
+    private void createOptionsPanel() {
+        
+        /* create the components: */
+        chkPublic = new JCheckBox();
+        chkProtected = new JCheckBox();
+        chkPackage = new JCheckBox();
+        chkPackagePrivateClasses = new JCheckBox();
+        chkAbstractImpl = new JCheckBox();
+        chkExceptions = new JCheckBox();
+        chkGenerateSuites = new JCheckBox();
+        chkSetUp = new JCheckBox();
+        chkTearDown = new JCheckBox();
+        chkContent = new JCheckBox();
+        chkJavaDoc = new JCheckBox();
+        chkComments = new JCheckBox();
+        
+        /* set texts: */
+        Mnemonics.setLocalizedText(
+                chkPublic,
+                bundle.getString("JUnitCfgOfCreate.chkPublic.text"));   //NOI18N
+        Mnemonics.setLocalizedText(
+                chkProtected,
+                bundle.getString("JUnitCfgOfCreate.chkProtected.text"));//NOI18N
+        Mnemonics.setLocalizedText(
+                chkPackage,
+                bundle.getString("JUnitCfgOfCreate.chkPackage.text"));  //NOI18N
+        Mnemonics.setLocalizedText(
+                chkPackagePrivateClasses,
+                bundle.getString(
+                    "JUnitCfgOfCreate.chkPackagePrivateClasses.text")); //NOI18N
+        Mnemonics.setLocalizedText(
+                chkAbstractImpl,
+                bundle.getString(
+                    "JUnitCfgOfCreate.chkAbstractImpl.text"));          //NOI18N
+        Mnemonics.setLocalizedText(
+                chkExceptions,
+                bundle.getString(
+                    "JUnitCfgOfCreate.chkExceptions.text"));            //NOI18N
+        Mnemonics.setLocalizedText(
+                chkGenerateSuites,
+                bundle.getString(
+                    "JUnitCfgOfCreate.chkGenerateSuites.text"));        //NOI18N
+        Mnemonics.setLocalizedText(
+                chkSetUp,
+                bundle.getString("JUnitCfgOfCreate.chkSetUp.text"));    //NOI18N
+        Mnemonics.setLocalizedText(
+                chkTearDown,
+                bundle.getString("JUnitCfgOfCreate.chkTearDown.text")); //NOI18N
+        Mnemonics.setLocalizedText(
+                chkContent,
+                bundle.getString("JUnitCfgOfCreate.chkContent.text"));  //NOI18N
+        Mnemonics.setLocalizedText(
+                chkJavaDoc,
+                bundle.getString("JUnitCfgOfCreate.chkJavaDoc.text"));  //NOI18N
+        Mnemonics.setLocalizedText(
+                chkComments,
+                bundle.getString("JUnitCfgOfCreate.chkComments.text")); //NOI18N
+        
+        /* create groups of checkboxes: */
+        JComponent methodAccessLevels = createChkBoxGroup(
+                bundle.getString("JUnitCfgOfCreate.groupAccessLevels"), //NOI18N
+                new JCheckBox[] {chkPublic, chkProtected, chkPackage});
+        JComponent classTypes = createChkBoxGroup(
+                bundle.getString("JUnitCfgOfCreate.groupClassTypes"),   //NOI18N
+                new JCheckBox[] {chkPackagePrivateClasses,
+                                 chkAbstractImpl, chkExceptions});
+        JComponent optionalClasses = createChkBoxGroup(
+                bundle.getString("JUnitCfgOfCreate.groupOptClasses"),   //NOI18N
+                new JCheckBox[] {chkGenerateSuites});
+        JComponent optionalCode = createChkBoxGroup(
+                bundle.getString("JUnitCfgOfCreate.groupOptCode"),      //NOI18N
+                new JCheckBox[] {chkSetUp, chkTearDown, chkContent});
+        JComponent optionalComments = createChkBoxGroup(
+                bundle.getString("JUnitCfgOfCreate.groupOptComments"),  //NOI18N
+                new JCheckBox[] {chkJavaDoc, chkComments});
+        
+        /* create the left column of options: */
+        Box leftColumn = Box.createVerticalBox();
+        leftColumn.add(methodAccessLevels);
+        leftColumn.add(Box.createVerticalStrut(11));
+        leftColumn.add(classTypes);
+        leftColumn.add(Box.createVerticalGlue());
+        
+        /* set alignments for BoxLayout: */
+        methodAccessLevels.setAlignmentX(0.0f);
+        classTypes.setAlignmentX(0.0f);
+        
+        /* create the right column of options: */
+        Box rightColumn = Box.createVerticalBox();
+        rightColumn.add(optionalClasses);
+        rightColumn.add(Box.createVerticalStrut(11));
+        rightColumn.add(optionalCode);
+        rightColumn.add(Box.createVerticalStrut(11));
+        rightColumn.add(optionalComments);
+        rightColumn.add(Box.createVerticalGlue());
+        
+        /* set alignments for BoxLayout: */
+        optionalClasses.setAlignmentX(0.0f);
+        optionalCode.setAlignmentX(0.0f);
+        optionalComments.setAlignmentX(0.0f);
+        
+        /* compose the final panel: */
+        jpCodeGen = new SizeRestrictedPanel(false, true);
+        jpCodeGen.setLayout(new BoxLayout(jpCodeGen, BoxLayout.X_AXIS));
+        jpCodeGen.add(leftColumn);
+        jpCodeGen.add(Box.createHorizontalStrut(12));
+        jpCodeGen.add(rightColumn);
+    }
+    
+    /**
+     * Creates a labelled group of checkboxes.
+     *
+     * @param  title  title for the group of checkboxes
+     * @param  elements  checkboxes - members of the group
+     * @return  visual component representing the group
+     */
+    private static JComponent createChkBoxGroup(String title,
+                                                JCheckBox[] elements) {
+        
+        /* create a component representing the group without title: */
+        JComponent content;
+        if (elements.length == 1) {
+            content = elements[0];
+        } else {
+            content = new JPanel(new GridLayout(0, 1, 0, 5));
+            for (int i = 0; i < elements.length; i++) {
+                content.add(elements[i]);
+            }
+        }
+        
+        /* add the title and insets to the group: */
+        JPanel result = new JPanel(new BorderLayout());
+        result.add(new JLabel(title), BorderLayout.NORTH);
+        content.setBorder(BorderFactory.createEmptyBorder(6, 12, 0, 0));
+        result.add(content, BorderLayout.CENTER);
+        
+        /*
+         * restrict the size so that the component is not resized when put
+         * into a container layed out by BoxLayout:
+         */
+        result.setMaximumSize(result.getPreferredSize());
+        
+        return result;
+    }
+    
+    /**
+     * Adds a border and a title around a given component.
+     *
+     * @param  component  component the border and title should be added to
+     * @param  insets  insets between the component and the titled border
+     * @param  title  text of the title
+     */
+    private static void addTitledBorder(JComponent component,
+                                        Insets insets,
+                                        String title) {
+        Border insideBorder = BorderFactory.createEmptyBorder(
+                insets.top, insets.left, insets.bottom, insets.right);
+        Border outsideBorder = new TitledBorder(
+                BorderFactory.createEtchedBorder(), title);
+        component.setBorder(new CompoundBorder(outsideBorder, insideBorder));
+    }
+    
+    /**
+     * Composes the whole panel from the templates panel, code generation
+     * options panel and the &quot;Show this configuration dialog&quot;
+     * checkbox.
+     */
+    private void composeWholePanel() {
+        
+        /* create the "Show this configuration dialog again" checkbox: */
+        chkEnabled = new JCheckBox();
+        Mnemonics.setLocalizedText(
+                chkEnabled,
+                bundle.getString("JUnitCfgOfCreate.chkEnabled.text"));  //NOI18N
+        
+        /* decorate the option panels: */
+        addTitledBorder(jpTemplates,
+                  new Insets(12, 12, 11, 11),
+                  bundle.getString("JUnitCfgOfCreate.jpTemplates.title"));//NOI18N
+        addTitledBorder(jpCodeGen,
+                  new Insets(12, 12, 11, 12),
+                  bundle.getString("JUnitCfgOfCreate.jpCodeGen.title"));//NOI18N
+        
+        /* compose the main panel: */
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        add(jpTemplates);
+        add(Box.createVerticalStrut(11));
+        add(jpCodeGen);
+        add(Box.createVerticalStrut(11));
+        add(chkEnabled);
+        
+        /* tune the layout: */
+        jpTemplates.setAlignmentX(0.0f);
+        jpCodeGen.setAlignmentX(0.0f);
+        //chkEnabled.setAlignmentX(0.0f);   //not necessary - its the default
+    }
 
-        jpTemplates = new javax.swing.JPanel();
-        lblSuiteClass = new javax.swing.JLabel();
-        lblTestClass = new javax.swing.JLabel();
-        cboSuiteClass = new javax.swing.JComboBox();
-        cboTestClass = new javax.swing.JComboBox();
-        jpCodeGen = new javax.swing.JPanel();
-        chkPublic = new javax.swing.JCheckBox();
-        chkProtected = new javax.swing.JCheckBox();
-        chkPackage = new javax.swing.JCheckBox();
-        chkComments = new javax.swing.JCheckBox();
-        chkContent = new javax.swing.JCheckBox();
-        chkJavaDoc = new javax.swing.JCheckBox();
-        chkExceptions = new javax.swing.JCheckBox();
-        chkAbstractImpl = new javax.swing.JCheckBox();
-        chkGenerateSuites = new javax.swing.JCheckBox();
-        chkPackagePrivateClasses = new javax.swing.JCheckBox();
-        chkEnabled = new javax.swing.JCheckBox();
+    private JComboBox cboSuiteClass;
+    private JComboBox cboTestClass;
+    private JCheckBox chkAbstractImpl;
+    private JCheckBox chkComments;
+    private JCheckBox chkContent;
+    private JCheckBox chkEnabled;
+    private JCheckBox chkExceptions;
+    private JCheckBox chkGenerateSuites;
+    private JCheckBox chkJavaDoc;
+    private JCheckBox chkPackage;
+    private JCheckBox chkPackagePrivateClasses;
+    private JCheckBox chkProtected;
+    private JCheckBox chkPublic;
+    private JCheckBox chkSetUp;
+    private JCheckBox chkTearDown;
+    private JComponent jpCodeGen;
+    private JComponent jpTemplates;
 
-        setLayout(new java.awt.GridBagLayout());
-
-        setMinimumSize(new java.awt.Dimension(500, 320));
-        jpTemplates.setLayout(new java.awt.GridBagLayout());
-
-        jpTemplates.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(), bundle.getString("JUnitCfgOfCreate.jpTemplates.title")));
-        lblSuiteClass.setText(bundle.getString("JUnitCfgOfCreate.lblSuiteClass.text"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 6);
-        jpTemplates.add(lblSuiteClass, gridBagConstraints);
-
-        lblTestClass.setText(bundle.getString("JUnitCfgOfCreate.lblTestClass.text"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 2);
-        jpTemplates.add(lblTestClass, gridBagConstraints);
-
-        cboSuiteClass.setMinimumSize(new java.awt.Dimension(200, 26));
-        cboSuiteClass.setPreferredSize(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 2, 4, 2);
-        jpTemplates.add(cboSuiteClass, gridBagConstraints);
-
-        cboTestClass.setMinimumSize(new java.awt.Dimension(200, 26));
-        cboTestClass.setPreferredSize(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 2, 4, 2);
-        jpTemplates.add(cboTestClass, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
-        add(jpTemplates, gridBagConstraints);
-
-        jpCodeGen.setLayout(new java.awt.GridBagLayout());
-
-        jpCodeGen.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(), bundle.getString("JUnitCfgOfCreate.jpCodeGen.title")));
-        chkPublic.setText(bundle.getString("JUnitCfgOfCreate.chkPublic.text"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        jpCodeGen.add(chkPublic, gridBagConstraints);
-
-        chkProtected.setText(bundle.getString("JUnitCfgOfCreate.chkProtected.text"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        jpCodeGen.add(chkProtected, gridBagConstraints);
-
-        chkPackage.setText(bundle.getString("JUnitCfgOfCreate.chkPackage.text"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        jpCodeGen.add(chkPackage, gridBagConstraints);
-
-        chkComments.setText(bundle.getString("JUnitCfgOfCreate.chkComments.text"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        jpCodeGen.add(chkComments, gridBagConstraints);
-
-        chkContent.setText(bundle.getString("JUnitCfgOfCreate.chkContent.text"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        jpCodeGen.add(chkContent, gridBagConstraints);
-
-        chkJavaDoc.setText(bundle.getString("JUnitCfgOfCreate.chkJavaDoc.text"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        jpCodeGen.add(chkJavaDoc, gridBagConstraints);
-
-        chkExceptions.setText(bundle.getString("JUnitCfgOfCreate.chkExceptions.text"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        jpCodeGen.add(chkExceptions, gridBagConstraints);
-
-        chkAbstractImpl.setText(bundle.getString("JUnitCfgOfCreate.chkAbstractImpl.text"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        jpCodeGen.add(chkAbstractImpl, gridBagConstraints);
-
-        chkGenerateSuites.setText(bundle.getString("JUnitCfgOfCreate.chkGenerateSuites.text"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        jpCodeGen.add(chkGenerateSuites, gridBagConstraints);
-
-        chkPackagePrivateClasses.setText(bundle.getString("JUnitCfgOfCreate.chkPackagePrivateClasses.text"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        jpCodeGen.add(chkPackagePrivateClasses, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
-        add(jpCodeGen, gridBagConstraints);
-
-        chkEnabled.setText(bundle.getString("JUnitCfgOfCreate.chkEnabled.text"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1000.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 13, 2, 2);
-        add(chkEnabled, gridBagConstraints);
-
-    }//GEN-END:initComponents
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox cboSuiteClass;
-    private javax.swing.JComboBox cboTestClass;
-    private javax.swing.JCheckBox chkAbstractImpl;
-    private javax.swing.JCheckBox chkComments;
-    private javax.swing.JCheckBox chkContent;
-    private javax.swing.JCheckBox chkEnabled;
-    private javax.swing.JCheckBox chkExceptions;
-    private javax.swing.JCheckBox chkGenerateSuites;
-    private javax.swing.JCheckBox chkJavaDoc;
-    private javax.swing.JCheckBox chkPackage;
-    private javax.swing.JCheckBox chkPackagePrivateClasses;
-    private javax.swing.JCheckBox chkProtected;
-    private javax.swing.JCheckBox chkPublic;
-    private javax.swing.JPanel jpCodeGen;
-    private javax.swing.JPanel jpTemplates;
-    private javax.swing.JLabel lblSuiteClass;
-    private javax.swing.JLabel lblTestClass;
-    // End of variables declaration//GEN-END:variables
 }
