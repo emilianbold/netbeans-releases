@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -39,6 +40,11 @@ import org.openide.util.lookup.Lookups;
  * @author Jesse Glick
  */
 public class ProjectManagerTest extends NbTestCase {
+    
+    static {
+        // For easier testing.
+        TimedWeakReference.TIMEOUT = 1000;
+    }
     
     public ProjectManagerTest(String name) {
         super(name);
@@ -113,6 +119,7 @@ public class ProjectManagerTest extends NbTestCase {
         assertEquals("ProjectFactory was called once so far on goodproject", 1, TestUtil.projectLoadCount(goodproject));
         Reference pref = new WeakReference(p);
         p = null;
+        Thread.sleep(TimedWeakReference.TIMEOUT); // make sure it is not being held strongly
         assertGC("Can collect an unused project with project directory still set", pref);
         p = pm.findProject(goodproject);
         assertNotNull("Can load goodproject again", p);

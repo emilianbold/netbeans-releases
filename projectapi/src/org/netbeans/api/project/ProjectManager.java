@@ -15,13 +15,13 @@ package org.netbeans.api.project;
 
 import java.io.IOException;
 import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileChangeAdapter;
@@ -207,7 +207,7 @@ public final class ProjectManager {
                             dir2Proj.notifyAll();
                             projectDirectory.addFileChangeListener(projectDeletionListener);
                             if (p != null) {
-                                dir2Proj.put(projectDirectory, new SoftReference(p));
+                                dir2Proj.put(projectDirectory, new TimedWeakReference(p));
                                 resetLP = true;
                                 return p;
                             } else {
