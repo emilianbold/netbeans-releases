@@ -98,7 +98,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             init( uiProperties );
 
             OptionListener listener = new OptionListener( project, uiProperties );
-            //HelpCtx helpCtx = new HelpCtx( "org.netbeans.modules.web.project.ui.customizer.WebCustomizer" );
             if (preselectedCategory != null && preselectedSubCategory != null) {
                 for (int i = 0; i < categories.length; i++) {
                     if (preselectedCategory.equals(categories[i].getName())) {
