@@ -17,10 +17,7 @@ package org.netbeans.modules.properties;
 
 import java.awt.Component;
 import java.util.EventObject;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.JComponent;
+import javax.swing.*;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 
@@ -46,6 +43,7 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
         valueComponent.setDocument(tf.getDocument());
         this.delegate = new PropertiesEditorDelegate(commentComponent, valueComponent);
         ((JTextField)editorComponent).addActionListener(delegate);
+        
     }
 
     /** Visible component */
@@ -54,15 +52,17 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
     }
 
     /** Overriding super class method. 
-    * It set the cursot at the beginnig of edited cell, in case of search it highlights the found text.
+    * It sets the cursot at the beginnig of edited cell, in case of searching it highlights the found text.
+    * At the end it request for focus so the editor component (JTextField) has it, not the table.
     * This is also a hack with reason to figure out which cell is going to be edited, if a key or a value.
     */
     public Component getTableCellEditorComponent(JTable table,
         Object value, boolean isSelected, int row, int column) {
+            
         // Key or value? Only in the first column are keys.
         isKeyCell = (column == 0) ? true : false;
         
-        JTextField c = (JTextField)super.getTableCellEditorComponent(table, value, isSelected, row, column);
+        final JTextField c = (JTextField)super.getTableCellEditorComponent(table, value, isSelected, row, column);
         Caret caret = c.getCaret();
         caret.setVisible(true);
         caret.setDot(0);
@@ -75,17 +75,33 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
             caret.setDot(result[2]);
             caret.moveDot(result[3]);
         }
-        
+
+        // It is necessary to get the focus via invoke later, cause
+        // the component is not visible yet.
+        if(!c.hasFocus()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    c.requestFocus();
+                }            
+            });
+        }
+
         return c;
     }
 
 
+    /** Inner class which is cell editor delegate. */
     protected class PropertiesEditorDelegate extends DefaultCellEditor.EditorDelegate {
 
+        /** Reference to text component showing comments on bundle edit table. */
         JTextComponent commentComponent;
+        /** Reference to text component showing key or value respectively on bundle edit table. */
         JTextComponent valueComponent;
 
         static final long serialVersionUID =9082979978712223677L;
+        
+        // Constructor
+        
         public PropertiesEditorDelegate(JTextComponent commentComponent, JTextComponent valueComponent) {
             this.commentComponent = commentComponent;
             this.valueComponent = valueComponent;
@@ -103,8 +119,8 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
                 commentComponent.setText(UtilConvert.unicodesToChars(sp.getComment()));
             }
             else {
-                ((JTextField)getEditorComponent()).setText("");
-                commentComponent.setText("");
+                ((JTextField)getEditorComponent()).setText(""); // NOI18N
+                commentComponent.setText(""); // NOI18N
             }
         }
 
@@ -118,10 +134,5 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
 
         }
 
-        public boolean startCellEditing(EventObject anEvent) {
-            if(anEvent == null)
-                getEditorComponent().requestFocus();
-            return true;
-        }
     } // End of inner PropertiesEditorDelegate class.
 }
