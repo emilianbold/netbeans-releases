@@ -51,6 +51,37 @@ public final class Util extends Object {
         return result.toString();
     }
 
+    /** Escape key value. Converts string to one with escaped ' ','=',':', and last '\\'
+    * in case they are not escaped already. Used for formating user input.
+    */
+    public static String escapeKey (String source) {
+        StringBuffer result = new StringBuffer();
+        for(int i=0; i<source.length(); i++) {
+            char x = source.charAt(i);
+            if(x == ' ' || x == '=' || x == ':') {
+                if( i==0 || (i>0 && source.charAt(i-1) != '\\'))
+                    result.append('\\');
+            }
+            // last char == '\\'
+            if(i==source.length()-1 && x == '\\') {
+                if( i>0 && source.charAt(i-1)!='\\')
+                    result.append('\\');
+            }
+            result.append(x);
+        }
+        return result.toString(); 
+    }
+
+    /** Escape key value. It escapes last '\\' character  only. Used for formating user input.
+    */
+    public static String escapeValue(String source) {
+        if(source.endsWith("\\")) {
+            if(source.length()>1 && source.charAt(source.length()-2)!='\\')
+                return new String(new StringBuffer(source).append('\\'));
+        }
+        return source;
+    }
+
     /** returns the file for the primary entry
     *   @param fe entry for a properties file
     */
@@ -138,7 +169,8 @@ public final class Util extends Object {
             int end = part.indexOf(PRB_SEPARATOR_CHAR, 1);
             String result;
             result = (end == -1) ? part.substring(1) : part.substring(1, end);
-            return (result.length() == 0) ? "" : result;
+            //return (result.length() == 0) ? null : result;
+            return (result.length() == 0) ? "" : result; // TEMP
         }
         catch (ArrayIndexOutOfBoundsException ex) {
             return null;
