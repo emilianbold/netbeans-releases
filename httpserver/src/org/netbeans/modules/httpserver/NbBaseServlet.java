@@ -232,7 +232,7 @@ public abstract class NbBaseServlet extends HttpServlet {
         form2 = "</B>"; // NOI18N
       } 
       else {
-        //name = fo.getName () + "." + fo.getExt ();
+        //name = fo.getName () + "." + fo.getExt (); // NOI18N
         form1 = ""; // NOI18N
         form2 = ""; // NOI18N
       }            
@@ -307,6 +307,7 @@ public abstract class NbBaseServlet extends HttpServlet {
 
 /*
  * Log
+ *  7    Gandalf   1.6         1/13/00  Petr Jiricka    More i18n
  *  6    Gandalf   1.5         1/12/00  Petr Jiricka    i18n
  *  5    Gandalf   1.4         1/3/00   Petr Jiricka    
  *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

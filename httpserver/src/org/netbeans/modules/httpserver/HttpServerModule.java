@@ -183,7 +183,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
     HttpServer server = new NbHttpServer(op.getPort(), null, null);
 
     try {
-      server.setDocumentBase(new URL("file:///nonexistingdirectory"));
+      server.setDocumentBase(new URL("file:///nonexistingdirectory")); // NOI18N
     }
     catch (MalformedURLException e) {
       throw new InternalError();
@@ -281,14 +281,14 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
 /*System.out.println("s :" + s);
 System.out.println("rep :" + op.getRepositoryBaseURL());*/ // NOI18N
       if(s.startsWith("/servlet/")) { // NOI18N
-//System.out.println("security check OK 1");
+//System.out.println("security check OK 1"); // NOI18N
         return true;
       }  
       if(s.startsWith("/web-inf")) { // NOI18N
         httpservletresponse.sendError(403);
         return false;
       } if (s.startsWith(op.getRepositoryBaseURL() + "/") || s.startsWith(op.getClasspathBaseURL() + "/")) { // NOI18N
-//System.out.println("security check OK 2");
+//System.out.println("security check OK 2"); // NOI18N
         return true;
       } else {
         httpservletresponse.sendError(404);
@@ -304,6 +304,7 @@ System.out.println("rep :" + op.getRepositoryBaseURL());*/ // NOI18N
 
 /*
  * Log
+ *  38   Gandalf   1.37        1/13/00  Petr Jiricka    More i18n
  *  37   Gandalf   1.36        1/12/00  Petr Jiricka    i18n
  *  36   Gandalf   1.35        1/11/00  Petr Jiricka    Cleanup
  *  35   Gandalf   1.34        1/9/00   Petr Jiricka    Cleanup
