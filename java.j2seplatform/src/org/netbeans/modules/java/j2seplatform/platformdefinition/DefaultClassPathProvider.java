@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,42 +22,53 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Iterator;
+import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 
 /**
  *
  * @author  tom
  */
-public class DefaultClassPathProvider implements ClassPathProvider, GlobalPathRegistryListener {
+public class DefaultClassPathProvider implements ClassPathProvider {
     
     /** Name of package keyword. */
     private static final String PACKAGE = "package";                    //NOI18N
     /**Java file extension */
     private static final String JAVA_EXT = "java";                      //NOI18N
-    
-    private ClassPath cachedCompiledClassPath;
+        
     private /*WeakHash*/Map/*<FileObject,WeakReference<FileObject>>*/ sourceRootsCache = new WeakHashMap ();
     private /*WeakHash*/Map/*<FileObject,WeakReference<ClassPath>>*/ sourceClasPathsCache = new WeakHashMap();
+    private Reference/*<ClassPath>*/ compiledClassPath;
     
     /** Creates a new instance of DefaultClassPathProvider */
     public DefaultClassPathProvider() {
     }
     
     public synchronized ClassPath findClassPath(FileObject file, String type) {
+        if (!file.isValid ()) {
+            return null;
+        }
         if (JAVA_EXT.equalsIgnoreCase(file.getExt()) || file.isFolder()) {  //Workaround: Editor asks for package root
             if (ClassPath.BOOT.equals (type)) {
                 JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
@@ -65,13 +78,12 @@ public class DefaultClassPathProvider implements ClassPathProvider, GlobalPathRe
             }
             else if (ClassPath.COMPILE.equals(type)) {
                 synchronized (this) {
-                    if (this.cachedCompiledClassPath == null) {
-                        GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
-                        regs.addGlobalPathRegistryListener(this);
-                        Set paths = regs.getPaths (ClassPath.COMPILE);
-                        this.cachedCompiledClassPath = ClassPathSupport.createProxyClassPath ((ClassPath[])paths.toArray(new ClassPath[paths.size()]));
+                    ClassPath cp = null;
+                    if (this.compiledClassPath == null || (cp = (ClassPath)this.compiledClassPath.get()) == null) {
+                        cp = ClassPathFactory.createClassPath(new CompileClassPathImpl ());
+                        this.compiledClassPath = new WeakReference (cp);
                     }
-                    return this.cachedCompiledClassPath;
+                    return cp;
                 }
             }
             else if (ClassPath.SOURCE.equals(type)) {
@@ -102,17 +114,7 @@ public class DefaultClassPathProvider implements ClassPathProvider, GlobalPathRe
             }
         }
         return null;
-    }
-    
-    public synchronized void pathsAdded(org.netbeans.api.java.classpath.GlobalPathRegistryEvent event) {
-        GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
-        this.cachedCompiledClassPath = null;
-    }    
-    
-    public synchronized void pathsRemoved(org.netbeans.api.java.classpath.GlobalPathRegistryEvent event) {
-        GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
-        this.cachedCompiledClassPath = null;
-    }    
+    }            
     
     private static FileObject getRootForFile (final FileObject fo) {
         String pkg = findJavaPackage (fo);
@@ -407,5 +409,91 @@ public class DefaultClassPathProvider implements ClassPathProvider, GlobalPathRe
             return false;
         }
     } // End of class SourceReader.
+    
+    private static class CompileClassPathImpl implements ClassPathImplementation, GlobalPathRegistryListener {
+        
+        private List cachedCompiledClassPath;
+        private PropertyChangeSupport support;
+        
+        public CompileClassPathImpl () {
+            this.support = new PropertyChangeSupport (this);
+        }
+        
+        public synchronized List getResources () {
+            if (this.cachedCompiledClassPath == null) {
+                System.out.println("CREATING");
+                GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
+                regs.addGlobalPathRegistryListener(this);
+                Set roots = new HashSet ();
+                //Add compile classpath
+                Set paths = regs.getPaths (ClassPath.COMPILE);
+                for (Iterator it = paths.iterator(); it.hasNext();) {
+                    ClassPath cp = (ClassPath) it.next();
+                    for (Iterator eit = cp.entries().iterator(); eit.hasNext();) {
+                        ClassPath.Entry entry = (ClassPath.Entry) eit.next();
+                        roots.add (entry.getURL());
+                    }                    
+                }
+                //Add entries from Exec CP which has sources on Sources CP and are not on the Compile CP
+                Set sources = regs.getPaths(ClassPath.SOURCE);
+                Set sroots = new HashSet ();
+                for (Iterator it = sources.iterator(); it.hasNext();) {
+                    ClassPath cp = (ClassPath) it.next();
+                    for (Iterator eit = cp.entries().iterator(); eit.hasNext();) {
+                        ClassPath.Entry entry = (ClassPath.Entry) eit.next();
+                        sroots.add (entry.getURL());
+                    }                    
+                }                
+                Set exec = regs.getPaths(ClassPath.EXECUTE);
+                for (Iterator it = exec.iterator(); it.hasNext();) {
+                    ClassPath cp = (ClassPath) it.next ();
+                    for (Iterator eit = cp.entries().iterator(); eit.hasNext();) {
+                        ClassPath.Entry entry = (ClassPath.Entry) eit.next ();
+                        FileObject[] fos = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
+                        for (int i=0; i< fos.length; i++) {
+                            try {
+                                if (sroots.contains(fos[i].getURL())) {
+                                    roots.add (entry.getURL());
+                                }
+                            } catch (FileStateInvalidException e) {
+                                ErrorManager.getDefault().notify(e);
+                            }                                
+                        }
+                    }
+                }
+                this.cachedCompiledClassPath =  new ArrayList ();
+                for (Iterator it = roots.iterator(); it.hasNext();) {
+                    this.cachedCompiledClassPath.add (ClassPathSupport.createResource((URL)it.next()));
+                }
+                System.out.println("Roots:"+roots);
+            }
+            return this.cachedCompiledClassPath;
+        }
+        
+        public void addPropertyChangeListener (PropertyChangeListener l) {
+            this.support.addPropertyChangeListener (l);
+        }
+        
+        public void removePropertyChangeListener (PropertyChangeListener l) {
+            this.support.removePropertyChangeListener (l);
+        }
+        
+        public synchronized void pathsAdded(org.netbeans.api.java.classpath.GlobalPathRegistryEvent event) {
+            if (ClassPath.COMPILE.equals(event.getId()) || ClassPath.SOURCE.equals(event.getId())) {
+                GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
+                this.cachedCompiledClassPath = null;
+            }
+            this.support.firePropertyChange(PROP_RESOURCES,null,null);
+        }    
+    
+        public synchronized void pathsRemoved(org.netbeans.api.java.classpath.GlobalPathRegistryEvent event) {
+            if (ClassPath.COMPILE.equals(event.getId()) || ClassPath.SOURCE.equals(event.getId())) {
+                GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
+                this.cachedCompiledClassPath = null;
+            }
+            this.support.firePropertyChange(PROP_RESOURCES,null,null);
+        }
+        
+    }
     
 }
