@@ -39,6 +39,8 @@ public class PrintDetailsTask implements Runnable {
     private int bufPos = 0;
     /** */
     private SearchDisplayer displayer;
+    /** */
+    private volatile boolean interrupted = false;
     
     
     /** Creates a new instance of PrintDetailsTask */
@@ -86,16 +88,34 @@ public class PrintDetailsTask implements Runnable {
             if (freeBufSpace == 0) {
                 printBuffer();
             }
+            
+            if (interrupted) {
+                break;
+            }
         }
-        if (freeBufSpace != 0) {
+        if ((freeBufSpace != 0) && !interrupted) {
             int smallBufSize = BUFFER_SIZE - freeBufSpace;
             Node[] smallBuffer = new Node[smallBufSize];
             System.arraycopy(buffer, 0, smallBuffer, 0, smallBufSize);
             displayer.displayNodes(smallBuffer);
         }
+        
+        /*
+         * We must call this even if this task is interrupted. We must close
+         * the output window.
+         */
         callDisplayerFromAWT("finishDisplaying");
     }
 
+    /**
+     * Stops this search task.
+     *
+     * @see  #stop(boolean)
+     */
+    void stop() {
+        interrupted = true;
+    }
+    
     /**
      */
     public Reference getOutputWriterRef() {
