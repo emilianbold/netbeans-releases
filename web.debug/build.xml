@@ -26,8 +26,6 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openidex.dir}/${nb.modules.dir}/org-openidex-util.jar"/>
         <pathelement location="${editor.dir}/${nb.modules.dir}/editor.jar"/>
         <pathelement location="${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
-        <pathelement location="${debuggercore.dir}/${nb.modules.dir}/org-netbeans-modules-debugger-core.jar"/>
-        <pathelement location="${debuggerjpda.dir}/${nb.modules.dir}/org-netbeans-modules-debugger-jpda.jar"/>
         <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
         <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
         <pathelement location="${html.dir}/${nb.modules.dir}/org-netbeans-modules-html.jar"/>
@@ -38,7 +36,9 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openide/deprecated.dir}/${nb.modules/autoload.dir}/openide-deprecated.jar"/> <!-- XXX -->
         <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
         <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
-        <pathelement location="${debuggercore/oldapi.dir}/${nb.modules.dir}/org-openide-debugger.jar"/>
+        <pathelement location="${debuggercore/api.dir}/${nb.modules/autoload.dir}/debuggercore-api.jar"/>
+        <pathelement location="${debuggercore.dir}/${nb.modules/autoload.dir}/debuggercore-ui.jar"/>
+        <pathelement location="${debuggerjpda/api.dir}/${nb.modules/autoload.dir}/debuggerjpda-api.jar"/>
         <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
         <pathelement location="${jdkhome}/lib/tools.jar"/>
 	<pathelement location="${j2eeserver.dir}/${nb.modules/autoload.dir}/j2eeserver.jar"/>
@@ -60,7 +60,6 @@ Microsystems, Inc. All Rights Reserved.
          basedir="src"
          excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
          compress="false">
-      <include name="org/netbeans/modules/web/"/>
     </jar>
   </target>
 
