@@ -113,6 +113,7 @@ public class WebProjectNature implements ProjectNature {
         return Lookups.fixed(new Object[] {
             new PrivilegedTemplatesImpl(),           // List of templates in New action popup
             new WebModules(project, projectHelper, projectEvaluator), // WebModuleProvider, ClassPathProvider
+            new WebFreeFormActionProvider(project, projectHelper)   //ActionProvider
         });
     }
     
