@@ -97,7 +97,7 @@ class DocIndexItem extends Object {
      * @return Value of property field.
  */
     public java.lang.String getField() {
-        return text != null ? text : "";
+        return text != null ? text : "";    //NOI18N
     }
 
     /** Setter for property field.

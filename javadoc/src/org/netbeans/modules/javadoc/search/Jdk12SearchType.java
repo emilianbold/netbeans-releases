@@ -42,7 +42,7 @@ public class Jdk12SearchType extends JavadocSearchType {
      * @return human presentable name
     */
     public String displayName() {
-        return NbBundle.getBundle( Jdk12SearchType.class ).getString("CTL_Jdk12_search_eng");
+        return NbBundle.getBundle( Jdk12SearchType.class ).getString("CTL_Jdk12_search_eng");   //NOI18N
     }
 
     /** Returns HelpCtx
@@ -65,7 +65,7 @@ public class Jdk12SearchType extends JavadocSearchType {
     public void setCaseSensitive(boolean caseSensitive) {
         boolean oldVal = caseSensitive;
         this.caseSensitive = caseSensitive;
-        this.firePropertyChange("caseSensitive", new Boolean(oldVal), new Boolean(caseSensitive));
+        this.firePropertyChange("caseSensitive", new Boolean(oldVal), new Boolean(caseSensitive));   //NOI18N
     }
 
     /** default returns null, must be overriden
@@ -79,7 +79,7 @@ public class Jdk12SearchType extends JavadocSearchType {
             rootOffset = ( rootOffset.replace('/', '.') + '.' );
         }
         else{
-            rootOffset = "";
+            rootOffset = "";    //NOI18N
         }            
         FileObject fo = fs.find( rootOffset + "index-files", null, null ); // NOI18N
         if ( fo != null ) {

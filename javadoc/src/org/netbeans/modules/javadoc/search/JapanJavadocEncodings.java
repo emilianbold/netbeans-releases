@@ -36,7 +36,7 @@ import java.beans.*;
 
 public class JapanJavadocEncodings extends PropertyEditorSupport {
     
-    private static final String[] tags = { "JISAutoDetect", "SJIS", "EUC-JP", "ISO-2022-JP", "UTF-8"};
+    private static final String[] tags = { "JISAutoDetect", "SJIS", "EUC-JP", "ISO-2022-JP", "UTF-8"};     //NOI18N
     
     /** @return names of the supported encodings */
     public String[] getTags() {

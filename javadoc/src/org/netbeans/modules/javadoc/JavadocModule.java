@@ -100,7 +100,7 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
         TopManager.getDefault().addPropertyChangeListener(this);
         
         org.openide.filesystems.FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().
-            findResource("Mount/Javadoc");
+            findResource("Mount/Javadoc");     //NOI18N
 	//System.err.println("Library folder = " + f);
         if (f != null) {
             try {
@@ -233,21 +233,21 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
             sdsTemp = new StdDocletSettingsService(); 
         // Reseting javadoc output directory is necessary for
         // multiuser installation
-        String fileSep = System.getProperty ("file.separator");
+        String fileSep = System.getProperty ("file.separator");   //NOI18N
 
         File directory = null;
 
         try {
-            directory = new File (System.getProperty ("netbeans.user") + fileSep + "javadoc").getCanonicalFile();
+            directory = new File (System.getProperty ("netbeans.user") + fileSep + "javadoc").getCanonicalFile();   //NOI18N
         }
         catch ( java.io.IOException e ) {
             err.notify (ErrorManager.INFORMATIONAL, e);
-            directory = new File (System.getProperty ("netbeans.user") + fileSep + "javadoc").getAbsoluteFile();
+            directory = new File (System.getProperty ("netbeans.user") + fileSep + "javadoc").getAbsoluteFile();   //NOI18N
         }
 
         //if ( sdsTemp.getDirectory() != null && !sdsTemp.getDirectory().equals( directory ) ) {
-        if ( System.getProperty ("netbeans.user") != null &&
-                !System.getProperty ("netbeans.user").equals(System.getProperty ("netbeans.home") ) ) {
+        if ( System.getProperty ("netbeans.user") != null &&       //NOI18N
+                !System.getProperty ("netbeans.user").equals(System.getProperty ("netbeans.home") ) ) {   //NOI18N
 
             // Multiuser we need to unmount the old file system
 
@@ -255,11 +255,11 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
             try {
                 File oldDirectory = null;
                 try {
-                    oldDirectory = new File (System.getProperty ("netbeans.home") + fileSep + "javadoc").getCanonicalFile();
+                    oldDirectory = new File (System.getProperty ("netbeans.home") + fileSep + "javadoc").getCanonicalFile();   //NOI18N
                 }
                 catch ( java.io.IOException e ) {
                     notify (e);
-                    oldDirectory = new File (System.getProperty ("netbeans.home") + fileSep + "javadoc").getAbsoluteFile();
+                    oldDirectory = new File (System.getProperty ("netbeans.home") + fileSep + "javadoc").getAbsoluteFile();   //NOI18N
                 }
 
                 localFS.setRootDirectory ( oldDirectory );

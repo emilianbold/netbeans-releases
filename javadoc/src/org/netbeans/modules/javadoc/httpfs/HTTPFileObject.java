@@ -113,7 +113,7 @@ class HTTPFileObject extends FileObject {
             this.parentFileObject = null;
             this.childFileObjects = new Hashtable( );
             this.uriStem = uriStem;
-            this.fileURL = new java.net.URL( parentFileSystem.baseURL, "." + uriStem );
+            this.fileURL = new java.net.URL( parentFileSystem.baseURL, "." + uriStem );//NOI18N
             this.fileAttributes = new Hashtable( 0 );
             this.arePackageContentsKnown = true;
             
@@ -135,7 +135,7 @@ class HTTPFileObject extends FileObject {
                     // Create default values for items read from the header
                     this.wasFileHeaderRead = false;
                     this.fileSize = -1;
-                    this.fileMIMEType = "";
+                    this.fileMIMEType = ""; //NOI18N
                     this.fileDate = new Date( );
                     this.fullFileName = uriStem;
                     
@@ -153,16 +153,16 @@ class HTTPFileObject extends FileObject {
                 } else {
                     
                     this.fileName = this.fullFileName;
-                    this.fileExtension = "";
+                    this.fileExtension = "";//NOI18N
                     
                 }
                 
             // If this is the root file object,
             } else {
                 
-                this.fullFileName = "";
-                this.fileName = "";
-                this.fileExtension = "";
+                this.fullFileName = "";//NOI18N
+                this.fileName = "";//NOI18N
+                this.fileExtension = "";//NOI18N
                 
             }
             
@@ -213,7 +213,7 @@ class HTTPFileObject extends FileObject {
 		if( newParentFileSystem == null ) {
 
 			// TODO: Add an error message to this exception
-			throw new IOException( ResourceUtils.getBundledString( "MSG_FilesystemNotFound" ) ); //NO I18N
+			throw new IOException( ResourceUtils.getBundledString( "MSG_FilesystemNotFound" ) ); //NOI18N
 		}
 
 		// Read the name of this file and initialize it
@@ -232,7 +232,7 @@ class HTTPFileObject extends FileObject {
         try {
             // Open a connection to the web server to read this file's header, which
             // has the side effect of reading the headers for this file
-            getFileConnection( "HEAD" ).disconnect( );  //NO I18N
+            getFileConnection( "HEAD" ).disconnect( );  //NOI18N
             
         } catch( IOException e ) {
             
@@ -281,7 +281,7 @@ class HTTPFileObject extends FileObject {
      */
     private HttpURLConnection getFileConnection( ) throws IOException {
         
-        return getFileConnection( "GET" );        
+        return getFileConnection( "GET" );    //NOI18N    
     }
     
     
@@ -424,7 +424,7 @@ class HTTPFileObject extends FileObject {
      *	@since 1.0
      */
     public boolean isRoot( ) {        
-        return uriStem.equals( "/" ); //NO I18N        
+        return uriStem.equals( "/" ); //NOI18N        
     }
     
     
@@ -436,7 +436,7 @@ class HTTPFileObject extends FileObject {
     public boolean isFolder(
     ) {
         
-        return uriStem.endsWith( "/" ); //NO I18N
+        return uriStem.endsWith( "/" ); //NOI18N
         
     }
     
@@ -639,8 +639,8 @@ class HTTPFileObject extends FileObject {
      */
     public FileObject getFileObject( String fileName, String extension ) {
         
-        if( !extension.equals( "" ) ) { //NO I18N
-            return child( fileName + "." + extension ); //NO I18N
+        if( !extension.equals( "" ) ) { //NOI18N
+            return child( fileName + "." + extension ); //NOI18N
         } else {
             return child( fileName );
         }
@@ -755,7 +755,7 @@ class HTTPFileObject extends FileObject {
             
             // Create the new file object
             childFileObject = new HTTPFileObject( newChildFileName, parentFileSystem );
-            fileConnection = childFileObject.getFileConnection( "HEAD" );   //NO I18N
+            fileConnection = childFileObject.getFileConnection( "HEAD" );   //NOI18N
             
             // If the file exists,
             if( fileConnection.getResponseCode( ) < 400 ) {
@@ -837,13 +837,13 @@ class HTTPFileObject extends FileObject {
         
         
         // Find ths standard files found in a package directory
-        packageSummaryFile = new HTTPFileObject( uriStem + "package-summary.html", parentFileSystem );  //NO I18N
+        packageSummaryFile = new HTTPFileObject( uriStem + "package-summary.html", parentFileSystem );  //NOI18N
         addChild( packageSummaryFile );
-        addOptionalChild( uriStem + "package-frame.html" ); //NO I18N
-        addOptionalChild( uriStem + "package-tree.html" );  //NO I18N
-        if( addOptionalChild( uriStem + "package-use.html" ) ) {    //NO I18N
+        addOptionalChild( uriStem + "package-frame.html" ); //NOI18N
+        addOptionalChild( uriStem + "package-tree.html" );  //NOI18N
+        if( addOptionalChild( uriStem + "package-use.html" ) ) {    //NOI18N
             
-            classUseDirectory = new HTTPFileObject( uriStem + "class-use/", parentFileSystem ); //NO I18N
+            classUseDirectory = new HTTPFileObject( uriStem + "class-use/", parentFileSystem ); //NOI18N
             addChild( classUseDirectory );
             
         } else {
@@ -869,9 +869,9 @@ class HTTPFileObject extends FileObject {
                 if( classFileName != null ) {
                     
                     // If the link points to  file in this directory that is also not a standard package file,
-                    if( classFileName.indexOf( '/' ) == -1 && !classFileName.startsWith( "." )  //NO I18N
-                    && !classFileName.startsWith( "#" ) && classFileName.indexOf( ':' ) == -1   //NO I18N
-                    && !classFileName.startsWith( "package-" ) ) {  //NO I18N
+                    if( classFileName.indexOf( '/' ) == -1 && !classFileName.startsWith( "." )  //NOI18N
+                    && !classFileName.startsWith( "#" ) && classFileName.indexOf( ':' ) == -1   //NOI18N
+                    && !classFileName.startsWith( "package-" ) ) {  //NOI18N
                         
                         // Add the file to this package directory
                         addChild( uriStem + classFileName );

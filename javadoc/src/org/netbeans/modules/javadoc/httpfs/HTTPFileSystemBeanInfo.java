@@ -48,14 +48,14 @@ public class HTTPFileSystemBeanInfo extends SimpleBeanInfo {
             try {            
                 propertyDescriptors = new PropertyDescriptor[ 1 ];
                 propertyDescriptors[ 0 ] = new PropertyDescriptor( HTTPFileSystem.PROP_URL, HTTPFileSystem.class, "getURL", "setURL" );	// NOI18N
-                propertyDescriptors[ 0 ].setDisplayName( ResourceUtils.getBundledString( "PROP_URLPropertyName" ) ); //NO I18N
-                propertyDescriptors[ 0 ].setShortDescription( ResourceUtils.getBundledString( "HINT_URLPropertyName" ) ); //NO I18N
+                propertyDescriptors[ 0 ].setDisplayName( ResourceUtils.getBundledString( "PROP_URLPropertyName" ) ); //NOI18N
+                propertyDescriptors[ 0 ].setShortDescription( ResourceUtils.getBundledString( "HINT_URLPropertyName" ) ); //NOI18N
                 propertyDescriptors[ 0 ].setBound( true );
                 propertyDescriptors[ 0 ].setConstrained( true );
                 propertyDescriptors[ 0 ].setPropertyEditorClass( URLPropertyEditor.class );
             }
             catch( IntrospectionException e ) {            
-                if ( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) { //NO I18N
+                if ( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) { //NOI18N
                     e.printStackTrace( );                
                     return null;
                 }            
@@ -68,7 +68,7 @@ public class HTTPFileSystemBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (FileSystem.class) };
         } catch (IntrospectionException ie) {
-            if ( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) { //NO I18N
+            if ( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) { //NOI18N
                 ie.printStackTrace( );                
             }            
             return null;
@@ -79,7 +79,7 @@ public class HTTPFileSystemBeanInfo extends SimpleBeanInfo {
         try {
             return Introspector.getBeanInfo (FileSystem.class).getIcon (kind);
         } catch (IntrospectionException ie) {
-            if ( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) { //NO I18N
+            if ( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) { //NOI18N
                 ie.printStackTrace( );
             }            
             return null;

@@ -37,7 +37,7 @@ public class HTTPFileSystem extends FileSystem {
      *
      *	@since 1.0
      */
-    public static final String	PROP_URL = "URL";   //NO I18N
+    public static final String	PROP_URL = "URL";   //NOI18N
     private static final long serialVersionUID = 200104;
         
     
@@ -71,7 +71,7 @@ public class HTTPFileSystem extends FileSystem {
         // TODO: I'd like to use this as the default, but there is no package-list file!
         //			setURL( new URL( "http://www.netbeans.org/download/apis/" ) );
         try{
-            setURL( "http://java.sun.com/j2se/1.3/docs/api/" );  //NO I18N        
+            setURL( "http://java.sun.com/j2se/1.3/docs/api/" );  //NOI18N        
         } catch( PropertyVetoException e ) {
             
             // I have no idea what to do if this happens!
@@ -169,30 +169,30 @@ public class HTTPFileSystem extends FileSystem {
             newURLEvent = new java.beans.PropertyChangeEvent( this, PROP_URL, oldURL, newURL );
             
             // If this URL doesn't point to an HTTP server,
-            if( !newURL.getProtocol( ).equals( "http" ) && !newURL.getProtocol( ).equals( "https" ) ) { //NO I18N
+            if( !newURL.getProtocol( ).equals( "http" ) && !newURL.getProtocol( ).equals( "https" ) ) { //NOI18N
                 
                 // Reject this URL
-                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_NotHTTPProtocol" ), newURLEvent );    //NO I18N
+                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_NotHTTPProtocol" ), newURLEvent );    //NOI18N
                 
             }
             
             // Create the new root file object
             baseURL = newURL;
-            rootFileObject = new HTTPFileObject( "/", this );   //NO I18N
+            rootFileObject = new HTTPFileObject( "/", this );   //NOI18N
             
             // Flag this file sytem as needing its contents scanned
             isInitialized = false;
             
             // If a Javadoc package list doesn't exists at this URL,
-            if( !rootFileObject.addOptionalChild( "/package-list" ) ) { //NO I18N
+            if( !rootFileObject.addOptionalChild( "/package-list" ) ) { //NOI18N
                 
                 // Reject this URL
-                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_JavadocsNotFound" ), newURLEvent ); //NO I18N
+                throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_JavadocsNotFound" ), newURLEvent ); //NOI18N
                 
             }
             
             // Set the new name of this file system
-            setSystemName( this.getClass( ).getName( ) + "/" + baseURL.toExternalForm( ) ); //NO I18N
+            setSystemName( this.getClass( ).getName( ) + "/" + baseURL.toExternalForm( ) ); //NOI18N
             
         } catch( PropertyVetoException e ) {
             
@@ -230,24 +230,24 @@ public class HTTPFileSystem extends FileSystem {
         if( !isInitialized ) {
             
             // Add the standard files for a Javadoc directory structre
-            packageFile = rootFileObject.child( "package-list" );       //NO I18N
-            rootFileObject.addChild( "/allclasses-frame.html" );        //NO I18N
-            rootFileObject.addOptionalChild( "/deprecated-list.html" ); //NO I18N
-            rootFileObject.addOptionalChild( "/help-doc.html" );        //NO I18N
-            rootFileObject.addOptionalChild( "/index.html" );           //NO I18N
-            rootFileObject.addChild( "/overview-frame.html" );          //NO I18N
-            rootFileObject.addChild( "/overview-summary.html" );        //NO I18N
-            rootFileObject.addOptionalChild( "/overview-tree.html" );   //NO I18N
-            rootFileObject.addChild( "/packages.html" );                //NO I18N
-            rootFileObject.addChild( "/serialized-form.html" );         //NO I18N
-            rootFileObject.addChild( "/stylesheet.css" );               //NO I18N
+            packageFile = rootFileObject.child( "package-list" );       //NOI18N
+            rootFileObject.addChild( "/allclasses-frame.html" );        //NOI18N
+            rootFileObject.addOptionalChild( "/deprecated-list.html" ); //NOI18N
+            rootFileObject.addOptionalChild( "/help-doc.html" );        //NOI18N
+            rootFileObject.addOptionalChild( "/index.html" );           //NOI18N
+            rootFileObject.addChild( "/overview-frame.html" );          //NOI18N
+            rootFileObject.addChild( "/overview-summary.html" );        //NOI18N
+            rootFileObject.addOptionalChild( "/overview-tree.html" );   //NOI18N
+            rootFileObject.addChild( "/packages.html" );                //NOI18N
+            rootFileObject.addChild( "/serialized-form.html" );         //NOI18N
+            rootFileObject.addChild( "/stylesheet.css" );               //NOI18N
             
             // Add the full index file
-            if( !rootFileObject.addOptionalChild( "/index-all.html" ) ) {   //NO I18N
+            if( !rootFileObject.addOptionalChild( "/index-all.html" ) ) {   //NOI18N
                 
                 // If there was no full index, search for split index files
                 indexFileNumber = 1;
-                while( rootFileObject.addOptionalChild( "/index-" + indexFileNumber + ".html" ) ) { //NO I18N
+                while( rootFileObject.addOptionalChild( "/index-" + indexFileNumber + ".html" ) ) { //NOI18N
                     
                     indexFileNumber++;                    
                 }
@@ -255,12 +255,12 @@ public class HTTPFileSystem extends FileSystem {
                 // If no index were found in the root,
                 if( indexFileNumber == 1 ) {
                     // Look in /index-files/
-                    indexDirectory = new HTTPFileObject( "/index-files/", this );   //NO I18N
+                    indexDirectory = new HTTPFileObject( "/index-files/", this );   //NOI18N
                     // Add the full index file
-                    if( !indexDirectory.addOptionalChild( "/index-files/index-all.html" ) ) {   //NO I18N
+                    if( !indexDirectory.addOptionalChild( "/index-files/index-all.html" ) ) {   //NOI18N
                         // If there was no full index, search for split index files
                         indexFileNumber = 1;
-                        while( indexDirectory.addOptionalChild( "/index-files/index-" + indexFileNumber + ".html" ) ) { //NO I18N
+                        while( indexDirectory.addOptionalChild( "/index-files/index-" + indexFileNumber + ".html" ) ) { //NOI18N
                             indexFileNumber++;
                         }
                         // If index file were found in this directory,
@@ -314,7 +314,7 @@ public class HTTPFileSystem extends FileSystem {
         
         
         // Pull apart the package heirarchy
-        packageParser = new StringTokenizer( packageName, "." );    //NO I18N
+        packageParser = new StringTokenizer( packageName, "." );    //NOI18N
         packageDirectory = rootFileObject;
         
         // With each level of the package,
@@ -325,7 +325,7 @@ public class HTTPFileSystem extends FileSystem {
             // Find its directory object
             if( packageDirectory.child( packagePart ) == null ) {
                 
-                packageDirectory.addChild( packageDirectory.uriStem + packagePart + "/" );  //NO I18N
+                packageDirectory.addChild( packageDirectory.uriStem + packagePart + "/" );  //NOI18N
             }
             packageDirectory = packageDirectory.child( packagePart );            
         }
@@ -364,7 +364,7 @@ public class HTTPFileSystem extends FileSystem {
         
         
         // Pull apart the directory structure
-        pathParser = new StringTokenizer( resourceName, "/" );  //NO I18N
+        pathParser = new StringTokenizer( resourceName, "/" );  //NOI18N
         foundFileObject = (HTTPFileObject)getRoot( );
         
         // Walk down the path to find the requested file

@@ -51,7 +51,7 @@ public class ShowDocAction extends CookieAction {
     * @return the name of the action
     */
     public String getName () {
-        return NbBundle.getBundle( ShowDocAction.class ).getString ("CTL_SHOWDOC_MenuItem");
+        return NbBundle.getBundle( ShowDocAction.class ).getString ("CTL_SHOWDOC_MenuItem");   //NOI18N
     }
 
     /** Cookie classes contains one class returned by cookie () method.
@@ -91,6 +91,6 @@ public class ShowDocAction extends CookieAction {
     }
 
     protected String iconResource(){
-        return "/org/netbeans/modules/javadoc/resources/showjavadoc.gif"; //NO I18N
+        return "/org/netbeans/modules/javadoc/resources/showjavadoc.gif"; //NOI18N
     }
 }

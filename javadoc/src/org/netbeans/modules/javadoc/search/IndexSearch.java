@@ -53,7 +53,7 @@ public class IndexSearch
             extends TopComponent
     implements Externalizable {
 
-    private static final String INDEX_SEARCH_HELP_CTX_KEY = "javadoc.search.window"; //NO I18N
+    private static final String INDEX_SEARCH_HELP_CTX_KEY = "javadoc.search.window"; //NOI18N
     
     //static final long serialVersionUID =3206093459760846163L;
     private static ResourceBundle bundle = null;
@@ -98,9 +98,9 @@ public class IndexSearch
 
     /** Button titles */
 
-    private static final String STR_FIND = ResourceUtils.getBundledString ("CTL_SEARCH_ButtonFind");
-    private static final String STR_STOP = ResourceUtils.getBundledString ("CTL_SEARCH_ButtonStop");
-
+    private static final String STR_FIND = ResourceUtils.getBundledString ("CTL_SEARCH_ButtonFind");    //NOI18N
+    private static final String STR_STOP = ResourceUtils.getBundledString ("CTL_SEARCH_ButtonStop");    //NOI18N
+    
     /** List models for different sorts */
     private ArrayList results = new ArrayList();
 
@@ -115,11 +115,11 @@ public class IndexSearch
     private static final DefaultListModel notModel = new DefaultListModel();
 
     static {
-        DocIndexItem dii = new DocIndexItem( ResourceUtils.getBundledString("CTL_SEARCH_Wait" ), "", null, "" );
+        DocIndexItem dii = new DocIndexItem( ResourceUtils.getBundledString("CTL_SEARCH_Wait" ), "", null, "" );    //NOI18N
         dii.setIconIndex( DocSearchIcons.ICON_WAIT );
         waitModel.addElement( dii );
 
-        DocIndexItem diin = new DocIndexItem( ResourceUtils.getBundledString("CTL_SEARCH_NotFound" ), "", null, "" );
+        DocIndexItem diin = new DocIndexItem( ResourceUtils.getBundledString("CTL_SEARCH_NotFound" ), "", null, "" );   //NOI18N
         diin.setIconIndex( DocSearchIcons.ICON_NOT_FOUND );
         notModel.addElement( diin );
     }
@@ -229,12 +229,12 @@ public class IndexSearch
 
         // Adding ToolTips
 
-        searchButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_search_ToolTip" ));
-        byReferenceButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_byReference_ToolTip" ));
-        byTypeButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_byType_ToolTip" ));
-        byNameButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_byName_ToolTip" ));
-        quickViewButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_quickView_ToolTip" ));
-        sourceButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_showSource_ToolTip" ));
+        searchButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_search_ToolTip" ));    //NOI18N
+        byReferenceButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_byReference_ToolTip" ));   //NOI18N
+        byTypeButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_byType_ToolTip" ));   //NOI18N
+        byNameButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_byName_ToolTip" ));   //NOI18N
+        quickViewButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_quickView_ToolTip" ));   //NOI18N
+        sourceButton.setToolTipText(ResourceUtils.getBundledString( "CTL_SEARCH_showSource_ToolTip" ));   //NOI18N
     }
     
     public HelpCtx getHelpCtx () {
@@ -491,12 +491,12 @@ public class IndexSearch
                     oc.open();
                 }
                 else {
-                    NotifyDescriptor.Message nd = new NotifyDescriptor.Message( ResourceUtils.getBundledString( "MSG_SEARCH_SrcNotFound" ) );
+                    NotifyDescriptor.Message nd = new NotifyDescriptor.Message( ResourceUtils.getBundledString( "MSG_SEARCH_SrcNotFound" ) );   //NOI18N
                     TopManager.getDefault().notify( nd );
                 }
             }
             else {
-                NotifyDescriptor.Message nd = new NotifyDescriptor.Message( ResourceUtils.getBundledString( "MSG_SEARCH_SrcNotFound" ) );
+                NotifyDescriptor.Message nd = new NotifyDescriptor.Message( ResourceUtils.getBundledString( "MSG_SEARCH_SrcNotFound" ) );   //NOI18N
                 TopManager.getDefault().notify( nd );
             }
 
@@ -594,7 +594,7 @@ public class IndexSearch
             myMode.dockInto( indexSearch );
             */
 
-            indexSearch.setName( ResourceUtils.getBundledString ("CTL_SEARCH_WindowTitle") );
+            indexSearch.setName( ResourceUtils.getBundledString ("CTL_SEARCH_WindowTitle") );   //NOI18N
         }
         indexSearch.setIcon( windowIcon );
         return indexSearch;
@@ -672,7 +672,7 @@ public class IndexSearch
         void go() {
 
             if ( docSystems.length <= 0 ) {
-                TopManager.getDefault().notify( new NotifyDescriptor.Message( ResourceUtils.getBundledString( "MSG_NoDoc" ) ) );
+                TopManager.getDefault().notify( new NotifyDescriptor.Message( ResourceUtils.getBundledString( "MSG_NoDoc" ) ) );   //NOI18N
                 searchStoped();
                 return;
             }

@@ -43,7 +43,7 @@ public class Jdk12SearchType_japan extends JavadocSearchType {
      * @return human presentable name
     */
     public String displayName() {
-        return NbBundle.getBundle( Jdk12SearchType_japan.class ).getString("CTL_Jdk12_search_eng_ja");
+        return NbBundle.getBundle( Jdk12SearchType_japan.class ).getString("CTL_Jdk12_search_eng_ja");   //NOI18N
     }
 
     /** Returns HelpCtx
@@ -66,14 +66,14 @@ public class Jdk12SearchType_japan extends JavadocSearchType {
     public void setCaseSensitive(boolean caseSensitive) {
         boolean oldVal = caseSensitive;
         this.caseSensitive = caseSensitive;
-        this.firePropertyChange("caseSensitive", new Boolean(oldVal), new Boolean(caseSensitive));
+        this.firePropertyChange("caseSensitive", new Boolean(oldVal), new Boolean(caseSensitive));   //NOI18N
     }
 
     /** Getter for property encoding.
      * @return Value of property encoding.
     */
     public java.lang.String getJapanEncoding() {
-        return ( japanEncoding != null ) ? japanEncoding : "JISAutoDetect";
+        return ( japanEncoding != null ) ? japanEncoding : "JISAutoDetect";    //NOI18N
     }
     
     /** Setter for property encoding.
@@ -94,7 +94,7 @@ public class Jdk12SearchType_japan extends JavadocSearchType {
             rootOffset = ( rootOffset.replace('/', '.') + '.' );
         }
         else{
-            rootOffset = "";
+            rootOffset = "";   //NOI18N
         }            
         FileObject fo = fs.find( rootOffset + "index-files", null, null ); // NOI18N
         if ( fo != null ) {

@@ -36,19 +36,19 @@ import org.netbeans.modules.javadoc.*;
 */
 public class DocumentationSettings extends SystemOption {
     
-    private static final String PROP_SEARCH_PATH         = "searchPatch";
-    private static final String PROP_SEARCH_SORT         = "idxSearchSort";
-    private static final String PROP_SEARCH_NO_HTML      = "idxSearchNoHtml";
-    private static final String PROP_SEARCH_SPLIT        = "idxSearchSplit";    
-    private static final String PROP_AUTOCOMENT_SPLIT    = "autocommentSplit";
-    private static final String PROP_AUTOCOMENT_MOD_MASK = "autocommentModifierMask";
-    private static final String PROP_AUTOCOMENT_PACKAGE  = "autocommentPackage";
-    private static final String PROP_AUTOCOMENT_ERR_MASK = "autocommentErrorMask";
-    private static final String PROP_EXECUTOR            = "executorEngine";    
-    private static final String PROP_SEARCH              = "searchEngine";
-    private static final String PROP_FS_SETTING          = "filesystemSetting";
-    private static final String PROP_ASK_BEFORE_GEN      = "askBeforeGenerating";
-    private static final String PROP_ASK_AFTER_GEN       = "askAfterGenerating";
+    private static final String PROP_SEARCH_PATH         = "searchPatch";   //NOI18N
+    private static final String PROP_SEARCH_SORT         = "idxSearchSort";   //NOI18N
+    private static final String PROP_SEARCH_NO_HTML      = "idxSearchNoHtml";   //NOI18N
+    private static final String PROP_SEARCH_SPLIT        = "idxSearchSplit";       //NOI18N
+    private static final String PROP_AUTOCOMENT_SPLIT    = "autocommentSplit";   //NOI18N
+    private static final String PROP_AUTOCOMENT_MOD_MASK = "autocommentModifierMask";   //NOI18N
+    private static final String PROP_AUTOCOMENT_PACKAGE  = "autocommentPackage";   //NOI18N
+    private static final String PROP_AUTOCOMENT_ERR_MASK = "autocommentErrorMask";   //NOI18N
+    private static final String PROP_EXECUTOR            = "executorEngine";       //NOI18N
+    private static final String PROP_SEARCH              = "searchEngine";   //NOI18N
+    private static final String PROP_FS_SETTING          = "filesystemSetting";   //NOI18N
+    private static final String PROP_ASK_BEFORE_GEN      = "askBeforeGenerating";   //NOI18N
+    private static final String PROP_ASK_AFTER_GEN       = "askAfterGenerating";   //NOI18N
     
     /** generation */
     //private static boolean externalJavadoc = false;
@@ -59,9 +59,9 @@ public class DocumentationSettings extends SystemOption {
     protected void initialize () {
         super.initialize ();
         if( getProperty( PROP_SEARCH_PATH ) == null )
-            setSearchPath(new String[] {"c:/Jdk1.2/doc" });
+            setSearchPath(new String[] {"c:/Jdk1.2/doc" });   //NOI18N
         if( getProperty( PROP_SEARCH_SORT ) == null )
-            setIdxSearchSort("A");
+            setIdxSearchSort("A");   //NOI18N
         if( getProperty( PROP_SEARCH_NO_HTML ) == null )
             setIdxSearchNoHtml(false);
         if( getProperty( PROP_SEARCH_SPLIT ) == null )
@@ -92,7 +92,7 @@ public class DocumentationSettings extends SystemOption {
 
     /** @return human presentable name */
     public String displayName() {
-        return NbBundle.getBundle(DocumentationSettings.class).getString("CTL_Documentation_settings");
+        return NbBundle.getBundle(DocumentationSettings.class).getString("CTL_Documentation_settings");   //NOI18N
     }
 
     public HelpCtx getHelpCtx () {

@@ -203,20 +203,20 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
 
     /* These are constants for the inner class */
     
-    static private final String STR_CLASS = ResourceUtils.getBundledString( "JDK12_CLASS" );
-    static private final String STR_INTERFACE = ResourceUtils.getBundledString( "JDK12_INTERFACE" );
-    static private final String STR_EXCEPTION = ResourceUtils.getBundledString( "JDK12_EXCEPTION" );
-    static private final String STR_CONSTRUCTOR = ResourceUtils.getBundledString( "JDK12_CONSTRUCTOR" );
-    static private final String STR_METHOD = ResourceUtils.getBundledString( "JDK12_METHOD" );
-    static private final String STR_ERROR = ResourceUtils.getBundledString( "JDK12_ERROR" );
-    static private final String STR_VARIABLE = ResourceUtils.getBundledString( "JDK12_VARIABLE" );
-    static private final String STR_STATIC = ResourceUtils.getBundledString( "JDK12_STATIC" );
-    static private final String STR_DASH = ResourceUtils.getBundledString( "JDK12_DASH" );
-    static private final String STR_PACKAGE = ResourceUtils.getBundledString( "JDK12_PACKAGE" );
+    static private final String STR_CLASS = ResourceUtils.getBundledString( "JDK12_CLASS" );       //NOI18N
+    static private final String STR_INTERFACE = ResourceUtils.getBundledString( "JDK12_INTERFACE" );   //NOI18N
+    static private final String STR_EXCEPTION = ResourceUtils.getBundledString( "JDK12_EXCEPTION" );   //NOI18N
+    static private final String STR_CONSTRUCTOR = ResourceUtils.getBundledString( "JDK12_CONSTRUCTOR" );   //NOI18N
+    static private final String STR_METHOD = ResourceUtils.getBundledString( "JDK12_METHOD" );   //NOI18N
+    static private final String STR_ERROR = ResourceUtils.getBundledString( "JDK12_ERROR" );   //NOI18N
+    static private final String STR_VARIABLE = ResourceUtils.getBundledString( "JDK12_VARIABLE" );   //NOI18N
+    static private final String STR_STATIC = ResourceUtils.getBundledString( "JDK12_STATIC" );   //NOI18N
+    static private final String STR_DASH = ResourceUtils.getBundledString( "JDK12_DASH" );   //NOI18N
+    static private final String STR_PACKAGE = ResourceUtils.getBundledString( "JDK12_PACKAGE" );   //NOI18N
 
-    static private final String STR_CONSTRUCTOR_JA = ResourceUtils.getBundledString( "JDK12_CONSTRUCTOR_JA" );
-    static private final String STR_METHOD_JA = ResourceUtils.getBundledString( "JDK12_METHOD_JA" );
-    static private final String STR_VARIABLE_JA = ResourceUtils.getBundledString( "JDK12_VARIABLE_JA" );
+    static private final String STR_CONSTRUCTOR_JA = ResourceUtils.getBundledString( "JDK12_CONSTRUCTOR_JA" );   //NOI18N
+    static private final String STR_METHOD_JA = ResourceUtils.getBundledString( "JDK12_METHOD_JA" );   //NOI18N
+    static private final String STR_VARIABLE_JA = ResourceUtils.getBundledString( "JDK12_VARIABLE_JA" );   //NOI18N
     
     static private final int IN_BALAST = 0;
     static private final int IN_DT = 1;
@@ -372,7 +372,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                 String text = new String ( data );
                 currentDii.setRemark( currentDii.getRemark() + text);
                 String declaringClass = new String( data ).trim();
-                if( !(".".equals(declaringClass))){
+                if( !(".".equals(declaringClass))){    //NOI18N
                     currentDii.setDeclaringClass(declaringClass);
 
                     // System.out.println("Data: " + text );

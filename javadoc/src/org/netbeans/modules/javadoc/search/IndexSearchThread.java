@@ -36,13 +36,13 @@ public abstract class IndexSearchThread extends Thread  {
     RequestProcessor.Task           rpTask = null;
     protected boolean caseSensitive;
     
-    protected String lastField="";
-    protected String middleField="";
-    protected String reminder="";
+    protected String lastField="";     //NOI18N
+    protected String middleField="";   //NOI18N    
+    protected String reminder="";   //NOI18N
     private int tokens=0;
 
-    private String lastAdd ="";
-    private String lastDeclaring="";
+    private String lastAdd ="";   //NOI18N
+    private String lastDeclaring="";   //NOI18N
     /** This method must terminate the process of searching */
     abstract void stopSearch();
 
@@ -54,7 +54,7 @@ public abstract class IndexSearchThread extends Thread  {
         //this.toFind = toFind;
         //rpTask = RequestProcessor.createRequest( this );
 
-        StringTokenizer st = new StringTokenizer(toFind, ".");
+        StringTokenizer st = new StringTokenizer(toFind, ".");     //NOI18N
         tokens = st.countTokens();
         //System.out.println(tokens);
         
