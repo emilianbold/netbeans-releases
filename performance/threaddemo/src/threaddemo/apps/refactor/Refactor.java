@@ -21,14 +21,12 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
+import org.openide.cookies.SaveCookie;
 import org.openide.util.Mutex;
 import org.w3c.dom.*;
 import threaddemo.data.DomProvider;
 import threaddemo.data.PhadhailLookups;
 import threaddemo.model.Phadhail;
-
-// XXX uses an unreal amount of memory; should save and close files after
-// it finishes (and release them from the iterator too)
 
 /**
  * Simulates some big model-based refactoring of files.
@@ -79,7 +77,10 @@ public class Refactor {
                 Iterator/*<Map.Entry<Phadhail,DomProvider>>*/ it = data.entrySet().iterator();
                 while (it.hasNext() && !cancelled[0]) {
                     Map.Entry e = (Map.Entry)it.next();
-                    Phadhail ph = (Phadhail)e.getKey();
+                    // Avoid keeping a reference to the old data, since we have
+                    // cached DomProvider's and such heavyweight stuff open on them:
+                    it.remove();
+                    final Phadhail ph = (Phadhail)e.getKey();
                     final DomProvider p = (DomProvider)e.getValue();
                     final String path = ph.getPath();
                     SwingUtilities.invokeLater(new Runnable() {
@@ -106,7 +107,19 @@ public class Refactor {
                     });
                     ph.mutex().writeAccess(new Mutex.Action() {
                         public Object run() {
+                            SaveCookie s = (SaveCookie)PhadhailLookups.getLookup(ph).lookup(SaveCookie.class);
                             refactor(p);
+                            if (s == null) {
+                                // Was unmodified before, so save it now.
+                                s = (SaveCookie)PhadhailLookups.getLookup(ph).lookup(SaveCookie.class);
+                                if (s != null) {
+                                    try {
+                                        s.save();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
                             return null;
                         }
                     });
