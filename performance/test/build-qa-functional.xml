@@ -106,12 +106,11 @@ Microsystems, Inc. All Rights Reserved.
     
         </executeTests>
 
-        <!-- TEMPORARY 
-            remove lock file - if setup fails - it will be possible run all tests - this must be solved by XTEST issue 45807 
-            this doesn't solve all our problems if setup fails during parsing of project !
-        -->
+        <!-- remove lock file - if setup fails - it will be possible run all tests - this must be solved by XTEST issue 45807 
+             this doesn't solve all our problems if setup fails during parsing of project !
+             Issue is solved.
         <delete file="${xtest.workdir}/sys/ide/lock" />
-        <!-- TEMPORARY -->
+        -->
         
         <!-- save copy of current Userdir -->
         <copy todir="${xtest.workdir}/sys/ide_backup">
