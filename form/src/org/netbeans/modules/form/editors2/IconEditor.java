@@ -33,12 +33,14 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.propertysheet.*;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.*;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormAwareEditor;
 import org.netbeans.modules.form.FormDesignValue;
@@ -64,8 +66,6 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
     private static final String FILE_PREFIX = "File"; // NOI18N
     /** Name prefix for icons from file. */
     private static final String CLASSPATH_PREFIX = "Classpath"; // NOI18N
-    /** Last selected resource. */
-    private static String lastResource;
     
     /**
      * Returns localized string from bundle.
@@ -237,11 +237,14 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
      * @return URL of the given resource.
      */
     private URL findResource(String resource) {
+        if (resource.startsWith("/")) { // NOI18N
+            resource = resource.substring(1);
+        }
         FileObject formFile = formModel.getFormDataObject().getFormFile();
         ClassPath classPath = ClassPath.getClassPath(formFile, ClassPath.SOURCE);
         FileObject resourceObject = classPath.findResource(resource);
         if (resourceObject == null) {
-            classPath = ClassPath.getClassPath(formFile, ClassPath.COMPILE);
+            classPath = ClassPath.getClassPath(formFile, ClassPath.EXECUTE);
             resourceObject = classPath.findResource(resource);
         }
         if (resourceObject == null) {
@@ -759,63 +762,90 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
          */
         private String selectResource() {
             FileObject formFile = formModel.getFormDataObject().getFormFile();
-            final ClassPath sourceClassPath = ClassPath.getClassPath(formFile, ClassPath.SOURCE);
-            final ClassPath compileClassPath = ClassPath.getClassPath(formFile, ClassPath.COMPILE);
-            
-            String name = tfName.getText();
-            if ((name == null) || name.trim().equals("")) name = lastResource;
-            // Root of selected file object
-            FileObject fob = null;
-            if (name != null) {
-                fob = sourceClassPath.findOwnerRoot(sourceClassPath.findResource(name));
-                if (fob == null) {
-                    fob = compileClassPath.findOwnerRoot(compileClassPath.findResource(name));
+            ClassPath executeClassPath = ClassPath.getClassPath(formFile, ClassPath.EXECUTE);
+            java.util.List roots = new LinkedList();
+            FileObject[] executeRoots = (executeClassPath == null) ? new FileObject[0] : executeClassPath.getRoots();
+            for (int i=0; i<executeRoots.length; i++) {
+                URL url = null;
+                FileObject[] srcRoots = null;
+                try {
+                    url = executeRoots[i].getURL();
+                    SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(url);
+                    srcRoots = result.getRoots();
+                    for (int j=0; j<srcRoots.length; j++) {
+                        roots.add(srcRoots[j]);
+                    }
+                } catch (FileStateInvalidException fsiex) {}
+                if ((url == null) || (srcRoots.length == 0)) {
+                    roots.add(executeRoots[i]);
                 }
             }
-            FileObject[] sourceRoots = (sourceClassPath == null) ? new FileObject[0] : sourceClassPath.getRoots();
-            FileObject[] compileRoots = (compileClassPath == null) ? new FileObject[0] : compileClassPath.getRoots();
-            FileObject[] roots = new FileObject[sourceRoots.length + compileRoots.length];
-            System.arraycopy(sourceRoots, 0, roots, 0, sourceRoots.length);
-            System.arraycopy(compileRoots, 0, roots, sourceRoots.length, compileRoots.length);
-            Node nodes[] = new Node[roots.length];
+            
+            Project project = FileOwnerQuery.getOwner(formFile);
+            Node nodes[] = new Node[roots.size()];
             int selRoot = -1;
             try {
-                for (int i=0; i<roots.length; i++) {
-                    if ((fob != null) && (fob.equals(roots[i]))) selRoot = i;
-                    DataObject dob = DataObject.find(roots[i]);
-                    nodes[i] = new FilterNode(dob.getNodeDelegate());
+                ListIterator iter = roots.listIterator();
+                while (iter.hasNext()) {
+                    FileObject root = (FileObject)iter.next();
+                    DataObject dob = DataObject.find(root);
+                    Project owner = FileOwnerQuery.getOwner(root);
+                    final String displayName = rootDisplayName(root, owner, owner != project);
+                    nodes[iter.previousIndex()] = new RootNode(dob.getNodeDelegate(), displayName);
                 }
             } catch (DataObjectNotFoundException donfex) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, donfex);
                 return null;
             }
-            Node node = (selRoot == -1) ? null : findSelectedNode(nodes[selRoot], name);
             Children children = new Children.Array();
             children.add(nodes);
             final AbstractNode root = new AbstractNode(children);
             root.setIconBase("org/netbeans/modules/form/editors2/iconResourceRoot"); // NOI18N
             root.setDisplayName(getString("CTL_ClassPathName")); // NOI18N
                             
-            ResourceSelector selector = new ResourceSelector(root, node);
+            ResourceSelector selector = new ResourceSelector(root);
             DialogDescriptor dd = new DialogDescriptor(selector, getString("CTL_OpenDialogName")); // NOI18N
             Object res = DialogDisplayer.getDefault().notify(dd);
             nodes = (res == DialogDescriptor.OK_OPTION) ? selector.getNodes() : null;
-            name = null;
+            String name = null;
             if ((nodes != null) && (nodes.length == 1)) {
                 DataObject dob = (DataObject)nodes[0].getCookie(DataObject.class);
                 if (dob != null) {
-                    fob = dob.getPrimaryFile();
-                    if (fob != null) {
-                        if (sourceClassPath.contains(fob)) {
-                            name = sourceClassPath.getResourceName(fob);
+                    FileObject fob = dob.getPrimaryFile();
+                    if (fob != null) {                        
+                        if (executeClassPath.contains(fob)) {
+                            name = executeClassPath.getResourceName(fob);
                         } else {
-                            name = compileClassPath.getResourceName(fob);
+                            ClassPath sourceClassPath = ClassPath.getClassPath(fob, ClassPath.SOURCE);
+                            name = sourceClassPath.getResourceName(fob);
                         }
                     }
                 }
             }
-            if (name != null) lastResource = name;
             return name;
+        }
+        
+        private String rootDisplayName(FileObject fo, Project owner, boolean withProjectName) {
+            if (owner != null) {
+                SourceGroup grp = sourceGroup(fo, owner);
+                String name = (grp!=null) ? grp.getDisplayName() : FileUtil.getFileDisplayName(fo);
+                if (withProjectName) {
+                    ProjectInformation pi = (ProjectInformation)owner.getLookup().lookup(ProjectInformation.class);
+                    if (pi != null) name  += " ["+pi.getDisplayName()+"]"; // NOI18N
+                }
+                return name;
+            } else
+                return FileUtil.getFileDisplayName(fo);
+        }
+        
+        private SourceGroup sourceGroup(FileObject file, Project prj) {
+            Sources src = ProjectUtils.getSources(prj);
+            SourceGroup[] srcgrps = src.getSourceGroups("java"); // NOI18N
+            for (int i = 0 ; i < srcgrps.length; i++) {
+                if (file == srcgrps[i].getRootFolder())
+                    return srcgrps[i];
+            }
+            return null;
         }
         
         private Node findSelectedNode(Node root, String name) {
@@ -921,11 +951,23 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
         
     } // end of IconPanel
     
+    private static class RootNode extends FilterNode {
+        
+        RootNode(Node node, String displayName) {
+            super(node);
+            if (displayName != null) {
+                disableDelegation(DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_DISPLAY_NAME);
+                setDisplayName(displayName);
+            }
+        }
+                
+    }
+    
     private static class ResourceSelector extends JPanel implements ExplorerManager.Provider {
         /** Manages the tree. */
         private ExplorerManager manager = new ExplorerManager();
                 
-        public ResourceSelector(Node root, Node selectedNode) {
+        public ResourceSelector(Node root) {
             ResourceBundle bundle = NbBundle.getBundle(ResourceSelector.class);
             
             setLayout(new BorderLayout(0, 5));
@@ -933,13 +975,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
             getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ResourceSelector")); // NOI18N
             getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ResourceSelector")); // NOI18N
             manager.setRootContext(root);
-            try {
-                selectedNode = (selectedNode == null) ? root : selectedNode;
-                manager.setSelectedNodes(new Node[] { selectedNode });
-            } catch(PropertyVetoException pve) {
-                throw new IllegalStateException(pve.getMessage());
-            }
-            
+
             BeanTreeView tree = new BeanTreeView();
             tree.setPopupAllowed(false);
             tree.setDefaultActionAllowed(false);
