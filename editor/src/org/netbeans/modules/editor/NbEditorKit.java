@@ -332,8 +332,11 @@ public class NbEditorKit extends ExtKit {
                 super.actionPerformed(evt);
 
                 if (bo != null){
-                    bo.setMacroDiffMap(OptionUtilities.getMapDiff(oldMacroMap, bo.getMacroMap(), true));
+                    Map newMacroMap = bo.getMacroMap();
+                    bo.setMacroDiffMap(OptionUtilities.getMapDiff(oldMacroMap, newMacroMap, true));
                     bo.setKeyBindingsDiffMap(OptionUtilities.getMapDiff(oldKBMap, getKBMap(), true));
+                    bo.setMacroMap(newMacroMap,false);
+                    bo.setKeyBindingList(bo.getKeyBindingList(), false);
                 }
             }
             
