@@ -133,6 +133,10 @@ public class StringFilter {
         return s == "" || s == null;
     }
     
+    /** Filters input string to a PrintStream.
+     * @param input string to be filtered
+     * @param output stream to write results in
+     */    
     public void filterLinesToStream (String input, PrintStream output) {
         BufferedReader br = new BufferedReader (new StringReader (input));
         try {
