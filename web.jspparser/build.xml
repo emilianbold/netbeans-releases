@@ -8,133 +8,66 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="web_jspparser" default="netbeans" basedir=".">
-  <import file="../../nbbuild/default.xml"/> 
 
-  <target name="init" depends="default.init">
-    <ant dir="../external" target="unscramble"/>
-    <property file="../spec-vers.properties"/>
-    <filter token="CORE_SPEC_VERS_SUBST" value="${web.core.specification.version}"/>
-    <filter token="SERVLET24_SPEC_VERS_SUBST" value="${web.servletapi24.specification.version}"/>
-    <filter token="JSPPARSER_SPEC_VERS_SUBST" value="${web.jspparser.specification.version}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <patternset id="web/jspparser.files">
-      <include name="${nb.modules/autoload.dir}/jsp-parser.jar"/>
-      <include name="${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"/>
-      <include name="${nb.modules/autoload.dir}/ext/jasper-compiler-5.0.24.jar"/>
-      <include name="${nb.modules/autoload.dir}/ext/jasper-runtime-5.0.24.jar"/>
-      <include name="${nb.modules/autoload.dir}/ext/commons-logging-api.jar"/>
-      <include name="${nb.modules/autoload.dir}/ext/commons-el.jar"/>
-    </patternset>
-    <path id="cp">
-      <pathelement location="${web/servletapi24.dir}/${nb.modules/autoload.dir}/ext/servlet-api-2.4.jar"/>
-      <pathelement location="../external/jsp-api-2.0.jar"/>
-      <pathelement location="../external/jasper-compiler-5.0.24.jar"/>
-      <pathelement location="../external/jasper-runtime-5.0.24.jar"/>
-      <pathelement location="../external/commons-logging-api.jar"/>
-      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-      <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
-    </path>
-  </target>
+    <import file="../../nbbuild/templates/projectized.xml"/>
+    
+    <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <!--<include name="${nb.modules/autoload.dir}/jsp-parser.jar"/>
+            <include name="${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"/>-->
+            <include name="${module.jar}"/>
+            <include name="${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"/>
+            <include name="${nb.modules/autoload.dir}/ext/jasper-compiler-5.0.24.jar"/>
+            <include name="${nb.modules/autoload.dir}/ext/jasper-runtime-5.0.24.jar"/>
+            <include name="${nb.modules/autoload.dir}/ext/commons-logging-api.jar"/>
+            <include name="${nb.modules/autoload.dir}/ext/commons-el.jar"/>
+        </patternset>
+    </target>
+    
+    <target name="release" depends="init">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext">
+          <fileset dir="../external">
+            <include name="jasper-compiler-5.0.24.jar"/>
+            <include name="jasper-runtime-5.0.24.jar"/>
+            <include name="commons-logging-api.jar"/>
+            <include name="commons-el.jar"/>
+          </fileset>
+        </copy>
+    </target>
+    
+    <target name="netbeans-extra" depends="release, ext-jar"/>
+    
+    <target name="jar-with-module-deps" if="module.dependencies" depends="ext-jar">
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
+            <manifest>
+                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
+                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
+                <!-- XXX make this conditional so can use OIDE-M-B-V instead -->
+                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
+            </manifest>
+            <fileset dir="${build.classes.dir}">
+              <include name="org/netbeans/modules/web/jspparser/"/>
+              <include name="org/netbeans/modules/web/jsps/"/>
+            </fileset>
+        </jar>
+    </target>
 
-  <target name="compile" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <include name="org/netbeans/modules/web/jspparser/"/>
-      <include name="org/netbeans/modules/web/jsps/"/>
-      <include name="org/netbeans/modules/web/jspparser_ext/"/>
-      <include name="org/apache/jasper/"/>
-      <classpath refID="cp"/>
-    </javac>
-  </target>
-
-  <target name="jars" depends="compile">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/jsp-parser.jar"
-         manifest="manifest-subst.mf"
-         basedir="src"
+    <target name="ext-jar">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"
+         basedir="${build.classes.dir}"
          excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
          compress="false">
-      <include name="org/netbeans/modules/web/jspparser/"/>
-      <include name="org/netbeans/modules/web/jsps/"/>
-    </jar>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"
-         basedir="src"
-         excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
-         compress="false">
-      <include name="org/netbeans/modules/web/jspparser_ext/"/>
-      <include name="org/apache/jasper/"/>
-    </jar>
-  </target>
-
-  <target name="release" depends="init">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
-    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext">
-      <fileset dir="../external">
-        <include name="jasper-compiler-5.0.24.jar"/>
-        <include name="jasper-runtime-5.0.24.jar"/>
-        <include name="commons-logging-api.jar"/>
-        <include name="commons-el.jar"/>
-      </fileset>
-    </copy>
-  </target>
-
-  <target name="netbeans" depends="jars,release">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/jsp-parser.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="web/jspparser.files"/>
-      </fileset>
-    </genlist>
-  </target>
-
-  <target name="nbm" depends="netbeans">
-    <makenbm file="web-jspparser.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules/autoload.dir}/jsp-parser.jar"
-	     homepage="http://web.${homepage.base}/"
-	     distribution="http://${dist.base}/web-jspparser.nbm">
-      <license name="jspparser-license.txt">
-        <text>For the JSP Parser module:</text>
-        <file location="${license.file}"/>
-        <text>For the Jasper compiler and runtime:</text>
-        <file location="${nb_all}/nbbuild/external/apache-license.txt"/>
-      </license>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-  <target name="clean" depends="init">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="web/jspparser.files"/>
-      </fileset>
-    </delete>
-    <delete file="manifest-subst.mf"/>
-    <delete file="web-jspparser.nbm"/>
-  </target>
-
-  <target name="test-build" depends="compile">
-    <!-- need to package also extbins to reload it correctly -->
-    <mkdir dir="reload"/>
-    <filter token="BUILD_NUMBER_SUBST" value="testing"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="reload/jsp-parser.jar" manifest="manifest-subst.mf" compress="false">
-      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <zipfileset src="../external/jasper-compiler-4.0.6.jar" excludes="META-INF/MANIFEST.MF"/>
-      <zipfileset src="../external/jasper-runtime-4.0.6.jar" excludes="META-INF/MANIFEST.MF"/>
-    </jar>
-  </target>
-  <!-- This target will only work *inside* the IDE! -->
-  <target name="test" depends="test-build" description="Test module inside running IDE.">
-    <nbinstaller module="reload/jsp-parser.jar" action="reinstall"/>
-  </target>
-
-
+            <include name="org/netbeans/modules/web/jspparser_ext/"/>
+            <include name="org/apache/jasper/"/>
+        </jar>
+    </target>
 </project>
+

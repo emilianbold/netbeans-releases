@@ -17,6 +17,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.StringTokenizer;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -106,6 +107,14 @@ class TestUtil {
     
         public void setContextPath (String path) {
             this.contextPath = path;
+        }
+        
+        public String getJ2eePlatformVersion (){
+            return "";
+        }
+        
+        public ClassPath getJavaSources (){
+            return null;
         }
     }
     
