@@ -99,9 +99,13 @@ public class RADMenuItemComponent extends RADComponent {
 
     
     Object o = getBeanInstance();
-    if (o instanceof MenuItem) {
-      //((MenuItem) o).addActionListener(getDefaultActionListener());
-      ((JMenuItem) getDesignTimeMenus (getFormManager ()).getDesignTime (o)).addActionListener(getDefaultActionListener());
+
+    // XXX(-tdt) PopupMenu is a subclass of MenuItem !!
+    /* if (o instanceof MenuItem) { */
+    if (o.getClass() == MenuItem.class) {  
+      JMenuItem designItem =
+        ((JMenuItem) getDesignTimeMenus(getFormManager()).getDesignTime(o));
+      designItem.addActionListener(getDefaultActionListener());
     }
     else if (o instanceof JMenuItem) {
       ((JMenuItem)o).addActionListener(getDefaultActionListener());
@@ -265,6 +269,8 @@ public class RADMenuItemComponent extends RADComponent {
 
 /*
  * Log
+ *  10   Gandalf-post-FCS1.8.1.0     3/27/00  Tran Duc Trung  FIX #6021: cannot add 
+ *       AWT PopMenu
  *  9    Gandalf   1.8         1/5/00   Ian Formanek    NOI18N
  *  8    Gandalf   1.7         12/2/99  Pavel Buzek     AWT menu is displayed in
  *       form at design time (a swing equivalent is created for each awt menu 
