@@ -12,9 +12,6 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!-- Special targets: apiexamples, open-apis -->
-<!-- Special properties: -Djdk-docs-location=...../api -->
-
 <!-- ToDo: modern compile can fail even within openide/src for the same -->
 <!-- reasons other modules need openide-13javac-workaround.jar! -->
 <!-- Not clear how to solve this. Try rerunning build if it happens. -->
@@ -369,7 +366,6 @@ Microsystems, Inc. All Rights Reserved.
                   <!-- XXX review distribution of JPopupMenuPlus, JPopupMenuUtils, etc. -->
                   <include name="org/openide/awt/JPopupMenu*class" />
                   <include name="org/openide/awt/NbPopupMenuUI*class" />
-                  <include name="org/openide/loaders/OperationListener*class" />
                   <include name="org/openide/filesystems/RepositoryListener*class" />
                   <include name="org/openide/filesystems/FileChangeListener*class" />
                   <include name="org/openide/filesystems/FileStatusListener*class" />
@@ -606,7 +602,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <echo message="Build Open API documentation..."/>
     <mkdir dir="javadoc/OpenAPIs"/>
     <javadoc destdir="javadoc/OpenAPIs"
-             packagenames="org.openide,org.openide.actions,org.openide.awt,org.openide.cookies,org.openide.explorer,org.openide.explorer.propertysheet,org.openide.explorer.propertysheet.editors,org.openide.explorer.view,org.openide.filesystems,org.openide.loaders,org.openide.modules,org.openide.nodes,org.openide.options,org.openide.text,org.openide.util,org.openide.util.actions,org.openide.util.datatransfer,org.openide.util.enum,org.openide.util.io,org.openide.util.lookup,org.openide.windows,org.openide.xml"
+             packagenames="org.openide,org.openide.actions,org.openide.awt,org.openide.cookies,org.openide.explorer,org.openide.explorer.propertysheet,org.openide.explorer.propertysheet.editors,org.openide.explorer.view,org.openide.filesystems,org.openide.modules,org.openide.nodes,org.openide.options,org.openide.text,org.openide.util,org.openide.util.actions,org.openide.util.datatransfer,org.openide.util.enum,org.openide.util.io,org.openide.util.lookup,org.openide.windows,org.openide.xml"
              doctitle="NetBeans Open APIs"
              windowtitle="NetBeans APIs"
              overview="api/doc/overview.html"
@@ -632,11 +628,9 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       <group title="ServiceType, WizardDescriptor, ..."
              packages="org.openide"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/doc-files/services-api.html&quot;&gt;Services &amp;amp; Lookup API&lt;/a&gt;"
-             packages="org.openide.util.lookup"/>
+             packages="org.openide.util.lookup:org.openide.cookies"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/filesystems/doc-files/api.html&quot;&gt;Filesystems API&lt;/a&gt;"
              packages="org.openide.filesystems"/>
-      <group title="&lt;a href=&quot;@TOP@org/openide/loaders/doc-files/api.html&quot;&gt;Datasystems API&lt;/a&gt;"
-             packages="org.openide.cookies:org.openide.loaders:org.openide.util.datatransfer"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/nodes/doc-files/api.html&quot;&gt;Nodes API&lt;/a&gt;"
              packages="org.openide.nodes"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/explorer/doc-files/api.html&quot;&gt;Explorer API&lt;/a&gt;"
@@ -650,7 +644,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       <group title="&lt;a href=&quot;@TOP@org/openide/options/doc-files/api.html&quot;&gt;Options API&lt;/a&gt;"
              packages="org.openide.options"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/util/doc-files/api.html&quot;&gt;Utility Classes&lt;/a&gt;"
-             packages="org.openide.awt:org.openide.util:org.openide.util.enum:org.openide.util.io:org.openide.xml"/>
+             packages="org.openide.awt:org.openide.util:org.openide.util.datatransfer:org.openide.util.enum:org.openide.util.io:org.openide.xml"/>
     </javadoc>
     <copy todir="javadoc/OpenAPIs">
       <fileset dir="../nbbuild/javadoctools">
@@ -665,7 +659,6 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <arch answers="arch/arch-openide-dialogs.xml" output="javadoc/OpenAPIs/arch/openide-dialogs.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
     <arch answers="arch/arch-openide-lookup.xml" output="javadoc/OpenAPIs/arch/openide-lookup.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
     <arch answers="arch/arch-openide-filesystems.xml" output="javadoc/OpenAPIs/arch/openide-filesystems.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
-    <arch answers="arch/arch-openide-datasystems.xml" output="javadoc/OpenAPIs/arch/openide-datasystems.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
     <arch answers="arch/arch-openide-nodes.xml" output="javadoc/OpenAPIs/arch/openide-nodes.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
     <arch answers="arch/arch-openide-explorer.xml" output="javadoc/OpenAPIs/arch/openide-explorer.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
     <arch answers="arch/arch-openide-actions.xml" output="javadoc/OpenAPIs/arch/openide-actions.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
