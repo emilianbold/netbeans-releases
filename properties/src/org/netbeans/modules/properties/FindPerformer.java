@@ -46,7 +46,7 @@ import org.openide.util.WeakListener;
  *
  * @author  Peter Zavadsky
  */
-public class FindPerformer implements ActionPerformer {
+public class FindPerformer implements ActionPerformer, PropertyChangeListener {
 
     /** Table on which perform the search. */
     private JTable table;
@@ -86,15 +86,11 @@ public class FindPerformer implements ActionPerformer {
     /** Listener for registering keystrokes to toggle highlight action. */
     private final ActionListener toggleHighlightListener;
     
-    /** Listens on changes on BundleEditPanel#settings object. It updates
-     * registered key strokes on table. */
-    private final PropertyChangeListener settingsListener;
-  
     /** Keeps history of found strings. */
     private HashSet history = new HashSet();
 
     /** Helper variable keeping <code>settings</code>. */
-    private TableViewSettingsFactory.TableViewSettings settings;
+    private TableViewSettings settings;
 
     // Initializes action listener use to register for key strokes to table.
     {
@@ -144,20 +140,22 @@ public class FindPerformer implements ActionPerformer {
     private  FindPerformer(JTable table) {
         this.table = table;
         
-        settingsListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    // Settings were changed reset registered key strokes.
+        settings = TableViewSettings.getDefault();
+        settings.addPropertyChangeListener(
+            WeakListener.propertyChange(this, settings)
+        );
+        
                     registerKeyStrokes();
                 }
-            };
             
-        settings = TableViewSettingsFactory.getTableViewSettings();
-        settings.addPropertyChangeListener(WeakListener.propertyChange(
-            settingsListener, settings));
         
+    /**
+     * Listen on setting changes.
+     */
+    public void propertyChange(PropertyChangeEvent evt) {
+        // Settings were changed reset registered key strokes.
         registerKeyStrokes();
     }
-    
     
     /** Gets find performer. */
     public static FindPerformer getFindPerformer(JTable table) {

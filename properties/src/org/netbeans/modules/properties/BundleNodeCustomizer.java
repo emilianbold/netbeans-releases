@@ -35,7 +35,7 @@ import org.openide.util.Utilities;
 
 /**
  * Customizer for bundle node (<code>PropertiesDataNode</code>) which represents
- * bundle of .properties files with same basic name.
+ * bundle of .properties files with same basic name and set of Locales.
  *
  * @author Peter Zavadsky
  * @see PropertiesDataNode
@@ -149,7 +149,6 @@ public class BundleNodeCustomizer extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         add(localesLabel, gridBagConstraints);
 
-        localesList.setPrototypeCellValue("0123456789012345678901234567890123456789");
         localesList.setCellRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(
                 JList list,
@@ -180,6 +179,7 @@ public class BundleNodeCustomizer extends JPanel {
                 return label;
             }
         });
+        localesList.setPrototypeCellValue("0123456789012345678901234567890123456789");
         localesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 localesListValueChanged(evt);
@@ -288,13 +288,13 @@ public class BundleNodeCustomizer extends JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel nameLabel;
-    private javax.swing.JTextField nameText;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JList localesList;
     private javax.swing.JLabel localesLabel;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JButton addLocale;
+    private javax.swing.JTextField nameText;
+    private javax.swing.JLabel nameLabel;
     private javax.swing.JButton removeLocales;
+    private javax.swing.JButton addLocale;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -34,6 +34,7 @@ import javax.swing.table.*;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListener;
@@ -45,16 +46,13 @@ import org.openide.windows.TopComponent;
  *
  * @author  Petr Jiricka
  */
-public class BundleEditPanel extends JPanel {
+public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     
     /** PropertiesDataObject this panel presents. */
     private PropertiesDataObject obj;
     
-    /** Listener on settings (colors particulary) changes. */
-    private PropertyChangeListener settingsListener;
-    
     /** Class representing settings used in table view. */
-    private static TableViewSettingsFactory.TableViewSettings settings;
+    private static TableViewSettings settings;
     
     /** Generated serialized version UID. */
     static final long serialVersionUID =-843810329041244483L;
@@ -151,23 +149,24 @@ public class BundleEditPanel extends JPanel {
         return table;
     }
     
+    
     /** Initializes <code>settings</code> variable. */
     private void initSettings() {
-        if(settings == null)
-            synchronized(getClass()) {
-                if(settings == null) {
-                    settings = TableViewSettingsFactory.getTableViewSettings();
+        settings = TableViewSettings.getDefault();
                     
                     // Listen on changes of setting settings.
-                    settings.addPropertyChangeListener(WeakListener.propertyChange(settingsListener = new PropertyChangeListener() {
+        settings.addPropertyChangeListener(
+            WeakListener.propertyChange(this, settings)
+        );
+    }
+
+    /**
+     * Handler of settings changes
+     */
                         public void propertyChange(PropertyChangeEvent evt) {
                             // settings changed repaint table
                             BundleEditPanel.this.repaint();
                         }
-                    }, settings));
-                }
-            }
-    }
     
     private void initAccessibility() {
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_BundleEditPanel"));
