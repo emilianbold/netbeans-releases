@@ -268,7 +268,7 @@ import org.openide.util.NbBundle;
         return StatusForAnnotationTypeQuery.getDefault().getStatusForAnnotationType(description.getAnnotationType());
     }
     
-    private Status computeTotalStatus() {
+    /*package private for tests*/Status computeTotalStatus() {
         int targetStatus = Status.STATUS_OK;
         int annotatedLine = -1;
         int totalLines = Utilities.getRowCount(doc);

@@ -51,7 +51,7 @@ public class AnnotationViewTest extends TestCase {
     protected void setUp() throws Exception {
         UnitUtilities.prepareTest(new String[] {"/org/netbeans/modules/editor/plain/resources/layer.xml"}, new Object[0]);
         BaseKit.getKit(PlainKit.class);
-        AnnotationTypes.getTypes().registerLoader(new LoaderImpl());
+        AnnotationTestUtilities.register();
         BaseOptions.findObject(BaseOptions.class, true);
     }
 
@@ -64,19 +64,21 @@ public class AnnotationViewTest extends TestCase {
         return suite;
     }
     
-    public static void testModelToView() throws Exception {
+    public void testModelToView() throws Exception {
         performTest(new Action() {
-            public void test(AnnotationView aView) throws Exception {
+            public void test(AnnotationView aView, BaseDocument document) throws Exception {
                 double         pos   = aView.modelToView(2);
                 
                 assertEquals(aView.viewToModel(pos)[0], aView.viewToModel(aView.modelToView(aView.viewToModel(pos)[0]))[0]);
+                
+                assertEquals(aView.modelToView(Utilities.getLineOffset(document, document.getLength()) + 1), (-1.0), 0.0001d);
             }
         });
     }
     
-    public static void testViewToModelIsContinuous() throws Exception {
+    public void testViewToModelIsContinuous() throws Exception {
         performTest(new Action() {
-            public void test(AnnotationView aView) throws Exception {
+            public void test(AnnotationView aView, BaseDocument document) throws Exception {
                 int[] last = new int[] {-1, -1};
                 
                 for (double pos = AnnotationView.HEIGHT_OFFSET; pos < (aView.getHeight() - AnnotationView.HEIGHT_LOWER_OFFSET); pos = pos + 1) {
@@ -91,9 +93,9 @@ public class AnnotationViewTest extends TestCase {
         });
     }
     
-    public static void testGetAnnotationIsContinuous() throws Exception {
+    public void testGetAnnotationIsContinuous() throws Exception {
         performTest(new Action() {
-            public void test(AnnotationView aView) throws Exception {
+            public void test(AnnotationView aView, BaseDocument document) throws Exception {
                 AnnotationDesc annotation = null;
                 boolean wasAnnotation = false;
                 
@@ -171,13 +173,13 @@ public class AnnotationViewTest extends TestCase {
             
             Position start = bd.createPosition(Utilities.getRowStartFromLineOffset(bd, 2));
             
-            AnnotationDesc a1 = new TestAnnotationDesc1(bd, start);
-            AnnotationDesc a2 = new TestAnnotationDesc2(bd, start);
+            AnnotationDesc a1 = new AnnotationTestUtilities.TestAnnotationDesc1(bd, start);
+            AnnotationDesc a2 = new AnnotationTestUtilities.TestAnnotationDesc2(bd, start);
             
             bd.getAnnotations().addAnnotation(a1);
             bd.getAnnotations().addAnnotation(a2);
             
-            action.test(aView);
+            action.test(aView, bd);
             
             bd.getAnnotations().removeAnnotation(a1);
             bd.getAnnotations().removeAnnotation(a2);
@@ -188,10 +190,10 @@ public class AnnotationViewTest extends TestCase {
     }
     
     private static abstract class Action {
-        public abstract void test(AnnotationView aView) throws Exception;
+        public abstract void test(AnnotationView aView, BaseDocument document) throws Exception;
     }
 
-    public static void testGetStatusesForBlock() throws /*BadLocation*/Exception {
+    public void testGetStatusesForBlock() throws /*BadLocation*/Exception {
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
@@ -211,8 +213,8 @@ public class AnnotationViewTest extends TestCase {
         
         Position start = bd.createPosition(Utilities.getRowStartFromLineOffset(bd, 2));
         
-        AnnotationDesc a1 = new TestAnnotationDesc1(bd, start);
-        AnnotationDesc a2 = new TestAnnotationDesc2(bd, start);
+        AnnotationDesc a1 = new AnnotationTestUtilities.TestAnnotationDesc1(bd, start);
+        AnnotationDesc a2 = new AnnotationTestUtilities.TestAnnotationDesc2(bd, start);
         
         bd.getAnnotations().addAnnotation(a1);
         bd.getAnnotations().addAnnotation(a2);
@@ -233,109 +235,62 @@ public class AnnotationViewTest extends TestCase {
         assertEquals(expected, AnnotationView.getStatusesForBlockImpl(bd, 2, 2));
     }
     
-    private static final String NAME_TEST_ANNOTATION_DESC1 = "org-netbeans-modules-java-parser_annotation_err";
-    private static final String NAME_TEST_ANNOTATION_DESC2 = "org-netbeans-modules-java-parser_annotation_warn";
-    
-    private static class TestAnnotationDesc1 extends AnnotationDesc {
-        
-        private BaseDocument doc;
-        private Position position;
-        
-        public TestAnnotationDesc1(BaseDocument bd, Position position) {
-            super(position.getOffset(), -1);
-            this.doc      = bd;
-            this.position = position;
+    public void testComputeTotalStatus() throws Exception {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    try {
+                        testComputeTotalStatus();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            return ;
         }
         
-        public String getShortDescription() {
-            return "Test1";
-        }
+        JFrame f = new JFrame();
+        JEditorPane editor = new JEditorPane();
+        
+        editor.setEditorKit(BaseKit.getKit(PlainKit.class));
+        
+        AnnotationView aView = new AnnotationView(editor);
+        
+        f.getContentPane().setLayout(new BorderLayout());
+        f.getContentPane().add(new JScrollPane(editor), BorderLayout.CENTER);
+        f.getContentPane().add(aView, BorderLayout.EAST);
+        
+        f.setSize(500, 500);
+        
+        f.setVisible(true);
 
-        public String getAnnotationType() {
-            return NAME_TEST_ANNOTATION_DESC1;
-        }
-
-        public int getOffset() {
-            return position.getOffset();
-        }
-
-        public int getLine() {
-            try {
-                return Utilities.getLineOffset(doc, getOffset());
-            } catch (BadLocationException e) {
-                IllegalStateException exc = new IllegalStateException();
-                
-                exc.initCause(e);
-                
-                throw exc;
-            }
-        }
+        BaseDocument bd = (BaseDocument) editor.getDocument();
         
+        bd.insertString(0, "\n\n\n\n\n\n\n\n\n\n", null);
+        
+        Position start = bd.createPosition(Utilities.getRowStartFromLineOffset(bd, 2));
+        
+        AnnotationDesc a1 = new AnnotationTestUtilities.TestAnnotationDesc1(bd, start);
+        AnnotationDesc a2 = new AnnotationTestUtilities.TestAnnotationDesc2(bd, start);
+        
+        bd.getAnnotations().addAnnotation(a1);
+        bd.getAnnotations().addAnnotation(a2);
+        
+        assertEquals(Status.STATUS_ERROR, aView.computeTotalStatus().getStatus());
+        
+        bd.getAnnotations().activateNextAnnotation(2);
+        
+        assertEquals(Status.STATUS_ERROR, aView.computeTotalStatus().getStatus());
+        
+        f.setVisible(false);
     }
     
-    private static class TestAnnotationType extends AnnotationType {
+    public void testAnnotationViewFactory() {
+        JEditorPane editor = new JEditorPane();
         
-        public TestAnnotationType() {
-            setVisible(true);
-        }
+        editor.setEditorKit(BaseKit.getKit(PlainKit.class));
         
+        assertNotNull(new AnnotationViewFactory().createSideBar(editor));
     }
     
-    private static class TestAnnotationDesc2 extends AnnotationDesc {
-        
-        private BaseDocument doc;
-        private Position position;
-        
-        public TestAnnotationDesc2(BaseDocument bd, Position position) {
-            super(position.getOffset(), -1);
-            this.doc      = bd;
-            this.position = position;
-        }
-        
-        public String getShortDescription() {
-            return "Test2";
-        }
-
-        public String getAnnotationType() {
-            return NAME_TEST_ANNOTATION_DESC2;
-        }
-
-        public int getOffset() {
-            return position.getOffset();
-        }
-
-        public int getLine() {
-            try {
-                return Utilities.getLineOffset(doc, getOffset());
-            } catch (BadLocationException e) {
-                IllegalStateException exc = new IllegalStateException();
-                
-                exc.initCause(e);
-                
-                throw exc;
-            }
-        }
-        
-    }
-    
-    private static class LoaderImpl implements Loader {
-        public void saveSetting(String settingName, Object value) {
-        }
-
-        public void saveType(AnnotationType type) {
-        }
-
-        public void loadTypes() {
-            Map type = new HashMap();
-            
-            type.put(NAME_TEST_ANNOTATION_DESC1, new TestAnnotationType());
-            type.put(NAME_TEST_ANNOTATION_DESC2, new TestAnnotationType());
-            
-            AnnotationTypes.getTypes().setTypes(type);
-        }
-
-        public void loadSettings() {
-        }
-        
-    }
 }
