@@ -68,6 +68,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -630,6 +631,73 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             }
         }
         
+        public void fileRenamed(FileRenameEvent fe) {
+            try {
+                FileObject fo = fe.getFile();
+                FileObject docBase = getWebModule().getDocumentBase();
+                if (FileUtil.isParentOf(docBase, fo)) {
+                    // inside docbase
+                    handleCopyFileToDestDir(fo);
+                    FileObject parent = fo.getParent();
+                    String path;
+                    if (FileUtil.isParentOf(docBase, parent)) {
+                        path = FileUtil.getRelativePath(docBase, fo.getParent()) +
+                            "/" + fe.getName() + "." + fe.getExt();
+                    }
+                    else {
+                        path = fe.getName() + "." + fe.getExt();
+                    }
+                    if (!isSynchronizationAppropriate(path)) 
+                        return;
+                    handleDeleteFileInDestDir(path);
+                }
+            }
+            catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        
+        public void fileDeleted(FileEvent fe) {
+            try {
+                FileObject fo = fe.getFile();
+                FileObject docBase = getWebModule().getDocumentBase();
+                if (FileUtil.isParentOf(docBase, fo)) {
+                    // inside docbase
+                    String path = FileUtil.getRelativePath(docBase, fo);
+                    if (!isSynchronizationAppropriate(path)) 
+                        return;
+                    handleDeleteFileInDestDir(path);
+                }
+            }
+            catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        
+        private boolean isSynchronizationAppropriate(String filePath) {
+            if (filePath.startsWith("WEB-INF/classes")) {
+                return false;
+            }
+            if (filePath.startsWith("WEB-INF/src")) {
+                return false;
+            }
+            if (filePath.startsWith("WEB-INF/lib")) {
+                return false;
+            }
+            return true;
+        }
+        
+        private void handleDeleteFileInDestDir(String resourcePath) throws IOException {
+            FileObject webBuildBase = getWebModule().getContentDirectory();
+            if (webBuildBase != null) {
+                // project was built
+                FileObject toDelete = webBuildBase.getFileObject(resourcePath);
+                if (toDelete != null) {
+                    toDelete.delete();
+                }
+            }
+        }
+        
         /** Copies a content file to an appropriate  destination directory, 
          * if applicable and relevant.
          */
@@ -639,6 +707,8 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                 if (FileUtil.isParentOf(docBase, fo)) {
                     // inside docbase
                     String path = FileUtil.getRelativePath(docBase, fo);
+                    if (!isSynchronizationAppropriate(path)) 
+                        return;
                     FileObject webBuildBase = getWebModule().getContentDirectory();
                     if (webBuildBase != null) {
                         // project was built
