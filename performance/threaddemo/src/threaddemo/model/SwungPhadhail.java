@@ -331,7 +331,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     }
     
     public Lock lock() {
-        return Locks.eventLock();
+        return Locks.event();
     }
     
 }

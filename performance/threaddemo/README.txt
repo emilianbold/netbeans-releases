@@ -97,6 +97,4 @@ Major known problems:
 - Refactoring while an XML file is expanded sometimes causes an infinite loop and
   GUI freeze. (Possible Xerces bug? If so, still apparently in 2.4.0...)
 
-- Read/write lock seems to not work with Index view - TBD.
-
 -jglick@netbeans.org

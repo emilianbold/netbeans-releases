@@ -29,7 +29,7 @@ final class MonitoredPhadhail extends AbstractPhadhail {
     
     private static final class LOCK {}
     private static final Object LOCK = new LOCK();
-    private static final Lock MLOCK = Locks.monitorLock(LOCK);
+    private static final Lock MLOCK = Locks.monitor(LOCK, 0);
     
     private static final Factory FACTORY = new Factory() {
         public AbstractPhadhail create(File f) {

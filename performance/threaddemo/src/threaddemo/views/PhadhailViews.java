@@ -102,14 +102,14 @@ public class PhadhailViews {
             super(n, n.isLeaf() ? Children.LEAF : new EQReplannedChildren(n));
         }
         public String getName() {
-            return (String)Locks.eventLock().read(new LockAction() {
+            return (String)Locks.event().read(new LockAction() {
                 public Object run() {
                     return EQReplannedNode.super.getName();
                 }
             });
         }
         public String getDisplayName() {
-            return (String)Locks.eventLock().read(new LockAction() {
+            return (String)Locks.event().read(new LockAction() {
                 public Object run() {
                     return EQReplannedNode.super.getDisplayName();
                 }
@@ -125,35 +125,35 @@ public class PhadhailViews {
             return new EQReplannedNode(n);
         }
         public Node findChild(final String name) {
-            return (Node)Locks.eventLock().read(new LockAction() {
+            return (Node)Locks.event().read(new LockAction() {
                 public Object run() {
                     return EQReplannedChildren.super.findChild(name);
                 }
             });
         }
         public Node[] getNodes(final boolean optimalResult) {
-            return (Node[])Locks.eventLock().read(new LockAction() {
+            return (Node[])Locks.event().read(new LockAction() {
                 public Object run() {
                     return EQReplannedChildren.super.getNodes(optimalResult);
                 }
             });
         }
         protected void filterChildrenAdded(final NodeMemberEvent ev) {
-            Locks.eventLock().readLater(new Runnable() {
+            Locks.event().readLater(new Runnable() {
                 public void run() {
                     EQReplannedChildren.super.filterChildrenAdded(ev);
                 }
             });
         }
         protected void filterChildrenRemoved(final NodeMemberEvent ev) {
-            Locks.eventLock().readLater(new Runnable() {
+            Locks.event().readLater(new Runnable() {
                 public void run() {
                     EQReplannedChildren.super.filterChildrenRemoved(ev);
                 }
             });
         }
         protected void filterChildrenReordered(final NodeReorderEvent ev) {
-            Locks.eventLock().readLater(new Runnable() {
+            Locks.event().readLater(new Runnable() {
                 public void run() {
                     EQReplannedChildren.super.filterChildrenReordered(ev);
                 }

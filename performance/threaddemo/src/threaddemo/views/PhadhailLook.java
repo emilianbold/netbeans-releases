@@ -188,7 +188,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         Lookup.Result r = (Lookup.Result)ev.getSource();
         final Phadhail ph = (Phadhail)results2Phadhails.get(r);
         assert ph != null;
-        Locks.eventLock().readLater(new Runnable() {
+        Locks.event().readLater(new Runnable() {
             public void run() {
                 fireChange(ph, Look.GET_LOOKUP_ITEMS);
             }
@@ -197,7 +197,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     
     public void childrenChanged(final PhadhailEvent ev) {
         assert ev.getPhadhail().lock().canRead();
-        Locks.eventLock().readLater(new Runnable() {
+        Locks.event().readLater(new Runnable() {
             public void run() {
                 fireChange(ev.getPhadhail(), Look.GET_CHILD_OBJECTS);
             }
@@ -206,7 +206,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     
     public void nameChanged(final PhadhailNameEvent ev) {
         assert ev.getPhadhail().lock().canRead();
-        Locks.eventLock().readLater(new Runnable() {
+        Locks.event().readLater(new Runnable() {
             public void run() {
                 fireChange(ev.getPhadhail(), Look.GET_NAME | Look.GET_DISPLAY_NAME);
             }
@@ -218,7 +218,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         DomProvider p = (DomProvider)e.getSource();
         final Phadhail ph = (Phadhail)domProviders2Phadhails.get(p);
         assert ph != null;
-        Locks.eventLock().readLater(new Runnable() {
+        Locks.event().readLater(new Runnable() {
             public void run() {
                 fireChange(ph, Look.GET_CHILD_OBJECTS);
             }

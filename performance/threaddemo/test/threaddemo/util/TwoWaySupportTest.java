@@ -17,8 +17,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import junit.framework.TestCase;
 import org.openide.util.Mutex;
+import threaddemo.locking.Lock;
+import threaddemo.locking.Locks;
+import threaddemo.locking.PrivilegedLock;
 
-/** Test the two-way support.
+/**
+ * Test the two-way support.
  * @author Jesse Glick
  */
 public class TwoWaySupportTest extends TestCase {
@@ -27,17 +31,17 @@ public class TwoWaySupportTest extends TestCase {
         junit.textui.TestRunner.run(new junit.framework.TestSuite(TwoWaySupportTest.class));
     }
     
-    private Mutex.Privileged p;
+    private PrivilegedLock p;
     private SimpleTWS s;
     
     protected void setUp() throws Exception {
-        p = new Mutex.Privileged();
-        Mutex m = new Mutex(p);
-        s = new SimpleTWS(m);
-        p.enterWriteAccess();
+        p = new PrivilegedLock();
+        Lock l = Locks.readWrite("test", p, 0);
+        s = new SimpleTWS(l);
+        p.enterWrite();
     }
     protected void tearDown() throws Exception {
-        p.exitWriteAccess();
+        p.exitWrite();
     }
     
     public void testBasicDerivation() throws Exception {
@@ -84,8 +88,8 @@ public class TwoWaySupportTest extends TestCase {
         
         private String string = "initial value";
         
-        public SimpleTWS(Mutex m) {
-            super(m);
+        public SimpleTWS(Lock l) {
+            super(l);
         }
         
         public String getString() {

@@ -14,7 +14,7 @@
 package threaddemo.locking;
 
 /**
- * Provides access to DuplexLock's internal methods.
+ * Ability to acquire or release a lock by itself.
  * This class can be used when one wants to avoid creating a
  * bunch of Runnables. Instead use:
  * <pre>
@@ -32,6 +32,7 @@ package threaddemo.locking;
  * the Lock. Thus you may create a PrivilegedLock for efficient access within
  * a package and only expose the lock to outside code, to ensure that it is
  * not abused by being entered and not exited.
+ * @see Lock
  */
 public final class PrivilegedLock {
     

@@ -47,7 +47,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     }
     
     public List getChildren() {
-        return (List)Locks.eventHybridLock().read(new LockAction() {
+        return (List)Locks.eventHybrid().read(new LockAction() {
             public Object run() {
                 return EventHybridLockedPhadhail.super.getChildren();
             }
@@ -55,7 +55,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     }
     
     public String getName() {
-        return (String)Locks.eventHybridLock().read(new LockAction() {
+        return (String)Locks.eventHybrid().read(new LockAction() {
             public Object run() {
                 return EventHybridLockedPhadhail.super.getName();
             }
@@ -63,7 +63,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     }
     
     public String getPath() {
-        return (String)Locks.eventHybridLock().read(new LockAction() {
+        return (String)Locks.eventHybrid().read(new LockAction() {
             public Object run() {
                 return EventHybridLockedPhadhail.super.getPath();
             }
@@ -71,7 +71,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     }
     
     public boolean hasChildren() {
-        return ((Boolean)Locks.eventHybridLock().read(new LockAction() {
+        return ((Boolean)Locks.eventHybrid().read(new LockAction() {
             public Object run() {
                 return EventHybridLockedPhadhail.super.hasChildren() ? Boolean.TRUE : Boolean.FALSE;
             }
@@ -80,7 +80,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     
     public void rename(final String nue) throws IOException {
         try {
-            Locks.eventHybridLock().write(new LockExceptionAction() {
+            Locks.eventHybrid().write(new LockExceptionAction() {
                 public Object run() throws IOException {
                     EventHybridLockedPhadhail.super.rename(nue);
                     return null;
@@ -93,7 +93,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     
     public Phadhail createContainerPhadhail(final String name) throws IOException {
         try {
-            return (Phadhail)Locks.eventHybridLock().write(new LockExceptionAction() {
+            return (Phadhail)Locks.eventHybrid().write(new LockExceptionAction() {
                 public Object run() throws IOException {
                     return EventHybridLockedPhadhail.super.createContainerPhadhail(name);
                 }
@@ -105,7 +105,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     
     public Phadhail createLeafPhadhail(final String name) throws IOException {
         try {
-            return (Phadhail)Locks.eventHybridLock().write(new LockExceptionAction() {
+            return (Phadhail)Locks.eventHybrid().write(new LockExceptionAction() {
                 public Object run() throws IOException {
                     return EventHybridLockedPhadhail.super.createLeafPhadhail(name);
                 }
@@ -117,7 +117,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     
     public void delete() throws IOException {
         try {
-            Locks.eventHybridLock().write(new LockExceptionAction() {
+            Locks.eventHybrid().write(new LockExceptionAction() {
                 public Object run() throws IOException {
                     EventHybridLockedPhadhail.super.delete();
                     return null;
@@ -130,7 +130,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     
     public InputStream getInputStream() throws IOException {
         try {
-            return (InputStream)Locks.eventHybridLock().read(new LockExceptionAction() {
+            return (InputStream)Locks.eventHybrid().read(new LockExceptionAction() {
                 public Object run() throws IOException {
                     return EventHybridLockedPhadhail.super.getInputStream();
                 }
@@ -143,7 +143,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     public OutputStream getOutputStream() throws IOException {
         // See comments in AbstractPhadhail.getOutputStream.
         try {
-            return (OutputStream)Locks.eventHybridLock().read(new LockExceptionAction() {
+            return (OutputStream)Locks.eventHybrid().read(new LockExceptionAction() {
                 public Object run() throws IOException {
                     return EventHybridLockedPhadhail.super.getOutputStream();
                 }
@@ -154,7 +154,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     }
     
     public Lock lock() {
-        return Locks.eventHybridLock();
+        return Locks.eventHybrid();
     }
     
 }

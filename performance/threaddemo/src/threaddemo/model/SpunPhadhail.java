@@ -60,7 +60,7 @@ final class SpunPhadhail extends Spin {
         if (method.getName().equals("toString")) {
             return "SpunPhadhail<" + super.invoke(proxy, method, args) + ">";
         } else if (method.getName().equals("lock")) {
-            return Locks.eventLock();
+            return Locks.event();
         } else {
             // XXX what about hashCode/equals? Should these be thread-safe?
             assert method.getName().endsWith("PhadhailListener") || EventQueue.isDispatchThread() : method.getName();

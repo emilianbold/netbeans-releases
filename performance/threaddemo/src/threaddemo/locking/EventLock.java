@@ -103,12 +103,7 @@ final class EventLock implements Lock {
     }
     
     public void readLater(final Runnable action) {
-        final Object held = ReadWriteLock.findHeldLocksOpaque();
-        invokeLaterLowPriority(this, new Runnable() {
-            public void run() {
-                ReadWriteLock.runWhileHoldingOpaque(held, action);
-            }
-        });
+        invokeLaterLowPriority(this, action);
     }
     
     public Object write(LockAction action) {

@@ -25,8 +25,9 @@ final class MonitorLock implements Lock {
     
     private final Object monitor;
     
-    MonitorLock(Object monitor) {
+    MonitorLock(Object monitor, int level) {
         this.monitor = monitor;
+        // XXX handle level
     }
     
     public boolean canRead() {
@@ -58,17 +59,9 @@ final class MonitorLock implements Lock {
     }
     
     public void readLater(final Runnable action) {
-        final Object held = ReadWriteLock.findHeldLocksOpaque();
         ReadWriteLock.LATER.post(new Runnable() {
             public void run() {
-                // XXX does not re-order monitors...
-                ReadWriteLock.runWhileHoldingOpaque(held, new Runnable() {
-                    public void run() {
-                        synchronized (monitor) {
-                            action.run();
-                        }
-                    }
-                });
+                read(action);
             }
         });
     }

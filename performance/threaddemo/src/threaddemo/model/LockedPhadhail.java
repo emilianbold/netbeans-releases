@@ -30,7 +30,7 @@ final class LockedPhadhail extends AbstractPhadhail {
     
     private static final PrivilegedLock PLOCK = new PrivilegedLock();
     static {
-        Locks.readWriteLock("LP", PLOCK, 0);
+        Locks.readWrite("LP", PLOCK, 0);
     }
     
     private static final Factory FACTORY = new Factory() {

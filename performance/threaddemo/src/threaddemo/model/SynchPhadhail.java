@@ -44,7 +44,7 @@ public class SynchPhadhail extends AbstractPhadhail {
     }
     
     public Lock lock() {
-        return Locks.eventLock();
+        return Locks.event();
     }
     
 }
