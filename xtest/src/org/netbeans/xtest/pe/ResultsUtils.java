@@ -283,12 +283,22 @@ public class ResultsUtils {
     
     
     public static TestBag getTestBag(File testBag) throws Exception {
-        Document doc = getDOMDocFromFile(testBag);
-        XMLBean xmlBean = XMLBean.getXMLBean(doc);    
-        if (xmlBean instanceof TestBag) {
-            return (TestBag)xmlBean;
-        } else {
+        if (!testBag.exists()) {
             return new TestBag();
+        }
+        try {
+            return TestBag.loadFromFile(testBag);
+        } catch (Exception e) {
+            TestBag aTestBag = new TestBag();
+            String testBagID = testBag.getParentFile().getParentFile().getName();
+            aTestBag.setUnexpectedFailure("XTest results reporter installed empty testbag.xml file, because the original one was corrupted. Exception caught :"
+                        +e.getMessage());
+            aTestBag.setBagID(testBagID);
+            aTestBag.setModule("Unknown");
+            aTestBag.setExecutor("Unknown");
+            aTestBag.setName("Unknown");
+            aTestBag.saveXMLBean(testBag);
+            return aTestBag;
         }
     }
     
@@ -307,7 +317,7 @@ public class ResultsUtils {
             int endIndex = suiteFile.getName().lastIndexOf(".xml");
             String suiteName = suiteFile.getName().substring(beginIndex,endIndex);
             aSuite.setName(suiteName);
-            aSuite.setUnexpectedFailure("XTest installed empty suite file, because the original one was corrupted. Exception caught :"
+            aSuite.setUnexpectedFailure("XTest results reporter installed empty suite file, because the original one was corrupted. Exception caught :"
                         +e.getMessage());
             // save the suite
             aSuite.saveXMLBean(suiteFile);
