@@ -21,8 +21,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 
-public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
-{
+public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable {
     private transient Connection con;
     private transient DatabaseMetaData dmd;
     protected Map properties;
@@ -3935,23 +3934,74 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
         properties.put(PROP_CAPITALIZE_USERNAME, newValue);
         propertySupport.firePropertyChange(PROP_CAPITALIZE_USERNAME, oldValue, newValue);
     }
+
+    
+    //JDK 1.4 / JDBC 3.0
+    // workaround to be compilable under JDK 1.4
+    // the following methods don't return real values
+    
+    public ResultSet getAttributes(String catalog, String schemaPattern, String typeNamePattern, String attributeNamePattern) throws SQLException {
+        return null;
+    }
+    
+    public int getDatabaseMajorVersion() throws SQLException {
+        return -1;
+    }
+    
+    public int getDatabaseMinorVersion() throws SQLException {
+        return -1;
+    }
+    
+    public int getJDBCMajorVersion() throws SQLException {
+        return -1;
+    }
+    
+    public int getJDBCMinorVersion() throws SQLException {
+        return -1;
+    }
+    
+    public int getResultSetHoldability() throws SQLException {
+        return -1;
+    }
+    
+    public int getSQLStateType() throws SQLException {
+        return -1;
+    }
+    
+    public ResultSet getSuperTables(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
+        return null;
+    }
+    
+    public ResultSet getSuperTypes(String catalog, String schemaPattern, String typeNamePattern) throws SQLException {
+        return null;
+    }
+    
+    public boolean locatorsUpdateCopy() throws SQLException {
+        return false;
+    }
+    
+    public boolean supportsGetGeneratedKeys() throws SQLException {
+        return false;
+    }
+    
+    public boolean supportsMultipleOpenResults() throws SQLException {
+        return false;
+    }
+    
+    public boolean supportsNamedParameters() throws SQLException {
+        return false;
+    }
+    
+    public boolean supportsResultSetHoldability(int holdability) throws SQLException {
+        return false;
+    }
+    
+    public boolean supportsSavepoints() throws SQLException {
+        return false;
+    }
+    
+    public boolean supportsStatementPooling() throws SQLException {
+        return false;
+    }
+    
 }
-
-
-
-
-/*
- * <<Log>>
- *  9    Gandalf   1.8         3/6/00   Radko Najman    fixed bug #4447
- *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
- *  7    Gandalf   1.6         11/1/99  Radko Najman    dmd.getDatabaseProductName().trim()
- *       
- *  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  5    Gandalf   1.4         9/30/99  Slavek Psenicka 
- *  4    Gandalf   1.3         9/29/99  Slavek Psenicka 
- *  3    Gandalf   1.2         9/15/99  Slavek Psenicka 
- *  2    Gandalf   1.1         9/13/99  Slavek Psenicka 
- *  1    Gandalf   1.0         9/10/99  Slavek Psenicka 
- * $
- */
