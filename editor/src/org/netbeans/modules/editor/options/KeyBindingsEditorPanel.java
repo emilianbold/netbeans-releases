@@ -40,11 +40,16 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
     private String kitClassName;
     private KeyBindingsEditor editor;
     private String defaultActionName;
+    private ButtonGroup sortGroup;
 
     /** Creates new form KeyBindingsEditorPanel */
     public KeyBindingsEditorPanel( KeyBindingsEditor editor ) {
         this.editor = editor;
         initComponents ();
+        // set up ButtonGroup for sort Buttons
+        sortGroup = new ButtonGroup ();
+        sortGroup.add (actionSortRadioButton);
+        sortGroup.add (nameSortRadioButton);
     }
 
     /**
@@ -97,9 +102,19 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         // do we have anything to manage?
         if( acts.length > 0 ) addSequenceButton.setEnabled( true );
 
+        // sort all Actions
+        Arrays.sort (acts);
+        
         actionsList.setListData( acts );
         actionsList.setSelectedIndex( actionIndex );
         updateSequences( 0 );
+        
+        // select the right sort button
+        if (ActionDescriptor.getSortMode () == ActionDescriptor.SORT_BY_ACTION) {
+            actionSortRadioButton.setSelected (true);
+        } else {
+            nameSortRadioButton.setSelected (true);
+        }
     }
 
     private void addKeyBindingList( Map target, Iterator source, boolean inherited ) {
@@ -182,94 +197,148 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         if( editor != null ) editor.customEditorChange();
     }
 
+    private void sortActionsList () {
+        // set sort mode of ActionDescriptor
+        int mode = actionSortRadioButton.isSelected () ? ActionDescriptor.SORT_BY_ACTION
+                                                     : ActionDescriptor.SORT_BY_NAME;
+        ActionDescriptor.setSortMode (mode);
+        ActionDescriptor ad = acts [actionIndex];
+        // resort array
+        Arrays.sort (acts);
+        
+        // refresh list content and select right item
+        int newIndex = 0;
+        for (int x=0; x < acts.length; x++) {
+            if (acts [x] == ad) {
+                newIndex = x;
+                break;
+            }
+        }
+        actionsList.setListData (acts);
+        // note: setListData will call actionsListValueChanged which will set
+        // actionIndex to -1 because the selection is empty.
+        actionIndex = newIndex;
+        actionsList.setSelectedIndex (actionIndex);
+        actionsList.ensureIndexIsVisible (actionIndex);
+        actionsList.requestFocus ();
+    }
+    
     /**
      * Create our visual representation.
      */
-    private void initComponents() {//GEN-BEGIN:initComponents
-        actionsPanel = new javax.swing.JPanel();
-        actionsScrollPane = new javax.swing.JScrollPane();
-        actionsList = new javax.swing.JList();
-        sequencesPanel = new javax.swing.JPanel();
-        sequencesScrollPane = new javax.swing.JScrollPane();
-        sequencesList = new javax.swing.JList();
-        addSequenceButton = new javax.swing.JButton();
-        removeSequenceButton = new javax.swing.JButton();
-        setLayout(new javax.swing.BoxLayout(this, 1));
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+    private void initComponents () {//GEN-BEGIN:initComponents
+        actionsPanel = new javax.swing.JPanel ();
+        actionsScrollPane = new javax.swing.JScrollPane ();
+        actionsList = new javax.swing.JList ();
+        sortButtonsPanel = new javax.swing.JPanel ();
+        nameSortRadioButton = new javax.swing.JRadioButton ();
+        actionSortRadioButton = new javax.swing.JRadioButton ();
+        sequencesPanel = new javax.swing.JPanel ();
+        sequencesScrollPane = new javax.swing.JScrollPane ();
+        sequencesList = new javax.swing.JList ();
+        addSequenceButton = new javax.swing.JButton ();
+        removeSequenceButton = new javax.swing.JButton ();
         
-        actionsPanel.setLayout(new javax.swing.BoxLayout(actionsPanel, 0));
-        actionsPanel.setBorder(new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder( bundle.getString( "KBEP_Actions" ) ), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8) ) ));
+        setLayout (new java.awt.BorderLayout (5, 5));
         
+        setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets (8, 8, 8, 8)));
+        actionsPanel.setLayout (new java.awt.BorderLayout ());
         
-          actionsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-                public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                    actionsListValueChanged(evt);
-                }
+        actionsPanel.setBorder (new javax.swing.border.CompoundBorder ( new javax.swing.border.TitledBorder ( bundle.getString ( "KBEP_Actions" ) ), new javax.swing.border.EmptyBorder (new java.awt.Insets (0, 8, 8, 8) ) ));
+        actionsList.addListSelectionListener (new javax.swing.event.ListSelectionListener () {
+            public void valueChanged (javax.swing.event.ListSelectionEvent evt) {
+                actionsListValueChanged (evt);
             }
-            );
-            actionsScrollPane.setViewportView(actionsList);
-            
-            actionsPanel.add(actionsScrollPane);
-          
-          
-        add(actionsPanel);
+        });
         
+        actionsScrollPane.setViewportView (actionsList);
         
-        sequencesPanel.setLayout(new java.awt.GridBagLayout());
+        actionsPanel.add (actionsScrollPane, java.awt.BorderLayout.CENTER);
+        
+        sortButtonsPanel.setLayout (new java.awt.FlowLayout (java.awt.FlowLayout.LEFT));
+        
+        nameSortRadioButton.setText (bundle.getString ("KBEP_name_sort_button"));
+        nameSortRadioButton.addActionListener (new java.awt.event.ActionListener () {
+            public void actionPerformed (java.awt.event.ActionEvent evt) {
+                nameSortRadioButtonActionPerformed (evt);
+            }
+        });
+        
+        sortButtonsPanel.add (nameSortRadioButton);
+        
+        actionSortRadioButton.setText (bundle.getString ("KBEP_action_sort_button"));
+        actionSortRadioButton.addActionListener (new java.awt.event.ActionListener () {
+            public void actionPerformed (java.awt.event.ActionEvent evt) {
+                actionSortRadioButtonActionPerformed (evt);
+            }
+        });
+        
+        sortButtonsPanel.add (actionSortRadioButton);
+        
+        actionsPanel.add (sortButtonsPanel, java.awt.BorderLayout.NORTH);
+        
+        add (actionsPanel, java.awt.BorderLayout.CENTER);
+        
+        sequencesPanel.setLayout (new java.awt.GridBagLayout ());
         java.awt.GridBagConstraints gridBagConstraints1;
-        sequencesPanel.setBorder(new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder( bundle.getString( "KBEP_Sequences" ) ), new javax.swing.border.EmptyBorder( new java.awt.Insets( 8, 8, 8, 8 ) ) ));
         
-        
-          sequencesList.setCellRenderer(new KeySequenceCellRenderer());
-            sequencesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-                public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                    sequencesListValueChanged(evt);
-                }
+        sequencesPanel.setBorder (new javax.swing.border.CompoundBorder ( new javax.swing.border.TitledBorder ( bundle.getString ( "KBEP_Sequences" ) ), new javax.swing.border.EmptyBorder ( new java.awt.Insets ( 8, 8, 8, 8 ) ) ));
+        sequencesScrollPane.setPreferredSize (new java.awt.Dimension (259, 80));
+        sequencesList.setCellRenderer (new KeySequenceCellRenderer ());
+        sequencesList.addListSelectionListener (new javax.swing.event.ListSelectionListener () {
+            public void valueChanged (javax.swing.event.ListSelectionEvent evt) {
+                sequencesListValueChanged (evt);
             }
-            );
-            sequencesScrollPane.setViewportView(sequencesList);
-            
-            gridBagConstraints1 = new java.awt.GridBagConstraints();
-          gridBagConstraints1.gridheight = 3;
-          gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-          gridBagConstraints1.insets = new java.awt.Insets(0, 0, 0, 8);
-          gridBagConstraints1.weightx = 1.0;
-          gridBagConstraints1.weighty = 1.0;
-          sequencesPanel.add(sequencesScrollPane, gridBagConstraints1);
-          
-          
-        addSequenceButton.setText(bundle.getString( "KBEP_Add" ));
-          addSequenceButton.setEnabled(false);
-          addSequenceButton.addActionListener(new java.awt.event.ActionListener() {
-              public void actionPerformed(java.awt.event.ActionEvent evt) {
-                  addSequenceButtonActionPerformed(evt);
-              }
-          }
-          );
-          gridBagConstraints1 = new java.awt.GridBagConstraints();
-          gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-          gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 0);
-          sequencesPanel.add(addSequenceButton, gridBagConstraints1);
-          
-          
-        removeSequenceButton.setText(bundle.getString( "KBEP_Remove" ));
-          removeSequenceButton.setEnabled(false);
-          removeSequenceButton.addActionListener(new java.awt.event.ActionListener() {
-              public void actionPerformed(java.awt.event.ActionEvent evt) {
-                  removeSequenceButtonActionPerformed(evt);
-              }
-          }
-          );
-          gridBagConstraints1 = new java.awt.GridBagConstraints();
-          gridBagConstraints1.gridx = 1;
-          gridBagConstraints1.gridy = 1;
-          gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-          sequencesPanel.add(removeSequenceButton, gridBagConstraints1);
-          
-          
-        add(sequencesPanel);
+        });
+        
+        sequencesScrollPane.setViewportView (sequencesList);
+        
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.gridheight = 3;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints1.insets = new java.awt.Insets (0, 0, 0, 8);
+        gridBagConstraints1.weightx = 1.0;
+        gridBagConstraints1.weighty = 1.0;
+        sequencesPanel.add (sequencesScrollPane, gridBagConstraints1);
+        
+        addSequenceButton.setText (bundle.getString ( "KBEP_Add" ));
+        addSequenceButton.setEnabled (false);
+        addSequenceButton.addActionListener (new java.awt.event.ActionListener () {
+            public void actionPerformed (java.awt.event.ActionEvent evt) {
+                addSequenceButtonActionPerformed (evt);
+            }
+        });
+        
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints1.insets = new java.awt.Insets (0, 0, 5, 0);
+        sequencesPanel.add (addSequenceButton, gridBagConstraints1);
+        
+        removeSequenceButton.setText (bundle.getString ( "KBEP_Remove" ));
+        removeSequenceButton.setEnabled (false);
+        removeSequenceButton.addActionListener (new java.awt.event.ActionListener () {
+            public void actionPerformed (java.awt.event.ActionEvent evt) {
+                removeSequenceButtonActionPerformed (evt);
+            }
+        });
+        
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.gridx = 1;
+        gridBagConstraints1.gridy = 1;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        sequencesPanel.add (removeSequenceButton, gridBagConstraints1);
+        
+        add (sequencesPanel, java.awt.BorderLayout.SOUTH);
         
     }//GEN-END:initComponents
+
+    private void nameSortRadioButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameSortRadioButtonActionPerformed
+        sortActionsList ();
+    }//GEN-LAST:event_nameSortRadioButtonActionPerformed
+
+    private void actionSortRadioButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionSortRadioButtonActionPerformed
+        sortActionsList ();
+    }//GEN-LAST:event_actionSortRadioButtonActionPerformed
 
     private void sequencesListValueChanged (javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_sequencesListValueChanged
         updateRemoveButton();
@@ -299,6 +368,7 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_removeSequenceButtonActionPerformed
 
     private void actionsListValueChanged (javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_actionsListValueChanged
+        if (actionsList.getSelectedIndex () < 0) return;
         actionIndex = actionsList.getSelectedIndex();
         updateSequences( 0 );
     }//GEN-LAST:event_actionsListValueChanged
@@ -308,6 +378,9 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
     private javax.swing.JPanel actionsPanel;
     private javax.swing.JScrollPane actionsScrollPane;
     private javax.swing.JList actionsList;
+    private javax.swing.JPanel sortButtonsPanel;
+    private javax.swing.JRadioButton nameSortRadioButton;
+    private javax.swing.JRadioButton actionSortRadioButton;
     private javax.swing.JPanel sequencesPanel;
     private javax.swing.JScrollPane sequencesScrollPane;
     private javax.swing.JList sequencesList;
@@ -400,6 +473,11 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
      * As it is private, all members could be directly read.
      */
     private static final class ActionDescriptor implements Comparable {
+        
+        public static final int SORT_BY_ACTION = 0;
+        public static final int SORT_BY_NAME = 1;
+        private static int sortMode = SORT_BY_NAME;
+        
         String name;
         String displayName;
         Vector sequences;
@@ -417,7 +495,18 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
 
         // Naturaly ordered by its name
         public int compareTo( Object o ) {
-            return name.compareTo( ((ActionDescriptor)o).name );
+            if (sortMode == SORT_BY_ACTION) {
+                return name.compareTo( ((ActionDescriptor)o).name );
+            } else {
+                return displayName.compareToIgnoreCase (((ActionDescriptor)o).displayName);
+            }
+        }
+        
+        public static void setSortMode (int sMode) {
+            sortMode = sMode;
+        }
+        public static int getSortMode () {
+            return sortMode;
         }
     }
 
