@@ -577,7 +577,7 @@ The Java Media Framework is separately downloadable.
   </target>
 
     <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all jars necessary + xerces.jar for using standalone filesystems.">
-        <zip compress="true" zipfile="standalone-fs/fs.zip">
+        <zip compress="true" zipfile="standalone-fs/nbfilesystems.zip">
             <fileset dir="netbeans/lib">
                 <include name="openide-fs.jar"/>
                 <include name="openide-util.jar"/>
@@ -589,7 +589,7 @@ The Java Media Framework is separately downloadable.
     </target>
 
     <target  name="standalone-fs-light" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all jars necessary for using standalone filesystems. Without xerces.jar.">
-        <zip compress="true" zipfile="standalone-fs/fs-light.zip">
+        <zip compress="true" zipfile="standalone-fs/nbfilesystems-light.zip">
             <fileset dir="netbeans/lib">
                 <include name="openide-fs.jar"/>
                 <include name="openide-util.jar"/>
