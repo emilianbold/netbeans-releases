@@ -14,6 +14,7 @@
 package org.netbeans.core;
 
 import java.io.File;
+import java.net.URL;
 
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
@@ -91,6 +92,8 @@ public class Plain extends NbTopManager implements Runnable {
 
       // and autoload modules
       ModuleInstaller.autoLoadModules ();
+    } else {
+        ModuleClassLoader.initialize (new URL[] { });
     }
   }
   
