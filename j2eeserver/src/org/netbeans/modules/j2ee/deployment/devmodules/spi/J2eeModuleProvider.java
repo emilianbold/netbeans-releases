@@ -46,17 +46,6 @@ public abstract class J2eeModuleProvider {
     
     public abstract ModuleChangeReporter getModuleChangeReporter ();
     
-    /** A folder that contains the module sources.
-     * <div class="nonnormative">
-     * <p>This folder can be user for example as a location of server specific 
-     * configuration files.</p>
-     * </div>
-     * @deprecated Do not use, will be clean up.
-     */
-    public FileObject getModuleFolder () {
-        return null;
-    }
-    
     public final ConfigSupport getConfigSupport () {
         if (confSupp == null) {
             confSupp = new ConfigSupportImpl (this);
@@ -104,55 +93,26 @@ public abstract class J2eeModuleProvider {
          * @return relative path inside distribution content.
          */
         public String getContentRelativePath(String deploymentConfigurationFileName);
-        /**
-         * Reset configuration storage references to make sure memory reclamation on project close.
-         * NOTE: do not use, will be clean up soon
-         * @deprecated
-         */
-        public void resetStorage();
     }
     
-    /**
-     * Whether to use directory path in storing deployment configuration files.
-     * NOTE: do not use
-     * @deprecated Do not use, will be clean up.
-     */
-    public boolean useDirectoryPath() {
-        return true;
-    }
-
     /**
      * Returns source deployment configuration file path for the given deployment 
      * configuration file name. 
      *
-     * Note: Implementation should override this method and not implement getModuleFolder 
-     * and useDirectoryPath.  For backward compatibility, the default implementation
-     * is based on calls to getModuleFolder and useDirectoryPath which are soon 
-     * to be obsolete.
-     *
      * @param name file name of the deployement configuration file.
      * @return non-null absolute path to the deployment configuration file.
      */
-    public File getDeploymentConfigurationFile(String name) {
-        return getConfigSupportImpl().getConfigurationFO(name);
-    }
+    abstract public File getDeploymentConfigurationFile(String name);
     
     /**
      * Finds source deployment configuration file object for the given deployment 
      * configuration file name.  
      *
-     * Note: Implementation should override this method and not implement getModuleFolder 
-     * and useDirectoryPath.  For backward compatibility, the default implementation
-     * is based on calls to getModuleFolder and useDirectoryPath which are soon 
-     * to be obsolete.
-     *
      * @param name file name of the deployement configuration file.
      * @return FileObject of the configuration descriptor file; null if the file does not exists.
      * 
      */
-    public FileObject findDeploymentConfigurationFile (String name) {
-        return getConfigSupportImpl().findConfigurationFO(name);
-    }
+    abstract public FileObject findDeploymentConfigurationFile (String name);
     
     /**
      * Return destination path-to-source file mappings.

@@ -218,47 +218,6 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         }
     }
     
-    //from J2eeDeploymentLookup:
-    /**
-     * Note this call is temporary for backward compatibility.  Do not use.
-     */
-    public FileObject findConfigurationFO(String name) {
-        if (name == null)
-            return null;
-        
-        FileObject moduleFolder = getProvider().getModuleFolder();
-
-        // should not happen, new project should have ovrridden this method to return non-null.
-        if (moduleFolder == null) {
-            throw new IllegalStateException("J2eeModuleProvider implementation needs to override this method!"); //NOI18N
-        }
-        
-        if (getProvider().useDirectoryPath()) {
-            name = getContentRelativePath(name);
-            if (name == null)
-                return null;
-        }
-        return moduleFolder.getFileObject(name);
-    }
-    /**
-     * Note this call is temporary for backward compatibility.  Do not use.
-     */
-    public File getConfigurationFO(String name) {
-        FileObject moduleFolder = getProvider().getModuleFolder();
-
-        // should not happen, new project should have ovrridden this method to return non-null.
-        if (moduleFolder == null) {
-            throw new IllegalStateException("New J2eeProviderImplementation needs to override this method!"); //NOI18N
-        }
-	
-        String path = getContentRelativePath(name);
-        if (path == null || ! getProvider().useDirectoryPath()) {
-            path = name;
-        }
-        File configFolder = FileUtil.toFile(moduleFolder);
-        return new File(configFolder, path);
-    }
-
     /**
      * This method save configurations in deployment plan in content directory
      * and return the fileobject for the plan.  Primary use is for remote deployment
