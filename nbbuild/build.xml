@@ -1299,11 +1299,11 @@ the ${netbeans.dest}/bin/ directory.
 
   <target name="zipclusters" depends="init">
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
-    <mkdir dir="${netbeans.build.dir}"/>
+    <mkdir dir="${netbeans.build.dir}/zips"/>
     <repeat target="zip-one-cluster" name="one.cluster.name" values="${clusters.list}" /> 
 
     <!-- package the misc files -->
-    <zip destfile="${netbeans.build.dir}/${clusters.prefix}-misc-${buildnum}.zip" update="true" duplicate="preserve">
+    <zip destfile="${netbeans.build.dir}/zips/${clusters.prefix}-misc-${buildnum}.zip" update="true" duplicate="preserve">
       <zipfileset file="${netbeans.dest}/bin/netbeans" filemode="755" prefix="bin"/>
       <zipfileset dir="${netbeans.dest}/bin" prefix="bin"/>
       <zipfileset dir="${netbeans.dest}/etc" prefix="etc"/>
@@ -1322,7 +1322,7 @@ the ${netbeans.dest}/bin/ directory.
     <setclusterpatternset cluster="${one.cluster.name}" name="${one.cluster.name}.files" trackingpath="${netbeans.dest.dir}" clusterdir="${one.cluster.dir}"/>
     
     <resolve name="zipcluster.file" property="${one.cluster.name}.pkg.filename"/>
-    <zip destfile="${netbeans.build.dir}/${clusters.prefix}-${zipcluster.file}-${buildnum}.zip" update="true" duplicate="preserve">
+    <zip destfile="${netbeans.build.dir}/zips/${clusters.prefix}-${zipcluster.file}-${buildnum}.zip" update="true" duplicate="preserve">
       <zipfileset dir="${netbeans.dest.dir}" filemode="755">
         <include name="${one.cluster.dir}/${nb.bin.dir}/nbexec"/>
       </zipfileset>
