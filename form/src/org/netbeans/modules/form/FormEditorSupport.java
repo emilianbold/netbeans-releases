@@ -191,7 +191,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
   private void saveForm () {
     if (formLoaded) {
+      formManager.fireFormToBeSaved ();
       TuborgPersistenceManager perMan = new TuborgPersistenceManager ();
+//      GandalfPersistenceManager perMan = new GandalfPersistenceManager ();
       FileObject formFile = formObject.getFormEntry ().getFile ();
       try {
         perMan.saveForm (formObject, formManager);
@@ -228,6 +230,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  20   Gandalf   1.19        7/3/99   Ian Formanek    Fires formToBeSaved 
+ *       before saving...
  *  19   Gandalf   1.18        6/10/99  Ian Formanek    Fixed bug which caused 
  *       that forms saved using "Compile" saved only the source and not the form
  *  18   Gandalf   1.17        6/10/99  Ian Formanek    Patched bug which 
