@@ -177,9 +177,9 @@ public class WebProjectProperties {
     DefaultTableModel SOURCE_ROOTS_MODEL;
     DefaultTableModel TEST_ROOTS_MODEL;
     Document WEB_DOCBASE_DIR_MODEL;
-     
-    // CustomizerLibraries
     ComboBoxModel JAVAC_SOURCE_MODEL;
+
+    // CustomizerLibraries
     ClassPathUiSupport.ClassPathTableModel JAVAC_CLASSPATH_MODEL;
     DefaultListModel JAVAC_TEST_CLASSPATH_MODEL;
     DefaultListModel RUN_TEST_CLASSPATH_MODEL;
@@ -198,7 +198,6 @@ public class WebProjectProperties {
     Document WAR_NAME_MODEL; 
     Document BUILD_CLASSES_EXCLUDES_MODEL;
     ButtonModel WAR_COMPRESS_MODEL;
-//    WarIncludesUi.ClassPathTableCellItemRenderer WAR_INCLUDES_TABLE_ITEM_RENDERER;
     WarIncludesUiSupport.ClasspathTableModel WAR_CONTENT_ADDITIONAL_MODEL;
 
     // CustomizerJavadoc
@@ -257,7 +256,6 @@ public class WebProjectProperties {
         
         CLASS_PATH_LIST_RENDERER = new WebClassPathUi.ClassPathListCellRenderer( evaluator );
         CLASS_PATH_TABLE_ITEM_RENDERER = new WebClassPathUi.ClassPathTableCellItemRenderer( evaluator );
-//        WAR_INCLUDES_TABLE_ITEM_RENDERER = new WarIncludesUi.ClassPathTableCellItemRenderer( evaluator );
         
         // CustomizerSources
         SOURCE_ROOTS_MODEL = WebSourceRootsUi.createModel( project.getSourceRoots() );
@@ -268,7 +266,6 @@ public class WebProjectProperties {
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                
         EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
 
-//        JAVAC_CLASSPATH_MODEL = ClassPathUiSupport.createTableModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_CLASSPATH ), ClassPathSupport.Item.PATH_IN_WAR_LIB ) );
         JAVAC_CLASSPATH_MODEL = ClassPathUiSupport.createTableModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_CLASSPATH ), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES) );
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_TEST_CLASSPATH ), null ) );
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
@@ -286,7 +283,6 @@ public class WebProjectProperties {
         WAR_NAME_MODEL = projectGroup.createStringDocument( evaluator, WAR_NAME );
         BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
         WAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, WAR_COMPRESS );
-//        WAR_CONTENT_ADDITIONAL_MODEL = WarIncludesUiSupport.createTableModel( cs.itemsIterator( (String)projectProperties.get( WAR_CONTENT_ADDITIONAL ), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
         WAR_CONTENT_ADDITIONAL_MODEL = WarIncludesUiSupport.createTableModel( cs.itemsList( (String)projectProperties.get( WAR_CONTENT_ADDITIONAL ), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
 
         // CustomizerJavadoc
@@ -369,12 +365,12 @@ public class WebProjectProperties {
         
         //Handle platform selection
         SpecificationVersion sourceLevel = (SpecificationVersion) JAVAC_SOURCE_MODEL.getSelectedItem();
-        PlatformUiSupport.storePlatform (projectProperties, updateHelper, (String) PLATFORM_MODEL.getSelectedItem());
-                
+        PlatformUiSupport.storePlatform (projectProperties, updateHelper, (String) PLATFORM_MODEL.getSelectedItem(), sourceLevel);
+
         //Save javac.source
-        if (JAVAC_SOURCE_MODEL.getSelectedItem()!=null) {
+        if (sourceLevel!=null) {
             //Not broken platform
-            projectProperties.setProperty(JAVAC_SOURCE, JAVAC_SOURCE_MODEL.getSelectedItem().toString());
+            projectProperties.setProperty(JAVAC_SOURCE, sourceLevel.toString());
         }
 
         // Handle other special cases
@@ -549,7 +545,15 @@ public class WebProjectProperties {
     }
 
     public Object get(String propertyName) {
-        return evaluator.getProperty(propertyName);
+        EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
+        EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
+
+        if (J2EE_SERVER_INSTANCE.equals(propertyName))
+            return privateProperties.getProperty(J2EE_SERVER_INSTANCE);
+        else
+            return projectProperties.getProperty(propertyName);
+        
+//        return evaluator.getProperty(propertyName);
     }
 
     public void put( String propertyName, Object value ) {

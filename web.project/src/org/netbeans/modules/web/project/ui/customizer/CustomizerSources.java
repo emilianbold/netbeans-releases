@@ -16,6 +16,8 @@ package org.netbeans.modules.web.project.ui.customizer;
 import java.io.File;
 
 import javax.swing.JFileChooser;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -42,7 +44,9 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         
         sourceRoots.setModel( uiProperties.SOURCE_ROOTS_MODEL );
         testRoots.setModel( uiProperties.TEST_ROOTS_MODEL );
-        
+        sourceRoots.getTableHeader().setReorderingAllowed(false);
+        testRoots.getTableHeader().setReorderingAllowed(false);
+
         FileObject projectFolder = uiProperties.getProject().getProjectDirectory();
         File pf = FileUtil.toFile( projectFolder );
         this.projectLocation.setText( pf == null ? "" : pf.getPath() ); // NOI18N
@@ -72,12 +76,31 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );
         
+        this.jComboBoxSourceLevel.setModel(uiProperties.JAVAC_SOURCE_MODEL);        
+        uiProperties.JAVAC_SOURCE_MODEL.addListDataListener(new ListDataListener () {
+            public void intervalAdded(ListDataEvent e) {
+                enableSourceLevel ();
+            }
+
+            public void intervalRemoved(ListDataEvent e) {
+                enableSourceLevel ();
+            }
+
+            public void contentsChanged(ListDataEvent e) {
+                enableSourceLevel ();
+            }                                    
+        });
+        enableSourceLevel ();
     }
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx (CustomizerSources.class);
     }
     
+    private void enableSourceLevel () {
+        this.jComboBoxSourceLevel.setEnabled(jComboBoxSourceLevel.getItemCount()>0);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -107,6 +130,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         removeTestRoot = new javax.swing.JButton();
         upTestRoot = new javax.swing.JButton();
         downTestRoot = new javax.swing.JButton();
+        jLabelSourceLevel = new javax.swing.JLabel();
+        jComboBoxSourceLevel = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -346,13 +371,34 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.45;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(testRootsPanel, gridBagConstraints);
+
+        jLabelSourceLevel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "MNE_SourceLevel").charAt(0));
+        jLabelSourceLevel.setLabelFor(jComboBoxSourceLevel);
+        jLabelSourceLevel.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "TXT_SourceLevel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
+        add(jLabelSourceLevel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(jComboBoxSourceLevel, gridBagConstraints);
+        jComboBoxSourceLevel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AN_SourceLevel"));
+        jComboBoxSourceLevel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AD_SourceLevel"));
 
     }//GEN-END:initComponents
 
@@ -378,9 +424,11 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JButton downSourceRoot;
     private javax.swing.JButton downTestRoot;
     private javax.swing.JButton jButtonBrowse;
+    private javax.swing.JComboBox jComboBoxSourceLevel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabelSourceLevel;
     private javax.swing.JLabel jLabelWebPages;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

@@ -294,7 +294,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
             new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
-            new SourceLevelQueryImpl(this.helper, evaluator()),
+            new SourceLevelQueryImpl(evaluator()),
             new WebSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new WebSharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl(this.updateHelper),
@@ -578,29 +578,29 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             try {
                 //Check libraries and add them to classpath automatically
                 String libFolderName = helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.LIBRARIES_DIR);
-                WebProjectProperties wpp = getWebProjectProperties();
-                    //DDDataObject initialization to be ready to listen on changes (#45771)
-                    try {
-                        FileObject ddFO = webModule.getDeploymentDescriptor();
-                        if (ddFO != null) {
-                            DataObject dobj = DataObject.find(ddFO);
-                        }
-                    } catch (org.openide.loaders.DataObjectNotFoundException ex) {}
-                if (libFolderName != null && helper.resolveFile (libFolderName).isDirectory ()) {
-                    List cpItems = (List) wpp.get (WebProjectProperties.JAVAC_CLASSPATH);
-                    FileObject libFolder = helper.resolveFileObject(libFolderName);
-                    FileObject libs [] = libFolder.getChildren ();
-                    boolean anyChanged = false;
-                    for (int i = 0; i < libs.length; i++) {
-                        anyChanged = addLibrary (cpItems, libs [i]) || anyChanged;
+                
+                //DDDataObject initialization to be ready to listen on changes (#45771)
+                try {
+                    FileObject ddFO = webModule.getDeploymentDescriptor();
+                    if (ddFO != null) {
+                        DataObject dobj = DataObject.find(ddFO);
                     }
-                    if (anyChanged) {
-                        wpp.put (WebProjectProperties.JAVAC_CLASSPATH, cpItems);
-                        wpp.store ();
-                        ProjectManager.getDefault ().saveProject (WebProject.this);
-                    }
-                    libFolder.addFileChangeListener (WebProject.this);
+                } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                    //PENDING
                 }
+                
+                if (libFolderName != null && helper.resolveFile (libFolderName).isDirectory ()) {
+                    WebProjectClassPathExtender cpExt = (WebProjectClassPathExtender) WebProject.this.getLookup().lookup(WebProjectClassPathExtender.class);
+                    libFolder = helper.resolveFileObject(libFolderName);
+                    if (cpExt != null) {
+                        FileObject libs [] = libFolder.getChildren ();
+                        cpExt.addArchiveFiles(WebProjectProperties.JAVAC_CLASSPATH, libs, ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+                        libFolder.addFileChangeListener (WebProject.this);
+                    }
+                    else
+                        ErrorManager.getDefault().log("Cannot find WebProjectClassPathExtender in the lookup of the project " + WebProject.this.getProjectDirectory() + "."); // NOI18N
+                }
+
                 // Register copy on save support
                 css.initialize();
                 
@@ -616,21 +616,23 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                         GeneratedFilesHelper.BUILD_XML_PATH,
                         WebProject.class.getResource("resources/build.xsl"),
                         true);
-                    String servInstID = (String)wpp.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
+                    
+                    
+                    EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
+                    EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );                    
+                    String servInstID = (String) privateProperties.getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
                     J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
                     if (platform != null) {
                         // updates j2ee.platform.cp & wscompile.cp & reg. j2ee platform listener
-                        wpp.put(WebProjectProperties.J2EE_SERVER_INSTANCE, servInstID);
-                        wpp.store();
+                        privateProperties.setProperty(WebProjectProperties.J2EE_SERVER_INSTANCE, servInstID);
                     } else {
                         // if there is some server instance of the type which was used
                         // previously do not ask and use it
-                        String serverType = (String)wpp.get(WebProjectProperties.J2EE_SERVER_TYPE);
+                        String serverType = (String) projectProperties.get(WebProjectProperties.J2EE_SERVER_TYPE);
                         if (serverType != null) {
                             String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
                             if (servInstIDs.length > 0) {
-                                wpp.put(WebProjectProperties.J2EE_SERVER_INSTANCE, servInstIDs[0]);
-                                wpp.store();
+                                privateProperties.setProperty(WebProjectProperties.J2EE_SERVER_INSTANCE, servInstIDs[0]);
                                 platform = Deployment.getDefault().getJ2eePlatform(servInstIDs[0]);
                             }
                         }
@@ -638,6 +640,9 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                             BrokenServerSupport.showAlert();
                         }
                     }
+                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                    updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+
                 }
                 
             } catch (IOException e) {
