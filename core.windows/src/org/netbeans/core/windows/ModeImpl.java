@@ -40,6 +40,8 @@ public final class ModeImpl implements Mode {
     
     /** asociated property change support for firing property changes */
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+
+    private static boolean DEBUG = Debug.isLoggable(ModeImpl.class);
     
     
     /** Construct new mode with given properties */
@@ -186,8 +188,10 @@ public final class ModeImpl implements Mode {
      * will be selected afterwards
      * @return true if top component was succesfully docked to this */
     private boolean dockIntoImpl(final TopComponent tc, final boolean select) {
-        Debug.log(ModeImpl.class, "Docking tc=" + tc.getName() + " into mode=" + this); // NOI18N
-        Debug.dumpStack(ModeImpl.class);
+        if(DEBUG) {
+            Debug.log(ModeImpl.class, "Docking tc=" + tc.getName() + " into mode=" + this); // NOI18N
+            Debug.dumpStack(ModeImpl.class);
+        }
         
         // PENDING
         // Preferably all in one step.

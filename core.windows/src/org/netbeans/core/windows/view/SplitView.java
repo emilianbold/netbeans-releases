@@ -43,6 +43,10 @@ public class SplitView extends ViewElement {
     
     private JSplitPane splitPane;
     
+    /** Debugging flag. */
+    private static boolean DEBUG = Debug.isLoggable(SplitView.class);
+
+    
     
     public SplitView(Controller controller, double resizeWeight,
     int orientation, double location, ViewElement first, ViewElement second) {
@@ -179,12 +183,14 @@ public class SplitView extends ViewElement {
             splitPosition = (int)(realSize.width * location);
         }
 
-        debug(""); // NOI18N
-        debug("Initing split=" + this); // NOI18N
-        debug("location=" + location); // NOI18N
-        debug("size=" + realSize); // NOI18N
-        debug("old position=" + getSplitPane().getDividerLocation()); // NOI18N
-        debug("location=" + splitPosition); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("Initing split=" + this); // NOI18N
+            debugLog("location=" + location); // NOI18N
+            debugLog("size=" + realSize); // NOI18N
+            debugLog("old position=" + getSplitPane().getDividerLocation()); // NOI18N
+            debugLog("location=" + splitPosition); // NOI18N
+        }
         
         // XXX SplitPane needs to be valid when setting divider position.
         // Have a look at #4188905, #4182558 etc. in BugParade.
@@ -199,7 +205,7 @@ public class SplitView extends ViewElement {
         return super.toString() + "[first=" + str1 + ", second=" + str2 + "]"; // NOI18N
     }
 
-    private static void debug(String message) {
+    private static void debugLog(String message) {
         Debug.log(SplitView.class, message);
     }
 }

@@ -42,6 +42,10 @@ import org.netbeans.core.windows.WindowSystemSnapshot;
  */
 final class ViewHelper {
     
+    /** Debugging flag. */
+    private static boolean DEBUG = Debug.isLoggable(ViewHelper.class);
+    
+    
     /** Creates a new instance of ViewHelper */
     private ViewHelper() {
     }
@@ -230,14 +234,18 @@ final class ViewHelper {
                 nextVisibleWeights += ((Double)visibleChild2refinedWeight.get(next)).doubleValue();
             }
             
-            debugLog(""); // NOI18N
-            debugLog("Computing split"); // NOI18N
-            debugLog("firstSplitWeight=" + firstSplitWeight); // NOI18N
-            debugLog("nextVisibleWeigths=" + nextVisibleWeights); // NOI18N
-
+            if(DEBUG) {
+                debugLog(""); // NOI18N
+                debugLog("Computing split"); // NOI18N
+                debugLog("firstSplitWeight=" + firstSplitWeight); // NOI18N
+                debugLog("nextVisibleWeigths=" + nextVisibleWeights); // NOI18N
+            }
+            
             // Compute split position.
             double splitPosition = firstSplitWeight/(firstSplitWeight + nextVisibleWeights);
-            debugLog("splitPosition=" + splitPosition); // NOI18N
+            if(DEBUG) {
+                debugLog("splitPosition=" + splitPosition); // NOI18N
+            }
 
             se = new ModeStructureAccessorImpl.SplitAccessorImpl(
                 first.getOriginator(), splitSnapshot, orientation, splitPosition, firstAccessor, secondAccessor, splitSnapshot.getResizeWeight());
@@ -331,28 +339,34 @@ final class ViewHelper {
             nextVisibleWeights += ((Double)visibleChild2refinedWeight.get(snapshot)).doubleValue();
         }
         
-        debugLog(""); // NOI18N
-        debugLog("location=" + location); // NOI18N
-        debugLog("first=" + first); // NOI18N
-        debugLog("second=" + second); // NOI18N
-        debugLog("1st original=" + firstWeight); // NOI18N
-        debugLog("2nd original=" + secondWeight); // NOI18N
-        debugLog("nextAllWeights=" + nextVisibleWeights); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("location=" + location); // NOI18N
+            debugLog("first=" + first); // NOI18N
+            debugLog("second=" + second); // NOI18N
+            debugLog("1st original=" + firstWeight); // NOI18N
+            debugLog("2nd original=" + secondWeight); // NOI18N
+            debugLog("nextAllWeights=" + nextVisibleWeights); // NOI18N
+        }
 
         // What value has to be added from second to first weight
         // (if it is vice versa the value has minus sign).
         double delta = location * (firstWeight + nextVisibleWeights) - firstWeight;
 
-        debugLog(""); // NOI18N
-        debugLog("delta=" + delta); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("delta=" + delta); // NOI18N
+        }
         
         double littleSum = firstWeight + secondWeight;
         
         firstWeight += delta;
         secondWeight -= delta;
         
-        debugLog("1st after=" + firstWeight); // NOI18N
-        debugLog("2nd after=" + secondWeight); // NOI18N
+        if(DEBUG) {
+            debugLog("1st after=" + firstWeight); // NOI18N
+            debugLog("2nd after=" + secondWeight); // NOI18N
+        }
         
         // Substract the invisible weights.
         if(visibleResizeWeights > 0D) {
@@ -360,8 +374,10 @@ final class ViewHelper {
             secondWeight = secondWeight - ((second.getResizeWeight() / visibleResizeWeights) * invisibleWeights);
         }
         
-        debugLog("1st after validation=" + firstWeight + ",\t originator=" + first.getOriginator()); // NOI18N
-        debugLog("2nd after validation=" + secondWeight + ",\t originator=" + second.getOriginator()); // NOI18N
+        if(DEBUG) {
+            debugLog("1st after validation=" + firstWeight + ",\t originator=" + first.getOriginator()); // NOI18N
+            debugLog("2nd after validation=" + secondWeight + ",\t originator=" + second.getOriginator()); // NOI18N
+        }
         
         controllerHandler.userChangedSplit(first.getOriginator(), firstWeight, second.getOriginator(), secondWeight);
         

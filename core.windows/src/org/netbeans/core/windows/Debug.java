@@ -32,6 +32,11 @@ public abstract class Debug {
     private Debug() {
     }
     
+    
+    public static boolean isLoggable(Class clazz) {
+        return ErrorManager.getDefault().getInstance(clazz.getName()).isLoggable(ErrorManager.INFORMATIONAL);
+    }
+    
     /** Logs debug message depending whether the logging is required based on class name.
      * @see org.openide.ErrorManager.getInstance(String) */
     public static void log(Class clazz, String message) {

@@ -54,10 +54,11 @@ final class PersistenceHandler implements PersistenceObserver {
     private final Map name2mode = new WeakHashMap(10);
     /** Maps group config name to group instance. */
     private final Map name2group = new WeakHashMap(10);
-//    /** Mpas TopComponent id to TopComponent instance. */
-//    private final Map id2tc = new WeakHashMap(10);
 
     private static PersistenceHandler defaultInstance;
+
+    /** Debugging flag. */
+    private static boolean DEBUG = Debug.isLoggable(PersistenceHandler.class);
     
     
     /** Creates a new instance of PersistenceHanlder */
@@ -95,7 +96,9 @@ final class PersistenceHandler implements PersistenceObserver {
     }
     
     private synchronized void load(boolean projectLoading) {
-        debugLog("## PersistenceHandler.load"); // NOI18N
+        if(DEBUG) {
+            debugLog("## PersistenceHandler.load"); // NOI18N
+        }
         
         WindowManagerConfig wmc = PersistenceManager.getDefault().loadWindowSystem();
 
@@ -252,14 +255,18 @@ final class PersistenceHandler implements PersistenceObserver {
     
     /** Implements <code>NbTopManager.WindowSystem</code> interface method. */
     public synchronized void save() {
-        debugLog("## PersistenceHandler.save"); // NOI18N
+        if(DEBUG) {
+            debugLog("## PersistenceHandler.save"); // NOI18N
+        }
         
         WindowManagerConfig wmc = getConfig();
         PersistenceManager.getDefault().saveWindowSystem(wmc);
     }
 
     private ModeImpl getModeFromConfig(ModeConfig mc) {
-        debugLog("Getting mode name=" + mc.name);
+        if(DEBUG) {
+            debugLog("Getting mode name=" + mc.name);
+        }
 
         ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(mc.name);
         if(mode == null) {
@@ -270,8 +277,10 @@ final class PersistenceHandler implements PersistenceObserver {
     }
     
     private ModeImpl createModeFromConfig(ModeConfig mc) {
-        debugLog(""); // NOI18N
-        debugLog("Creating mode name=\"" + mc.name + "\""); // NOI8N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("Creating mode name=\"" + mc.name + "\""); // NOI8N
+        }
         
         ModeImpl mode = WindowManagerImpl.getInstance().createMode(
             mc.name, mc.kind, mc.permanent, mc.constraints);
@@ -285,8 +294,10 @@ final class PersistenceHandler implements PersistenceObserver {
     private ModeImpl initModeFromConfig(ModeImpl mode, ModeConfig mc) {
         for (int j = 0; j < mc.tcRefConfigs.length; j++) {
             TCRefConfig tcRefConfig = (TCRefConfig) mc.tcRefConfigs[j];
-            debugLog("\tTopComponent[" + j + "] id=\"" // NOI18N
-                + tcRefConfig.tc_id + "\", \topened=" + tcRefConfig.opened); // NOI18N
+            if(DEBUG) {
+                debugLog("\tTopComponent[" + j + "] id=\"" // NOI18N
+                    + tcRefConfig.tc_id + "\", \topened=" + tcRefConfig.opened); // NOI18N
+            }
 
             // PENDING
             if (tcRefConfig.opened) {
@@ -324,14 +335,18 @@ final class PersistenceHandler implements PersistenceObserver {
         
         long start = System.currentTimeMillis();
         TopComponent tc = PersistenceManager.getDefault().getTopComponentForID(tc_id);
-        debugLog("***Getting TopComponent for ID=" + tc_id + " in " + (System.currentTimeMillis() - start) + " ms"); // NOI18N
+        if(DEBUG) {
+            debugLog("***Getting TopComponent for ID=" + tc_id + " in " + (System.currentTimeMillis() - start) + " ms"); // NOI18N
+        }
         
         return tc;
     }
     
     private TopComponentGroupImpl createTopComponentGroupFromConfig(GroupConfig groupCfg) {
-        debugLog(""); // NOI18N
-        debugLog("Creating group name=\"" + groupCfg.name + "\" \t[opened=" + groupCfg.opened + "]"); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("Creating group name=\"" + groupCfg.name + "\" \t[opened=" + groupCfg.opened + "]"); // NOI18N
+        }
         
         TopComponentGroupImpl tcGroup = new TopComponentGroupImpl(groupCfg.name, groupCfg.opened);
 
@@ -339,9 +354,11 @@ final class PersistenceHandler implements PersistenceObserver {
         
         for (int j = 0; j < groupCfg.tcGroupConfigs.length; j++) {
             TCGroupConfig tcGroupCfg = groupCfg.tcGroupConfigs[j];
-            debugLog("\tTopComponent[" + j + "] id=\"" // NOI18N
-                + tcGroupCfg.tc_id + "\", \topen=" + tcGroupCfg.open + ", \tclose=" + tcGroupCfg.close
-                + ", \twasOpened=" + tcGroupCfg.wasOpened); // NOI18N
+            if(DEBUG) {
+                debugLog("\tTopComponent[" + j + "] id=\"" // NOI18N
+                    + tcGroupCfg.tc_id + "\", \topen=" + tcGroupCfg.open + ", \tclose=" + tcGroupCfg.close
+                    + ", \twasOpened=" + tcGroupCfg.wasOpened); // NOI18N
+            }
 
             tcGroup.addUnloadedTopComponent(tcGroupCfg.tc_id);
 
@@ -371,45 +388,65 @@ final class PersistenceHandler implements PersistenceObserver {
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
         
         Rectangle joinedBounds = wmi.getMainWindowBoundsJoined();
-        debugLog("joinedBouds=" + joinedBounds); // NOI18N
+        if(DEBUG) {
+            debugLog("joinedBouds=" + joinedBounds); // NOI18N
+        }
         wmc.xJoined      = joinedBounds.x;
         wmc.yJoined      = joinedBounds.y;
         wmc.widthJoined  = joinedBounds.width;
         wmc.heightJoined = joinedBounds.height;
         Rectangle separatedBounds = wmi.getMainWindowBoundsSeparated();
-        debugLog("separatedBounds=" + separatedBounds); // NOI18N
+        if(DEBUG) {
+            debugLog("separatedBounds=" + separatedBounds); // NOI18N
+        }
         wmc.xSeparated      = separatedBounds.x;
         wmc.ySeparated      = separatedBounds.y;
         wmc.widthSeparated  = separatedBounds.width;
         wmc.heightSeparated = separatedBounds.height;
         
         wmc.mainWindowFrameStateJoined = wmi.getMainWindowFrameStateJoined();
-        debugLog("mainWindowFrameStateJoined=" + wmc.mainWindowFrameStateJoined); // NOI18N
+        if(DEBUG) {
+            debugLog("mainWindowFrameStateJoined=" + wmc.mainWindowFrameStateJoined); // NOI18N
+        }
         wmc.mainWindowFrameStateSeparated = wmi.getMainWindowFrameStateSeparated();
-        debugLog("mainWindowFrameStateSeparated=" + wmc.mainWindowFrameStateSeparated); // NOI18N
+        if(DEBUG) {
+            debugLog("mainWindowFrameStateSeparated=" + wmc.mainWindowFrameStateSeparated); // NOI18N
+        }
 
         wmc.editorAreaState = wmi.getEditorAreaState();
-        debugLog("editorAreaState=" + wmc.editorAreaState); // NOI18N
+        if(DEBUG) {
+            debugLog("editorAreaState=" + wmc.editorAreaState); // NOI18N
+        }
         wmc.editorAreaBounds = wmi.getEditorAreaBounds();
-        debugLog("editorAreaBounds=" + wmc.editorAreaBounds); // NOI18N
+        if(DEBUG) {
+            debugLog("editorAreaBounds=" + wmc.editorAreaBounds); // NOI18N
+        }
         wmc.editorAreaConstraints = wmi.getEditorAreaConstraints();
-        debugLog("editorAreaConstraints=" + wmc.editorAreaConstraints); // NOI18N
+        if(DEBUG) {
+            debugLog("editorAreaConstraints=" + wmc.editorAreaConstraints); // NOI18N
+        }
         wmc.screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         
         ModeImpl mo = wmi.getActiveMode();
-        debugLog("active mode=" + mo); // NOI18N
+        if(DEBUG) {
+            debugLog("active mode=" + mo); // NOI18N
+        }
         if (mo != null) {
             wmc.activeModeName = mo.getName();
         }
         
         mo = wmi.getMaximizedMode();
-        debugLog("maximized mode=" + mo); // NOI18N
+        if(DEBUG) {
+            debugLog("maximized mode=" + mo); // NOI18N
+        }
         if (mo != null) {
             wmc.maximizedModeName = mo.getName();
         }
         
         wmc.toolbarConfiguration = wmi.getToolbarConfigName();
-        debugLog("toolbarConfiguration=" + wmc.toolbarConfiguration); // NOI18N
+        if(DEBUG) {
+            debugLog("toolbarConfiguration=" + wmc.toolbarConfiguration); // NOI18N
+        }
         
         // Modes.
         Set modeSet = wmi.getModes();
@@ -447,15 +484,23 @@ final class PersistenceHandler implements PersistenceObserver {
         WindowManager wm = WindowManager.getDefault();
         ModeConfig modeCfg = new ModeConfig();
         modeCfg.name = mode.getName();
-        debugLog(""); // NOI18N
-        debugLog("mode name=" + modeCfg.name); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("mode name=" + modeCfg.name); // NOI18N
+        }
         modeCfg.state = mode.getState();
-        debugLog("mode state=" + modeCfg.state); // NOI18N
+        if(DEBUG) {
+            debugLog("mode state=" + modeCfg.state); // NOI18N
+        }
         
         modeCfg.kind = mode.getKind();
-        debugLog("mode kind=" + modeCfg.kind); // NOI18N
+        if(DEBUG) {
+            debugLog("mode kind=" + modeCfg.kind); // NOI18N
+        }
         modeCfg.constraints = mode.getConstraints();
-        debugLog("mode constraints=" + modeCfg.constraints); // NOI18N
+        if(DEBUG) {
+            debugLog("mode constraints=" + modeCfg.constraints); // NOI18N
+        }
         // PENDING Whether to save relative or absolute bounds.
         // In case of relative, they would need to be computed.
         Rectangle relBounds = null;
@@ -463,21 +508,29 @@ final class PersistenceHandler implements PersistenceObserver {
             modeCfg.relativeBounds = relBounds;
         } else {
             modeCfg.bounds = mode.getBounds();
-            debugLog("mode bounds=" + modeCfg.bounds); // NOI18N
+            if(DEBUG) {
+                debugLog("mode bounds=" + modeCfg.bounds); // NOI18N
+            }
         }
         modeCfg.frameState = mode.getFrameState();
-        debugLog("mode frame state=" + modeCfg.frameState); // NOI18N
+        if(DEBUG) {
+            debugLog("mode frame state=" + modeCfg.frameState); // NOI18N
+        }
         
         TopComponent selectedTC = mode.getSelectedTopComponent();
         if(selectedTC != null) {
             if (pm.isTopComponentPersistent(selectedTC)) {
                 String tc_id = wm.findTopComponentID(selectedTC);
-                debugLog("selected tc=" + selectedTC.getName()); // NOI18N
+                if(DEBUG) {
+                    debugLog("selected tc=" + selectedTC.getName()); // NOI18N
+                }
                 modeCfg.selectedTopComponentID = tc_id;
             }
         }
         modeCfg.permanent = mode.isPermanent();
-        debugLog("mode permanent=" + modeCfg.permanent); // NOI18N
+        if(DEBUG) {
+            debugLog("mode permanent=" + modeCfg.permanent); // NOI18N
+        }
         
         // TopComponents:
         List tcRefCfgList = new ArrayList();
@@ -493,7 +546,9 @@ final class PersistenceHandler implements PersistenceObserver {
                 }
             }
 
-            debugLog("tc ID=" + tcID); // NOI18N
+            if(DEBUG) {
+                debugLog("tc ID=" + tcID); // NOI18N
+            }
             TCRefConfig tcRefCfg = new TCRefConfig();
             tcRefCfg.tc_id = tcID;
             tcRefCfg.opened = opened;
@@ -508,8 +563,10 @@ final class PersistenceHandler implements PersistenceObserver {
         GroupConfig groupCfg = new GroupConfig();
         groupCfg.name = tcGroup.getName();
         groupCfg.opened = tcGroup.isOpened();
-        debugLog(""); // NOI18N
-        debugLog("group name=" + groupCfg.name); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("group name=" + groupCfg.name); // NOI18N
+        }
         Set openSet = tcGroup.getOpeningSetIDs();
         Set closeSet = tcGroup.getClosingSetIDs();
         Set wasOpenedSet = tcGroup.getGroupOpenedTopComponentsIDs();
@@ -533,10 +590,12 @@ final class PersistenceHandler implements PersistenceObserver {
             if(groupCfg.opened) {
                 tcGroupCfg.wasOpened = wasOpenedSet.contains(tcID);
             }
-            debugLog("tc id=" + tcGroupCfg.tc_id // NOI18N
-                + ", open=" + tcGroupCfg.open // NOI18N
-                + ", close=" + tcGroupCfg.close // NOI18N
-                + ", wasOpened=" + tcGroupCfg.wasOpened); // NOI18N
+            if(DEBUG) {
+                debugLog("tc id=" + tcGroupCfg.tc_id // NOI18N
+                    + ", open=" + tcGroupCfg.open // NOI18N
+                    + ", close=" + tcGroupCfg.close // NOI18N
+                    + ", wasOpened=" + tcGroupCfg.wasOpened); // NOI18N
+            }
         }
         
         groupCfg.tcGroupConfigs = (TCGroupConfig[])tcGroupCfgMap.values().toArray(new TCGroupConfig[0]);
@@ -548,7 +607,9 @@ final class PersistenceHandler implements PersistenceObserver {
      * @param modeConfig configuration data of added mode
      */
     public synchronized void modeConfigAdded(ModeConfig modeConfig) {
-        debugLog("WMI.modeConfigAdded mo:" + modeConfig.name); // NOI18N
+        if(DEBUG) {
+            debugLog("WMI.modeConfigAdded mo:" + modeConfig.name); // NOI18N
+        }
         getModeFromConfig(modeConfig);
     }
     
@@ -556,7 +617,9 @@ final class PersistenceHandler implements PersistenceObserver {
      * @param modeName unique name of removed mode
      */
     public synchronized void modeConfigRemoved(String modeName) {
-        debugLog("WMI.modeConfigRemoved mo:" + modeName); // NOI18N
+        if(DEBUG) {
+            debugLog("WMI.modeConfigRemoved mo:" + modeName); // NOI18N
+        }
         ModeImpl mode = (ModeImpl)name2mode.remove(modeName);
         if(mode != null) {
             WindowManagerImpl.getInstance().removeMode(mode);
@@ -574,7 +637,9 @@ final class PersistenceHandler implements PersistenceObserver {
      */
     public synchronized void topComponentRefConfigAdded
     (String modeName, TCRefConfig tcRefConfig, String [] tcRefNames) {
-        debugLog("WMI.topComponentRefConfigAdded mo:" + modeName + " tcRef:" + tcRefConfig.tc_id); // NOI18N
+        if(DEBUG) {
+            debugLog("WMI.topComponentRefConfigAdded mo:" + modeName + " tcRef:" + tcRefConfig.tc_id); // NOI18N
+        }
         
         TopComponent tc = getTopComponentForID(tcRefConfig.tc_id);
         if(tc != null) {
@@ -593,7 +658,9 @@ final class PersistenceHandler implements PersistenceObserver {
      * @param tc_id unique id of removed tcRef
      */
     public synchronized void topComponentRefConfigRemoved(String tc_id) {
-        debugLog("WMI.topComponentRefConfigRemoved tcRef:" + tc_id); // NOI18N
+        if(DEBUG) {
+            debugLog("WMI.topComponentRefConfigRemoved tcRef:" + tc_id); // NOI18N
+        }
         
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         ModeImpl mode = wm.findModeForOpenedID(tc_id);
@@ -614,7 +681,9 @@ final class PersistenceHandler implements PersistenceObserver {
      * @param groupConfig configuration data of added group
      */
     public synchronized void groupConfigAdded(GroupConfig groupConfig) {
-        debugLog("WMI.groupConfigAdded group:" + groupConfig.name); // NOI18N
+        if(DEBUG) {
+            debugLog("WMI.groupConfigAdded group:" + groupConfig.name); // NOI18N
+        }
         createTopComponentGroupFromConfig(groupConfig);
     }
     
@@ -622,7 +691,9 @@ final class PersistenceHandler implements PersistenceObserver {
      * @param groupName unique name of removed group
      */
     public synchronized void groupConfigRemoved(String groupName) {
-        debugLog("WMI.groupConfigRemoved group:" + groupName); // NOI18N
+        if(DEBUG) {
+            debugLog("WMI.groupConfigRemoved group:" + groupName); // NOI18N
+        }
         TopComponentGroupImpl group = (TopComponentGroupImpl)name2group.remove(groupName);
         if(group != null) {
             WindowManagerImpl.getInstance().removeTopComponentGroup(group);
@@ -637,7 +708,9 @@ final class PersistenceHandler implements PersistenceObserver {
      * @param tcGroupConfig configuration data of added tcGroup
      */
     public synchronized void topComponentGroupConfigAdded(String groupName, TCGroupConfig tcGroupConfig) {
-        debugLog("WMI.topComponentGroupConfigAdded group:" + groupName + " tcGroup:" + tcGroupConfig.tc_id); // NOI18N
+        if(DEBUG) {
+            debugLog("WMI.topComponentGroupConfigAdded group:" + groupName + " tcGroup:" + tcGroupConfig.tc_id); // NOI18N
+        }
         
         TopComponentGroupImpl group = (TopComponentGroupImpl)name2group.get(groupName);
         if(group != null) {
@@ -657,7 +730,9 @@ final class PersistenceHandler implements PersistenceObserver {
      * @param tc_id unique id of removed tcGroup
      */
     public synchronized void topComponentGroupConfigRemoved(String groupName, String tc_id) {
-        debugLog("WMI.topComponentGroupConfigRemoved group:" + groupName + " tcGroup:" + tc_id); // NOI18N
+        if(DEBUG) {
+            debugLog("WMI.topComponentGroupConfigRemoved group:" + groupName + " tcGroup:" + tc_id); // NOI18N
+        }
         
         TopComponentGroupImpl group = (TopComponentGroupImpl)name2group.get(groupName);
         if(group != null) {

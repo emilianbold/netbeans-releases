@@ -65,6 +65,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     
     private final Set showingTopComponents = new WeakSet(10);
 
+    /** Debugging flag. */
+    private static boolean DEBUG = Debug.isLoggable(DefaultView.class);
+
     
     public DefaultView(ControllerHandler controllerHandler) {
         this.controllerHandler = controllerHandler;
@@ -87,9 +90,11 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         // Change to view understandable-convenient structure.
         WindowSystemAccessor wsa = ViewHelper.createWindowSystemAccessor(snapshot);
         
-        debugLog(""); // NOI18N
-        debugLog("Structure=" + wsa); // NOI18N
-        debugLog(""); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("Structure=" + wsa); // NOI18N
+            debugLog(""); // NOI18N
+        }
 
         // Update accessors.
         if(wsa != null) { // wsa == null during hiding.
@@ -116,7 +121,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             int changeType = viewEvent.getType();
             
             if(changeType == CHANGE_VISIBILITY_CHANGED) {
-                debugLog("Winsys visibility changed, visible=" + viewEvent.getNewValue()) ; // NOI18N
+                if(DEBUG) {
+                    debugLog("Winsys visibility changed, visible=" + viewEvent.getNewValue()) ; // NOI18N
+                }
                 
                 windowSystemVisibilityChanged(((Boolean)viewEvent.getNewValue()).booleanValue(), wsa);
                 // PENDING this should be processed separatelly, there is nothing to coallesce.
@@ -131,7 +138,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             
             // The other types.
             if(changeType == CHANGE_MAIN_WINDOW_BOUNDS_JOINED_CHANGED) {
-                debugLog("Main window bounds joined changed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Main window bounds joined changed"); // NOI18N
+                }
 
                 if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
                     Rectangle bounds = (Rectangle)viewEvent.getNewValue();
@@ -140,7 +149,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                     }
                 }
             } else if(changeType == CHANGE_MAIN_WINDOW_BOUNDS_SEPARATED_CHANGED) {
-                debugLog("Main window bounds separated changed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Main window bounds separated changed"); // NOI18N
+                }
 
                 if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_SEPARATED) {
                     Rectangle bounds = (Rectangle)viewEvent.getNewValue();
@@ -149,74 +160,102 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                     }
                 }
             } else if(changeType == CHANGE_MAIN_WINDOW_FRAME_STATE_JOINED_CHANGED) {
-                debugLog("Main window frame state joined changed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Main window frame state joined changed"); // NOI18N
+                }
 
                 if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
                     hierarchy.getMainWindow().setExtendedState(wsa.getMainWindowFrameStateJoined());
                 }
             } else if(changeType == CHANGE_MAIN_WINDOW_FRAME_STATE_SEPARATED_CHANGED) {
-                debugLog("Main window frame state separated changed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Main window frame state separated changed"); // NOI18N
+                }
 
                 if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_SEPARATED) {
                     hierarchy.getMainWindow().setExtendedState(wsa.getMainWindowFrameStateSeparated());
                 }
             } else if(changeType == CHANGE_EDITOR_AREA_STATE_CHANGED) {
-                debugLog("Editor area state changed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Editor area state changed"); // NOI18N
+                }
 
                 hierarchy.updateDesktop(wsa);
                 hierarchy.updateMainWindowBounds(wsa);
                 hierarchy.setSeparateModesVisible(true);
                 hierarchy.updateSplits();
             } else if(changeType == CHANGE_EDITOR_AREA_FRAME_STATE_CHANGED) {
-                debugLog("Editor area frame state changed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Editor area frame state changed"); // NOI18N
+                }
 
                 hierarchy.updateEditorAreaFrameState(wsa.getEditorAreaFrameState());
             } else if(changeType == CHANGE_EDITOR_AREA_BOUNDS_CHANGED) {
-                debugLog("Editor area bounds changed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Editor area bounds changed"); // NOI18N
+                }
 
                 hierarchy.updateEditorAreaBounds((Rectangle)viewEvent.getNewValue());
             } else if(changeType == CHANGE_EDITOR_AREA_CONSTRAINTS_CHANGED) {
-                debugLog("Editor area constraints changed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Editor area constraints changed"); // NOI18N
+                }
 
                 hierarchy.updateDesktop(wsa);
             } else if(changeType == CHANGE_ACTIVE_MODE_CHANGED) {
-                debugLog("Active mode changed, mode=" + viewEvent.getNewValue()); // NOI18N
+                if(DEBUG) {
+                    debugLog("Active mode changed, mode=" + viewEvent.getNewValue()); // NOI18N
+                }
 
                 hierarchy.updateDesktop(wsa);
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_TOOLBAR_CONFIGURATION_CHANGED) {
-                debugLog("Toolbar config name changed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Toolbar config name changed"); // NOI18N
+                }
 
                 ToolbarPool.getDefault().setConfiguration(wsa.getToolbarConfigurationName());
             } else if(changeType == CHANGE_MAXIMIZED_MODE_CHANGED) {
-                debugLog("Maximized mode changed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Maximized mode changed"); // NOI18N
+                }
 
                 hierarchy.setMaximizedModeView(hierarchy.getModeViewForAccessor(wsa.getMaximizedModeAccessor()));
                 hierarchy.updateDesktop(wsa);
                 hierarchy.updateSplits();
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_MODE_ADDED) {
-                debugLog("Mode added"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Mode added"); // NOI18N
+                }
 
                 hierarchy.updateDesktop(wsa);
             } else if(changeType == CHANGE_MODE_REMOVED) {
-                debugLog("Mode removed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Mode removed"); // NOI18N
+                }
 
                 hierarchy.updateDesktop(wsa);
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_MODE_CONSTRAINTS_CHANGED) {
-                debugLog("Mode constraints changed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Mode constraints changed"); // NOI18N
+                }
 
                 hierarchy.updateDesktop(wsa);
             } else if(changeType == CHANGE_MODE_BOUNDS_CHANGED) {
-                debugLog("Mode bounds changed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Mode bounds changed"); // NOI18N
+                }
 
                 ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
                 if(modeView != null) {
                     modeView.getComponent().setBounds((Rectangle)viewEvent.getNewValue());
                 }
             } else if(changeType == CHANGE_MODE_FRAME_STATE_CHANGED) {
-                debugLog("Mode state changed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Mode state changed"); // NOI18N
+                }
 
                 ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
                 if(modeView != null) {
@@ -224,7 +263,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                     modeView.updateFrameState();
                 }
             } else if(changeType == CHANGE_MODE_SELECTED_TOPCOMPONENT_CHANGED) {
-                debugLog("Selected topcomponent changed, tc=" + viewEvent.getNewValue()); // NOI18N
+                if(DEBUG) {
+                    debugLog("Selected topcomponent changed, tc=" + viewEvent.getNewValue()); // NOI18N
+                }
 
                 // XXX PENDING see TopComponent.requestFocus (it's wrongly overriden).
                 hierarchy.updateDesktop(wsa);
@@ -234,14 +275,18 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                     hierarchy.activateMode(ma);
                 }
             } else if(changeType == CHANGE_MODE_TOPCOMPONENT_ADDED) {
-                debugLog("TopComponent added"); // NOI18N
+                if(DEBUG) {
+                    debugLog("TopComponent added"); // NOI18N
+                }
 
                 hierarchy.updateDesktop(wsa);
                 hierarchy.setSeparateModesVisible(true);
                 ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
                 hierarchy.updateSplits();
             } else if(changeType == CHANGE_MODE_TOPCOMPONENT_REMOVED) {
-                debugLog("TopComponent removed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("TopComponent removed"); // NOI18N
+                }
 
                 hierarchy.setMaximizedModeView(hierarchy.getModeViewForAccessor(wsa.getMaximizedModeAccessor()));
                 hierarchy.updateDesktop(wsa);
@@ -251,74 +296,100 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 }
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_TOPCOMPONENT_DISPLAY_NAME_CHANGED) {
-                debugLog("TopComponent display name changed, tc=" + viewEvent.getNewValue()); // NOI18N
+                if(DEBUG) {
+                    debugLog("TopComponent display name changed, tc=" + viewEvent.getNewValue()); // NOI18N
+                }
 
                 ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
                 if(modeView != null) { // PENDING investigate
                     modeView.updateName((TopComponent)viewEvent.getNewValue());
                 }
             } else if(changeType == CHANGE_TOPCOMPONENT_DISPLAY_NAME_ANNOTATION_CHANGED) {
-                debugLog("TopComponent display name annotation changed, tc=" + viewEvent.getNewValue()); // NOI18N
+                if(DEBUG) {
+                    debugLog("TopComponent display name annotation changed, tc=" + viewEvent.getNewValue()); // NOI18N
+                }
 
                 ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
                 if(modeView != null) { // PENDING investigate
                     modeView.updateName((TopComponent)viewEvent.getNewValue());
                 }
             } else if(changeType == CHANGE_TOPCOMPONENT_TOOLTIP_CHANGED) {
-                debugLog("TopComponent tooltip changed, tc=" + viewEvent.getNewValue()); // NOI18N
+                if(DEBUG) {
+                    debugLog("TopComponent tooltip changed, tc=" + viewEvent.getNewValue()); // NOI18N
+                }
 
                 ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
                 if(modeView != null) { // PENDING investigate
                     modeView.updateToolTip((TopComponent)viewEvent.getNewValue());
                 }
             } else if(changeType == CHANGE_TOPCOMPONENT_ICON_CHANGED) {
-                debugLog("TopComponent icon changed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("TopComponent icon changed"); // NOI18N
+                }
 
                 ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
                 if(modeView != null) { // PENDING investigate
                     modeView.updateIcon((TopComponent)viewEvent.getNewValue());
                 }
             } else if(changeType == CHANGE_TOPCOMPONENT_ATTACHED) {
-                debugLog("TopComponent attached"); // NOI18N
+                if(DEBUG) {
+                    debugLog("TopComponent attached"); // NOI18N
+                }                
 
                 hierarchy.updateDesktop(wsa);
                 // PENDING Updating splits - figure out how to init just newly added ones.
                 hierarchy.updateSplits();
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_TOPCOMPONENT_ARRAY_ADDED) {
-                debugLog("TopComponent array added:" // NOI18N
-                    + Arrays.asList((TopComponent[])viewEvent.getNewValue()));
+                if(DEBUG) {
+                    debugLog("TopComponent array added:" // NOI18N
+                        + Arrays.asList((TopComponent[])viewEvent.getNewValue()));
+                }
 
                 hierarchy.updateDesktop(wsa);
                 hierarchy.updateSplits();
             } else if(changeType == CHANGE_TOPCOMPONENT_ARRAY_REMOVED) {
-                debugLog("TopComponent array removed:" // NOI18N
-                    + Arrays.asList((TopComponent[])viewEvent.getNewValue()));
+                if(DEBUG) {
+                    debugLog("TopComponent array removed:" // NOI18N
+                        + Arrays.asList((TopComponent[])viewEvent.getNewValue()));
+                }
 
                 hierarchy.updateDesktop(wsa);
                 hierarchy.updateSplits();
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_TOPCOMPONENT_ACTIVATED) {
-                debugLog("TopComponent activated, tc=" + viewEvent.getNewValue()); // NOI18N
+                if(DEBUG) {
+                    debugLog("TopComponent activated, tc=" + viewEvent.getNewValue()); // NOI18N
+                }
+                
                 hierarchy.updateDesktop(wsa);
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_MODE_CLOSED) {
-                debugLog("Mode closed, mode=" + viewEvent.getSource()); // NOI18N
+                if(DEBUG) {
+                    debugLog("Mode closed, mode=" + viewEvent.getSource()); // NOI18N
+                }
+                
                 hierarchy.updateDesktop();
                 hierarchy.updateSplits();
             } else if(changeType == CHANGE_DND_PERFORMED) {
-                debugLog("DnD performed"); // NOI18N
+                if(DEBUG) {
+                    debugLog("DnD performed"); // NOI18N
+                }
 
                 hierarchy.setMaximizedModeView(hierarchy.getModeViewForAccessor(wsa.getMaximizedModeAccessor()));
                 hierarchy.updateDesktop();
                 hierarchy.updateSplits();
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_UI_UPDATE) {
-                debugLog("UI update"); // NOI18N
+                if(DEBUG) {
+                    debugLog("UI update"); // NOI18N
+                }
 
                 hierarchy.updateUI();
             } else if(changeType == CHANGE_PROJECT_NAME) {
-                debugLog("Update project name"); // NOI18N
+                if(DEBUG) {
+                    debugLog("Update project name"); // NOI18N
+                }
                 
                 hierarchy.setProjectName(wsa.getProjectName());
             }
@@ -350,23 +421,31 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         // Init toolbar.
         ToolbarPool.getDefault().setConfiguration(wsa.getToolbarConfigurationName());
         
-        debugLog(wsa.getModeStructureAccessor().toString());
+        if(DEBUG) {
+            debugLog(wsa.getModeStructureAccessor().toString());
+        }
 
         hierarchy.setMaximizedModeView(hierarchy.getModeViewForAccessor(wsa.getMaximizedModeAccessor()));
 
         // Init desktop.
         hierarchy.updateDesktop(wsa);
 
-        debugLog("Init view 2="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
+        if(DEBUG) {
+            debugLog("Init view 2="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
+        }
         
         hierarchy.setSplitModesVisible(true);
 
-        debugLog("Init view 3="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
+        if(DEBUG) {
+            debugLog("Init view 3="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
+        }
         
         // Prepare main window (pack and set bounds).
         hierarchy.getMainWindow().prepareWindow();
 
-        debugLog("Init view 4="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
+        if(DEBUG) {
+            debugLog("Init view 4="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
+        }
        
         // Shows main window
         hierarchy.getMainWindow().setVisible(true);
@@ -403,7 +482,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
 
         hierarchy.installMainWindowListeners();
         
-        debugLog("Init view 5="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
+        if(DEBUG) {
+            debugLog("Init view 5="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
+        }
     }
     
     private void hideWindowSystem() {
@@ -418,7 +499,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     ////////////////////////////////////////////////////
     // Controller >>
     public void userActivatedModeView(ModeView modeView) {
-        debugLog("User activated mode view, mode=" + modeView); // NOI18N
+        if(DEBUG) {
+            debugLog("User activated mode view, mode=" + modeView); // NOI18N
+        }
         
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
@@ -426,7 +509,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     }
     
     public void userSelectedTab(ModeView modeView, TopComponent selected) {
-        debugLog("User selected tab, tc=" + WindowManagerImpl.getInstance().getTopComponentDisplayName(selected)); // NOI18N
+        if(DEBUG) {
+            debugLog("User selected tab, tc=" + WindowManagerImpl.getInstance().getTopComponentDisplayName(selected)); // NOI18N
+        }
 
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
@@ -434,7 +519,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     }
     
     public void userClosingMode(ModeView modeView) {
-        debugLog("User closing mode="+modeView); // NOI18N
+        if(DEBUG) {
+            debugLog("User closing mode="+modeView); // NOI18N
+        }
 
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
@@ -447,7 +534,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     }
     
     public void userResizedMainWindow(Rectangle bounds) {
-        debugLog("User resized main window"); // NOI18N
+        if(DEBUG) {
+            debugLog("User resized main window"); // NOI18N
+        }
 
         // Ignore when main window is maximized.
         if(hierarchy.getMainWindow().getExtendedState() != Frame.MAXIMIZED_BOTH) {
@@ -493,7 +582,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     }
     
     public void userMovedMainWindow(Rectangle bounds) {
-        debugLog("User moved main window"); // NOI18N
+        if(DEBUG) {
+            debugLog("User moved main window"); // NOI18N
+        }
 
         // Ignore when main window is maximized.
         if(hierarchy.getMainWindow().getExtendedState() != Frame.MAXIMIZED_BOTH) {
@@ -502,13 +593,17 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     }
     
     public void userResizedEditorArea(Rectangle bounds) {
-        debugLog("User resized editor area"); // NOI18N
+        if(DEBUG) {
+            debugLog("User resized editor area"); // NOI18N
+        }
 
         controllerHandler.userResizedEditorArea(bounds);
     }
     
     public void userResizedModeBounds(ModeView modeView, Rectangle bounds) {
-        debugLog("User resized mode"); // NOI18N
+        if(DEBUG) {
+            debugLog("User resized mode"); // NOI18N
+        }
 
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
@@ -517,7 +612,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     
     public void userMovedSplit(double splitLocation, SplitView splitView,
     ViewElement first, ViewElement second) {
-        debugLog("User moved split"); // NOI18N
+        if(DEBUG) {
+            debugLog("User moved split"); // NOI18N
+        }
 
         SplitAccessor splitAccessor = (SplitAccessor)hierarchy.getAccessorForView(splitView);
         ElementAccessor firstAccessor = hierarchy.getAccessorForView(first);
@@ -530,7 +627,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     }
     
     public void userClosedTopComponent(ModeView modeView, TopComponent tc) {
-        debugLog("User closed topComponent=" + tc); // NOI18N
+        if(DEBUG) {
+            debugLog("User closed topComponent=" + tc); // NOI18N
+        }
 
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
@@ -538,19 +637,25 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     }
     
     public void userChangedFrameStateMainWindow(int frameState) {
-        debugLog("User changed frame state main window"); // NOI18N
+        if(DEBUG) {
+            debugLog("User changed frame state main window"); // NOI18N
+        }
         
         controllerHandler.userChangedFrameStateMainWindow(frameState);
     }
     
     public void userChangedFrameStateEditorArea(int frameState) {
-        debugLog("User changed frame state editor area"); // NOI18N
+        if(DEBUG) {
+            debugLog("User changed frame state editor area"); // NOI18N
+        }
 
         controllerHandler.userChangedFrameStateEditorArea(frameState);
     }
     
     public void userChangedFrameStateMode(ModeView modeView, int frameState) {
-        debugLog("User changed frame state mode"); // NOI18N
+        if(DEBUG) {
+            debugLog("User changed frame state mode"); // NOI18N
+        }
 
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
@@ -563,7 +668,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             return;
         }
         
-        debugLog("User dropped TopComponent's"); // NOI18N
+        if(DEBUG) {
+            debugLog("User dropped TopComponent's"); // NOI18N
+        }
 
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
@@ -575,7 +682,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             return;
         }
         
-        debugLog("User dropped TopComponent's to index=" + index); // NOI18N
+        if(DEBUG) {
+            debugLog("User dropped TopComponent's to index=" + index); // NOI18N
+        }
         
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
@@ -594,7 +703,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             return;
         }
         
-        debugLog("User dropped TopComponent's to side=" + side); // NOI18N
+        if(DEBUG) {
+            debugLog("User dropped TopComponent's to side=" + side); // NOI18N
+        }
         
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
@@ -606,7 +717,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             return;
         }
 
-        debugLog("User dropped TopComponent's into empty editor"); // NOI18N
+        if(DEBUG) {
+            debugLog("User dropped TopComponent's into empty editor"); // NOI18N
+        }
         
         controllerHandler.userDroppedTopComponentsIntoEmptyEditor(tcs);
     }
@@ -616,7 +729,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             return;
         }
 
-        debugLog("User dropped TopComponent's around, side=" + side); // NOI18N
+        if(DEBUG) {
+            debugLog("User dropped TopComponent's around, side=" + side); // NOI18N
+        }
         
         controllerHandler.userDroppedTopComponentsAround(tcs, side);
     }
@@ -626,7 +741,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             return;
         }
         
-        debugLog("User dropped TopComponent's into split=" + splitView); // NOI18N
+        if(DEBUG) {
+            debugLog("User dropped TopComponent's into split=" + splitView); // NOI18N
+        }
 
         SplitAccessor splitAccessor = (SplitAccessor)hierarchy.getAccessorForView(splitView);
         ElementAccessor firstAccessor = hierarchy.getAccessorForView(splitView.getFirst());
@@ -644,7 +761,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             return;
         }
 
-        debugLog("User dropped TopComponent's around editor, side=" + side); // NOI18N
+        if(DEBUG) {
+            debugLog("User dropped TopComponent's around editor, side=" + side); // NOI18N
+        }
         
         controllerHandler.userDroppedTopComponentsAroundEditor(tcs, side);
     }
@@ -654,7 +773,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             return;
         }
         
-        debugLog("User dropped TopComponent's into free area, bounds=" + bounds); // NOI18N
+        if(DEBUG) {
+            debugLog("User dropped TopComponent's into free area, bounds=" + bounds); // NOI18N
+        }
         
         controllerHandler.userDroppedTopComponentsIntoFreeArea(tcs, bounds);
     }

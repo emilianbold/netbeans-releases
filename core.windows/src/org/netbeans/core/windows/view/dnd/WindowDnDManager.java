@@ -113,6 +113,9 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     /** Keeps ref to fake center panel droppable. */
     private static WeakReference centerDropWRef = new WeakReference(null);
     
+    /** Debugging flag. */
+    private static boolean DEBUG = Debug.isLoggable(WindowDnDManager.class);
+    
     
     /** Creates a new instance of <code>WindowsDnDManager</code>. */
     public WindowDnDManager(ViewAccessor viewAccessor) {
@@ -192,8 +195,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
      * starting drag operation. */
     public void dragStarting(TopComponentDroppable startingDroppable, Point startingPoint,
     TopComponent startingTransfer) {
-        debugLog(""); // NOI18N
-        debugLog("dragStarting"); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("dragStarting"); // NOI18N
+        }
         
         // PENDING
         this.startingDroppable = startingDroppable;
@@ -283,8 +288,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
      * Informs all turned on <code>TopComponentDroppable</code>'s
      * about fininshed drag and drop. */
     public void dragFinished() {
-        debugLog(""); // NOI18N
-        debugLog("dragFinished"); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("dragFinished"); // NOI18N
+        }
 
         // PENDING
         startingDroppable = null;
@@ -659,10 +666,11 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
      * @return <code>true</code> if the drop was successful */
     private static boolean performDrop(Controller controller,
     TopComponentDroppable droppable, int dropAction, TopComponent[] tcArray, Point location) {
-        debugLog(""); // NOI18N
-        debugLog("performDrop"); // NOI18N
-
-        debugLog("droppable=" + droppable); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("performDrop"); // NOI18N
+            debugLog("droppable=" + droppable); // NOI18N
+        }
 
         if(tcArray == null || tcArray.length == 0) {
             return true;
@@ -740,8 +748,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
         /** Implements <code>DragSourceMotionListener</code>. */
         public void dragMouseMoved(DragSourceDragEvent evt) {
-            debugLog(""); // NOI18N
-            debugLog("dragMouseMoved evt=" + evt); // NOI18N
+            if(DEBUG) {
+                debugLog(""); // NOI18N
+                debugLog("dragMouseMoved evt=" + evt); // NOI18N
+            }
             
             Point location = evt.getLocation();
             if(location == null) {

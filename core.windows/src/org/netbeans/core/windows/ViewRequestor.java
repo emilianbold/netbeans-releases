@@ -55,6 +55,9 @@ class ViewRequestor {
      * Manipulate it in AWT thread only. */
     private WindowSystemSnapshot snapshot;
     
+    private static boolean DEBUG = Debug.isLoggable(ViewRequestor.class);
+    
+    
     /** Creates a new instance of ViewRequestor */
     public ViewRequestor(Central central) {
         this.central = central;
@@ -78,8 +81,10 @@ class ViewRequestor {
     /** Schedules request into AWT. */
     public void scheduleRequest(ViewRequest request) {
         if(SwingUtilities.isEventDispatchThread() && processingRequest) {
-            Debug.log(ViewRequestor.class, "Processing request, returning event"); // NOI18N
-            Debug.dumpStack(ViewRequestor.class);
+            if(DEBUG) {
+                debugLog("Processing request, returning event"); // NOI18N
+                Debug.dumpStack(ViewRequestor.class);
+            }
             // XXX Preventing loop caused by impl of TopComponent.requestFocus().
             return;
         }
@@ -178,9 +183,10 @@ class ViewRequestor {
             final long time = System.currentTimeMillis();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    Debug.log(ViewRequestor.class,
-                        "Rescheduling request into AWT took=" // NOI18N
-                        + (System.currentTimeMillis() - time) + " ms"); // NOI18N
+                    if(DEBUG) {
+                        debugLog("Rescheduling request into AWT took=" // NOI18N
+                            + (System.currentTimeMillis() - time) + " ms"); // NOI18N
+                    }
                     
                     processVisibilityRequest(visibilityRequest);
                 }
@@ -261,10 +267,11 @@ class ViewRequestor {
         snapshot.setToolbarConfigurationName(currentSnapshot.getToolbarConfigurationName());
         snapshot.setProjectName(currentSnapshot.getProjectName());
 
-        Debug.log(ViewRequestor.class,
-            "Updating winsys snapshot took=" // NOI18N
-            + (System.currentTimeMillis() - time) + " ms"); // NOI18N
-        Debug.log(ViewRequestor.class, snapshot.toString());
+        if(DEBUG) {
+            debugLog("Updating winsys snapshot took=" // NOI18N
+                + (System.currentTimeMillis() - time) + " ms"); // NOI18N
+            debugLog(snapshot.toString());
+        }
     }
     
     // XXX PENDING Adjusts the source event to the view needs.
@@ -316,6 +323,10 @@ class ViewRequestor {
     }
     // !! AWT thread only <<
     ///////////////////////////////////////////
+
+    private static void debugLog(String message) {
+        Debug.log(ViewRequestor.class, message);
+    }
 
 }
 

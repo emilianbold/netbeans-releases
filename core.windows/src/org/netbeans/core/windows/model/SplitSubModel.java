@@ -55,6 +55,10 @@ class SplitSubModel {
     /** Root <code>Node</code> which represents the split panes structure
      * with modes as leaves. */
     protected Node root;
+    
+    /** Debugging flag. */
+    private static boolean DEBUG = Debug.isLoggable(SplitSubModel.class);
+
 
     
     /** Creates a new instance of SplitModel */
@@ -113,12 +117,14 @@ class SplitSubModel {
         
         Node modeNode = getModeNode(mode);
         
-        debugLog(""); // NOI18N
-        debugLog(""); // NOI18N
-        debugLog("=========================================="); // NOI18N
-        debugLog("Adding mode to tree=" + mode); // NOI18N
-        debugLog("constraints=" + Arrays.asList(constraints)); // NOI18N
-        debugLog("modeNode=" + modeNode); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog(""); // NOI18N
+            debugLog("=========================================="); // NOI18N
+            debugLog("Adding mode to tree=" + mode); // NOI18N
+            debugLog("constraints=" + Arrays.asList(constraints)); // NOI18N
+            debugLog("modeNode=" + modeNode); // NOI18N
+        }
 
         return addNodeToTree(modeNode, constraints, adjustToAllWeights);
     }
@@ -134,12 +140,14 @@ class SplitSubModel {
         Node modeNode = getModeNode(mode);
         Node attachModeNode = getModeNode(attachMode);
         
-        debugLog(""); // NOI18N
-        debugLog(""); // NOI18N
-        debugLog("=========================================="); // NOI18N
-        debugLog("Adding mode to between=" + mode); // NOI18N
-        debugLog("attachMode=" + attachMode); // NOI18N
-        debugLog("side=" + side); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog(""); // NOI18N
+            debugLog("=========================================="); // NOI18N
+            debugLog("Adding mode to between=" + mode); // NOI18N
+            debugLog("attachMode=" + attachMode); // NOI18N
+            debugLog("side=" + side); // NOI18N
+        }
 
         return addNodeToTreeToSide(modeNode, attachModeNode, side);
     }
@@ -154,12 +162,14 @@ class SplitSubModel {
 
         Node modeNode = getModeNode(mode);
         
-        debugLog(""); // NOI18N
-        debugLog(""); // NOI18N
-        debugLog("=========================================="); // NOI18N
-        debugLog("Adding mode to between=" + mode); // NOI18N
-        debugLog("firstElement=" + firstElement); // NOI18N
-        debugLog("secondElement=" + secondElement); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog(""); // NOI18N
+            debugLog("=========================================="); // NOI18N
+            debugLog("Adding mode to between=" + mode); // NOI18N
+            debugLog("firstElement=" + firstElement); // NOI18N
+            debugLog("secondElement=" + secondElement); // NOI18N
+        }
 
         return addNodeToTreeBetween(modeNode, firstElement, secondElement);
     }
@@ -174,11 +184,13 @@ class SplitSubModel {
 
         Node modeNode = getModeNode(mode);
         
-        debugLog(""); // NOI18N
-        debugLog(""); // NOI18N
-        debugLog("=========================================="); // NOI18N
-        debugLog("Adding mode to around=" + mode); // NOI18N
-        debugLog("side=" + side); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog(""); // NOI18N
+            debugLog("=========================================="); // NOI18N
+            debugLog("Adding mode to around=" + mode); // NOI18N
+            debugLog("side=" + side); // NOI18N
+        }
 
         return addNodeToTreeAround(modeNode, side);
     }
@@ -193,11 +205,13 @@ class SplitSubModel {
 
         Node modeNode = getModeNode(mode);
         
-        debugLog(""); // NOI18N
-        debugLog(""); // NOI18N
-        debugLog("=========================================="); // NOI18N
-        debugLog("Adding mode to around=" + mode); // NOI18N
-        debugLog("side=" + side); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog(""); // NOI18N
+            debugLog("=========================================="); // NOI18N
+            debugLog("Adding mode to around=" + mode); // NOI18N
+            debugLog("side=" + side); // NOI18N
+        }
 
         return addNodeToTreeAroundEditor(modeNode, side);
     }
@@ -324,8 +338,10 @@ class SplitSubModel {
             return false;
         }
         
-        debugLog(""); // NOI18N
-        debugLog("Inserting to side="+side); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("Inserting to side="+side); // NOI18N
+        }
 
         // Update
         if(attachNode == root) {
@@ -439,10 +455,12 @@ class SplitSubModel {
         double firstWeight = ((Double)visibleChild2refinedWeight.get(first)).doubleValue();
         double secondWeight = ((Double)visibleChild2refinedWeight.get(second)).doubleValue();
         
-        debugLog(""); // NOI18N
-        debugLog("Inserting between"); // NOI18N
-        debugLog("firstWeight="+firstWeight); // NOI18N
-        debugLog("secondWeight="+secondWeight); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("Inserting between"); // NOI18N
+            debugLog("firstWeight="+firstWeight); // NOI18N
+            debugLog("secondWeight="+secondWeight); // NOI18N
+        }
         
         int index = parent.getChildIndex(second);
         double newWeight = firstWeight * Constants.DROP_BETWEEN_RATIO + secondWeight * Constants.DROP_BETWEEN_RATIO;

@@ -136,7 +136,9 @@ implements AWTEventListener, DragSourceListener {
     private static final String NAME_CURSOR_MOVE_NO      = "CursorTopComponentMoveNo"; // NOI18N
     /** */
     private static final String NAME_CURSOR_COPY_NO_MOVE = "CursorTopComponentCopyNoMove"; // NOI18N
-
+    
+    /** Debugging flag. */
+    private static boolean DEBUG = Debug.isLoggable(TopComponentDragSupport.class);
     
     private final WindowDnDManager windowDnDManager;
 
@@ -224,8 +226,10 @@ implements AWTEventListener, DragSourceListener {
         startingPoint = null;
         startingComponent = null;
         
-        debugLog(""); // NOI18N
-        debugLog("eventDispatched (MOUSE_DRAGGED)"); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("eventDispatched (MOUSE_DRAGGED)"); // NOI18N
+        }
         
         // XXX Do not clash with JTree (e.g. in explorer) drag.
         if((srcComp instanceof JTree)
@@ -323,8 +327,10 @@ implements AWTEventListener, DragSourceListener {
     /** Actually starts the drag operation. */
     private void doStartDrag(Object transfer, DragGestureEvent evt,
     TopComponentDroppable startingDroppable, Point startingPoint) {
-        debugLog(""); // NOI18N
-        debugLog("doStartDrag"); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("doStartDrag"); // NOI18N
+        }
         
         TopComponent firstTC = transfer instanceof TopComponent
                 ? (TopComponent)transfer
@@ -422,8 +428,10 @@ implements AWTEventListener, DragSourceListener {
      * due to an undeterministic calls of this method especially in MDI mode.
      * @see #setSuccessCursor */
     public void dragEnter(DragSourceDragEvent evt) {
-        debugLog(""); // NOI18N
-        debugLog("dragEnter");// NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("dragEnter");// NOI18N
+        }
             
         // Just refresh the weak ref to the context if necessary.
         // The expected code here is done by ragExitHack method called from DropTarget's.
@@ -434,8 +442,10 @@ implements AWTEventListener, DragSourceListener {
 
     /** Dummy implementation of <code>DragSourceListener</code> method. */
     public void dragOver(DragSourceDragEvent evt) {
-        debugLog(""); // NOI18N
-        debugLog("dragOver"); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("dragOver"); // NOI18N
+        }
     }
 
     /** Implements <code>DragSourceListener</code> method.
@@ -445,8 +455,10 @@ implements AWTEventListener, DragSourceListener {
      * due to an undeterministic calls of this method especially in MDI mode.
      * @see #setUnsuccessCursor */
     public void dragExit(DragSourceEvent evt) {
-        debugLog(""); // NOI18N
-        debugLog("dragExit"); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("dragExit"); // NOI18N
+        }
         
         // Just refresh the weak ref to the context if necessary.
         // The expected code here is done by ragExitHack method called from DropTarget's.
@@ -459,8 +471,10 @@ implements AWTEventListener, DragSourceListener {
      * It changes the cursor type from copy to move and bakc accordting the
      * user action. */
     public void dropActionChanged(DragSourceDragEvent evt) {
-        debugLog(""); // NOI18N
-        debugLog("dropActionChanged"); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("dropActionChanged"); // NOI18N
+        }
         String name = evt.getDragSourceContext().getCursor().getName();
         
         if(name == null) {
@@ -515,8 +529,10 @@ implements AWTEventListener, DragSourceListener {
      * Informs window dnd manager the drag operation finished.
      * @see WindowDnDManager#dragFinished */
     public void dragDropEnd(final DragSourceDropEvent evt) {
-        debugLog(""); // NOI18N
-        debugLog("dragDropEnd"); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("dragDropEnd"); // NOI18N
+        }
         
         windowDnDManager.dragFinished();
         

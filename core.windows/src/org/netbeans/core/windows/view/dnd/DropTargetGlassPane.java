@@ -66,6 +66,10 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
      * rectangle. */
     private TopComponentDroppable droppable;
     
+    /** Debugging flag. */
+    private static boolean DEBUG = Debug.isLoggable(DropTargetGlassPane.class);
+
+    
 
     /** Creates non initialized <code>DropTargetGlassPane</code>. */
     public DropTargetGlassPane(Observer observer, Informer informer) {
@@ -233,8 +237,10 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
      * accepts/rejects the drag operation if move or copy operation
      * is specified. */
     public void dragEnter(DropTargetDragEvent evt) {
-        debug(""); // NOI18N
-        debug("dragEnter"); // NO18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("dragEnter"); // NO18N
+        }
         
         int dropAction = evt.getDropAction();
         // Mask action NONE to MOVE one.
@@ -252,8 +258,10 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     /** Implements <code>DropTargetListener</code> method.
      * Unsets the glass pane to show 'drag under' gestures. */
     public void dragExit(DropTargetEvent evt) {
-        debug(""); // NOI18N
-        debug("dragExit"); // NO18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("dragExit"); // NO18N
+        }
         
         Component c = evt.getDropTargetContext().getComponent();
         if(c == this) {
@@ -265,8 +273,10 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
      * Informs the glass pane about the location of dragged cursor above
      * the component. */
     public void dragOver(DropTargetDragEvent evt) {
-        debug(""); // NOI18N
-        debug("dragOver"); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("dragOver"); // NOI18N
+        }
         
         // XXX Eliminate bug, see dragExitedHack.
         observer.setLastDropTarget(this);
@@ -276,8 +286,10 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
      * When changed the drag action accepts/rejects the drag operation
      * appropriatelly */
     public void dropActionChanged(DropTargetDragEvent evt) {
-        debug(""); // NOI18N
-        debug("dropActionChanged"); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("dropActionChanged"); // NOI18N
+        }
         
         int dropAction = evt.getDropAction();
         boolean acceptDrag;
@@ -306,8 +318,10 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     /** Implements <code>DropTargetListener</code> method. 
      * Perfoms the actual drop operation. */
     public void drop(DropTargetDropEvent evt) {
-        debug(""); // NOI18N
-        debug("drop"); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("drop"); // NOI18N
+        }
         
         // Inform glass pane about finished drag operation.
         Component c = evt.getDropTargetContext().getComponent();
@@ -366,7 +380,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
 //        ); // PENDING
     }
 
-    private static void debug(String message) {
+    private static void debugLog(String message) {
         Debug.log(DropTargetGlassPane.class, message);
     }
     

@@ -49,6 +49,9 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
     /** Utility field holding list of ChangeListeners. */
     private transient java.util.ArrayList changeListenerList;
     
+    /** Debugging flag. */
+    private static boolean DEBUG = Debug.isLoggable(TabbedAdapter.class);
+    
     /** Creates a new instance of TabbedAdapter */
     public TabbedAdapter (int type) {
         super(type == Constants.MODE_KIND_EDITOR 
@@ -87,7 +90,9 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
     public void insertTopComponent(String name, javax.swing.Icon icon, TopComponent tc, String toolTip, int position) {
         TabData td = new TabData (tc, icon, name, toolTip);
         
-        debugLog("InsertTab: " + name + " hash:" + System.identityHashCode(tc)); // NOI18N
+        if(DEBUG) {
+            debugLog("InsertTab: " + name + " hash:" + System.identityHashCode(tc)); // NOI18N
+        }
         
         getModel().addTab(position, td);
     }
@@ -253,11 +258,13 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
         final int LEFT_WIDTH = Math.min((int)(0.25 * mdl.getW(0)), 30);
         final int RIGHT_WIDTH = Math.min((int)(0.25 * mdl.getW(getTopComponentCount() - 1)), 30);
         
-        debugLog(""); // NOI18N
-        debugLog("TOP_HEIGHT    =" + TOP_HEIGHT); // NOI18N
-        debugLog("BOTTOM_HEIGHT =" + BOTTOM_HEIGHT); // NOI18N
-        debugLog("LEFT_WIDTH    =" + LEFT_WIDTH); // NOI18N
-        debugLog("RIGHT_WIDTH   =" + RIGHT_WIDTH); // NOI18N
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("TOP_HEIGHT    =" + TOP_HEIGHT); // NOI18N
+            debugLog("BOTTOM_HEIGHT =" + BOTTOM_HEIGHT); // NOI18N
+            debugLog("LEFT_WIDTH    =" + LEFT_WIDTH); // NOI18N
+            debugLog("RIGHT_WIDTH   =" + RIGHT_WIDTH); // NOI18N
+        }
         
         // Size of area which indicates creation of new split.
 //        int delta = Constants.DROP_AREA_SIZE;

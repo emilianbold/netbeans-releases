@@ -51,6 +51,8 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     /** PropertyChange support */
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     
+    /** Debugging flag. */
+    private static boolean DEBUG = Debug.isLoggable(RegistryImpl.class);
 
     /** Creates new RegistryImpl */
     public RegistryImpl() {
@@ -225,11 +227,12 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     
     private void doFirePropertyChange(final String propName,
     final Object oldValue, final Object newValue) {
-        debugLog(""); // NOI18N
-        debugLog("Scheduling event firing: propName=" + propName); // NOI18N
-        debugLog("\toldValue=" + (oldValue instanceof Object[] ? Arrays.asList((Object[])oldValue) : oldValue)); // NOI18N
-        debugLog("\tnewValue=" + (newValue instanceof Object[] ? Arrays.asList((Object[])newValue) : newValue)); // NOI18N
-
+        if(DEBUG) {
+            debugLog(""); // NOI18N
+            debugLog("Scheduling event firing: propName=" + propName); // NOI18N
+            debugLog("\toldValue=" + (oldValue instanceof Object[] ? Arrays.asList((Object[])oldValue) : oldValue)); // NOI18N
+            debugLog("\tnewValue=" + (newValue instanceof Object[] ? Arrays.asList((Object[])newValue) : newValue)); // NOI18N
+        }
         // PENDING When #37529 finished, then uncomment the next row and move the 
         // checks of AWT thread away.
         //  WindowManagerImpl.assertEventDispatchThread();
