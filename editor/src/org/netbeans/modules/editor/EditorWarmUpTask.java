@@ -84,6 +84,14 @@ public class EditorWarmUpTask implements Runnable{
     private static final boolean debug
         = Boolean.getBoolean("netbeans.debug.editor.warmup"); // NOI18N
     
+    /**
+     * Option to skip warmup code in case e.g. when there are some debugging
+     * messages in the code and they would be shown many times
+     * thank to the warmup code.
+     */
+    private static final boolean disable
+        = Boolean.getBoolean("netbeans.editor.warmup.disable"); // NOI18N
+    
     
     private void sampleDirParsing(){
         File userdir = new File(System.getProperty("netbeans.user", ""),"sampledir"); //NOI18N
@@ -146,7 +154,11 @@ public class EditorWarmUpTask implements Runnable{
         Document longDoc = pane.getDocument();
         
         try {
-            
+            // Check whether warmup is disabled and if so return immediately
+            if (disable) {
+                return;
+            }
+
             // Fill the document with data.
             // Number of lines is more important here than number of columns in a line
             // Do one big insert instead of many small inserts
