@@ -1429,7 +1429,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
 
   <!-- Tasklist modules -->
-  <target name="all-tasklist/api" depends="init,all-java">
+  <target name="all-tasklist/api" depends="init">
     <echo message="Building module tasklist/api..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1478,7 +1478,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tasklist/suggestions/ui..."/>
     <ant dir="../tasklist/suggestions/ui" target="netbeans"/>
   </target>
-  <target name="all-tasklist/docscan" depends="init,all-java/api,all-projects/projectapi,all-projects/projectuiapi,all-tasklist/api,all-tasklist/core,all-tasklist/suggestions">
+  <target name="all-tasklist/docscan" depends="init,all-projects/projectapi,all-projects/projectuiapi,all-tasklist/api,all-tasklist/core,all-tasklist/suggestions">
     <echo message="Building module tasklist/docscan..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
