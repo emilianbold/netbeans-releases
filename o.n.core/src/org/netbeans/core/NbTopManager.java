@@ -339,8 +339,10 @@ public abstract class NbTopManager extends TopManager {
                 m.invoke(o, new Object[] {helpCtx});
                 return;
             }
+        } catch (ClassNotFoundException cnfe) {
+            // ignore - maybe javahelp module is not installed, not so strange
         } catch (Exception e) {
-            // ignore - maybe javahelp module is not installed
+            // potentially more serious
             getErrorManager().notify(ErrorManager.INFORMATIONAL, e);
         }
         // Did not work.
