@@ -4,6 +4,7 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/1">
             <name>cp-prj-1</name>
+            <display-name>cp-prj-1</display-name>
             <minimum-ant-version>1.6</minimum-ant-version>
         </data>
     </configuration>

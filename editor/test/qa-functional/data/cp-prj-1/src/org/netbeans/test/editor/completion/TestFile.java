@@ -17,7 +17,7 @@ public class TestFile extends Object {
 
     /** Creates new TestFile */
     public TestFile() {
-
+String[] a = new String[10]; a[\\"test\\".length()].
     }
 
 }

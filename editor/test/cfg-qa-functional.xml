@@ -39,10 +39,18 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testcomplexunsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIunsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15*" />
             </patternset>
         </testset>
     </testbag>
 
+    <testbag testattribs="all,completion-15" name="JDK1.5 Completion">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15*" />
+            </patternset>
+        </testset>
+    </testbag>
     
     <!-- Editor Application non-validation tests -->
 

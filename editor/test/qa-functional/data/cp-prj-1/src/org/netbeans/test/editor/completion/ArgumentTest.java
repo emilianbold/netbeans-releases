@@ -11,7 +11,7 @@ public class ArgumentTest {
     }
     
     public void testingMethod(String first, Object second, Integer third, Float fourth) {
-
+third.
     }
     
 }

@@ -17,7 +17,7 @@ public class InnerOutter extends Object {
         
         public class Innerest {
             public int test() {
-
+Innerer.this.
             }
         }
         
