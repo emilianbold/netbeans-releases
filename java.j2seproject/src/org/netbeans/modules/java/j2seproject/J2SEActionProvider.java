@@ -352,6 +352,9 @@ class J2SEActionProvider implements ActionProvider {
             return null;
         }
         FileObject testSrcDir = project.getTestSourceDirectory();
+        if (testSrcDir == null) {
+            return null;
+        }
         FileObject srcDir = project.getSourceDirectory();
         return ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcDir, SUBST, true);
     }    
