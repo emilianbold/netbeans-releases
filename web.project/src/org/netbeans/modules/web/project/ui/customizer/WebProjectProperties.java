@@ -31,6 +31,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.web.project.ProjectWebModule;
 
 import org.netbeans.modules.web.project.SourceRoots;
+import org.netbeans.modules.web.project.WebSources;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
@@ -317,6 +318,10 @@ public class WebProjectProperties {
             });
             // and save the project        
             ProjectManager.getDefault().saveProject(project);
+            
+            //temporary fix for issue #54454 - deadlock when upgrading project.xml
+            WebSources ws = (WebSources) project.getLookup().lookup(WebSources.class);
+            ws.fireChange();
         } 
         catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException)e.getException());

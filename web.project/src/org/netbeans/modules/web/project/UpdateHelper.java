@@ -7,13 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.project;
 
 import java.io.IOException;
+import javax.swing.JButton;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -165,13 +166,19 @@ public class UpdateHelper {
     /**
      * Request an saving of update. If the project is not of current version the user will be asked to update the project.
      * If the user agrees with an update the project is updated.
+     * @return true if the metadata are of current version or updated
      */
-    public void requestSave () throws IOException{
-        if (!isCurrent() && canUpdate()) {
-            saveUpdate (null);
+    public boolean requestSave () throws IOException{
+        if (isCurrent()) {
+            return true;
         }
+        if (!canUpdate()) {
+            return false;
+        }
+        saveUpdate (null);
+        return true;
     }
-
+    
     /**
      * Returns true if the project is of current version.
      * @return true if the project is of current version, otherwise false.
@@ -280,10 +287,17 @@ public class UpdateHelper {
     public static Notifier createDefaultNotifier () {
         return new Notifier() {
             public boolean canUpdate() {
+                JButton updateOption = new JButton (NbBundle.getMessage(UpdateHelper.class, "CTL_UpdateOption"));
                 return DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Confirmation (NbBundle.getMessage(UpdateHelper.class,"TXT_ProjectUpdate"),
+                    new NotifyDescriptor (NbBundle.getMessage(UpdateHelper.class,"TXT_ProjectUpdate"),
                         NbBundle.getMessage(UpdateHelper.class,"TXT_ProjectUpdateTitle"),
-                        NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION;
+                        NotifyDescriptor.DEFAULT_OPTION,
+                        NotifyDescriptor.WARNING_MESSAGE,
+                        new Object[] {
+                            updateOption,
+                            NotifyDescriptor.CANCEL_OPTION
+                        },
+                        updateOption)) == updateOption;
             }
         };
     }
