@@ -27,7 +27,6 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.Context;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
-import org.openide.windows.TopComponent;
 
 
 /**
