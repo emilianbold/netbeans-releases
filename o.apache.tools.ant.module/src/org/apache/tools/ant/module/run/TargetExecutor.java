@@ -82,11 +82,16 @@ public class TargetExecutor implements Runnable {
     public void setSwitchWorkspace(boolean sw) {
         switchWorkspace = sw;
     }
+
+    public ExecutorTask execute () throws IOException {
+        return execute(null);
+    }
   
     /** Start it going. */
-    public ExecutorTask execute () throws IOException {
+    ExecutorTask execute (String name) throws IOException {
         //System.err.println("execute #1: " + this);
-        String name;
+        if (name == null) {
+            
         if (AntSettings.getDefault ().getReuseOutput ()) {
             name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_reused");
         } else {
@@ -122,6 +127,8 @@ public class TargetExecutor implements Runnable {
             } else {
                 name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_notarget", projectName, fileName);
             }
+        }
+        
         }
         final ExecutorTask task;
         synchronized (this) {
