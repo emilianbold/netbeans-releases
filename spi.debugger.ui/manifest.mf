@@ -1,4 +1,4 @@
-OpenIDE-Module: org.netbeans.modules.debugger.core/1
+OpenIDE-Module: org.netbeans.modules.debugger.core/2
 OpenIDE-Module-Name: Debugger Core
 OpenIDE-Module-Display-Category: Debugging
 OpenIDE-Module-Install: org/netbeans/modules/debugger/multisession/EnterpriseModule.class

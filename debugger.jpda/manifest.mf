@@ -2,7 +2,7 @@ OpenIDE-Module: org.netbeans.modules.debugger.jpda/1
 OpenIDE-Module-Name: JPDA Debugger
 OpenIDE-Module-Display-Category: Debugging
 OpenIDE-Module-Install: org/netbeans/modules/debugger/jpda/JPDADebuggerModule.class
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.debugger.core/1 > 1.1.4
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.debugger.core/2 > 1.1.4
 OpenIDE-Module-Specification-Version: 1.9
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Short-Description: Enables debugging with the JPDA debugger implementation.
