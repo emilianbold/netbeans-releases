@@ -69,7 +69,9 @@ public class UpdateTracking {
     // for generating xml in build process
     public UpdateTracking( String nbPath ) {
         trackingFile = new File( nbPath + FILE_SEPARATOR + TRACKING_FILE_NAME);
+        
         read();
+        
         origin = INST_ORIGIN;
     }
     
@@ -77,30 +79,29 @@ public class UpdateTracking {
     private void read() {
         /** org.w3c.dom.Document document */
         org.w3c.dom.Document document;
-
-        InputStream is;
-        try {
-            is = new FileInputStream( trackingFile );
-
+        if (!trackingFile.exists()) {
+            document = XMLUtil.createDocument("modules");  //NOI18N
+        }
+        else {
+            InputStream is;
+            try {
+                is = new FileInputStream( trackingFile );
+                
             InputSource xmlInputSource = new InputSource( is );
             document = XMLUtil.parse( xmlInputSource, false, false, new ErrorCatcher(), null );
             if (is != null)
                 is.close();
-        }
-        catch ( org.xml.sax.SAXException e ) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) { // NOI18N
+            }
+            catch ( org.xml.sax.SAXException e ) {
                 System.out.println("Bad update_tracking" ); // NOI18N
                 e.printStackTrace ();
+                return;
             }
-            return;
-            //TopManager.getDefault().notifyException( e );
-        }
-        catch ( java.io.IOException e ) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) { // NOI18N
+            catch ( java.io.IOException e ) {
                 System.out.println("Missing update_tracking" ); // NOI18N
                 e.printStackTrace ();
+                return;
             }
-            return;
         }
 
         org.w3c.dom.Element element = document.getDocumentElement();

@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars">
-    <genlist targetname="nbm" outputfiledir="../openide/netbeans"/>
+    <genlist targetname="nbm" outputfiledir="../nbbuild/netbeans"/>
   </target>
 
   <target name="nbm" depends="netbeans">

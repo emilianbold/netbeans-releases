@@ -27,7 +27,7 @@ import java.util.jar.Manifest;
  */
 public class MakeListOfNBM extends Task {
     String targetName = null;
-    String outputFile = null;
+    File outputFile = null;
     
     /** Sets target which contains the <makenbm> tasks */
     public void setTargetname(String s) {
@@ -35,18 +35,22 @@ public class MakeListOfNBM extends Task {
     }
     
     /** Sets the directory used to create the NBM list file */
-    public void setOutputfileDir(String s) {
+    public void setOutputfileDir(File s) {
         outputFile = s;
     }
 
 
     public void execute () throws BuildException {
-        if ( targetName == "null" ) new BuildException( "You have to specify target used to make NBMs" );
-        if ( outputFile == "null" ) new BuildException( "You have to specify output directoty" );
+        if ( targetName == null ) new BuildException( "You have to specify target used to make NBMs" );
+        if ( outputFile == null ) new BuildException( "You have to specify output directoty" );
         log ("Generating information for Auto Update...");
         
+        if (!outputFile.exists()) {
+            outputFile.mkdirs();
+        }
+        
         Task nbms[] = ((Target) this.getProject().getTargets().get(targetName)).getTasks();
-        UpdateTracking track = new UpdateTracking( (new File( this.getProject().getBaseDir(), outputFile )).getAbsolutePath() );
+        UpdateTracking track = new UpdateTracking( outputFile.getAbsolutePath() );
         for( int i=0; i < nbms.length; i++) {
             if (nbms[i].getClass().getName().endsWith("MakeNBM")) {
                 
