@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.loaders.image;
 
 import java.awt.Dimension;
+import java.io.*;
 
 import org.openide.text.EditorSupport;
 import org.openide.util.HelpCtx;
@@ -34,11 +35,21 @@ public class ImageViewer extends CloneableTopComponent {
   private javax.swing.JLabel label;
 
   static final long serialVersionUID =6960127954234034486L;
+  
+  /** Default constructor. Must be here, used during de-externalization */
+  public ImageViewer () {
+    super();
+  }
+  
   /** Create a new image viewer.
   * @param obj the data object holding the image
   */
   public ImageViewer(ImageDataObject obj) {
     super(obj);
+    initialize(obj);
+  }
+  
+  private void initialize (ImageDataObject obj) {
     storedObject = obj;
     javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(label = new javax.swing.JLabel(new NBImageIcon(obj)));
     setLayout(new java.awt.BorderLayout());
@@ -54,10 +65,12 @@ public class ImageViewer extends CloneableTopComponent {
   * @see #requestFocus
   */
   public void open (Workspace w) {
-    if (w == null) w = org.openide.TopManager.getDefault ().getWindowManager ().getCurrentWorkspace ();
-    Mode viewerMode = w.findMode(this);
+    Workspace realW = (w == null)
+      ? org.openide.TopManager.getDefault().getWindowManager().getCurrentWorkspace()
+      : w;
+    Mode viewerMode = realW.findMode(this);
     if (viewerMode == null) {
-      Mode editorMode = w.findMode(EditorSupport.EDITOR_MODE);
+      Mode editorMode = realW.findMode(EditorSupport.EDITOR_MODE);
       if (editorMode != null) editorMode.dockInto(this);
     }
     super.open (w);
@@ -71,6 +84,28 @@ public class ImageViewer extends CloneableTopComponent {
   public HelpCtx getHelpCtx () {
     return new HelpCtx(ImageViewer.class);
   }
+  
+  /** Serialize this top component. Serializes its data object in addition
+  * to common superclass behaviour.
+  * @param out the stream to serialize to
+  */
+  public void writeExternal (ObjectOutput out)
+              throws IOException {
+    super.writeExternal(out);
+    out.writeObject(storedObject);
+  }
+  
+  /** Deserialize this top component.
+  * Reads its data object and initializes itself in addition
+  * to common superclass behaviour.
+  * @param in the stream to deserialize from
+  */
+  public void readExternal (ObjectInput in)
+              throws IOException, ClassNotFoundException {
+    super.readExternal(in);
+    storedObject = (ImageDataObject)in.readObject();
+    initialize(storedObject);
+  }              
 
   // Cloning the viewer uses the same underlying data object.
   protected CloneableTopComponent createClonedObject () {
@@ -81,6 +116,8 @@ public class ImageViewer extends CloneableTopComponent {
 
 /*
  * Log
+ *  15   Gandalf   1.14        3/8/00   David Simonek   bugfix - repaired 
+ *       serialization of this top component
  *  14   Gandalf   1.13        1/5/00   Ian Formanek    NOI18N
  *  13   Gandalf   1.12        11/27/99 Patrik Knakal   
  *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
