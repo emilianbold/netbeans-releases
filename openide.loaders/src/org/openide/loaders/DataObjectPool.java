@@ -708,6 +708,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         while (it.hasNext()) {
             Item item = (Item)it.next ();
             DataObject obj = item.getDataObjectOrNull ();
+            getPOOL ().waitNotified (obj);
             if (obj != null) {
                 set.addAll (obj.files ());
             }
