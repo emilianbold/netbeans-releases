@@ -27,6 +27,8 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
+import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
 import org.netbeans.jemmy.operators.Operator;
 
 import org.openide.windows.TopComponent;
@@ -58,6 +60,12 @@ import org.openide.windows.TopComponent;
  * @author Jiri.Skrivanek@sun.com
  */
 public class TopComponentOperator extends JComponentOperator {
+    
+    static {
+        DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID, 
+        new MouseRobotDriver(JemmyProperties.getCurrentTimeouts().create("EventDispatcher.RobotAutoDelay"), 
+        new Class[] {TopComponentOperator.class}));
+    }
     
     /** Waits for index-th TopComponent with given name in specified container.
      * @param contOper container where to search
