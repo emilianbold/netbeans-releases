@@ -114,19 +114,13 @@ public class PanelSourceFolders extends SettingsPanel {
         File srcRoot = (File) settings.getProperty ("sourceRoot");      //NOI18N
         if (srcRoot!=null) {
             path = srcRoot.getAbsolutePath();
-        }
-        else {
-            path = FoldersListSettings.getDefault().getLastExternalSourceRoot();
-        }
+        }       
         if (path!=null) {
             this.sources.setText (path);
         }
         File testRoot = (File) settings.getProperty ("testRoot");       //NOI18N
         if (testRoot != null) {
             path = testRoot.getAbsolutePath();
-        }
-        else {
-            path = FoldersListSettings.getDefault().getLastExternalTestRoot();
         }
         if (path!=null) {
             this.tests.setText (path);
@@ -162,13 +156,11 @@ public class PanelSourceFolders extends SettingsPanel {
         File testRoot = null;
         String srcPath = this.sources.getText();
         if (srcPath.length() > 0) {
-            srcRoot = FileUtil.normalizeFile(new File(srcPath));
-            FoldersListSettings.getDefault().setLastExternalSourceRoot (srcPath);
+            srcRoot = FileUtil.normalizeFile(new File(srcPath));           
         }
         String testPath = this.tests.getText();
         if (testPath.length()>0) {
-            testRoot = FileUtil.normalizeFile(new File(testPath));
-            FoldersListSettings.getDefault().setLastExternalTestRoot (testPath);
+            testRoot = FileUtil.normalizeFile(new File(testPath));            
         }
         settings.putProperty ("sourceRoot",srcRoot);    //NOI18N
         settings.putProperty("testRoot",testRoot);      //NOI18N
