@@ -233,6 +233,10 @@ public class WebProjectProperties {
 
     private static boolean needsUpdate = false;
     
+    private static String serverId;
+    private static String cp;
+    
+    
     public WebProjectProperties(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;
         this.updateHelper = updateHelper;
@@ -328,6 +332,14 @@ public class WebProjectProperties {
             });
             // and save the project        
             ProjectManager.getDefault().saveProject(project);
+            
+            //prevent deadlock reported in the issue #54643
+            //cp and serverId values are set in setNewContextPathValue() method which is called from storeProperties() before this code
+            //it is easier to preset them instead of reading them here again
+            if (cp != null && cp.length() != 0) {
+                ProjectWebModule wm = (ProjectWebModule) project.getLookup().lookup(ProjectWebModule.class);
+                wm.setContextPath(serverId, cp);
+            }
             
             //temporary fix for issue #54454 - deadlock when upgrading project.xml
             WebSources ws = (WebSources) project.getLookup().lookup(WebSources.class);
@@ -662,9 +674,9 @@ public class WebProjectProperties {
         if (contextPath == null || contextPath.length() == 0)
             return;
 
-        ProjectWebModule wm = (ProjectWebModule) project.getLookup().lookup(ProjectWebModule.class);
-        String serverInstId = privateProps.getProperty(J2EE_SERVER_INSTANCE);
-        wm.setContextPath(serverInstId, contextPath);
+        cp = contextPath;    
+        serverId = privateProps.getProperty(J2EE_SERVER_INSTANCE);
+
         projectProps.setProperty(CONTEXT_PATH, contextPath);
     }
     
