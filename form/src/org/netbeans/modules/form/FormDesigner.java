@@ -36,6 +36,8 @@ import org.netbeans.modules.form.palette.*;
 import org.netbeans.modules.form.fakepeer.FakePeerContainer;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 
+import org.netbeans.lib.awtextra.*;
+
 /**
  *
  * @author Tran Duc Trung, Tomas Pavek, Josef Kozak
@@ -137,32 +139,13 @@ public class FormDesigner extends TopComponent
         if (workspace == null)
             workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
         
-        super.open(workspace);
-        
-        String modeName = null;        
-        
-        if (formSettings.getOpenFormsInOneWindow()) {
-            modeName = "Form";
-        }
-        else {
-            modeName = generateModeName(this);
-        }
-        
-        Mode mode = workspace.findMode(modeName);
+        Mode mode = workspace.findMode("Form"); // NOI18N
         
         if (mode != null) {
             mode.dockInto(this);
-        }        
-
-        if (mode == null) {
-            mode = workspace.createMode(
-                     modeName,
-                     FormEditor.getFormBundle().getString("CTL_FormWindowTitle"), // NOI18N
-                     iconURL);
-            mode.dockInto(this);
         }
 
-        //super.open(workspace);
+        super.open(workspace);
     }
 
     protected void componentActivated() {
@@ -1011,6 +994,7 @@ public class FormDesigner extends TopComponent
         private int lineThickness;
         private int paddingThickness;
         private FormModel formModel;
+        private AbsoluteConstraints ac;
         
         
         public FormDesignerPanel(FormModel formModel, JComponent container) {
@@ -1026,16 +1010,14 @@ public class FormDesigner extends TopComponent
             lineThickness = 1;
             paddingThickness = 30;
             
-            setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+            setLayout(new AbsoluteLayout());
             
             updateBackgroundColor();
             
             int borderSize = 2 * getBorderThickness();
-            add(formDesignerLayer, new org.netbeans.lib.awtextra.AbsoluteConstraints(
-                                        0, 0, 
-                                        400 + borderSize, 
-                                        300 + borderSize 
-            ));
+            
+            ac = new AbsoluteConstraints(0, 0, 400 + borderSize, 300 + borderSize);
+            add(formDesignerLayer, ac);
         }
         
         
@@ -1045,17 +1027,14 @@ public class FormDesigner extends TopComponent
         
         
         public void updatePanel(Dimension d) {
-            remove(formDesignerLayer);
             if (d == null) {
                 return;
             }
             
             int padding = 2 * getBorderThickness();
-            add(formDesignerLayer, new org.netbeans.lib.awtextra.AbsoluteConstraints(
-                                        0, 0, 
-                                        d.width + padding, 
-                                        d.height + padding 
-            ));
+            ac.width = d.width + padding;
+            ac.height = d.height + padding;
+
             formDesignerLayer.revalidate();
             formDesignerLayer.repaint();
         }
