@@ -115,8 +115,15 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
     value = map;
     
     // Obtain name of the kits type
-    typeName = OptionSupport.getTypeName((Class)map.get( null ));
-    
+    try {
+      Class kitClass = Class.forName( (String)map.get( null ) );
+      typeName = OptionSupport.getTypeName( kitClass );
+    } catch( ClassNotFoundException e ) {
+      if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
+        e.printStackTrace();
+      return;
+    }
+  
     Set keySet = map.keySet();
     
     String[] names = new String[keySet.size() - 1];
