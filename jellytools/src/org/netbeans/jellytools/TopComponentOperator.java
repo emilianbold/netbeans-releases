@@ -228,7 +228,22 @@ public class TopComponentOperator extends JComponentOperator {
     public void close() {
         // used direct call of IDE API method because CloseViewAction closes
         // active TopComponent and not neccesarily this one
-        ((TopComponent)getSource()).close();
+        if(EventQueue.isDispatchThread()) {
+            // if in dispatch thread, invoke directly
+            ((TopComponent)getSource()).close();
+        } else {
+            // run it in dispatch thread
+            try {
+                // actions has to be invoked in dispatch thread (see http://www.netbeans.org/issues/show_bug.cgi?id=35755)
+                EventQueue.invokeAndWait(new Runnable() {
+                    public void run() {
+                        ((TopComponent)getSource()).close();
+                    }
+                });
+            } catch (Exception e) {
+                throw new JemmyException("Exception while calling close()", e);
+            }
+        }
         waitComponentShowing(false);
     }
 
