@@ -447,7 +447,8 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
             throws IOException, ClassNotFoundException {
                 in.defaultReadObject();
                 
-                super.entry = this.entry;
+                if(this.entry != null)
+                    super.entry = this.entry;
         }
     }
 
