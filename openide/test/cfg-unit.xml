@@ -43,8 +43,6 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/openide/loaders/DataFolderTest.class/testSortMode"/> <!-- failing in cont. test -->
 		<exclude name="org/openide/loaders/DataFolderTest.class/testMove"/> <!-- failing in cont. test -->
 		<exclude name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/> <!-- failing in cont. test -->
-                <!-- #31906 - the folder refresh was rewritten and this test is not valid anymore probably -->
-                <exclude name="org/openide/loaders/DataFolderTest.class/testOrderInAtomicAction"/>
                 <!-- following was disabled because of issue #20179 -->
                 <exclude name="org/openide/loaders/DataFolderMoveTest.class"/>
                 <!-- x -->
@@ -121,8 +119,6 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="org/openide/loaders/DataFolderTest.class/testSortMode"/>
 		<include name="org/openide/loaders/DataFolderTest.class/testMove"/>
 		<include name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/>
-                <!-- #31906 - the folder refresh was rewritten and this test is not valid anymore probably -->
-                <include name="org/openide/loaders/DataFolderTest.class/testOrderInAtomicAction"/>
                 <!-- #28118 -->
                 <include name="org/openide/loaders/InstanceDataObjectTest.class/testFiringEventWhenDeleted"/>
 		<!-- Nodes -->
