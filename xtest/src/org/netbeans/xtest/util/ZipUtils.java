@@ -67,6 +67,10 @@ public class ZipUtils {
         if (!destFile.exists()) {
             destFile.mkdirs();
         }
+        
+        // create canonical destFile
+        File canonicalDestFile = destFile.getCanonicalFile();
+        
         if (!zipFile.exists()) {
              debugInfo("unpackZip: File "+zipFile.getName()+" does not exist");
             throw new IllegalArgumentException("Zip "+zipFile.getName()+" does not exist");
@@ -90,7 +94,7 @@ public class ZipUtils {
             while (entry != null) {
                 String entryName = entry.getName();
                 if (entryName.startsWith(fileToUnpack)) {
-                    String outFilename = destFile.getAbsolutePath()+File.separator+entryName;
+                    String outFilename = canonicalDestFile.getAbsolutePath()+File.separator+entryName;
                     debugInfo("unpackZip: Extracting "+outFilename);
                     if (entry.isDirectory()) {
                         File dir  = new File(outFilename);
@@ -106,9 +110,19 @@ public class ZipUtils {
                             throw new IOException("Directory cannot be created:"+outFilename);
                         }
                     } else {
-                        debugInfo("unpackZip: Extracting file");
+                        // check for parent dir existence ...
+                        File outParentDir  = new File(outFilename).getParentFile();
+                        if (!outParentDir.exists()) {
+                            // create it
+                            debugInfo("unpackZip: Making directory");
+                            if (!outParentDir.mkdirs()) {
+                                throw new IOException("Directory cannot be created:"+outFilename);
+                            }
+                        }
                         
+                        debugInfo("unpackZip: Extracting file");                        
                         out = new FileOutputStream(outFilename);
+                        
                         int bytesRead;
                         while ((bytesRead = zis.read(buffer)) != -1) {
                             out.write(buffer,0,bytesRead);
