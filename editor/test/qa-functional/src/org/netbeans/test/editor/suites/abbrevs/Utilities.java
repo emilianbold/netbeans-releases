@@ -13,14 +13,17 @@
 
 package org.netbeans.test.editor.suites.abbrevs;
 
-import org.netbeans.test.oo.gui.jelly.MainFrame;
-import org.netbeans.test.oo.gui.jelly.Options;
-import org.netbeans.test.oo.gui.jelly.PropertiesWindow;
 import org.netbeans.modules.editor.options.BaseOptions;
 import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.editor.options.BaseOptionsBeanInfo;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import org.netbeans.modules.editor.options.AllOptions;
+import org.openide.options.SystemOption;
 
 /**
  *
@@ -32,60 +35,59 @@ public class Utilities {
     public Utilities() {
     }
     
-    public static void addAbbreviation(String editorName, String[] abbrevName, String[] abbrevContent) throws Exception {
-        if (abbrevName.length != abbrevContent.length)
-            throw new IllegalArgumentException("The arrays do not have same number of items.");
-        
-        Options.show();
-        Options options = Options.find();
-        PropertiesWindow properties = options.getPropertiesWindow("Editing" + options.delim + "Editor Settings" + options.delim + editorName + " Editor");
-        
-        properties.openEditDialog(getEditorBundle().getString("PROP_" + BaseOptions.ABBREV_MAP_PROP));
-        
-        AbbreviationsDialog abbreviations = new AbbreviationsDialog();
-        
-        for (int cntr = 0; cntr < abbrevContent.length; cntr++) {
-            abbreviations.pushAddNoBlock();
-            
-            AddAbreviationDialog addAbbrev = new AddAbreviationDialog();
-            
-            addAbbrev.putAbbrevShortCut(abbrevName[cntr]);
-            addAbbrev.putAbbrevContent(abbrevContent[cntr]);
-            addAbbrev.pushOKButton();
-        }
-
-        Thread.sleep(1000);
-        
-        abbreviations.pushOKButtonNoBlock();
-        
-        properties.close();
-        options.close();
-    }
-
-    public static void removeAbbreviation(String editorName, String[] abbrevName) throws Exception {
-        Options.show();
-        Options options = Options.find();
-        PropertiesWindow properties = options.getPropertiesWindow("Editing" + options.delim + "Editor Settings" + options.delim + editorName + " Editor");
-        
-        properties.openEditDialog(getEditorBundle().getString("PROP_" + BaseOptions.ABBREV_MAP_PROP));
-        
-        AbbreviationsDialog abbreviations = new AbbreviationsDialog();
-
-        for (int cntr = 0; cntr < abbrevName.length; cntr++ ){
-            if (abbreviations.selectAbbreviation(abbrevName[cntr]))
-                abbreviations.pushRemoveNoBlock();
-        }
-        
-        Thread.sleep(1000);
-        
-        abbreviations.pushOKButtonNoBlock();
-        
-        properties.close();
-        options.close();
-    }
-    
     public static ResourceBundle getEditorBundle() {
         return NbBundle.getBundle(BaseOptionsBeanInfo.class);
+    }
+    
+    /**Saves abbreviations maps for all editor kits installed. You should no
+     * rely on the particular type returned (java.util.Map), but just save the
+     * returned Object and pass it unchanged to restoreAbbreviationsState();
+     */
+    public static Object saveAbbreviationsState() {
+        SystemOption[] options = ((AllOptions) AllOptions.findObject(AllOptions.class)).getOptions();
+        Map            result  = new HashMap();
+        
+        for (int cntr = 0; cntr < options.length; cntr++) {
+            if (options[cntr] instanceof BaseOptions) {
+                BaseOptions baseOptions      = (BaseOptions) options[cntr];
+                
+                result.put(baseOptions.getClass(), baseOptions.getAbbrevMap());
+            }
+        }
+        
+        return result;
+    }
+    
+    public static void restoreAbbreviationsState(Object state) throws ClassCastException {
+        Map abbreviations = (Map) state; //ClassCastException
+        
+        /*Just check, no functionality:
+         */
+        {
+            Iterator it = abbreviations.values().iterator();
+            Map      dummy;
+            
+            while (it.hasNext()) {
+                dummy = (Map) it.next();
+            }
+        }
+        
+        /*The main functionality:
+         */
+        
+        SystemOption[] options = ((AllOptions) AllOptions.findObject(AllOptions.class)).getOptions();
+
+        for (int cntr = 0; cntr < options.length; cntr++) {
+            if (options[cntr] instanceof BaseOptions) {
+                BaseOptions baseOptions      = (BaseOptions) options[cntr];
+                Map         kitAbbreviations = (Map) abbreviations.get(baseOptions.getClass()); //ClassCastException
+                
+                if (kitAbbreviations != null) {
+                    baseOptions.setAbbrevMap(kitAbbreviations);
+                }
+            }
+        }
+        
     }
         
 }

@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
              this file will be searched in directories specified by property xtest.extra.jars.path 
                  example: <property name="xtest.extra.jars.ide" value="jdbc_driver1.zip;jdbcd_river2.jar"/>
           -->
-        <property name="xtest.extra.jars.ide" value="jemmy.jar;jelly-nb.jar"/>
+        <property name="xtest.extra.jars.ide" value="jemmy.jar;jelly-nb.jar;jelly2-nb.jar"/>
 
 
         <!-- Arguments which will be added into commandline of starting IDE. 
