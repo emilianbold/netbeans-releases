@@ -37,6 +37,11 @@ import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.FileOwnerQuery;
 
 
 
@@ -118,36 +123,20 @@ public class SelectorUtils {
    * by <code>filter</code>
    **/
   static public Node sourcesNode(Project prj, FilteredNode.NodeFilter filter) {
-
-    if (prj != null) {
-      Node node = LogicalViews.physicalView(prj).createLogicalView();
-      return new FilteredNode(node, filter);
-    } else {
-      // Thus changing to work with GlobalPathRegistry
-      Set paths = GlobalPathRegistry.getDefault().getPaths( ClassPath.SOURCE );
-      java.util.List roots = new ArrayList();
-      for ( Iterator it = paths.iterator(); it.hasNext(); ) {
-	ClassPath cp = (ClassPath)it.next();
-	roots.addAll( Arrays.asList( cp.getRoots() ) );
-      }
-
-
-      // XXX This is a bit dirty and should be rewritten to Children.Keys
-      // XXX The subnodes deserve better names than src and test
-      java.util.List nodes = new ArrayList();
-      Set names = new HashSet();
-      for( Iterator it = roots.iterator(); it.hasNext(); ) {
-	FileObject fo = (FileObject)it.next();
-	if ( names.contains( fo.getPath()) ) {
-	  continue;
-	}
-	names.add( fo.getPath () );
+      Sources src = ProjectUtils.getSources(prj);
+      SourceGroup[] srcgrps = src.getSourceGroups("java");
+      java.util.List nodes = new ArrayList();      
+      for (int i = 0 ; i < srcgrps.length; i++) {
 	try {
-	  nodes.add( new FilteredNode(DataObject.find( fo ).getNodeDelegate(), filter ));
-	}
-	catch( DataObjectNotFoundException e ) {
-	  // Ignore
-	}
+	  FileObject rfo = srcgrps[i].getRootFolder();
+	  FilteredNode node = new FilteredNode(DataObject.find(rfo).getNodeDelegate(),
+					       filter);
+	  //	  node.setName(srcgrps[i].getName());
+	  node.setDisplayName(srcgrps[i].getDisplayName());
+	  //	node.setIcon(srcgrps[i].getIcon());
+					     
+	  nodes.add(node);
+	} catch (org.openide.loaders.DataObjectNotFoundException ex) {}
       }
 
       Children ch = new Children.Array();
@@ -160,7 +149,7 @@ public class SelectorUtils {
       // XXX Needs some icon.
 
       return repositoryNode;
-    }
+      //    }
   }
 
   /** Instantiate a template object.
