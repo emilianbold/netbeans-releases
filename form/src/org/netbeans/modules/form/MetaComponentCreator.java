@@ -331,12 +331,14 @@ public class MetaComponentCreator {
                 return TARGET_MENU;
         }
 
-        if (Component.class.isAssignableFrom(beanClass)
-            && !java.awt.Window.class.isAssignableFrom(beanClass)
-            && !java.applet.Applet.class.isAssignableFrom(beanClass))
-        {   // visual component
+        if (Component.class.isAssignableFrom(beanClass)) {
+            // visual component
             if (targetComp == null)
                 return TARGET_VISUAL;
+
+            if (java.awt.Window.class.isAssignableFrom(beanClass)
+                    || java.applet.Applet.class.isAssignableFrom(beanClass))
+                return defaultToOthers ? TARGET_VISUAL : NO_TARGET;
 
             if (!(targetComp instanceof RADVisualComponent))
                 return NO_TARGET; // no visual target
@@ -499,6 +501,11 @@ public class MetaComponentCreator {
         // non-default values e.g. a label on buttons, checkboxes
         defaultComponentInit(newMetaComp);
 
+        Class beanClass = newMetaComp.getBeanClass();
+        if (java.awt.Window.class.isAssignableFrom(beanClass)
+                || java.applet.Applet.class.isAssignableFrom(beanClass))
+            targetComp = null;
+        
         addVisualComponent(newMetaComp, targetComp, constraints);
 
         return newMetaComp;
