@@ -847,6 +847,8 @@
    <mapID target="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer" url="filesystems/filesystems_diff.html" />
    <mapID target="org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer" url="filesystems/filesystems_diff.html" />
    <mapID target="org.netbeans.modules.diff.builtin.DefaultDiff" url="filesystems/filesystems_diff.html" />
+   <mapID target="org.netbeans.modules.merge.Merge.visualizers" url="cvs-nb/cvs_merge-resolve.html" />
+   <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="cvs-nb/cvs_merge-resolve.html" />
 
 
    <!--Filesystems node--> 
