@@ -134,7 +134,7 @@ Microsystems, Inc. All Rights Reserved.
 	<include name="org/netbeans/xtest/testrunner/**"/>
     </jar>	        
   
-    <copy file="external/junit-3.7.jar" tofile="lib/junit.jar"/>
+    <copy file="external/junit-3.8.1.jar" tofile="lib/junit.jar"/>
     <copy file="external/xml-apis-1.0b2.jar" tofile="lib/xml-apis.jar"/>
     <copy file="external/xerces-2.0.1.jar" tofile="lib/xerces.jar"/>
     <copy file="external/xalan-2.3.1.jar" tofile="lib/xalan.jar"/>

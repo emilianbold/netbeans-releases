@@ -1,6 +1,5 @@
 Manifest-Version: 1.0
 XTest-MajorVersion: 1.2
-XTest-MinorVersion: 1
+XTest-MinorVersion: 2pwd
+
 XTest-Branch: dev
-
-
