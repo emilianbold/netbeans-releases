@@ -130,8 +130,9 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Toolbars">
-        <file name="Debugging.xml" url="Debugging.xml"/>
-
+        <file name="Debugging.xml" url="Debugging.xml">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        </file>    
         <folder name="Debug">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-netbeans-modules-debugger-support-actions-StartAction.instance"/>

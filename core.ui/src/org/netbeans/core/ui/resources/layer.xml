@@ -275,7 +275,9 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <!-- specify toolbar configuration for platform ui. -->
-        <file name="Standard.xml" url="Standard.xml"/>
+        <file name="Standard.xml" url="Standard.xml">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        </file>
     </folder> <!-- Toolbars -->
     
     <folder name="Shortcuts">
