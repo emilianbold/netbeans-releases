@@ -277,7 +277,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
   public int getFormSizePolicy () {
     if (formInfo instanceof JAppletFormInfo
-        || formInfo instanceof AppletFormInfo) {
+        || formInfo instanceof AppletFormInfo
+        || formInfo instanceof JPanelFormInfo
+        || formInfo instanceof PanelFormInfo) {
       return GEN_NOTHING;
     }
 
@@ -640,6 +642,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  27   Gandalf-post-FCS1.24.1.1    3/20/00  Tran Duc Trung  
  *  26   Gandalf-post-FCS1.24.1.0    3/20/00  Tran Duc Trung  FIX #6008: don't 
  *       generate resize code for applet and panel
  *  25   Gandalf   1.24        1/13/00  Ian Formanek    NOI18N #2
