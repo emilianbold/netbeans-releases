@@ -59,7 +59,7 @@ public class XTestCompilerType extends CompilerType {
     private static final String cleanResultsTarget = "cleanresults";
     
     /** Holds value of property netbeansHome. */
-    private File netbeansHome;
+    private File netbeansHome=null;
 
     /** Holds value of property xtestHome. */
     private File xtestHome;
@@ -85,10 +85,10 @@ public class XTestCompilerType extends CompilerType {
     
     /** creates new XTestCompilerType, fills and returns propper Handler
      * @return ServiceType.Handler with XTestCompilerType */    
-    public static ServiceType.Handle getHandle() {
+/*    public static ServiceType.Handle getHandle() {
         return new ServiceType.Handle(new XTestCompilerType());
     }
-    
+*/    
     /** returns Help Context
      * @return HelpCtx */    
     public HelpCtx getHelpCtx () {
@@ -112,6 +112,8 @@ public class XTestCompilerType extends CompilerType {
                 setNetbeansHome(home);
                 if (obj instanceof MultiDataObject) {
                     Object coo=ExecSupport.getExecutor(((MultiDataObject)obj).getPrimaryEntry());
+                    if ((coo==null)&&(obj instanceof XTestDataObject))
+                        coo=TopManager.getDefault().getServices().find(XTestExecutor.class);
                     if ((coo!=null) && (coo instanceof XTestExecutor)) {
                         XTestExecutor exec=((XTestExecutor)coo);
                         if (exec.getNetbeansHome()==null)

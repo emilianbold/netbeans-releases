@@ -80,10 +80,10 @@ public class XTestExecutor extends Executor {
     
     /** creates new XTestEecutor, fills and returns propper Handler
      * @return ServiceType.Handle */    
-    public static ServiceType.Handle getHandle() {
+/*    public static ServiceType.Handle getHandle() {
         return new ServiceType.Handle(new XTestExecutor());
     }
-    
+*/    
     /** throws "Not yet implemented" IOException
      * @param info ExecInfo
      * @throws IOException "Not yet implemented" IOException
