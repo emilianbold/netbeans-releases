@@ -24,6 +24,9 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
     /** Creates new form CustomizerCompile */
     public CustomizerCompile(WebProjectProperties webProperties) {
         initComponents();
+        
+        jButtonEdit.setVisible(false);
+        
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerCompile.class, "ACS_CustomizeCompile_A11YDesc")); //NOI18N
         
         vps = new VisualPropertySupport(webProperties);
@@ -72,18 +75,18 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.CompoundBorder(new javax.swing.border.EtchedBorder(), new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12))));
-        jCheckBoxDebugInfo.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Debugging_LabelMnemonic").charAt(0));
         jCheckBoxDebugInfo.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_DebugInfo_JCheckBox"));
+        jCheckBoxDebugInfo.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Debugging_LabelMnemonic").charAt(0));
         jCheckBoxDebugInfo.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jCheckBoxDebugInfo, gridBagConstraints);
         jCheckBoxDebugInfo.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeCompile_Debugging__A11YDesc"));
 
-        jCheckBoxDeprecation.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Deprecated_LabelMnemonic").charAt(0));
         jCheckBoxDeprecation.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_Deprecation_JCheckBox"));
+        jCheckBoxDeprecation.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Deprecated_LabelMnemonic").charAt(0));
         jCheckBoxDeprecation.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -191,8 +194,8 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         jPanel2.add(jButtonMoveDown, gridBagConstraints);
         jButtonMoveDown.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeCompile_Down_A11YDesc"));
 
-        jButtonEdit.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeCompile_EditLibrary_LabelMnemonic").charAt(0));
         jButtonEdit.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_Edit_JButton"));
+        jButtonEdit.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeCompile_EditLibrary_LabelMnemonic").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
