@@ -230,6 +230,7 @@ Microsystems, Inc. All Rights Reserved.
 
            <!-- Include also editors package (it is not part of explorer library) -->
            <include name="org/openide/explorer/propertysheet/editors/*.class"/>
+           <include name="org/openide/explorer/propertysheet/editors/*.properties"/>
            <exclude name="org/openide/explorer/propertysheet/editors/Enhanced*.class"/>
 
       </fileset>
