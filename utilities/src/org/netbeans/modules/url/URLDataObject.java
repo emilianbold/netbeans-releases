@@ -55,7 +55,7 @@ import org.openide.util.actions.Presenter;
  * @author Ian Formanek
  * @see org.openide.Places.Folders#bookmarks
  */
-public class URLDataObject extends MultiDataObject implements EditCookie, OpenCookie, URLNodeCookie, InstanceCookie {
+public class URLDataObject extends MultiDataObject implements EditCookie, OpenCookie, InstanceCookie {
 
     /** Name for url property. */
     private static final String PROP_URL = "url"; // NOI18N
@@ -186,8 +186,8 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
         TopManager.getDefault().showUrl(url);
     }
 
-    /** Implements <code>URLNodeCookie</code> interface.
-     * @see URLNodeCookie */
+    /** Opens the bookamrks in new browser window.
+     * @see OpenInNewWindowAction */
     public void openInNewWindow () {
         String urlString = getURLString ();
         if(urlString == null)
