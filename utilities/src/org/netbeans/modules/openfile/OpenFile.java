@@ -23,6 +23,7 @@ import java.awt.event.*;
 import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.text.StyledDocument;
 
 import org.openide.*;
 import org.openide.cookies.*;
@@ -30,6 +31,7 @@ import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
+import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 
 /** Opens files when requested. Main functionality.
@@ -45,21 +47,32 @@ class OpenFile extends Object {
   * @param wait whether to wait until requested to return a status
   * @param addr address to send reply to, if waiting
   * @param port port to send reply to, if waiting
+  * @param line line number to try to open to (starting at zero), or <code>-1</code> to ignore
   */
-  static void open (File f, final boolean wait, InetAddress addr, int port) {
+  static void open (File f, final boolean wait, InetAddress addr, int port, int line) {
     FileObject fo = find (f);
     
     if (fo != null) {
       try {
         DataObject obj = DataObject.find (fo);
+        final EditorCookie edit = line != -1 ? (EditorCookie) obj.getCookie (EditorCookie.class) : null;
         final OpenCookie open = (OpenCookie) obj.getCookie (OpenCookie.class);
         final ViewCookie view = (ViewCookie) obj.getCookie (ViewCookie.class);
-        if (open != null || view != null) {
+        if (open != null || view != null || edit != null) {
           TopManager.getDefault ().setStatusText (SettingsBeanInfo.getString (wait ? "MSG_openingAndWaiting" : "MSG_opening", f.toString ()));
-          if (open != null)
+          if (edit != null) {
+            edit.open ();
+            StyledDocument doc = edit.openDocument ();
+            JEditorPane[] panes = edit.getOpenedPanes ();
+            if (panes.length > 0)
+              panes[0].setCaretPosition (NbDocument.findLineOffset (doc, line));
+            else
+              TopManager.getDefault ().setStatusText (SettingsBeanInfo.getString ("MSG_couldNotOpenAt"));
+          } else if (open != null) {
             open.open ();
-          else
+          } else {
             view.view ();
+          }
           TopManager.getDefault ().setStatusText ("");
           if (wait) {
             // Could look for a SaveCookie just to see, but need not.
@@ -440,6 +453,8 @@ class OpenFile extends Object {
 
 /*
  * Log
+ *  28   Gandalf   1.27        1/7/00   Jesse Glick     -line option for line 
+ *       numbers.
  *  27   Gandalf   1.26        1/6/00   Jan Jancura     Icon removed from 
  *       NotifyDesc.
  *  26   Gandalf   1.25        1/4/00   Jesse Glick     Friendlier mount 

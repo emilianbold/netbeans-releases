@@ -45,7 +45,7 @@ static final long serialVersionUID =-3424129228987962529L;
     chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
     if (currDir != null) chooser.setCurrentDirectory (currDir);
     if (chooser.showOpenDialog (null) == JFileChooser.APPROVE_OPTION) {
-      OpenFile.open (chooser.getSelectedFile (), false, null, 0);
+      OpenFile.open (chooser.getSelectedFile (), false, null, 0, -1);
     }
     currDir = chooser.getCurrentDirectory ();
   }
@@ -54,6 +54,8 @@ static final long serialVersionUID =-3424129228987962529L;
 
 /*
  * Log
+ *  10   Gandalf   1.9         1/7/00   Jesse Glick     -line option for line 
+ *       numbers.
  *  9    Gandalf   1.8         11/5/99  Jesse Glick     Context help jumbo 
  *       patch.
  *  8    Gandalf   1.7         11/2/99  Jesse Glick     Commented out testing 
