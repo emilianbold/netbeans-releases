@@ -56,6 +56,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
     setIconBase ("/com/netbeans/developer/impl/resources/repository");
     setName (NbBundle.getBundle (DataSystem.class).getString ("dataSystemName"));
     setShortDescription (NbBundle.getBundle (DataSystem.class).getString ("CTL_Repository_Hint"));
+    getCookieSet().add(fsp);
   }
 
   /** Constructor. Uses default file system pool.
@@ -234,6 +235,8 @@ static final long serialVersionUID =-2266375092419944364L;
 
 /*
  * Log
+ *  24   Gandalf   1.23        11/29/99 Petr Kuzel      Repository node tagged 
+ *       by Repository cookie.
  *  23   Gandalf   1.22        11/5/99  Jaroslav Tulach WeakListener has now 
  *       registration methods.
  *  22   Gandalf   1.21        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
