@@ -32,6 +32,12 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.file.name" value="test.jar"/>
     <property name="xtest.file.location" value="lib"/>
 
+    <!-- These in/excludes will be added to xtest.pattern    -->
+    <!-- if you want to use these properties, you should use -->
+    <!-- config with empty testbag                           -->    
+    <property name="xtest.includes" value=""/>
+    <property name="xtest.excludes" value=""/>   
+    
 
     <target name="forbidden">
        <fail message="This script is not intended to be directly executed. This in only library."/>
