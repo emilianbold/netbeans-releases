@@ -25,14 +25,14 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="core qa-functional test config">
 <!-- START Window System testbags -->
-    <testbag testattribs="stable and ide" executor="ide" name="Validation tests - initial position of windows (in ide)" resultsprocessor="unit">
+    <testbag testattribs="stable or ide" executor="ide" name="Validation tests - initial position of windows (in ide)" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>                
                 <include name="gui/windowsystem/validation/Validation_Init.class"/>		               
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="stable and ide" executor="ide" name="Validation tests - docking/attaching/resize/move/project switching (in ide)" resultsprocessor="unit">
+    <testbag testattribs="stable or ide" executor="ide" name="Validation tests - docking/attaching/resize/move/project switching (in ide)" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/windowsystem/validation/Validation_Docking.class"/>		
@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="stable and ide" executor="ide" name="Main Window tests (in ide)" resultsprocessor="unit">
+    <testbag testattribs="stable or ide" executor="ide" name="Main Window tests (in ide)" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/windowsystem/mainwindow/MainMenu.class"/>		
@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
 
 
 <!-- Start Property Editors testbag -->
-    <testbag testattribs="stable and ide and pe" executor="ide" name="Property Editors and Customizers tests" resultsprocessor="unit">
+    <testbag testattribs="stable or ide or pe" executor="ide" name="Property Editors and Customizers tests" resultsprocessor="unit">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_*.class"/>
@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
 <!-- END Property Editors testbag -->
     
    <!-- 
-    <testbag testattribs="stable and ide" executor="code" name="testbag_2" resultsprocessor="unit">
+    <testbag testattribs="stable or ide" executor="code" name="testbag_2" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>
        
