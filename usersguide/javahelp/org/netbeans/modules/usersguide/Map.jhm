@@ -54,6 +54,13 @@
 <mapID target="objects.show-extensions" url="objects/objects_show-extensions.html" />
 <mapID target="objects.specify-extension" url="objects/objects_specify-extension.html" />
 
+<mapID target="files.diff" url="files/files_diff.html" />
+<mapID target="files.icons" url="files/files_icons.html" />
+<mapID target="files.ignore-files" url="files/files_ignore-files.html" />
+<mapID target="files.search" url="files/files_search.html" />
+<mapID target="files.template" url="files/files_template.html" />
+<mapID target="files.unknown" url="files/files_unknown.html" />
+
 <mapID target="search" url="objects/search/search.html" />
 <mapID target="search.combo" url="objects/search/search_combo.html" />
 <mapID target="search.date" url="objects/search/search_date.html" />
@@ -322,7 +329,6 @@
 <mapID target="workspace.clone" url="workspace/clone.html" />
 <mapID target="workspace.window.mode" url="workspace/window_modes.html" />
 
-<mapID target="propfiles.prop" url="java/nodes/properties.html" />
 <mapID target="propfiles.intro" url="propfiles/propfile.html" />
 <mapID target="propfiles.creating" url="propfiles/creatingprops.html" />
 <mapID target="propfiles.adding" url="propfiles/addingprops.html" />
@@ -783,50 +789,6 @@
    
    <mapID target="org.openide.awt.MenuBar$MenuFolder.Project" url="pending.html" /> 
    <mapID target="org.netbeans.modules.form.editors2.BorderEditor$BorderPanel" url="pending.html" />
-
-<!--Explorer Node CSH-->
-   <mapID target="org.openide.src.nodes.MethodNode" url="java/nodes/methods.html" />
-   <mapID target="org.openide.src.nodes.ElementCategory.Methods" url="java/nodes/methods.html" />
-   <mapID target="org.openide.src.ConstructorNode" url="java/nodes/constructors.html" />
-   <mapID target="org.openide.src.nodes.ElementCategory.Constructors" url="java/nodes/constructors.html" />
-   <mapID target="org.openide.src.nodes.FieldNode" url="java/nodes/fields.html" />
-   <mapID target="org.openide.src.nodes.ElementCategory.Fields" url="java/nodes/fields.html" />
-   <mapID target="org.openide.src.nodes.ClassNode" url="java/nodes/class.html" /> 
-   <mapID target="org.netbeans.modules.java.JavaDataObject" url="java/nodes/source.html" /> 
-   <mapID target="org.netbeans.modules.form.FormDataObject" url="java/nodes/form.html" /> 
-   <mapID target="org.netbeans.modules.form.FormObjectProperties" url="java/nodes/form_props.html" /> 
-   <mapID target="org.netbeans.modules.clazz.SerDataObject" url="java/nodes/prototype.html" /> 
-   <mapID target="org.netbeans.modules.clazz.ClassDataObject" url="java/nodes/class.html" />
-   <mapID target="org.openide.src.nodes.InterfaceNode" url="java/nodes/interface.html" /> 
-   <mapID target="org.openide.src.nodes.InitializerNode" url="java/nodes/constructors.html" />
-   
-<!-- Java node property sheet CSH -->
-   <mapID target="org.netbeans.modules.java.JavaNode.properties" url="java/nodes/source_props.html" />
-   <mapID target="org.openide.src.ConstructorProperties" url="java/nodes/constructors_props.html" />
-   <mapID target="org.openide.src.MethodProperties" url="java/nodes/methods_props.html" />
-   <mapID target="org.openide.src.ClassProperties" url="java/nodes/class_props.html" />
-   <mapID target="org.openide.src.InterfaceProperties" url="java/nodes/interface_props.html" />
-   <mapID target="org.openide.src.InitializerProperties" url="java/nodes/constructors_props.html" />
-   <mapID target="org.openide.src.FieldProperties" url="java/nodes/fields_props.html" />
-
-   <mapID target="org.netbeans.modules.html.HtmlLoader.Obj" url="objects/objects_icons.html" />
-   <mapID target="org.netbeans.modules.beans.EventSetPatternNode" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.IdxPropertyPatternNode" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_IDXPROPERTY" url="java/nodes/beanprop.html" /> 
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_MULTICASTSE" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_UNICASTSE" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_PROPERTY" url="java/nodes/beanprop.html" /> 
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Indexed Property" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Multicast Event Source" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Unicast Event Source" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Property" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogProperty" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogIdxProperty" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogUniCastES" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogMultiCastES" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.PatternNode" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.PropertyPatternNode" url="java/nodes/beanprop.html" />
    
    <mapID target="org.netbeans.modules.debugger.core.CoreDebugger.dialog" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.session.actions.StartSessionAction" url="pending.html" />

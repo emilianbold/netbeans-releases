@@ -50,10 +50,10 @@
 
   <tocitem text="Working with Files" >
     <tocitem text="Viewing the Physical Layout of Project Files" target="tbd" />
-    <tocitem text="Searching Files" target="search" />
-    <tocitem text="Specifying an Extension for a Text File" target="objects.specify-extension" />
-    <tocitem text="Adding a File Extension to an Object Type" target="objects.file-extensions" />
-    <tocitem text="Hiding File Extensions" target="objects.show-extensions" />
+    <tocitem text="Searching Files" target="files.search" />
+    <tocitem text="Creating a Template" target="files.template" />
+    <tocitem text="Working with Unknown File Extensions" target="files.unknown" />
+    <tocitem text="Specifying Files to Ignore" target="tbd" />
   </tocitem>
 
   <tocitem text="Using Version Control with the IDE" >
