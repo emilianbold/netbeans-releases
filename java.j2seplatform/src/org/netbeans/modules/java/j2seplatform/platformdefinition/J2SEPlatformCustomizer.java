@@ -43,7 +43,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
     private static final int SOURCES = 1;
     private static final int JAVADOC = 2;
 
-    private J2SEPlatformImpl platform;
+    private J2SEPlatformImpl platform;    
 
     public J2SEPlatformCustomizer (J2SEPlatformImpl platform) {
         this.platform = platform;
@@ -74,6 +74,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         private JButton moveUpButton;
         private JButton moveDownButton;
         private int type;
+        private File currentDir;
 
         public PathView (J2SEPlatformImpl platform, int type) {
             this.type = type;
@@ -319,6 +320,9 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             chooser.setFileFilter (new SimpleFileFilter(message,new String[] {"ZIP","JAR"}));   //NOI18N
             chooser.setAcceptAllFileFilterUsed(false);
+            if (this.currentDir != null) {
+                chooser.setCurrentDirectory(this.currentDir);
+            }
             if (chooser.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
                 File[] fs = chooser.getSelectedFiles();
                 PathModel model = (PathModel) this.resources.getModel();
@@ -349,6 +353,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                     }
                     this.resources.setSelectedIndices(toSelect);
                 }
+                this.currentDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
             }
         }
 
