@@ -17,6 +17,8 @@ import org.openide.ErrorManager;
 import javax.swing.text.*;
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * A custom Swing text View which supports line wrapping.  The default Swing
@@ -97,38 +99,87 @@ public class WrappedTextView extends View {
         unselectedErr = selectedErr;
     }
 
-    
+
     public WrappedTextView(Element elem, JTextComponent comp) {
         super(elem);
         this.comp = comp;
     }
 
-    /**
-     * Determines the preferred span for this view along an
-     * axis.
-     *
-     * @param axis may be either <code>View.X_AXIS</code> or
-     *             <code>View.Y_AXIS</code>
-     * @return the span the view would like to be rendered into.
-     *         Typically the view is told to render into the span
-     *         that is returned, although there is no guarantee.
-     *         The parent may choose to resize or break the view
-     * @see javax.swing.text.View#getPreferredSpan
-     */
+
     public float getPreferredSpan(int axis) {
         OutputDocument doc = odoc();
+        float result = 0;
         if (doc != null) {
             switch (axis) {
                 case X_AXIS :
-                    return doc.getLongestLineLength() * charWidth();
+                    result = getCharsPerLine();
+                    break;
                 case Y_AXIS :
-                    return doc.getLogicalLineCountIfWrappedAt(getCharsPerLine()) * charHeight();
+                    result = doc.getLogicalLineCountIfWrappedAt(getCharsPerLine()) * charHeight() + fontDescent();
+                    break;
                 default :
                     throw new IllegalArgumentException (Integer.toString(axis));
             }
-        } else {
-            return 0;
+//            System.err.println ("Preferred " + a2s(axis) + "=" + result + " for " + doc.getElementCount() + " lines" + l2c(axis, result));
         }
+        return result;
+    }
+
+    private String l2c(int axis, float count) {
+        int ct = (int) count;
+        String result = "";
+        switch (axis) {
+            case X_AXIS :
+                result = " = " + (ct * charWidth()) + " pixels width";
+                break;
+            case Y_AXIS :
+                result = " = " + (ct * charHeight()) + " pixels height";
+                break;
+        }
+        result += " logical lines: " + odoc().getLogicalLineCountIfWrappedAt(getCharsPerLine());
+        return result;
+    }
+
+    private static String a2s(int i) {
+        return i == X_AXIS ? "X_AXIS" : "Y_AXIS";
+    }
+
+    public float getMinimumSpan(int axis) {
+       OutputDocument doc = odoc();
+        float result = 0;
+        if (doc != null) {
+            switch (axis) {
+                case X_AXIS :
+                    result = 80;
+                    break;
+                case Y_AXIS :
+                    result = doc.getLogicalLineCountIfWrappedAt(getCharsPerLine()) * charHeight() + fontDescent();
+                    break;
+                default :
+                    throw new IllegalArgumentException (Integer.toString(axis));
+            }
+//            System.err.println ("Minimum " + a2s(axis) + "=" + result+ " for " + doc.getElementCount() + " lines"+ l2c(axis, result));
+        }
+        return result;
+    }
+
+    public float getMaximumSpan(int axis) {
+       OutputDocument doc = odoc();
+        float result = 0;
+        if (doc != null) {
+            switch (axis) {
+                case X_AXIS :
+                    result = doc.getLongestLineLength();
+                    break;
+                case Y_AXIS :
+                    result = doc.getLogicalLineCountIfWrappedAt(80) + fontDescent();
+                    break;
+                default :
+                    throw new IllegalArgumentException (Integer.toString(axis));
+            }
+//            System.err.println ("Maximum " + a2s(axis) + "=" + result+ " for " + doc.getElementCount() + " lines"+ l2c(axis, result));
+        }
+        return result;
     }
 
     /**
@@ -180,6 +231,8 @@ public class WrappedTextView extends View {
      */
     public void setChanged(boolean val) {
         changed = val;
+        updateInfo (null);
+        preferenceChanged(this, true, true);
     }
 
     /**
@@ -227,23 +280,25 @@ public class WrappedTextView extends View {
      * the charcter width/height, etc.
      * @param g
      */
-    private void updateInfo(Graphics g) {
-//        if (charWidth == -1 || changed) {
-            aa = ((Graphics2D) g).getRenderingHint(RenderingHints.KEY_ANTIALIASING) ==
-                RenderingHints.VALUE_ANTIALIAS_ON;
+    public void updateInfo(Graphics g) {
+        if (charWidth == -1 || changed) {
+            if (g != null) {
+                aa = ((Graphics2D) g).getRenderingHint(RenderingHints.KEY_ANTIALIASING) ==
+                    RenderingHints.VALUE_ANTIALIAS_ON;
 
-            FontMetrics fm = g.getFontMetrics(comp.getFont());
-            charWidth = fm.charWidth('m'); //NOI18N
-            charHeight = fm.getHeight();
-            fontDescent = fm.getMaxDescent();
+                FontMetrics fm = g.getFontMetrics(comp.getFont());
+                charWidth = fm.charWidth('m'); //NOI18N
+                charHeight = fm.getHeight();
+                fontDescent = fm.getMaxDescent();
+                charsPerLine = width / charWidth;
+            }
             if (comp.getParent() instanceof JViewport) {
                 JViewport jv = (JViewport) comp.getParent();
-                width = jv.getExtentSize().width - (aa ? 18 : 24);
+                width = jv.getExtentSize().width - (aa ? 18 : 17);
             } else {
-                width = comp.getWidth() - (aa ? 18 : 24);
+                width = comp.getWidth() - (aa ? 18 : 17);
             }
-            charsPerLine = width / charWidth;
-//        }
+        }
     }
 
     /**
@@ -251,7 +306,7 @@ public class WrappedTextView extends View {
      *
      * @return
      */
-    private int margin() {
+    public static int margin() {
         return 9;
     }
 
@@ -283,7 +338,7 @@ public class WrappedTextView extends View {
 
             d.toLogicalLineIndex(ln, charsPerLine);
 
-            int firstline = ln[0]; //XXX
+            int firstline = ln[0];
 
             int count = lineCount - firstline;
 
@@ -318,7 +373,7 @@ public class WrappedTextView extends View {
                             //Fast forward through logical lines above the first one we want
                             //to paint, but do redraw the arrow so we don't erase it
                             currLogicalLine++;
-                            drawArrow (g, y - ((logicalLines - currLogicalLine) * charHeight()));
+                            drawArrow (g, y - ((logicalLines - currLogicalLine) * charHeight()), currLogicalLine == ln[1]);
                         }
                     }
                     //Iterate all the logicalLines lines
@@ -327,7 +382,7 @@ public class WrappedTextView extends View {
                         int lenToDraw = Math.min(charsPerLine, length - charpos);
 
                         if (currLogicalLine != logicalLines-1) {
-                            drawArrow (g, y);
+                            drawArrow (g, y, currLogicalLine == logicalLines-2);
                         }
                         int realPos = lineStart + charpos;
 
@@ -371,8 +426,7 @@ public class WrappedTextView extends View {
      * @param g A graphics to paint into
      * @param y The y coordinate of the line as a font baseline position
      */
-    private void drawArrow (Graphics g, int y) {
-        Graphics2D g2d = (Graphics2D) g;
+    private void drawArrow (Graphics g, int y, boolean drawHead) {
         int fontHeight = charHeight();
         Color c = g.getColor();
 
@@ -381,39 +435,34 @@ public class WrappedTextView extends View {
         int w = getWidth() + 15;
         y+=2;
 
-        Stroke s = g2d.getStroke();
-        if (aa) {
-            g2d.setStroke (new BasicStroke(1.4f));
-            g.drawArc(w - 8, y - (fontHeight / 2), 8, fontHeight, 265, 185);
-        } else {
-            g.drawLine (w-8, y - (fontHeight / 2), w-1, y - (fontHeight / 2));
-            g.drawLine (w-8, y - (fontHeight / 2) + 1, w, y - (fontHeight / 2) + 1);
-            g.drawLine (w-1, y - (fontHeight / 2), w-1, y + (fontHeight / 2));
-            g.drawLine (w, y - (fontHeight / 2)+1, w, y + (fontHeight / 2) - 1);
 
-            g.drawLine (w-6, y + (fontHeight / 2)-1, w, y + (fontHeight / 2)-1);
-            g.drawLine (w-6, y + (fontHeight / 2), w-1, y + (fontHeight / 2));
+        int rpos = aa ? 8 : 4;
+        if (aa) {
+            g.drawArc(w - rpos, y - (fontHeight / 2), rpos + 1, fontHeight, 265, 185);
+        } else {
+            g.drawLine (w-rpos, y - (fontHeight / 2), w, y - (fontHeight / 2));
+            g.drawLine (w, y - (fontHeight / 2)+1, w, y + (fontHeight / 2) - 1);
+            g.drawLine (w-rpos, y + (fontHeight / 2), w, y + (fontHeight / 2));
         }
         if (aa) {
             w++;
         }
-        int[] xpoints = new int[] {
-            w - 10,
-            w - 5,
-            w - 5,
-        };
-        int[] ypoints = new int[] {
-            y + (fontHeight / 2),
-            y + (fontHeight / 2) - 5,
-            y + (fontHeight / 2) + 5,
-        };
-        g.fillPolygon(xpoints, ypoints, 3);
-
-        if (aa) {
-            g2d.setStroke(s);
+        if (drawHead) {
+            rpos = aa ? 7 : 8;
+            int[] xpoints = new int[] {
+                w - rpos,
+                w - rpos + 5,
+                w - rpos + 5,
+            };
+            int[] ypoints = new int[] {
+                y + (fontHeight / 2),
+                y + (fontHeight / 2) - 5,
+                y + (fontHeight / 2) + 5,
+            };
+            g.fillPolygon(xpoints, ypoints, 3);
         }
 
-        g.setColor (UIManager.getColor("controlShadow")); //NOI18N
+        g.setColor (arrowColor());
         g.drawLine (1, y - (fontHeight / 2), 5, y - (fontHeight / 2));
         g.drawLine (1, y - (fontHeight / 2), 1, y + (fontHeight / 2));
         g.drawLine (1, y + (fontHeight / 2), 5, y + (fontHeight / 2));

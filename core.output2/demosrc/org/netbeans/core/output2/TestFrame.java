@@ -29,9 +29,16 @@
     private void writeContent() {
         System.err.println ("Writing content");
         io.getOut().println("This is an output window");
-        for (int i=0; i < 100; i++) {
-            out.println (i +  ": Wow, we will write a long line of text here.  Very long in fact - who knows just how long it" +
+        for (int i=0; i < 2000; i++) {
+            out.println (Thread.currentThread().getName() + i +  ": Wow, we will write a long line of text here.  Very long in fact - who knows just how long it" +
                 " might end up being?  Well, we'll have to see.");
+
+//            if (i == 1000) {
+            try {
+                out.println ("This is the thousandth line", new L());
+//                Thread.currentThread().sleep(20);
+                } catch (Exception e) {}
+//            }
 
             io.getErr().println (i + ": This is a not so long line");
 //            out.println (i + ": This, on the other hand, is a relatively short line");
@@ -67,18 +74,39 @@
         io = (NbIO) new NbIOProvider().getIO ("Test", false);
     }
 
+    private static int ct = 3;
     public void run () {
         if (SwingUtilities.isEventDispatchThread()) {
             out = (OutWriter) io.getOut();
-           new Thread(this).start();
-           out.println ("This is the first text");
+           Thread t = new Thread(this);
+           t.setName ("Thread " + ct + " - ");
+           t.start();
+           ct--;
+           out.println ("This is the first text " + ct);
            ((OutputPane) win.getSelectedTab().getOutputPane()).setWrapped(true);
+           if (ct > 0) {
+               SwingUtilities.invokeLater (this);
+           }
         } else {
         try {
             Thread.currentThread().sleep(3000);
             } catch (Exception e) {}
             writeContent();
         }
+    }
+
+
+    public class L implements OutputListener {
+
+        public void outputLineSelected(OutputEvent ev) {
+        }
+
+        public void outputLineAction(OutputEvent ev) {
+        }
+
+        public void outputLineCleared(OutputEvent ev) {
+        }
+
     }
 
 
