@@ -29,7 +29,6 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
-import java.util.StringTokenizer;
 import org.netbeans.TopSecurityManager;
 import org.netbeans.core.NbTopManager;
 import org.netbeans.xtest.util.JNIKill;
@@ -198,12 +197,7 @@ public class Main extends Object {
     }
     
     
-    static final String TEST_CLASS = "test.class";
-    //private static final String TEST_CLASSPATH = "test.classpath";
-    private static final String TEST_ARGS = "test.arguments";
-    static final String TEST_EXECUTOR = "test.executor";
     private static final String TEST_EXIT = "test.exit";
-    static final String TEST_FINISHED = "test.finished";
     private static final String TEST_TIMEOUT = "xtest.timeout";
     //private static final String TEST_REDIRECT = "test.output.redirect";
     private static final String TEST_REUSE_IDE = "test.reuse.ide";
@@ -232,11 +226,6 @@ public class Main extends Object {
     }
     
     private static void doTestPart() {
-        
-        
-        // do nothing if no TEST_CLASS specified
-        if (System.getProperty(TEST_CLASS) == null)
-            return;                
         
         NbTopManager.get();
         
@@ -267,19 +256,6 @@ public class Main extends Object {
             testTimeout = DEFAULT_TIMEOUT;
         }
 
-        
-        StringTokenizer st = new StringTokenizer(System.getProperty(TEST_ARGS, ""));
-        final String[] params = new String[st.countTokens()];
-        int i = 0;
-        while (st.hasMoreTokens()) {
-            params[i++] = st.nextToken();
-        }
-        
-        
-        // get the current time 
-        final long startTime = System.currentTimeMillis();                 
-        final long testTime = testTimeout;
-        
         Thread testThread = new Thread( new Runnable() {
             public void run() {
                 try {
@@ -297,13 +273,8 @@ public class Main extends Object {
                             getProjectsHandle().openProject(System.getProperty(IDE_OPEN_PROJECT));
                         }
                     }
-                        
-                        
-        /* 
-                    setNodeProperties();
-                    */
                     
-                    handle.run(params, startTime, testTime);
+                    handle.run();
                 }
                 catch (Exception ex) {
                     errMan.notify(ErrorManager.EXCEPTION, ex);
@@ -396,7 +367,7 @@ public class Main extends Object {
            Integer intparam[] = {new Integer(1)};
            errMan.log(ErrorManager.USER, new Date().toString() + ": using TopSecurityManager.exit(1) to exit IDE.");
            // exit
-           m.invoke(null,intparam);
+           m.invoke(null,(Object[])intparam);
         }
         catch (Exception e) {
            errMan.log(ErrorManager.USER, new Date().toString() + ": using System.exit(1) to exit IDE.");
@@ -405,45 +376,6 @@ public class Main extends Object {
         }
     }
     
-    /*
-    private static void setNodeProperties() {
-        FileObject fo = Repository.getDefault().findResource(System.getProperty(TEST_CLASS) + ".java");
-        if (fo != null) {
-            try {
-                DataObject obj = DataObject.find(fo);
-                Node nod = obj.getNodeDelegate();
-                Node.PropertySet[] psets = nod.getPropertySets();
-                Node.Property[] props = null;
-                
-                // get the Execution property set
-                for (int i = 0; i < psets.length; i++) {
-                    if (psets[i].getName().equals("Execution")) {
-                        props = psets[i].getProperties();
-                        break;
-                    }
-                }
-                // get the "params" property and try to set it
-                if (props != null) {
-                    for (int i = 0; i < props.length; i++) {
-                        if (props[i].getName().equals("params")) {
-                            if (System.getProperty(TEST_ARGS) != null) {
-                                props[i].setValue(System.getProperty(TEST_ARGS));
-                            }
-                        }
-                    }
-                }
-            }
-            catch (java.lang.Exception ex) {
-                // ok, not able to set the Arguments property
-                // it's still worth trying to proceed with the test
-                // the FileObject may just be read-only
-            }
-            
-        }
-        
-    }
-    */
-
     private static class QueueEmpty implements AWTEventListener {
         
         private long eventDelayTime = 100; // 100 millis
@@ -561,7 +493,7 @@ public class Main extends Object {
     }
     
     public static interface MainWithExecInterface {
-        void run(String[] params, long startTime, long testTime) throws Exception;
+        void run() throws Exception;
         int terminateProcesses();
         //void setRedirect();
     }

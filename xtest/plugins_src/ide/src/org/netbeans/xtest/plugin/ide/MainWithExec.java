@@ -15,7 +15,6 @@ package org.netbeans.xtest.plugin.ide;
 
 import java.awt.event.ActionEvent;
 import java.util.Collection;
-import java.util.Date;
 import org.netbeans.core.NbPlaces;
 import org.netbeans.core.execution.ProcessNode;
 import org.openide.ErrorManager;
@@ -29,7 +28,6 @@ import junit.framework.Test;
 import junit.framework.TestListener;
 import junit.framework.TestResult;
 import org.netbeans.xtest.plugin.ide.services.XTestErrorManager;
-import org.openide.util.SharedClassObject;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.xtest.testrunner.JUnitTestRunner;
 
@@ -188,7 +186,7 @@ public class MainWithExec implements Main.MainWithExecInterface {
         return 0;
     }
     
-    public void run(String[] params, long startTime, long testTime) throws Exception {
+    public void run() throws Exception {
         try {
             if("true".equals(System.getProperty("xtest.ide.error.manager"))) {
                 // install xtest error manager

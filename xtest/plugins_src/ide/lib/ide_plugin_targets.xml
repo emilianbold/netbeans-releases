@@ -37,7 +37,6 @@ Microsystems, Inc. All Rights Reserved.
         
         <!-- there should be some better userdir than this -->
         <property name="xtest.userdir" location="${xtest.workdir}/sys/ide"/>
-        <property name="test.class" value="org.netbeans.xtest.testrunner.IdeJUnitTestRunnerExecutor"/>
         
         
         <property name="xtest.ide.commandline.suffix" value=""/>
@@ -159,10 +158,6 @@ Microsystems, Inc. All Rights Reserved.
 
         <ide-jvmargs jvmargs="${xtest.ide.jvmargs}" property="xtest.ide.commandline.jvmargs"/>
             
-        <!--
-        <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -nosplash -cp:p &quot;${xtest.ide.path}&quot; -J-Dtest.class=${test.class} -J-Dtest.classpath=&quot;${test.classpath}&quot; -J-Dtest.basedir=&quot;${basedir}&quot; -J-Dtest.ant.file=&quot;${ant.file}&quot; -J-Dtest.target=${test.target} -J-Dtest.reuse.ide=${xtest.ide.reuse.userdir} -J-Dxtest.home=&quot;${xtest.home}&quot; -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.name=&quot;${tbag.name}&quot; -J-Dtbag.executor=${tbag.executor} -J-Dxtest.module=&quot;${xtest.module}&quot; -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; -J-Dxtest.distexec=true -J-Dtest.exit=${xtest.ide.exit} -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; -J-Dxtest.workdir=&quot;${xtest.workdir}&quot; -J-Dxtest.results=&quot;${xtest.results}&quot; -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Djunit.properties.file=${junit.properties.file} -J-Dnetbeans.windows=${xtest.ide.winsys} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
-        -->
-        
         <condition property="xtest.ide.timeout" value="0">
  	   <equals arg1="${xtest.ide.exit}" arg2="false"/>
  	</condition>        
@@ -210,7 +205,6 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dnetbeans.full.hack=true 
 -J-Dnetbeans.windows=${xtest.ide.winsys} 
 -J-Dnetbeans.systemclassloader.patches=&quot;${xtest.netbeans.systemclassloader.patches}&quot; 
--J-Dtest.class=${test.class} 
 -J-Dtest.exit=${xtest.ide.exit} 
 -J-Dtest.reuse.ide=${xtest.ide.reuse.userdir} 
 -J-Dtest.output.redirect=true 
@@ -241,9 +235,6 @@ ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.s
 http://www.netbeans.org/issues/show_bug.cgi?id=52385
 It can cause problems when temp files are not deleted if test crashes
 -J-Djava.io.tmpdir=&quot;${xtest.tmpdir}&quot;
-
-removed !!!!
--J-Dtest.classpath=&quot;${test.classpath}&quot; 
 
 -->                   
         
