@@ -13,38 +13,36 @@
 
 package gui.window;
 
-import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.DialogOperator;
 
 /**
- * Test of Add JDBC Driver dialog
+ * Test of Project Properties Window
  *
- * @author  anebuzelsky@netbeans.org
+ * @author  mmirilovic@netbeans.org
  */
-public class AddJDBCDriverDialog extends testUtilities.PerformanceTestCase {
+public class ProjectPropertiesWindow extends testUtilities.PerformanceTestCase {
     
-    /** Creates a new instance of AddJDBCDriverDialog */
-    public AddJDBCDriverDialog(String testName) {
+    private static Node testNode;
+    
+    /** Creates a new instance of ProjectPropertiesWindow */
+    public ProjectPropertiesWindow(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
     
-    /** Creates a new instance of AddJDBCDriverDialog */
-    public AddJDBCDriverDialog(String testName, String performanceDataName) {
+    /** Creates a new instance of ProjectPropertiesWindow */
+    public ProjectPropertiesWindow(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
     
-    private Node thenode;
-    
     protected void initialize() {
-        // show Runtime tab and select Databases / Drivers node
-        thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), "Databases|Drivers");
-        thenode.select();
+        testNode = (Node) new ProjectsTabOperator().getProjectRootNode("jEdit41");
     }
     
     public void prepare() {
@@ -52,9 +50,9 @@ public class AddJDBCDriverDialog extends testUtilities.PerformanceTestCase {
     }
     
     public ComponentOperator open() {
-        // invoke Add Driver item from the popup
-        thenode.callPopup().pushMenu("Add Driver ...");
-        return new DialogOperator("Add JDBC Driver");
+        // invoke Window / Properties from the main menu
+        testNode.performPopupAction("Properties");
+        return new NbDialogOperator("Project Properties - jEdit41");
     }
     
 }

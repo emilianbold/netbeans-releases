@@ -28,13 +28,13 @@ import org.netbeans.jemmy.operators.DialogOperator;
  */
 public class SetDefaultServerDialog extends testUtilities.PerformanceTestCase {
     
-    /** Creates a new instance of ValidateSetDefaultServerDialog */
+    /** Creates a new instance of SetDefaultServerDialog */
     public SetDefaultServerDialog(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
     
-    /** Creates a new instance of ValidateSetDefaultServerDialog */
+    /** Creates a new instance of SetDefaultServerDialog */
     public SetDefaultServerDialog(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;

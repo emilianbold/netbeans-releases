@@ -25,12 +25,12 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class PropertyEditorColor extends PropertyEditors {
     
-    /** Creates a new instance of ValidatePropertyEditorColor */
+    /** Creates a new instance of PropertyEditorColor */
     public PropertyEditorColor(String testName) {
         super(testName);
     }
     
-    /** Creates a new instance of ValidatePropertyEditorColor */
+    /** Creates a new instance of PropertyEditorColor */
     public PropertyEditorColor(String testName, String performanceDataName) {
         super(testName,performanceDataName);
     }

@@ -27,12 +27,13 @@ import org.netbeans.jemmy.operators.DialogOperator;
  */
 public class NewDatabaseConnectionDialog extends testUtilities.PerformanceTestCase {
     
-    /** Creates a new instance of ValidateNewDatabaseConnectionDialog */
+    /** Creates a new instance of NewDatabaseConnectionDialog */
     public NewDatabaseConnectionDialog(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
     
+    /** Creates a new instance of NewDatabaseConnectionDialog */
     public NewDatabaseConnectionDialog(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;

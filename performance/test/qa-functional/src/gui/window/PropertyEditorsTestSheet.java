@@ -141,7 +141,7 @@ public class PropertyEditorsTestSheet {
 //            props.put(new TestProperty("Service Type",          org.openide.ServiceType.class));            
 //            props.put(new TestProperty("Short",                 java.lang.Short.class));            
 //            props.put(new TestProperty("short",                 short.class));            
-//            props.put(new TestProperty("String",                java.lang.String.class));            
+            props.put(new TestProperty("String",                java.lang.String.class));            
 //            props.put(new TestProperty("String []",             java.lang.String[].class));            
 //            props.put(new TestProperty("Table Model",           javax.swing.table.TableModel.class));            
 //            props.put(new TestProperty("URL",                   java.net.URL.class));            
