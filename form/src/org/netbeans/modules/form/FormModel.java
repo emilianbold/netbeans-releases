@@ -253,8 +253,8 @@ public class FormModel
                                    LayoutSupport layoutSupport) {
         LayoutSupport current = cont.getLayoutSupport();
 
-        cont.setLayoutSupport(null);
-        ((RADChildren) cont.getNodeReference().getChildren()).updateKeys();
+//        cont.setLayoutSupport(null);
+//        ((RADChildren) cont.getNodeReference().getChildren()).updateKeys();
         cont.setLayoutSupport(layoutSupport);
         ((RADChildren) cont.getNodeReference().getChildren()).updateKeys();
         

@@ -192,6 +192,9 @@ public class LayoutSupportRegistry {
             layoutToLayoutSupport.put(
                 "java.awt.CardLayout",
                 "org.netbeans.modules.form.layoutsupport.CardLayoutSupport");
+            layoutToLayoutSupport.put(
+                "org.netbeans.lib.awtextra.AbsoluteLayout",
+                "org.netbeans.modules.form.layoutsupport.AbsoluteLayoutSupport");
         }
         return layoutToLayoutSupport;
     }

@@ -69,19 +69,19 @@ public class LayoutNode extends AbstractNode implements FormLayoutCookie
     }
 
     public boolean hasCustomizer() {
-        return !layoutSupport.getContainer().isReadOnly()
-                && layoutSupport.getCustomizerClass() != null;
+        if (layoutSupport.getContainer().isReadOnly()
+               || layoutSupport.getCustomizerClass() == null)
+            return false;
+
+        RADVisualContainer container = layoutSupport.getContainer();
+        FormDesigner designer = container.getFormModel().getFormDesigner();
+        return designer.isInDesignedTree(container);
     }
 
     public Component getCustomizer() {
         Class customizerClass = layoutSupport.getCustomizerClass();
         if (customizerClass == null)
             return null;
-
-//        RADVisualContainer container = layoutSupport.getContainer();
-//        FormDesigner designer = container.getFormModel().getFormDesigner();
-//        if (!designer.isInDesignedTree(container))
-//            designer.setTopDesignContainer(container);
 
         Object customizer;
         try {

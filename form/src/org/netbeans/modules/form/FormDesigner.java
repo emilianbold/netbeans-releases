@@ -31,6 +31,8 @@ import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.explorer.ExplorerPanel;
 
+import org.netbeans.lib.awtextra.AbsoluteConstraints;
+
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.*;
 import org.netbeans.modules.form.layoutsupport.*;
@@ -512,10 +514,9 @@ public class FormDesigner extends TopComponent
      * (whether the component is in the tree under top designed container).
      */
     public boolean isInDesignedTree(RADVisualComponent metacomp) {
-        RADVisualContainer parent = metacomp.getParentContainer();
-        while (parent != null) {
-            if (parent == topDesignContainer) return true;
-            parent = parent.getParentContainer();
+        while (metacomp != null) {
+            if (metacomp == topDesignContainer) return true;
+            metacomp = metacomp.getParentContainer();
         }
         return false;
     }
@@ -788,12 +789,16 @@ public class FormDesigner extends TopComponent
                 else
                     root.add(comp, constr);
             }
-            else if (constrDesc instanceof NullLayoutSupport.NullConstraintsDesc) {
-                Rectangle bounds = (Rectangle)constrDesc.getConstraintsObject();
-                if (bounds.width == -1)
-                    bounds.width = comp.getPreferredSize().width;
-                if (bounds.height == -1)
-                    bounds.height = comp.getPreferredSize().height;
+            else if (constrDesc instanceof AbsoluteLayoutSupport.AbsoluteConstraintsDesc) {
+                AbsoluteConstraints ac = (AbsoluteConstraints)
+                                         constrDesc.getConstraintsObject();
+                Rectangle bounds = new Rectangle();
+                bounds.x = ac.x;
+                bounds.y = ac.y;
+                bounds.width = ac.width > -1 ?
+                               ac.width : comp.getPreferredSize().width;
+                bounds.height = ac.height > -1 ?
+                                ac.height : comp.getPreferredSize().height;
                 root.add(comp);
                 comp.setBounds(bounds);
             }

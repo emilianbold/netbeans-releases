@@ -126,28 +126,49 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     // Layout Manager management
 
     public void setLayoutSupport(LayoutSupport laySup) {
-        RADVisualComponent[] comps = getSubComponents();
+        RADVisualComponent[] components = getSubComponents();
+        LayoutSupport.ConstraintsDesc[] oldConstraints = null;
+        LayoutSupport.ConstraintsDesc[] newConstraints = null;
 
         // remove components from current layout
         if (layoutSupport != null)
-            for (int i = 0; i < comps.length; i++)
-                layoutSupport.removeComponent(comps[i]);
+            for (int i = 0; i < components.length; i++) {
+                RADVisualComponent comp = components[i];
+                LayoutSupport.ConstraintsDesc constr =
+                    layoutSupport.getConstraints(comp);
+                if (constr != null) {
+                    if (oldConstraints == null)
+                        oldConstraints =
+                            new LayoutSupport.ConstraintsDesc[components.length];
+                    oldConstraints[i] = constr;
+                }
+                layoutSupport.removeComponent(comp);
+            }
 
         // set new layout
-        this.layoutSupport = laySup;
+        layoutSupport = laySup;
         if (layoutSupport != null) {
             layoutSupport.initialize(this);
 
-            // add components to the new layout
-            for (int i = 0; i < comps.length; i++) {
-                RADVisualComponent comp = comps[i];
-                layoutSupport.addComponent(comp, 
-                                           layoutSupport.getConstraints(comp));
-                comp.resetConstraintsProperties();
+            // convert constraints if needed
+            if (oldConstraints != null &&
+                    layoutSupport.getConstraints(components[0]) == null) {
+                Container cont = (Container)
+                    getFormModel().getFormDesigner().getComponent(this);
+                Component[] comps = cont != null ? cont.getComponents() : null;
+                newConstraints = layoutSupport.convertConstraints(oldConstraints,
+                                                                  comps);
             }
 
-//            setLayoutNodeReference(layoutSupport.getLayoutClass() != null ?
-//                                   new LayoutNode(layoutSupport) : null);
+            // add components to the new layout
+            for (int i = 0; i < components.length; i++) {
+                RADVisualComponent comp = components[i];
+                LayoutSupport.ConstraintsDesc constr = newConstraints != null ? 
+                                            newConstraints[i] :
+                                            layoutSupport.getConstraints(comp);
+                layoutSupport.addComponent(comp, constr);
+                comp.resetConstraintsProperties();
+            }
         }
 
         setLayoutNodeReference(null);
@@ -264,21 +285,4 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         if (!(comp instanceof RADVisualComponent)) throw new IllegalArgumentException();
         return subComponents.indexOf(comp);
     }
-
-    /////
-
-/*    public boolean isAncestorOf(RADVisualComponent comp) {
-        int index = getIndexOf(comp);
-        if (index >= 0)
-            return true;
-        
-        RADComponent comps[] = getSubBeans();
-        for (int i = 0; i < comps.length; i++) {
-            RADComponent c = comps[i];
-            if (c instanceof RADVisualContainer
-                && ((RADVisualContainer)c).isAncestorOf(comp))
-                return true;
-        }
-        return false;
-    } */
 }

@@ -77,11 +77,16 @@ public class SelectLayoutAction extends NodeAction
     protected boolean enable(Node[] activatedNodes) {
         for (int i=0; i < activatedNodes.length; i++) {
             RADVisualContainer container = getContainer(activatedNodes[i]);
-            if (container == null) return false;
+            if (container == null)
+                return false;
 
             LayoutSupport ls = container.getLayoutSupport();
             if (ls != null && ls.getLayoutClass() == null
                     && !(ls instanceof NullLayoutSupport))
+                return false;
+
+            FormDesigner designer = container.getFormModel().getFormDesigner();
+            if (!designer.isInDesignedTree(container))
                 return false;
         }
         return true;

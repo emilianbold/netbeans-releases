@@ -67,7 +67,7 @@ public class FormLoaderSettings extends SystemOption {
     public static final String PROP_OUTPUT_LEVEL = "outputLevel"; // NOI18N
 
     /** Property name of the nullLayout property */
-    public static final String PROP_NULL_LAYOUT = "nullLayout"; // NOI18N
+//    public static final String PROP_NULL_LAYOUT = "nullLayout"; // NOI18N
 
     public static final String PROP_PALETTE_TABS_VISIBLE = "paletteTabsVisible"; // NOI18N
 

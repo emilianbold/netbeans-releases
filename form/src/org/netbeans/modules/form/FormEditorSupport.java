@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
 import java.beans.*;
@@ -55,9 +54,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     private RADComponentNode formRootNode;
     private FormModel formModel;
     private PersistenceManager saveManager;
-
-    /** lock for opening form */
-//    private static final Object OPEN_FORM_LOCK = new Object();
 
     /** Table of FormModel instances of open forms */
     private static Hashtable openForms = new Hashtable();
@@ -323,16 +319,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                 && !"Debugging".equals(name);
     }
 
-/*    private void enforceNodesCreation(Node node) {
-        Children ch = node.getChildren();
-        if (ch != Children.LEAF) {
-            Node[] nodes = ch.getNodes();
-            for (int i = 0; i < nodes.length; i++) {
-                enforceNodesCreation(nodes[i]);
-            }
-        }
-    } */
-
     // -----------
     // saving
 
@@ -453,9 +439,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                         formModel.fireFormChanged();
                     }
                     else if (FormLoaderSettings.PROP_VARIABLES_MODIFIER.equals(propName)) {
-                        formModel.fireFormChanged();
-                    }
-                    else if (FormLoaderSettings.PROP_NULL_LAYOUT.equals(propName)) {
                         formModel.fireFormChanged();
                     }
                     else if (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE.equals(propName)

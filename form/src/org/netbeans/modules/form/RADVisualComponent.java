@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
 import java.util.*;
@@ -84,7 +83,7 @@ public class RADVisualComponent extends RADComponent {
         LayoutSupport laySup = parent.getLayoutSupport();
         if (laySup == null) return null;
 
-        return getConstraintsDesc(laySup.getClass());
+        return laySup.getConstraints(this);
     }
 
     /** Setter for attaching old version of constraints description
@@ -183,17 +182,14 @@ public class RADVisualComponent extends RADComponent {
         for (int i=0; i < constraintsProperties.length; i++) {
             if (constraintsProperties[i] instanceof FormProperty) {
                 FormProperty prop = (FormProperty)constraintsProperties[i];
-                prop.addPropertyChangeListener(getPropertyListener());
-
-                if (!(prop instanceof RADProperty)) { // usually true
-                    prop.addPropertyChangeListener(getConstraintsListener());
-                    // temporarily no property context - until we solve
-                    // persistence for advanced constraints properties
-//                    prop.setPropertyContext(new RADProperty.RADPropertyContext(this));
-                    if (isReadOnly()) {
-                        int type = prop.getAccessType() | FormProperty.NO_WRITE;
-                        prop.setAccessType(type);
-                    }
+                // we suppose constraints property is not RADProperty...
+                prop.addPropertyChangeListener(getConstraintsListener());
+                // temporarily no property context - until we solve
+                // persistence for advanced constraints properties
+//                prop.setPropertyContext(new RADProperty.RADPropertyContext(this));
+                if (isReadOnly()) {
+                    int type = prop.getAccessType() | FormProperty.NO_WRITE;
+                    prop.setAccessType(type);
                 }
             }
         }
@@ -211,14 +207,27 @@ public class RADVisualComponent extends RADComponent {
 
     private PropertyChangeListener getConstraintsListener() {
         if (constraintsListener == null)
-            constraintsListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent ev) {
-                    getFormModel().fireFormChanged();
-//                    RADComponentNode node = getNodeReference();
-//                    if (node != null) node.fireComponentPropertiesChange();
-                }
-            };
+            constraintsListener = new ConstraintsListener();
         return constraintsListener;
+    }
+
+    class ConstraintsListener extends PropertyListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            super.propertyChange(evt);
+
+            // re-add components to reflect changed constraints
+            RADVisualContainer parentCont = getParentContainer();
+            LayoutSupport laysup = parentCont.getLayoutSupport();
+            RADVisualComponent[] components = parentCont.getSubComponents();
+
+            for (int i=0; i < components.length; i++)
+                laysup.removeComponent(components[i]);
+            for (int i=0; i < components.length; i++)
+                laysup.addComponent(components[i],
+                                    laysup.getConstraints(components[i]));
+
+            getFormModel().fireFormChanged();
+        }
     }
 
     // -----------------------------------------------------------------------------

@@ -149,10 +149,6 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
         return false;
     }
 
-    public ConstraintsDesc fixConstraints(ConstraintsDesc constraintsDesc) {
-        return constraintsDesc;
-    }
-
     public int getResizableDirections(Component component) {
         return 0;
     }
@@ -184,6 +180,15 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
 
     public ConstraintsDesc getConstraints(RADVisualComponent component) {
         return (ConstraintsDesc) component.getConstraintsDesc(getClass());
+    }
+
+    public ConstraintsDesc fixConstraints(ConstraintsDesc constraintsDesc) {
+        return constraintsDesc;
+    }
+
+    public ConstraintsDesc[] convertConstraints(ConstraintsDesc[] constraints,
+                                                Component[] components) {
+        return null;
     }
 
     public String getJavaSetLayoutString(/*RADVisualContainer cont*/) {
@@ -262,11 +267,12 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
         if (comp == null || cont == null) return null;
 
         Component[] comps = cont.getComponents();
+        RADVisualComponent[] metacomps = container.getSubComponents();
+        if (comps.length != metacomps.length) return null;
+
         for (int i=0; i < comps.length; i++)
-            if (comps[i] == comp) {
-                RADVisualComponent[] metacomps = container.getSubComponents();
+            if (comps[i] == comp)
                 return getConstraints(metacomps[i]);
-            }
 
         return null;
     }

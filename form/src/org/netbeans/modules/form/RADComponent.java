@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
 import org.openide.explorer.propertysheet.editors.*;
@@ -174,7 +173,8 @@ public class RADComponent implements FormDesignValue {
                     props[i].reinstateProperty();
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        e.printStackTrace();
                     // [PENDING] notify exception?
                     // simply ignore this property
                 }
@@ -740,21 +740,7 @@ public class RADComponent implements FormDesignValue {
     }
 
     protected PropertyChangeListener createPropertyListener() {
-        return new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent ev) {
-                RADComponentNode node = getNodeReference();
-                if (node == null) return;
-
-                // changes in component's properties should be propagated
-                // to it's node
-                if (FormProperty.PROP_VALUE.equals(ev.getPropertyName()))
-                    node.firePropertyChangeHelper(ev.getPropertyName(),
-                                    ev.getOldValue(), ev.getNewValue());
-
-                else if (FormProperty.CURRENT_EDITOR.equals(ev.getPropertyName()))
-                    node.fireComponentPropertySetsChange();
-            }
-        };
+        return new PropertyListener();
     }
 
     protected PropertyChangeListener getPropertyListener() {
@@ -788,8 +774,27 @@ public class RADComponent implements FormDesignValue {
         }
     }
 
+    // -------------
+    // innerclasses
+
+    protected class PropertyListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            RADComponentNode node = getNodeReference();
+            if (node == null) return;
+
+            // changes in component's properties should be propagated
+            // to it's node
+            if (FormProperty.PROP_VALUE.equals(evt.getPropertyName()))
+                node.firePropertyChangeHelper(evt.getPropertyName(),
+                                evt.getOldValue(), evt.getNewValue());
+
+            else if (FormProperty.CURRENT_EDITOR.equals(evt.getPropertyName()))
+                node.fireComponentPropertySetsChange();
+        }
+    }
+
     // ------------------------------------
-    // innerclasses - some hacks for ButtonGroup...
+    // some "hack-classes" for ButtonGroup...
 
     // pseudo-property for buttons - holds ButtonGroup in which button
     // is placed; kind of "reversed" property

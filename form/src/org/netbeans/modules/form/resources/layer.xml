@@ -385,6 +385,11 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/swing/boxLayout.gif" />
                 <attr name="beaninfo" boolvalue="false"/>
             </file>
+            <file name="org-netbeans-lib-awtextra-AbsoluteLayout.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/layoutsupport/resources/AbsoluteLayout.gif" />
+                <attr name="beaninfo" boolvalue="false"/>
+            </file>
             <file name="org-netbeans-modules-form-layoutsupport-NullLayoutSupport.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/layoutsupport/resources/NullLayout.gif" />
@@ -396,7 +401,8 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="java-awt-GridLayout.instance/java-awt-GridBagLayout.instance" boolvalue="true" />
             <attr name="java-awt-GridBagLayout.instance/java-awt-CardLayout.instance" boolvalue="true" />
             <attr name="java-awt-CardLayout.instance/javax-swing-BoxLayout.instance" boolvalue="true" />
-            <attr name="javax-swing-BoxLayout.instance/org-netbeans-modules-form-layoutsupport-NullLayoutSupport.instance" boolvalue="true" />
+            <attr name="javax-swing-BoxLayout.instance/org-netbeans-lib-awtextra-AbsoluteLayout.instance" boolvalue="true" />
+            <attr name="org-netbeans-lib-awtextra-AbsoluteLayout.instance/org-netbeans-modules-form-layoutsupport-NullLayoutSupport.instance" boolvalue="true" />
         </folder>
 
         <folder name="Borders">
