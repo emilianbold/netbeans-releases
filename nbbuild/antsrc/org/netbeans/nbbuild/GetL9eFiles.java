@@ -41,7 +41,7 @@ public class GetL9eFiles extends Task {
   /** The target directory to copy all translatable files to.
    * <p>Default: <samp>src-todo</samp>
    */
-  protected File targetDir = new File( "src-todo") ;
+  protected File targetDir = null ;
 
   /** List of exclude patterns that override the listFiles.
    * <p>Default: Ja localized files
@@ -55,7 +55,7 @@ public class GetL9eFiles extends Task {
     File f ;
 
     baseDir = s;
-    f = new File( baseDir) ;
+    f = new File( antBaseDir() + baseDir) ;
     try {
       grandParent = new File( f.getCanonicalPath()) ;
     }
@@ -92,6 +92,10 @@ public class GetL9eFiles extends Task {
     File module ;
     LinkedList modules ;
     ListIterator iter ;
+
+    if( targetDir == null) {
+      targetDir = new File( antBaseDir() + "src-todo") ;
+    }
 
     // If needed, setup the grandParent variable. //
     if( grandParent == null) {
@@ -183,7 +187,8 @@ public class GetL9eFiles extends Task {
     }
   }
 
-  protected static String mapL9eFile( String file, String toDir, String grandParentName) {
+  protected static String mapL9eFile( String file, String toDir, 
+				      String grandParentName) {
     return toDir + file.substring( grandParentName.length()) ;
   }
 
@@ -202,6 +207,10 @@ public class GetL9eFiles extends Task {
       }
     }
     return( modules) ;
+  }
+
+  protected String antBaseDir() {
+    return( getProject().getBaseDir().getAbsolutePath() + File.separator) ;
   }
 
 }
