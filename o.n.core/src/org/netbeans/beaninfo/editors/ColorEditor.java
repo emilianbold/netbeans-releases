@@ -158,7 +158,7 @@ public final class ColorEditor implements PropertyEditor {
   }
 
   public void setValue (Object object) {
-    if (!(object instanceof Color)) return;
+    if (!(object instanceof Color)) throw new IllegalArgumentException (object.toString ());
     if (object != null) {
       if (object instanceof SuperColor) color = (SuperColor) object;
       else color = new SuperColor ((Color) object);
@@ -537,6 +537,8 @@ public final class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  12   Gandalf   1.11        6/28/99  Ian Formanek    throws 
+ *       IllegalArgumentException if not passed Color instance in setValue
  *  11   Gandalf   1.10        6/27/99  Ian Formanek    Ignores non-Color values
  *  10   Gandalf   1.9         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
