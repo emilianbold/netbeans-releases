@@ -135,6 +135,7 @@ public class EntityOverviewForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(primaryKeyFieldComboBox, gridBagConstraints);
 
+        primaryKeyClassComboBox.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;

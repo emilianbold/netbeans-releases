@@ -79,7 +79,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
         if (isCmp) {
             primaryKeyFieldLabel.setVisible(true);
             primaryKeyFieldComboBox.setVisible(true);
-            primaryKeyFieldComboBox.setVisible(true);
+            primaryKeyClassComboBox.setVisible(true);
             primaryKeyClassTextField.setVisible(false);
 
             primaryKeyFieldComboBox.addItem(COMPOUND);
@@ -107,8 +107,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                     } else {
                         primaryKeyClassComboBox.setEnabled(false);
                         CmpField cmpField = entity.getCmpField(selectedIndex - 1);
-                        CmpFieldHelper helper = new CmpFieldHelper(entityHelper,
-                                cmpField);
+                        CmpFieldHelper helper = new CmpFieldHelper(entityHelper, cmpField);
                         entity.setPrimKeyClass(helper.getType());
                     }
                     primaryKeyClassComboBox.setSelectedItem(entity.getPrimKeyClass());
@@ -140,14 +139,18 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                 }
 
                 public void setItemValue(String value) {
-                    entity.setPrimKeyClass(value);
+                    if (Utils.isValidPackageName(value)) {
+                        entity.setPrimKeyClass(value);
+                    } else {
+                        primaryKeyClassComboBox.setSelectedItem(getItemValue());
+                    }
                 }
             });
 
         } else {
             primaryKeyFieldLabel.setVisible(false);
             primaryKeyFieldComboBox.setVisible(false);
-            primaryKeyFieldComboBox.setVisible(false);
+            primaryKeyClassComboBox.setVisible(false);
             primaryKeyClassTextField.setVisible(true);
 
             addRefreshable(new ItemEditorHelper(primaryKeyClassTextField, new TextItemEditorModel(dataObject, false) {
