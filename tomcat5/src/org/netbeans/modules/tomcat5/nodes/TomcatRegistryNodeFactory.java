@@ -56,7 +56,7 @@ public class TomcatRegistryNodeFactory implements RegistryNodeFactory {
       * @return target server node
       */
     public Node getTargetNode(Lookup lookup) {
-        return null;
+        return new TomcatTargetNode(lookup);
 
     }
 }

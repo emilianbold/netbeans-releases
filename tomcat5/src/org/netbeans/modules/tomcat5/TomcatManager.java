@@ -44,6 +44,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.openide.xml.XMLUtil;
 
 import org.netbeans.modules.tomcat5.config.*;
+import org.netbeans.modules.tomcat5.ide.StartTomcat;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.netbeans.modules.tomcat5.nodes.DebuggingTypeEditor;
 
@@ -125,6 +126,8 @@ public class TomcatManager implements DeploymentManager {
     
     private FileSystem catalinaFS;
     
+    private StartTomcat sTomcat;
+    
     /** storage for HTTP connector port */
 //    private Integer serverPort;
     
@@ -144,7 +147,7 @@ public class TomcatManager implements DeploymentManager {
             TomcatFactory.getEM ().log ("Creating connected TomcatManager uri="+uri+", uname="+uname); //NOI18N
         }
         this.connected = conn;
-        
+        sTomcat = null;
         int uriOffset = uri.indexOf ("http:");  // NOI18N
         if (uriOffset > 0) {
             // parse home and base attrs
@@ -170,6 +173,7 @@ public class TomcatManager implements DeploymentManager {
     public InstanceProperties getInstanceProperties() {
         return InstanceProperties.getInstanceProperties(TomcatFactory.tomcatUriPrefix + getUri());
     }
+    
     
     
     /** Creates an instance of disconnected TomcatManager * /
@@ -273,6 +277,14 @@ public class TomcatManager implements DeploymentManager {
             if (fileName.equals(fsFileName)) return fs;
         }
         return null;
+    }
+    
+    public StartTomcat getStartTomcat(){
+        return sTomcat;
+    }
+    
+    public void setStartTomcat (StartTomcat st){
+        sTomcat = st;
     }
     
     /** Returns username.

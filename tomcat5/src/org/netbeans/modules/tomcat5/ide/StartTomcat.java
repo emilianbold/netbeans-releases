@@ -136,6 +136,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     /** Associates with @see javax.enterprise.deploy.spi.DeploymentManager */
     public void setDeploymentManager (javax.enterprise.deploy.spi.DeploymentManager manager) {
         tm = (TomcatManager)manager;
+        tm.setStartTomcat(this);
     }
     
     public boolean supportsStartDeploymentManager () {

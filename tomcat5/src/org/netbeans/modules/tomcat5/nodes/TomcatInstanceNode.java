@@ -22,7 +22,12 @@ import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
+
+import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesAction;
+
 import org.netbeans.modules.tomcat5.ide.MonitorSupport;
+import org.openide.actions.PropertiesAction;
+
 
 /**
  *
@@ -53,7 +58,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
      */
     public TomcatInstanceNode(Children children, Lookup lookup) {
         super(children);
-        this.getChildren().add(new Node[]{new WebModuleNode(new Children.Map())});
+        //this.getChildren().add(new Node[]{new WebModuleNode(new Children.Map())});
         lkp = lookup;
         setIconBase(ICON_BASE);
         getCookieSet().add(this);
@@ -143,8 +148,12 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
 
     public javax.swing.Action[] getActions(boolean context) {
         return new SystemAction[] {
+                   null,
                    SystemAction.get (AccessLogAction.class),
-                   SystemAction.get (ContextLogAction.class)
+                   SystemAction.get (ContextLogAction.class),
+                   null,
+                   SystemAction.get(PropertiesAction.class),
+                   null
                };        
     }
 
@@ -341,11 +350,5 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         return sheet;
     }
     
-    class WebModuleNode extends AbstractNode{
-         public WebModuleNode(Children children) {
-            super(children);
-            setIconBase(ICON_BASE);
-            setDisplayName("Web Modules");
-         }
-    }
+    
 }
