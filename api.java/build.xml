@@ -179,7 +179,7 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
-    <delete file="java.nbm"/>
+    <delete file="java-api.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
   </target>
