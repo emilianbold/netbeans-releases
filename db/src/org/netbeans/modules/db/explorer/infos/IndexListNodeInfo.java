@@ -17,6 +17,7 @@ import java.sql.*;
 import java.util.*;
 import com.netbeans.ddl.*;
 import org.openide.nodes.Node;
+import com.netbeans.enterprise.modules.db.adaptors.*;
 import com.netbeans.enterprise.modules.db.DatabaseException;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
@@ -29,7 +30,8 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 	throws DatabaseException
 	{
  		try {
-			DatabaseMetaData dmd = getConnection().getMetaData();
+//			DatabaseMetaData dmd = getConnection().getMetaData();
+			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
 			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
@@ -54,7 +56,8 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 	throws DatabaseException
 	{
  		try {
-			DatabaseMetaData dmd = getConnection().getMetaData();
+//			DatabaseMetaData dmd = getConnection().getMetaData();
+			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
 			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);

@@ -71,7 +71,8 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
 			Specification spec = (Specification)getSpecification();
 			CreateTable cmd = (CreateTable)spec.createCommandCreateTable("DUMMY");
 			String code = getCode();
-			DatabaseMetaData dmd = getConnection().getMetaData();
+//			DatabaseMetaData dmd = getConnection().getMetaData();
+			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
 			
 			if (code.equals(DatabaseNode.PRIMARY_KEY)) {
 				col = (TableColumn)cmd.createPrimaryKeyColumn(getName());
@@ -113,7 +114,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
 			else if (key.equals("datatype")) setDataType((Integer)obj);
 			super.setProperty(key, obj);
 		} catch (Exception e) {
-			System.out.println("unable to set "+key+" = "+obj+", "+e.getMessage());
+			e.printStackTrace();
 		}
 	}
 

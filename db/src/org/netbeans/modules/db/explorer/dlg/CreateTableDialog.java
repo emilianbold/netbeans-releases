@@ -63,7 +63,7 @@ public class CreateTableDialog
 			dlgtab = reader.getData();
 			stream.close();		
 		} catch (Exception e) {
-			System.out.println(e); 
+			e.printStackTrace();
 			dlgtab = null;
 		}
 		
@@ -258,10 +258,7 @@ public class CreateTableDialog
 							Toolkit.getDefaultToolkit().beep();	
 							disres = false;
 						}
-					} else {
-						System.out.println(event.getSource());
-						result = false;
-					}
+					} else result = false;
 					
 					if (disres) {
 						dialog.setVisible(false);
@@ -275,7 +272,7 @@ public class CreateTableDialog
 			dialog = TopManager.getDefault().createDialog(descriptor);
 			dialog.setResizable(true);
 		} catch (MissingResourceException ex) {
-			System.out.println("Missing resource "+ex.getKey());
+			ex.printStackTrace();
 		}
     }
     

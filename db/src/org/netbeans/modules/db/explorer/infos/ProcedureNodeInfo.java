@@ -34,19 +34,20 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
 	{
 		return (DatabaseDriver)get(DatabaseNodeInfo.DBDRIVER);
 	}
-
+/*
 	public void setDatabaseDriver(DatabaseDriver drv)
 	{
 		put(DatabaseNodeInfo.NAME, drv.getName());
 		put(DatabaseNodeInfo.URL, drv.getURL());
 		put(DatabaseNodeInfo.DBDRIVER, drv);
 	}
-
+*/
 	public void initChildren(Vector children)
 	throws DatabaseException
 	{
  		try {
-			DatabaseMetaData dmd = getConnection().getMetaData();
+//			DatabaseMetaData dmd = getConnection().getMetaData();
+			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String name = (String)get(DatabaseNode.PROCEDURE);
 			ResultSet rs = dmd.getProcedureColumns(catalog, getUser(), name, null);

@@ -36,6 +36,7 @@ public class AddDriverAction extends DatabaseAction
 			AddDriverDialog dlg = new AddDriverDialog();
 			if (dlg.run()) nfo.addDriver(dlg.getDriver());
 		} catch(Exception e) {
+			e.printStackTrace();
 			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to add driver, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 		}
 	}

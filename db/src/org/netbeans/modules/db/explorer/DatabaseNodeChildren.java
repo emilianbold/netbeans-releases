@@ -43,7 +43,7 @@ public class DatabaseNodeChildren extends Children.Array
 				else throw new Exception("unable to create node for "+sinfo.getCode());
 			}
 		} catch (Exception e) {
-			System.out.println("unable to create nodes for "+nodeinfo.getCode()+": "+e);
+			e.printStackTrace();
 			children.clear();
 		}
 		
@@ -95,7 +95,7 @@ public class DatabaseNodeChildren extends Children.Array
 			node.setInfo(info); /* makes a copy of info, use node.getInfo() to access it */
 			node.getInfo().setNode(node); /* this is a weak, be cool, baby ;) */
 		} catch (Exception e) {
-			System.out.println("unable to create node "+ncode+"("+nclass+")"+", "+e.getMessage());
+			e.printStackTrace();
 		}
 
 		return node;

@@ -49,7 +49,7 @@ public class GrabTableAction extends DatabaseAction
 				Object element = enu.nextElement();
 				if (element instanceof ColumnNodeInfo) {
 					cmd.getColumns().add(((ColumnNodeInfo)element).getColumnSpecification());
-				} else System.out.println(element.getClass()+" not grabbed");
+				} 
 			}
 
 			// Get filename

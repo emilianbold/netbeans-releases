@@ -24,8 +24,20 @@ import com.netbeans.enterprise.modules.db.explorer.dataview.*;
 
 public class ViewDataAction extends DatabaseAction
 {
+	protected boolean enable(Node[] activatedNodes)
+	{
+		Node node;
+		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+		else return false;
+		
+		ConnectionNodeInfo info = (ConnectionNodeInfo)node.getCookie(ConnectionNodeInfo.class);
+		if (info != null) return (info.getConnection() != null);
+		return true;
+	}
+
 	public void performAction (Node[] activatedNodes) 
 	{
+		String expression = "";
 		StringBuffer cols = new StringBuffer();
 		Node node;
 		if (activatedNodes != null && activatedNodes.length>0) {
@@ -43,6 +55,9 @@ public class ViewDataAction extends DatabaseAction
 							cols.append(nfo.getName());
 						}
 					}
+					
+					expression = "select "+cols.toString()+" from "+onome;
+					
 				} else if (info instanceof ColumnNodeInfo || info instanceof ViewColumnNodeInfo) {
 					onome = info.getTable();
 					for (int i = 0; i<activatedNodes.length; i++) {
@@ -53,9 +68,12 @@ public class ViewDataAction extends DatabaseAction
 							cols.append(info.getName());
 						}
 					}
-				} else throw new Exception("unable to view data from "+info.getClass());
+
+					expression = "select "+cols.toString()+" from "+onome;
+
+				} 
 				
-				DataViewWindow win = new DataViewWindow(info.getDatabaseConnection(), info.getUser(), "select "+cols.toString()+" from "+onome);
+				DataViewWindow win = new DataViewWindow(info.getDatabaseConnection(), info.getUser(), expression);
 				win.open();
 				win.fetch();
 				

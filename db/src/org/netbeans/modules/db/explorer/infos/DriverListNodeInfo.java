@@ -47,7 +47,7 @@ implements DriverOperations
 					} else throw new Exception("driver "+drv);
 				}
 			} catch (Exception e) {
-				System.out.println("cannot restore all drivers; "+e);
+				e.printStackTrace();
 			}
 		}
 	}
@@ -68,23 +68,4 @@ implements DriverOperations
 		ninfo.setDatabaseDriver(drv);
 		chld.createSubnode(ninfo, true);
 	}
-	
-	/** Removes node from list and node list.
-	*/
-/*
-	public void removeDriver(DatabaseDriver drv)
-	throws DatabaseException
-	{
-		DatabaseNode node = (DatabaseNode)getNode();
-		Vector drvs = RootNode.getOption().getAvailableDrivers();
-		int idx = drvs.indexOf(drv);
-		if (idx == -1) throw new DatabaseException("driver "+drv+" was not found");
-		DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
-		Node rnode = chld.getNodes()[idx];
-		System.out.println("removing node "+rnode);
-		if (rnode != null) chld.remove(new Node[]{rnode});
-		else throw new DatabaseException("driver node "+drv+" was not found");
-		drvs.removeElementAt(idx);
-	}	
-*/
 }

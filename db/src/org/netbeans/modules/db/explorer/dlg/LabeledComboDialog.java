@@ -84,7 +84,7 @@ public class LabeledComboDialog
 			dialog = TopManager.getDefault().createDialog(descriptor);
 			dialog.setResizable(false);
 		} catch (MissingResourceException ex) {
-			System.out.println("missing resource "+ex.getKey()+"("+ex+")");
+			ex.printStackTrace();
 		}
     }
     

@@ -15,9 +15,13 @@
 package com.netbeans.enterprise.modules.db.explorer.actions;
 
 import java.util.Vector;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
+
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
+import org.openide.util.NbBundle;
 import com.netbeans.ddl.*;
 import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
@@ -27,6 +31,9 @@ import com.netbeans.enterprise.modules.db.explorer.dlg.NewConnectionDialog;
 
 public class ConnectUsingDriverAction extends DatabaseAction
 {
+	private final static String CLASS_NOT_FOUND = "EXC_ClassNotFound";
+	private final static String BUNDLE_PATH = "com.netbeans.enterprise.modules.db.resources.Bundle";
+
 	public void performAction(Node[] activatedNodes) 
 	{
 		Node node;
@@ -41,6 +48,9 @@ public class ConnectUsingDriverAction extends DatabaseAction
 			cinfo.setDriver(info.getURL());
 			NewConnectionDialog cdlg = new NewConnectionDialog(drvs, cinfo);
 			if (cdlg.run()) nfo.addConnection((DBConnection)cinfo);
+		} catch (ClassNotFoundException ex) {	
+			String message = MessageFormat.format(NbBundle.getBundle(BUNDLE_PATH).getString(CLASS_NOT_FOUND), new String[] {ex.getMessage()});
+			TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
 		} catch(Exception e) {
 			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to add connection, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 		}

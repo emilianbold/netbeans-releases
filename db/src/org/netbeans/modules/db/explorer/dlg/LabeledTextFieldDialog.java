@@ -104,7 +104,7 @@ public class LabeledTextFieldDialog
 			dialog = TopManager.getDefault().createDialog(descriptor);
 			dialog.setResizable(true);
 		} catch (MissingResourceException ex) {
-			System.out.println("missing resource "+ex.getKey()+"("+ex+")");
+			ex.printStackTrace();
 		}
     }
     

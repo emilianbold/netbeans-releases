@@ -31,7 +31,8 @@ public class IndexNodeInfo extends TableNodeInfo
 	throws DatabaseException
 	{
  		try {
-			DatabaseMetaData dmd = getConnection().getMetaData();
+//			DatabaseMetaData dmd = getConnection().getMetaData();
+			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
 			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);

@@ -43,7 +43,8 @@ public class AddToIndexAction extends DatabaseAction
 			String columnname = (String)nfo.get(DatabaseNode.COLUMN);
 
 			Connection con = nfo.getConnection();
-			DatabaseMetaData dmd = con.getMetaData();
+//			DatabaseMetaData dmd = con.getMetaData();
+			DatabaseMetaData dmd = info.getDatabaseAdaptor().getMetaData();
 			Specification spec = (Specification)nfo.getSpecification();
 			String index = (String)nfo.get(DatabaseNode.INDEX);
 

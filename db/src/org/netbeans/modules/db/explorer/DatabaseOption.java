@@ -68,7 +68,8 @@ public class DatabaseOption extends SystemOption
 					String name = (String)((Map)rit).get("name");
 					String drv = (String)((Map)rit).get("driver");
 					String prefix = (String)((Map)rit).get("prefix");
-					rit = new DatabaseDriver(name, drv, prefix);
+					String adaptor = (String)((Map)rit).get("adaptor");
+					rit = new DatabaseDriver(name, drv, prefix, adaptor);
 					if (rit != null) rvec.add(rit);
 				}				
 			} else rvec = new Vector();

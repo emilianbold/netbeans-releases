@@ -127,8 +127,8 @@ public class AddIndexDialog
 			DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddIndexTitle"), true, listener);
 			dialog = TopManager.getDefault().createDialog(descriptor);
 			dialog.setResizable(true);
-		} catch (MissingResourceException ex) {
-			System.out.println("missing resource "+ex.getKey()+"("+ex+")");
+		} catch (MissingResourceException e) {
+			e.printStackTrace();
 		}
     }
     

@@ -48,8 +48,8 @@ public class DatabaseOptionBeanInfo extends SimpleBeanInfo
 			desc[1].setShortDescription(bundle.getString ("HINT_FETCH_LIMIT"));
 			desc[2].setDisplayName(bundle.getString("PROP_FETCH_STEP"));
 			desc[2].setShortDescription(bundle.getString ("HINT_FETCH_STEP"));
-		} catch (Exception ex) {
-		  System.out.println("DatabaseOptionBeanInfo static init: "+ex);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

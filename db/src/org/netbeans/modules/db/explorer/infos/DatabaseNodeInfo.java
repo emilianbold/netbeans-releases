@@ -16,6 +16,7 @@ package com.netbeans.enterprise.modules.db.explorer.infos;
 import java.io.InputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.beans.*;
 import java.util.*;
 import java.sql.*;
 import com.netbeans.ddl.*;
@@ -24,8 +25,10 @@ import java.beans.PropertyChangeListener;
 import com.netbeans.ddl.util.PListReader;
 import com.netbeans.enterprise.modules.db.DatabaseException;
 import com.netbeans.enterprise.modules.db.explorer.*;
+import com.netbeans.enterprise.modules.db.adaptors.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
+import org.openide.*;
 import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
@@ -67,6 +70,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	public static final String CHILDREN_ORDERING = "children_ordering";
 	public static final String READONLY = "readOnly";
 	public static final String PERM = "perm";
+	public static final String ADAPTOR = "adaptor";
+	public static final String ADAPTOR_CLASSNAME = "adaptorClass";
 	
 	private static Map gtab = null;
 	private static final String gtabfile = "com/netbeans/enterprise/modules/db/resources/explorer.plist";
@@ -81,7 +86,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 			gtab = reader.getData();
 			stream.close();		
 		} catch (Exception e) {
-			System.out.println(e); 
+			e.printStackTrace();
 			gtab = null;
 		}
 		return gtab;
@@ -101,7 +106,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 			if (nodec != null) e_ni = (DatabaseNodeInfo)Class.forName(nodec).newInstance();
 			else throw new Exception("unable to find class information for "+nodecode);
 		} catch (Exception e) { 
-			System.out.println(e);
+			e.printStackTrace();
 			throw new DatabaseException(e.getMessage()); 
 		}
 		
@@ -247,6 +252,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 			driverpcsKeys.add(NAME);
 			driverpcsKeys.add(URL);
 			driverpcsKeys.add(PREFIX);
+			driverpcsKeys.add(ADAPTOR_CLASSNAME);
 		}
 		
 		return driverpcsKeys;
@@ -255,7 +261,9 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	public Object put(Object key, Object obj)
 	{
 		Object old = get(key);
-		super.put(key, obj);
+		if (key == null) throw new NullPointerException();
+		if (obj != null) super.put(key, obj);
+		else remove(key);
 		if (getDriverPCSKeys().contains(key)) getDriverPCS().firePropertyChange((String)key, old, obj);		
 		return old;
 	}
@@ -573,7 +581,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 					} else action = SystemAction.get(Class.forName(actcn));
 					
 				} catch (Exception e) {
-					System.out.println("unable to create action \""+e_action.get(NAME)+"\", "+e);
+					e.printStackTrace();
 				}
 			}
 			
@@ -615,5 +623,50 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	public void setReadOnly(boolean flag)
 	{
 		put(READONLY, new Boolean(flag));
+	}
+	
+	public String getDatabaseAdaptorClassName()
+	{
+		String adac = null;
+		String drv = getDriver();
+		DatabaseOption option = RootNode.getOption();
+		Vector drvs = option.getAvailableDrivers();
+		Enumeration enu = drvs.elements();
+		while (enu.hasMoreElements()) {
+			DatabaseDriver driver = (DatabaseDriver)enu.nextElement();
+			if (driver.getURL().equals(drv)) adac = driver.getDatabaseAdaptor();
+		}
+
+		if (adac == null) adac = "com.netbeans.enterprise.modules.db.adaptors.DefaultAdaptor";
+		return adac;
+	}
+	
+	public void setDatabaseAdaptorClassName(String name)
+	{
+		put(ADAPTOR_CLASSNAME, name);
+	}
+	
+	public DatabaseAdaptor getDatabaseAdaptor() throws SQLException
+	{
+		try {
+			Object ada = get(ADAPTOR);
+			if (ada == null) {
+				Connection con = getConnection();
+				if (con != null) {
+					ClassLoader cloader = TopManager.getDefault().currentClassLoader();
+					ada = Beans.instantiate(cloader, getDatabaseAdaptorClassName());
+					if (ada instanceof DatabaseAdaptor) {
+						((DatabaseAdaptor)ada).setConnection(con);
+						put(ADAPTOR, ada);
+					} else throw new ClassNotFoundException("adaptor should implement DatabaseAdaptor interface");
+				} else throw new DatabaseException("adaptor requires an existing connection");
+			}
+			
+			return (DatabaseAdaptor)ada;
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw new SQLException(ex.getMessage());
+		}
 	}
 }
