@@ -47,7 +47,7 @@ public final class J2SEAntLogger extends AntLogger {
             Project proj = ProjectManager.getDefault().findProject(projdir);
             if (proj != null) {
                 // Check if it is a J2SEProject.
-                return proj.getLookup().lookup(J2SEProject.AntProjectHelperProvider.class) != null;
+                return proj.getLookup().lookup(J2SEProject.class) != null;
             }
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);

@@ -13,24 +13,18 @@
 
 package org.netbeans.modules.java.j2seproject;
 
-import java.awt.Dialog;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.SoftReference;
-import java.util.*;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
@@ -41,18 +35,11 @@ import org.netbeans.modules.java.j2seproject.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.java.j2seproject.ui.J2SECustomizerProvider;
 import org.netbeans.modules.java.j2seproject.ui.J2SEPhysicalViewProvider;
-import org.netbeans.spi.java.classpath.ClassPathFactory;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
-import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -67,17 +54,11 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
@@ -138,18 +119,18 @@ final class J2SEProject implements Project, AntProjectListener {
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(evaluator(), new String[] {
-            "${src.dir}/*.java", // NOI18N
-            "${test.src.dir}/*.java", // NOI18N
+            "${" + J2SEProjectProperties.SRC_DIR + "}/*.java", // NOI18N
+            "${" + J2SEProjectProperties.TEST_SRC_DIR + "}/*.java", // NOI18N
         }, new String[] {
-            "${build.classes.dir}/*.class", // NOI18N
-            "${build.test.classes.dir}/*.class", // NOI18N
+            "${" + J2SEProjectProperties.BUILD_CLASSES_DIR + "}/*.class", // NOI18N
+            "${" + J2SEProjectProperties.BUILD_TEST_CLASSES_DIR + "}/*.class", // NOI18N
         });
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
-        sourcesHelper.addPrincipalSourceRoot("${src.dir}", NbBundle.getMessage (J2SEProject.class, "NAME_src.dir"), /*XXX*/null, null);
-        sourcesHelper.addPrincipalSourceRoot("${test.src.dir}", NbBundle.getMessage (J2SEProject.class, "NAME_test.src.dir"), /*XXX*/null, null);
+        sourcesHelper.addPrincipalSourceRoot("${" + J2SEProjectProperties.SRC_DIR + "}", NbBundle.getMessage(J2SEProject.class, "NAME_src.dir"), /*XXX*/null, null);
+        sourcesHelper.addPrincipalSourceRoot("${" + J2SEProjectProperties.TEST_SRC_DIR + "}", NbBundle.getMessage(J2SEProject.class, "NAME_test.src.dir"), /*XXX*/null, null);
         // XXX add build dir too?
-        sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage (J2SEProject.class, "NAME_src.dir"), /*XXX*/null, null);
-        sourcesHelper.addTypedSourceRoot("${test.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage (J2SEProject.class, "NAME_test.src.dir"), /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${" + J2SEProjectProperties.SRC_DIR + "}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(J2SEProject.class, "NAME_src.dir"), /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${" + J2SEProjectProperties.TEST_SRC_DIR + "}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(J2SEProject.class, "NAME_test.src.dir"), /*XXX*/null, null);
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -173,16 +154,16 @@ final class J2SEProject implements Project, AntProjectListener {
             new SourceLevelQueryImpl(helper, evaluator()),
             sourcesHelper.createSources(),
             helper.createSharabilityQuery(evaluator(), new String[] {
-                "${src.dir}", // NOI18N
-                "${test.src.dir}", // NOI18N
+                "${" + J2SEProjectProperties.SRC_DIR + "}", // NOI18N
+                "${" + J2SEProjectProperties.TEST_SRC_DIR + "}", // NOI18N
             }, new String[] {
-                "${dist.dir}", // NOI18N
-                "${build.dir}", // NOI18N
+                "${" + J2SEProjectProperties.DIST_DIR + "}", // NOI18N
+                "${" + J2SEProjectProperties.BUILD_DIR + "}", // NOI18N
             }),
             fileBuilt,
             new RecommendedTemplatesImpl (helper),
             new J2SEProjectClassPathExtender(this, helper, eval,refHelper),
-            new AntProjectHelperProvider ()
+            this, // never cast an externally obtained Project to J2SEProject - use lookup instead
         });
     }
 
@@ -202,16 +183,15 @@ final class J2SEProject implements Project, AntProjectListener {
     // Package private methods -------------------------------------------------
     
     FileObject getSourceDirectory() {
-        String srcDir = evaluator().getProperty("src.dir"); // NOI18N
+        String srcDir = evaluator().getProperty(J2SEProjectProperties.SRC_DIR);
         if (srcDir == null) {
-            // XXX cleaner to define some simple defaults in the evaluator itself?
             return null;
         }
         return helper.resolveFileObject(srcDir);
     }
     
     FileObject getTestSourceDirectory() {
-        String testSrcDir = evaluator().getProperty("test.src.dir"); // NOI18N
+        String testSrcDir = evaluator().getProperty(J2SEProjectProperties.TEST_SRC_DIR);
         if (testSrcDir == null) {
             return null;
         }
@@ -219,37 +199,14 @@ final class J2SEProject implements Project, AntProjectListener {
     }
     
     File getTestClassesDirectory() {
-        String testClassesDir = evaluator().getProperty("build.test.classes.dir"); // NOI18N
+        String testClassesDir = evaluator().getProperty(J2SEProjectProperties.BUILD_TEST_CLASSES_DIR);
         if (testClassesDir == null) {
             return null;
         }
         return helper.resolveFile(testClassesDir);
     }
     
-    final class AntProjectHelperProvider {
-        AntProjectHelper getAntProjectHelper () {
-            return helper;
-        }
-    }
-    
-    /** Return configured project name. */
-    public String getName() {
-        return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
-                Element data = helper.getPrimaryConfigurationData(true);
-                // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                if (nl.getLength() == 1) {
-                    nl = nl.item(0).getChildNodes();
-                    if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                        return ((Text) nl.item(0)).getNodeValue();
-                    }
-                }
-                return "???"; // NOI18N
-            }
-        });
-    }
-    
+    // Currently unused (but see #47230):
     /** Store configured project name. * /
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Mutex.Action() {
@@ -289,11 +246,24 @@ final class J2SEProject implements Project, AntProjectListener {
         }
         
         public String getName() {
-            return PropertyUtils.getUsablePropertyName(J2SEProject.this.getName());
+            return PropertyUtils.getUsablePropertyName(getDisplayName());
         }
         
         public String getDisplayName() {
-            return J2SEProject.this.getName();
+            return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
+                public Object run() {
+                    Element data = helper.getPrimaryConfigurationData(true);
+                    // XXX replace by XMLUtil when that has findElement, findText, etc.
+                    NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                    if (nl.getLength() == 1) {
+                        nl = nl.item(0).getChildNodes();
+                        if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
+                            return ((Text) nl.item(0)).getNodeValue();
+                        }
+                    }
+                    return "???"; // NOI18N
+                }
+            });
         }
         
         public Icon getIcon() {
@@ -359,7 +329,7 @@ final class J2SEProject implements Project, AntProjectListener {
             //register updater of main.class
             //the updater is active only on the opened projects
             mainClassUpdater = new MainClassUpdater (J2SEProject.this, eval, helper,
-                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0],"main.class"); //NOI18N
+                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], J2SEProjectProperties.MAIN_CLASS);
 
             // Make it easier to run headless builds on the same machine at least.
             ProjectManager.mutex().writeAccess(new Mutex.Action() {

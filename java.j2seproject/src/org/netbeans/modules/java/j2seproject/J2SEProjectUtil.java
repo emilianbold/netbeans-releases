@@ -19,17 +19,19 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.*;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.JavaModelPackage;
+import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.Parameter;
+import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.javacore.ClassIndex;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileObject;
 import org.netbeans.modules.javacore.JMManager;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.openide.filesystems.FileObject;
 
-/** The util methods for projectui module.
- *
+/**
+ * Miscellaneous utilities for the j2seproject module.
  * @author  Jiri Rechtacek
  */
 public class J2SEProjectUtil {
@@ -41,16 +43,10 @@ public class J2SEProjectUtil {
      * @return source directory or null if directory not set or if the project 
      * doesn't provide AntProjectHelper
      */    
-    final public static FileObject getProjectSourceDirectory (Project p) {
-        J2SEProject.AntProjectHelperProvider provider = (J2SEProject.AntProjectHelperProvider)p.getLookup ().lookup (J2SEProject.AntProjectHelperProvider.class);
-        if (provider != null) {
-            AntProjectHelper helper = provider.getAntProjectHelper ();
-            assert helper != null : p;
-            String srcDir = helper.getStandardPropertyEvaluator ().getProperty (J2SEProjectProperties.SRC_DIR);
-            if (srcDir == null) {
-                return null;
-            }
-            return helper.resolveFileObject (srcDir);
+    public static FileObject getProjectSourceDirectory(Project p) {
+        J2SEProject j2seprj = (J2SEProject) p.getLookup().lookup(J2SEProject.class);
+        if (j2seprj != null) {
+            return j2seprj.getSourceDirectory();
         } else {
             return null;
         }
@@ -64,13 +60,15 @@ public class J2SEProjectUtil {
      * @return evaluated value of given property or null if the property not set or
      * if the project doesn't provide AntProjectHelper
      */    
-    final public static Object getEvaluatedProperty (Project p, String value) {
-        J2SEProject.AntProjectHelperProvider provider = (J2SEProject.AntProjectHelperProvider)p.getLookup ().lookup (J2SEProject.AntProjectHelperProvider.class);
-        if (provider != null && value != null) {
-            assert provider.getAntProjectHelper () != null : p;
-            return provider.getAntProjectHelper ().getStandardPropertyEvaluator ().evaluate (value);
+    public static Object getEvaluatedProperty(Project p, String value) {
+        if (value == null) {
+            return null;
+        }
+        J2SEProject j2seprj = (J2SEProject) p.getLookup().lookup(J2SEProject.class);
+        if (j2seprj != null) {
+            return j2seprj.evaluator().evaluate(value);
         } else {
-            return value;
+            return null;
         }
     }
     
@@ -79,7 +77,7 @@ public class J2SEProjectUtil {
      * @param fo source
      * @return true if the source contains the main method
      */
-    final public static boolean hasMainMethod (FileObject fo) {
+    public static boolean hasMainMethod(FileObject fo) {
         // support for unit testing
         if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
             return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
@@ -108,7 +106,7 @@ public class J2SEProjectUtil {
      * @param root the root of source to start find
      * @return list of names of classes, e.g, [sample.project1.Hello, sample.project.app.MainApp]
      */
-    final public static List/*<String>*/ getMainClasses (FileObject root) {
+    public static List/*<String>*/ getMainClasses (FileObject root) {
         JavaMetamodel.getDefaultRepository ().beginTrans (false);
         List/*<String>*/ classes = new ArrayList ();
 
@@ -151,7 +149,7 @@ public class J2SEProjectUtil {
      * @param root root of sources
      * @return true if the class name exists and it's a main class
      */
-    final public static boolean isMainClass (String className, FileObject root) {
+    public static boolean isMainClass(String className, FileObject root) {
         // support for unit testing
         if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
             return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
