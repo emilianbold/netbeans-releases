@@ -120,6 +120,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AD_PlatformsCustomizer"));
         platforms.setBorder(new javax.swing.border.EtchedBorder());
         platforms.setPreferredSize(new java.awt.Dimension(220, 400));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -132,6 +133,8 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 6);
         add(platforms, gridBagConstraints);
+        platforms.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AN_PlatformsCustomizerPlatforms"));
+        platforms.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AD_PlatformsCustomizerPlatforms"));
 
         addButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_AddPlatform"));
         addButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_AddPlatform").charAt(0));
@@ -147,6 +150,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 6);
         add(addButton, gridBagConstraints);
+        addButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AD_AddPlatform"));
 
         removeButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_Remove"));
         removeButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_Remove").charAt(0));
@@ -162,6 +166,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(removeButton, gridBagConstraints);
+        removeButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AD_Remove"));
 
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_PlatformHome").charAt(0));
         jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_PlatformHome"));
@@ -185,6 +190,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 3, 6, 12);
         add(platformHome, gridBagConstraints);
+        platformHome.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AD_PlatformHome"));
 
         clientArea.setLayout(new java.awt.GridBagLayout());
 
@@ -200,7 +206,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         add(clientArea, gridBagConstraints);
 
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_PlatformName").charAt(0));
-        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_PlatformName:"));
+        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_PlatformName"));
         jLabel2.setLabelFor(platformName);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -220,6 +226,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 3, 6, 12);
         add(platformName, gridBagConstraints);
+        platformName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AD_PlatformName"));
 
     }//GEN-END:initComponents
 

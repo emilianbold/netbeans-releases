@@ -33,7 +33,8 @@ public final class PlatformsCustomizer {
     public static boolean showCustomizer (JavaPlatform platform) {
         org.netbeans.modules.java.platform.ui.PlatformsCustomizer  customizer =
                 new org.netbeans.modules.java.platform.ui.PlatformsCustomizer ();
-        Object close = NbBundle.getMessage(PlatformsCustomizer.class,"CTL_Close");
+        javax.swing.JButton close = new javax.swing.JButton(NbBundle.getMessage(PlatformsCustomizer.class,"CTL_Close"));
+        close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PlatformsCustomizer.class,"AD_Close"));
         DialogDescriptor descriptor = new DialogDescriptor (customizer,NbBundle.getMessage(PlatformsCustomizer.class,
                 "TXT_PlatformsManager"), true, new Object[] {close},close,DialogDescriptor.DEFAULT_ALIGN,null,null); // NOI18N
         Dialog dlg = null;

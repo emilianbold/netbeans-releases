@@ -53,6 +53,8 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
 
 
     private void initComponents () {
+        this.getAccessibleContext().setAccessibleName (NbBundle.getMessage(J2SEPlatformCustomizer.class,"AN_J2SEPlatformCustomizer"));
+        this.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(J2SEPlatformCustomizer.class,"AD_J2SEPlatformCustomizer"));
         this.addTab(NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_Classes"), createPathTab(CLASSPATH));
         this.addTab(NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_Sources"), createPathTab(SOURCES));
         this.addTab(NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_Javadoc"), createPathTab(JAVADOC));
@@ -84,18 +86,22 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             JLabel label = new JLabel ();
             String key = null;
             String mneKey = null;
+            String ad = null;
             switch (type) {
                 case CLASSPATH:
                     key = "TXT_JDKClasspath";       //NOI18N
                     mneKey = "MNE_JDKClasspath";    //NOI18N
+                    ad = "AD_JDKClasspath";         //NOI18N
                     break;
                 case SOURCES:
                     key = "TXT_JDKSources";         //NOI18N
                     mneKey = "MNE_JDKSources";      //NOI18N
+                    ad = "AD_JDKSources";      //NOI18N
                     break;
                 case JAVADOC:
                     key = "TXT_JDKJavadoc";         //NOI18N
                     mneKey = "MNE_JDKJavadoc";      //NOI8N
+                    ad = "AD_JDKJavadoc";      //NOI8N
                     break;
                 default:
                     assert false : "Illegal type of panel";     //NOI18N
@@ -113,12 +119,14 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             ((GridBagLayout)this.getLayout()).setConstraints(label,c);
             this.add (label);
             this.resources = new JList(new PathModel(platform,type));
+            label.setLabelFor (this.resources);
+            this.resources.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2SEPlatformCustomizer.class,ad));
             this.resources.addListSelectionListener(new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
                     selectionChanged ();
                 }
             });
-            JScrollPane spane = new JScrollPane (this.resources);
+            JScrollPane spane = new JScrollPane (this.resources);            
             c = new GridBagConstraints();
             c.gridx = GridBagConstraints.RELATIVE;
             c.gridy = GridBagConstraints.RELATIVE;
@@ -129,8 +137,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             c.weightx = 1.0;
             c.weighty = 1.0;
             ((GridBagLayout)this.getLayout()).setConstraints(spane,c);
-            this.add (spane);
-            label.setLabelFor (spane);
+            this.add (spane);            
             if (type == SOURCES || type == JAVADOC) {                
                 this.addButton = new JButton ();
                 String text;
@@ -138,13 +145,16 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 if (type == SOURCES) {
                     text = NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Add");
                     mne = NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_Add").charAt(0);
+                    ad = NbBundle.getMessage(J2SEPlatformCustomizer.class, "AD_Add");
                 }
                 else {
                     text = NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_AddZip");
                     mne = NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_AddZip").charAt(0);
+                    ad = NbBundle.getMessage(J2SEPlatformCustomizer.class, "AD_AddZip");
                 }
                 this.addButton.setText(text);
                 this.addButton.setMnemonic(mne);
+                this.addButton.getAccessibleContext().setAccessibleDescription (ad);
                 addButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
                         addPathElement ();
@@ -179,6 +189,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
 //                }
                 removeButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Remove"));
                 removeButton.setMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_Remove").charAt(0));
+                removeButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(J2SEPlatformCustomizer.class,"AD_Remove"));
                 removeButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
                         removePathElement ();
@@ -196,6 +207,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 this.add (removeButton);
                 moveUpButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Up"));
                 moveUpButton.setMnemonic(NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_Up").charAt(0));
+                moveUpButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(J2SEPlatformCustomizer.class,"AD_Up"));
                 moveUpButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
                         moveUpPathElement ();
@@ -213,6 +225,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 this.add (moveUpButton);
                 moveDownButton = new JButton (NbBundle.getMessage(J2SEPlatformCustomizer.class, "CTL_Down"));
                 moveDownButton.setMnemonic (NbBundle.getMessage(J2SEPlatformCustomizer.class, "MNE_Down").charAt(0));
+                moveDownButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2SEPlatformCustomizer.class,"AD_Down"));
                 moveDownButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
                         moveDownPathElement ();
