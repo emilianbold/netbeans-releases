@@ -17,30 +17,38 @@ package org.netbeans.modules.pdf;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
-
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.JarFileSystem;
+import org.openide.filesystems.LocalFileSystem;
 import org.openide.loaders.XMLDataObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
-
+import org.openide.util.Utilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 
-/** Permits a special kind of .xml file to be used for PDF links.
+/**
+ * Permits a special kind of .xml file to be used for PDF links.
  * After this processor is registered, any .xml file which matches
  * the specified DTD (it must declare a <code>&lt;!DOCTYPE&gt;</code>)
  * will provide an instance of a {@link JMenuItem}.
@@ -55,14 +63,19 @@ import org.w3c.dom.NodeList;
  * bar folder, for example <samp>..../system/Menu/Help/</samp>.
  *
  * @author Jesse Glick
+ * @author  Marian Petras
  * @see org.openide.loaders.XMLDataObject.Processor
  */
-public class LinkProcessor implements InstanceCookie, XMLDataObject.Processor, ActionListener {
+public class LinkProcessor implements InstanceCookie,
+                                      XMLDataObject.Processor,
+                                      ActionListener {
 
     /** Public ID of catalog. */
-    public static final String PUBLIC_ID = "-//NetBeans//DTD PDF Document Menu Link 1.0//EN"; // NOI18N
+    public static final String PUBLIC_ID
+            = "-//NetBeans//DTD PDF Document Menu Link 1.0//EN";        //NOI18N
     /** */
-    public static final String PUBLIC_WWW = "http://www.netbeans.org/dtds/pdf_link-1_0.dtd"; // NOI18N
+    public static final String PUBLIC_WWW
+            = "http://www.netbeans.org/dtds/pdf_link-1_0.dtd";          //NOI18N
 
     /** <code>XMLDataObject</code> this processor is linked to. */
     private XMLDataObject xmlDataObject;
@@ -81,84 +94,245 @@ public class LinkProcessor implements InstanceCookie, XMLDataObject.Processor, A
     }
      */
 
-    /** Attaches this processor to specified xml data object. Implements <code>XMLDataObject.Processor</code> interface. 
-     * @param xmlDataObject xml data object to which attach this processor */
+    /* Implements interface <code>XMLDataObject.Processor</code>. */
+    /**
+     * Attaches this processor to specified XML data object.
+     *
+     * @param  xmlDataObject  XML data object to which attach this processor
+     */
     public void attachTo(XMLDataObject xmlDataObject) {
         this.xmlDataObject = xmlDataObject;
     }
 
-    /** Gets instance class. Implements <code>InstanceCookie</code> interface method. 
-     * @return <code>JMenuItem</code> class */
+    /* Implements interface <code>InstanceCookie</code>. */
+    /**
+     * @return <code>JMenuItem</code> class
+     */
     public Class instanceClass() throws IOException, ClassNotFoundException {
         return JMenuItem.class;
     }
 
-    /** Creates instance. Implements <code>InstanceCookie</code> interface method. */
+    /* Implements interface <code>InstanceCookie</code>. */
     public Object instanceCreate() throws IOException, ClassNotFoundException {
+        Icon icon = new ImageIcon(Utilities.loadImage(
+                "org/netbeans/modules/pdf/PDFDataIcon.gif"));           //NOI18N
         String name = xmlDataObject.getNodeDelegate().getDisplayName();
         
-        Icon icon = new ImageIcon(Toolkit.getDefaultToolkit().getImage
-            (LinkProcessor.class.getResource("PDFDataIcon.gif"))); // NOI18N
-        // [PENDING] chop mnemonics
-        JMenuItem menuItem = new JMenuItem(name, icon);
+        JMenuItem menuItem = new JMenuItem(icon);
+        Mnemonics.setLocalizedText(menuItem, name);
         menuItem.addActionListener(this);
         
         return menuItem;
     }
     
-    /** Gets name of instance. Implements <code>InstanceCookie</code> interface method. 
-     * @return name of <code>xmlDataObject</code> */
+    /* Implements interface <code>InstanceCookie</code>. */
+    /**
+     * @return  name of the <code>xmlDataObject</code>
+     */
     public String instanceName() {
         return xmlDataObject.getName();
     }
 
-    /** Performs action. Retrieves pdf data obect from specified xml one and opens it.
-     * Implements <code>ActionListener</code> interface method. */
+    /**
+     * Retrieves the name of a file describing the XML data object
+     *
+     * @return  as much precious path to the file as possible
+     */
+    private String getXMLFileName() {
+        FileObject fileObject = xmlDataObject.getPrimaryFile();
+        FileSystem fileSystem;
+        try {
+            fileSystem = fileObject.getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            return fileObject.getPath();
+        }
+        String fsRelativeName = fileObject.getPath();
+        
+        if (fileSystem instanceof LocalFileSystem) {
+            File rootDir = ((LocalFileSystem) fileSystem).getRootDirectory();
+            try {
+                rootDir = rootDir.getCanonicalFile();
+            } catch (IOException ex) {
+                rootDir = rootDir.getAbsoluteFile();
+            }
+            return rootDir.getPath() + '/' + fsRelativeName;
+        } else if (fileSystem instanceof JarFileSystem) {
+            File jarFile = ((JarFileSystem) fileSystem).getJarFile();
+            try {
+                jarFile = jarFile.getCanonicalFile();
+            } catch (IOException ex) {
+                jarFile = jarFile.getAbsoluteFile();
+            }
+            return '[' + jarFile.getPath() + ']' + '/' + fsRelativeName;
+        } else {
+            String fsName = fileSystem.getDisplayName();
+            return '[' + fsName + ']' + '/' + fsRelativeName;
+        }
+    }
+
+    /**
+     * Notifies the user that the XML file is broken.
+     */
+    private void notifyXMLFileBroken() {
+        String msg = NbBundle.getMessage(LinkProcessor.class,
+                                         "EXC_file_not_matching_DTD",   //NOI18N
+                                         getXMLFileName());
+        ErrorManager.getDefault().log(ErrorManager.USER, msg);
+    }
+    
+    /**
+     * Notifies the user about some problem with the XML file.
+     *
+     * @param  msgKey  resource bundle key for the message
+     * @param  urlSpec  url that caused the problem
+     * @param  isError  type of the message - use <code>true</code> for
+     *                  an error message, <code>false</code> for
+     *                  an information message
+     */
+    private void notifyBadFileSpec(String msgKey,
+                                   String urlSpec,
+                                   boolean isError) {
+        String msg = NbBundle.getMessage(LinkProcessor.class,
+                                         msgKey,
+                                         getXMLFileName(),
+                                         urlSpec);
+        ErrorManager.getDefault().log(isError ? ErrorManager.WARNING
+                                              : ErrorManager.USER,
+                                      msg);
+    }
+    
+    /**
+     */
+    private void notifyFileDoesNotExist(File file) {
+        String msg = NbBundle.getMessage(LinkProcessor.class,
+                                         "MSG_File_does_not_exist",     //NOI18N
+                                         file.getAbsolutePath());
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                msg, NotifyDescriptor.WARNING_MESSAGE));
+    }
+    
+    /**
+     * Grabs a file from a specification in an element of an XML file.
+     *
+     * @param  innerElement  element containing specification of a PDF file
+     * @return  file corresponding to the specification,
+     *          or <code>null</code> if the specification was illegal
+     *          or unsupported
+     */
+    private File grabFile(Element innerElement) {
+        String linkType = innerElement.getTagName();
+        
+        /* handle element "file": */
+        if (linkType.equals("file")) {                                  //NOI18N
+            if (!innerElement.hasAttribute("path")) {                   //NOI18N
+                notifyXMLFileBroken();
+                return null;
+            }
+            return new File(innerElement.getAttribute("path"));         //NOI18N
+            
+        /* handle element "idefile": */
+        } else if (linkType.equals("idefile")) {                        //NOI18N
+            if (!innerElement.hasAttribute("base")) {                   //NOI18N
+                notifyXMLFileBroken();
+                return null;
+            }
+            String base = innerElement.getAttribute("base");            //NOI18N
+            String path = base.replace('.', '/') + ".pdf";              //NOI18N
+            File file = InstalledFileLocator.getDefault()
+                        .locate(path, null, true);
+            if (file == null) {
+                notifyFileDoesNotExist(file);
+                return null;
+            }
+            return file;
+            
+        /* handle element "url": */
+        } else if (linkType.equals("url")) {                            //NOI18N
+            if (!innerElement.hasAttribute("name")) {                   //NOI18N
+                notifyXMLFileBroken();
+                return null;
+            }
+            String urlSpec = innerElement.getAttribute("name");         //NOI18N
+            URL url;
+            try {
+                url = new URL(urlSpec);
+            } catch (MalformedURLException ex) {
+                notifyBadFileSpec(
+                        "MSG_Cannot_open_malformed_URL",                //NOI18N
+                        urlSpec,
+                        true);
+                return null;
+            }
+            if (!url.getProtocol().equals("file")) {                    //NOI18N
+                notifyBadFileSpec(
+                        "MSG_Cannot_open_unsupported_URL",              //NOI18N
+                        urlSpec,
+                        false);
+            }
+            try {
+                return new File(new URI("file://" + url.getPath()));    //NOI18N
+            } catch (URISyntaxException ex1) {
+                ErrorManager.getDefault().notify(ex1);
+                return null;
+            } catch (IllegalArgumentException ex2) {
+                ErrorManager.getDefault().notify(ex2);
+                return null;
+            }
+            
+        } else {
+            notifyXMLFileBroken();
+            return null;
+        }
+    }
+    
+    /* Implements interface <code>ActionListener</code>. */
+    /**
+     * Performs an action. Retrieves a PDF data object from the specified
+     * XML data object and opens it.
+     */
     public void actionPerformed(ActionEvent evt) {
         try {
-            // [PENDING] better exceptions, ideally--not toString()
+            
+            /* Grab the element containing the link: */
+            Element innerElement;
             Document document = xmlDataObject.getDocument();
             Element pdfLinkElement = document.getDocumentElement();
-            
-            NodeList nodeList = pdfLinkElement.getChildNodes ();
+            NodeList nodeList = pdfLinkElement.getChildNodes();
+            int count = nodeList.getLength();
             Node node = null;
-            
-            for(int i = 0; i < nodeList.getLength(); i++) {
+            for (int i = 0; i < count; i++) {
                 Node nextNode = nodeList.item(i);
-                if(nextNode.getNodeType() == Node.ELEMENT_NODE) {
-                    if(node != null) 
-                        throw new Exception(document.toString());
-                    
-                    node = nextNode;
+                if (nextNode.getNodeType() == Node.ELEMENT_NODE) {
+                    if (node == null) {
+                        node = nextNode;
+                    } else {
+                        /* there should be just one element */
+                        notifyXMLFileBroken();
+                        return;
+                    }
                 }
             }
-            
-            if(node == null)
-                throw new Exception(document.toString());
-            
-            Element innerElement = (Element)node;
-            
-            String type = innerElement.getTagName();
-            
-            // Retrieve pdf file.
-            File file;
-            
-            if("file".equals(type)) { // NOI18N
-                file = new File((String)innerElement.getAttribute("path")); // NOI18N
-            } else if("idefile".equals(type)) { // NOI18N
-                String base = (String)innerElement.getAttribute("base"); // NOI18N
-                String path = base.replace('.', '/') + ".pdf"; // NOI18N
-                file = InstalledFileLocator.getDefault().locate(path, null, true);
-                if (file == null) throw new FileNotFoundException(path);
-            } else if("url".equals(type)) { // NOI18N
-                throw new Exception("PDF: unimplemented."); // NOI18N
-            } else {
-                throw new Exception(document.toString());
+            if (node == null) {
+                /* there should be exactly one element within 'pdfLink' */
+                notifyXMLFileBroken();
+                return;
             }
+            innerElement = (Element) node;
             
-            // [PENDING] in-process PDF viewer support
-            new PDFOpenSupport(file).open();
-        } catch(Exception e) {
+            /* Retrieve the PDF file: */
+            File file = grabFile(innerElement);
+            
+            /* Try to open the file in an external viewer: */
+            if (file != null) {
+                try {
+                    // [PENDING] in-process PDF viewer support
+                    new PDFOpenSupport(file).open();
+                    return;
+                } catch (IllegalArgumentException ex) {
+                    notifyFileDoesNotExist(file);
+                }
+            }
+        } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
         }
     }
