@@ -47,7 +47,7 @@ import org.netbeans.modules.editor.IndentEngineFormatter;
 import org.netbeans.modules.editor.SimpleIndentEngine;
 
 import org.openide.options.SystemOption;
-import org.openide.util.HelpCtx;
+//import org.openide.util.HelpCtx;
 import org.openide.text.IndentEngine;
 import org.openide.ServiceType;
 import java.beans.IntrospectionException;
@@ -173,7 +173,7 @@ public class BaseOptions extends OptionSupport {
     
     static final long serialVersionUID =-5469192431366914841L;
     
-    private static final String HELP_ID = "editing.global"; // !!! NOI18N
+    //private static final String HELP_ID = "editing.global"; // !!! NOI18N
     private static final String NO_INDENT_ENGINE = "NO_INDENT_ENGINE"; // NOI18N
     
     /** Whether formatting debug messages should be displayed */
@@ -374,9 +374,11 @@ public class BaseOptions extends OptionSupport {
         }
     }
     
+    /* #54893
     public HelpCtx getHelpCtx() {
         return new HelpCtx(HELP_ID);
     }
+     */
     
     public int getTabSize() {
         return getSettingInteger(SettingsNames.TAB_SIZE);
