@@ -81,8 +81,10 @@ public class CustomizeLayoutAction extends CookieAction {
         if (radCookie != null) {
             RADComponent metacomp = radCookie.getRADComponent();
             if (metacomp instanceof RADVisualContainer) {
-                NodeOperation.getDefault().customize(
-                    ((RADVisualContainer)metacomp).getLayoutNodeReference());
+                Node layoutNode = ((RADVisualContainer)metacomp)
+                                      .getLayoutNodeReference();
+                if (layoutNode != null && layoutNode.hasCustomizer())
+                    NodeOperation.getDefault().customize(layoutNode);
             }
         }
     }
