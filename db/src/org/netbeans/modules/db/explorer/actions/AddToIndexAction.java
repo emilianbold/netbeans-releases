@@ -75,6 +75,7 @@ public class AddToIndexAction extends DatabaseAction
 			if (dlg.run()) {
 
 				CreateIndex icmd = spec.createCommandCreateIndex(tablename);
+				icmd.setIndexName(index);
 				Iterator enu = ixrm.iterator();
 				while (enu.hasNext()) {
 					icmd.specifyColumn((String)enu.next());
@@ -83,7 +84,8 @@ public class AddToIndexAction extends DatabaseAction
 				icmd.specifyColumn((String)dlg.getSelectedItem());
 				spec.createCommandDropIndex(index).execute();
 				icmd.execute();
-				((DatabaseNodeChildren)nfo.getNode().getChildren()).createSubnode(info,true);
+				nfo.refreshChildren();
+//				((DatabaseNodeChildren)nfo.getNode().getChildren()).createSubnode(info,true);
 			}
 
 		} catch(Exception e) {
