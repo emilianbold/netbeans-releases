@@ -27,20 +27,21 @@ import org.netbeans.editor.LocaleSupport;
 */
 
 public class NbLocalizer implements LocaleSupport.Localizer {
-
-    private ResourceBundle bundle;
+// Fix of #36754 - localizers memory consumption
+//    private ResourceBundle bundle;
+    private Class bundleClass;
 
     /** Construct new localizer that uses a bundle for the given class.
     * @param bundleClass class for which the bundle is retrieved by NbBundle.getBundle()
     */
     public NbLocalizer(Class bundleClass) {
-        bundle = NbBundle.getBundle(bundleClass);
+        this.bundleClass = bundleClass;
     }
 
     /** Get the localized string using the given key. */
     public String getString(String key) {
         try {
-            return bundle.getString(key);
+            return NbBundle.getBundle(bundleClass).getString(key);
         } catch (MissingResourceException e) {
             return null;
         }
