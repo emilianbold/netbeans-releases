@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -313,6 +313,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         
         descriptor.addPropertyChangeListener(this);
         addWindowListener(this);
+        
+        initializeClosingOptions ();
     }
     
     /** Descriptor can be cached and reused. We need to remove listeners 
@@ -322,6 +324,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         descriptor.removePropertyChangeListener(this);
         uninitializeMessage();
         uninitializeButtons();
+        uninitializeClosingOptions ();
     }
     
     public void addNotify() {
@@ -413,6 +416,22 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
             getContentPane().remove(currentButtonsPanel);
             currentButtonsPanel = null;
         }
+    }
+    
+    private void initializeClosingOptions (boolean init) {
+        Object[] options = getClosingOptions ();
+        if (options == null) return ;
+        for (int i = 0; i < options.length; i++) {
+            modifyListener (options[i], buttonListener, init);
+        }
+    }
+    
+    private void initializeClosingOptions () {
+        initializeClosingOptions (true);
+    }
+    
+    private void uninitializeClosingOptions () {
+        initializeClosingOptions (false);
     }
     
     protected final void initializeButtons() {
@@ -681,11 +700,11 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         }
     }
     
-    private void modifyListener(Component comp, ButtonListener l, boolean add) {
+    private void modifyListener(Object comp, ButtonListener l, boolean add) {
         // on JButtons attach simply by method call
         if (comp instanceof JButton) {
             JButton b = (JButton)comp;
-            if (add) {
+            if (add) { 
                 b.addActionListener(l);
                 b.addComponentListener(l);
                 b.addPropertyChangeListener(l);
@@ -701,6 +720,11 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
             java.lang.reflect.Method m = null;
             try {
                 m = comp.getClass().getMethod(add ? "addActionListener" : "removeActionListener", new Class[] { ActionListener.class });// NOI18N
+                try {
+                    m.setAccessible (true);
+                } catch (SecurityException se) {
+                    m = null; // no jo, we cannot make accessible
+                }
             } catch (NoSuchMethodException e) {
                 m = null; // no jo, we cannot attach ActionListener to this Component
             } catch (SecurityException e2) {
