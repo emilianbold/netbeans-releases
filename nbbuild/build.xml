@@ -943,6 +943,22 @@ the ${netbeans.dest}/bin/ directory.
     </exec>
   </target>
 
+  <target name="l10n-kit" depends="init">
+    <taskdef name="l10n" classname="org.netbeans.nbbuild.L10nTask"
+             classpath="nbantext.jar"/>
+    <delete dir="${l10n.dist.dir}"/>
+    <mkdir dir="${l10n.dist.dir}"/>
+    <delete dir="tmp"/>
+    <mkdir dir="tmp"/>
+    <property name="nbroot" location=".."/>
+    <l10n topdirs="${nbroot}" modules="${fixedmodule},${modules}"
+          localizablefile="l10n.list" generatedfile="l10n.list.translated"
+          distdir="${l10n.dist.dir}" changedfile="l10n.list.changed"
+          builddir="tmp" buildnumber="${buildnumber}"
+          excludepattern="**/ja/,**/*_ja.*"/>
+    <delete dir="tmp"/>
+  </target>
+
   <target name="bootstrap-javadoc"
           depends="bootstrap"
           description="Generate Javadoc for Ant extensions.">
