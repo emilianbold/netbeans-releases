@@ -61,14 +61,14 @@ public class DebuggerTestApplication extends javax.swing.JFrame {
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
-                DebuggerTestApplication.this.exitForm(evt);
+                exitForm(evt);
             }
         });
 
         jButton1.setText("Stop");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                DebuggerTestApplication.this.jButton1ActionPerformed(evt);
+                jButton1ActionPerformed(evt);
             }
         });
 
@@ -77,7 +77,7 @@ public class DebuggerTestApplication extends javax.swing.JFrame {
         jButton2.setText("Clear");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                DebuggerTestApplication.this.jButton2ActionPerformed(evt);
+                jButton2ActionPerformed(evt);
             }
         });
 
@@ -134,9 +134,9 @@ public class DebuggerTestApplication extends javax.swing.JFrame {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JButton jButton1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JProgressBar jProgressBar1;
     // End of variables declaration//GEN-END:variables
