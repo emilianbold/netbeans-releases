@@ -27,7 +27,6 @@ import org.openide.explorer.view.ListView;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.explorer.*;
-import org.openide.util.HelpCtx;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.*;
@@ -354,10 +353,6 @@ public final class BorderEditor extends PropertyEditorSupport
                 if (nodes.length != 1)
                     throw new PropertyVetoException("", evt); // NOI18N
             }
-        }
-
-        public org.openide.util.HelpCtx getHelpCtx() {
-            return new HelpCtx(BorderPanel.class);
         }
 
         public Dimension getPreferredSize() {

@@ -27,7 +27,6 @@ import javax.swing.border.*;
 import org.openide.*;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
-import org.openide.util.HelpCtx;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.propertysheet.*;
@@ -496,9 +495,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
                     break;
             }
             tfName.setText(((NbImageIcon)localIcon).name);
-            
-            HelpCtx.setHelpIDString(this, "gui.csh.icon"); // NOI18N
-            
+
             updateIcon();
         }
         
@@ -746,7 +743,6 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
             fd.setValue("filter", filter); // NOI18N
             PropertyPanel panel = new PropertyPanel(epm, PropertyPanel.PREF_CUSTOM_EDITOR);
             DialogDescriptor dd = new DialogDescriptor(panel, getString("CTL_OpenDialogName"), true, null); // NOI18N
-            dd.setHelpCtx(new HelpCtx("csh.openimage")); // NOI18N
             Object res = DialogDisplayer.getDefault().notify(dd);
             if (res == DialogDescriptor.OK_OPTION) {
                 return ff[0];

@@ -60,7 +60,7 @@ public class CustomizeLayoutAction extends CookieAction {
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(CustomizeLayoutAction.class);
+        return HelpCtx.DEFAULT_HELP;
     }
 
     /** Icon resource.

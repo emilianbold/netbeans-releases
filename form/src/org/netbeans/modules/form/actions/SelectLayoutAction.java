@@ -48,7 +48,7 @@ public class SelectLayoutAction extends CallableSystemAction {
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(SelectLayoutAction.class);
+        return HelpCtx.DEFAULT_HELP;
     }
 
     public boolean isEnabled() {

@@ -50,7 +50,7 @@ public class EventsAction extends CookieAction {
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(EventsAction.class);
+        return HelpCtx.DEFAULT_HELP;
     }
 
     protected void performAction(Node[] activatedNodes) {
