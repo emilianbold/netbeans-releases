@@ -50,6 +50,7 @@ public final class Issue extends Object {
     static final String DEPENDS_ON = "dependson";
     static final String BLOCKS = "blocks";
     static final String CREATED = "creation_ts";
+    static final String VOTES = "votes";
     
     /** The target milestone attribute name. */
     static final String TARGET_MILESTONE = "target_milestone";
@@ -67,10 +68,11 @@ public final class Issue extends Object {
      */
     public int getId() {
         Object id = getAttribute(ISSUE_ID);
-        if (! (id instanceof Integer)) {
+        try {
+            return Integer.parseInt ((String) id);
+        } catch (Exception ex) {
             return -1;
         }
-        return Integer.valueOf((String) id).intValue ();
     }
 
     /** Who is assigned to this bug.
@@ -192,6 +194,18 @@ public final class Issue extends Object {
      */
     public String getSubcomponent () {
         return string (SUBCOMPONENT);
+    }
+    
+    /** Number of votes for given component.
+     * @return integer representing number of votes or 0 is no votes present
+     */
+    public int getVotes () {
+        try {
+            String s = string (VOTES);
+            return Integer.parseInt (s);
+        } catch (Exception ex) {
+            return 0;
+        }
     }
 
     
