@@ -295,6 +295,10 @@ public class NbEditorKit extends ExtKit {
                     item.putClientProperty ("HelpID", helpID);
             }
             if (item != null) {
+                if (item.getAccelerator() == null){
+                    KeyStroke ks = (KeyStroke)a.getValue(Action.ACCELERATOR_KEY);
+                    if (ks!=null) item.setAccelerator(ks);
+                }
                 popupMenu.add(item);
             }
         }
@@ -302,7 +306,6 @@ public class NbEditorKit extends ExtKit {
         protected void addAction(JTextComponent target, JPopupMenu popupMenu,
         String actionName) {
             if (actionName != null) { // try if it's an action class name
-
                 // Check for the TopComponent actions
                 if (TopComponent.class.getName().equals(actionName)) {
                     // Get the cloneable-editor instance
@@ -380,6 +383,10 @@ public class NbEditorKit extends ExtKit {
                             }
 
                             if (item != null) {
+                                if (item.getAccelerator() == null){
+                                    KeyStroke ks = (KeyStroke)a.getValue(Action.ACCELERATOR_KEY);
+                                    if (ks!=null) item.setAccelerator(ks);
+                                }
                                 popupMenu.add(item);
                             }
                         }
