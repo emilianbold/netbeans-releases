@@ -508,11 +508,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/outputSettings.gif" />
         </file>
-
-        <file name="org-openide-explorer-propertysheet-PropertySheetSettings.settings" url="PropertySheetSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/propertysheet/propertySheetSettings.gif" />
-        </file>
         
         <file name="org-openide-text-PrintSettings.settings" url="PrintSettings.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />

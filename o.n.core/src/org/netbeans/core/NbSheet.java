@@ -45,7 +45,6 @@ import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.propertysheet.PropertySheet;
-import org.openide.explorer.propertysheet.PropertySheetSettings;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.nodes.NodeAdapter;
@@ -97,7 +96,6 @@ public final class NbSheet extends TopComponent {
     /** the nodes that are displayed in the property sheet */
     private Node[] nodes = new Node[0];
     /** */
-    private SettingsListener settingsListener;
 
     /** Constructor for new sheet.
     * The sheet does not listen to global changes */
@@ -129,15 +127,6 @@ public final class NbSheet extends TopComponent {
         listener = new Listener ();
 
         snListener = new SheetNodesListener();
-
-        settingsListener = new SettingsListener();
-        PropertySheetSettings pss = (PropertySheetSettings)SharedClassObject.findObject(PropertySheetSettings.class);
-        pss.addPropertyChangeListener(
-            org.openide.util.WeakListeners.propertyChange(
-                settingsListener, 
-                pss
-            )
-        );
 
         // set accessiblle description
         getAccessibleContext ().setAccessibleName (
@@ -420,32 +409,6 @@ public final class NbSheet extends TopComponent {
         }
 
     }
-    // Settings listener
-    final class SettingsListener implements PropertyChangeListener {
-        public void propertyChange (PropertyChangeEvent e) {
-            String name = e.getPropertyName ();
-
-            if (name == null) return;
-
-            if (name.equals (PropertySheet.PROPERTY_SORTING_MODE)) {
-                try {
-                    propertySheet.setSortingMode (((Integer)e.getNewValue ()).intValue ());
-                } catch (PropertyVetoException ee) {
-                }
-            } else if (name.equals (PropertySheet.PROPERTY_DISPLAY_WRITABLE_ONLY)) {
-                propertySheet.setDisplayWritableOnly (((Boolean)e.getNewValue ()).booleanValue ());
-            } else if (name.equals (PropertySheet.PROPERTY_VALUE_COLOR)) {
-                propertySheet.setValueColor ((Color)e.getNewValue ());
-            } else if (name.equals (PropertySheet.PROPERTY_DISABLED_PROPERTY_COLOR)) {
-                propertySheet.setDisabledPropertyColor ((Color)e.getNewValue ());
-            } else if (name.equals (PropertySheet.PROPERTY_PLASTIC)) {
-                propertySheet.setPlastic (((Boolean)e.getNewValue ()).booleanValue ());
-            } else if (name.equals (PropertySheet.PROPERTY_PROPERTY_PAINTING_STYLE)) {
-                propertySheet.setPropertyPaintingStyle (((Integer)e.getNewValue ()).intValue ());
-            }
-        }
-    }
-
     /** Change listener to changes in selected nodes. And also
     * nodes listener to listen to global changes of the nodes.
     */
