@@ -70,18 +70,23 @@ final class Util {
         
         if (activatedNodes != null && activatedNodes.length > 0) {
             for (int i = 0; i < activatedNodes.length; i++) {
-                DataObject dataObject = (DataObject)activatedNodes[i].getCookie(DataObject.class);
+                DataObject.Container container = (DataObject.Container) activatedNodes[i].getCookie(DataObject.Container.class);
                 
-                if (dataObject == null) continue;
+                if (container != null) {
                 
-                if (dataObject instanceof DataFolder) {
-                    Iterator it = I18nUtil.getAcceptedDataObjects((DataFolder)dataObject).iterator();
-                    
-                    while(it.hasNext()) {
-                        addSource(settings, (DataObject)it.next());
+                    if (container instanceof DataFolder) {
+                        Iterator it = I18nUtil.getAcceptedDataObjects(container).iterator();
+
+                        while(it.hasNext()) {
+                            addSource(settings, (DataObject)it.next());
+                        }
                     }
-                } else if (FactoryRegistry.hasFactory(dataObject.getClass())) {
-                    addSource(settings, dataObject);
+                }
+
+                DataObject dobj = (DataObject) activatedNodes[i].getCookie(DataObject.class);
+                if (dobj == null) continue;
+                if (FactoryRegistry.hasFactory(dobj.getClass())) {
+                    addSource(settings, dobj);
                 }
             }
         }
@@ -104,7 +109,9 @@ final class Util {
             sourceMap.put(source, null);
             return;
         }
-        
+
+        // try to associate Bundle file
+
         DataObject[] children = folder.getChildren();
         
         for(int i = 0; i < children.length; i++) {

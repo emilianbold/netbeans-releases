@@ -229,13 +229,13 @@ public final class I18nUtil {
     /** 
      * Recursivelly get all accepted data objects starting from given folder. 
      */
-    public static List getAcceptedDataObjects(DataFolder folder) {
+    public static List getAcceptedDataObjects(DataObject.Container folder) {
         List accepted = new ArrayList();
         
         DataObject[] children = folder.getChildren();
 
         for(int i = 0; i < children.length; i++) {
-            if(children[i] instanceof DataFolder) {  
+            if(children[i] instanceof DataObject.Container) {
                 accepted.addAll(getAcceptedDataObjects((DataFolder)children[i]));
             } else {
                 if(FactoryRegistry.hasFactory(children[i].getClass()))
