@@ -153,6 +153,7 @@ public class TargetListerTest extends NbTestCase {
     }
     
     public void testImportedDefaultAndDifferentBasedir() throws Exception {
+        // #50087: Ant does *not* use the basedir when resolving an <import>!
         FileObject importing4 = testdir.getFileObject("targetlister/importing4.xml");
         assertNotNull("importing4.xml found", importing4);
         List/*<TargetLister.Target>*/ targets = getTargets(importing4);

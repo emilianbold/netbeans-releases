@@ -306,10 +306,12 @@ public class TargetLister {
                     if (_file.isAbsolute()) {
                         file = _file;
                     } else {
-                        if (basedir == null) {
+                        File prjFile = apc.getFile();
+                        if (prjFile == null) {
                             throw new IOException("Cannot import relative path " + fileS + " from a diskless script"); // NOI18N
                         }
-                        file = new File(basedir, fileS);
+                        // #50087: <import> resolves file against the script, *not* the basedir.
+                        file = new File(prjFile.getParentFile(), fileS);
                     }
                     if (file.canRead()) {
                         FileObject fileObj = FileUtil.toFileObject(FileUtil.normalizeFile(file));
