@@ -106,6 +106,20 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     
     static final long serialVersionUID =5011742660516204764L;
     
+    private static final int customFontHeightCorrection;
+    
+    static {
+        int customFontSize = UIManager.getInt( "customFontSize" );
+        if( customFontSize < 1 ) 
+            customFontSize = 1;
+            
+        int defaultFontSize = UIManager.getInt( "nbDefaultFontSize" );
+        if( defaultFontSize <= 0 ) 
+            defaultFontSize = 11;
+        
+        customFontHeightCorrection = Math.max( customFontSize - defaultFontSize, 0 );
+    }
+    
     /** Create a new Toolbar with empty name. */
     public Toolbar () {
         this (""); // NOI18N
@@ -645,7 +659,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
      * @return number of rows
      */
     static public int rowCount (int height) {
-        return 1 + height / (getBasicHeight() + HEIGHT_TOLERANCE);
+        return 1 + height / (getBasicHeight() + HEIGHT_TOLERANCE+customFontHeightCorrection);
     }
 
     /** Set DnDListener to Toolbar.
