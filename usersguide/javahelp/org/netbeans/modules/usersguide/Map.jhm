@@ -349,11 +349,6 @@
 <mapID target="editing.goto" url="editing/goto.html" />
 <mapID target="editing.fastimport" url="editing/fastimport.html" />
 <mapID target="editing.fastopen" url="editing/fastopen.html" />
-<mapID target="editing.parserdatabase" url="editing/parserdatabase.html" />
-<mapID target="editing.parserdatabase_customizing" url="editing/parserdatabase_customizing.html" />
-<mapID target="editing.parserdatabase_updating" url="editing/parserdatabase_updating.html" />
-<mapID target="editing.parserdatabase_customizer" url="editing/parserdatabase_customizer.html" />
-<mapID target="editing.deleting-pdb" url="editing/deleting-pdb.html" />
 <mapID target="editing.xmlsettings" url="editing/xmlsettings.html" />
 <mapID target="editing.configuring" url="editing/configuring/configuring.html" />
 <mapID target="editing.settingkeybdshorts" url="editing/configuring/settingkeybdshorts.html" />
@@ -389,9 +384,6 @@
 <!-- Csh pages for scroll insets and Fonts and Color property editors -->
 <mapID target="editing.scrollinsets" url="editing/configuring/insets.html" />
 <mapID target="editing.fonts" url="editing/configuring/fontsandcolors.html" />
-
-<!-- Csh page for Code Completion Data Manager -->
-<mapID target="editing.completion.manager" url="editing/parserdatabase_customizer.html" />
 
 <!-- Csh page for Java Code Folding dialog box -->
 <mapID target="editing.codefolding" url="editing/editor_folding.html" />
@@ -854,9 +846,9 @@
   <mapID target="org.openide.actions.CustomizeAction" url="pending.html" />
   <mapID target="org.openide.actions.CustomizeBeanAction" url="pending.html" />
   <mapID target="org.openide.actions.CustomizeBeanAction.dialog" url="pending.html" />
-  <mapID target="org.openide.actions.CopyAction" url="objects/objects_clipboard-ops.html" />
-  <mapID target="org.openide.actions.CutAction" url="objects/objects_clipboard-ops.html" />
-  <mapID target="org.openide.actions.DeleteAction" url="objects/objects_clipboard-ops.html" />
+  <mapID target="org.openide.actions.CopyAction" url="pending.html" />
+  <mapID target="org.openide.actions.CutAction" url="pending.html" />
+  <mapID target="org.openide.actions.DeleteAction" url="pending.html" />
   <mapID target="org.openide.actions.EditAction" url="pending.html" />
   <mapID target="org.openide.actions.FinishDebuggerAction" url="pending.html" />
   <mapID target="org.openide.actions.GoAction" url="pending.html" />
@@ -865,7 +857,7 @@
   <mapID target="org.openide.actions.InstantiateAction" url="pending.html" />
   <mapID target="org.openide.actions.NewTemplateAction" url="objects/objects_new.html" />
   <mapID target="org.openide.actions.NewTemplateAction$From" url="objects/objects_new.html" />
-  <mapID target="org.openide.actions.PasteAction" url="objects/objects_clipboard-ops.html" />
+  <mapID target="org.openide.actions.PasteAction" url="pending.html" />
   <mapID target="org.openide.actions.PropertiesAction" url="pending.html" />
   <mapID target="org.openide.actions.SaveAction" url="objects/objects_saving.html" />
   <mapID target="org.openide.actions.SaveAllAction" url="objects/objects_saving.html" />
@@ -903,12 +895,12 @@
   <mapID target="org.openide.src.nodes.ElementNode" url="pending.html" />
   <mapID target="org.openide.src.nodes.SourceOptions" url="objects/objects_elements.html" />
   <mapID target="org.openide.text.EditorSupport$Editor" url="pending.html" />
-  <mapID target="org.openide.loaders.DataFolder$Paste.move" url="objects/objects_clipboard-ops.html" />
-  <mapID target="org.openide.loaders.DataFolder$Paste.instantiate" url="objects/objects_clipboard-ops.html" />
-  <mapID target="org.openide.loaders.DataFolder$Paste.copy" url="objects/objects_clipboard-ops.html" />  
-  <mapID target="org.openide.loaders.DataFolder$Paste.shadow" url="objects/objects_clipboard-ops.html" />
-  <mapID target="org.openide.loaders.DataFolder$SerializePaste" url="objects/objects_clipboard-ops.html" /> 
-  <mapID target="org.openide.loaders.DataFolder$InstantiatePaste" url="objects/objects_clipboard-ops.html" /> 
+  <mapID target="org.openide.loaders.DataFolder$Paste.move" url="pending.html" />
+  <mapID target="org.openide.loaders.DataFolder$Paste.instantiate" url="pending.html" />
+  <mapID target="org.openide.loaders.DataFolder$Paste.copy" url="pending.html" />  
+  <mapID target="org.openide.loaders.DataFolder$Paste.shadow" url="pending.html" />
+  <mapID target="org.openide.loaders.DataFolder$SerializePaste" url="pending.html" /> 
+  <mapID target="org.openide.loaders.DataFolder$InstantiatePaste" url="pending.html" /> 
   <mapID target="org.openide.options.SystemOption" url="pending.html" />  
   <mapID target="org.openide.src.nodes.ClassElementNode.MENU_CREATE_BLOCK" url="pending.html" />
   <mapID target="org.openide.src.nodes.ClassElementNode.MENU_CREATE_CLASS" url="pending.html" />  
