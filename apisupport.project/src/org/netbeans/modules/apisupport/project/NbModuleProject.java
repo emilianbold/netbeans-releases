@@ -310,6 +310,14 @@ final class NbModuleProject implements Project {
         return helper.resolveFile(testClassesDir);
     }
     
+    FileObject getJavaHelpDirectory() {
+        if (helper.resolveFileObject("javahelp/manifest.mf") != null) { // NOI18N
+            // Special hack for core.
+            return null;
+        }
+        return helper.resolveFileObject("javahelp"); // NOI18N
+    }
+    
     File getModuleJarLocation() {
         return helper.resolveFile(evaluateString("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")); // NOI18N
     }

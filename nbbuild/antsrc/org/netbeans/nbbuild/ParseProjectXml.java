@@ -99,6 +99,15 @@ public final class ParseProjectXml extends Task {
         codeNameBaseDashesProperty = s;
     }
 
+    private String codeNameBaseSlashesProperty;
+    /**
+     * Set the property to set the module code name base (separated by
+     * slashes not dots) to.
+     */
+    public void setCodeNameBaseSlashesProperty(String s) {
+        codeNameBaseSlashesProperty = s;
+    }
+
     private String moduleClassPathProperty;
     /**
      * Set the property to set the computed module class path to,
@@ -183,22 +192,25 @@ public final class ParseProjectXml extends Task {
                     }
                 }
             }
-                if (codeNameBaseDashesProperty != null) {
-                    String cnb = getCodeNameBase(pDoc);
-                    define(codeNameBaseDashesProperty, cnb.replace('.', '-'));
+            if (codeNameBaseDashesProperty != null) {
+                String cnb = getCodeNameBase(pDoc);
+                define(codeNameBaseDashesProperty, cnb.replace('.', '-'));
+            }
+            if (codeNameBaseSlashesProperty != null) {
+                String cnb = getCodeNameBase(pDoc);
+                define(codeNameBaseSlashesProperty, cnb.replace('.', '/'));
+            }
+            if (moduleClassPathProperty != null) {
+                if (modulesXml == null) {
+                    throw new BuildException("You must set 'modulesxml'", getLocation());
                 }
-                if (moduleClassPathProperty != null) {
-                    if (modulesXml == null) {
-                        throw new BuildException("You must set 'modulesxml'", getLocation());
-                    }
-                    Document mDoc = XMLUtil.parse(new InputSource(modulesXml.toURI().toString()),
-                                                  false, true, /*XXX*/null, null);
-                    String cp = computeClasspath(pDoc, mDoc);
-                    if (cp != null) {
-                        define(moduleClassPathProperty, cp);
-                    }
+                Document mDoc = XMLUtil.parse(new InputSource(modulesXml.toURI().toString()),
+                                              false, true, /*XXX*/null, null);
+                String cp = computeClasspath(pDoc, mDoc);
+                if (cp != null) {
+                    define(moduleClassPathProperty, cp);
                 }
-            
+            }
         } catch (Exception e) {
             throw new BuildException(e, getLocation());
         }

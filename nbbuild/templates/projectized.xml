@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
         <property file="nbproject/private/private.properties"/>
         <property file="nbproject/project.properties"/>
-        <parseprojectxml project="." modulesxml="${nb_all}/nbbuild/templates/modules.xml" publicpackagesproperty="public.packages" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" codenamebasedashesproperty="code.name.base.dashes" moduleclasspathproperty="module.classpath"/>
+        <parseprojectxml project="." modulesxml="${nb_all}/nbbuild/templates/modules.xml" publicpackagesproperty="public.packages" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" codenamebasedashesproperty="code.name.base.dashes" codenamebaseslashesproperty="code.name.base.slashes" moduleclasspathproperty="module.classpath"/>
         <property name="module.jar.dir" value="${nb.modules.dir}"/>
         <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
@@ -51,11 +51,27 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement path="${module.classpath}"/>
             <pathelement path="${cp.extra}"/>
         </path>
+        <condition property="has.javahelp">
+            <and>
+                <available file="javahelp"/>
+                <!-- Special hack for core: -->
+                <not><available file="javahelp/manifest.mf"/></not>
+            </and>
+        </condition>
+        <property name="build.javahelp.dir" location="build/javahelp"/>
+        <property name="javahelp.jar.dir" value="${nb.modules/docs.dir}"/>
+        <property name="javahelp.jar.basename" value="${code.name.base.dashes}.jar"/>
+        <property name="javahelp.jar" value="${javahelp.jar.dir}/${javahelp.jar.basename}"/>
+        <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
+        <property name="javahelp.search" value="JavaHelpSearch"/>
+        <property name="javahelp.excludes" value="credits.html"/>
+        <!-- XXX maybe have a javahelp.hs property to point to the helpset -->
     </target>
 
     <target name="files-init" depends="basic-init">
         <patternset id="module.files">
             <include name="${module.jar}"/>
+            <include name="${javahelp.jar}" if="has.javahelp"/>
             <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
         </patternset>
     </target>
@@ -178,7 +194,7 @@ Microsystems, Inc. All Rights Reserved.
         </createmodulexml>
     </target>
 
-    <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,module-xml-eager">
+    <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,module-xml-eager,javahelp">
         <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${module.jar}">
             <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
                 <patternset refid="module.files"/>
@@ -293,6 +309,59 @@ Microsystems, Inc. All Rights Reserved.
         </nbjpdastart>
         <antcall target="do-debug-test-single"/>
     </target>
+
+    <target name="javahelp" depends="init" if="has.javahelp">
+        <mkdir dir="${build.javahelp.dir}"/>
+        <copy todir="${build.javahelp.dir}">
+            <fileset dir="javahelp" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+        </copy>
+        <jhindexer basedir="${build.javahelp.dir}/${javahelp.base}"
+                   db="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}">
+            <classpath>
+                <fileset dir="${nb_all}/nbbuild/external">
+                    <include name="jhall*.jar"/>
+                </fileset>
+            </classpath>
+            <include name="**/*.html"/>
+            <exclude name="${javahelp.search}/"/>
+            <exclude name="${javahelp.excludes}"/>
+        </jhindexer>
+        <!-- Add ide.css for easy previewing only; usersguide provides it in distro: -->
+        <!-- (XXX maybe the viewer task can automagically do this...) -->
+        <mkdir dir="${build.javahelp.dir}/org/netbeans/modules/usersguide"/>
+        <copy tofile="${build.javahelp.dir}/org/netbeans/modules/usersguide/ide.css"
+              file="${nb_all}/usersguide/javahelp/org/netbeans/modules/usersguide/ide.css"
+              failonerror="false"/>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${javahelp.jar.dir}"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${javahelp.jar}" compress="true">
+            <fileset dir="${build.javahelp.dir}">
+                <!-- XXX this does not exclude the folder, unfortunately... -->
+                <exclude name="org/netbeans/modules/usersguide/ide.css"/>
+            </fileset>
+        </jar>
+    </target>
+
+    <!-- XXX need targets to check javahelp links and to preview javahelp in a viewer like this: -->
+    <!--
+    HelpSet hs = new HelpSet(someClassLoader, f.toURI().toURL());
+    String title = hs.getTitle();
+    if (title == null) {
+        title = f.getAbsolutePath();
+    }
+    JDialog dlg = new JDialog(WindowManager.getDefault().getMainWindow(), title, false);
+    dlg.getContentPane().add(new JHelp(hs), BorderLayout.CENTER);
+    dlg.setSize(920, 660); // match min size of IDE's viewer
+    dlg.pack();
+    dlg.addWindowListener(this);
+    dlg.show();
+    synchronized (this) {
+        wait();
+    }
+    // ...
+    public synchronized void windowClosing(WindowEvent ev) {
+        notify();
+    }
+    -->
 
     <target name="clean" depends="init">
         <!-- XXX could probably have clean depend on a lesser init target: -->
