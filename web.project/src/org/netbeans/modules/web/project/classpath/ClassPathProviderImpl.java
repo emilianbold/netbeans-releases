@@ -14,20 +14,13 @@ package org.netbeans.modules.web.project.classpath;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -45,7 +38,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
-    private final Reference[] cache = new SoftReference[8];
+    private final ClassPath[] cache = new ClassPath[8];
 
     private final Map/*<String,FileObject>*/ dirCache = new HashMap();
 
@@ -126,13 +119,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             return null;
         }
         if (type == 2) type = 0;
-        ClassPath cp = null;
-        if (cache[3+type] == null || (cp = (ClassPath)cache[3+type].get()) == null) {
+        ClassPath cp = cache[3+type];
+        if ( cp == null) {
             if (type == 0) {    
                 cp = ClassPathFactory.createClassPath(
                 new ProjectClassPathImplementation(helper, "javac.classpath", evaluator));      //NOI18N
             }
-            cache[3+type] = new SoftReference(cp);
+            cache[3+type] = cp;
         }
         return cp;
         
@@ -153,8 +146,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             case 4: type -=3; break;
         }
         
-        ClassPath cp = null;
-        if (cache[6+type] == null || (cp = (ClassPath)cache[6+type].get())== null) {
+        ClassPath cp = cache[6+type];
+        if ( cp == null ) {
             if (type == 0) {
                 //XXX : It should return a classpath for run.classpath property, but
                 // the run.classpath property was removed from the webproject in the past
@@ -165,7 +158,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 cp = ClassPathFactory.createClassPath(
                 new ProjectClassPathImplementation(helper, "debug.classpath", evaluator)); // NOI18N
             }
-            cache[6+type] = new SoftReference(cp);
+            cache[6+type] = cp;
         }
         return cp;
     }
@@ -180,8 +173,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             // Unknown.
             return null;
         }
-        ClassPath cp = null;
-        if (cache[type] == null || (cp = (ClassPath)cache[type].get()) == null) {
+        ClassPath cp = cache[type];
+        if ( cp == null ) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
                 new ProjectClassPathImplementation(helper, SRC_DIR, evaluator)); // NOI18N
@@ -193,16 +186,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                     new ProjectClassPathImplementation(helper, DOC_BASE_DIR, evaluator)); // NOI18N
                 }
             }
-            cache[type] = new SoftReference(cp);
+            cache[type] = cp;
         }
         return cp;
     }
     
     private ClassPath getBootClassPath() {
-        ClassPath cp = null;
-        if (cache[7] == null || (cp = (ClassPath)cache[7].get()) == null) {
+        ClassPath cp = cache[7];
+        if (cp == null ) {
             cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(helper, evaluator));
-            cache[7] = new SoftReference(cp);
+            cache[7] = cp;
         }
         return cp;
     }
