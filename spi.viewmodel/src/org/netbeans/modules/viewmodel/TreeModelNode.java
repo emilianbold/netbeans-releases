@@ -526,9 +526,6 @@ public class TreeModelNode extends AbstractNode {
                                 id + "#html", 
                                 htmlValue ((String) value)
                             );
-                            System.out.println("set value " + value);
-                            System.out.println("          " + removeHTML ((String) value));
-                            System.out.println("          " + htmlValue ((String) value));
                         } else
                             properties.put (id, value);
                         firePropertyChange (id, null, value);
