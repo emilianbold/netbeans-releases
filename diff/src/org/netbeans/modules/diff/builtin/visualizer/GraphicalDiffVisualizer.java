@@ -15,14 +15,10 @@ package org.netbeans.modules.diff.builtin.visualizer;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
-import java.util.List;
 
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.diff.Difference;
@@ -117,7 +113,8 @@ public class GraphicalDiffVisualizer extends DiffVisualizer implements Serializa
         }
         DiffComponent diff;
         String componentName = name1;
-        if (name2 != null && name2.length() > 0)  componentName += " <> "+name2;
+        if (name2 != null && name2.length() > 0) componentName = NbBundle.getMessage(
+                GraphicalDiffVisualizer.class, "MSG_TwoFilesDiffTitle", componentName, name2);            
         diff = new DiffComponent(diffs, componentName, MIMEType,
             name1, name2, title1, title2, r1, r2,
             new Color[] { colorMissing, colorAdded, colorChanged });
