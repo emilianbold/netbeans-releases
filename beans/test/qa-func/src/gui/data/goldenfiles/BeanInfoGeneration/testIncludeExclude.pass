@@ -2,9 +2,8 @@ import java.beans.*;
 
 public class TestFileBeanInfo extends SimpleBeanInfo {
     
-
     // Bean descriptor 
-    /*lazy BeanDescriptor*/;
+    /*lazy BeanDescriptor*/
     private static BeanDescriptor getBdescriptor(){
         BeanDescriptor beanDescriptor = new BeanDescriptor  ( TestFile.class , null );
         
@@ -18,7 +17,7 @@ public class TestFileBeanInfo extends SimpleBeanInfo {
     private static final int PROPERTY_indexProperty = 1;
 
     // Property array 
-    /*lazy PropertyDescriptor*/;
+    /*lazy PropertyDescriptor*/
     private static PropertyDescriptor[] getPdescriptor(){
         PropertyDescriptor[] properties = new PropertyDescriptor[2];
     
@@ -35,7 +34,7 @@ public class TestFileBeanInfo extends SimpleBeanInfo {
     // EventSet identifiers
 
     // EventSet array
-    /*lazy EventSetDescriptor*/;
+    /*lazy EventSetDescriptor*/
     private static EventSetDescriptor[] getEdescriptor(){
         EventSetDescriptor[] eventSets = new EventSetDescriptor[0];
         
@@ -46,7 +45,7 @@ public class TestFileBeanInfo extends SimpleBeanInfo {
     // Method identifiers 
 
     // Method array 
-    /*lazy MethodDescriptor*/;
+    /*lazy MethodDescriptor*/
     private static MethodDescriptor[] getMdescriptor(){
         MethodDescriptor[] methods = new MethodDescriptor[0];
         

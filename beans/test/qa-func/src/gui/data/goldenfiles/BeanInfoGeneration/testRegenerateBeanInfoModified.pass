@@ -14,11 +14,17 @@ public class TestFileBeanInfo extends SimpleBeanInfo {
     
     
     // Property identifiers 
+    private static final int PROPERTY_indexProperty = 0;
 
     // Property array 
     /*lazy PropertyDescriptor*/;
     private static PropertyDescriptor[] getPdescriptor(){
-        PropertyDescriptor[] properties = new PropertyDescriptor[0];
+        PropertyDescriptor[] properties = new PropertyDescriptor[1];
+    
+        try {
+            properties[PROPERTY_indexProperty] = new IndexedPropertyDescriptor ( "indexProperty", TestFile.class, "getIndexProperty", "setIndexProperty", "getIndexProperty", "setIndexProperty" );
+        }
+        catch( IntrospectionException e) {}
         
         // Here you can add code for customizing the properties array.
         
@@ -29,20 +35,17 @@ public class TestFileBeanInfo extends SimpleBeanInfo {
     private static final int EVENT_focusListener = 1;
     private static final int EVENT_vetoableChangeListener = 2;
     private static final int EVENT_propertyChangeListener = 3;
-    private static final int EVENT_actionListener = 4;
 
     // EventSet array
     /*lazy EventSetDescriptor*/;
     private static EventSetDescriptor[] getEdescriptor(){
-        EventSetDescriptor[] eventSets = new EventSetDescriptor[5];
+        EventSetDescriptor[] eventSets = new EventSetDescriptor[4];
     
             try {
             eventSets[EVENT_containerListener] = new EventSetDescriptor ( TestFile.class, "containerListener", java.awt.event.ContainerListener.class, new String[] {"componentAdded", "componentRemoved"}, "addContainerListener", "removeContainerListener" );
             eventSets[EVENT_focusListener] = new EventSetDescriptor ( TestFile.class, "focusListener", java.awt.event.FocusListener.class, new String[] {"focusLost", "focusGained"}, "addFocusListener", "removeFocusListener" );
             eventSets[EVENT_vetoableChangeListener] = new EventSetDescriptor ( TestFile.class, "vetoableChangeListener", java.beans.VetoableChangeListener.class, new String[] {"vetoableChange"}, "addVetoableChangeListener", "removeVetoableChangeListener" );
             eventSets[EVENT_propertyChangeListener] = new EventSetDescriptor ( TestFile.class, "propertyChangeListener", java.beans.PropertyChangeListener.class, new String[] {"propertyChange"}, "addPropertyChangeListener", "removePropertyChangeListener" );
-            eventSets[EVENT_actionListener] = new EventSetDescriptor ( TestFile.class, "actionListener", java.awt.event.ActionListener.class, new String[] {"actionPerformed"}, "addActionListener", "removeActionListener" );
-            eventSets[EVENT_actionListener].setUnicast ( true );
         }
         catch( IntrospectionException e) {}
         
