@@ -1,0 +1,197 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.openide.filesystems;
+
+import java.io.IOException;
+import java.io.File;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Random;
+
+import org.netbeans.performance.Benchmark;
+import org.openide.filesystems.*;
+
+/**
+ * ReadOnlyFSTest is a base class for FileSystem tests. It defines a lot of methods that
+ * exploit interface of the FileSystem class, note, however, that it uses only operations
+ * that do not change state of the FileSystem.
+ */
+public abstract class ReadOnlyFSTest extends Benchmark {
+    
+    /** Arguments - number of files */
+    private static final Object[] ARGS = new Object[] { 
+        new Object[] { new Integer(1000), new Integer(10) },
+        new Object[] { new Integer(1000), new Integer(100) }
+    };
+    
+    /** number of files for given run */
+    protected int foCount;
+    /** number of attributes (taken into account) for given run */
+    protected int attrsCount;
+    /** iterations for given run */
+    protected int iterations;
+    /** FileObjects for given run */
+    protected FileObject[] files;
+    /** String attrs for given run */
+    protected String[][] pairs;
+    /** Gives permutation */
+    protected int[] perm;
+
+    /** Creates new Tests */
+    public ReadOnlyFSTest(String name) {
+        super(name);
+        setArgumentArray(ARGS);
+    }
+    
+    /** inherited; sets up env */
+    protected void setUp() throws Exception {
+        Object[] param = (Object[]) getArgument();
+        foCount = ((Integer) param[0]).intValue();
+        attrsCount = ((Integer) param[1]).intValue();
+        iterations = getIterationCount();
+        files = new FileObject[foCount];
+        pairs = generateRandomStrings(new String[files.length][2]);
+        perm = shuffleIntArray(fillIntArray(new int[files.length]));
+    }
+    
+    /** Set up given number of FileObjects */
+    protected abstract FileObject[] setUpFileObjects(int foCount) throws Exception;
+    
+    /** Disposes given FileObjects */
+    protected abstract void tearDownFileObjects(FileObject[] fos) throws Exception;
+    
+    /** Shuts down this test */
+    protected void tearDown() throws Exception {
+        tearDownFileObjects(files);
+    }
+
+    //--------------------------------------------------------------------------
+    //------------------------- attributes section -----------------------------
+    
+    /** Gets all attributes for all FileObjects (their no. given by the 
+     * parameter). Attributes are acquired sequentially.
+     */
+    public void testGetAttributesSeq() throws IOException {
+        for (int i = 0; i < files.length; i++) {
+            Enumeration enum = files[i].getAttributes();
+            while (enum.hasMoreElements()) {
+                String attr = (String) enum.nextElement();
+                Object val = files[i].getAttribute(attr);
+            }
+        }        
+    }
+     
+    /** Gets all attributes for all FileObjects (their no. given by the 
+     * parameter). Attributes are acquired randomly.
+     */
+    public void testGetAttributesRnd() throws IOException {
+        List list = new ArrayList(files.length + 3);
+        for (int i = 0; i < files.length; i++) {
+            list.add(files[i].getAttributes());
+        }
+        
+        for (int i = 0; i < files.length; i++) {
+            Enumeration enum = (Enumeration) list.get(i);
+            if (enum.hasMoreElements()) {
+                String key = (String) enum.nextElement();
+                files[i].getAttribute(key);
+            }
+        }        
+    }
+    
+    //--------------------------------------------------------------------------
+    //------------------------- utility methods --------------------------------
+    
+    /** Remove all attributes for given files */
+    public void cleanUpAttributes(FileObject[] files) throws Exception {
+        for (int i = 0; i < files.length; i++) {
+            Enumeration enum = files[i].getAttributes();
+            while (enum.hasMoreElements()) {
+                String attr = (String) enum.nextElement();
+                files[i].setAttribute(attr, null);
+            }
+        }        
+    }
+
+    /** Fills in  an array of ints so that arr[i] == i */
+    public static final int[] fillIntArray(int[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = i;
+        }
+        
+        return arr;
+    }
+    
+    /** Shuffles an int array so that arr[i] == i is not very likely */
+    public static final int[] shuffleIntArray(int[] arr) {
+        Random rnd = new Random(97943);
+        
+        for (int i = 0; i < arr.length; i++) {
+            int next = rnd.nextInt(arr.length);
+            swap(arr, i, next);
+        }
+        
+        return arr;
+    }
+    
+    /** Swaps integers from idxa and idxb in the arr array */
+    private static void swap(int[] arr, int idxa, int idxb) {
+        if (idxa == idxb) {
+            return;
+        }
+        
+        int tmp = arr[idxa];
+        arr[idxa] = arr[idxb];
+        arr[idxb] = tmp;
+    }
+    
+    /** Generates random String pairs */
+    public static final String[][] generateRandomStrings(String[][] arr) {
+        Random rnd = new Random(97943);
+        
+        for (int i = 0; i < arr.length; i++) {
+            arr[i][0] = String.valueOf(rnd.nextInt());
+            arr[i][1] = String.valueOf(rnd.nextInt());
+        }
+        
+        return arr;
+    }
+    
+    /** Creates temporary folder with a random name */
+    public static File createTempFolder() throws Exception {
+        File tmp = File.createTempFile("local", "lacol");
+        String name = tmp.getName();
+        File folder = tmp.getParentFile();
+        tmp.delete();
+
+        folder = new File(folder, name);
+        folder.mkdir();
+
+        return folder;
+    }
+    
+    /** Deletes (recursively) a folder */
+    public static void delete(File folder) throws Exception {
+        File[] files = folder.listFiles();
+        
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isDirectory()) {
+                delete(files[i]);
+            }
+            files[i].delete();
+        }
+        
+        folder.delete();
+    }    
+}
