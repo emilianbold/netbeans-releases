@@ -68,7 +68,6 @@
     <tocitem text="Refreshing a View" target="objects.refresh" />
     <tocitem text="Runtime Tab in the Explorer" target="objects.runtime" />
     <tocitem text="Redisplaying a Closed Explorer Tab" target="objects.redisplay-explorer" />
-    <tocitem text="Runtime Tab in the Explorer" target="objects.runtime" />
     <tocitem text="Specifying an Extension for a Text File" target="objects.specify-extension" />
     <tocitem text="Adding a File Extension to an Object Type" target="objects.file-extensions" />
     <tocitem text="Displaying File Extensions" target="objects.show-extensions" />
