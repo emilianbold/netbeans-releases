@@ -27,7 +27,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.SourceGroup;
 import org.netbeans.spi.project.Sources;
-import org.netbeans.spi.project.support.SourceContainers;
+import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -59,7 +59,7 @@ public final class SourcesHelper {
         }
         public final SourceGroup toGroup(FileObject loc) {
             assert loc != null;
-            return SourceContainers.group(getProject(), loc, displayName);
+            return GenericSources.group(getProject(), loc, displayName);
         }
     }
     

@@ -26,7 +26,7 @@ import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.Sources;
 import org.netbeans.spi.project.SourceGroup;
-import org.netbeans.spi.project.support.SourceContainers;
+import org.netbeans.spi.project.support.GenericSources;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;

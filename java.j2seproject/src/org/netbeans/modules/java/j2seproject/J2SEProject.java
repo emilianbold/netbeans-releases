@@ -44,7 +44,7 @@ import org.netbeans.spi.project.ProjectInformation;
 import org.netbeans.spi.project.Sources;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
-import org.netbeans.spi.project.support.SourceContainers;
+import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;

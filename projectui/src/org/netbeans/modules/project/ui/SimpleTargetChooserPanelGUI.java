@@ -25,7 +25,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.SourceGroup;
 import org.netbeans.spi.project.Sources;
-import org.netbeans.spi.project.support.SourceContainers;
+import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -244,7 +244,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             else {		           
                 Sources sources = (Sources)project.getLookup().lookup( Sources.class );
                 if (sources == null) {
-                    sources = SourceContainers.genericOnly(project);
+                    sources = GenericSources.genericOnly(project);
                 }
                 fo = BrowseFolders.showDialog( sources.getSourceGroups( Sources.TYPE_GENERIC ) );
             }
