@@ -134,7 +134,14 @@ public class PropertyPattern extends Pattern {
 
         // Generate field
         if ( withField || withSupport ) {
-            pp.generateField( true );
+            try {
+                pp.generateField( true );
+            } catch (SourceException e) {
+                TopManager.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                        bundle.getString("MSG_Cannot_Create_Field"),
+                        NotifyDescriptor.WARNING_MESSAGE));
+            }
         }
 
         // Ensure property change support field and methods exist
