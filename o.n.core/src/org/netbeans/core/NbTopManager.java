@@ -44,7 +44,7 @@ import com.netbeans.ide.explorer.view.BeanTreeView;
 
 
 import com.netbeans.developer.impl.actions.*;
-import com.netbeans.developer.impl.output.OutWindow;
+import com.netbeans.developer.impl.output.OutputTab;
 /*
 import com.netbeans.developer.impl.presenters.MenuContext;
 import com.netbeans.developer.impl.presenters.ShortcutNode;
@@ -238,7 +238,7 @@ public class NbTopManager extends TopManager {
   * @return default system output printer
   */
   public OutputWriter getStdOut () {
-    return OutWindow.getStdOut ();
+    return OutputTab.getStdOut ();
   }
 
   /** creates new OutputWriter
@@ -246,7 +246,7 @@ public class NbTopManager extends TopManager {
   * @return new OutputWriter with given name
   */
   public InputOutput getIO(String name) {
-    return OutWindow.getIO (name);
+    return OutputTab.getIO (name);
   }
 
 
