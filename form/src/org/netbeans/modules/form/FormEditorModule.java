@@ -34,13 +34,6 @@ import com.netbeans.developer.modules.loaders.form.palette.*;
 */
 public class FormEditorModule extends ModuleInstall {
 
-  private static final String AWT_CATEGORY_NAME = NbBundle.getBundle (FormEditorModule.class).getString ("CTL_Palette_AWT");
-  private static final String SWING_CATEGORY_NAME = NbBundle.getBundle (FormEditorModule.class).getString ("CTL_Palette_Swing");
-  private static final String SWING2_CATEGORY_NAME = NbBundle.getBundle (FormEditorModule.class).getString ("CTL_Palette_Swing2");
-  private static final String BEANS_CATEGORY_NAME = NbBundle.getBundle (FormEditorModule.class).getString ("CTL_Palette_Beans");
-  private static final String LAYOUTS_CATEGORY_NAME = NbBundle.getBundle (FormEditorModule.class).getString ("CTL_Palette_Layouts");
-  private static final String BORDERS_CATEGORY_NAME = NbBundle.getBundle (FormEditorModule.class).getString ("CTL_Palette_Borders");
-
   static final long serialVersionUID =1573432625099425394L;
   /** Module installed for the first time. */
   public void installed () {
@@ -214,66 +207,72 @@ public class FormEditorModule extends ModuleInstall {
     // -----------------------------------------------------------------------------
     // Create AWT Category and components
     try {
-      if ((awtCategory = paletteFolder.getFileObject (AWT_CATEGORY_NAME)) == null) 
-        awtCategory = paletteFolder.createFolder (AWT_CATEGORY_NAME);
+      if ((awtCategory = paletteFolder.getFileObject ("AWT")) == null) // NOI18N
+        awtCategory = paletteFolder.createFolder ("AWT"); // NOI18N
       createInstances (awtCategory, defaultAWTComponents, null, componentErrors);
+      localizeFile (awtCategory);
     } catch (java.io.IOException e) {
-      categoryErrors.add (AWT_CATEGORY_NAME);
+      categoryErrors.add ("AWT"); // NOI18N
     }
     awtFolder = DataFolder.findFolder (awtCategory);
     
     // -----------------------------------------------------------------------------
     // Create Swing Category and components
     try {
-      if ((swingCategory = paletteFolder.getFileObject (SWING_CATEGORY_NAME)) == null) 
-        swingCategory = paletteFolder.createFolder (SWING_CATEGORY_NAME);
+      if ((swingCategory = paletteFolder.getFileObject ("Swing")) == null) // NOI18N
+        swingCategory = paletteFolder.createFolder ("Swing"); // NOI18N
       createInstances (swingCategory, defaultSwingComponents, null, componentErrors);
+      localizeFile (swingCategory);
     } catch (java.io.IOException e) {
-      categoryErrors.add (SWING_CATEGORY_NAME);
+      categoryErrors.add ("Swing"); // NOI18N
     }
     swingFolder = DataFolder.findFolder (swingCategory);
 
     // -----------------------------------------------------------------------------
     // Create Swing2 Category and components
     try {
-      if ((swing2Category = paletteFolder.getFileObject (SWING2_CATEGORY_NAME)) == null) 
-        swing2Category = paletteFolder.createFolder (SWING2_CATEGORY_NAME);
+      if ((swing2Category = paletteFolder.getFileObject ("Swing2")) == null) // NOI18N
+        swing2Category = paletteFolder.createFolder ("Swing2"); // NOI18N
       createInstances (swing2Category, defaultSwing2Components, null, componentErrors);
+      localizeFile (swing2Category);
     } catch (java.io.IOException e) {
-      categoryErrors.add (SWING2_CATEGORY_NAME);
+      categoryErrors.add ("Swing2"); // NOI18N
     }
     swing2Folder = DataFolder.findFolder (swing2Category);
 
     // -----------------------------------------------------------------------------
     // Create Beans Category and components
     try {
-      if ((beansCategory = paletteFolder.getFileObject (BEANS_CATEGORY_NAME)) == null) 
-        beansCategory = paletteFolder.createFolder (BEANS_CATEGORY_NAME);
+      if ((beansCategory = paletteFolder.getFileObject ("Beans")) == null) // NOI18N
+        beansCategory = paletteFolder.createFolder ("Beans"); // NOI18N
       createInstances (beansCategory, defaultBeansComponents, null, componentErrors);
+      localizeFile (beansCategory);
     } catch (java.io.IOException e) {
-      categoryErrors.add (BEANS_CATEGORY_NAME);
+      categoryErrors.add ("Beans"); // NOI18N
     }
     beansFolder = DataFolder.findFolder (beansCategory);
 
     // -----------------------------------------------------------------------------
     // Create Layouts Category and components
     try {
-      if ((layoutsCategory = paletteFolder.getFileObject (LAYOUTS_CATEGORY_NAME)) == null) 
-        layoutsCategory = paletteFolder.createFolder (LAYOUTS_CATEGORY_NAME);
+      if ((layoutsCategory = paletteFolder.getFileObject ("Layouts")) == null) // NOI18N
+        layoutsCategory = paletteFolder.createFolder ("Layouts"); // NOI18N
       createInstances (layoutsCategory, defaultLayoutsComponents, defaultLayoutsIcons, componentErrors);
+      localizeFile (layoutsCategory);
     } catch (java.io.IOException e) {
-      categoryErrors.add (LAYOUTS_CATEGORY_NAME);
+      categoryErrors.add ("Layouts"); // NOI18N
     }
     layoutsFolder = DataFolder.findFolder (layoutsCategory);
 
     // -----------------------------------------------------------------------------
     // Create Borders Category and components
     try {
-      if ((bordersCategory = paletteFolder.getFileObject (BORDERS_CATEGORY_NAME)) == null) 
-        bordersCategory = paletteFolder.createFolder (BORDERS_CATEGORY_NAME);
+      if ((bordersCategory = paletteFolder.getFileObject ("Borders")) == null) // NOI18N
+        bordersCategory = paletteFolder.createFolder ("Borders"); // NOI18N
       createInstances (bordersCategory, defaultBorders, defaultBordersIcons, componentErrors);
+      localizeFile (bordersCategory);
     } catch (java.io.IOException e) {
-      categoryErrors.add (BORDERS_CATEGORY_NAME);
+      categoryErrors.add ("Borders"); // NOI18N
     }
     bordersFolder = DataFolder.findFolder (bordersCategory);
 
@@ -323,6 +322,16 @@ public class FormEditorModule extends ModuleInstall {
           // ignore failure to set order
         }
       }
+    }
+  }
+  
+  private static void localizeFile (FileObject file) {
+    try {
+      // This attribute is private to the system file system and must be specially added this way:
+      file.setAttribute ("SystemFileSystem.localizingBundle", "com.netbeans.developer.modules.loaders.form.Bundle"); // NOI18N
+    } catch (java.io.IOException ioe) {
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+        ioe.printStackTrace ();
     }
   }
 
@@ -449,6 +458,7 @@ public class FormEditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  42   Gandalf   1.41        1/17/00  Jesse Glick     Localized filenames.
  *  41   Gandalf   1.40        1/16/00  Jesse Glick     Actions pool; localized 
  *       jars.
  *  40   Gandalf   1.39        1/5/00   Ian Formanek    NOI18N

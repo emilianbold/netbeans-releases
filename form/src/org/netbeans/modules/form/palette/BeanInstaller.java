@@ -192,7 +192,7 @@ public final class BeanInstaller extends Object {
     addJarFileSystem (jar);
 
     if (pal == null) {
-      pal = com.netbeans.developer.modules.loaders.form.FormEditor.getFormBundle ().getString ("CTL_Palette_Beans"); // default palette category
+      pal = "Beans"; // default palette category // NOI18N
     }
 
     FileObject root = TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot();
@@ -755,6 +755,7 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  32   Gandalf   1.31        1/17/00  Jesse Glick     Localized filenames.
  *  31   Gandalf   1.30        1/16/00  Ian Formanek    Different format in 
  *       properties files.
  *  30   Gandalf   1.29        1/15/00  Pavel Buzek     
