@@ -28,18 +28,59 @@ public interface ActionProvider {
     /**
      * Standard command to incrementally build the project.
      */
-    String COMMAND_BUILD = "build";
+    String COMMAND_BUILD = "build"; // NOI18N
     
+    /** 
+     * Standard command for compiling set of files
+     */
+    String COMMAND_COMPILE_SINGLE = "compile.single"; // NOI18N
+        
     /**
      * Standard command to clean build products.
      */
-    String COMMAND_CLEAN = "clean";
+    String COMMAND_CLEAN = "clean"; // NOI18N
     
     /**
      * Standard command to do a "clean" (forced) rebuild.
      */
-    String COMMAND_REBUILD = "rebuild";
+    String COMMAND_REBUILD = "rebuild"; // NOI18N
+        
+    /** 
+     * Standard command for running the project
+     */
+    String COMMAND_RUN = "run"; // NOI18N
+
+    /** 
+     * Standard command for running one file
+     */
+    String COMMAND_RUN_SINGLE = "run.single"; // NOI18N
     
+    /** 
+     * Standard command for running tests on given projects
+     */
+    String COMMAND_TEST = "test"; // NOI18N
+    
+    /** 
+     * Standard command for running one test file
+     */    
+    String COMMAND_TEST_SINGLE = "test.single";  // NOI18N
+    
+    /**
+     * Standard command for running the project in debugger
+     */    
+    String COMMAND_DEBUG = "debug"; /*XXX define somewhere*/ // NOI18N
+    
+    /**
+     * Standard command for running single file in debugger
+     */    
+    String COMMAND_DEBUG_SINGLE = "debug.single"; // NOI18N
+    
+    /** 
+     * Standard command for running one test in debugger
+     */
+    String COMMAND_DEBUG_TEST_SINGLE = "debug.test.single"; // NOI18N
+    
+        
     /**
      * Get a list of all commands which this project supports.
      * @return a list of command names suitable for {@link #invokeAction}
