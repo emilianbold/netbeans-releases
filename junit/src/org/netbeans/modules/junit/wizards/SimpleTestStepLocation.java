@@ -19,33 +19,47 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.junit.GuiUtils;
+import org.netbeans.modules.junit.NamedObject;
 import org.netbeans.modules.junit.SizeRestrictedPanel;
+import org.netbeans.modules.junit.TestCreator;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
@@ -54,6 +68,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -63,6 +78,9 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
     
     private static final String PACKAGES_NODE_ICON_BASE
      = "org/netbeans/modules/java/j2seproject/ui/resources/packageRoot";//NOI18N
+    private final String testClassNameSuffix
+            = NbBundle.getMessage(TestCreator.class,
+                                  "PROP_test_classname_suffix");        //NOI18N
     
     private Component visualComp;
     private List changeListeners;
@@ -70,6 +88,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
     private JButton btnBrowse;
     private JTextField tfTestClass;
     private JTextField tfProjectName;
+    private JComboBox cboxLocation;
     private JTextField tfCreatedFile;
     
     private JCheckBox chkPublic;
@@ -82,6 +101,19 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
     private JCheckBox chkHints;
     
     private Project project;
+    private SourceGroup srcSourceGroup;
+    private SourceGroup testSourceGroup;
+    private FileObject srcRootFolder;
+    private FileObject testRootFolder;
+    private String testsRootDirName = "";                               //NOI18N
+    private String srcRelFileNameSys = "";                              //NOI18N
+    private String testRelFileName = "";                                //NOI18N
+    private boolean classNameValid = false;
+    private boolean classExists = false;
+    private boolean isValid = false;
+    private TemplateWizard wizard;
+    private String msgClassNameInvalid;
+    private String msgClassToTestDoesNotExist;
         
     public SimpleTestStepLocation() {
         super();
@@ -92,11 +124,13 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         JLabel lblClassToTest = new JLabel();
         JLabel lblCreatedTestClass = new JLabel();
         JLabel lblProject = new JLabel();
+        JLabel lblLocation = new JLabel();
         JLabel lblFile = new JLabel();
         tfClassToTest = new JTextField();
         btnBrowse = new JButton();
         tfTestClass = new JTextField();
         tfProjectName = new JTextField();
+        cboxLocation = new JComboBox();
         tfCreatedFile = new JTextField();
         
         ResourceBundle bundle
@@ -108,6 +142,8 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
                                    bundle.getString("LBL_TestClass"));  //NOI18N
         Mnemonics.setLocalizedText(lblProject,
                                    bundle.getString("LBL_Project"));    //NOI18N
+        Mnemonics.setLocalizedText(lblLocation,
+                                   bundle.getString("LBL_Location"));   //NOI18N
         Mnemonics.setLocalizedText(lblFile,
                                    bundle.getString("LBL_CreatedFile"));//NOI18N
         Mnemonics.setLocalizedText(btnBrowse,
@@ -117,6 +153,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         lblCreatedTestClass.setLabelFor(tfTestClass);
         lblProject.setLabelFor(tfProjectName);
         lblFile.setLabelFor(tfCreatedFile);
+        lblLocation.setLabelFor(cboxLocation);
         
         tfTestClass.setEditable(false);
         tfProjectName.setEditable(false);
@@ -126,11 +163,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         tfProjectName.setFocusable(false);
         tfCreatedFile.setFocusable(false);
         
-        btnBrowse.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    selectClass();
-                }
-        });
+        setUpInteraction();
         
         JCheckBox[] chkBoxes;
         
@@ -215,15 +248,29 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         gbc.gridwidth = 1;
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0.0d;
-        gbc.insets = new Insets(0, 0, 12, 12);
+        gbc.insets = new Insets(0, 0, 6, 12);
         targetPanel.add(lblProject, gbc);
         
         gbc.gridx = GridBagConstraints.RELATIVE;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0d;
-        gbc.insets = new Insets(0, 0, 12, 0);
+        gbc.insets = new Insets(0, 0, 6, 0);
         targetPanel.add(tfProjectName, gbc);
+        
+        gbc.gridy++;
+        
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0.0d;
+        gbc.insets = new Insets(0, 0, 12, 12);
+        targetPanel.add(lblLocation, gbc);
+        
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0d;
+        gbc.insets = new Insets(0, 0, 12, 0);
+        targetPanel.add(cboxLocation, gbc);
         
         gbc.gridy++;
         
@@ -263,7 +310,15 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         
         Box result = Box.createVerticalBox();
         result.add(targetPanel);
-        result.add(Box.createVerticalStrut(24));
+        result.add(Box.createVerticalStrut(12));
+        result.add(new JSeparator() {
+            public java.awt.Dimension getMaximumSize() {
+                java.awt.Dimension maximumSize = super.getMaximumSize();
+                maximumSize.height = getPreferredSize().height;
+                return maximumSize;
+            }
+        });
+        result.add(Box.createVerticalStrut(12));
         result.add(optionsBox);
         //result.add(Box.createVerticalGlue());  //not necessary
         
@@ -274,6 +329,147 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         return result;
     }
     
+    private void setUpLocationComboBox() {
+        Collection sourceGroupPairs = Utils.getSourceGroupPairs(project);
+        //PENDING - what if the collection of pairs is empty?
+        //PENDING - should not the pairs be sorted (alphabetically)?
+        Iterator i = sourceGroupPairs.iterator();
+        NamedObject[] items = new NamedObject[sourceGroupPairs.size()];
+        for (int j = 0; j < items.length; j++) {
+            SourceGroup[] sourceGroupPair = (SourceGroup[]) i.next();
+            SourceGroup tests = sourceGroupPair[1];
+            items[j] = new NamedObject(sourceGroupPair,
+                                       tests.getDisplayName());
+        }
+        cboxLocation.setModel(new DefaultComboBoxModel(items));
+        //PENDING - if possible, we should pre-set the test source group
+        //          corresponding to the currently selected node
+        locationChanged();
+        
+        cboxLocation.setEditable(false);
+    }
+    
+    private void setUpInteraction() {
+        btnBrowse.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    selectClass();
+                }
+        });
+        tfClassToTest.getDocument().addDocumentListener(new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) {
+                    classNameChanged();
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    classNameChanged();
+                }
+                public void changedUpdate(DocumentEvent e) {
+                    classNameChanged();
+                }
+        });
+        cboxLocation.addItemListener(new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {
+                    locationChanged();
+                }
+        });
+    }
+    
+    private void locationChanged() {
+        Object item = cboxLocation.getSelectedItem();
+        SourceGroup[] pair = (SourceGroup[]) ((NamedObject) item).object;
+        srcSourceGroup = pair[0];
+        testSourceGroup = pair[1];
+        srcRootFolder = srcSourceGroup.getRootFolder();
+        testRootFolder = testSourceGroup.getRootFolder();
+        testsRootDirName
+                = FileUtil.getFileDisplayName(testRootFolder);
+        updateCreatedFileName();
+        if (classNameValid) {
+            checkSelectedClassExists();
+        }
+        setValidity();
+    }
+    
+    private void classNameChanged() {
+        String className = tfClassToTest.getText().trim();
+        String testClassName = tfTestClass.getText();
+        String fileName;
+        if (className.length() != 0) {
+            testClassName = className + testClassNameSuffix;
+            srcRelFileNameSys = className.replace('.', '/')
+                                + ".java";                              //NOI18N
+            testRelFileName = testClassName.replace('.', File.separatorChar)
+                              + ".java";                                //NOI18N
+        } else {
+            testClassName = "";                                         //NOI18N
+            srcRelFileNameSys = "";                                     //NOI18N
+            testRelFileName = "";                                       //NOI18N
+        }
+        tfTestClass.setText(testClassName);
+        updateCreatedFileName();
+        
+        if (checkClassNameValidity()) {
+            checkSelectedClassExists();
+        }
+        setValidity();
+    }
+    
+    private void updateCreatedFileName() {
+        tfCreatedFile.setText(testRelFileName != ""                     //NOI18N
+                              ? testsRootDirName + '/' + testRelFileName
+                              : "");                                    //NOI18N
+    }
+    
+    private boolean checkClassNameValidity() {
+        String className = tfClassToTest.getText().trim();
+        classNameValid = Utils.isValidClassName(className);
+        return classNameValid;
+    }
+    
+    private boolean checkSelectedClassExists() {
+        FileObject file = srcRootFolder.getFileObject(srcRelFileNameSys);
+        classExists = (file != null);
+        return classExists;
+    }
+    
+    private void setValidity() {
+        boolean wasValid = isValid;
+        
+        boolean valid = true;
+        if (tfClassToTest.getText().trim().length() == 0) {
+            setErrorMsg(null);
+            valid = false;
+        } else if (!classNameValid) {
+            if (msgClassNameInvalid == null) {
+                msgClassNameInvalid = NbBundle.getMessage(
+                        SimpleTestStepLocation.class,
+                        "MSG_InvalidClassName");                    //NOI18N
+            }
+            setErrorMsg(msgClassNameInvalid);
+            valid = false;
+        } else if (!classExists) {
+            if (msgClassToTestDoesNotExist == null) {
+                msgClassToTestDoesNotExist = NbBundle.getMessage(
+                        SimpleTestStepLocation.class,
+                        "MSG_ClassToTestDoesNotExist");                 //NOI18N
+            }
+            setErrorMsg(msgClassToTestDoesNotExist);
+            valid = false;
+        } else {
+            setErrorMsg(null);
+        }
+        isValid = valid;
+        
+        if (isValid != wasValid) {
+            fireChange();
+        }
+    }
+    
+    private void setErrorMsg(String message) {
+        if (wizard != null) {
+            wizard.putProperty("WizardPanel_errorMessage", message);    //NOI18N
+        }
+    }
+    
     /**
      * Displays a class chooser dialog and lets the user to select a class.
      * If the user confirms they choice, full name of the selected class
@@ -281,16 +477,49 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
      */
     private void selectClass() {
         try {
-            AbstractNode node = new AbstractNode(
-                    PackageView.createPackageView(Utils.getSrcRoot(project)));
-            node.setIconBase(PACKAGES_NODE_ICON_BASE);
+            /*
+            Collection sourceGroups = Utils.getSourceSourceGroups(project);
+            Node[] sourceGroupNodes = new Node[sourceGroups.size()];
+            Iterator iterator = sourceGroups.iterator();
+            for (int i = 0; i < sourceGroupNodes.length; i++) {
+                SourceGroup srcGroup = (SourceGroup) iterator.next();
+                AbstractNode srcGroupNode = new AbstractNode(
+                       PackageView.createPackageView(srcGroup.getRootFolder()));
+                srcGroupNode.setIconBase(PACKAGES_NODE_ICON_BASE);
+                
+                srcGroupNode.setName(srcGroup.getName());
+                srcGroupNode.setDisplayName(srcGroup.getDisplayName());
+                sourceGroupNodes[i] = srcGroupNode;
+            }
+            
+            Node rootNode;
+            if (sourceGroupNodes.length == 1) {
+                rootNode = new FilterNode(
+                        sourceGroupNodes[0],
+                        new LogicalViewRootChildren(sourceGroupNodes[0]));
+            } else {
+                Children children = new Children.Array();
+                children.add(sourceGroupNodes);
+                
+                AbstractNode node = new AbstractNode(children);
+                rootNode = new FilterNode(node,
+                                          new LogicalViewRootChildren(node));
+                rootNode.setName("Project Source Roots");               //NOI18N
+                rootNode.setDisplayName(
+                        NbBundle.getMessage(SimpleTestStepLocation.class,
+                                            "LBL_Sources"));            //NOI18N
+            }
+             */
+            
+            AbstractNode srcGroupNode = new AbstractNode(
+                PackageView.createPackageView(srcRootFolder));
+            srcGroupNode.setIconBase(PACKAGES_NODE_ICON_BASE);
+            srcGroupNode.setName(srcSourceGroup.getName());
+            srcGroupNode.setDisplayName(srcSourceGroup.getDisplayName());
+            
             Node rootNode = new FilterNode(
-                                    node,
-                                    new LogicalViewRootChildren(node));
-            rootNode.setName("Logical View Root");                      //NOI18N
-            rootNode.setDisplayName(
-                    NbBundle.getMessage(SimpleTestStepLocation.class,
-                                        "LBL_SourcePackages"));         //NOI18N
+                    srcGroupNode,
+                    new LogicalViewRootChildren(srcGroupNode));
             
             NodeAcceptor acceptor = new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
@@ -333,8 +562,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
     }
     
     public boolean isValid() {
-        //PENDING:
-        return true;
+        return isValid;
     }
     
     public HelpCtx getHelp() {
@@ -343,19 +571,36 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
     }
     
     public void readSettings(Object settings) {
-        //PENDING
+        wizard = (TemplateWizard) settings;
+        
+        chkPublic.setSelected(
+               Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_PUBLIC)));
+        chkProtected.setSelected(
+               Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_PROTECTED)));
+        chkPackagePrivate.setSelected(
+               Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_PACKAGE)));
+        chkSetUp.setSelected(
+               Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_SETUP)));
+        chkTearDown.setSelected(
+               Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_TEARDOWN)));
+        chkMethodBodies.setSelected(
+           Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_METHOD_BODIES)));
+        chkJavadoc.setSelected(
+               Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_JAVADOC)));
+        chkHints.setSelected(
+               Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_HINTS)));
     }
     
     public void storeSettings(Object settings) {
-        TemplateWizard wizard = (TemplateWizard) settings;
+        wizard = (TemplateWizard) settings;
         
         wizard.putProperty(SimpleTestCaseWizard.PROP_CLASS_TO_TEST,
                            tfClassToTest.getText());
         
-        wizard.putProperty(GuiUtils.CHK_SETUP,
-                           Boolean.valueOf(chkSetUp.isSelected()));
-        wizard.putProperty(GuiUtils.CHK_TEARDOWN,
-                           Boolean.valueOf(chkSetUp.isSelected()));
+        wizard.putProperty(GuiUtils.CHK_PUBLIC,
+                           Boolean.valueOf(chkPublic.isSelected()));
+        wizard.putProperty(GuiUtils.CHK_PROTECTED,
+                           Boolean.valueOf(chkProtected.isSelected()));
         wizard.putProperty(GuiUtils.CHK_PACKAGE,
                            Boolean.valueOf(chkPackagePrivate.isSelected()));
         wizard.putProperty(GuiUtils.CHK_SETUP,
@@ -405,6 +650,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         this.project = project;
         tfProjectName.setText(
                 ProjectUtils.getInformation(project).getDisplayName());
+        setUpLocationComboBox();
         //PENDING - not yet finished
     }
     

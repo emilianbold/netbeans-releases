@@ -39,9 +39,6 @@ import org.openide.util.NbBundle;
 class TestSuiteStepLocation implements WizardDescriptor.Panel {
 
     private Component visualComp;
-    private LocationPanel locPanel;
-    private ChangeListener locPanelListener;
-    private List changeListeners;
     private JCheckBox chkSetUp;
     private JCheckBox chkTearDown;
     private JCheckBox chkCodeHints;
@@ -52,8 +49,6 @@ class TestSuiteStepLocation implements WizardDescriptor.Panel {
     }
 
     private Component createVisualComp() {
-        locPanel = new LocationPanel();
-        
         JCheckBox[] chkBoxes;
         
         JComponent infoLabel = GuiUtils.createMultilineLabel(
@@ -77,64 +72,28 @@ class TestSuiteStepLocation implements WizardDescriptor.Panel {
                         GuiUtils.CHK_HINTS}));
         chkCodeHints = chkBoxes[0];
 
-        /* set layout of the components: */
-        JPanel selectionPanel = new SizeRestrictedPanel(new BorderLayout(0, 24), false, true);
-        selectionPanel.add(locPanel, BorderLayout.CENTER);
-        selectionPanel.add(infoLabel, BorderLayout.SOUTH);
-        
         JComponent box = new JPanel();
         box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
-        box.add(selectionPanel);
+        box.add(infoLabel);
         box.add(Box.createVerticalStrut(24));
         box.add(optCode);
         box.add(Box.createVerticalStrut(11));
         box.add(optComments);
-        box.add(Box.createVerticalGlue());
-
+        
         /* tune layout of the components within the box: */
-        selectionPanel.setAlignmentX(0.0f);
+        infoLabel.setAlignmentX(0.0f);
         optCode.setAlignmentX(0.0f);
         optComments.setAlignmentX(0.0f);
 
         return box;
     }
 
-    void setProject(Project project) {
-        locPanel.setProject(project);
-    }
-
     public void addChangeListener(ChangeListener l) {
-        if (changeListeners == null) {
-            changeListeners = new ArrayList(4);
-            locPanelListener = new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    TestSuiteStepLocation.this.fireChange();
-                }
-            };
-            locPanel.setChangeListener(locPanelListener);
-        }
-        changeListeners.add(l);
+        // no listeners needed - the panel is always valid
     }
 
     public void removeChangeListener(ChangeListener l) {
-        if (changeListeners != null) {
-            if (changeListeners.remove(l) && changeListeners.isEmpty()) {
-                changeListeners = null;
-                locPanel.setChangeListener(null);
-                locPanelListener = null;
-            }
-        }
-    }
-
-    private void fireChange() {
-        if (changeListeners == null) {
-            return;
-        }
-        ChangeEvent e = new ChangeEvent(this);
-        java.util.Iterator i = changeListeners.iterator();
-        while (i.hasNext()) {
-            ((ChangeListener) i.next()).stateChanged(e);
-        }
+        // no listeners needed - the panel is always valid
     }
 
     public Component getComponent() {
@@ -147,20 +106,22 @@ class TestSuiteStepLocation implements WizardDescriptor.Panel {
     }
 
     public boolean isValid() {
-        return locPanel.hasValidClassName();
+        return true;
     }
 
     public void readSettings(Object settings) {
-        //PENDING
+        TemplateWizard wizard = (TemplateWizard) settings;
+        
+        chkSetUp.setSelected(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_SETUP)));
+        chkTearDown.setSelected(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_TEARDOWN)));
+        chkCodeHints.setSelected(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_HINTS)));
     }
 
     public void storeSettings(Object settings) {
         TemplateWizard wizard = (TemplateWizard) settings;
-        
-        wizard.putProperty(TestSuiteWizard.PROP_PACKAGE,
-                           locPanel.getPackage());
-        wizard.putProperty(TestSuiteWizard.PROP_CLASS_NAME,
-                           locPanel.getClassName());
         
         wizard.putProperty(GuiUtils.CHK_SETUP,
                            Boolean.valueOf(chkSetUp.isSelected()));

@@ -15,6 +15,7 @@ package org.netbeans.modules.junit.wizards;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.junit.CreateTestAction;
 import org.netbeans.modules.junit.JUnitSettings;
+import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -54,25 +56,20 @@ public class EmptyTestCaseWizardIterator
 
     /** index of step &quot;Name &amp; Location&quot; */
     private static final int INDEX_TARGET = 2;
-    ///** index of step &quot;Settings&quot; */
-    //private static final int INDEX_SETTINGS = 3;
 
     /** name of panel &quot;Name &amp; Location&quot; */
     private final String nameTarget = NbBundle.getMessage(
             EmptyTestCaseWizardIterator.class,
             "LBL_panel_Target");                                        //NOI18N
-    ///** name of panel &quot;Settings&quot; */
-    //private final String nameSettings = NbBundle.getMessage(
-    //        EmptyTestCaseWizardIterator.class,
-    //        "LBL_panel_Settings");                                      //NOI18N
     /** index of the current panel */
     private int current;
     /** registered change listeners */
-    private List changeListeners;
+    private List changeListeners;   //PENDING - what is this useful for?
     /** panel for choosing name and target location of the test class */
-    private EmptyTestStepLocation targetPanel;
-    ///** panel for changing settings of JUnit test creation */
-    //private WizardDescriptor.Panel settingsPanel;
+    private WizardDescriptor.Panel targetPanel;
+    private Project lastSelectedProject = null;
+    /** */
+    private WizardDescriptor.Panel optionsPanel;
 
     /**
      */
@@ -151,27 +148,28 @@ public class EmptyTestCaseWizardIterator
         }
     }
 
-    /**
-     * Returns a panel for choosing name and target location of the test
-     * class. If the panel already exists, returns the existing panel,
-     * otherwise creates a new panel.
-     *
-     * @return  existing panel or a newly created panel if it did not exist
-     */
     private WizardDescriptor.Panel getTargetPanel() {
-        if (targetPanel == null) {
-            //Project project = Templates.getProject(wizard);
-            //Sources sources = ProjectUtils.getSources(project);
-
-            //PENDING - for Java projects, we should use SOURCES_TYPE_JAVA
-            //SourceGroup[] sourceGroups
-            //        = sources.getSourceGroups(Sources.TYPE_GENERIC);
-
-            //targetPanel = Templates.createSimpleTargetChooser(project,
-            //                                                  sourceGroups);
-            targetPanel = new EmptyTestStepLocation();
+        Project project = Templates.getProject(wizard);
+        if (targetPanel == null || project != lastSelectedProject) {
+            Collection sourceGroups = Utils.getTestSourceGroups(project);
+            if (sourceGroups.isEmpty()) {
+                targetPanel = new StepProblemMessage(
+                        project,
+                        NbBundle.getMessage(EmptyTestCaseWizardIterator.class,
+                                            "MSG_NoTestSourceGroup"));  //NOI18N
+            } else {
+                SourceGroup[] testSrcGroups;
+                sourceGroups.toArray(
+                        testSrcGroups = new SourceGroup[sourceGroups.size()]);
+                if (optionsPanel == null) {
+                    optionsPanel = new EmptyTestStepLocation();
+                }
+                targetPanel = JavaTemplates.createPackageChooser(project,
+                                                                 testSrcGroups,
+                                                                 optionsPanel);
+            }
+            lastSelectedProject = project;
         }
-        targetPanel.setProject(Templates.getProject(wizard));
         return targetPanel;
     }
 
@@ -181,8 +179,6 @@ public class EmptyTestCaseWizardIterator
         switch (current) {
             case INDEX_TARGET:
                 return nameTarget;
-            //case INDEX_SETTINGS:
-            //    return nameSettings;
             default:
                 throw new AssertionError(current);
         }
@@ -203,7 +199,8 @@ public class EmptyTestCaseWizardIterator
         this.wizard = null;
         
         targetPanel = null;
-        //settingsPanel = null;
+        lastSelectedProject = null;
+        optionsPanel = null;
         
         changeListeners = null;
     }
@@ -230,23 +227,11 @@ public class EmptyTestCaseWizardIterator
             return null;
         }
         
-        /* ... determine the target folder... */
-        String pkg = (String) wizard.getProperty(
-                                      EmptyTestCaseWizard.PROP_PACKAGE);
-        System.out.println("pkg = " + pkg);
-        Project project = Templates.getProject(wizard);
-        FileObject testsRoot = Utils.findTestsRoot(project);
-        FileObject targetFolder = Utils.getPackageFolder(testsRoot, pkg);
+        String name = Templates.getTargetName(wizard);
+        FileObject targetFolder = Templates.getTargetFolder(wizard);
         DataFolder targetFolderDataObj = DataFolder.findFolder(targetFolder);
-        
-        /* ... and instantiate the object: */
-        String name = (String) wizard.getProperty(
-                                            EmptyTestCaseWizard.PROP_CLASS_NAME)
-                      + "";  //NOI18N
-        System.out.println("name = " + name);
         DataObject testDataObj = templateDataObj.createFromTemplate(
                                          targetFolderDataObj, name);
-        System.out.println("Test Created.");
         return Collections.singleton(testDataObj);
     }
 

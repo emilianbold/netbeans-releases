@@ -15,6 +15,7 @@ package org.netbeans.modules.junit.wizards;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -23,8 +24,10 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.junit.CreateTestAction;
 import org.netbeans.modules.junit.JUnitSettings;
+import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -60,7 +63,10 @@ public class TestSuiteWizardIterator
     /** registered change listeners */
     private List changeListeners;
     /** panel for choosing name and target location of the test class */
-    private TestSuiteStepLocation targetPanel;
+    private WizardDescriptor.Panel targetPanel;
+    private Project lastSelectedProject = null;
+    /** */
+    private WizardDescriptor.Panel optionsPanel;
 
     /**
      */
@@ -125,33 +131,6 @@ public class TestSuiteWizardIterator
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        if (current == INDEX_TARGET) {
-            //try {
-                //DataFolder folder = Templates.getTargetFolder(wizard);
-                
-                //PENDING - this is a workaround - the above code does not work!
-                //DataFolder folder = wizard.getTargetFolder();
-                
-                //String name = Templates.getTargetName(wizard);
-                
-                //PENDING - this is a workaround - the above code does not work!
-               // String name = wizard.getTargetName();
-                
-                //wizard.putProperty(EmptyTestCaseWizard.PROP_TARGET_FOLDER,
-                //                   folder);
-                //wizard.putProperty(EmptyTestCaseWizard.PROP_TARGET_NAME,
-                //                   name);
-            //} catch (IOException ex) {
-            //    String msg = NbBundle.getMessage(
-            //            EmptyTestCaseWizardIterator.class,
-            //            "MSG_Could_not_create_target_dir");             //NOI18N
-            //    DialogDisplayer.getDefault().notify(
-            //            new NotifyDescriptor.Message(
-            //                    msg,
-            //                    NotifyDescriptor.ERROR_MESSAGE));
-            //    return;
-            //}
-        }
         current++;
     }
 
@@ -174,19 +153,27 @@ public class TestSuiteWizardIterator
      * @return  existing panel or a newly created panel if it did not exist
      */
     private WizardDescriptor.Panel getTargetPanel() {
-        if (targetPanel == null) {
-            //Project project = Templates.getProject(wizard);
-            //Sources sources = ProjectUtils.getSources(project);
-
-            //PENDING - for Java projects, we should use SOURCES_TYPE_JAVA
-            //SourceGroup[] sourceGroups
-            //        = sources.getSourceGroups(Sources.TYPE_GENERIC);
-
-            //targetPanel = Templates.createSimpleTargetChooser(project,
-            //                                                  sourceGroups);
-            targetPanel = new TestSuiteStepLocation();
+        Project project = Templates.getProject(wizard);
+        if (targetPanel == null || project != lastSelectedProject) {
+            Collection sourceGroups = Utils.getTestSourceGroups(project);
+            if (sourceGroups.isEmpty()) {
+                targetPanel = new StepProblemMessage(
+                        project,
+                        NbBundle.getMessage(EmptyTestCaseWizardIterator.class,
+                                            "MSG_NoTestSourceGroup"));  //NOI18N
+            } else {
+                SourceGroup[] testSrcGroups;
+                sourceGroups.toArray(
+                        testSrcGroups = new SourceGroup[sourceGroups.size()]);
+                if (optionsPanel == null) {
+                    optionsPanel = new TestSuiteStepLocation();
+                }
+                targetPanel = JavaTemplates.createPackageChooser(project,
+                                                                 testSrcGroups,
+                                                                 optionsPanel);
+            }
+            lastSelectedProject = project;
         }
-        targetPanel.setProject(Templates.getProject(wizard));
         return targetPanel;
     }
 
@@ -196,8 +183,6 @@ public class TestSuiteWizardIterator
         switch (current) {
             case INDEX_TARGET:
                 return nameTarget;
-            //case INDEX_SETTINGS:
-            //    return nameSettings;
             default:
                 throw new AssertionError(current);
         }
@@ -218,7 +203,8 @@ public class TestSuiteWizardIterator
         this.wizard = null;
         
         targetPanel = null;
-        //settingsPanel = null;
+        lastSelectedProject = null;
+        optionsPanel = null;
         
         changeListeners = null;
     }
@@ -245,23 +231,11 @@ public class TestSuiteWizardIterator
             return null;
         }
         
-        /* ... determine the target folder... */
-        String pkg = (String) wizard.getProperty(
-                                      TestSuiteWizard.PROP_PACKAGE);
-        System.out.println("pkg = " + pkg);
-        Project project = Templates.getProject(wizard);
-        FileObject testsRoot = Utils.findTestsRoot(project);
-        FileObject targetFolder = Utils.getPackageFolder(testsRoot, pkg);
+        String name = Templates.getTargetName(wizard);
+        FileObject targetFolder = Templates.getTargetFolder(wizard);
         DataFolder targetFolderDataObj = DataFolder.findFolder(targetFolder);
-        
-        /* ... and instantiate the object: */
-        String name = (String) wizard.getProperty(
-                                            TestSuiteWizard.PROP_CLASS_NAME)
-                      + "";  //NOI18N
-        System.out.println("name = " + name);
         DataObject testDataObj = templateDataObj.createFromTemplate(
                                          targetFolderDataObj, name);
-        System.out.println("Test Created.");
         return Collections.singleton(testDataObj);
     }
 
