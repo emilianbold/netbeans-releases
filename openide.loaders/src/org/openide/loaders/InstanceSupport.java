@@ -466,7 +466,11 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
                     c = customLoader.loadClass(name);
                 } else {
                     // to save the space with wasting classloaders, try the system first
-                    c = ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass (name);
+                    ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+                    if (loader == null) {
+                        loader = getClass ().getClassLoader ();
+                    }
+                    c = loader.loadClass (name);
                 }
             } catch (ClassNotFoundException ex) {
                 // ok, ignore and try our class loader
