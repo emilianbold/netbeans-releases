@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,15 +21,18 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.operators.Operator;
+
 
 /**
- * Provides access to the "Search Results" window. <br>
+ * Provides access to the "Search Results" view. <p>
+ * Usage:<br>
+ * <pre>
+ *      SearchResultsOperator sro = new SearchResultsOperator();
+ *      sro.openResult("MyClass|myMethod");
+ * </pre><p>
  * Timeouts used:<br>
  * SearchResultsOperator.SearchTime - maximum time for search to be performed.
  */
@@ -44,21 +47,16 @@ public class SearchResultsOperator extends TopComponentOperator {
     private JButtonOperator _btStop;
     private JButtonOperator _btShowDetails;
     private JButtonOperator _btModifySearch;
-    private JButtonOperator _btClose;
-    private JButtonOperator _btShowInExplorer;
-    private JButtonOperator _btHelp;
     private JTreeOperator _treeResult;
-    private JListOperator _lstPositions;
-    private JTextFieldOperator _txtFilesystem;
-    private JTextFieldOperator _txtPath;
     private JRadioButtonOperator _rbSortByName;
     private JRadioButtonOperator _rbDoNotSort;
 
     /**
-     * Waits for window opened.
+     * Waits for view opened.
      */
     public SearchResultsOperator() {
-        super("Search Results");    // NOI18N
+        // "Search Results"
+        super(TITLE);
     }
 
     static {
@@ -68,6 +66,7 @@ public class SearchResultsOperator extends TopComponentOperator {
     //component access    
     /**
      * returns operator for "Stop Search" button.
+     * @return JButtonOperator instance
      */
     public JButtonOperator btStopSearch() {
         if(_btStop == null) {
@@ -82,6 +81,7 @@ public class SearchResultsOperator extends TopComponentOperator {
 
     /**
      * Returns operator for "Show Details" button.
+     * @return JButtonOperator instance
      */
     public JButtonOperator btShowDetails() {
         if(_btShowDetails == null) {
@@ -96,6 +96,7 @@ public class SearchResultsOperator extends TopComponentOperator {
 
     /**
      * Returns operator for "Modify Search" button.
+     * @return JButtonOperator instance
      */
     public JButtonOperator btModifySearch() {
         if(_btModifySearch == null) {
@@ -109,35 +110,8 @@ public class SearchResultsOperator extends TopComponentOperator {
     }
 
     /**
-     * Returns operator for "Close" button.
-     */
-    public JButtonOperator btClose() {
-        if(_btClose == null) {
-            _btClose = 
-                new JButtonOperator(this, 
-                                    Bundle.
-                                    getStringTrimmed("org.netbeans.modules.search.Bundle",
-                                              "TEXT_BUTTON_CANCEL"));
-        }
-        return _btClose;
-    }
-
-    /**
-     * Returns operator for "Help" button.
-     */
-    public JButtonOperator btHelp() {
-        if(_btHelp == null) {
-            _btHelp = 
-                new JButtonOperator(this, 
-                                    Bundle.
-                                    getString("org.netbeans.core.actions.Bundle",
-                                              "CTL_help_button"));
-        }
-        return _btHelp;
-    }
-
-    /**
      * Returns operator for search result tree.
+     * @return JTreeOperator instance
      */
     public JTreeOperator treeResult() {
         if (_treeResult == null) {
@@ -147,73 +121,31 @@ public class SearchResultsOperator extends TopComponentOperator {
     }
 
     /**
-     * Returns operator for position list.
-     */
-    public JListOperator lstPositions() {
-        if (_lstPositions == null) {
-            _lstPositions = new JListOperator(this);
-        }
-        return _lstPositions;
-    }
-
-    /**
-     * Returns operator for "Show in Explorer" button.
-     */
-    public JButtonOperator btShowInExplorer() {
-        if(_btShowInExplorer == null) {
-            _btShowInExplorer = 
-                new JButtonOperator(this, 
-                                    Bundle.
-                                    getStringTrimmed("org.netbeans.modules.search.Bundle",
-                                                     "TEXT_BUTTON_SHOW"));
-        }
-        return _btShowInExplorer;
-    }
-
-    /**
-     * Returns operator for filesystem text field.
-     */
-    public JTextFieldOperator txtFilesystem() {
-        if (_txtFilesystem == null) {
-            _txtFilesystem = new JTextFieldOperator(this, 0);
-        }
-        return _txtFilesystem;
-    }
-
-    /**
-     * Returns operator for path text field.
-     */
-    public JTextFieldOperator txtPath() {
-        if (_txtPath == null) {
-            _txtPath = new JTextFieldOperator(this, 0);
-        }
-        return _txtPath;
-    }
-
-    /**
      * Returns operator for "Sort by Name" radio button.
+     * @return JRadioButtonOperator instance
      */
     public JRadioButtonOperator rbSortByName() {
         if(_rbSortByName == null) {
             _rbSortByName = 
                 new JRadioButtonOperator(this, 
                                          Bundle.
-                                         getString("org.netbeans.modules.search.Bundle",
-                                                   "TEXT_BUTTON_SORT"));
+                                         getStringTrimmed("org.netbeans.modules.search.Bundle",
+                                                          "TEXT_BUTTON_SORT"));
         }
         return _rbSortByName;
     }
 
     /**
      * Returns operator for "Do Not Sort" radio button.
+     * @return JRadioButtonOperator instance
      */
     public JRadioButtonOperator rbDoNotSort() {
         if(_rbDoNotSort == null) {
             _rbDoNotSort = 
                 new JRadioButtonOperator(this, 
                                          Bundle.
-                                         getString("org.netbeans.modules.search.Bundle",
-                                                   "TEXT_BUTTON_UNSORT"));
+                                         getStringTrimmed("org.netbeans.modules.search.Bundle",
+                                                          "TEXT_BUTTON_UNSORT"));
         }
         return _rbDoNotSort;
     }
@@ -234,10 +166,20 @@ public class SearchResultsOperator extends TopComponentOperator {
     }
 
     /**
-     * Selects a path in the tree
+     * Selects a path in the results tree
+     * @param path path to requested result (e.g. "MyClass|myMethod")
      */
-    public void selectResult(String treePath) {
-        new Node(treeResult(), treePath).select();
+    public void selectResult(String path) {
+        new Node(treeResult(), path).select();
+    }
+    
+    /**
+     * Double clicks on the specified path in the results tree. It opens file
+     * in editor.
+     * @param path path to requested result (e.g. "MyClass|myMethod")
+     */
+    public void openResult(String path) {
+        treeResult().clickOnPath(new Node(treeResult(), path).getTreePath(), 2);
     }
 
     /**
@@ -248,50 +190,21 @@ public class SearchResultsOperator extends TopComponentOperator {
     }
 
     /**
-     * Pushes "Show Details" button and returns TermOperator from output window.
+     * Pushes "Show Details" button and returns {@link OutputTabOperator} from output window.
+     * @return OutputTabOperator instance
      */
-    public TermOperator showDetails() {
+    public OutputTabOperator showDetails() {
         btShowDetails().push();
-        return new TermOperator(TITLE);
+        return new OutputTabOperator(TITLE);
     }
 
     /**
-     * Pushes "Modify Search" button.
+     * Pushes "Modify Search" button. and return {@link FindInFilesOperator}
+     * @return FindInFilesOperator instance
      */
     public FindInFilesOperator modifySearch() {
         btModifySearch().pushNoBlock();
         return new FindInFilesOperator();
-    }
-
-    /**
-     * Pushes close button.
-     */
-    public void closeByButton() {
-        btClose().push();
-    }
-
-    /**
-     * Pushes help button.
-     */
-    public HelpOperator help() {
-        btHelp().push();
-        return(new HelpOperator());
-    }
-
-    /**
-     * Pushes "Show in Explorer" button.
-     */
-    public void showInExplorer() {
-        btShowInExplorer().push();
-    }
-
-    /**
-     * Double clicks on position in list.
-     */
-    public EditorOperator showPosition(String position) {
-        lstPositions().clickOnItem(position, 2);
-        String selectedNode = treeResult().getSelectionPath().getLastPathComponent().toString();
-        return new EditorOperator(selectedNode);
     }
 
     /**
@@ -323,13 +236,7 @@ public class SearchResultsOperator extends TopComponentOperator {
         btStopSearch();
         btShowDetails();
         btModifySearch();
-        btClose();
-        btShowInExplorer();
-        btHelp();
         treeResult();
-        lstPositions();
-        txtFilesystem();
-        txtPath();
         rbSortByName();
         rbDoNotSort();
     }
