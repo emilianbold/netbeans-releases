@@ -23,7 +23,7 @@ import java.util.Random;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.modules.xml.core.cookies.TreeDocumentCookie;
+import org.netbeans.modules.xml.tax.cookies.TreeDocumentCookie;
 import org.netbeans.tax.TreeDocument;
 import org.netbeans.tax.TreeException;
 import org.netbeans.tax.TreeNode;
@@ -316,7 +316,12 @@ public abstract class AbstractTestUtil {
      */
     public DataObject findData(String name) throws DataObjectNotFoundException {
         URL url = this.getClass().getResource("data/" + name);
-        if (url == null) throw new IllegalStateException("'data' folder's URL is null.");
+        if (url == null) {
+            if (DEBUG) {
+                System.err.println("'data/" + name +"' URL is null.");
+            }
+            return null;
+        }
         FileObject fo = findFileObject(url.toExternalForm());
         if (fo == null) {
             if (DEBUG) {
