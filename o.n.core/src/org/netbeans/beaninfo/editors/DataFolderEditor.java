@@ -67,20 +67,10 @@ public class DataFolderEditor extends PropertyEditorSupport {
     * @param text  The string to be parsed.
     */
     public void setAsText(String text) {
-        throw new IllegalArgumentException();
-        // TODO: correct this !!! ???
- //       Node settings = TopManager.getDefault().getPlaces ().nodes ().repositorySettings ();
- //       Node n = settings.getChildren().findChild(text);
- //       if (n != null) {
- //           InstanceCookie ic = (InstanceCookie)n.getCookie(InstanceCookie.class);
- //           if (ic != null) {
- //               try {
- //                   setValue(ic.instanceCreate());
- //               } catch (Exception x) {
- //                   // silently ignore
- //               }
- //           }
- //       }
+        if ( text==null || text.equals("") || text.equals( getString ("LAB_DefaultDataFolder") ) )
+            setValue(null);
+        else
+            throw new IllegalArgumentException();
     }
 
     public boolean supportsCustomEditor () {
