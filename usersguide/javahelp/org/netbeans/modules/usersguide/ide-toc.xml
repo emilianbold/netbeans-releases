@@ -437,10 +437,10 @@
     
     <tocitem text="Packaging Web Modules" > 
         <tocitem text="About WAR Files" target="concepts_war"  />
-        <tocitem text="Unpacking and Mounting WAR Files" target="war_unpack" />	
+<!--    <tocitem text="Unpacking and Mounting WAR Files" target="war_unpack" /> -->	
         <tocitem text="Creating WAR Files" target="webmod_packagewar" />
         <tocitem text="Adding External Resources to WAR Files" target="war_xtrafiles" />	
-        <tocitem text="Viewing the Contents of a WAR File" target="war_viewcont" />
+<!--	<tocitem text="Viewing the Contents of a WAR File" target="war_viewcont" />  -->
         <tocitem text="Removing WAR Files" target="war_delete"/>        
     </tocitem> <!-- Packaging Web Modules -->
     
