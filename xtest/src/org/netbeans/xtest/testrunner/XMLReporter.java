@@ -68,7 +68,7 @@ public class XMLReporter implements JUnitTestListener {
     private String currentClassName = UNKNOWN_TEST;
     private String currentSuiteName = UNKNOWN_TEST;
     
-    private static String ERRORMANAGER_MESSAGE = "* XTest detected some errors in ErrorManager - see ide.log for details *";
+    private static String ERRORMANAGER_MESSAGE = "* XTest detected some errors in ErrorManager - see messages.log for details *";
     
     /** Creates new XMLResultProcessor */
     public XMLReporter(File resultsDirectory) {

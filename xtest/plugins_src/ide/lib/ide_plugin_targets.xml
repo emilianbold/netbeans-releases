@@ -74,7 +74,7 @@ Microsystems, Inc. All Rights Reserved.
            <not>
               <or>
                  <equals arg1="${xtest.ide.reuse.userdir}" arg2="false"/>
-                 <available file="${xtest.userdir}/system/ide.log" property="ide.userdir.available"/>
+                 <available file="${xtest.userdir}/var/log/messages.log" property="ide.userdir.available"/>
               </or>
            </not>
         </condition>
@@ -323,27 +323,29 @@ removed !!!!
     <!-- ======================== -->
     
     <target name="move-ide-results">
-        <available file="${xtest.workdir}/sys/ide/system/ide.log" property="ide.userdir.available"/>
+        <available file="${xtest.workdir}/sys/ide/var/log/messages.log" property="ide.userdir.available"/>
         <antcall target="move-ide-userdir"/>
     </target>
     
     <target name="move-ide-userdir" if="ide.userdir.available">
-        <!-- copy ide.log -->
-        <copy file="${xtest.workdir}/sys/ide/system/ide.log" todir="${xtest.current.results}/sys/ide"/>
+        <!-- copy messages.log -->
+        <copy file="${xtest.workdir}/sys/ide/var/log/messages.log" todir="${xtest.current.results}/sys/ide"/>
         <!-- copy output dir -->
         <available file="${xtest.workdir}/sys/ide/output" type="dir" property="xtest.ide.output.exists"/>
         <antcall target="copy-output"/>
         <!-- copy ide screenshot image -->
-        <available file="${xtest.workdir}/sys/ide/system/screenshots" type="dir" property="xtest.ide.screenshot.exists"/>
+        <available file="${xtest.workdir}/sys/ide/var/screenshots" type="dir" property="xtest.ide.screenshot.exists"/>
         <antcall target="copy-ide-screenshots"/>
         <!-- copy ide.zip -->
         <condition property="xtest.userdir.move">
+           <echo message="XXXXXXXXXXXXXXX xtest.archive.ide.userdir=${xtest.archive.ide.userdir}"/>
            <equals arg1="${xtest.archive.ide.userdir}" arg2="true"/>
         </condition>
         <antcall target="copy-ide.zip"/>
     </target>
     
     <target name="copy-ide.zip" if="xtest.userdir.move">
+        <echo message="XXXXXXXXXXXXXXX copy-ide.zip xtest.workdir/sys/ide=${xtest.workdir}/sys/ide"/>
         <!-- zip the ide userdir stuff -->
         <zip zipfile="${xtest.current.results}/sys/ide/ide.zip" basedir="${xtest.workdir}/sys/ide"/>
     </target>
@@ -356,7 +358,7 @@ removed !!!!
     
     <target name="copy-ide-screenshots" if="xtest.ide.screenshot.exists">
         <copy todir="${xtest.current.results}/sys/ide/screenshots">
-            <fileset dir="${xtest.workdir}/sys/ide/system/screenshots"/>
+            <fileset dir="${xtest.workdir}/sys/ide/var/screenshots"/>
         </copy>
     </target>
     
