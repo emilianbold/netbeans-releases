@@ -458,6 +458,10 @@ final public class FormEditor extends Object {
       super (com.netbeans.ide.nodes.Children.LEAF);
       setIconBase (EMPTY_INSPECTOR_ICON_BASE);
     }
+
+    public boolean canRename () {
+      return false;
+    }
   }
 
   final static class ErrorLogItem {
@@ -514,6 +518,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  3    Gandalf   1.2         3/24/99  Ian Formanek    
  *  2    Gandalf   1.1         3/24/99  Ian Formanek    
  *  1    Gandalf   1.0         3/24/99  Ian Formanek    
  * $
