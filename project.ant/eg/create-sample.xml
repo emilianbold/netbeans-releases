@@ -1,79 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="all" name="ant/project/eg">
-    <description>
-        Run this first to set up the example.
-    </description>
-    <property name="nbroot" location="../../.."/>
-    <property name="build.xsl" location="${nbroot}/java/j2seproject/src/org/netbeans/modules/java/j2seproject/resources/build.xsl"/>
-    <property name="build-impl.xsl" location="${nbroot}/java/j2seproject/src/org/netbeans/modules/java/j2seproject/resources/build-impl.xsl"/>
-    <target name="all" depends="validate,process"/>
-    <target name="process">
-        <ant dir="${nbroot}/ant/project" target="anttask"/>
-        <taskdef resource="org/netbeans/modules/project/ant/task/antlib.xml">
-            <classpath>
-                <pathelement location="${nbroot}/ant/project/build/tasks.jar"/>
-                <pathelement location="${nbroot}/nbbuild/netbeans/ide4/modules/org-netbeans-modules-project-ant.jar"/>
-                <pathelement location="${nbroot}/nbbuild/netbeans/platform4/core/openide.jar"/>
-                <pathelement location="${nbroot}/nbbuild/netbeans/platform4/modules/org-netbeans-modules-masterfs.jar"/>
-                <pathelement location="${nbroot}/nbbuild/netbeans/ide4/modules/org-netbeans-modules-projectapi.jar"/>
-                <pathelement location="${nbroot}/nbbuild/netbeans/platform4/modules/org-netbeans-modules-queries.jar"/>
-            </classpath>
-        </taskdef>
-        <regenerate-files project="myapp" buildxsl="${build.xsl}" buildimplxsl="${build-impl.xsl}"/>
-        <regenerate-files project="mylib" buildxsl="${build.xsl}" buildimplxsl="${build-impl.xsl}"/>
-        <regenerate-files project="extapp" buildxsl="${build.xsl}" buildimplxsl="${build-impl.xsl}"/>
-        <regenerate-files project="brokenproj" buildxsl="${build.xsl}" buildimplxsl="${build-impl.xsl}"/>
-    </target>
+<project basedir="." default="validate-compile" name="ant/project/eg">
     <target name="validate-compile">
         <javac srcdir="." destdir=".">
             <include name="ValidateAllBySchema.java"/>
         </javac>
     </target>
-    <target name="validate" depends="validate-compile">
-        <pathconvert property="xmls" pathsep=",">
-            <path>
-                <fileset dir=".">
-                    <include name="**/nbproject/project.xml"/>
-                    <include name="**/nbproject/private/private.xml"/>
-                </fileset>
-            </path>
-        </pathconvert>
-        <pathconvert property="schemas" pathsep=",">
-            <path>
-                <fileset dir="${nbroot}">
-                    <include name="ant/project/src/**/*.xsd"/>
-                    <include name="java/j2seproject/src/**/*.xsd"/>
-                </fileset>
-            </path>
-        </pathconvert>
-        <java classname="ValidateAllBySchema" failonerror="true" fork="true">
-            <classpath>
-                <pathelement location="."/>
-                <fileset dir="${nbroot}/libs/external">
-                    <include name="xerces*.jar"/>
-                    <include name="xml-commons-dom-ranges*.jar"/>
-                </fileset>
-            </classpath>
-            <arg value="${xmls}"/>
-            <arg value="${schemas}"/>
-        </java>
-    </target>
     <target name="clean">
         <delete>
             <fileset dir=".">
                 <include name="*.class"/>
-                <include name="myapp/nbproject/build-impl.xml"/>
-                <include name="mylib/nbproject/build-impl.xml"/>
-                <include name="extapp/nbproject/build-impl.xml"/>
-                <include name="brokenproj/nbproject/build-impl.xml"/>
-                <include name="myapp/nbproject/genfiles.properties"/>
-                <include name="mylib/nbproject/genfiles.properties"/>
-                <include name="extapp/nbproject/genfiles.properties"/>
-                <include name="brokenproj/nbproject/genfiles.properties"/>
-                <include name="myapp/build.xml"/>
-                <include name="mylib/build.xml"/>
-                <include name="extapp/build.xml"/>
-                <include name="brokenproj/build.xml"/>
             </fileset>
         </delete>
     </target>
