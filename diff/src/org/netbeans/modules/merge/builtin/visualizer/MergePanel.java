@@ -25,9 +25,10 @@ import java.io.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
-import org.openide.util.HelpCtx;
-import org.openide.text.CloneableEditorSupport;
+import org.openide.actions.CloseViewAction;
 import org.openide.actions.CopyAction;
+import org.openide.actions.SaveAction;
+import org.openide.util.HelpCtx;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
@@ -45,10 +46,13 @@ public class MergePanel extends javax.swing.JPanel {
     public static final String ACTION_LAST_CONFLICT = "lastConflict"; // NOI18N
     public static final String ACTION_PREVIOUS_CONFLICT = "previousConflict"; // NOI18N
     public static final String ACTION_NEXT_CONFLICT = "nextConflict"; // NOI18N
-    public static final String ACTION_ACCEPT_RIGHT = "acceptRight";
-    //public static final String ACTION_ACCEPT_RIGHT_AND_NEXT = "acceptRightAndNext";
-    public static final String ACTION_ACCEPT_LEFT = "acceptLeft";
-    //public static final String ACTION_ACCEPT_LEFT_AND_NEXT = "acceptLeftAndNext";
+    public static final String ACTION_ACCEPT_RIGHT = "acceptRight"; // NOI18N
+    //public static final String ACTION_ACCEPT_RIGHT_AND_NEXT = "acceptRightAndNext"; // NOI18N
+    public static final String ACTION_ACCEPT_LEFT = "acceptLeft"; // NOI18N
+    //public static final String ACTION_ACCEPT_LEFT_AND_NEXT = "acceptLeftAndNext"; // NOI18N
+    
+    public static final String PROP_CAN_BE_SAVED = "canBeSaved"; // NOI18N
+    public static final String PROP_CAN_NOT_BE_SAVED = "canNotBeSaved"; // NOI18N
     
     // scroll 4 lines vertically
     private static final double VERTICAL_SCROLL_NUM_LINES = 4.0;
@@ -89,6 +93,10 @@ public class MergePanel extends javax.swing.JPanel {
     private List resolvedRightConflictsLineNumbers = new ArrayList();
 
     private ArrayList controlListeners = new ArrayList();
+    
+    private SystemAction[] systemActions = new SystemAction[] { SaveAction.get(SaveAction.class),
+                                                                null,
+                                                                CloseMergeViewAction.get(CloseMergeViewAction.class) };
 
     /**
      * Used for deserialization.
@@ -460,13 +468,19 @@ public class MergePanel extends javax.swing.JPanel {
       this.numUnresolvedConflicts = numConflicts;
   }
     
-  public void setCurrentLine(int line, int diffLength, int conflictPos) {
+  public void setCurrentLine(int line, int diffLength, int conflictPos,
+                             int resultLine) {
       if (line > 0) {
-          showLine(line, diffLength);
+          showLine12(line, diffLength);
+          showLine3(resultLine, diffLength);
           if (conflictPos >= 0) this.currentConflictPos = conflictPos;
           updateStatusLine();
           updateAcceptButtons(line);
       }
+  }
+  
+  public void setNeedsSaveState(boolean needsSave) {
+      firePropertyChange((needsSave) ? PROP_CAN_BE_SAVED : PROP_CAN_NOT_BE_SAVED, null, null);
   }
   
   public synchronized void addControlActionListener(ActionListener listener) {
@@ -531,6 +545,14 @@ public class MergePanel extends javax.swing.JPanel {
  */
     }//GEN-LAST:event_exitForm
 
+    public void setSystemActions(SystemAction[] actions) {
+        this.systemActions = actions;
+    }
+    
+    public SystemAction[] getSystemActions() {
+        return systemActions;
+    }
+    
     private void initActions() {
         jEditorPane1.addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent e) {
@@ -687,14 +709,12 @@ public class MergePanel extends javax.swing.JPanel {
         this.totalHeight = totHeight;
     }
 
-    private void showLine(int line, int diffLength) {
+    private void showLine12(int line, int diffLength) {
         //System.out.println("showLine("+line+", "+diffLength+")");
         this.linesComp1.setActiveLine(line);
         this.linesComp2.setActiveLine(line);
-        this.linesComp3.setActiveLine(line);
         linesComp1.repaint();
         linesComp2.repaint();
-        linesComp3.repaint();
         int padding = 5;
         if (line <= 5) padding = line/2;
         int off1, off2;
@@ -718,6 +738,11 @@ public class MergePanel extends javax.swing.JPanel {
         jEditorPane2.setCaretPosition(off2);
         //D.deb("off1 = "+off1+", off2 = "+off2+", totalHeight = "+totalHeight+", totalLines = "+totalLines+", ypos = "+ypos);
         //System.out.println("off1 = "+off1+", off2 = "+off2+", totalHeight = "+totalHeight+", totalLines = "+totalLines+", ypos = "+ypos);
+    }
+    
+    private void showLine3(int line, int diffLength) {
+        linesComp3.setActiveLine(line);
+        linesComp3.repaint();
     }
     
     private void setViewPosition(java.awt.Point p1, java.awt.Point p2) {
@@ -1356,13 +1381,14 @@ public class MergePanel extends javax.swing.JPanel {
         }
     }
     
-    /**
+    /*
      * Whether all conflicts are resolved and the panel can be closed.
      * @return <code>true</code> when the panel can be closed, <code>false</code> otherwise.
-     */
+     *
     public boolean canClose() {
         return true;
     }
+     */
     
     /**
      * Write the result content into the given writer. Skip all unresolved conflicts.

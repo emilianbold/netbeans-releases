@@ -14,11 +14,40 @@
 package org.netbeans.modules.merge.builtin.visualizer;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.plaf.TabbedPaneUI;
 
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
+import org.openide.actions.FileSystemAction;
+import org.openide.awt.MouseUtils;
+import org.openide.awt.JPopupMenuPlus;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.nodes.Node;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListener;
+import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  * This is a component, that acts as a non modal dialog.
@@ -26,19 +55,24 @@ import org.openide.windows.Workspace;
  * therefore this approach was chosen.
  * @author  Martin Entlicher
  */
-public class MergeDialogComponent extends TopComponent {
+public class MergeDialogComponent extends TopComponent implements ChangeListener {
     
     public static final String MERGE_MODE = "MergeModeName";
     
     public static final String PROP_PANEL_CLOSING = "panelClosing"; // NOI18N
     public static final String PROP_ALL_CLOSED = "allPanelsClosed"; // NOI18N
     public static final String PROP_ALL_CANCELLED = "allPanelsCancelled"; // NOI18N
+    public static final String PROP_PANEL_SAVE = "panelSave"; // NOI18N
+    
+    private Map nodesForPanels = new HashMap();
     
     /** Creates new form MergeDialogComponent */
     public MergeDialogComponent() {
         initComponents();
+        initListeners();
         javax.swing.JRootPane root = getRootPane();
         if (root != null) root.setDefaultButton(okButton);
+        putClientProperty("PersistenceType", "Never");
         setName(org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "MergeDialogComponent.title"));
     }
     
@@ -113,7 +147,7 @@ public class MergeDialogComponent extends TopComponent {
         add(buttonsPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
-
+    
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         // Add your handling code here:
         //List panelsToCloseList;
@@ -121,16 +155,50 @@ public class MergeDialogComponent extends TopComponent {
         synchronized (this) {
             panels = mergeTabbedPane.getComponents();
         }
+        ArrayList unsavedPanelNames = new ArrayList();
+        ArrayList saveCookies = new ArrayList();
         for (int i = 0; i < panels.length; i++) {
             MergePanel panel = (MergePanel) panels[i];
-            if (panel.canClose()) {
-                try {
-                    fireVetoableChange(PROP_PANEL_CLOSING, null, panel);
-                } catch (PropertyVetoException pvex) {
-                    return ;
-                }
-                mergeTabbedPane.remove(panel);
+            MergeNode node = (MergeNode) nodesForPanels.get(panel);
+            SaveCookie sc;
+            if ((sc = (SaveCookie) node.getCookie(SaveCookie.class)) != null) {
+                unsavedPanelNames.add(panel.getName());
+                saveCookies.add(sc);
             }
+        }
+        Object ret;
+        if (unsavedPanelNames.size() == 1) {
+            ret = TopManager.getDefault().notify(
+            new NotifyDescriptor.Message(NbBundle.getMessage(MergeDialogComponent.class,
+                                                             "SaveFileQuestion",
+                                                             unsavedPanelNames.get(0))));
+        } else if (unsavedPanelNames.size() > 1) {
+            ret = TopManager.getDefault().notify(
+                new NotifyDescriptor.Message(NbBundle.getMessage(MergeDialogComponent.class,
+                                                                 "SaveFilesQuestion",
+                                                                 new Integer(unsavedPanelNames.size()))));
+        } else {
+            ret = NotifyDescriptor.OK_OPTION;
+        }
+        if (ret != NotifyDescriptor.OK_OPTION) return ;
+        try {
+            for (Iterator it = saveCookies.iterator(); it.hasNext(); ) {
+                SaveCookie sc = (SaveCookie) it.next();
+                sc.save();
+            }
+        } catch (java.io.IOException ioEx) {
+            TopManager.getDefault().notify(
+                new NotifyDescriptor.Message(ioEx.getLocalizedMessage()));
+            return ;
+        }
+        for (int i = 0; i < panels.length; i++) {
+            MergePanel panel = (MergePanel) panels[i];
+            try {
+                fireVetoableChange(PROP_PANEL_CLOSING, null, panel);
+            } catch (PropertyVetoException pvex) {
+                return ;
+            }
+            removeMergePanel(panel);
         }
         synchronized (this) {
             if (mergeTabbedPane.getTabCount() == 0) {
@@ -143,11 +211,11 @@ public class MergeDialogComponent extends TopComponent {
             }
         }
     }//GEN-LAST:event_okButtonActionPerformed
-
+    
     private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
         // Add your handling code here:
     }//GEN-LAST:event_helpButtonActionPerformed
-
+    
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         // Add your handling code here:
         synchronized (this) {
@@ -158,6 +226,11 @@ public class MergeDialogComponent extends TopComponent {
         }
     }//GEN-LAST:event_cancelButtonActionPerformed
     
+    /** @return Preferred size of editor top component  */
+    public Dimension getPreferredSize() {
+        Rectangle bounds = org.openide.TopManager.getDefault().getWindowManager().getCurrentWorkspace().getBounds();
+        return new Dimension(bounds.width / 2, bounds.height / 2);
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane mergeTabbedPane;
@@ -167,6 +240,10 @@ public class MergeDialogComponent extends TopComponent {
     private javax.swing.JButton helpButton;
     // End of variables declaration//GEN-END:variables
     
+    private void initListeners() {
+        mergeTabbedPane.addMouseListener(new PopupMenuImpl());
+        mergeTabbedPane.addChangeListener(this);
+    }
     
     protected Mode getDockingMode(Workspace workspace) {
         Mode mode = workspace.findMode(MERGE_MODE);
@@ -174,7 +251,7 @@ public class MergeDialogComponent extends TopComponent {
             mode = workspace.createMode(
                 MERGE_MODE, getName(),
                 MergeDialogComponent.class.getResource(
-                "/org/netbeans/modules/merge/builtin/visualizer/mergeModeIcon.gif" // NOI18N
+                    "/org/netbeans/modules/merge/builtin/visualizer/mergeModeIcon.gif" // NOI18N
             ));
         }
         return mode;
@@ -194,7 +271,148 @@ public class MergeDialogComponent extends TopComponent {
     public synchronized void addMergePanel(MergePanel panel) {
         mergeTabbedPane.addTab(panel.getName(), panel);
         javax.swing.JRootPane root = getRootPane();
+        MergeNode node = new MergeNode(panel);
+        nodesForPanels.put(panel, node);
+        mergeTabbedPane.setSelectedComponent(panel);
+        setActivatedNodes(new Node[] { node });
         if (root != null) root.setDefaultButton(okButton);
     }
     
+    public synchronized void removeMergePanel(MergePanel panel) {
+        mergeTabbedPane.remove(panel);
+        nodesForPanels.remove(panel);
+        if (mergeTabbedPane.getTabCount() == 0) {
+            try {
+                fireVetoableChange(PROP_ALL_CLOSED, null, null);
+            } catch (PropertyVetoException pvex) {
+                return ;
+            }
+            close();
+        }
+    }
+    
+    public MergePanel getSelectedMergePanel() {
+        Component selected = mergeTabbedPane.getSelectedComponent();
+        if (selected == null || !(selected instanceof MergePanel)) return null;
+        return ((MergePanel) selected);
+    }
+    
+    private static JPopupMenu createPopupMenu(MergePanel panel) {
+        JPopupMenu popup = new JPopupMenuPlus();
+        SystemAction[] actions = panel.getSystemActions();
+        for (int i = 0; i < actions.length; i++) {
+            if (actions[i] == null) {
+                popup.addSeparator();
+            } else if (actions[i] instanceof CallableSystemAction) {
+                popup.add(((CallableSystemAction)actions[i]).getPopupPresenter());
+                //add FileSystemAction to pop-up menu
+            } else if (actions[i] instanceof FileSystemAction) {
+                popup.add(((FileSystemAction)actions[i]).getPopupPresenter());
+            }
+        }
+        return popup;
+    }
+    
+    /** Shows given popup on given coordinations and takes care about the
+     *  situation when menu can exceed screen limits.
+     *  Copied from org.netbeans.core.windows.frames.DefaultContainerImpl
+     */
+    private static void showPopupMenu(JPopupMenu popup, Point p, Component comp) {
+        SwingUtilities.convertPointToScreen(p, comp);
+        Dimension popupSize = popup.getPreferredSize();
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        
+        if (p.x + popupSize.width > screenSize.width) {
+            p.x = screenSize.width - popupSize.width;
+        }
+        if (p.y + popupSize.height > screenSize.height) {
+            p.y = screenSize.height - popupSize.height;
+        }
+        SwingUtilities.convertPointFromScreen(p, comp);
+        popup.show(comp, p.x, p.y);
+    }
+    
+    /** Listen on tabbed pane merge panel selection */
+    public void stateChanged(javax.swing.event.ChangeEvent changeEvent) {
+        MergePanel panel = (MergePanel) mergeTabbedPane.getSelectedComponent();
+        if (panel != null) {
+            Node node = (Node) nodesForPanels.get(panel);
+            if (node != null) {
+                setActivatedNodes(new Node[] { node });
+            }
+        }
+    }
+    
+    /** Popup menu reaction implementation */
+    private class PopupMenuImpl extends MouseUtils.PopupMouseAdapter {
+        
+        /** Called when the seqeunce of mouse events should lead to actual
+         *  showing of the popup menu. */
+        protected void showPopup(java.awt.event.MouseEvent mouseEvent) {
+            TabbedPaneUI tabUI = mergeTabbedPane.getUI();
+            int clickTab = tabUI.tabForCoordinate(mergeTabbedPane, mouseEvent.getX(), mouseEvent.getY());
+            MergePanel panel = getSelectedMergePanel();
+            if (panel == null) {
+                return;
+            }
+            if (clickTab != -1) {
+                //Click is on valid tab, not on empty area in tab
+                showPopupMenu(createPopupMenu(panel), mouseEvent.getPoint(), mergeTabbedPane);
+            }
+        }
+        
+    }
+    
+    private class MergeNode extends org.openide.nodes.AbstractNode implements PropertyChangeListener, SaveCookie {
+        
+        private Reference mergePanelRef;
+        
+        public MergeNode(MergePanel panel) {
+            super(org.openide.nodes.Children.LEAF);
+            panel.addPropertyChangeListener(WeakListener.propertyChange(this, panel));
+            mergePanelRef = new WeakReference(panel);
+            getCookieSet().add(new CloseCookieImpl());
+            //activateSave();
+        }
+        
+        private void activateSave() {
+            getCookieSet().add(this);
+        }
+        
+        private void deactivateSave() {
+            getCookieSet().remove(this);
+        }
+        
+        public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+            if (MergePanel.PROP_CAN_BE_SAVED.equals(propertyChangeEvent.getPropertyName())) {
+                activateSave();
+            } else if (MergePanel.PROP_CAN_NOT_BE_SAVED.equals(propertyChangeEvent.getPropertyName())) {
+                deactivateSave();
+            }
+        }
+        
+        public void save() throws java.io.IOException {
+            try {
+                MergeDialogComponent.this.fireVetoableChange(PROP_PANEL_SAVE, null, mergePanelRef.get());
+            } catch (PropertyVetoException vetoEx) {
+                throw new java.io.IOException(vetoEx.getLocalizedMessage());
+            }
+            //System.out.println("SAVE called.");
+            //deactivateSave();
+        }
+        
+        private class CloseCookieImpl extends Object implements CloseCookie {
+        
+            public boolean close() {
+                try {
+                    MergeDialogComponent.this.fireVetoableChange(PROP_PANEL_CLOSING, null, mergePanelRef.get());
+                } catch (PropertyVetoException vetoEx) {
+                    return false;
+                }
+                removeMergePanel((MergePanel) mergePanelRef.get());
+                return true;
+            }
+        }
+        
+    }
 }

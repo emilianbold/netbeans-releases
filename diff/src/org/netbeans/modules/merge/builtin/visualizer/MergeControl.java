@@ -199,7 +199,8 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
         int lf1 = diff.getFirstEnd() - diff.getFirstStart() + 1;
         int lf2 = diff.getSecondEnd() - diff.getSecondStart() + 1;
         int length = Math.max(lf1, lf2);
-        panel.setCurrentLine(line, length, currentDiffLine);
+        panel.setCurrentLine(line, length, currentDiffLine,
+                             resultDiffLocations[currentDiffLine]);
     }
     
     /**
@@ -246,6 +247,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
             resultDiffLocations[i] -= shift;
         }
         resolvedConflicts.add(diff);
+        panel.setNeedsSaveState(true);
     }
     
     public void actionPerformed(ActionEvent actionEvent) {
@@ -276,7 +278,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
     }
     
     public void vetoableChange(PropertyChangeEvent propertyChangeEvent) throws PropertyVetoException {
-        if (MergeDialogComponent.PROP_PANEL_CLOSING.equals(propertyChangeEvent.getPropertyName())) {
+        if (MergeDialogComponent.PROP_PANEL_SAVE.equals(propertyChangeEvent.getPropertyName())) {
             MergePanel panel = (MergePanel) propertyChangeEvent.getNewValue();
             if (this.panel == panel) {
                 ArrayList unresolvedConflicts = new ArrayList();//java.util.Arrays.asList(diffs));
@@ -299,6 +301,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
                 try {
                     panel.writeResult(resultSource.createWriter((Difference[]) unresolvedConflicts.toArray(
                         new Difference[unresolvedConflicts.size()])));
+                    panel.setNeedsSaveState(false);
                 } catch (IOException ioex) {
                     throw new PropertyVetoException(NbBundle.getMessage(MergeControl.class,
                                                         "MergeControl.failedToSave",
