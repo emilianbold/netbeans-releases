@@ -92,16 +92,6 @@ public class NonGui extends NbTopManager implements Runnable {
     * command line option */
     private static boolean noLogging = false;
 
-    /** The flag whether to write output to the console - can be set via -noconsole
-    * command line option */
-    private static boolean noConsole = true;
-    
-    /** Temporary object to save System.out value */
-    private static PrintStream standardOut;
-
-    /** Temporary object to save System.err value */
-    private static PrintStream standardErr;
-
     /** Flag telling if the system clipboard should be used or not.
     * This helps avoid crashes and hangs on Unixes.
     */
@@ -113,6 +103,9 @@ public class NonGui extends NbTopManager implements Runnable {
     /** The Class that logs the IDE events to a log file */
     private static TopLogging logger;
 
+    /** The flag for accessibility */
+    public static boolean accessibility = false;
+    
     /** Getter for home directory.
     */
     protected static String getHomeDir () {
@@ -304,10 +297,13 @@ public class NonGui extends NbTopManager implements Runnable {
                 );
             } else if (args[i].equalsIgnoreCase("-nosplash")) // NOI18N
                 noSplash = true;
+            else if (args[i].equalsIgnoreCase("-accessibility")) // NOI18N
+            {
+                accessibility = true;
+                java.lang.System.setProperty("netbeans.accessibility","true");
+            }
             else if (args[i].equalsIgnoreCase("-noinfo")) // NOI18N
                 noinfo = true;
-            else if (args[i].equalsIgnoreCase("-info")) // NOI18N
-                noConsole = false;
             else if (args[i].equalsIgnoreCase("-nologging")) // NOI18N
                 noLogging = true;
             else if (args[i].equalsIgnoreCase("-nosysclipboard")) // NOI18N
@@ -370,15 +366,6 @@ public class NonGui extends NbTopManager implements Runnable {
                 showHelp();
                 doExit(0);
             }
-        }
-        
-        if (noConsole)
-        {
-            // temporarily disable System.out and System.err and save their original values
-            standardOut = new PrintStream(System.out);
-            standardErr = new PrintStream(System.err);
-            System.setOut(new PrintStream(new ByteArrayOutputStream()));
-            System.setErr(new PrintStream(new ByteArrayOutputStream()));
         }
 
         if (! specifiedBranding) {
@@ -629,13 +616,6 @@ public class NonGui extends NbTopManager implements Runnable {
         
         startFolder (getDefault ().getPlaces ().folders ().startup ());
         StartLog.logProgress ("StartFolder content started"); // NOI18N
-        if (noConsole)  // switch System.out and System.err back to their original values
-        {
-            System.setOut(standardOut);
-            System.setErr(standardErr);
-        }
-//        System.out.println("test out");
-//        System.err.println("test err");
     }
 
 
