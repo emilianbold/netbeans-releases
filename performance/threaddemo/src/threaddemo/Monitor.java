@@ -68,10 +68,12 @@ final class Monitor extends JPanel implements ActionListener {
         heapField.setEditable(false);
         sub.add(heapField);
         heapLiveCheckBox = new JCheckBox("Immediate Heap Updates");
+        heapLiveCheckBox.setMnemonic('h');
         sub.add(heapLiveCheckBox);
         add(sub);
         sub = new JPanel();
         JButton gc = new JButton("GC");
+        gc.setMnemonic('g');
         gc.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
                 System.gc();
