@@ -19,9 +19,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- register XML template folder -->  
     <folder name="Templates">
         <!-- !?! order ?!? -->
-        <attr name="Other/XML" boolvalue="true"/>
         <attr name="RMI/XML" boolvalue="true"/>
-        <attr name="Scripting/XML" boolvalue="true"/>
 
         <folder name="XML">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.api.xml.resources.Bundle"/>

@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- register templates -->  
     <folder name="Templates">
+        <attr name="RMI/XML" boolvalue="true"/>
 
         <folder name="XML">
 

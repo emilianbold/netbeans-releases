@@ -48,7 +48,8 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntShortcut.html"/>
       </file>
     </folder>
-    <attr name="Ant/Classes" boolvalue="true"/>
+    <attr name="Classes/Ant" boolvalue="true"/>
+    <attr name="JarPackager/Ant" boolvalue="true"/>
     <attr name="Ant/Other" boolvalue="true"/>
 
     <!-- Service templates -->

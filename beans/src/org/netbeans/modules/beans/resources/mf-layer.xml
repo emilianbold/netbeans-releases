@@ -16,9 +16,11 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
   <folder name="Templates">
-    <attr name="Ant/Beans" boolvalue="true"/>
+    <attr name="Classes/Beans" boolvalue="true"/>
+    <attr name="GUIForms/Beans" boolvalue="true"/>
     <folder name="Beans">
       <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/beans/resources/Beans.html" />
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
 
       <file name="Bean.java" url="templates/Bean.template">
          <attr name="template" boolvalue="true" />
