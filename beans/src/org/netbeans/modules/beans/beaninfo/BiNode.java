@@ -213,7 +213,11 @@ public final class BiNode extends AbstractNode {
                 ) {
                     public Object getValue () throws
                         IllegalAccessException, InvocationTargetException {
-                        ie.setAsText(biAnalyser.getIconC16());    
+                        if( biAnalyser.getIconC16() != null ) 
+                            ie.setAsText(biAnalyser.getIconC16());
+                        else
+                            ie.setAsText("null"); //NO I18N    
+                            
                         return biAnalyser.getIconC16();                        
                     }
                     
@@ -241,7 +245,10 @@ public final class BiNode extends AbstractNode {
                 ) {
                     public Object getValue () throws
                         IllegalAccessException, InvocationTargetException {
-                        ie.setAsText(biAnalyser.getIconM16());    
+                        if( biAnalyser.getIconM16() != null ) 
+                            ie.setAsText(biAnalyser.getIconM16());
+                        else
+                            ie.setAsText("null"); //NO I18N    
                         return biAnalyser.getIconM16();                        
                     }
                     
@@ -269,7 +276,11 @@ public final class BiNode extends AbstractNode {
                 ) {
                     public Object getValue () throws
                         IllegalAccessException, InvocationTargetException {
-                        ie.setAsText(biAnalyser.getIconC32());
+                        if( biAnalyser.getIconC32() != null ) 
+                            ie.setAsText(biAnalyser.getIconC32());
+                        else
+                            ie.setAsText("null"); //NO I18N    
+                        
                         return biAnalyser.getIconC32();
                     }
                     
@@ -297,7 +308,11 @@ public final class BiNode extends AbstractNode {
                 ) {
                     public Object getValue () throws
                         IllegalAccessException, InvocationTargetException {
-                        ie.setAsText(biAnalyser.getIconM32());
+                        if( biAnalyser.getIconM32() != null ) 
+                            ie.setAsText(biAnalyser.getIconM32());
+                        else
+                            ie.setAsText("null"); //NO I18N    
+                        
                         return biAnalyser.getIconM32();
                     }
                     
