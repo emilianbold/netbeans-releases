@@ -151,6 +151,7 @@ public final class ServerRegistry implements java.io.Serializable {
     }
     
     public static final String INSTALLED_SERVERS_PATH = "/J2EE/InstalledServers";
+    public static final String URL_ATTR = "url";
     public static final String USERNAME_ATTR = "username";
     public static final String PASSWORD_ATTR = "password";
     public static FileObject getInstanceFileObject(String url) {
@@ -158,10 +159,12 @@ public final class ServerRegistry implements java.io.Serializable {
         return rep.findResource(INSTALLED_SERVERS_PATH+"/"+url);
     }
     
-    public void addInstance(String url, String username, String password) throws IOException {
+    public synchronized void addInstance(String url, String username, String password) throws IOException {
         Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
         FileObject dir = rep.findResource(INSTALLED_SERVERS_PATH);
-        FileObject fo = dir.createData(url);
+        String name = FileUtil.findFreeFileName(dir,"instance",null);
+        FileObject fo = dir.createData(name);
+        fo.setAttribute(URL_ATTR, url);
         fo.setAttribute(USERNAME_ATTR, username);
         fo.setAttribute(PASSWORD_ATTR, password);
         // PENDING synchronize this so that the instance isn't created before
@@ -169,9 +172,9 @@ public final class ServerRegistry implements java.io.Serializable {
     }
     
     public void addInstance(FileObject fo) {
-        String url = fo.getNameExt();
-        String username = (String) fo.getAttribute("username");
-        String password = (String) fo.getAttribute("password");
+        String url = (String) fo.getAttribute(URL_ATTR);
+        String username = (String) fo.getAttribute(USERNAME_ATTR);
+        String password = (String) fo.getAttribute(PASSWORD_ATTR);
         //        System.err.println("Adding instance " + fo);
         for(Iterator i = servers.values().iterator(); i.hasNext();) {
             Server server = (Server) i.next();
