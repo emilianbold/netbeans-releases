@@ -124,6 +124,11 @@ class CopySupport {
             this.targetComponent = targetComponent;
         }
 
+        public String getName() {
+            return FormUtils.getBundleString(isComponentCut() ?
+                                             "CTL_CutPaste" : "CTL_CopyPaste"); // NOI18N
+        }
+
         public Transferable paste() throws java.io.IOException {
             boolean fromCut = isComponentCut();
             RADComponent sourceComponent = getSourceComponent(fromCut);
