@@ -36,7 +36,9 @@ public class XTestResultsReport extends XMLBean {
     public long     xmlat_time;
     //public String   xmlat_attributes;
     public String   xmlat_project;
-    public String   xmlat_build;    
+    public String   xmlat_build;
+    public String   xmlat_testingGroup;
+    public String   xmlat_testedType;
     public long     xmlat_testsTotal;
     public long     xmlat_testsPass;
     public long     xmlat_testsFail;

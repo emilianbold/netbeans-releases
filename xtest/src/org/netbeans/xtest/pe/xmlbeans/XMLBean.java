@@ -34,7 +34,7 @@ import java.lang.reflect.*;
  */
 public abstract class XMLBean {
 
-    private final static boolean DEBUG = false;
+    public static boolean DEBUG = false;
     
     public final static String XMLBEAN_PACKAGE = "org.netbeans.xtest.pe.xmlbeans";
     public final static String XMLBEAN_ATT_PREFIX = "xmlat_";
@@ -104,6 +104,11 @@ public abstract class XMLBean {
             field.setDouble(obj,Double.parseDouble(value));
             return;
         }
+        
+        if (fieldTypeName.equals("boolean")) {
+            field.setBoolean(obj,Boolean.getBoolean(value));
+            return;
+        }   
         
         if (fieldTypeName.equals("java.sql.Date")) {
             field.set(obj,java.sql.Date.valueOf(value));

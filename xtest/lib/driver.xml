@@ -12,7 +12,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="Xtest driver" basedir="." default="start">
+<project name="XTest driver" basedir="." default="start">
 
    <property name="xtest.driver.config" location="driver.properties"/>
    <property file="${xtest.driver.config}"/>
@@ -43,6 +43,8 @@ Microsystems, Inc. All Rights Reserved.
      	<taskdef name="checkout" classname="org.netbeans.xtest.driver.CheckoutNeeded"/>
      	<taskdef name="list" classname="org.netbeans.xtest.driver.ListReader"/>
      	<taskdef name="resolve" classname="org.netbeans.xtest.driver.ResolveInstance"/>
+        <taskdef name="reportinfo" classname="org.netbeans.xtest.pe.XTestResultsReportTask"/>
+        <taskdef name="buildinfo" classname="org.netbeans.xtest.pe.ParseBuildInfo"/>
      </nbtaskdef>
    </target>
    
@@ -83,10 +85,36 @@ Microsystems, Inc. All Rights Reserved.
    <target name="start" depends="init,localresults-clean,install-ide">
      <antcall target="checkout-system"/>
      <antcall target="checkout-modules"/>
-     <mkdir dir="${xtest.results}"/>
+     <!-- prebuild specific stuff -> this needs to be more enhanced !!! -->
+     <antcall target="prebuild"/>
+     <!-- create results dir, get info about tested build and create testreport file -->
+     <mkdir dir="${xtest.results}/xmlresults"/>
+     <echo message="ide installto = ${ide.installto}"/>
+     <buildinfo srcfile="${ide.home}/build_info" buildInfoNumberProperty="xtest.ide.build.name" />
+     <echo message="Testing build ${xtest.ide.build.name}"/>
+     <property name="xtest.tested.project" value="Unknown"/>
+     <property name="xtest.testing.group" value="Unknown"/>
+     <property name="xtest.tested.type" value="Unknown"/>
+     <reportinfo  outFile="${xtest.results}/xmlresults/testreport.xml"
+            project="${xtest.tested.project}" build="${xtest.ide.build.name}"
+            testingGroup="${xtest.testing.group}" testedType="${xtest.tested.type}" />
+     
+     
      <for list="${xtest.instance.list}" delimiters="," property="xtest.instancecfg">
        <antcall target="test-one-repository"/>
-     </for>
+     </for>     
+     <antcall target="pack-results"/>
+   </target>
+   
+   <target name="pack-results">
+         <buildinfo srcfile="${ide.home}/build_info" buildInfoNumberProperty="ide.build" />
+         <echo message="Shipping results for build ${ide.build}"/>
+         <property name="ide.build" value="unknown"/>
+         <property name="xtest.machine" value="unknown"/>
+         <property name="archive.filename" value="${xtest.results}/../${xtest.machine}-${ide.build}.zip"/>
+         <zip zipfile="${archive.filename}">
+            <fileset dir="${xtest.results}"/>
+         </zip>
    </target>
 
    <target name="test-one-repository" depends="splitproperty">
@@ -132,6 +160,14 @@ Microsystems, Inc. All Rights Reserved.
      </ant>
    </target>
    
+   <target name="prebuild" if="xtest.prebuild.dir">   
+        <property name="xtest.prebuild.antfile" value="build.xml"/>
+        <property name="xtest.prebuild.target" value="all"/>
+        <echo message="calling ${xtest.prebuild.dir}/${xtest.prebuild.antfile} with target=${xtest.prebuild.target}"/>
+        <ant antfile="${xtest.prebuild.antfile}" dir="${xtest.prebuild.dir}"
+            target="${xtest.prebuild.target}"/>
+   </target>
+   
   <!-- ========= -->
   <!-- Execution -->
   <!-- ========= -->
@@ -150,7 +186,7 @@ Microsystems, Inc. All Rights Reserved.
    </target>
    
    <target name="localresults-clean">
-        <delete dir="${xtest.results}"/>
+        <delete dir="${xtest.results}"/>                
    </target>
 
   <!-- ================= -->

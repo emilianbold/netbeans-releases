@@ -27,7 +27,15 @@
 	<BLOCKQUOTE>
 		<H2>run on <xsl:value-of select="document('testreport.xml',/*)/XTestResultsReport/SystemInfo/@host"/> at <xsl:value-of select="@timeStamp"/></H2>
 	</BLOCKQUOTE>
-	<HR/>
+	<UL>
+		<xsl:if test="@project">
+			<LI>Tested project: <xsl:value-of select="@project"/></LI>
+		</xsl:if>
+		<xsl:if test="@build">
+			<LI>Tested build: <xsl:value-of select="@build"/></LI>
+		</xsl:if>	
+	</UL>
+	<HR/>	
 	<xsl:apply-templates/>
 </xsl:template>
 

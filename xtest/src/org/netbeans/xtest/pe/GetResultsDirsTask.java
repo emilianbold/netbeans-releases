@@ -206,6 +206,7 @@ public class GetResultsDirsTask extends Task{
     
     
     public void execute () throws BuildException {
+        log("Getting fresh testrun and testbag directories");
         createAndSetTestRun();
         createAndSetTestBag();
     }

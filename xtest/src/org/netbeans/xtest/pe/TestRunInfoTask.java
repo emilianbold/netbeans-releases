@@ -63,12 +63,14 @@ public class TestRunInfoTask extends Task{
     }
 
     public void execute () throws BuildException {
+        log("Generating test run info xml");
         TestRun tr;
         try {
             Document doc = SerializeDOM.parseFile(this.outfile);
             tr = (TestRun)XMLBean.getXMLBean(doc);
             //System.out.println("TestRun already created");
             // testrun already created - return
+            log("Test run info already exists - skipping");
             return;
         } catch (Exception e) {
             //System.out.println("TestRun not found, have to crete a new one");
@@ -80,10 +82,10 @@ public class TestRunInfoTask extends Task{
             SerializeDOM.serializeToStream(tr.toDocument(),outStream);
             outStream.close();
         } catch (IOException ioe) {
-            System.err.println("TestRunInfoTask - cannot save testrun");
+            log("Cannot save testrun:"+ioe);
             ioe.printStackTrace(System.err);
         } catch (Exception e) {
-            System.err.println("TestRunInfoTask - XMLBean exception ???");
+            log("XMLBean exception?:+e");
             e.printStackTrace(System.err);           
         }
     }

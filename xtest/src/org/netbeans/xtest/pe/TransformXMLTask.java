@@ -95,6 +95,7 @@ public class TransformXMLTask extends Task{
     
     public void execute () throws BuildException {
         try {
+            log("Transforming report's XMLs to HTMLs");
             int inputDirType = ResultsUtils.resolveResultsDir(inputDir);
             switch (inputDirType) {
                 case ResultsUtils.TESTBAG_DIR:

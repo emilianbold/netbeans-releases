@@ -73,6 +73,7 @@ public class TestBagInfoTask extends Task{
     */
     
     public void execute () throws BuildException {
+        log("Generating test bag info xml");
         tb.xmlat_timeStamp = new java.sql.Timestamp(System.currentTimeMillis());
         //System.err.println("TB:"+tb);
         try {
@@ -80,10 +81,10 @@ public class TestBagInfoTask extends Task{
             SerializeDOM.serializeToStream(tb.toDocument(),outStream);
             outStream.close();
         } catch (IOException ioe) {
-            System.err.println("TestBagInfoTask - cannot save systeminfo");
+            log("Cannot save test bag info:"+ioe);
             ioe.printStackTrace(System.err);
         } catch (Exception e) {
-            System.err.println("TestBagInfoTask - XMLBean exception ???");
+            log("XMLBean exception?:"+e);
             e.printStackTrace(System.err);           
         }
     }

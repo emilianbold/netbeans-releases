@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <property name="xtest.ide.winsys" value="mdi"/>
     <!-- location for workdir for the harness -->
-    <property name="xtest.workdir" location="workdir"/>
+    <property name="xtest.workdir" location="work"/>
     <!-- location for results from the harness -->
     <property name="xtest.results" location="results"/>
     <property name="xtest.module" value="Unknown"/>
@@ -81,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathdef useid="test.basepath">
             <path>
                 <pathelement path="${junit.path};${xtest.path};${xerces.path}"/>
-                <pathelement location="${xtest.workdir}/work"/>
+                <pathelement location="${xtest.workdir}/sys/tests"/>
             </path>
         </pathdef>
 
@@ -101,7 +101,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- ${xtest.classpath.root}/${xtest.testtype}/${tbag.classpath.work}           -->
         <!-- and then testset specific dir and then returned in property tbag.classpath -->
         <property name="tbag.classpath.root" location="${xtest.workdir}"/>
-        <property name="tbag.classpath.work" value="systemworkdir/tests"/>
+        <property name="tbag.classpath.work" value="sys/tests"/>
     </target>
     
     <target name="prepare-xtest">
@@ -130,7 +130,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Running ${xtest.module} tests, test type: ${xtest.testtype}, test attributes: ${xtest.attribs}"/>
 
       	<property file="${xtest.userdata.propertyfile}"/>
-        <property name="test.propertyfile" location="${xtest.workdir}/systemworkdir/userdata.properties"/>
+        <property name="test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
    	<write-property propertyPrefix="xtest.userdata" attribs="${xtest.attribs}" file="${test.propertyfile}"/>
 
         <!-- prepare result dir and produce some informatino about this testrun -->
@@ -156,9 +156,9 @@ Microsystems, Inc. All Rights Reserved.
         <!-- prepare workdir structure -->
         <mkdir dir="${xtest.workdir}/xmlresults"/>
         <mkdir dir="${xtest.workdir}/xmlresults/suites"/>
-        <mkdir dir="${xtest.workdir}/systemworkdir/tests"/>
-        <mkdir dir="${xtest.workdir}/systemworkdir/ide_userdir"/>
-        <mkdir dir="${xtest.workdir}/userworkdir"/>
+        <mkdir dir="${xtest.workdir}/sys/tests"/>
+        <mkdir dir="${xtest.workdir}/sys/ide"/>
+        <mkdir dir="${xtest.workdir}/user"/>
         
         
         <antcall target="prepare-tests"/>
@@ -166,13 +166,13 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="prepare-tests" depends="test-unjared" unless="unjared">
-        <unjar dest="${xtest.workdir}/systemworkdir/tests" 
+        <unjar dest="${xtest.workdir}/sys/tests" 
                src="${xtest.file.location}/${xtest.file.name}"/>
     </target>
     
     <!-- Just test whether tests are already unzipped -->
     <target name="test-unjared">
-        <available property="unjared" file="${xtest.workdir}/systemworkdir/tests/META-INF/MANIFEST.MF"/>
+        <available property="unjared" file="${xtest.workdir}/sys/tests/META-INF/MANIFEST.MF"/>
     </target>
     
     <!-- ============== -->
@@ -207,7 +207,7 @@ Microsystems, Inc. All Rights Reserved.
         </pathdef>
 
         <!-- there should be some better userdir than this -->
-        <property name="xtest.userdir" location="${xtest.workdir}/systemworkdir/ide_userdir"/>
+        <property name="xtest.userdir" location="${xtest.workdir}/sys/ide"/>
         <property name="test.class" value="org.netbeans.xtest.AntRunner"/>
         <property name="test.classpath" refid="test.classpath"/>
         <property name="test.target" value="ide_test_helper"/>
@@ -297,10 +297,10 @@ Microsystems, Inc. All Rights Reserved.
                       outfile="${xtest.workdir}/xmlresults/testbag.xml"/>  
         <!-- run the tests -->
         <nbjunit fork="${junit.fork}" printsummary="yes">            
-            <sysproperty key="work.dir" value="${xtest.workdir}/systemworkdir"/>
-            <sysproperty key="xtest.workdir" value="${xtest.workdir}/systemworkdir"/>
-            <sysproperty key="system.dir" value="${xtest.workdir}/systemworkdir"/>
-            <sysproperty key="nbjunit.workdir" value="${xtest.workdir}/userworkdir"/>
+            <sysproperty key="work.dir" value="${xtest.workdir}/sys"/>
+            <sysproperty key="xtest.workdir" value="${xtest.workdir}/sys"/>
+            <sysproperty key="system.dir" value="${xtest.workdir}/sys"/>
+            <sysproperty key="nbjunit.workdir" value="${xtest.workdir}/user"/>
             <syspropertyfile file="${test.propertyfile}"/>
             
             <formatter classname="org.netbeans.xtest.pe.junit.JUnitResultsReporter" extension=".xml"/>
@@ -328,21 +328,14 @@ Microsystems, Inc. All Rights Reserved.
        
         <property name="xtest.current.results" value="${xtest.results.testbag.dir}"/>
        
-        <!-- move results from workdir to result dir --> 
-        <move toDir="${xtest.current.results}">
-            <fileset dir="${xtest.workdir}">                        
-                <exclude name="systemworkdir/tests/**"/>
-                <exclude name="systemworkdir/userdata.properties"/>
-            </fileset>
-        </move>
-        
-        <copy toDir = "${xtest.current.results}">
-            <fileset dir="${xtest.workdir}">
-                <include name="systemworkdir/userdata.properties"/>
-            </fileset>
-        </copy>
-        
-        <delete dir="${xtest.workdir}/systemworkdir/tests" />
+        <!-- move the results, because of path length limit on windows
+            there have to be a separate process for windows and for 
+            the rest of operating systems -->
+        <condition property="os.is.windows">
+            <os family="windows"/>
+        </condition>
+        <antcall target="move-results"/>
+        <antcall target="move-results-windows"/>        
         
         <!-- a mew testbag was added, regenerate the XML tree -->
         <regenerateXML inputDir="${xtest.results}"/>
@@ -361,7 +354,63 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.report.url" value="${xtest.results}/htmlresults/index.html"/>
         <echo message="Hi, here's report URL:"/>
         <echo message="file://${xtest.report.url}"/>        
+    </target>        
+    <!--
+    -->
+    <target name="move-results-windows" if="os.is.windows">
+        <!--
+        <echo message="WINDOWS :-(("/>
+        -->
+        <!-- move results from workdir to result dir --> 
+        <move toDir="${xtest.current.results}">
+            <fileset dir="${xtest.workdir}">                        
+                <exclude name="sys/**"/>                
+            </fileset>
+        </move>
+        
+        <copy toDir = "${xtest.current.results}">
+            <fileset dir="${xtest.workdir}">
+                <include name="sys/userdata.properties"/>
+            </fileset>
+        </copy>
+        
+        <!-- now copy the ide workdir stuff - since there is 
+            a problem with that on windows -->
+        <zip zipfile="${xtest.workdir}/sys/ide.zip" basedir="${xtest.workdir}/sys/ide"/>
+        
+        <unzip src="${xtest.workdir}/sys/ide.zip" dest="${xtest.current.results}/sys/ide"/>                
+        
+        <delete dir="${xtest.workdir}/sys/tests" />
+        <delete dir="${xtest.workdir}/sys/ide"/>
+        <delete file="${xtest.workdir}/sys/ide.zip"/>
+        <delete dir="${xtest.workdir}/user"/>
+        <delete dir="${xtest.workdir}/xmlresults"/>
     </target>
+    
+    <target name="move-results" unless="os.is.windows">
+        <!--
+        <echo message="NO WINDOWS :-))"/>
+        -->
+        <!-- move results from workdir to result dir --> 
+        <move toDir="${xtest.current.results}">
+            <fileset dir="${xtest.workdir}">                        
+                <exclude name="sys/tests"/>                
+                <exclude name="sys/userdata.properties"/>
+            </fileset>
+        </move>
+        
+        <copy toDir = "${xtest.current.results}">
+            <fileset dir="${xtest.workdir}">
+                <include name="sys/userdata.properties"/>
+            </fileset>
+        </copy>
+                         
+        <delete dir="${xtest.workdir}/sys/tests" />
+        <delete dir="${xtest.workdir}/user"/>
+        <delete dir="${xtest.workdir}/xmlresults"/>
+        
+    </target>
+    
     
     <!-- ======== -->
     <!-- Building -->

@@ -31,6 +31,12 @@
 	<xsl:call-template name="summary-table"/>	
 	<UL>
 		<LI><A HREF="systeminfo.html">System Info</A></LI>
+		<xsl:if test="@project">
+			<LI>Tested project: <xsl:value-of select="@project"/></LI>
+		</xsl:if>
+		<xsl:if test="@build">
+			<LI>Tested build: <xsl:value-of select="@build"/></LI>
+		</xsl:if>		
 	</UL>
 	<HR/>
 	<xsl:apply-templates/>

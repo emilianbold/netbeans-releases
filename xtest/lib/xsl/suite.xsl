@@ -91,7 +91,7 @@
 		<TD><xsl:value-of select="@message"/></TD>
 		<TD>
 			<xsl:if test="@workdir">
-				<A><xsl:attribute name="href">../../userworkdir/<xsl:value-of select="@workdir"/>/</xsl:attribute>Yes</A>
+				<A><xsl:attribute name="href">../../user/<xsl:value-of select="@workdir"/>/</xsl:attribute>Yes</A>
 			</xsl:if>
 			<xsl:if test="not(@workdir)">
 			No

@@ -24,9 +24,17 @@
 
 <xsl:template match="XTestResultsReport">
 	<H4>
-		<I>XTest Results Report<BR/>
-		run on <B><xsl:value-of select="/XTestResultsReport/SystemInfo/@host"/></B><BR/>
-		at <B><xsl:value-of select="/XTestResultsReport/@timeStamp"/></B></I><BR/>		
+		<I>
+		<B>XTest Results Report:</B><BR/><BR/>
+		<xsl:if test="@project">
+			Tested project:<B><xsl:value-of select="@project"/></B><BR/>
+		</xsl:if>
+		<xsl:if test="@build">
+			Tested build:<B><xsl:value-of select="@build"/></B><BR/>
+		</xsl:if>
+		Run on: <B><xsl:value-of select="SystemInfo/@host"/></B><BR/>
+		Run at: <B><xsl:value-of select="@timeStamp"/></B><BR/>						
+		</I>
 		<UL>			
 			<LI><A HREF="systeminfo.html" TARGET="report">System Info</A></LI>	
 			<BR/><BR/>					

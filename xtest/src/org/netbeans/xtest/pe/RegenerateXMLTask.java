@@ -123,14 +123,25 @@ public class RegenerateXMLTask extends Task{
     
     public static XTestResultsReport getXTestResultsReport(File reportFile)    {
         try {
+            debugInfo("getXTestResultsReport(): file="+reportFile);
             Document doc = getDOMDocFromFile(reportFile);
+            debugInfo("getXTestResultsReport(): god Document");
+            //XMLBean.DEBUG=true;
             XMLBean xmlBean = XMLBean.getXMLBean(doc);    
+            //XMLBean.DEBUG=false;
+            debugInfo("getXTestResultsReport(): got XMLBean");  
             if (xmlBean instanceof XTestResultsReport) {
+                debugInfo("getXTestResultsReport(): got XTestResultsReport");  
                 return (XTestResultsReport)xmlBean;
             } else {
+                debugInfo("getXTestResultsReport(): have to create new XTestResultsReport (XMLBean is not the required type)");  
                 return new XTestResultsReport();
             }
         } catch (Exception e) {
+            debugInfo("getXTestResultsReport(): EXCEPTION!!!"+e);
+            //e.printStackTrace();
+            //XMLBean.DEBUG=false;
+            debugInfo("getXTestResultsReport(): have to create new XTestResultsReport!");  
             return new XTestResultsReport();
         }
     }
@@ -172,6 +183,7 @@ public class RegenerateXMLTask extends Task{
     
     public void execute () throws BuildException {
         try {
+            log("Regenerating report's XMLs");
                         
             Project antProject = getProject();
             String fullrun = antProject.getProperty("xtest.fullrun");
@@ -188,11 +200,11 @@ public class RegenerateXMLTask extends Task{
                     regenerateTestReport(inputDir,false,false);
                     break;
                 default:
-                    System.out.println("RegenerateXMLTask: cannot regenerate (not a suitable input dir)");
+                    log("cannot regenerate (not a suitable input dir)");
             }
             
         } catch (Exception e) {
-            System.err.println("Exception in RegenerateXMLTask");
+            log("Exception in RegenerateXMLTask:"+e);
             e.printStackTrace(System.err);
         }
     }

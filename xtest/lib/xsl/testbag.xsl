@@ -36,7 +36,7 @@
 	<LI>Module: <xsl:value-of select="@module"/></LI>
 	<LI>Test Type: <xsl:value-of select="@testType"/></LI>
 	<xsl:if test="string(@executor)='ide'">
-		<LI><A HREF="../systemworkdir/ide_userdir">IDE User Directory</A></LI>
+		<LI><A HREF="../sys/ide">IDE User Directory</A></LI>
 	</xsl:if>
 	</UL>
 	<HR/>

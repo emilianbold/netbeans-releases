@@ -111,17 +111,17 @@ public class SystemInfoTask extends Task {
     
 
     public void execute () throws BuildException {
+        log("Generating system info xml");
         SystemInfo si = getSystemInfo();
-        System.err.println("SI:"+si);
         try {
             FileOutputStream outStream = new FileOutputStream(this.outfile);            
             SerializeDOM.serializeToStream(si.toDocument(),outStream);
             outStream.close();
         } catch (IOException ioe) {
-            System.err.println("SystemInfoTask - cannot save systeminfo");
+            log("Cannot save systeminfo:"+ioe);
             ioe.printStackTrace(System.err);
         } catch (Exception e) {
-            System.err.println("SystemInfoTask - XMLBean exception ???");
+            log("XMLBean exception?:"+e);
             e.printStackTrace(System.err);           
         }
     }
