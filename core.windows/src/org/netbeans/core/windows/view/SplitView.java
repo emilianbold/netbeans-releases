@@ -101,7 +101,8 @@ public class SplitView extends ViewElement {
     public boolean updateAWTHierarchy(Dimension availableSpace) {
         boolean result = false;
 //        debugLog(this.hashCode() + " available width=" + availableSpace.width);
-        //this is neccesary because of thge way resettoPreffereSize() is implemented.
+        // this is neccesary because of the way resettoPreffereSize() and in fact
+        // JSplitPane.resetToPreferredSizes() are implemented.
         // if the split has wrong size, the preffered sizing fails and minimumsizes are used
         // as fallback -> resulting in weirdo resizing, editor eating all space..
         if (!availableSpace.equals(getSplitPane().getSize())) {
@@ -138,20 +139,19 @@ public class SplitView extends ViewElement {
         
         result |= assureComponentInSplit(first.getComponent(), true);
         result |= assureComponentInSplit(second.getComponent(), false);
-//        debugLog(this.hashCode() + " update left=" + first.getClass());
+        //debugLog(this.hashCode() + " update left=" + first.getClass());
         result |= first.updateAWTHierarchy(firstDim);
-//        debugLog(this.hashCode() + " update right=" + second.getClass());
+        //debugLog(this.hashCode() + " update right=" + second.getClass());
         result |= second.updateAWTHierarchy(secondDim);
-//        assureComponentInSplit(first.getComponent(), true);
-//        assureComponentInSplit(second.getComponent(), false);
         if (first.getComponent() == null || second.getComponent() == null) {
-//            debugLog("setting divider");
+            //debugLog("setting divider to " + location);
             result = true;
             splitPane.setDividerLocation(location);
         } /*else if (result) { //Check result value - resetToPreferredSizes() will *always* cause a full repaint
             splitPane.resetToPreferredSizes();
             debugLog(this.hashCode() + " resetting to preffered sizes");
         }*/
+        
         return result;
     }
     
