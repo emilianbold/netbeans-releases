@@ -22,12 +22,16 @@ import com.netbeans.ide.modules.ModuleInstall;
 */
 public class FormEditorModule implements ModuleInstall {
 
+
+
   /** Module installed for the first time. */
   public void installed () {
   }
 
   /** Module installed again. */
   public void restored () {
+
+
     // 1. create palette
     // bla bla
   }
@@ -40,10 +44,12 @@ public class FormEditorModule implements ModuleInstall {
   public boolean closing () {
     return true; // agree to close
   }
+  
 }
 
 /*
  * Log
+ *  2    Gandalf   1.1         3/22/99  Ian Formanek    
  *  1    Gandalf   1.0         3/22/99  Ian Formanek    
  * $
  */
