@@ -722,7 +722,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     /** Implementation of Pin button, its look is dependent on orientation
      * and can be set using setOrientation method.
      */
-    protected static final class PinButton extends JButton {
+    protected static class PinButton extends JButton {
         
         private Map pressedIcons, rolloverIcons, regularIcons;
         

@@ -19,6 +19,12 @@ import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.Collections;
+
+import java.util.HashMap;
+import java.util.Map;
+
+
 import org.openide.awt.HtmlRenderer;
 
 /**
@@ -319,8 +325,38 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     }
 
     protected PinButton createPinButton() {
-        // XXX - TBD - change to own specialized pin button with proper icons
-        return super.createPinButton();
+        Map normalIcons = new HashMap(6);
+        normalIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/xp-pin-select-normal-east.gif");
+        normalIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/xp-pin-select-normal-west.gif");
+        normalIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/xp-pin-select-normal-south.gif");
+        normalIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/xp-pin-select-normal-center.gif");
+        Map pressedIcons = new HashMap(6);
+        pressedIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/xp-pin-select-pressed-east.gif");
+        pressedIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/xp-pin-select-pressed-west.gif");
+        pressedIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/xp-pin-select-pressed-south.gif");
+        pressedIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/xp-pin-select-pressed-center.gif");
+        Map rolloverIcons = new HashMap(6);
+        rolloverIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/xp-pin-select-rollover-east.gif");
+        rolloverIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/xp-pin-select-rollover-west.gif");
+        rolloverIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/xp-pin-select-rollover-south.gif");
+        rolloverIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/xp-pin-select-rollover-center.gif");
+        Map focusNormalIcons = new HashMap(6);
+        focusNormalIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-normal-east.gif");
+        focusNormalIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-normal-west.gif");
+        focusNormalIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-normal-south.gif");
+        focusNormalIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-normal-center.gif");
+        Map focusPressedIcons = new HashMap(6);
+        focusPressedIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-pressed-east.gif");
+        focusPressedIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-pressed-west.gif");
+        focusPressedIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-pressed-south.gif");
+        focusPressedIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-pressed-center.gif");
+        Map focusRolloverIcons = new HashMap(6);
+        focusRolloverIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-rollover-east.gif");
+        focusRolloverIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-rollover-west.gif");
+        focusRolloverIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-rollover-south.gif");
+        focusRolloverIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/xp-pin-focused-rollover-center.gif");
+        
+        return new XPPinButton(displayer, focusNormalIcons, focusPressedIcons, focusRolloverIcons, normalIcons, pressedIcons, rolloverIcons);
     }
     
     /**
@@ -411,5 +447,52 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
 
 
     } // end of OwnController
+    
+    protected static class XPPinButton extends PinButton {
+        private Map focusedNormal;
+        private Map focusedRollover;
+        private Map focusedPressed;
+
+        private TabDisplayer displayer;
+        
+        
+        protected XPPinButton(TabDisplayer displayer,
+                              Map focusedNormal, Map focusedPressed, Map focusedRollover,
+                              Map selectNormal, Map selectPressed, Map selectRollover) {
+            super(selectNormal, selectPressed, selectRollover);
+            this.focusedPressed = focusedPressed;
+            this.focusedRollover = focusedRollover;
+            this.focusedNormal = focusedNormal;
+            this.displayer = displayer;
+        }
+        
+        
+        public Icon getIcon() {
+            if (displayer.isActive()) {
+                return iconCache.obtainIcon((String)focusedNormal.get(getOrientation()));
+            } else {
+                return super.getIcon();
+            }
+        }
+
+        public Icon getRolloverIcon() {
+            if (displayer.isActive()) {
+                return iconCache.obtainIcon((String)focusedRollover.get(getOrientation()));
+            } else {
+                return super.getRolloverIcon();
+            }
+            
+        }
+        
+        public Icon getPressedIcon() {
+            if (displayer.isActive()) {
+                return iconCache.obtainIcon((String)focusedPressed.get(getOrientation()));
+            } else {
+                return super.getPressedIcon();
+            }
+        }
+        
+        
+    }
 
 }

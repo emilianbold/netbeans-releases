@@ -18,6 +18,10 @@ import org.netbeans.swing.tabcontrol.TabDisplayer;
 import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
+
+
 import org.openide.awt.HtmlRenderer;
 
 /**
@@ -278,8 +282,22 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     }
 
     protected PinButton createPinButton() {
-        // XXX - TBD - change to own specialized pin button with proper icons
-        return super.createPinButton();
+        Map normalIcons = new HashMap(6);
+        normalIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/met-pin-normal-select-east.gif");
+        normalIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/met-pin-normal-select-west.gif");
+        normalIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/met-pin-normal-select-south.gif");
+        normalIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/met-pin-normal-select-center.gif");
+        Map pressedIcons = new HashMap(6);
+        pressedIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/met-pin-pressed-select-east.gif");
+        pressedIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/met-pin-pressed-select-west.gif");
+        pressedIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/met-pin-pressed-select-south.gif");
+        pressedIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/met-pin-pressed-select-center.gif");
+        Map rolloverIcons = new HashMap(6);
+        rolloverIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/met-pin-normal-focus-east.gif");
+        rolloverIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/met-pin-normal-focus-west.gif");
+        rolloverIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/met-pin-normal-focus-south.gif");
+        rolloverIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/met-pin-normal-focus-center.gif");
+        return new PinButton(normalIcons, pressedIcons, rolloverIcons);
     }
     
     /**
