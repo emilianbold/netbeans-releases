@@ -99,11 +99,14 @@
 
 <!-- Standard Web Project Properties dialog-->
 <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerGeneral" url="web/overvw/WebCustomizerGeneral.html" />
+<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerSources" url="web/overvw/WebCustomizerSources.html" />
 <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="web/overvw/WebCustomizerCompile.html" />
+<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompileTest" url="web/overvw/WebCustomizerCompileTest.html" />
 <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWar" url="web/overvw/WebCustomizerWar.html" />
 <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="web/overvw/WebCustomizerJavadoc.html" />
 <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerRun" url="web/overvw/WebCustomizerRun.html" />
-	
+<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerRunTest" url="web/overvw/WebCustomizerRunTest.html" />
+
 <!-- End of web apps help -->
 
 <!-- Start of Enterprise Application help -->
