@@ -30,6 +30,7 @@ import java.io.*;
 public class NbPath extends Task {
 
     public static void main(String args[]) throws Exception {
+        System.out.println("System:"+NbPath.isJDK14AndOver());
     }
     
     public void setNbHome(String home) {
@@ -46,6 +47,23 @@ public class NbPath extends Task {
 
     public void setAntHome(String home) {
         this.anthome = checkPath(home);
+    }
+    
+    public static boolean isJDK14AndOver() {
+        String specificationVersion = System.getProperty("java.specification.version");
+        if (specificationVersion != null) {
+            try {
+                float version = Float.parseFloat(specificationVersion);
+                if (version >= 1.4F) {
+                    //System.out.println("NbPath:isJDK14AndOver(): returning true");
+                    return true;
+                }
+            } catch (NumberFormatException nfe) {
+                // cannot parse - probably not a 1.4 or greater
+            }
+        }
+        //System.out.println("NbPath:isJDK14AndOver(): returning false");
+        return false;
     }
 
     public void execute () throws BuildException {
@@ -177,7 +195,13 @@ public class NbPath extends Task {
         String xalan_path = getProject().getProperty(XALAN_PATH);
         if (null == xalan_path) {
             list.setLength(0);
-            addPath(list, xalan_jar);
+            // since xalan is now part of JDK 1.4 and greater - do not add it
+            if (!NbPath.isJDK14AndOver()) {
+                //System.out.println("NbPath: Adding xalan");
+                addPath(list, xalan_jar);
+            } else {
+                //System.out.println("NbPath: not adding xalan");
+            }
             addPath(list, xerces_jar);
             xalan_path = list.toString();
             getProject().setProperty(XALAN_PATH, xalan_path);

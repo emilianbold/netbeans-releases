@@ -89,6 +89,8 @@ public class NbMultiTaskDef extends Task {
             // system loader (packages java, javax are by default loaded using
             // system classloader)
             al.addLoaderPackageRoot("javax.xml");
+            al.addLoaderPackageRoot("org.apache.xalan");
+            //al.addLoaderPackageRoot("org.apache.xerces");
             loader = al;
         }
 

@@ -22,6 +22,7 @@ package org.netbeans.xtest.pe;
 import org.apache.tools.ant.*;
 import java.io.*;
 import org.netbeans.xtest.pe.xmlbeans.*;
+import org.netbeans.xtest.util.SAXParserFactoryUtil;
 import java.util.*;
 import org.w3c.dom.*;
 
@@ -112,7 +113,8 @@ public class TransformXMLTask extends Task{
             }
         } catch (Exception te) {
             debugInfo("execute(): Exception !!! : "+te);
-            new BuildException(te);
+            te.printStackTrace();
+            throw new BuildException(te);
         }
     }
         
@@ -120,10 +122,34 @@ public class TransformXMLTask extends Task{
     
     
     public static Transformer getTransformer(File xsl) throws TransformerConfigurationException {
-        TransformerFactory tFactory = TransformerFactory.newInstance();
+        debugInfo("getTransformer(): - getting transformer for "+xsl);
+        //debugInfo("getTransformer(): properties:"+System.getProperties());
+        debugInfo("getTransformer(): property javax.xml.transform.TransformerFactory:"+System.getProperty("javax.xml.transform.TransformerFactory"));
+        debugInfo("getTransformer(): property javax.xml.parsers.DocumentBuilderFactory:"+System.getProperty("javax.xml.parsers.DocumentBuilderFactory")); 
+        debugInfo("getTransformer(): property javax.xml.parsers.SAXParserFactory: "+System.getProperty("javax.xml.parsers.SAXParserFactory"));
+        
+        //SAXParserFactoryUtil.setXTestParser();
+
+        /*
+        System.setProperty("javax.xml.transform.TransformerFactory","org.apache.xalan.processor.TransformerFactoryImpl");
+        System.setProperty("javax.xml.parsers.SAXParserFactory","org.apache.xerces.jaxp.SAXParserFactoryImpl");
+        System.setProperty("javax.xml.parsers.DocumentBuilderFactory","org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+        */
+        debugInfo("getTransformer(): property javax.xml.transform.TransformerFactory:"+System.getProperty("javax.xml.transform.TransformerFactory"));
+        debugInfo("getTransformer(): property javax.xml.parsers.DocumentBuilderFactory:"+System.getProperty("javax.xml.parsers.DocumentBuilderFactory")); 
+        debugInfo("getTransformer(): property javax.xml.parsers.SAXParserFactory: "+System.getProperty("javax.xml.parsers.SAXParserFactory"));
+
+        javax.xml.transform.TransformerFactory tFactory = javax.xml.transform.TransformerFactory.newInstance();
         StreamSource xslSource = new StreamSource(xsl);
         Transformer transformer = tFactory.newTransformer(xslSource);
+        //SAXParserFactoryUtil.revertXTestParser();
         debugInfo("getTransformer(): got transformer from this xsl:"+xsl);
+
+        debugInfo("getTransformer(): property javax.xml.transform.TransformerFactory:"+System.getProperty("javax.xml.transform.TransformerFactory"));
+        debugInfo("getTransformer(): property javax.xml.parsers.DocumentBuilderFactory:"+System.getProperty("javax.xml.parsers.DocumentBuilderFactory")); 
+        debugInfo("getTransformer(): property javax.xml.parsers.SAXParserFactory: "+System.getProperty("javax.xml.parsers.SAXParserFactory"));
+        
+        
         return transformer;
     }
     
