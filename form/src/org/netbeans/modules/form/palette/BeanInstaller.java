@@ -250,11 +250,22 @@ public final class BeanInstaller extends Object {
       if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
       /* ignore */ 
     }
+    HashMap libsMap = new HashMap (installedLibs.size ()*2);
     String newName;
     try {
+      for (Enumeration e = installedLibs.propertyNames (); e.hasMoreElements ();) {
+        String lib = installedLibs.getProperty ((String)e.nextElement ());
+        libsMap.put (lib, lib);
+      }
       newName = jar.getJarFile ().getCanonicalPath ();
-      if (installedLibs.getProperty (newName) == null) {
-        installedLibs.setProperty (newName, "Yes");
+      if (libsMap.get (newName) == null) {
+        libsMap.put (newName, newName);
+        installedLibs.clear ();
+        int index = 1;
+        for (Iterator it = libsMap.keySet ().iterator (); it.hasNext (); ) {
+          installedLibs.setProperty ("library"+index, (String)it.next ());
+          index++;
+        }
         installedLibs.store (new FileOutputStream (installedLibsFile), "");
       }
     } catch (IOException e) { 
@@ -744,6 +755,8 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  31   Gandalf   1.30        1/16/00  Ian Formanek    Different format in 
+ *       properties files.
  *  30   Gandalf   1.29        1/15/00  Pavel Buzek     
  *  29   Gandalf   1.28        1/15/00  Ian Formanek    Creates 
  *       beans/libs.properties
