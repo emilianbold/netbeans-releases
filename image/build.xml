@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -29,7 +29,6 @@ Microsystems, Inc. All Rights Reserved.
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-<!--        <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!- XXX -->
       </classpath>
     </javac>
   </target>
