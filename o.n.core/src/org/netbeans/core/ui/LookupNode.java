@@ -24,6 +24,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataShadow;
 import org.openide.loaders.TemplateWizard;
+import org.openide.loaders.XMLDataObject;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
@@ -254,7 +255,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
         Node parent;
         
         Leaf (Node node, DataObject data, Node parent) {
-            super(node);
+            super(node, (data instanceof XMLDataObject) ? Children.LEAF : new FilterNode.Children(node));
             this.data = data;
             this.parent = parent;
         }
