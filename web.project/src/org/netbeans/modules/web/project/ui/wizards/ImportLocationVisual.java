@@ -42,7 +42,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         initComponents ();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
 
-        setName(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_IW_ImportTitle")); //NOI18N
+        setName(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_ImportTitle")); //NOI18N
         
         locationDocument = projectLocationTextField.getDocument ();
         locationDocument.addDocumentListener (this);

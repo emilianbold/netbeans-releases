@@ -60,7 +60,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
     
     private String[] createSteps() {
         return new String[] {
-            NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_ProjectTitleName") //NOI18N
+            NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName") //NOI18N
         };
     }
     
@@ -130,7 +130,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
     }
     
     public String name() {
-        return MessageFormat.format(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_WizardStepsCount"), new String[] {(new Integer(index + 1)).toString(), (new Integer(panels.length)).toString()}); //NOI18N
+        return MessageFormat.format(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_WizardStepsCount"), new String[] {(new Integer(index + 1)).toString(), (new Integer(panels.length)).toString()}); //NOI18N
     }
     
     public boolean hasNext() {

@@ -53,7 +53,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
         setAsMainCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
         setAsMainCheckBox.setSelected(true);
-        setAsMainCheckBox.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_SetAsMain_CheckBox"));
+        setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBox"));
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -91,7 +91,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
         j2eeSpecLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevel_CheckBoxMnemonic").charAt(0));
         j2eeSpecLabel.setLabelFor(j2eeSpecComboBox);
-        j2eeSpecLabel.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_J2EESpecLevel_Label"));
+        j2eeSpecLabel.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevel_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -116,9 +116,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         add(j2eeSpecComboBox, gridBagConstraints);
         j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NPW1_J2EESpecLevel_A11YDesc"));
 
-        j2eeSpecDescLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_Description_LabelMnemonic").charAt(0));
+        j2eeSpecDescLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_Description_LabelMnemonic").charAt(0));
         j2eeSpecDescLabel.setLabelFor(j2eeSpecDescTextPane);
-        j2eeSpecDescLabel.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_J2EESpecLevelDesc_Label"));
+        j2eeSpecDescLabel.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevelDesc_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -151,7 +151,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed
         StringBuffer str = new StringBuffer("J2EESpecLevel_Desc_"); //NOI18N
         str.append(j2eeSpecComboBox.getSelectedIndex());
-        j2eeSpecDescTextPane.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString(str.toString())); //NOI18N
+        j2eeSpecDescTextPane.setText(NbBundle.getMessage(PanelOptionsVisual.class, str.toString())); //NOI18N
         switch (j2eeSpecComboBox.getSelectedIndex()) {
             case 0: j2eeLevel = WebModule.J2EE_14_LEVEL;
                     break;
@@ -184,8 +184,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private void initJ2EESpecLevels() {
-       j2eeSpecComboBox.addItem(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("J2EESpecLevel_0")); //NOI18N
-       j2eeSpecComboBox.addItem(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("J2EESpecLevel_1")); //NOI18N
+       j2eeSpecComboBox.addItem(NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_0")); //NOI18N
+       j2eeSpecComboBox.addItem(NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_1")); //NOI18N
        j2eeSpecComboBox.setSelectedIndex(0);
     }
 
