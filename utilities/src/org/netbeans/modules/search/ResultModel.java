@@ -16,25 +16,29 @@ package org.netbeans.modules.search;
 
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import java.text.MessageFormat;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.modules.search.res.Res;
+import org.netbeans.modules.search.scanners.RepositoryScanner;
 import org.netbeans.modules.search.types.DetailHandler;
 
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
+import org.openide.TopManager;
+import org.openide.util.RequestProcessor;
 import org.openide.util.TaskListener;
+import org.openidex.search.DetailCookie;
 import org.openidex.search.SearchTask;
 import org.openidex.search.SearchType;
 
@@ -55,15 +59,6 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     /** Node representing root of found nodes.
      * Its children hold all found nodes. */
     private ResultRootNode root;
-
-    /** Whether the nodes are sorted. */
-    private boolean sorted;
-
-    /** Unsorted list of found nodes. */
-    private ArrayList unsortedNodes;
-    
-    /** Sorted list of found nodes. */
-    private ArrayList sortedNodes;
 
     /** Search task. */
     private SearchTask task = null;
@@ -91,9 +86,6 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     public ResultModel(CriteriaModel model) {
         EVENT = new ChangeEvent(this);
 
-        sorted = false;
-        unsortedNodes = new ArrayList(100);
-        sortedNodes = new ArrayList(100);
         root = new ResultRootNode();
         criteria = model;
     }
@@ -101,13 +93,8 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     
     /** Accept nodes. Some nodes were found by engine. */
     public synchronized boolean acceptNodes(Node[] nodes) {
-
-        root.getChildren().add(nodes);
-        for (int i=0; i < nodes.length; i++) {
-            unsortedNodes.add(nodes[i]);
-            sortedNodes.add(nodes[i]);
-        }
-
+        root.addNodes(nodes);
+        
         if (useDisp && disp != null) {
             disp.acceptNodes(nodes);
         }
@@ -173,12 +160,12 @@ public class ResultModel implements NodeAcceptor, TaskListener {
 
     /** Gets number of found nodes. */
     public int getFound() {
-        return unsortedNodes.size();
+        return root == null ? 0 : root.getNumberOfFoundNodes();
     }
 
     /** Whether found nodes are sorted. */
     public boolean isSorted() {
-        return sorted;
+        return root == null ? false : root.isSorted();
     }
 
     /** Sort or unsort found nodes. (Display name is used for sorting.)
@@ -186,41 +173,14 @@ public class ResultModel implements NodeAcceptor, TaskListener {
      * @return the new root node with (un)sorted subnodes.
      */
     public Node sortNodes(boolean sort) {
+        boolean sorted = root.isSorted();
         if(sort == sorted)
             return root;
 
         root.setDisplayName(getRootDisplayName());
+
+        root.sort(sort);
         
-        // copy one array of nodes to another array of nodes which is
-        // of type Node[] ...
-        Object[] objects;
-        Node[] sortedN;
-        Node[] unsortedN;
-
-        objects = sortedNodes.toArray();
-        sortedN = new Node[objects.length];
-        
-        for (int i=0; i < objects.length; i++)
-            sortedN[i] = (Node)objects[i];
-
-        objects = unsortedNodes.toArray();
-        unsortedN = new Node[objects.length];
-        
-        for (int i=0; i < objects.length; i++)
-            unsortedN[i] = (Node)objects[i];
-
-        if (sort) {
-            root.getChildren().remove(unsortedN);
-            root.getChildren().add(sortedN);
-        }
-        else {
-            root.getChildren().remove(sortedN);
-            root.getChildren().add(unsortedN);
-        }
-
-        sorted = sort;
-        propertyChangeSupport.firePropertyChange(PROP_SORTED, !sorted, sorted);
-
         return root;
     }
 
@@ -229,7 +189,6 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     public void taskFinished(final org.openide.util.Task task) {
         done = true;
         root.setDisplayName(getRootDisplayName());
-        Collections.sort(sortedNodes, NodeNameComparator.getComparator());
         fireChange();
     }
 
@@ -241,6 +200,12 @@ public class ResultModel implements NodeAcceptor, TaskListener {
 
         int found = getFound();
 
+        return getRootDisplayNameHelp(found);
+    }
+    
+    /** Gets display name based on number of found nodes.
+     * @param found number of found nodes. */
+    private static String getRootDisplayNameHelp(int found) {
         if (found == 1) {
             return MessageFormat.format(Res.text("MSG_FOUND_A_NODE"), // NOI18N
                                         new Object[] { new Integer(found) } );
@@ -289,22 +254,186 @@ public class ResultModel implements NodeAcceptor, TaskListener {
         propertyChangeSupport.removePropertyChangeListener(l);
     }
 
+    
     /** Search Result root node. May contain some statistic properties. */
-    private static class ResultRootNode extends AbstractNode {
+    private static class ResultRootNode extends AbstractNode implements PropertyChangeListener {
+
+        /** Maps keys to nodes. The keys are names of fileobject for which nodes are found or
+         * if there was not such one the node itself. The nodes are <code>FoundNode</code>'s. */
+        private final Map keys = new Hashtable();
+
+        /** Comparator used for sorting children nodes. */
+        private final Comparator comparator;
+        
+        /** Whether this node has sorted children. */
+        private boolean sorted = false;
+
+        
         /** Creates a new node with no content. */
         public ResultRootNode() {
-            super(new Children.Array());
+            super(new ResultRootChildren());
 
+            this.comparator = new Comparator() {
+                public boolean equals(Object o) {
+                    if(this == o)
+                        return true;
+                    
+                    return false;
+                }
+                
+                public int compare(Object o1, Object o2) {
+                    if(o1 == o2)
+                        return 0;
+                    
+                    if(o1 == null)
+                        return 1;
+                    
+                    if(o2 == null)
+                        return -1;
+                    
+                    Node node1 = (Node)keys.get(o1);
+                    Node node2 = (Node)keys.get(o2);
+                    
+                    if(node1 == node2)
+                        return 0;
+                    
+                    if(node1 == null)
+                        return 1;
+                    
+                    if(node2 == null)
+                        return -1;
+
+                    int result = node1.getDisplayName().compareTo(node2.getDisplayName());
+
+                    // Can't return that two different nodes are equal even their names are same.
+                    return result == 0 ? -1 : result;
+                }
+
+            };
+            
             // displayed name indicates search in progress
             setDisplayName(Res.text("SEARCHING___")); // NOI18N
         }
 
-        /** Creates a new node with subnodes. */
-        public ResultRootNode(Children ch, String dispName) {
-            super(ch);
-            setDisplayName(dispName);
+
+        /** Adds found nodes. */
+        public void addNodes(Node[] nodes) {
+            for(int i = 0; i < nodes.length; i++) {
+                if(nodes[i] == null || keys.values().contains(nodes[i]))
+                    continue;
+                
+                if(nodes[i] instanceof RepositoryScanner.FoundNode) {
+                    String keyName = ((RepositoryScanner.FoundNode)nodes[i]).getOriginalFileObjectName();
+                    if(keyName != null) {
+                        keys.put(keyName, nodes[i]);
+                        
+                        continue;
+                    }
+                    
+                    nodes[i].addPropertyChangeListener(this);
+                }
+                
+                keys.put(nodes[i], nodes[i]);
+            }
+            
+            updateChildren();
+        }
+        
+        /** Gets node for strings key. */
+        public Node getNodeForKey(String key) {
+            if(!keys.containsKey(key))
+                return null;
+            
+            FileObject fileObject = TopManager.getDefault().getRepository().findResource(key);
+            
+            if(fileObject == null) {
+                keys.remove(key);
+                setDisplayName(getRootDisplayNameHelp(getNumberOfFoundNodes()));
+
+                return null;
+            }
+            
+            try {
+                DataObject dataObject = DataObject.find(fileObject);
+                
+                Node originalNode = dataObject.getNodeDelegate(); 
+
+                Node oldNode = (Node)keys.get(key);
+                oldNode.removePropertyChangeListener(this);
+                
+                // return new refreshed node with the original detail cookie.
+                Node newFoundNode = new RepositoryScanner.FoundNode(originalNode, (DetailCookie)oldNode.getCookie(DetailCookie.class));
+                newFoundNode.addPropertyChangeListener(this);
+                
+                keys.put(key, newFoundNode);
+                
+                return newFoundNode;
+            } catch(DataObjectNotFoundException dnfe) {
+                keys.remove(key);
+                setDisplayName(getRootDisplayNameHelp(getNumberOfFoundNodes()));
+                
+                return null;
+            }
+        }
+        
+        /** Implements <code>PropertyChangeListener</code>. */
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(RepositoryScanner.PROP_NODE_VALID.equals(evt.getPropertyName())) {
+                String name = ((RepositoryScanner.FoundNode)evt.getOldValue()).getOriginalFileObjectName();
+                
+                if(name != null)
+                    updateChild(name);
+            } else if(RepositoryScanner.PROP_NODE_DESTROYED.equals(evt.getPropertyName())) {
+                keys.values().remove(evt.getOldValue());
+                setDisplayName(getRootDisplayNameHelp(getNumberOfFoundNodes()));
+                
+                String name = ((RepositoryScanner.FoundNode)evt.getOldValue()).getOriginalFileObjectName();
+                
+                if(name != null)
+                    updateChild(name);
+            }
+        }
+        
+        /** Sorts/unsorts the children nodes. */
+        public void sort(boolean sort) {
+            Set newKeys;
+            
+            if(sort)
+                newKeys = new TreeSet(comparator);
+            else
+                newKeys = new HashSet();
+            
+            newKeys.addAll(keys.keySet());
+            
+            updateChildren(newKeys);
+
+            sorted = sort;
         }
 
+        /** Getter for sorted property. */
+        public boolean isSorted() {
+            return sorted;
+        }
+
+        /** Gets number of found nodes. */
+        public int getNumberOfFoundNodes() {
+            return keys.size();
+        }
+        
+        /** Updates one child. */
+        private void updateChild(String key) {
+            ((ResultRootChildren)getChildren()).update(key);
+        }
+        
+        /** Updates all children. */
+        private void updateChildren() {
+            ((ResultRootChildren)getChildren()).update(keys.keySet());
+        }
+        
+        /** Updates all children by new keys. */
+        private void updateChildren(Set newKeys) {
+            ((ResultRootChildren)getChildren()).update(newKeys);
+        }
         
         /** Gets icon. Overrides superclass method.
          * @return universal search icon. */
@@ -316,32 +445,57 @@ public class ResultModel implements NodeAcceptor, TaskListener {
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
+        
     } // End of ResultRoorNode class.
     
 
-    /** Node name comparator, */
-    private static class NodeNameComparator implements Comparator {
-        /** Comparator. */
-        private static Comparator comparator = null;
-
-        /** Compare two nodes according to their display names.
-         * Implements <code>Comparator</code> interface method. */
-        public int compare(Object o1,Object o2) {
-            return ((Node)o1).getDisplayName().compareTo(((Node)o2).getDisplayName());
+    /** Children for result root node. */
+    private static class ResultRootChildren extends Children.Keys {
+        /** Overrides superclass method. */
+        protected void addNotify() {
+            setKeys(Collections.EMPTY_SET);
+            RequestProcessor.postRequest(new Runnable() {
+                 public void run() {
+                     ResultRootNode root = (ResultRootNode)getNode();
+                     
+                     if(root != null)
+                        root.updateChildren();
+                 }
+             });
         }
 
-        /** Implements <code>Comparator</code> interface method. */
-        public boolean equals(Object obj) {
-            return obj instanceof NodeNameComparator;
+        /** Overrrides superclass method. */
+        protected void removeNotify() {
+            setKeys(Collections.EMPTY_SET);
         }
 
-        /** Gets the instance pf comparator. 
-         * @return the instance of <code>NodeNameComparator</code> */
-        public static Comparator getComparator() {
-            if (comparator == null)
-                comparator = new NodeNameComparator();
-            return comparator;
+        /** Creates nodes. */
+        protected Node[] createNodes(Object key) {
+            if(key instanceof String) {
+                ResultRootNode root = (ResultRootNode)getNode();
+                
+                if(root == null)
+                    return new Node[0];
+                
+                Node node = root.getNodeForKey((String)key);
+                
+                return node == null ? new Node[0] : new Node[] {node};
+            } else if(key instanceof Node)
+                return new Node[] {(Node)key};
+            else
+                return new Node[0];
         }
-    } // End of NodeNameComparator class.
+        
+        /** Updates key. */
+        public void update(String key) {
+            refreshKey(key);
+        }
+        
+        /** Updates all keys from set. */
+        public void update(Set keys) {
+            setKeys(keys);
+        }
+        
+    } // End of ResultRootChildren class.
     
 }
