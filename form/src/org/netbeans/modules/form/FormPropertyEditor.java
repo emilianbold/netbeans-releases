@@ -33,6 +33,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   private PropertyEditor modifiedEditor;
   private Class propertyType;
   private PropertyEditor[] allEditors;
+  private java.util.Vector listeners;
 
   // -----------------------------------------------------------------------------
   // Constructor
@@ -96,9 +97,11 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   *     the PropertyEditor should create a new object to hold any
   *     modified value.
   */
-  public void setValue(Object value) {
-    this.value = value;
+  public void setValue(Object newValue) {
+    Object oldValue = value;
+    value = newValue;
     modifiedEditor.setValue (value);
+    firePropertyChange ();
   }
   
   /**
@@ -292,9 +295,11 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   * @param listener  An object to be invoked when a PropertyChange
   *		event is fired.
   */
-  public synchronized void addPropertyChangeListener(
-                            PropertyChangeListener listener) {
-    // no-op impl
+  public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    if (listeners == null) {
+      listeners = new java.util.Vector();
+    }
+    listeners.addElement(listener);
   }
 
   /**
@@ -302,15 +307,42 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   *
   * @param listener  The PropertyChange listener to be removed.
   */
-  public synchronized void removePropertyChangeListener(
-                            PropertyChangeListener listener) {
-    // no-op impl
+  public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+    if (listeners == null) {
+      return;
+    }
+    listeners.removeElement(listener);
+  }
+
+  /**
+  * Report that we have been modified to any interested listeners.
+  *
+  * @param source  The PropertyEditor that caused the event.
+  */
+  void firePropertyChange() {
+    java.util.Vector targets;
+    synchronized (this) {
+      if (listeners == null) {
+        return;
+      }
+      targets = (java.util.Vector) listeners.clone();
+    }
+
+    PropertyChangeEvent evt = new PropertyChangeEvent(this, null, null, null);
+    
+    for (int i = 0; i < targets.size(); i++) {
+      PropertyChangeListener target = (PropertyChangeListener)targets.elementAt(i);
+      target.propertyChange(evt);
+    }
   }
 
 }
 
 /*
  * Log
+ *  16   Gandalf   1.15        10/6/99  Ian Formanek    Fixed bug 3494 - When 
+ *       creating EnhancedPropertyEditor with inplace custom editor 
+ *       (JPasswordField), it doesn't lost the focus when enter was pressed.
  *  15   Gandalf   1.14        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
  *        changes
  *  14   Gandalf   1.13        8/17/99  Ian Formanek    no semantic change
