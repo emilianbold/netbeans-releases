@@ -74,8 +74,13 @@
          <tocitem text="About Web Services" target="about_web_service" />
          <tocitem text="Creating a Web Service" target="create_ws" />
 	 <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
-	 <tocitem text="Adding an Enterprise Resource" target="add_enterprise_resource" />
 	 <tocitem text="Adding a SOAP Message Handler" target="add_soap_message" />
+	 <tocitem text="Adding an Enterprise Resource" >
+	 <tocitem text="About Adding an Enterprise Resource" target="add_enterprise_resource" />
+	 	<tocitem text="Calling an EJB" target="call_an_ejb" />
+	 	<tocitem text="Using a Database" target="tbd" />
+		<tocitem text="Sending a JMS Message" target="tbd" />
+	 </tocitem> 
          <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
          <tocitem text="Running a Web Service" target="run_ws" />
 	 <tocitem text="Testing a Web Service" target="test_ws" />
