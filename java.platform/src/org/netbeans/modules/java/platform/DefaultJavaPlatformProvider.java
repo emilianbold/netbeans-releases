@@ -30,6 +30,7 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
 
     private HashSet listeners;
     private FileObject storage;
+    private JavaPlatform defaultPlatform;
 
     public DefaultJavaPlatformProvider () {
         storage = Repository.getDefault().getDefaultFileSystem().findResource(PLATFORM_STORAGE);
@@ -76,7 +77,16 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
     }
     
     public JavaPlatform getDefaultPlatform() {
-        return (JavaPlatform)Lookup.getDefault().lookup(JavaPlatform.class);
+        if (this.defaultPlatform == null) {
+            JavaPlatform[] allPlatforms = this.getInstalledPlatforms();
+            for (int i=0; i< allPlatforms.length; i++) {
+                if ("default_platform".equals(allPlatforms[i].getProperties().get("platform.ant.name"))) {  //NOI18N
+                    defaultPlatform = allPlatforms[i];
+                    break;
+                }
+            }
+        }
+        return this.defaultPlatform;
     }
     
 

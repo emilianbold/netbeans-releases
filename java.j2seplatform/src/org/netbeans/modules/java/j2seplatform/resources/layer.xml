@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Platforms">
             <folder name="org-netbeans-api-java-Platform">
                  <!-- Placeholder, installed platforms will be created in this folder -->
-                 <file name=".default.xml" url="templates/defaultPlatform.xml"/>
+                 <file name="default_platform.xml" url="templates/defaultPlatform.xml"/>
             </folder>
         </folder>
     </folder>

@@ -33,7 +33,7 @@ import org.netbeans.api.java.classpath.*;
 public class DefaultPlatformImpl extends J2SEPlatformImpl {
 
 
-    public static final String DEFAULT_PLATFORM_ANT_NAME = ".default";           //NOI18N
+    public static final String DEFAULT_PLATFORM_ANT_NAME = "default_platform";           //NOI18N
 
     private ClassPath standardLibs;
     
