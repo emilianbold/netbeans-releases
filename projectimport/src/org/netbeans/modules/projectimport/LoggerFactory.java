@@ -46,11 +46,13 @@ public class LoggerFactory {
     }
     
     static {
-        try {
-            LEVEL = Level.parse(
-                    System.getProperty("projectimport.logging.level")); // NOI18N
-        } catch (IllegalArgumentException iae) {
-            // use default level - INFO
+        String levelName = System.getProperty("projectimport.logging.level"); // NOI18N
+        if (levelName != null) {
+            try {
+                LEVEL = Level.parse(levelName);
+            } catch (IllegalArgumentException iae) {
+                // use default level - INFO
+            }
         }
     }
     
