@@ -173,9 +173,9 @@
     </tocitem>
 
     <tocitem text="Editing XML Documents" >
-      <!--<tocitem text="About Editing XML Documents" target="xml_about" />
+      <tocitem text="About Editing XML Documents" target="xml_about" />
       <tocitem text="Working with XML Documents" target="xml_overview" />
-      <tocitem text="XML Task Quick Reference" target="xml_quickref" />-->
+      <tocitem text="XML Task Quick Reference" target="xml_quickref" />
       <tocitem text="Creating an XML Document" target="xml_createxml" />
       <tocitem text="Editing an XML Document" target="xml_editxml" />
       <tocitem text="Creating a DTD" target="xml_createdtd" />
