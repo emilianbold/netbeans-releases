@@ -18,16 +18,22 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -63,8 +69,6 @@ public class DocumentsDlg extends javax.swing.JPanel
 implements HelpCtx.Provider, PropertyChangeListener {
     
     private static DocumentsDlg defaultInstance;
-    
-    private static Reference dlgRef = new SoftReference(null);
     
     private ExplorerPanel explorer;
     
@@ -303,35 +307,33 @@ implements HelpCtx.Provider, PropertyChangeListener {
 
 
     public static void showDocumentsDialog() {
-         Dialog dlg = (Dialog)dlgRef.get();
-
-         if(dlg == null) {
-             JPanel documentsPanel = getDefault();
-             JButton closeButton = new JButton(NbBundle.getMessage(DocumentsDlg.class, "CTL_Close"));
-             closeButton.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "CTL_Close_Mnemonic").charAt(0));
-             closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_Close"));
-             DialogDescriptor dlgDesc = new DialogDescriptor(
-             documentsPanel,
-             NbBundle.getMessage(DocumentsDlg.class, "CTL_DocumentsTitle"),
-             true, // is modal!!
-             new Object[] {closeButton},
-             closeButton,
-             DialogDescriptor.DEFAULT_ALIGN,
-             null,
-             null);
-             dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
-             dlgRef = new SoftReference(dlg);
-         }
-
-         getDefault().updateNodes();
-         dlg.setVisible(true);
-         getDefault().clearNodes();
+        DocumentsDlg documentsPanel = getDefault();
+        JButton closeButton = new JButton(NbBundle.getMessage(DocumentsDlg.class, "CTL_Close"));
+        closeButton.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "CTL_Close_Mnemonic").charAt(0));
+        closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_Close"));
+        DialogDescriptor dlgDesc = new DialogDescriptor(
+            documentsPanel,
+            NbBundle.getMessage(DocumentsDlg.class, "CTL_DocumentsTitle"),
+            true, // is modal!!
+            new Object[] {closeButton},
+            // make "switcch to document" button default
+            getDefault().jButtonActivate,
+            DialogDescriptor.DEFAULT_ALIGN,
+            null,
+            null
+        );
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
+        getDefault().updateNodes();
+        dlg.setVisible(true);
+        getDefault().clearNodes();
     }
     
     private JPanel createListView () {
         JPanel panel = new JPanel();
-        // Defined size in #36907.
-        panel.setPreferredSize(new Dimension(540, 400));
+        // Defined size in #36907 - surrounding controls will add to this size
+        // and result is desired 540x400. Note that we can't hardcode size of
+        // whole dialog to work correctly with different font size
+        panel.setPreferredSize(new Dimension(375, 232));
         panel.setLayout(new BorderLayout());
         listView = new ListView();
         // proper border for the view
@@ -361,6 +363,16 @@ implements HelpCtx.Provider, PropertyChangeListener {
         
         Node root = new AbstractNode(nodeArray);
         explorer.getExplorerManager().setRootContext(root);
+        // set focus to documents list
+        listView.requestFocus();
+        // select first item if possible
+        if (tcNodes.size() > 0) {
+            try {
+                explorer.getExplorerManager().setSelectedNodes(new Node[] { (Node)tcNodes.get(0) });
+            } catch (PropertyVetoException exc) {
+                // do nothing, what should I do?
+            }
+        }
     }
     
     private void clearNodes() {
@@ -430,8 +442,8 @@ implements HelpCtx.Provider, PropertyChangeListener {
     private ListView listView;
     
     /** Used to display list of TopComponent in ListView. */
-    private static class TopComponentNode extends AbstractNode
-    implements Comparable {
+    private class TopComponentNode extends AbstractNode
+                                   implements Comparable, Action {
         
         private TopComponent tc;
         
@@ -477,6 +489,32 @@ implements HelpCtx.Provider, PropertyChangeListener {
             } else {
                 return displayName2 == null ? 1 : displayName1.compareTo(displayName2);
             }
+        }
+        
+        /** Invokes itself ac action when double click or Enter pressed on node
+         */
+        public Action getPreferredAction() {
+            return this;
+        }
+
+        /** Implementation of Action interface, activates TopComponent
+         * currently selected in the list view (should be the same component
+         * that is asociated with this Node) 
+         */
+        public void actionPerformed(ActionEvent evt) {
+            activate(evt);
+        }
+        
+        public boolean isEnabled() {
+            return true;
+        }
+        
+        public void putValue(String key, Object value) {
+            // no operation
+        }
+        
+        public void setEnabled(boolean b) {
+            // no operation
         }
         
     }
