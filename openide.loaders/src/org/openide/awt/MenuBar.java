@@ -218,12 +218,14 @@ public class MenuBar extends JMenuBar implements Externalizable {
          * @param cookie the instance cookie to test
          * @return true if the cookie is accepted.
          */
-        protected InstanceCookie acceptCookie (InstanceCookie cookie)
-    			    throws IOException, ClassNotFoundException {
+        protected InstanceCookie acceptCookie(InstanceCookie cookie)
+                throws IOException, ClassNotFoundException {
             Class cls = cookie.instanceClass();
-            return Component.class.isAssignableFrom(cls) ||
-                   Presenter.Toolbar.class.isAssignableFrom(cls)
-                   ? cookie : null;
+            boolean is =
+                    Component.class.isAssignableFrom(cls) ||
+                    Presenter.Toolbar.class.isAssignableFrom(cls) ||
+                    Action.class.isAssignableFrom(cls);
+            return is ? cookie : null;
         }
 
         /** Returns an <code>InstanceCookie</code> of a JMenu
@@ -241,32 +243,47 @@ public class MenuBar extends JMenuBar implements Externalizable {
          * @param cookies array of instance cookies for the folder
          * @return the updated <code>MenuBar</code> representee
          */
-        protected Object createInstance (InstanceCookie[] cookies)
-        throws IOException, ClassNotFoundException {
-            final LinkedList ll = new LinkedList ();
-            allInstances (cookies, ll);
+        protected Object createInstance(InstanceCookie[] cookies)
+                throws IOException, ClassNotFoundException {
+            final LinkedList ll = new LinkedList();
+            allInstances(cookies, ll);
 
-	    final MenuBar mb = MenuBar.this;
-
+            final MenuBar mb = MenuBar.this;
             cleanUp(); //remove the stuff we've added last time
-
             // fill with new content
-            Iterator it = ll.iterator ();
+            Iterator it = ll.iterator();
             while (it.hasNext()) {
-                Object obj = it.next ();
-                if (obj instanceof Presenter.Toolbar) {
-                    obj = ((Presenter.Toolbar)obj).getToolbarPresenter();
-                    if (obj instanceof JButton) { // tune the presenter a bit
-                        ((JButton)obj).setBorderPainted(false);
-                    }
+                Component component = convertToComponent(it.next());
+                if (component != null) {
+                    addComponent(component);
                 }
-                if (obj instanceof Component) addComponent((Component) obj);
             }
             mb.validate();
             mb.repaint();
             return mb;
         }
 
+        private Component convertToComponent(final Object obj) {
+            Component retVal = null;
+            if (obj instanceof Component) {
+                retVal = (Component)obj;                
+            } else {
+                if (obj instanceof Presenter.Toolbar) {
+                    retVal = ((Presenter.Toolbar)obj).getToolbarPresenter();
+                    
+                    if (obj instanceof JButton) { // tune the presenter a bit
+                        ((JButton)obj).setBorderPainted(false);
+                    }
+                } else if (obj instanceof Action) {
+                    Action a = (Action) obj;
+                    JButton button = new JButton();
+                    Actions.connect(button, a);
+                    retVal = button;                    
+                }                
+            }
+            return retVal;
+        }
+        
         /** For outer class access to the data folder */
         DataFolder getFolder () {
             return folder;
