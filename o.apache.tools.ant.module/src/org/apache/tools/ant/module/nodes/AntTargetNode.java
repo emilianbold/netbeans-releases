@@ -45,7 +45,7 @@ import org.apache.tools.ant.module.api.ElementCookie;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.run.TargetExecutor;
 import org.apache.tools.ant.module.xml.ElementSupport;
-import org.apache.tools.ant.module.wizards.properties.PropertiesFileProperty;
+import org.apache.tools.ant.module.wizards.properties.*;
 
 /** A node representing an Ant build target.
  */
@@ -130,7 +130,10 @@ public class AntTargetNode extends ElementNode {
         }
         props.put (new DependsProperty (proj));
         props.put (new BuildSequenceProperty(el));
-        props.put (new TargetPropertiesFileProperty ()); 
+        TargetPropertiesFileProperty tpfp = new TargetPropertiesFileProperty ();
+        props.put (tpfp); 
+        PropertiesChooserProperty pcp = new PropertiesChooserProperty (tpfp);
+        props.put (pcp);
     }
 
     private class TargetPropertiesFileProperty extends PropertiesFileProperty {

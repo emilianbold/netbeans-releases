@@ -45,7 +45,7 @@ import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.ElementCookie;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.xml.ElementSupport;
-import org.apache.tools.ant.module.wizards.properties.PropertiesFileProperty;
+import org.apache.tools.ant.module.wizards.properties.*;
 
 /** A node that represents an Ant project.
  */
@@ -243,7 +243,10 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         props.put (prop);
         // id prop unnecessary, since project name functions as an ID
         props.put (new ProjectBuildSequenceProperty(proj));
-        props.put (new ProjectPropertiesFileProperty ());
+        ProjectPropertiesFileProperty ppfp = new ProjectPropertiesFileProperty ();
+        props.put (ppfp);
+        PropertiesChooserProperty pcp = new PropertiesChooserProperty (ppfp);
+        props.put (pcp);
     }
 
     public void propertyChange (PropertyChangeEvent evt) {
