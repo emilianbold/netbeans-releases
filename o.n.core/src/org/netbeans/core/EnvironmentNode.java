@@ -113,7 +113,7 @@ public final class EnvironmentNode extends AbstractNode {
         }
         public void setValue(Object val) {
           if (! (val instanceof String)) return;
-          setName((String) val);
+          super.setName((String) val);
         }
       }
     );
@@ -168,6 +168,7 @@ public final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  6    Gandalf   1.5         1/20/99  Jaroslav Tulach 
  *  5    Gandalf   1.4         1/7/99   Ian Formanek    
  *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
  *  3    Gandalf   1.2         1/6/99   Ian Formanek    Fixed outerclass 

@@ -490,7 +490,7 @@ public final class LoaderPoolNode extends IndexedNode {
   * Delegates its work to the outer class LoaderPoolNode.
   */
   public static final class NbLoaderPool extends DataLoaderPool {
-    private NbLoaderPool () {
+    NbLoaderPool () {
       super();
     }
 
@@ -522,6 +522,7 @@ public final class LoaderPoolNode extends IndexedNode {
 
 /*
 * Log
+*  6    Gandalf   1.5         1/20/99  Jaroslav Tulach 
 *  5    Gandalf   1.4         1/7/99   David Simonek   
 *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
 *  3    Gandalf   1.2         1/6/99   Ian Formanek    Reflecting change in 
