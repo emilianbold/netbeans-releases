@@ -25,9 +25,9 @@ XMLBINDIR=`pwd -P`
 XML_ROOT=$XMLBINDIR/..
 NBROOT=${XML_ROOT}/..
 
-XML_APIS=${NBROOT}/core/external/xml-apis*.jar
-XERCES=${NBROOT}/core/external/xerces*.jar
-XALAN=${NBROOT}/libs/external/xalan*.jar
+XML_APIS=`ls ${NBROOT}/core/external/xml-apis*.jar`
+XERCES=`ls ${NBROOT}/core/external/xerces*.jar`
+XALAN=`ls ${NBROOT}/libs/external/xalan*.jar`
 
 ##<debug>
 #ls -la ${XML_APIS}

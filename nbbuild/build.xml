@@ -42,7 +42,7 @@ ToDo:
         <!-- For JavaHelp indexing: -->
         <include name="nbbuild/external/jhall*.jar"/>
         <!-- For XMLValidate Ant task: -->
-        <include name="xml/external/resolver-1_1_nb.jar"/>
+        <include name="xml/external/resolver*.jar"/>
       </fileset>
     </path>
     <javac srcdir="antsrc" destdir="antsrc" deprecation="true" debug="${build.compiler.debug}">

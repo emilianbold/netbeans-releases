@@ -25,7 +25,7 @@
 L10N_LIST="xml/l10n.list"
 echo -n > $L10N_LIST
 
-for module in api catalog compat core css tax text-edit tools tree-edit xsl schema; do
+for module in api catalog core css tax text-edit tools tree-edit xsl schema; do
     MODULE_HOME="xml/${module}"
     MODULE_L10N_LIST="${MODULE_HOME}/l10n.list"
     MODULE_L10N_LIST_TEMP="${MODULE_L10N_LIST}.temp"

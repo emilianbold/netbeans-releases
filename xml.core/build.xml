@@ -74,12 +74,7 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
             <fileset dir="compat/src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
             <locale name="ja"/>
-        </locjar>    
-
-        <for-each locations="../compat"/>
-        <copy todir="netbeans">
-            <fileset dir="../compat/netbeans"/>
-        </copy>
+        </locjar>
     </target>
 
     <target name="release">
@@ -145,7 +140,6 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="javahelp/org/netbeans/modules/xml/core/docs/JavaHelpSearch"/>
 
         <for-each locations="compat"/>
-        <for-each locations="../compat"/>
     </target>
 
     <target name="real-clean" depends="clean">
