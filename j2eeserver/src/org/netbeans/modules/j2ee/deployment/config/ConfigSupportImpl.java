@@ -124,7 +124,10 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     private DConfigBean getWebContextDConfigBean() {
         refresh();
         try {
-            DeploymentConfiguration dc = getStorage().getDeploymentConfiguration();
+            ConfigurationStorage cs = getStorage();
+            if (cs == null)
+                return null;
+            DeploymentConfiguration dc = cs.getDeploymentConfiguration();
             DeployableObject deployable = dc.getDeployableObject();
             //PENDIND: do we need if (deployable instanceof J2eeApplicationObject) ...
             DDBeanRoot ddBeanRoot = deployable.getDDBeanRoot();
@@ -340,8 +343,10 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         } catch (Exception ex) {
             String msg = NbBundle.getMessage(ConfigSupportImpl.class, "MSG_ConfigStorageFailed",
             getServer (), getProvider().getJ2eeModule());
-            ErrorManager.getDefault().annotate(ex, msg);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().log(ErrorManager.ERROR, ex.getMessage());
+            StackTraceElement[] stes = ex.getStackTrace();
+            if (stes != null && stes.length > 0)
+                ErrorManager.getDefault().log(ErrorManager.ERROR, stes[0].toString());
         } finally {
             if (lock != null) lock.releaseLock();
             try {
@@ -361,11 +366,12 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         return (ModuleType) getProvider().getJ2eeModule().getModuleType();
     }
     private boolean hasCustomSupport() {
-        return hasCustomSupport(getDeploymentPlanSplitter(), getModuleType());
+        return hasCustomSupport(getServer(), getModuleType());
     }
-    private static boolean hasCustomSupport(DeploymentPlanSplitter dps, ModuleType type) {
-        if(dps == null) return false;
-        return dps.getDeploymentPlanFileNames(type) != null;
+    private static boolean hasCustomSupport(Server server, ModuleType type) {
+        if (server == null || server.getDeploymentPlanSplitter() == null)
+            return false;
+        return server.getDeploymentPlanFiles(type) != null;
     }
 
     private J2eeModuleProvider getProvider () {
@@ -378,7 +384,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         
         relativePaths = new HashMap();
         if (hasCustomSupport()) {
-            String [] paths = getDeploymentPlanSplitter().getDeploymentPlanFileNames(getModuleType());
+            String [] paths = getServer().getDeploymentPlanFiles(getModuleType());
             configurationPrimaryFileName = paths[0].substring(paths[0].lastIndexOf("/")+1);
         
             collectData(getServer(), relativePaths);
@@ -388,10 +394,10 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     }
     
     private void collectData(Server server, Map map) {
-        if (! this.hasCustomSupport(getDeploymentPlanSplitter(), getModuleType()))
+        if (! this.hasCustomSupport(server, getModuleType()))
             return;
         
-        String [] paths = server.getDeploymentPlanSplitter().getDeploymentPlanFileNames(getModuleType());
+        String [] paths = server.getDeploymentPlanFiles(getModuleType());
         paths = (paths == null) ? new String[0] : paths;
         for (int i=0; i<paths.length; i++) {
             String name = paths[i].substring(paths[i].lastIndexOf("/")+1);
@@ -441,8 +447,8 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         ModuleType type = (ModuleType) provider.getJ2eeModule().getModuleType();
         DeploymentPlanSplitter dps = server.getDeploymentPlanSplitter();
         String[] fnames;
-        if (hasCustomSupport(dps, type)) {
-            fnames = dps.getDeploymentPlanFileNames(type);
+        if (hasCustomSupport(server, type)) {
+            fnames = server.getDeploymentPlanFiles(type);
         } else if (server.supportsModuleType(type)) {
             fnames = new String[] { ConfigDataLoader.getStandardDeploymentPlanName(server) };
         } else {
@@ -511,14 +517,20 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     }
     
     public void setCMPMappingInfo(String ejbName, OriginalCMPMapping mapping) {
-        DeploymentConfiguration config = getStorage().getDeploymentConfiguration();
+        ConfigurationStorage cs = getStorage();
+        if (cs == null)
+            return;
+        DeploymentConfiguration config = cs.getDeploymentConfiguration();
         ConfigurationSupport serverConfig = this.getServer().geConfigurationSupport();
         serverConfig.setMappingInfo(config, ejbName, mapping);
     }
     
     public void ensureResourceDefinedForEjb(String ejbname, String ejbtype) {
+        ConfigurationStorage cs = getStorage();
+        if (cs == null)
+            return;
         DConfigBean ejb = null;
-        DDRoot ddroot = getStorage().getEjbJarRoot();
+        DDRoot ddroot = cs.getEjbJarRoot();
         StandardDDImpl[] ddbeans = (StandardDDImpl[]) ddroot.getChildBean("/enterprise-beans/"+ejbtype); //NOI18N
         for (int i=0; i<ddbeans.length; i++) {
             String ejbName = (String) ddbeans[i].proxy.bean.getValue("EjbName"); //NOI18N
@@ -540,7 +552,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             Exception e = new Exception("Failed to lookup: "+ejbname+" type "+ejbtype);
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
-        DeploymentConfiguration config = getStorage().getDeploymentConfiguration();
+        DeploymentConfiguration config = cs.getDeploymentConfiguration();
         ConfigurationSupport serverConfig = this.getServer().geConfigurationSupport();
         serverConfig.ensureResourceDefined(config, ejb, provider.getEnterpriseResourceDirectory());
     }
