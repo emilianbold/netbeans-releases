@@ -42,6 +42,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class InstanceDataObjectModuleTest7 extends InstanceDataObjectModuleTestHid 
 implements org.openide.filesystems.FileChangeListener {
+    private boolean instanceSaved;
 
     public InstanceDataObjectModuleTest7(String name) {
         super(name);
@@ -71,6 +72,7 @@ implements org.openide.filesystems.FileChangeListener {
     
     public void testFixedSettingsChangeInstanceAfterSlowReload() throws Exception {
         twiddle(m2, TWIDDLE_ENABLE);
+        assertTrue ("m2 is enabled", m2.isEnabled ());
         DataObject obj1;
         try {
             obj1 = findIt("Services/Misc/inst-2.settings");
@@ -80,21 +82,17 @@ implements org.openide.filesystems.FileChangeListener {
             Action a1 = (Action)inst1.instanceCreate();
             assertTrue("Old version of action", a1.isEnabled());
             // Make some change which should cause it to be written to disk:
-            a1.setEnabled(false);
-            // Cf. InstanceDataObject.SettingsInstance.SAVE_DELAY = 2000:
-            Thread.sleep(3000);
-            /*
-            File saved = new File(new File(new File(systemDir, "Services"), "Misc"), "inst-2.settings");
-            assertTrue("Wrote to disk: " + saved, saved.isFile());
-             */
-            /*
-            File saved = FileUtil.toFile(obj1.getPrimaryFile());
-            assertNotNull("Wrote to disk; expecting: " + new File(new File(new File(systemDir, "Services"), "Misc"), "inst-2.settings"),
-                saved);
-             */
+            synchronized (this) {
+                a1.setEnabled(false);
+                // Cf. InstanceDataObject.SettingsInstance.SAVE_DELAY = 2000:
+                wait (60000);
+                assertTrue ("Really was saved", instanceSaved);
+            }
             twiddle(m2, TWIDDLE_DISABLE);
             // Just in case it is needed:
             Thread.sleep(1000);
+            
+            assertTrue ("Data object is still valid", obj1.isValid ());
 
             // Yarda's patch:
             InstanceCookie.Of notExists = (InstanceCookie.Of)obj1.getCookie (InstanceCookie.class);
@@ -131,7 +129,11 @@ implements org.openide.filesystems.FileChangeListener {
     public void fileAttributeChanged (org.openide.filesystems.FileAttributeEvent fe) {
     }
     
-    public void fileChanged (org.openide.filesystems.FileEvent fe) {
+    public synchronized void fileChanged (org.openide.filesystems.FileEvent fe) {
+        if ("inst-2.settings".equals (fe.getFile ().getNameExt ())) {
+            instanceSaved = true;
+            notifyAll ();
+        }
     }
     
     public void fileDataCreated (org.openide.filesystems.FileEvent fe) {

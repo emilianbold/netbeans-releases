@@ -6,6 +6,7 @@
     <folder name="Services">
         <folder name="Misc">
             <file name="inst-2.settings" url="inst-2.xml"/>
+            <file name="inst-8.settings" url="inst-2.xml"/>
         </folder>
     </folder>
 </filesystem>
