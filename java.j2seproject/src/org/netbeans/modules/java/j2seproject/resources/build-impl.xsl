@@ -104,6 +104,12 @@ is divided into following sections:
                     <fail unless="platform.javac">Must set platform.javac</fail>
                 </xsl:if>
                 <available file="${{manifest.file}}" property="manifest.available"/>
+                <condition property="manifest.available+main.class">
+                    <and>
+                        <isset property="manifest.available"/>
+                        <isset property="main.class"/>
+                    </and>
+                </condition>
                 <available property="have.tests" file="${{test.src.dir}}"/>
                 <condition property="netbeans.home+have.tests">
                     <and>
@@ -113,6 +119,12 @@ is divided into following sections:
                 </condition>
                 <condition property="no.javadoc.preview">
                     <isfalse value="${{javadoc.preview}}"/>
+                </condition>
+                <property name="run.jvmargs" value=""/>
+                <condition property="no.deps">
+                    <and>
+                        <istrue value="${{no.dependencies}}"/>
+                    </and>
                 </condition>
             </target>
 
@@ -301,17 +313,19 @@ is divided into following sections:
                         <java fork="true" classname="@{{classname}}">
                             <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                                <bootclasspath>
-                                    <path path="${{platform.bootcp}}"/>
-                                </bootclasspath>
                             </xsl:if>
                             <jvmarg value="-Xdebug"/>
                             <jvmarg value="-Xnoagent"/>
                             <jvmarg value="-Djava.compiler=none"/>
                             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
+                            <jvmarg line="${{run.jvmargs}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
+                            <syspropertyset>
+                                <propertyref prefix="run-sys-prop."/>
+                                <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                            </syspropertyset>
                             <arg line="@{{args}}"/>
                         </java>
                     </sequential>
@@ -335,17 +349,36 @@ is divided into following sections:
                             <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
+                            <jvmarg line="${{run.jvmargs}}"/>
                             <classpath>
                                 <path path="${{run.classpath}}"/>
                             </classpath>
+                            <syspropertyset>
+                                <propertyref prefix="run-sys-prop."/>
+                                <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                            </syspropertyset>
                             <customize/>
                         </java>
                     </sequential>
                 </macrodef>
             </target>
 
+            <target name="-init-presetdef-jar">
+                <presetdef>
+                    <xsl:attribute name="name">nb.j2seproject.jar</xsl:attribute>
+                    
+                    <!-- There seems to be bug in Ant in presetdef when namespaces is used.-->
+                    <!-- Temporarily do not use namespace.-->
+                    <!-- <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute> -->
+                    
+                    <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
+                        <fileset dir="${{build.classes.dir}}"/>
+                    </jar>
+                </presetdef>
+            </target>
+
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-java</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-java,-init-presetdef-jar</xsl:attribute>
             </target>
 
             <xsl:comment>
@@ -417,37 +450,38 @@ is divided into following sections:
     ====================
     </xsl:comment>
 
+            <target name="-pre-pre-jar">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
+                <mkdir dir="${{dist.jar.dir}}"/>
+            </target>
+
             <target name="-pre-jar">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
             <target name="-do-jar-without-manifest">
-                <xsl:attribute name="depends">init,compile,-pre-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="unless">manifest.available</xsl:attribute>
-                <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
-                <mkdir dir="${{dist.jar.dir}}"/>
-                <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
-                    <fileset dir="${{build.classes.dir}}"/>
-                </jar>
+                <nb.j2seproject.jar/>
             </target>
 
             <target name="-do-jar-with-manifest">
-                <xsl:attribute name="depends">init,compile,-pre-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="if">manifest.available</xsl:attribute>
-                <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
-                <mkdir dir="${{dist.jar.dir}}"/>
-                <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
-                    <xsl:attribute name="manifest">${manifest.file}</xsl:attribute>
-                    <xsl:if test="/p:project/p:configuration/j2se:data/j2se:use-manifest">
-                        <!-- Assume this is a J2SE application. -->
-                        <!-- Any Main-Class set in the manifest takes precedence. -->
-                        <manifest>
-                            <attribute name="Main-Class" value="${{main.class}}"/>
-                        </manifest>
-                    </xsl:if>
-                    <fileset dir="${{build.classes.dir}}"/>
-                </jar>
+                <xsl:attribute name="unless">manifest.available+main.class</xsl:attribute>
+                <nb.j2seproject.jar manifest="${{manifest.file}}"/>
+            </target>
+
+            <target name="-do-jar-with-mainclass">
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
+                <xsl:attribute name="if">manifest.available+main.class</xsl:attribute>
+                <nb.j2seproject.jar manifest="${{manifest.file}}">
+                    <manifest>
+                        <attribute name="Main-Class" value="${{main.class}}"/>
+                    </manifest>
+                </nb.j2seproject.jar>
             </target>
 
             <target name="-post-jar">
@@ -456,7 +490,7 @@ is divided into following sections:
             </target>
 
             <target name="jar">
-                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-post-jar</xsl:attribute>
                 <xsl:attribute name="description">Build JAR.</xsl:attribute>
             </target>
 
@@ -773,20 +807,11 @@ is divided into following sections:
             <target name="run-applet">
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
-                <sequential>
-                    <java fork="true" classname="sun.applet.AppletViewer">
-                        <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                            <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                            <bootclasspath>
-                                <path path="${{platform.bootcp}}"/>
-                            </bootclasspath>
-                        </xsl:if>
-                        <classpath>
-                            <path path="${{classpath}}"/>
-                        </classpath>
+                <j2seproject:java classname="sun.applet.AppletViewer">
+                    <customize>
                         <arg line="${{applet.url}}"/>
-                    </java>
-                </sequential>
+                    </customize>
+                </j2seproject:java>
             </target>
 
     <xsl:comment>
@@ -799,24 +824,7 @@ is divided into following sections:
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
-                <sequential>
-                    <java fork="true" classname="sun.applet.AppletViewer">
-                        <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                            <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                            <bootclasspath>
-                                <path path="${{platform.bootcp}}"/>
-                            </bootclasspath>
-                        </xsl:if>
-                        <jvmarg value="-Xdebug"/>
-                        <jvmarg value="-Xnoagent"/>
-                        <jvmarg value="-Djava.compiler=none"/>
-                        <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
-                        <classpath>
-                            <path path="${{classpath}}"/>
-                        </classpath>
-                        <arg line="${{applet.url}}"/>
-                    </java>
-                </sequential>
+                <j2seproject:debug classname="sun.applet.AppletViewer" args="${{applet.url}}"/>
             </target>
 
             <target name="debug-applet">
@@ -885,7 +893,7 @@ is divided into following sections:
         <xsl:param name="type"/>
         <target name="{$targetname}">
             <xsl:attribute name="depends">init</xsl:attribute>
-            <xsl:attribute name="unless">no.dependencies</xsl:attribute>
+            <xsl:attribute name="unless">no.deps</xsl:attribute>
             <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
             <xsl:for-each select="$references/projdeps:reference[not($type) or projdeps:artifact-type = $type]">
                 <xsl:variable name="subproj" select="projdeps:foreign-project"/>

@@ -114,14 +114,11 @@ public class J2SEProjectGenerator {
         Element minant = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
         minant.appendChild(doc.createTextNode("1.6")); // NOI18N
         data.appendChild(minant);
-        if (manifestFile != null) {
-            Element manifest = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "use-manifest"); // NOI18N
-            data.appendChild(manifest);
-        }
         h.putPrimaryConfigurationData(data, true);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         // XXX the following just for testing, TBD:
         ep.setProperty("dist.dir", "dist");
+        ep.setComment("dist.dir", new String[]{"# this directory is removed during the project clean"}, false);
         ep.setProperty("dist.jar", "${dist.dir}/" + codename + ".jar");
         ep.setProperty("javac.classpath", new String[0]);
         ep.setProperty("run.classpath", new String[]{"${javac.classpath}"+File.pathSeparatorChar,
@@ -146,12 +143,16 @@ public class J2SEProjectGenerator {
             ep.setProperty("test.src.dir", testRoot);
         }
         ep.setProperty("build.dir", "build");
+        ep.setComment("build.dir", new String[]{"# this directory is removed during the project clean"}, false);
         ep.setProperty("build.classes.dir", "${build.dir}/classes");
         ep.setProperty("build.test.classes.dir", "${build.dir}/test/classes");
         ep.setProperty("build.test.results.dir", "${build.dir}/test/results");
         ep.setProperty("build.classes.excludes", "**/*.java,**/*.form");
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc");
         ep.setProperty("platform.active", "default_platform");
+
+        ep.setProperty("run.jvmargs", "");
+        ep.setComment("run.jvmargs", new String[]{"# space separated list of JVM arguments for VM in which the project will run"}, false);
 
         ep.setProperty(J2SEProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N

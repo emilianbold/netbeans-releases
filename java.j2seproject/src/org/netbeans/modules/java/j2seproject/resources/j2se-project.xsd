@@ -25,7 +25,6 @@ Microsystems, Inc. All Rights Reserved.
                         </xsd:restriction>
                     </xsd:simpleType>
                 </xsd:element>
-                <xsd:element name="use-manifest" minOccurs="0"/>
                 <xsd:element name="explicit-platform" minOccurs="0"/>
             </xsd:sequence>
         </xsd:complexType>
