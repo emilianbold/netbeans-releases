@@ -1,10 +1,22 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 1 -*- -->
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
   <!ENTITY api-questions SYSTEM "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
 
 <api-answers
-  question-version="1.23"
+  question-version="1.24"
   module="java/api"
   author="jglick@netbeans.org"
 >
@@ -70,8 +82,7 @@
 -->
  <answer id="arch-time">
   <p>
-   More or less done. Some performance tuning, etc. remains. Might add listening
-   support to queries which do not currently support it.
+   Essentially done.
   </p>
  </answer>
 
@@ -213,9 +224,23 @@
         </question>
 -->
  <answer id="dep-nb">
-  <p>
-   Filesystems.
-  </p>
+  <ul>
+   <li>
+    <api group="java" name="Filesystems" type="import" category="official">
+     <p>
+      For many purposes.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="Execution" type="import" category="official">
+     <p>
+      <code>NbClassLoader</code> is used by
+      <code>ClassPath.getClassLoader(...)</code>.
+     </p>
+    </api>
+   </li>
+  </ul>
  </answer>
 
 
@@ -270,10 +295,9 @@
         </question>
 -->
  <answer id="deploy-dependencies">
-  <p>
-   <!-- XXX details -->
-   Regular module dependency.
-  </p>
+  <pre>
+   OpenIDE-Module-Module-Dependencies: org.netbeans.api.java/1 &gt; @SPECIFICATION-VERSION@
+  </pre>
  </answer>
 
 
@@ -523,7 +547,7 @@
 -->
  <answer id="exec-threading">
   <p>
-   TBD. Currently each data structure is intended to be thread-safe.
+   Currently each data structure is intended to be thread-safe.
   </p>
  </answer>
 
@@ -750,6 +774,7 @@
    roots to be invalidated, and this makes file change events linear in the
    number of <code>ClassPath</code> objects. This area is being studied and will
    hopefully be optimized, perhaps reducing overhead to a small constant.
+   May require explicit support from the Filesystems API to fully optimize.
   </p>
  </answer>
 
@@ -882,5 +907,40 @@
    No.
   </p>
  </answer>
+
+
+<!--
+        <question id="security-grant" when="final">
+            Does your code grant additional rights to some other code?
+            <hint>Avoid using a class loader that adds extra
+            permissions to loaded code unless really necessary.
+            Also note that your API implementation
+            can also expose unneeded permissions to enemy code by
+            calling AccessController.doPrivileged().</hint>
+        </question>
+-->
+ <answer id="security-grant">
+  <p>
+   <code>ClassPath.getClassLoader(...)</code> is granted all permissions.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-policy" when="final">
+            Does your functionality require modifications to the standard policy file?
+            <hint>Your code might pass control to third-party code not
+            coming from trusted domains. This could be code downloaded over the
+            network or code coming from libraries that are not bundled
+            with NetBeans. Which permissions need to be granted to which domains?</hint>
+        </question>
+-->
+ <answer id="security-policy">
+  <p>
+   No.
+  </p>
+ </answer>
+
 
 </api-answers>
