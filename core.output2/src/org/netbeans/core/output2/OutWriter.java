@@ -444,6 +444,9 @@ class OutWriter extends PrintWriter {
                 int newCount = lines.getLineCount();
                 for (int i=newCount - addedCount; i < newCount; i++) {
                     lines.addListener (i, l, important);
+                    //#48485 we should update the UI, since the lines are in the model
+                    // and jump next/previous can't jump to appropriate place.
+                    lines.fire();
                 }
             }
         }
