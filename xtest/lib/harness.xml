@@ -135,7 +135,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="send-mail2" if="xtest.mail.report">
         <mail from="${xtest.mail.from}" tolist="${xtest.mail.to}" 
-              subject="XTest Results: ${summary}" files="${xtest.mail.report}"
+              subject="XTest Results: ${summary}" messagefile="${xtest.mail.report}"
               mailhost="${xtest.mail.mailhost}"/>     
     </target>    
     
