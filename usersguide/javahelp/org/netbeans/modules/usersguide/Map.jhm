@@ -514,6 +514,7 @@
 <!-- could use a more specific page for this. -->
 <mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
 
+<!--CSH for GUI/Form Editor-->
 <!-- csh page for Component Palette node in options window -->
 <mapID target="gui.options.component-palette" url="pending.html" />
 <!--TODO need page for options window node -->
@@ -523,6 +524,9 @@
 <mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/gui_modifiers.html" /> 
 <!-- GUI csh page needed; 2003/03/07 can't find this ID in the code-->
 <mapID target="gui.csh.icon" url="pending.html" />
+
+<mapID target="gui.source.modifying.property" url="gui/gui_modifysource.html" />
+
 
 <!-- To Do window help -->
 <mapID target="org.netbeans.modules.tasklist.core.TaskNode" url="editing/tasks_viewing.html" />
