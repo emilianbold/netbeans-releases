@@ -15,6 +15,7 @@ package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.Dialog;
 import java.io.IOException;
+import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -141,10 +142,8 @@ public class BrokenReferencesSupport {
         SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
-                        Object ok = NbBundle.getMessage(BrokenReferencesAlertPanel.class,"MSG_Broken_References_OK");
                         DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(), 
-                            NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
-                            true, new Object[] {ok}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                            NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title")); // NOI18N
                         dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
                         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
                         dlg.setVisible(true);
