@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# resolve symlinks
+#
+
+PRG=$0
+
+while [ -h "$PRG" ]; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '^.*-> \(.*\)$' 2>/dev/null`
+    if expr "$link" : '^/' 2> /dev/null >/dev/null; then
+	PRG="$link"
+    else
+	PRG="`dirname "$PRG"`/$link"
+    fi
+done
+
+progdir=`dirname "$PRG"`
+
+. $progdir/../etc/netbeans.conf
+
+if [ -z "$netbeans_clusters" ] ; then
+    netbeans_clusters="$progdir/../nb4.0:$progdir/../ide4"
+    if [ -d "$progdir/../extra" ]; then
+        netbeans_clusters="$netbeans_clusters:$progdir/../extra"
+    fi
+fi
+
+jdkhomeswitch=
+if [ ! -z "$netbeans_j2sdkhome" ] ; then
+    jdkhomeswitch="--jdkhome \"$netbeans_j2sdkhome\""
+fi
+
+eval "$progdir"/../platform4/launcher/nbexec \
+    $jdkhomeswitch \
+    --clusters "$netbeans_clusters" \
+    --userdir "${netbeans_default_userdir}" \
+    ${netbeans_default_options} \
+    "$@"

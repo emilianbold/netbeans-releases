@@ -308,9 +308,9 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module autoupdate..."/>
     <ant dir="../autoupdate" target="netbeans"/>
   </target>
-  <target name="all-autoupdate/updatecenters" depends="all-autoupdate">
-    <echo message="Building module autoupdate/updatecenters..."/>
-    <ant dir="../autoupdate/updatecenters" target="netbeans"/>
+  <target name="all-ide/updatecenters" depends="all-autoupdate">
+    <echo message="Building module ide/updatecenters..."/>
+    <ant dir="../ide/updatecenters" target="netbeans"/>
   </target>
   <target name="all-beans" depends="all-openide,all-java,all-java/srcmodel">
     <echo message="Building module beans..."/>
@@ -815,9 +815,9 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../corba" target="netbeans"/>
   </target>
 
-  <target name="all-ui/welcome" depends="all-openide,all-utilities,all-autoupdate">
-    <echo message="Building module ui/welcome..."/>
-    <ant dir="../ui/welcome" target="netbeans"/>
+  <target name="all-ide/welcome" depends="all-openide,all-utilities,all-autoupdate">
+    <echo message="Building module ide/welcome..."/>
+    <ant dir="../ide/welcome" target="netbeans"/>
   </target>
 
   <!-- Libs modules -->
@@ -1149,14 +1149,14 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <loadproperties srcfile="${netbeans.dest.dir}/moduleCluster.properties" />
         
     <mkdir dir="${netbeans.dest.dir}/bin" />
-    <copy file="../core/nbide/launcher/unix/netbeans" todir="${netbeans.dest.dir}/bin" />
+    <copy file="../ide/launcher/unix/netbeans" todir="${netbeans.dest.dir}/bin" />
     <chmod file="${netbeans.dest.dir}/bin/netbeans" perm="ugo+rx"/>
-    <copy file="../core/nbide/launcher/windows/netbeans.exe" todir="${netbeans.dest.dir}/bin" />
-    <copy file="../core/nbide/launcher/windows/nb.exe" todir="${netbeans.dest.dir}/bin" />
-    <copy file="../core/nbide/launcher/macosx/macosx_launcher.dmg" todir="${netbeans.dest.dir}/bin" />
+    <copy file="../ide/launcher/windows/netbeans.exe" todir="${netbeans.dest.dir}/bin" />
+    <copy file="../ide/launcher/windows/nb.exe" todir="${netbeans.dest.dir}/bin" />
+    <copy file="../ide/launcher/macosx/macosx_launcher.dmg" todir="${netbeans.dest.dir}/bin" />
 
     <mkdir dir="${netbeans.dest.dir}/etc" />
-    <copy file="../core/nbide/launcher/netbeans.conf" todir="${netbeans.dest.dir}/etc" />
+    <copy file="../ide/launcher/netbeans.conf" todir="${netbeans.dest.dir}/etc" />
 
     <echo message="${netbeans.dest.dir}/${nb.cluster.platform.dir}/${nb.bin.dir}/nbexec" />
     <fixcrlf eol="lf" srcdir="${netbeans.dest.dir}" >
