@@ -67,7 +67,7 @@ public class CreateTestAction extends CookieAction {
     }
 
     protected String iconResource () {
-        return "CreateTestActionIcon.gif";
+        return "resources/CreateTestActionIcon.gif";
     }
 
     protected int mode () {
