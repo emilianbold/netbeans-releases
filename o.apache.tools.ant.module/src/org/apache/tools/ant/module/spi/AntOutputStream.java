@@ -145,7 +145,7 @@ public abstract class AntOutputStream extends OutputStream {
     abstract protected void writeLine(String line) throws IOException;
     
     /** Create well formated message from the parsed information.
-     * @deprecated No longer used.
+     * @deprecated No longer used since org.apache.tools.ant.module/3 3.8.
      */
     protected String formatMessage(String fileName, String message, int line1, int col1, int line2, int col2) {
         String m = (message != null ? message : NbBundle.getMessage (AntOutputStream.class, "ERR_unknown"));
