@@ -90,7 +90,7 @@ public class ListViewTest extends NbTestCase {
                 r.keyRelease(KeyEvent.VK_SHIFT);
                 r.mouseRelease(InputEvent.BUTTON1_MASK);
             } else {
-                assert(false);
+                fail();
             }
         }
     }
@@ -157,7 +157,7 @@ public class ListViewTest extends NbTestCase {
             c.add(new Node[] { children[i] } );
             //Thread.sleep(350);
         }
-        assert(c.getNodesCount() == NO_OF_NODES);
+        assertEquals(NO_OF_NODES, c.getNodesCount());
     }
     
     /**
