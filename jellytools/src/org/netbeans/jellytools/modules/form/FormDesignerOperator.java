@@ -75,26 +75,19 @@ public class FormDesignerOperator extends TopComponentOperator {
 
     /** Waits for the form Designer appearence and creates operator for it.
      * It is activated by defalt.
+     * @param name name of form designer
      */
-    public FormDesignerOperator() {
-        super(waitTopComponent(null, null, 0, new FormDesignerChooser()));
+    public FormDesignerOperator(String name) {
+        this(name, 0);
     }
 
     /** Waits for the form Designer appearence and creates operator for it.
      * It is activated by defalt.
      * @param name name of form designer
+     * @param index wait for index-th form designer
      */
-    public FormDesignerOperator(String name) {
-        super(waitTopComponent(null, name, 0, new FormDesignerChooser()));
-    }
-
-    
-    /** Searches for FormDesigner in the specified ContainerOperator.
-     * @param contOper ContainerOperator where to find FormDesigner
-     */
-    public FormDesignerOperator(ContainerOperator contOper) {
-        super(waitTopComponent(contOper, null, 0, new FormDesignerChooser()));
-        copyEnvironment(contOper);
+    public FormDesignerOperator(String name, int index) {
+        super(waitTopComponent(name, index));
     }
     
     /** Returns JToggleButtonOperator instance of Source button
@@ -394,23 +387,6 @@ public class FormDesignerOperator extends TopComponentOperator {
     public EditorOperator editor() {
         source();
         return new EditorOperator((JComponent)this.waitSubComponent(new EditorOperator.EditorSubchooser()));
-    }
-    
-    private static class FormDesignerChooser implements ComponentChooser {
-        public boolean checkComponent(Component comp) {
-            return null != new ContainerOperator((Container)comp).findSubComponent(new ComponentChooser() {
-                public boolean checkComponent(Component comp) {
-                    return comp.getClass().getName().equals("org.netbeans.modules.form.FormDesigner") ||
-                           comp.getClass().getName().equals("org.netbeans.modules.form.FormEditorSupport$JavaEditorTopComponent");
-                }
-                public String getDescription() {
-                    return("FormDesigner or Form Java Editor");
-                }
-            });
-        }
-        public String getDescription() {
-            return("FormDesigner or Form Java Editor");
-        }
     }
     
     private static class HandleLayerChooser implements ComponentChooser {
