@@ -79,7 +79,7 @@ public class I18nOptions extends SystemOption {
     public boolean isAdvancedWizard() {
         // Lazy init.
         if(getProperty(PROP_ADVANCED_WIZARD) == null)
-            putProperty(PROP_ADVANCED_WIZARD, Boolean.FALSE, true);
+            return false;
         
         return ((Boolean)getProperty(PROP_ADVANCED_WIZARD)).booleanValue();
     }
@@ -113,7 +113,7 @@ public class I18nOptions extends SystemOption {
     public String getReplaceJavaCode() {
         // Lazy init.
         if(getProperty(PROP_REPLACE_JAVA_CODE) == null)
-            putProperty(PROP_REPLACE_JAVA_CODE, I18nUtil.getReplaceFormatItems().get(2), true);
+            return (String)I18nUtil.getReplaceFormatItems().get(2);
         
         return (String)getProperty(PROP_REPLACE_JAVA_CODE);
     }
@@ -133,7 +133,7 @@ public class I18nOptions extends SystemOption {
     public String getRegularExpression() {
         // Lazy init.
         if(getProperty(PROP_REGULAR_EXPRESSION) == null)
-            putProperty(PROP_REGULAR_EXPRESSION, I18nUtil.getRegExpItems().get(0), true);
+            return (String)I18nUtil.getRegExpItems().get(0);
         
         return (String)getProperty(PROP_REGULAR_EXPRESSION);
     }
@@ -154,7 +154,7 @@ public class I18nOptions extends SystemOption {
     public String getI18nRegularExpression() {
         // Lazy init.
         if(getProperty(PROP_I18N_REGULAR_EXPRESSION) == null)
-            putProperty(PROP_I18N_REGULAR_EXPRESSION, I18nUtil.getI18nRegExpItems().get(0), true);
+            return (String)I18nUtil.getI18nRegExpItems().get(0);
         
         return (String)getProperty(PROP_I18N_REGULAR_EXPRESSION);
     }
@@ -174,7 +174,7 @@ public class I18nOptions extends SystemOption {
     public boolean isReplaceResourceValue() {
         // Lazy init.
         if(getProperty(PROP_REPLACE_RESOURCE_VALUE) == null)
-            putProperty(PROP_REPLACE_RESOURCE_VALUE, Boolean.FALSE, true);
+            return false;
         
         return ((Boolean)getProperty(PROP_REPLACE_RESOURCE_VALUE)).booleanValue();
     }
