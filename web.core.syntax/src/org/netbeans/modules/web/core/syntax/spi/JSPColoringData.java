@@ -43,6 +43,8 @@ public final class JSPColoringData extends PropertyChangeSupport {
     
     private boolean elIgnored = false;
     
+    private boolean xmlSyntax = false;
+    
     /** Creates a new instance of JSPColoringData. */
     public JSPColoringData(Object sourceBean) {
         super(sourceBean);
@@ -81,6 +83,12 @@ public final class JSPColoringData extends PropertyChangeSupport {
         return elIgnored;
     }
     
+    /** Returns true if the page is in xml syntax (JSP Documnet). 
+     * If the page is in standard syntax, returns false.
+     */
+    public boolean isXMLSyntax(){
+        return xmlSyntax;
+    }
     /*public boolean isBodyIntepretedByTag(String prefix, String tagName) {
     }*/
         
@@ -89,7 +97,7 @@ public final class JSPColoringData extends PropertyChangeSupport {
      * @param newPrefixMapper the new map of (prefix, uri)
      * @param parseSuccessful wherher parsing was successful. If false, then the new information is partial only
      */
-    public void applyParsedData(Map newTaglibs, Map newPrefixMapper, boolean newELIgnored, boolean parseSuccessful) {
+    public void applyParsedData(Map newTaglibs, Map newPrefixMapper, boolean newELIgnored, boolean newXMLSyntax, boolean parseSuccessful) {
         // check whether coloring has not changed
         boolean coloringSame = equalsColoringInformation(taglibs, prefixMapper, newTaglibs, newPrefixMapper);
         
@@ -97,6 +105,11 @@ public final class JSPColoringData extends PropertyChangeSupport {
         if (parseSuccessful) {
             coloringSame = coloringSame && (elIgnored == newELIgnored);
             elIgnored = newELIgnored;
+        }
+        
+        if (newXMLSyntax != xmlSyntax){
+            xmlSyntax = newXMLSyntax;
+            coloringSame = false;
         }
         
         // appy taglib data

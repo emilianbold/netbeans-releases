@@ -259,7 +259,8 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                     prefixMapper = pageInfo.getJspPrefixMapper();
                 }
                 getJSPColoringData(false).applyParsedData(pageInfo.getTagLibraries(), prefixMapper, 
-                                                          pageInfo.isELIgnored(), locResult.isParsingSuccess());
+                                                          pageInfo.isELIgnored(), getCachedOpenInfo(false, false).isXmlSyntax(), 
+                                                          locResult.isParsingSuccess());
                 // if failure do nothing
                 parsingTask = null;
             }
