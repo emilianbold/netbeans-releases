@@ -24,21 +24,17 @@ import com.netbeans.ide.*;
 import com.netbeans.ide.awt.SplittedPanel;
 import com.netbeans.ide.windows.ActivatedNodesListener;
 import com.netbeans.ide.windows.NodesEvent;
-//import com.netbeans.ide.windows.TopFrame;
 import com.netbeans.ide.explorer.*;
 import com.netbeans.ide.explorer.propertysheet.PropertySheetView;
 import com.netbeans.ide.explorer.propertysheet.PropertySheet;
 import com.netbeans.ide.explorer.view.BeanTreeView;
 import com.netbeans.ide.util.NbVersion;
-//import com.netbeans.ide.nodes.Cookies;
 import com.netbeans.ide.nodes.Node;
 import com.netbeans.developer.modules.loaders.form.actions.*;
-//import com.netbeans.developer.modules.loaders.form.FormDataNode;
 import com.netbeans.developer.modules.loaders.form.FormDataObject;
 import com.netbeans.developer.modules.loaders.form.FormLoaderSettings;
-//import com.netbeans.developer.modules.loaders.form.layouts.support.*;
 import com.netbeans.developer.modules.loaders.form.palette.PaletteAction;
-//import com.netbeans.developer.modules.loaders.java.JavaLoaderSettings;
+import com.netbeans.developerx.loaders.form.formeditor.layouts.support.*;
 
 /** A static class that manages global FormEditor issues.
 *
@@ -89,7 +85,6 @@ final public class FormEditor extends Object {
 
   private static Vector errorLog = new Vector ();
   private static ComponentInspector componentInspector;
-  private static ExplorerManager explorerManager;
   private static EmptyInspectorNode emptyInspectorNode;
   
 // -----------------------------------------------------------------------------
@@ -130,31 +125,6 @@ final public class FormEditor extends Object {
 // -----------------------------------------------------------------------------
 // Static methods
 
-  /** This method updates all the stuff that is in the context of the "current" form.
-  * It is e.g. the COmponentInspector and the DesignMode action.
-  * @param FormManager the form manager of the current form or null if no form is currently opened
-  */
-//  public static void formActivated (FormManager formManager) {
-/*    if (formManager != null) {
-//    System.out.println ("FormActivated:"+formManager.getComponentsRoot ().getDisplayName ());
-      getExplorerManager().setRootContext (formManager.getComponentsRoot ());
-      com.netbeans.ide.explorer.Explorer.getNodesTracker ().setSelectedNodes (getExplorerManager ());
-    }
-    else {
-//    System.out.println ("FormManager null...");
-      getExplorerManager().setRootContext (emptyInspectorNode);
-      com.netbeans.ide.explorer.Explorer.getNodesTracker ().setSelectedNodes (getExplorerManager ());
-    }
-    designModeAction.setFormManager (formManager);
-    testModeAction.setFormManager (formManager); */
-//  }
-
-  static void updateActivatedNodes () {
-/*    getComponentInspector ().invokeActivated ();
-    getComponentInspector ().setNodes (getExplorerManager ().getSelectedNodes ());
-    Explorer.getNodesTracker ().setSelectedNodes (getExplorerManager ()); */
-  }
-
   /** Provides the resource bundle for FormEditor */
   public static java.util.ResourceBundle getFormBundle() {
     return formBundle;
@@ -178,13 +148,6 @@ final public class FormEditor extends Object {
     return componentInspector;
   }
 
-/*  public static ExplorerManager getExplorerManager() {
-    if (explorerManager == null) {
-      explorerManager = new ExplorerManager();
-    }
-    return explorerManager;
-  }
-*/
   public static java.awt.Image getGridImage (Container gridCont) {
     Image gridImage = gridCont.createImage(100, 100);
     Graphics ig = gridImage.getGraphics();
@@ -197,17 +160,17 @@ final public class FormEditor extends Object {
     return gridImage;
   }
 
-/*  public static String getSerializedBeanName (RADNode node) {
-    StringBuffer name = new StringBuffer (node.getFormManager ().getFormObject ().getName ());
+  public static String getSerializedBeanName (RADComponent comp) {
+    StringBuffer name = new StringBuffer (comp.getFormManager ().getFormObject ().getName ());
     name.append ("$");
-    name.append (node.getName ());
+    name.append (comp.getName ());
     name.append (".ser");
     return name.toString ();
   }
 
-  public static void defaultComponentInit (RADVisualNode node) {
-    Component comp = node.getComponent ();
-    String varName = node.getName ();
+  public static void defaultComponentInit (RADVisualComponent radComp) {
+    Component comp = radComp.getComponent ();
+    String varName = comp.getName ();
     String propName = null;
     if (comp instanceof Button) {
       if ("".equals (((Button)comp).getLabel ())) {
@@ -265,11 +228,13 @@ final public class FormEditor extends Object {
         propName = "text";
       }
     }
+    /*
     if (propName != null)
       node.firePropertyChangeHelper (propName, "", varName);
+      */ // [PENDING - try]
   }
 
-  public static void defaultMenuInit (RADMenuItemNode node) {
+/*  public static void defaultMenuInit (RADMenuItemNode node) {
     Object comp = node.getBean ();
     String varName = node.getName ();
     String propName = null;
@@ -334,7 +299,7 @@ final public class FormEditor extends Object {
   * @param itemClass The class of the component the layout is requested for
   * @return the DesignLayout that should be used in the container.
   */
-/*  public static DesignSupportLayout getSupportLayout (Class itemClass) {
+  public static DesignSupportLayout getSupportLayout (Class itemClass) {
     if (javax.swing.JTabbedPane.class.isAssignableFrom (itemClass))
       return new JTabbedPaneSupportLayout ();
     else if (javax.swing.JScrollPane.class.isAssignableFrom (itemClass))
@@ -346,7 +311,7 @@ final public class FormEditor extends Object {
     else if (javax.swing.JLayeredPane.class.isAssignableFrom (itemClass))
       return new JLayeredPaneSupportLayout ();
     return null;
-  } */
+  } 
 
 // ---------------------------------------------------
 // inner classes
@@ -355,8 +320,16 @@ final public class FormEditor extends Object {
   final public static class ComponentInspector extends ExplorerPanel 
     implements java.io.Serializable 
   {
+    /** The message formatter for Explorer title */
+    private static java.text.MessageFormat formatInspectorTitle = new java.text.MessageFormat (
+        formBundle.getString ("FMT_InspectorTitle")
+      );
+
     /** A JDK 1.1. serial version UID */
 //    static final long serialVersionUID = 6802346985641760699L;
+
+    /** Currently focused form or null if no form is opened/focused */
+    transient private FormManager formManager; 
 
     /** The Inspector's icon */
     private final static java.awt.Image inspectorIcon = java.awt.Toolkit.getDefaultToolkit ().getImage (
@@ -378,22 +351,42 @@ final public class FormEditor extends Object {
 
       add ("Center", split);
       
-/*      manager.addPropertyChangeListener (new PropertyChangeListener () {
+      manager.addPropertyChangeListener (new PropertyChangeListener () {
           public void propertyChange (PropertyChangeEvent evt) {
-            if (ExplorerManager.PROP_ROOTCONTEXT.equals (evt.getPropertyName ()))
-               setNodes (new Node[] { manager.getRootContext () });
+            if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName ())) {
+              updateTitle ();
+              if (formManager != null) {
+                formManager.updateSelection (getExplorerManager ().getSelectedNodes ());
+              }
+            }
           }
         }
-      ); */
+      ); 
       setIcon (inspectorIcon);
     }
 
     public void focusForm (FormManager formManager) {
+      System.out.println("Focus Form: "+formManager);
+      this.formManager = formManager;
       if (formManager == null) {
         getExplorerManager ().setRootContext (emptyInspectorNode);
       } else {
         getExplorerManager ().setRootContext (formManager.getFormEditorSupport ().getFormRootNode ());
       }
+    }
+
+    FormManager getFocusedForm () {
+      return formManager;
+    }
+
+    void setSelectedNodes (Node[] nodes, FormManager manager) throws java.beans.PropertyVetoException {
+      if (manager == formManager) {
+        getExplorerManager ().setSelectedNodes (nodes);
+      }
+    }
+
+    Node[] getSelectedNodes () {
+      return getExplorerManager ().getSelectedNodes ();
     }
 
     /** Called when the explored context changes.
@@ -405,13 +398,14 @@ final public class FormEditor extends Object {
       if (nodes.length == 0)
         title = formBundle.getString ("CTL_NoSelection");
       else if (nodes.length == 1) {
-/*        if (nodes[0] instanceof RADNode) {
-          RADNode radNode = (RADNode)nodes[0];
+        FormNodeCookie cookie = (FormNodeCookie)nodes[0].getCookie (FormNodeCookie.class);
+        if (cookie != null) {
+          RADComponent radComponent = cookie.getRADComponent ();
           title = formatInspectorTitle.format (
-            new Object[] { radNode.getName() } );
-        }
-        else */
+            new Object[] { radComponent.getName() } );
+        } else {
           title = formBundle.getString ("CTL_NoSelection");
+        }
       }
       else
         title = formBundle.getString ("CTL_MultipleSelection");
@@ -430,23 +424,6 @@ final public class FormEditor extends Object {
     public com.netbeans.ide.util.HelpCtx getHelp() {
       return new com.netbeans.ide.util.HelpCtx("com.netbeans.developer.docs.Users_Guide.usergd-using-div-26");
     }
-
-/*    protected void setNodes (Node[] nodes) {
-      if (nodes.length == 0)
-        nodes = new Node[] { getExplorerManager().getRootContext () };
-//    System.out.println("UpdateActivated:"+nodes.length);
-//    for (int i = 0; i < nodes.length; i++)
-//      System.out.println("UpdateActivated[] :"+nodes[i].getDisplayName ());
-      super.setNodes (nodes);
-    }
-
-    public void closeLast () {
-      setVisible(false);
-    } 
-
-    void invokeActivated () {
-      frameActivated ();
-    } */
 
     /** replaces this in object stream */
     public Object writeReplace() {
@@ -518,7 +495,7 @@ final public class FormEditor extends Object {
 
   public static void displayErrorLog () {
     if (errorLog.size () == 0) return;
-//    new ErrorLogDialog (errorLog).show ();
+    //new ErrorLogDialog (errorLog).show ();
     clearLog ();
   }
 
@@ -526,6 +503,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  8    Gandalf   1.7         5/14/99  Ian Formanek    
  *  7    Gandalf   1.6         5/12/99  Ian Formanek    
  *  6    Gandalf   1.5         5/4/99   Ian Formanek    Package change
  *  5    Gandalf   1.4         5/2/99   Ian Formanek    

@@ -23,7 +23,7 @@ import java.text.MessageFormat;
 *
 * @author Ian Formanek
 */
-public class RADComponentNode extends AbstractNode {
+public class RADComponentNode extends AbstractNode implements FormNodeCookie {
 
   private final static MessageFormat nameFormat = new MessageFormat (NbBundle.getBundle (RADComponentNode.class).getString ("FMT_ComponentName"));
   
@@ -40,6 +40,8 @@ public class RADComponentNode extends AbstractNode {
   public RADComponentNode (RADComponent component) {
     super ((component instanceof ComponentContainer) ? new RADChildren ((ComponentContainer)component) : Children.LEAF);
     this.component = component;
+    component.setNodeReference (this);
+    getCookieSet ().add (this);
     String className = component.getComponentClass ().getName ();
     if (component instanceof RADVisualFormContainer) {
       // [PENDING - handle this better and also for non-visual forms]
@@ -62,10 +64,19 @@ public class RADComponentNode extends AbstractNode {
   public Node.PropertySet[] getPropertySets () {
     return component.getProperties ();
   }
+
+// -----------------------------------------------------------------------------
+// FormNodeCookie implementation
+  
+  public RADComponent getRADComponent () {
+    return component;
+  }
+
 }
 
 /*
  * Log
+ *  5    Gandalf   1.4         5/14/99  Ian Formanek    
  *  4    Gandalf   1.3         5/12/99  Ian Formanek    
  *  3    Gandalf   1.2         5/4/99   Ian Formanek    Package change
  *  2    Gandalf   1.1         4/29/99  Ian Formanek    

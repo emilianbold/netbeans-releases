@@ -45,6 +45,7 @@ public class RADComponent {
 
 // -----------------------------------------------------------------------------
 // Private variables
+  private RADComponentNode componentNode;
 
   private Class beanClass;
   private Object beanInstance;
@@ -105,6 +106,14 @@ public class RADComponent {
 
     changedPropertyValues = new HashMap ();
     defaultPropertyValues = BeanSupport.getDefaultPropertyValues (beanClass);
+  }
+
+  void setNodeReference (RADComponentNode node) {
+    this.componentNode = node;
+  }
+
+  RADComponentNode getNodeReference () {
+    return componentNode;
   }
   
 // -----------------------------------------------------------------------------
@@ -632,6 +641,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  9    Gandalf   1.8         5/14/99  Ian Formanek    
  *  8    Gandalf   1.7         5/12/99  Ian Formanek    
  *  7    Gandalf   1.6         5/11/99  Ian Formanek    Build 318 version
  *  6    Gandalf   1.5         5/10/99  Ian Formanek    

@@ -25,17 +25,30 @@ import java.util.HashMap;
 */
 public class RADVisualComponent extends RADComponent {
 
+// -----------------------------------------------------------------------------
+// Private properties
+
   private HashMap constraints = new HashMap (10);
   transient private Node.PropertySet[] visualPropertySet;
   transient private RADVisualContainer parent;
+
+// -----------------------------------------------------------------------------
+// Initialization
 
   void initParent (RADVisualContainer parent) {
     this.parent = parent;
   }
   
+// -----------------------------------------------------------------------------
+// Public interface
+
   /** @return The JavaBean visual component represented by this RADVisualComponent */
   public Component getComponent () {
     return (Component)getComponentInstance ();
+  }
+
+  public RADVisualContainer getParentContainer () {
+    return parent;
   }
 
   /** @return The index of this component within all the subcomponents of its parent */
@@ -43,6 +56,9 @@ public class RADVisualComponent extends RADComponent {
     return -1; // [PENDING] ((OrderCookie) Cookies.getInstanceOf (getParentNode ().getCookie (), OrderCookie.class)).getIndexOf (this);
   }
   
+// -----------------------------------------------------------------------------
+// Constraints management
+
   void initConstraints (HashMap map) {
     for (java.util.Iterator it = map.keySet ().iterator (); it.hasNext ();) {
       String layoutClassName = (String) it.next ();
@@ -84,6 +100,7 @@ public class RADVisualComponent extends RADComponent {
 
 /*
  * Log
+ *  6    Gandalf   1.5         5/14/99  Ian Formanek    
  *  5    Gandalf   1.4         5/12/99  Ian Formanek    
  *  4    Gandalf   1.3         5/11/99  Ian Formanek    Build 318 version
  *  3    Gandalf   1.2         5/10/99  Ian Formanek    

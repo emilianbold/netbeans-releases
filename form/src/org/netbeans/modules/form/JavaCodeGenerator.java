@@ -273,7 +273,6 @@ public class JavaCodeGenerator extends CodeGenerator {
           
   
   private void generateComponentEvents (RADComponent comp, StringBuffer text, String indent) {
-    String oneIndent = "  "; // [PENDING indentation engine]
     String variablePrefix = getVariableGenString (comp, false);
 
     EventsList.EventSet[] eventSets = comp.getEventsList ().getEventSets ();
@@ -463,7 +462,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       try {
         JavaEditor.InteriorSection sec = s.createInteriorSectionAfter (initComponentsSection, getEventSectionName (handlerName));
         sec.setHeader (getEventHandlerHeader (handlerName, paramTypes));
-        sec.setBody (getDefaultEventBody ());
+        sec.setBody (getEventHandlerBody (handlerName, paramTypes, bodyText));
         sec.setBottom (getEventHandlerFooter (handlerName, paramTypes));
       } catch (javax.swing.text.BadLocationException e) {
         e.printStackTrace (); // [PENDING]
@@ -486,13 +485,9 @@ public class JavaCodeGenerator extends CodeGenerator {
       return false;
 
     synchronized (GEN_LOCK) {
-      System.out.println("Change event handler: "+handlerName);
+      System.out.println("Change event handler: "+handlerName+" text: "+bodyText);
       sec.setHeader (getEventHandlerHeader (handlerName, paramTypes));
-      if (bodyText == null) {
-        sec.setBody (getDefaultEventBody ());
-      } else {
-        sec.setBody (bodyText);
-      }
+      sec.setBody (getEventHandlerBody (handlerName, paramTypes, bodyText));
       sec.setBottom (getEventHandlerFooter (handlerName, paramTypes));
     }
     return true;
@@ -513,7 +508,6 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
 
   private String getEventHandlerHeader (String handlerName, String[] paramTypes) {
-    String oneIndent = "  ";
     StringBuffer buf = new StringBuffer ();
     buf.append (oneIndent);
     buf.append ("private void ");
@@ -539,12 +533,22 @@ public class JavaCodeGenerator extends CodeGenerator {
     return buf.toString ();
   }
 
+  private String getEventHandlerBody (String handlerName, String[] paramTypes, String bodyText) {
+    if (bodyText == null) {
+      bodyText = getDefaultEventBody ();
+    } else {
+      bodyText = Utilities.replaceString (bodyText, "\n", "\n"+oneIndent);
+      bodyText = Utilities.replaceString (bodyText, "\t", oneIndent);
+      bodyText = oneIndent + oneIndent + bodyText;
+    }
+    return bodyText;
+  }
+
   private String getEventHandlerFooter (String handlerName, String[] paramTypes) {
     return "  }\n"; // [PENDING]
   }
   
   private String getDefaultEventBody () {
-    String oneIndent = "  "; // [PENDING]
     StringBuffer evtCode = new StringBuffer();
     evtCode.append (oneIndent);
     evtCode.append (oneIndent);
@@ -675,6 +679,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  9    Gandalf   1.8         5/14/99  Ian Formanek    
  *  8    Gandalf   1.7         5/12/99  Ian Formanek    
  *  7    Gandalf   1.6         5/11/99  Ian Formanek    Build 318 version
  *  6    Gandalf   1.5         5/10/99  Ian Formanek    

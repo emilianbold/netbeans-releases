@@ -259,13 +259,13 @@ public class FormEditorModule implements ModuleInstall {
 
   /** The default Layout Components */
   private final static String[] defaultLayoutsComponents = new String[] {
-    "com.netbeans.developerx.loaders.form.layouts.DesignFlowLayout",
-    "com.netbeans.developerx.loaders.form.layouts.DesignBorderLayout",
-    "com.netbeans.developerx.loaders.form.layouts.DesignGridLayout",
-    "com.netbeans.developerx.loaders.form.layouts.DesignCardLayout",
-    "com.netbeans.developerx.loaders.form.layouts.DesignAbsoluteLayout",
-    "com.netbeans.developerx.loaders.form.layouts.DesignGridBagLayout",
-    "com.netbeans.developerx.loaders.form.layouts.DesignBoxLayout",
+    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout",
+    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout",
+    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridLayout",
+    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignCardLayout",
+    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignAbsoluteLayout",
+    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout",
+    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBoxLayout",
   };
 
   /** The default Layout Components */
@@ -281,15 +281,15 @@ public class FormEditorModule implements ModuleInstall {
   
   /** The default Swing Borders */
   private final static String[] defaultBorders = new String[] {
-    "com.netbeans.developerx.loaders.form.border.EmptyBorderInfo",
-    "com.netbeans.developerx.loaders.form.border.LineBorderInfo",
-    "com.netbeans.developerx.loaders.form.border.MatteIconBorderInfo",
-    "com.netbeans.developerx.loaders.form.border.MatteColorBorderInfo",
-    "com.netbeans.developerx.loaders.form.border.TitledBorderInfo",
-    "com.netbeans.developerx.loaders.form.border.EtchedBorderInfo",
-    "com.netbeans.developerx.loaders.form.border.BevelBorderInfo",
-    "com.netbeans.developerx.loaders.form.border.SoftBevelBorderInfo",
-    "com.netbeans.developerx.loaders.form.border.CompoundBorderInfo",
+    "com.netbeans.developerx.loaders.form.formeditor.border.EmptyBorderInfo",
+    "com.netbeans.developerx.loaders.form.formeditor.border.LineBorderInfo",
+    "com.netbeans.developerx.loaders.form.formeditor.border.MatteIconBorderInfo",
+    "com.netbeans.developerx.loaders.form.formeditor.border.MatteColorBorderInfo",
+    "com.netbeans.developerx.loaders.form.formeditor.border.TitledBorderInfo",
+    "com.netbeans.developerx.loaders.form.formeditor.border.EtchedBorderInfo",
+    "com.netbeans.developerx.loaders.form.formeditor.border.BevelBorderInfo",
+    "com.netbeans.developerx.loaders.form.formeditor.border.SoftBevelBorderInfo",
+    "com.netbeans.developerx.loaders.form.formeditor.border.CompoundBorderInfo",
   };
   
   /** The default Swing Borders */
@@ -308,6 +308,7 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  15   Gandalf   1.14        5/14/99  Ian Formanek    
  *  14   Gandalf   1.13        5/11/99  Ian Formanek    Build 318 version
  *  13   Gandalf   1.12        5/4/99   Ian Formanek    Icons again
  *  12   Gandalf   1.11        4/26/99  Ian Formanek    

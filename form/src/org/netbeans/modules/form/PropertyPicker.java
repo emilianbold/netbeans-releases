@@ -65,7 +65,7 @@ public class PropertyPicker extends javax.swing.JDialog {
       allComponents.addElement (nodes[i]); */
  // [PENDING]
     addComponentsRecursively ((ComponentContainer)manager.getRADForm ().getTopLevelComponent (), allComponents); // [PENDING - incorrect cast]
-    RADComponent[] components = new RADComponent [allComponents.size ()];
+    components = new RADComponent [allComponents.size ()];
     allComponents.copyInto (components);
     int selIndex = -1;
     for (int i = 0; i < components.length; i++) {
@@ -323,6 +323,7 @@ public class PropertyPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/14/99  Ian Formanek    
  *  1    Gandalf   1.0         5/13/99  Ian Formanek    
  * $
  */
