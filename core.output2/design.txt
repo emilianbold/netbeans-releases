@@ -66,6 +66,37 @@ For throughput reasons, it is in UTF-16 format for its lifetime.  A Save As func
 which will copy the file to a user-specified location, converting its encoding in the process.
 
 
+WORD WRAPPING
+Doing effective, fast-performing word wrapping is harder than it seems - making it scale
+is the biggie.  So this is heavily optimized.  Main points:
+ - javax.swing.text's WrappedPlainView (what you get if you set word wrap on a JTextArea)
+   is absolutely out - to figure out where to put the caret, it will iterate every char
+   in the document, to expand tabs & such).  Solution:  Don't expand tabs, and don't use 
+   WrappedPlainView.
+ - There are a bunch of optimizations possible because of a couple things:
+     - The document will never change except at the end
+     - We know we're always using a fixed width font
+
+Consider that, if you want to know what position in the document a wrapped character position
+on a component is, you need to iterate from the top of the document down, counting wrapped lines
+until you find the one you're on.  Once you hit a few hundred thousand lines, it can take a
+second or so for the caret to move when you click!
+
+What we do is, above a small output file, we cache the number of logical lines
+*above* each line which is wrapped.  For a query of any given line, we find the first line
+above it which *is* wrapped, take the cached value and add in the distance to that line.
+Caching only those lines which are wrapped keeps the cache nice and small, and so at worst
+it's a couple binary searches and integer adds to get the right value.
+
+The cache is initially built the first time something asks for wrap information.  If the
+document is still being written, it will be added to for any lines that go over the wrap
+point.
+
+The achilles heel is that, if the output window width changes, the cache must be rebuilt,
+and that can be expensive (though even at 400000 lines it's less than 1s on a reasonable
+machine, and not many people are reading 400000 lines of output).
+
+
 UI ARCHITECTURE
 The GUI design is built around pure MVC design and limiting usage of the listener pattern.
 It is composed of two layers:
