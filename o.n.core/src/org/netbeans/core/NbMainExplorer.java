@@ -536,7 +536,8 @@ public final class NbMainExplorer extends CloneableTopComponent
             // update TC's attributes
             setIcon(rc.getIcon(BeanInfo.ICON_COLOR_16x16));
             setToolTipText(rc.getShortDescription());
-            //setName(rc.getDisplayName());
+            // bugfix #15136
+            setName(rc.getDisplayName());
             updateTitle();
             // attach listener
             if (weakRcL == null) {
