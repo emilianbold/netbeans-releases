@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -48,12 +48,12 @@ import javax.swing.JTextField;
  * <u>Java Project With Existing Ant script</u><br>
  * <ol>
  * <li>Label and TextField Location: <code>txtLocation().setText()</code>
- * <li>Label and TextField Ant Script: <code>txtAntScript().setText()</code>
+ * <li>Label and TextField Build Script: <code>txtBuildScript().setText()</code>
  * <li>Label and TextField Project Name: <code>txtProjectName().setText()</code>
  * <li>Label and TextField Project Folder: <code>txtProjectFolder().setText()</code>
  * <li>Button Browse... for browsing Location <code>btBrowseLocation().push()</code>
- * <li>Button Browse... for browsing Ant Script <code>btBrowseAntScript().push()</code>
- * <li>Button Browse... for browsing Project Folder <code>btBrowseAntScript().push()</code>
+ * <li>Button Browse... for browsing Build Script <code>btBrowseBuildScript().push()</code>
+ * <li>Button Browse... for browsing Project Folder <code>btBrowseProjectFolder().push()</code>
  * <li>CheckBox Set as Main Project <code>cbSetAsMainProject().setSelected(true)</code> 
  * </ol>
  * <u>Java project With Existing Sources</u><br>
@@ -98,9 +98,9 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
     //Java Project With Existing Ant script
     private JLabelOperator      _lblLocation;
     private JTextFieldOperator  _txtLocation;
-    private JLabelOperator      _lblAntScript;
-    private JTextFieldOperator  _txtAntScript;
-    private JButtonOperator     _btBrowseAntScript;
+    private JLabelOperator      _lblBuildScript;
+    private JTextFieldOperator  _txtBuildScript;
+    private JButtonOperator     _btBrowseBuildScript;
     private JButtonOperator     _btBrowseProjectFolder;
     //Java Project with Existing Sources
     private JLabelOperator      _lblSourcePackagesFolder;
@@ -208,12 +208,17 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
     }
     
     
-    /** Returns operator for browse j2se ant project location button
+    /** Returns operator for browse location button in Java Project with existing 
+     * Ant script wizard.
      * @return JButtonOperator
      */
     public JButtonOperator btBrowseLocation() {
         if ( _btBrowseLocation==null ) {
-            _btBrowseLocation = new JButtonOperator(this,"Browse...", 2); //TODO I18N
+            _btBrowseLocation = new JButtonOperator(
+                                        this,
+                                        Bundle.getStringTrimmed("org.netbeans.modules.ant.freeform.ui.Bundle",
+                                                                "BTN_BasicProjectInfoPanel_browseProjectLocation"), 
+                                        2);
         }
         return _btBrowseLocation;
     }
@@ -226,20 +231,20 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
         if ( _cbSetAsMainProject==null ) {
             _cbSetAsMainProject = new JCheckBoxOperator(this,
                                         Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
-                                                                "LBL_NWP1_SetAsMain_CheckBox"));
+                                                                "LBL_setAsMainCheckBox"));
         }
         return _cbSetAsMainProject;    
     }
     
     
-    /** Returns operator for checkbox 'Create Main Class:'
+    /** Returns operator for checkbox 'Create Main Class'
      * @return JCheckBoxOperator
      */
     public JCheckBoxOperator cbCreateMainClass() {
         if ( _cbCreateMainClass==null ) {
             _cbCreateMainClass = new JCheckBoxOperator(this,
                                         Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
-                                                                "LBL_NWP1_CreateMainClass_CheckBox"));
+                                                                "LBL_createMainCheckBox"));
         }
         return _cbCreateMainClass;    
     }
@@ -256,71 +261,87 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
     }
     
     
-    /** Returns operator for label Location:
+    /** Returns operator for label 'Location:' in Java Project with existing 
+     * Ant script wizard.
      * @return JLabelOperator
      */
     public JLabelOperator lblLocation() {
         if(_lblLocation == null) {
            _lblLocation = new JLabelOperator(this,
-                                    Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle",
-                                                            "LBL_TargetChooser_Location_Label"));
+                                    Bundle.getStringTrimmed("org.netbeans.modules.ant.freeform.ui.Bundle",
+                                                            "LBL_BasicProjectInfoPanel_jLabel6"));
         }
         return _lblLocation;
     }
     
-    /** Returns operator of Location: text field
+    /** Returns operator of Location: text field in Java Project with existing 
+     * Ant script wizard.
      * @return JTextOperator
      */
     public JTextFieldOperator txtLocation() {
         if(_txtLocation == null) {
             if ( lblLocation().getLabelFor()!=null ) {
-            _txtLocation = new JTextFieldOperator((JTextField)lblLocation().getLabelFor());
+                _txtLocation = new JTextFieldOperator((JTextField)lblLocation().getLabelFor());
             }
         }
         return _txtLocation;
     }
     
     
-    /** Returns operator for label Ant Script:
+    /** Returns operator for label 'Build Script:' in Java Project with existing 
+     * Ant script wizard.
      * @return JLabelOperator
      */
-    public JLabelOperator lblAntScript() {
-        if(_lblAntScript == null) {
-            _lblAntScript = new JLabelOperator(this,"Ant Script:"); //TODO I18N
+    public JLabelOperator lblBuildScript() {
+        if(_lblBuildScript == null) {
+            _lblBuildScript = new JLabelOperator(this,
+                                    Bundle.getStringTrimmed("org.netbeans.modules.ant.freeform.ui.Bundle",
+                                                            "LBL_BasicProjectInfoPanel_jLabel2"));
         }
-        return _lblAntScript;
+        return _lblBuildScript;
     }
     
-    /** Returns operator of Location: text field
+    /** Returns operator of 'Build Script:' text field in Java Project with existing 
+     * Ant script wizard.
      * @return JTextOperator
      */
-    public JTextFieldOperator txtAntScript() {
-        if(_txtAntScript == null) {
-            if (  lblAntScript().getLabelFor()!=null ) {
-                _txtAntScript = new JTextFieldOperator((JTextField)lblAntScript().getLabelFor());
+    public JTextFieldOperator txtBuildScript() {
+        if(_txtBuildScript == null) {
+            if (  lblBuildScript().getLabelFor()!=null ) {
+                _txtBuildScript = new JTextFieldOperator((JTextField)lblBuildScript().getLabelFor());
             }    
         }
-        return _txtAntScript;
+        return _txtBuildScript;
     }
     
     
-    /** Returns operator for browse Ant Script button
+    /** Returns operator for browse Build Script button in Java Project with existing 
+     * Ant script wizard.
      * @return JButtonOperator
      */
-    public JButtonOperator btBrowseAntScript() {
-        if ( _btBrowseAntScript==null ) {
-            _btBrowseAntScript = new JButtonOperator(this,"Browse...", 0); //TODO I18N
+    public JButtonOperator btBrowseBuildScript() {
+        if ( _btBrowseBuildScript==null ) {
+            _btBrowseBuildScript = new JButtonOperator(
+                                this,
+                                Bundle.getStringTrimmed("org.netbeans.modules.ant.freeform.ui.Bundle",
+                                                        "BTN_BasicProjectInfoPanel_browseAntScript"), 
+                                0);
         }
-        return _btBrowseAntScript;
+        return _btBrowseBuildScript;
     }
     
     
-    /** Returns operator for browse Project Folder button
+    /** Returns operator for browse Project Folder button in Java Project with existing 
+     * Ant script wizard.
      * @return JButtonOperator
      */
     public JButtonOperator btBrowseProjectFolder() {
         if ( _btBrowseProjectFolder==null ) {
-            _btBrowseProjectFolder = new JButtonOperator(this, "Browse...",1); //TODO I18N
+            _btBrowseProjectFolder = new JButtonOperator(
+                                            this, 
+                                            Bundle.getStringTrimmed("org.netbeans.modules.ant.freeform.ui.Bundle",
+                                                                    "BTN_BasicProjectInfoPanel_browseProjectFolder"), 
+                                            1);
         }
         return _btBrowseProjectFolder;
     }
@@ -454,10 +475,10 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
         cbCreateMainClass();
         txtCreateMainClass();
         lblLocation();
-        lblAntScript();
+        lblBuildScript();
         txtLocation();
-        txtAntScript();
-        btBrowseAntScript();
+        txtBuildScript();
+        btBrowseBuildScript();
         btBrowseProjectFolder();
         */
     }
