@@ -58,9 +58,10 @@ import org.netbeans.modules.java.JavaExternalCompilerType;
 import org.netbeans.modules.java.JExternalCompilerGroup;
 import org.netbeans.modules.java.environment.Utilities;
 import org.netbeans.modules.java.Util;
-import org.openidex.nodes.looks.Look;
-import org.openidex.nodes.looks.DefaultLook;
-import org.openidex.nodes.looks.CompositeLook;
+
+import org.netbeans.api.nodes2looks.*;
+import org.netbeans.spi.looks.*;
+
 import org.netbeans.modules.web.core.WebExecSupport;
 
 /** Object that provides main functionality for internet data loader.
@@ -111,46 +112,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     }
 
     protected org.openide.nodes.Node createNodeDelegate () {
-        Lookup.Template template = new Lookup.Template( org.openidex.nodes.looks.Look.class ); 
-        Lookup.Result result = Lookup.getDefault().lookup( template );
-        Collection cls = result.allInstances(); 
-        Look defaultLook = null;
-        Look wellKnown = null;
         Object o = new JspNode (this);
-
-        for( Iterator it = cls.iterator(); it.hasNext();  ) {
-            Look look = (Look)it.next();
-            // System.out.println ("Inspecting look " + look); // NOI18N
-
-            // ignore it now - CNFE when jspie is missing
-            // if (look.isLookStandalone (o) == false) continue;
-            
-            // System.out.println ("\tpassed");
-            
-            // skip some well known looks
-            if (DefaultLook.class.equals(look.getClass())) {
-                if (wellKnown == null) {
-                    wellKnown = look;
-                }
-            // } else if (JspServletDefaultLook.class.equals(look.getClass())) {
-            } else if (CompositeLook.class.equals(look.getClass())
-                   &&  "Web-Look".equals (look.getName ())) {   // NOI18N
-                wellKnown = look;                    
-                break;
-            } else {
-                // System.out.println ("\tand using as default"); // NOI18N
-                defaultLook = look;
-            }
-        }
-
-        if (defaultLook == null) {
-            defaultLook = wellKnown;
-        }
-
-        // System.out.println ("Default look for " + this + " = " + defaultLook); // NOI18N
-
-        Node ret = new WebLookNode (o, wellKnown == null? defaultLook: wellKnown);
-        // System.out.println ("Testing " + ret.getLook()); // NOI18N
+        Node ret = Nodes.node (o);
         return ret;
     }
 
