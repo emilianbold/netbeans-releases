@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <exclude name="org/netbeans/modules/i18n/cross/"/>
+      <exclude name="org/netbeans/modules/i18n/form/"/>
       <classpath>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
       </classpath>
     </javac>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <include name="org/netbeans/modules/i18n/cross/"/>
+      <include name="org/netbeans/modules/i18n/form/"/>
       <classpath>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
@@ -58,16 +58,16 @@ Microsystems, Inc. All Rights Reserved.
             basedir="src"
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
-      <exclude name="org/netbeans/modules/i18n/cross/"/>
+      <exclude name="org/netbeans/modules/i18n/form/"/>
       <locale name="ja"/>
     </locjar>
-    <copy file="manifest-cross.mf" tofile="manifest-cross-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/i18n-cross.jar"
-            manifest="manifest-cross-subst.mf"
+    <copy file="manifest-form.mf" tofile="manifest-form-subst.mf" filtering="on"/>
+    <locjar jarfile="netbeans/modules/i18n-form.jar"
+            manifest="manifest-form-subst.mf"
             basedir="src"
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
-      <include name="org/netbeans/modules/i18n/cross/"/>
+      <include name="org/netbeans/modules/i18n/form/"/>
       <locale name="ja"/>
     </locjar>
 
@@ -96,7 +96,7 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
-    <delete file="manifest-cross-subst.mf"/>
+    <delete file="manifest-form-subst.mf"/>
     <delete file="i18n.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
