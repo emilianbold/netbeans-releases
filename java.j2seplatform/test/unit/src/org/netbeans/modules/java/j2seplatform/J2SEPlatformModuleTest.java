@@ -22,7 +22,6 @@ import org.netbeans.modules.java.j2seplatform.platformdefinition.JavaPlatformPro
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
