@@ -336,6 +336,25 @@ workspaceswitcher
 
   <target name="virgin" depends="firststart-merge"
           description="Create a virgin build that has never been started.">
+    <taskdef name="createmodulexml" classname="org.netbeans.nbbuild.CreateModuleXML" classpath="nbantext.jar"/>
+    <mkdir dir="${netbeans.dest}/system/Modules"/>
+    <mkdir dir="${netbeans.dest}/modules/autoload"/>
+    <createmodulexml xmldir="${netbeans.dest}/system/Modules">
+      <enabled dir="${netbeans.dest}/modules">
+        <include name="*.jar"/>
+        <!-- Just to test that we can in fact preconfigure some disabled modules: -->
+        <exclude name="icebrowser.jar"/>
+        <!-- It really needs to be installed() currently or exceptions -->
+        <!-- (so let it be autoscanned and loaded that way): -->
+        <exclude name="javadoc.jar"/>
+      </enabled>
+      <disabled dir="${netbeans.dest}/modules">
+        <include name="icebrowser.jar"/>
+      </disabled>
+      <autoload dir="${netbeans.dest}/modules/autoload">
+        <include name="*.jar"/>
+      </autoload>
+    </createmodulexml>
     <!-- zip task not well suited to making final build, as it does not set +x bits -->
     <!-- so on Unix try to use native ZIP first -->
     <delete file="NetBeans-${buildnum}-virgin.zip"/>
