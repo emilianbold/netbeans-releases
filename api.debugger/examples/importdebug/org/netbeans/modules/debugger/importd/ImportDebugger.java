@@ -24,7 +24,9 @@ import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.debugger.*;
-import org.netbeans.modules.debugger.support.DebuggerSupport;
+import org.netbeans.modules.debugger.support.DebuggerAnnotation;
+import org.netbeans.modules.debugger.support.SecondaryDebuggerSupport;
+import org.netbeans.modules.debugger.support.StateSupport;
 import org.netbeans.modules.debugger.support.util.Utils;
 import org.netbeans.modules.debugger.support.util.ValidatorImpl;
 
@@ -36,10 +38,12 @@ import org.netbeans.modules.debugger.support.util.ValidatorImpl;
  *
  * @author Jan Jancura
  */
-public class ImportDebugger extends DebuggerSupport {
+public class ImportDebugger extends SecondaryDebuggerSupport {
 
     // static ..................................................................
     
+    /** generated Serialized Version UID */
+    static final long                       serialVersionUID = 84466455228078708L;
     /** bundle to obtain text information from */
     private static ResourceBundle                      bundle;
 
@@ -48,6 +52,23 @@ public class ImportDebugger extends DebuggerSupport {
             bundle = NbBundle.getBundle (ImportDebugger.class);
         return bundle.getString (s);
     }
+
+    /** debugger State constant. */
+    public static final State                 STATE_STOPPED = 
+        new StateSupport (
+            StateSupport.PAUSE |
+            StateSupport.STEP_OVER |
+            StateSupport.STEP_INTO |
+            StateSupport.STEP_OUT
+        );
+    /** debugger State constant. */
+    public static final State                 STATE_RUNNING = 
+        new StateSupport (
+            StateSupport.PAUSE
+        );
+    
+    static DebuggerAnnotation.CurrentPC currentLineAnnotation =
+        new DebuggerAnnotation.CurrentPC ();
 
     
     // variables ...............................................................
@@ -176,19 +197,61 @@ public class ImportDebugger extends DebuggerSupport {
         refreshWatches ();
     }
 
+    /**
+     * Jumps to the next call site (towards the top of the call-stack).
+     */
+    public void goToCalledMethod () {
+    }
+    
+    /**
+     * Jumps to the previous call site (towards the bottom of the call-stack).
+     */
+    public void goToCallingMethod () {
+    }
+
+    /**
+     * Jumps to a given line.
+     *
+     * @param l a line jump to
+     */
+    public void runToCursor (Line l) {
+    }
+
+    /**
+     * Pauses debugging.
+     */
+    public void pause () {
+    }
+
     public void setCurrentLine (Line l) {
         Line old = getCurrentLine ();
-        if (old != null) old.unmarkCurrentLine ();
+        if (old != null) {
+           // old.unmarkCurrentLine ();
+           currentLineAnnotation.detachLine ();
+        }
         if (l != null) {
             Utils.showInEditor (l);
-            l.markCurrentLine ();
+            //l.markCurrentLine ();
+            currentLineAnnotation.attachLine (l);
         }
         super.setCurrentLine (l);
     }
 
+    protected void setState (int state) {
+        super.setState (state);
+        switch (state) {
+            case DEBUGGER_NOT_RUNNING:
+                setDebuggerState (STATE_NOT_RUNNING);
+                break;
+            case DEBUGGER_RUNNING:
+                setDebuggerState (STATE_RUNNING);
+                break;
+            case DEBUGGER_STOPPED:
+                setDebuggerState (STATE_STOPPED);
+                break;
+        }
+    }
     
-    // WATCHES ..............................................................
-
     /** Creates new uninitialized watch. The watch is visible (not hidden).
     *
     * @return new uninitialized watch
@@ -296,33 +359,5 @@ public class ImportDebugger extends DebuggerSupport {
         int len = NbDocument.findLineOffset (doc, l.getLineNumber () + 1) - 
             off - 1;
         return doc.getText (off, len);
-    }
-
-
-    
-    /**
-     * Jumps to the next call site (towards the top of the call-stack).
-     */
-    public void goToCalledMethod () {
-    }
-    
-    /**
-     * Jumps to the previous call site (towards the bottom of the call-stack).
-     */
-    public void goToCallingMethod () {
-    }
-
-    /**
-     * Jumps to a given line.
-     *
-     * @param l a line jump to
-     */
-    public void runToCursor (Line l) {
-    }
-
-    /**
-     * Pauses debugging.
-     */
-    public void pause () {
     }
 }

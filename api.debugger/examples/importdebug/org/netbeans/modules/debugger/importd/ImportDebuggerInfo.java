@@ -72,7 +72,6 @@ public class ImportDebuggerInfo extends AbstractDebuggerInfo {
      * @return type of debugger which should be used to debug this DebuggerInfo
      */
     public DebuggerImpl getDebuggerImpl () {
-        Thread.dumpStack();
         return ImportDebuggerModule.getDebuggerImpl ();
     }
 }
