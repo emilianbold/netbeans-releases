@@ -19,6 +19,8 @@ import com.netbeans.developer.modules.loaders.form.forminfo.FormInfo;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Iterator;
+import javax.swing.JMenuBar;
 
 /** RADVisualFormContainer represents the top-level container of the form and the form itself
 * during design time.
@@ -34,6 +36,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   public static final String PROP_GENERATE_SIZE = "generateSize";
   public static final String PROP_GENERATE_CENTER = "generateCenter";
 
+  protected static final String AUX_MENU_COMPONENT = "RADVisualFormContainer_MenuComponent";
+
   public static final int GEN_BOUNDS = 0;
   public static final int GEN_PACK = 1;
   public static final int GEN_NOTHING = 2;
@@ -43,9 +47,11 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   
   private FormInfo formInfo;
   private Container topContainer;
+  private Container topAddContainer;
 
   // Synthetic properties of form
-  private String menu;
+  private RADComponent menu;
+  private boolean menuInitialized = false;
   private Dimension formSize = new Dimension (FormEditor.DEFAULT_FORM_WIDTH, FormEditor.DEFAULT_FORM_HEIGHT);
   private Point formPosition;
   private boolean generatePosition = true;
@@ -57,11 +63,12 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     super ();
     this.formInfo = formInfo;
     topContainer = formInfo.getTopContainer ();
+    topAddContainer = formInfo.getTopAddContainer ();
   }
   
   /** @return The JavaBean visual container represented by this RADVisualComponent */
   public Container getContainer () {
-    return topContainer;
+    return topAddContainer;
   }
 
   /** Called to create the instance of the bean. Default implementation simply creates instance 
@@ -78,16 +85,57 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     return formInfo.getContainerGenName ();
   }
 
+// ------------------------------------------------------------------------------
+// Form synthetic properties
+
   public FormInfo getFormInfo () {
     return formInfo;
   }
 
   public String getFormMenu () {
-    return menu;
+    if (!menuInitialized) {
+      String menuName = (String)getAuxValue (AUX_MENU_COMPONENT);
+      if (menuName != null) {
+        ArrayList list = getAvailableMenus ();
+        for (Iterator it = list.iterator (); it.hasNext ();) {
+          RADComponent comp = (RADComponent)it.next ();
+          if (comp.getName ().equals (menuName)) {
+            menu = comp;
+            break;
+          }
+        }
+      }
+      menuInitialized = true;
+    }
+    if (menu == null) return null;
+    else return menu.getName ();
   }
 
   public void setFormMenu (String value) {
-    menu = value;
+    setAuxValue (AUX_MENU_COMPONENT, value);
+
+    if (value != null) {
+      ArrayList list = getAvailableMenus ();
+      for (Iterator it = list.iterator (); it.hasNext ();) {
+        RADComponent comp = (RADComponent)it.next ();
+        if (comp.getName ().equals (value)) {
+          menu = comp;
+        }
+      }
+      // set the real menu
+      if (formInfo instanceof JMenuBarContainer) {
+        if (menu.getBeanInstance () instanceof JMenuBar) {
+          ((JMenuBarContainer)formInfo).setJMenuBar ((JMenuBar)menu.getBeanInstance ());
+        }
+      } else if (formInfo instanceof MenuBarContainer) {
+        if (menu.getBeanInstance () instanceof MenuBar) {
+          ((MenuBarContainer)formInfo).setMenuBar ((MenuBar)menu.getBeanInstance ());
+        }
+      }
+    } else {
+      menu = null;
+    }
+    getFormManager ().fireFormChange ();
   }
 
   public Point getFormPosition () {
@@ -121,6 +169,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   }
 
   public void setGeneratePosition (boolean value) {
+    // [PENDING - set as aux value]
     generatePosition = value;
     getFormManager ().fireFormChange ();
   }
@@ -130,6 +179,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   }
 
   public void setGenerateSize (boolean value) {
+    // [PENDING - set as aux value]
     generateSize = value;
     getFormManager ().fireFormChange ();
   }
@@ -139,6 +189,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   }
 
   public void setGenerateCenter (boolean value) {
+    // [PENDING - set as aux value]
     generateCenter = value;
     getFormManager ().fireFormChange ();
   }
@@ -148,9 +199,13 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   }
 
   public void setFormSizePolicy (int value) {
+    // [PENDING - set as aux value]
     formSizePolicy = value;
     getFormManager ().fireFormChange ();
   }
+
+// ------------------------------------------------------------------------------
+// End of form synthetic properties
 
   protected Node.Property[] createSyntheticProperties () {
 
@@ -242,7 +297,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     if ((formInfo instanceof JMenuBarContainer) || (formInfo instanceof MenuBarContainer)) {
       Node.Property[] ret = new Node.Property [7];
 
-      Node.Property menuProperty = new PropertySupport.ReadWrite (PROP_MENU_BAR, String.class, "menu bar", "menu bar of the form") {
+     Node.Property menuProperty = new PropertySupport.ReadWrite (PROP_MENU_BAR, String.class, "menu bar", "menu bar of the form") {
         public Object getValue () throws
         IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
           String s = getFormMenu ();
@@ -283,7 +338,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
   }
 
-  String[] getAvailableMenus() {
+  ArrayList getAvailableMenus() {
     ArrayList list = new ArrayList();
     RADComponent[] comps = getFormManager ().getNonVisualComponents ();
     int size = comps.length;
@@ -297,17 +352,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
           list.add (n);
       }
     }
-    size = list.size();
-    String[] menus = new String[size + 1];
-//    menusNodes = new RADMenuNode[size + 1];
-    
-    menus[0] = NO_MENU;
-//    menusNodes[0] = null;
-    for (int i = 0; i < size; i++) {
-//      menusNodes[i + 1] = (RADMenuComponent) list.elementAt(i);
-      menus[i + 1] = ((RADMenuComponent) list.get(i)).getName();
-    }
-    return menus;
+    return list;
   }
 
 // ------------------------------------------------------------------------------------------
@@ -349,12 +394,20 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
     /** @return names of the possible directions */
     public String[] getTags () {
-      return getAvailableMenus ();
+      ArrayList list = getAvailableMenus ();
+      RADComponent[] comps = new RADComponent [list.size ()];
+      list.toArray (comps);
+      String[] names = new String[comps.length + 1];
+      names[0] = NO_MENU; // No Menu
+      for (int i = 0; i < comps.length; i++) {
+        names[i+1] = comps[i].getName ();
+      }
+      return names;
     }
 
     /** @return text for the current value */
     public String getAsText () {
-      return (String) getValue ();
+      return (String)getValue ();
     }
 
     /** Setter.
@@ -368,6 +421,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  7    Gandalf   1.6         7/9/99   Ian Formanek    menu editor improvements
  *  6    Gandalf   1.5         7/5/99   Ian Formanek    menu bar property, 
  *       constants for properties
  *  5    Gandalf   1.4         6/25/99  Ian Formanek    Improved Size Policy 

@@ -264,6 +264,25 @@ public class JavaCodeGenerator extends CodeGenerator {
       if (form.getTopLevelComponent () instanceof RADVisualFormContainer) {
         RADVisualFormContainer visualForm = (RADVisualFormContainer)form.getTopLevelComponent ();
   
+        // 1. generate code for menu, if the form is menu bar container and has a menu associated
+
+        String menuComp = visualForm.getFormMenu ();
+        if (menuComp != null) {
+          String menuText = null;
+          if (visualForm.getFormInfo () instanceof JMenuBarContainer) {
+             menuText = "setJMenuBar (";
+          } else if (visualForm.getFormInfo () instanceof MenuBarContainer) {
+             menuText = "setMenuBar (";
+          }
+          if (menuText != null) {
+             menuText = menuText + menuComp + ");\n\n";
+             initCodeWriter.write (menuText);
+          }
+        }
+        
+  
+        // 2. generate size code according to form size policy
+
         int formPolicy = visualForm.getFormSizePolicy ();
         boolean genSize = visualForm.getGenerateSize();
         boolean genPosition = visualForm.getGeneratePosition();
@@ -382,6 +401,8 @@ public class JavaCodeGenerator extends CodeGenerator {
             } else {
               generateComponentAddCode (children[i], (RADVisualContainer)comp, initCodeWriter);
             }
+          } else if (comp instanceof RADMenuComponent) {
+            generateMenuAddCode (children[i], (RADMenuComponent)comp, initCodeWriter);
           } // [PENDING - adding to non-visual containers]
 
           initCodeBuffer.setIndentLevel (level, oneIndent);
@@ -441,6 +462,13 @@ public class JavaCodeGenerator extends CodeGenerator {
     initCodeWriter.write (dl.generateComponentCode (container, (RADVisualComponent)comp));
   }
   
+  private void generateMenuAddCode (RADComponent comp, RADMenuComponent container, Writer initCodeWriter) throws IOException {
+    initCodeWriter.write (container.getName ());
+    initCodeWriter.write (".add (");
+    initCodeWriter.write (comp.getName ());
+    initCodeWriter.write (");");
+  }
+
 /*  private void generateIndexedPropertySetter (RADComponent comp, PropertyDescriptor desc, StringBuffer text, String indent) {
     System.out.println("generateIndexedPropertySetter: NotImplemented... (Property: "+desc.getName ()+", Value: "+value+")"); // [PENDING]
   }
@@ -1102,6 +1130,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  35   Gandalf   1.34        7/9/99   Ian Formanek    menu editor improvements
  *  34   Gandalf   1.33        7/8/99   Ian Formanek    Fixed closing code 
  *       generation writers
  *  33   Gandalf   1.32        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
