@@ -183,12 +183,14 @@ public class LineDiff implements Diff {
                     result.add(new Result(passLines[i], i, true));
                 }
             }
-            Collections.sort(result);
-            PrintStream ps=new PrintStream(new FileOutputStream(diffFile));
-            for (int i=0;i < result.size();i++) {
-                ps.println(result.get(i));
+            if (result.size() > 0) {
+                Collections.sort(result);
+                PrintStream ps=new PrintStream(new FileOutputStream(diffFile));
+                for (int i=0;i < result.size();i++) {
+                    ps.println(result.get(i));
+                }
+                ps.close();
             }
-            ps.close();
         }
         return false;
     }
