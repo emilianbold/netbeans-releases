@@ -50,6 +50,7 @@
             <file name="SimpleJUnitTest.java" url="templates/SimpleJUnitTest.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/SimpleJUnitTest.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
             </file>
         </folder>
