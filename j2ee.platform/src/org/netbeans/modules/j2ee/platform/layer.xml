@@ -23,6 +23,16 @@ Microsystems, Inc. All Rights Reserved.
           <file name="saaj12.xml" url="saaj12.xml"/>
         </folder>
       </folder>
+    
+    <folder name="Services">
+      <folder name="JavaHelp">
+         <!-- Merge after Core IDE Help: -->
+         <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-j2ee-helpset.xml" boolvalue="true"/>
+         <file name="org-netbeans-modules-j2ee-helpset.xml" url="helpset-decl.xml"/>
+         <!-- Merge before 3rd party help: -->
+         <attr name="org-netbeans-modules-j2ee-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
+      </folder>
+    </folder>
   
       <folder name="Menu">
         <folder name="Tools">
