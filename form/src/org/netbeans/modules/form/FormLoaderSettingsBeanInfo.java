@@ -197,7 +197,9 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[19].setDisplayName(formBundle.getString("PROP_FORMDESIGNER_BORDER_COLOR"));
             desc[19].setShortDescription(formBundle.getString("HINT_FORMDESIGNER_BORDER_COLOR"));
             
-            desc[20].setHidden(true);
+            desc[20].setDisplayName(formBundle.getString("PROP_SHOW_COMPONENT_NAMES"));
+            desc[20].setShortDescription(formBundle.getString("HINT_SHOW_COMPONENT_NAMES"));
+//            desc[20].setHidden(true);
 
             desc[21].setDisplayName(formBundle.getString("PROP_VARIABLES_LOCAL"));
             desc[21].setShortDescription(formBundle.getString("HINT_VARIABLES_LOCAL"));
