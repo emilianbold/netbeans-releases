@@ -288,7 +288,7 @@ workspaceswitcher
     <!-- XXX ideal would be a timeout after which the process would get SIGQUIT then SIGINT then SIGKILL -->
     <!-- This is possible in newer Ants but not in 1.1 -->
     <echo message="Successfully started, cleaning up detritus..."/>
-    <rename src="firststart/system/ide.log" dest="NetBeans-${buildnumber}.log"/>
+    <move file="firststart/system/ide.log" tofile="NetBeans-${buildnumber}.log"/>
     <delete file="firststart/system/project.basic"/>
     <delete file="firststart/system/project.last"/>
     <delete file="firststart/beans/libs.properties"/>
@@ -315,10 +315,18 @@ Build number: ${buildnumber}
   </target>
   <target name="tryme" depends="maybe-firststart"
           description="Try running the IDE interactively (build it first if needed).">
-    <exec os="indows" dir="firststart/bin" command="runide.exe ${tryme.args}" failonerror="yes"/>
-    <exec os="Linux" dir="firststart/bin" command="sh runide.sh ${tryme.args}" failonerror="yes"/>
-    <exec os="SunOS" dir="firststart/bin" command="sh runide.sh ${tryme.args}" failonerror="yes"/>
-    <exec os="Solaris" dir="firststart/bin" command="sh runide.sh ${tryme.args}" failonerror="yes"/>
+    <exec os="indows" dir="firststart/bin" executable="runide.exe" failonerror="yes">
+      <arg line="${tryme.args}"/>
+    </exec>
+    <exec os="Linux" dir="firststart/bin" executable="sh" failonerror="yes">
+      <arg line="runide.sh ${tryme.args}"/>
+    </exec>
+    <exec os="SunOS" dir="firststart/bin" executable="sh" failonerror="yes">
+      <arg line="runide.sh ${tryme.args}"/>
+    </exec>
+    <exec os="Solaris" dir="firststart/bin" executable="sh" failonerror="yes">
+      <arg line="runide.sh ${tryme.args}"/>
+    </exec>
   </target>
 
   <target name="update-info" depends="init,all-openide,all-core"

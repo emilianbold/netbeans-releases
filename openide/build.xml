@@ -70,13 +70,13 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="clean-preprocess">
-    <deltree dir="tmp" />
+    <delete dir="tmp" />
   </target>
 
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/lib"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copyfile src="manifest.mf" dest="manifest-subst.mf" filtering="on"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="netbeans/lib/openide.jar"
          manifest="manifest-subst.mf"
          basedir="src"
