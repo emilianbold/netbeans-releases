@@ -79,10 +79,12 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         super.notifyUnmodified();
 
         removeSaveCookie();
-        String name = mvtc.getDisplayName();
-        if (name.endsWith(" *")) { // NOI18N
-            name = name.substring(0,name.length()-2);
-            mvtc.setDisplayName(name);
+        if (mvtc!=null) {
+            String name = mvtc.getDisplayName();
+            if (name.endsWith(" *")) { // NOI18N
+                name = name.substring(0,name.length()-2);
+                mvtc.setDisplayName(name);
+            }
         }
     }
 
