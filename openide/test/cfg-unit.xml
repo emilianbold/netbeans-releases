@@ -51,6 +51,7 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectsCreatedOncePerFile"/>
                 <exclude name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectInvalidatedAfterRootChange"/>
                 <exclude name="org/openide/loaders/MultiDataObjectTest.class"/>
+                <exclude name="org/openide/loaders/InstanceDataObjectTest.class/testCreateFromTemplateForSettingsFile"/>
                 <include name="org/openide/xml/*.class"/>
                 <include name="org/openide/explorer/propertysheet/*.class"/>
                 <include name="org/openide/nodes/*.class"/>
@@ -84,9 +85,15 @@ Microsystems, Inc. All Rights Reserved.
         </testset>      
     </testbag>
 
-    <!-- XXX: ide,failing? -->
-    <!--<include name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectsCreatedOncePerFile"/>-->
-    <!--<exclude name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectInvalidatedAfterRootChange"/>-->
+    <testbag testattribs="ide,failing" executor="ide" name="testbag_4" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>                
+                <include name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectsCreatedOncePerFile"/>
+                <include name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectInvalidatedAfterRootChange"/>
+                <include name="org/openide/loaders/InstanceDataObjectTest.class/testCreateFromTemplateForSettingsFile"/>
+            </patternset>
+        </testset>      
+    </testbag>
     
     <executor name="ide" antfile="build.xml" target="runidetest"/>
     <executor name="code" antfile="build.xml" target="runcodetest"/>
