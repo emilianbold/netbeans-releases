@@ -34,7 +34,7 @@ import java.util.Set;
  *
  * @author  Tim Boudreau
  */
-class IntMap {
+final class IntMap {
     private int[] keys = new int[] { Integer.MAX_VALUE, Integer.MAX_VALUE, 
         Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE};
         

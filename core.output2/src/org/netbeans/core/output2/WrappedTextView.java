@@ -161,41 +161,11 @@ public class WrappedTextView extends View {
     }
 
     public float getMinimumSpan(int axis) {
-       OutputDocument doc = odoc();
-        float result = 0;
-        if (doc != null) {
-            switch (axis) {
-                case X_AXIS :
-                    result = 80;
-                    break;
-                case Y_AXIS :
-                    result = doc.getLogicalLineCountIfWrappedAt(getCharsPerLine()) * charHeight() + fontDescent();
-                    break;
-                default :
-                    throw new IllegalArgumentException (Integer.toString(axis));
-            }
-        }
-        return result;
+        return getPreferredSpan(axis);
     }
 
     public float getMaximumSpan(int axis) {
-       OutputDocument doc = odoc();
-        float result = 0;
-        if (doc != null) {
-            switch (axis) {
-                case X_AXIS :
-                    result = doc.getLongestLineLength() * charWidth();
-                    break;
-                case Y_AXIS :
-                    result = doc.getLogicalLineCountIfWrappedAt(80) + fontDescent();
-                    System.err.println("Max span: " + result);
-                    break;
-                default :
-                    throw new IllegalArgumentException (Integer.toString(axis));
-            }
-//            System.err.println ("Maximum " + a2s(axis) + "=" + result+ " for " + doc.getElementCount() + " lines"+ l2c(axis, result));
-        }
-        return result;
+        return getPreferredSpan(axis);
     }
 
     /**
@@ -563,6 +533,7 @@ public class WrappedTextView extends View {
             result.x = margin() + (column * charWidth());
 //            System.err.println(pos + "@" + result.x + "," + result.y + " line " + line + " start " + start + " row " + row + " col " + column);
         }
+        
         return result;
     }
 
@@ -593,8 +564,8 @@ public class WrappedTextView extends View {
             int lineLength = od.getLineLength(logicalLine);
 
             int column = (ix / charWidth());
-            if (column > lineLength) {
-                return lineStart + lineLength-1;
+            if (column > lineLength-1) {
+                column = lineLength-1;
             }
 
             int result = wraps > 0 ?
@@ -605,6 +576,7 @@ public class WrappedTextView extends View {
                     charsPerLine + " column " + column + " line length " + lineLength);
 //            System.err.println ("v2m: [" + ix + "," + iy + "] = " + result);
 */
+                
             return result;
 
         } else {

@@ -18,6 +18,8 @@
 
 package org.netbeans.core.output2.ui;
 
+import java.awt.Rectangle;
+import javax.swing.plaf.TextUI;
 import org.netbeans.core.output2.Controller;
 import org.openide.ErrorManager;
 
@@ -89,6 +91,11 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         }
         if (locked) {
             setMouseLine(-1);
+        }
+        if (isWrapped()) {
+            //Saves having OutputEditorKit have to do its own listening
+            getViewport().revalidate();
+            getViewport().repaint();
         }
     }
     
@@ -566,12 +573,108 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     private class OCaret extends DefaultCaret {
         public void setSelectionVisible(boolean val) {
             super.setSelectionVisible(true);
+            super.setBlinkRate(0);
         }
         public boolean isSelectionVisible() {
             return true;
         }
-        public void setVisible() {}
+        public void setBlinkRate(int rate) {
+            super.setBlinkRate(0);
+        }
+        public void setVisible(boolean b) {
+            super.setVisible(true);
+        }
+ 
         public boolean isVisible() { return true; }
-    }
+        
+        public void paint(Graphics g) {
+            JTextComponent component = textView;
+            if(isVisible()) {
+                try {
+                    TextUI mapper = component.getUI();
+                    Rectangle r = mapper.modelToView(component, getDot(), Position.Bias.Forward);
 
+                    if ((r == null) || ((r.width == 0) && (r.height == 0))) {
+                        return;
+                    }
+                    if (width > 0 && height > 0 &&
+                                    !this._contains(r.x, r.y, r.width, r.height)) {
+                        // We seem to have gotten out of sync and no longer
+                        // contain the right location, adjust accordingly.
+                        Rectangle clip = g.getClipBounds();
+
+                        if (clip != null && !clip.contains(this)) {
+                            // Clip doesn't contain the old location, force it
+                            // to be repainted lest we leave a caret around.
+                            repaint();
+                        }
+ //                       System.err.println("WRONG! Caret dot m2v = " + r + " but my bounds are " + x + "," + y + "," + width + "," + height);
+                        
+                        // This will potentially cause a repaint of something
+                        // we're already repainting, but without changing the
+                        // semantics of damage we can't really get around this.
+                        damage(r);
+                    }
+                    g.setColor(component.getCaretColor());
+                    g.drawLine(r.x, r.y, r.x, r.y + r.height - 1);
+
+                } catch (BadLocationException e) {
+                    // can't render I guess
+                    //System.err.println("Can't render cursor");
+                }
+            }
+        }    
+        
+        private boolean _contains(int X, int Y, int W, int H) {
+            int w = this.width;
+            int h = this.height;
+            if ((w | h | W | H) < 0) {
+                // At least one of the dimensions is negative...
+                return false;
+            }
+            // Note: if any dimension is zero, tests below must return false...
+            int x = this.x;
+            int y = this.y;
+            if (X < x || Y < y) {
+                return false;
+            }
+            if (W > 0) {
+                w += x;
+                W += X;
+                if (W <= X) {
+                    // X+W overflowed or W was zero, return false if...
+                    // either original w or W was zero or
+                    // x+w did not overflow or
+                    // the overflowed x+w is smaller than the overflowed X+W
+                    if (w >= x || W > w) {
+                        return false;
+                    }
+                } else {
+                    // X+W did not overflow and W was not zero, return false if...
+                    // original w was zero or
+                    // x+w did not overflow and x+w is smaller than X+W
+                    if (w >= x && W > w) {
+                        //This is the bug in DefaultCaret - returns false here
+                        return true;
+                    }
+                }
+            }
+            else if ((x + w) < X) {
+                return false;
+            }
+            if (H > 0) {
+                h += y;
+                H += Y;
+                if (H <= Y) {
+                    if (h >= y || H > h) return false;
+                } else {
+                    if (h >= y && H > h) return false;
+                }
+            }
+            else if ((y + h) < Y) {
+                return false;
+            }
+            return true;
+        }        
+    }
 }

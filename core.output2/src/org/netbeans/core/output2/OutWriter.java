@@ -265,6 +265,9 @@ class OutWriter extends OutputWriter implements Runnable {
         if (disposed || trouble) {
             return 0;
         }
+        if (lineStartList.size() == 0) {
+            return 0;
+        }
         int lineStart = lineStartList.get(idx);
         int lineEnd;
         if (idx != lineStartList.size()-1) {
@@ -650,6 +653,20 @@ class OutWriter extends OutputWriter implements Runnable {
         try {
             int start = getStorage().write(bb);
             lineStartList.add (start);
+            
+            //If we already have enough lines that we need to cache logical line
+            //lengths, update the cache - rebuilding it is expensive
+            if (knownLogicalLineCounts != null) {
+                int len = length(lineStartList.size()-2);
+                int aboveLineCount = knownLogicalLineCounts.size() == 0 ? 0 : knownLogicalLineCounts.get(lineStartList.size()-2);
+                if (len > knownCharCount) {
+                    aboveLineCount += (len / knownCharCount) + 1;
+                } else {
+                    aboveLineCount++;
+                }
+                knownLogicalLineCounts.add(aboveLineCount);
+            }
+
         
             if (Controller.verbose) Controller.log (this + ": Wrote " + ((ByteBuffer)bb.flip()).asCharBuffer() + " at " + start);
             if (lineStartList.size() == 20 || lineStartList.size() == 10 || lineStartList.size() == 1) { //Fire again after the first 20 lines
@@ -673,7 +690,13 @@ class OutWriter extends OutputWriter implements Runnable {
      * a cache on the first call and uses that.
      */
     public int getLogicalLineCountAbove (int line, int charCount) {
-        if (getStorage().size() < 100000 || !storage.isClosed()) {
+        if (line == 0) {
+            return 0;
+        }
+        if (toByteIndex(charCount) > longestLine) {
+            return line;
+        }
+        if (getStorage().size() < 500000 || !storage.isClosed()) {
             return dynLogicalLineCountAbove(line, charCount);
         } else {
             return cachedLogicalLineCountAbove (line, charCount);
@@ -687,7 +710,10 @@ class OutWriter extends OutputWriter implements Runnable {
      * a cache on the first call and uses that.
      */
     public int getLogicalLineCountIfWrappedAt (int charCount) {
-        if (getStorage().size() < 100000 || !storage.isClosed()) {
+        if (toByteIndex(charCount) > longestLine) {
+            return lineCount();
+        }
+        if (getStorage().size() < 500000 || !storage.isClosed()) {
             return dynLogicalLineCountIfWrappedAt(charCount);
         } else {
             return cachedLogicalLineCountIfWrappedAt(charCount);
@@ -695,48 +721,50 @@ class OutWriter extends OutputWriter implements Runnable {
     }
     
     int knownCharCount = -1;
-    private int cachedLogicalLineCountAbove (int line, int charCount) {
-        if (charCount != knownCharCount) {
+    private synchronized int cachedLogicalLineCountAbove (int line, int charCount) {
+        if (charCount != knownCharCount || knownLogicalLineCounts == null) {
             knownCharCount = charCount;
             calcCharCounts(charCount);
         }
-        return line == 0 ? 0 : knownLogicalLineCounts.get(line-1);
+        return knownLogicalLineCounts.get(line);
     }
     
-    private int cachedLogicalLineCountIfWrappedAt (int charCount) {
-        if (charCount == 0) {
+    private synchronized int cachedLogicalLineCountIfWrappedAt (int charCount) {
+        int lineCount = lineCount();
+        if (charCount == 0 || lineCount == 0) {
             return 0;
         }
-        if (charCount != knownCharCount ) {
+        if (charCount != knownCharCount || knownLogicalLineCounts == null) {
             knownCharCount = charCount;
             calcCharCounts(charCount);
         }
-        int lineCount = lineCount();
         int result = knownLogicalLineCounts.get(lineCount-1);
         int len = length (lineCount - 1);
         result += (len / charCount) + 1;
         return result;
     }
     
-    private void calcCharCounts(int width) {
-        int max = lineStartList.size();
-        knownLogicalLineCounts = new IntList(max);
-        knownLogicalLineCounts.add(0);
+    private synchronized void calcCharCounts(int width) {
+        int lineCount = lineCount();
+        knownLogicalLineCounts = new IntList(lineCount);
         
         int bcount = toByteIndex(width);
         
-        int prev = 0;
-        int ct = 1;
-        for (int i=1; i < max; i++) {
-            int curr = lineStartList.get(i);
-            if (curr - prev > bcount) {
-                ct += ((curr - prev) / bcount) + 1;
+        
+        knownLogicalLineCounts.add(0);
+        int val = 0;
+        for (int i=1; i < lineCount; i++) {
+            int len = length(i);
+            
+            if (len > width) {
+                val += (len / width) + 1;
             } else {
-                ct++;
+                val++;
             }
-            prev = curr;
-            knownLogicalLineCounts.add(ct);
-        }        
+            knownLogicalLineCounts.add(val);
+        }
+        
+        knownCharCount = width;
     }
     
     private IntList knownLogicalLineCounts = null;
@@ -806,10 +834,6 @@ class OutWriter extends OutputWriter implements Runnable {
             } else {
                 lastWrappedAboveLineCount++;
             }
-        }
-        int lineLen = length(line);
-        if (lineLen > charCount) {
-
         }
 
         lastWrappedAboveLine = line;

@@ -25,7 +25,7 @@ import java.util.Arrays;
  *
  * @author  Tim Boudreau
  */
-class IntList {
+final class IntList {
     private int initialCapacity;
     private int[] array;
     private int used = 0;
