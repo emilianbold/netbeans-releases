@@ -108,7 +108,7 @@ public class ProxyClassLoader extends ClassLoader {
     }
 
     private void zombieCheck(String hint) {
-        if (dead) {
+        if (/*dead*/false/* suppress this warning for now, more confusing than useful */) {
             IllegalStateException ise = new IllegalStateException("WARNING - attempting to use a zombie classloader " + this + " on " + hint + ". This means classes from a disabled module are still active. May or may not be a problem."); // NOI18N
             JarClassLoader.notify(0, ise);
             // don't warn again for same loader... this was enough
