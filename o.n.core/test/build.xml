@@ -155,6 +155,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Compiles all tests -->
     <target name="compile" depends="prepare-compile-classpath" unless="xtest.distexec">
         <ant dir="unit/src/org/netbeans/core/modules"/>
+        <ant dir="unit/src/org/netbeans/core/projects"/>
         <ant dir="unit/src/org/netbeans/core/lookup/data"/>
         <javac srcdir="unit/src" 
                deprecation="${build.compiler.deprecation}"
@@ -184,6 +185,7 @@ Microsystems, Inc. All Rights Reserved.
         </delete>
         <delete dir="${xtest.file.location}"/>
         <ant dir="unit/src/org/netbeans/core/modules" target="clean"/>
+        <ant dir="unit/src/org/netbeans/core/projects" target="clean"/>
         <ant dir="unit/src/org/netbeans/core/lookup/data" target="clean"/>
     </target>
 
