@@ -14,6 +14,7 @@
 package org.netbeans.modules.web.examples;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +31,9 @@ import org.openide.xml.XMLUtil;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
+import org.openide.modules.InstalledFileLocator;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+
 /**
  * Create a sample web project by unzipping a template into some directory
  *
@@ -40,11 +44,13 @@ public class WebSampleProjectGenerator {
     private WebSampleProjectGenerator() {}
 
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project/1";    //NOI18N
+    public static final String JSPC_CLASSPATH = "jspc.classpath";
 
     public static FileObject createProjectFromTemplate(final FileObject template, File projectLocation, final String name) throws IOException {
         FileObject prjLoc = null;
         if (template.getExt().endsWith("zip")) {  //NOI18N
             unzip(template.getInputStream(), projectLocation);
+            // update project.xml
             try {
                 prjLoc = FileUtil.toFileObject(projectLocation);
                 File projXml = FileUtil.toFile(prjLoc.getFileObject(AntProjectHelper.PROJECT_XML_PATH));
@@ -65,6 +71,39 @@ public class WebSampleProjectGenerator {
             } catch (Exception e) {
                 throw new IOException(e.toString());
             }
+            
+            //update private/project.properties
+            try {
+                File props = FileUtil.toFile(prjLoc.getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
+                InputStream is = new FileInputStream(props);
+                EditableProperties ep = new EditableProperties();
+                ep.load(is);
+                
+                // JSPC classpath
+                StringBuffer sb = new StringBuffer();
+                // Ant is needed in classpath if we are forking JspC into another process
+                sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false)); //NOI18N
+                sb.append(":"); // NOI18N
+                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/servlet-api-2.4.jar", null, false)); //NOI18N
+                sb.append(":"); // NOI18N
+                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jsp-api-2.0.jar", null, false));   //NOI18N
+                sb.append(":"); // NOI18N
+                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.25.jar", null, false));    //NOI18N
+                sb.append(":"); // NOI18N
+                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.0.25.jar", null, false));     //NOI18N
+                sb.append(":"); // NOI18N
+                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false));    //NOI18N
+                sb.append(":"); // NOI18N
+                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-logging-api.jar", null, false));   //NOI18N
+                ep.setProperty(JSPC_CLASSPATH, sb.toString());
+
+                OutputStream os = new FileOutputStream(props);
+                ep.store(os);
+                
+            } catch (Exception e) {
+                throw new IOException(e.toString());
+            }
+        
             prjLoc.refresh(false);
         }
         return prjLoc;
