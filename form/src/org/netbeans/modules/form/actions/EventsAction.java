@@ -26,9 +26,9 @@ import com.netbeans.ide.util.HelpCtx;
 import com.netbeans.ide.util.actions.*;
 //import com.netbeans.ide.nodes.Cookies;
 import com.netbeans.ide.nodes.Node;
-//import com.netbeans.developer.modules.loaders.form.formeditor.FormEditor;
-//import com.netbeans.developer.modules.loaders.form.formeditor.RADNode;
-//import com.netbeans.developer.modules.loaders.form.formeditor.EventsList;
+//import com.netbeans.developer.modules.loaders.form.FormEditor;
+//import com.netbeans.developer.modules.loaders.form.RADNode;
+//import com.netbeans.developer.modules.loaders.form.EventsList;
 import com.netbeans.developer.modules.loaders.form.FormNodeCookie;
 
 /** Events action - subclass of NodeAction - enabled on RADNodes.
@@ -155,6 +155,8 @@ public class EventsAction extends CookieAction {
 }
 /*
  * Log
+ *  3    Gandalf   1.2         5/4/99   Ian Formanek    package change 
+ *       (formeditor -> ..)
  *  2    Gandalf   1.1         3/28/99  Ian Formanek    Introduced changes done 
  *       in X2 after this class was copied to Gandalf
  *  1    Gandalf   1.0         3/26/99  Ian Formanek    

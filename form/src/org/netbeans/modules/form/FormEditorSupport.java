@@ -17,17 +17,13 @@ import java.io.*;
 
 import com.netbeans.ide.TopManager;
 import com.netbeans.ide.NotifyDescriptor;
+import com.netbeans.ide.filesystems.FileObject;
 import com.netbeans.ide.loaders.MultiDataObject;
 import com.netbeans.ide.src.nodes.SourceChildren;
 import com.netbeans.ide.util.NbBundle;
 
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
-import com.netbeans.developer.modules.loaders.form.formeditor.*;
 import com.netbeans.developer.modules.loaders.form.forminfo.*;
-import com.netbeans.developer.modules.loaders.form.backward.DesignForm;
-import com.netbeans.developer.modules.loaders.form.backward.RADNode;
-import com.netbeans.developer.modules.loaders.form.backward.RADVisualNode;
-import com.netbeans.developer.modules.loaders.form.backward.RADContainerNode;
 
 /** 
 *
@@ -39,11 +35,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   private FormDataObject formObject;
   /** True, if the design form has been loaded from the form file */
   transient private boolean formLoaded;
-  /** The DesignForm of this form */
-//  transient private DesignForm designForm;
 
-  private FormTopComponent formTopComponent;
-  
   private RADComponentNode formRootNode;
 
   private FormManager formManager;
@@ -103,10 +95,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   /** @returns the Form Window */
   FormTopComponent getFormTopComponent () {
     if (!formLoaded) return null;
-    if (formTopComponent == null) {
-      formTopComponent = new FormTopComponent (formManager);
-    }
-    return formTopComponent;
+    return formManager.getFormTopComponent ();
   }
 
   public com.netbeans.ide.nodes.Node getFormRootNode () {
@@ -145,92 +134,27 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   * @return true if the form was correcly loaded, false if any error occured 
   */
   protected boolean loadForm () {
-    InputStream is = null;
+    TuborgPersistenceManager perMan = new TuborgPersistenceManager ();
+    FileObject formFile = formObject.getFormEntry ().getFile ();
     try {
-      is = formObject.getFormEntry ().getFile().getInputStream();
-    } catch (FileNotFoundException e) {
-      String message = java.text.MessageFormat.format(NbBundle.getBundle (FormEditorSupport.class).getString("FMT_ERR_LoadingForm"),
-                                            new Object[] { formObject.getName(), e.getClass().getName()} );
-      TopManager.getDefault().notify(new NotifyDescriptor.Exception(e, message));
-      return false;
-    }
-    
-    ObjectInputStream ois = null;
-    try {
-      ois = new FormBCObjectInputStream(is); 
-
-      // deserialization from stream
-      Object deserializedForm = ois.readObject ();
-      
-      // create new objects from Backward compatibility classes
-      RADForm radForm = null;
-      if (deserializedForm instanceof DesignForm) {
-        formManager = new FormManager (this);
-        radForm = new RADForm (new JFrameFormInfo (), formManager);
-        RADComponent[] subComps = createHierarchy ((((DesignForm)deserializedForm).getFormManager ().getRootNode ()), formManager);
-        radForm.getTopLevelComponent ().initSubComponents (subComps);
-      }
-
-      FormEditor.displayErrorLog ();
-
-      TopManager.getDefault ().notify (new NotifyDescriptor.Message (
-            NbBundle.getBundle (FormEditorSupport.class).getString ("MSG_BackwardCompatibility_OK"),
-            NotifyDescriptor.INFORMATION_MESSAGE
-          )
-       );
+      if (perMan.canLoadForm (formObject)) {
+        formManager  = perMan.loadForm (formObject);
+        formManager.initialize ();
+        
+        // create form hierarchy node and add it to SourceChildren
+        SourceChildren sc = (SourceChildren)formObject.getNodeDelegate ().getChildren ();
+        formRootNode = new RADComponentNode ((RADComponent)formManager.getRADForm ().getTopLevelComponent ());
+        sc.add (new RADComponentNode [] { formRootNode });
+        
+      } else return false;
       formLoaded = true;
-
-      // create form hierarchy node and add it to SourceChildren
-      SourceChildren sc = (SourceChildren)formObject.getNodeDelegate ().getChildren ();
-      formRootNode = new RADComponentNode ((RADComponent)radForm.getTopLevelComponent ());
-      sc.add (new RADComponentNode [] { formRootNode });
-                      
-                  
-    } catch (Throwable e) {
-      if (System.getProperty ("netbeans.debug.form") != null) {
-        e.printStackTrace ();
-      }
-      TopManager.getDefault ().notify (new NotifyDescriptor.Message (
-            NbBundle.getBundle (FormEditorSupport.class).getString ("ERR_BackwardCompatibilityBreach"),
-            NotifyDescriptor.WARNING_MESSAGE
-          )
-       );
+    } catch (IOException e) {
+      e.printStackTrace ();
       return false;
     }
-    finally {
-      if (ois != null) {
-        try {
-          ois.close();
-        }
-        catch (IOException e) {
-        }
-      }
-    }
-
     return true;
   }
 
-  private static RADComponent[] createHierarchy (RADContainerNode node, FormManager formManager) {
-    RADNode nodes[] = node.getSubNodes ();
-    RADComponent[] comps = new RADComponent [nodes.length];
-    for (int i = 0; i < nodes.length; i++) {
-      if (nodes[i] instanceof RADContainerNode) {
-        comps[i] = new RADVisualContainer ();
-        RADComponent[] subs = createHierarchy ((RADContainerNode)nodes[i], formManager);
-        ((ComponentContainer)comps[i]).initSubComponents (subs);
-      } else if (nodes[i] instanceof RADVisualNode) {
-        comps[i] = new RADVisualComponent ();
-      } else {
-        comps[i] = new RADComponent ();
-      }
-      comps[i].setFormManager (formManager);
-      comps[i].setComponent (nodes[i].getBeanClass ());
-      comps[i].setName (nodes[i].getName ());
-    }
-
-    return comps;
-  }
-  
 // -----------------------------------------------------------------------------
 // FormCookie implementation
   
@@ -264,6 +188,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  10   Gandalf   1.9         5/4/99   Ian Formanek    package change 
+ *       (formeditor -> ..)
  *  9    Gandalf   1.8         5/2/99   Ian Formanek    
  *  8    Gandalf   1.7         4/29/99  Ian Formanek    
  *  7    Gandalf   1.6         4/29/99  Ian Formanek    

@@ -54,6 +54,8 @@ public class FormDataObject extends JavaDataObject {
   transient private boolean componentRefRegistered;
 
 
+  transient private FormEditorSupport formEditor;
+
   /** The entry for the .form file */
   FileEntry formEntry;
   
@@ -65,9 +67,6 @@ public class FormDataObject extends JavaDataObject {
     init ();
   }
 
-//--------------------------------------------------------------------
-// Other methods
-
   /** Initalizes the FormDataObject after deserialization */
   private void init() {
     templateInit = false;
@@ -75,10 +74,27 @@ public class FormDataObject extends JavaDataObject {
     componentRefRegistered = false;
   }
 
+//--------------------------------------------------------------------
+// Important interface
+
+//--------------------------------------------------------------------
+// Other methods
+
+  public FileObject getFormFile () {
+    return getFormEntry ().getFile ();
+  }
+  
   protected JavaEditor createJavaEditor () {
-    return new FormEditorSupport (getPrimaryEntry (), this);
+    if (formEditor == null) {
+      formEditor = new FormEditorSupport (getPrimaryEntry (), this);
+    }
+    return formEditor;
   }
 
+  FormEditorSupport getFormEditor () {
+    return (FormEditorSupport)createJavaEditor ();
+  }
+  
   FileEntry getFormEntry () {
     return formEntry;
   }
@@ -117,6 +133,8 @@ public class FormDataObject extends JavaDataObject {
 
 /*
  * Log
+ *  16   Gandalf   1.15        5/4/99   Ian Formanek    package change 
+ *       (formeditor -> ..)
  *  15   Gandalf   1.14        4/27/99  Ian Formanek    Fixed bug #1457 - Form 
  *       DataObject does not have the "Execution" properties
  *  14   Gandalf   1.13        4/26/99  Ian Formanek    

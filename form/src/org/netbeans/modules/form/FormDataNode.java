@@ -16,7 +16,6 @@ package com.netbeans.developer.modules.loaders.form;
 import java.lang.reflect.InvocationTargetException;
 
 import com.netbeans.ide.util.HelpCtx;
-import com.netbeans.developer.modules.loaders.form.formeditor.*;
 import com.netbeans.developer.modules.loaders.java.JavaNode;
 
 /** The DataNode for Forms.
@@ -53,6 +52,8 @@ public class FormDataNode extends JavaNode {
 
 /*
  * Log
+ *  8    Gandalf   1.7         5/4/99   Ian Formanek    package change 
+ *       (formeditor -> ..)
  *  7    Gandalf   1.6         4/29/99  Ian Formanek    
  *  6    Gandalf   1.5         4/27/99  Ian Formanek    Fixed bug #1457 - Form 
  *       DataObject does not have the "Execution" properties

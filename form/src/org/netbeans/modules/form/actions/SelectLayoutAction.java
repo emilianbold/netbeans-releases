@@ -22,8 +22,7 @@ import com.netbeans.ide.util.HelpCtx;
 import com.netbeans.ide.util.actions.*;
 import com.netbeans.ide.nodes.Node;
 //import com.netbeans.ide.nodes.Cookies;
-//import com.netbeans.developer.modules.loaders.form.formeditor.palette.*;
-import com.netbeans.developer.modules.loaders.form.formeditor.*;
+//import com.netbeans.developer.modules.loaders.form.palette.*;
 import com.netbeans.developer.modules.loaders.form.*;
 
 /** SelectLayout action - subclass of NodeAction - enabled on RADContainerNodes and RADLayoutNodes.
@@ -196,6 +195,8 @@ public class SelectLayoutAction extends CookieAction {
 }
 /*
  * Log
+ *  3    Gandalf   1.2         5/4/99   Ian Formanek    package change 
+ *       (formeditor -> ..)
  *  2    Gandalf   1.1         3/28/99  Ian Formanek    Introduced changes done 
  *       in X2 after this class was copied to Gandalf
  *  1    Gandalf   1.0         3/26/99  Ian Formanek    
