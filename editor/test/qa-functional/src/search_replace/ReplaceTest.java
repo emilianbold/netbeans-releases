@@ -172,27 +172,35 @@ public class ReplaceTest extends EditorTestCase {
             // check status bar
             waitForLabel("'testReplaceDialogComboBox' found at 13:35");
             
-            int found = 0;
+            boolean found1 = false;
+            boolean found2 = false;
+            boolean found3 = false;
             for (int i = 0; i<replace.cboFindWhat().getItemCount(); i++) {
                 if (((String)replace.cboFindWhat().getItemAt(i)).equals( 
-                    "testReplaceDialogComboBox")) found++;
+                    "testReplaceDialogComboBox")) found1 = true;
                 if (((String)replace.cboFindWhat().getItemAt(i)).equals( 
-                    "class")) found++;
+                    "class")) found2 = true;
                 if (((String)replace.cboFindWhat().getItemAt(i)).equals( 
-                    "package")) found++;
+                    "package")) found3 = true;
             }
-            assertEquals(found, 3);
+            assertEquals(found1, true);
+            assertEquals(found2, true);
+            assertEquals(found3, true);
 
-            int found2 = 0;
+            found1 = false;
+            found2 = false;
+            found3 = false;
             for (int i = 0; i<replace.cboReplaceWith().getItemCount(); i++) {
                 if (((String)replace.cboReplaceWith().getItemAt(i)).equals( 
-                    "testReplaceDialogComboBox2")) found2++;
+                    "testReplaceDialogComboBox2")) found1 = true;
                 if (((String)replace.cboReplaceWith().getItemAt(i)).equals( 
-                    "klasa")) found2++;
+                    "klasa")) found2 = true;
                 if (((String)replace.cboReplaceWith().getItemAt(i)).equals( 
-                    "pakaz")) found2++;
+                    "pakaz")) found3 = true;
             }
-            assertEquals(found2, 3);
+            assertEquals(found1, true);
+            assertEquals(found2, true);
+            assertEquals(found3, true);
                         
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);
             replace.close();
@@ -368,7 +376,7 @@ public class ReplaceTest extends EditorTestCase {
                     public String getDescription() {
                         return("any replace dialog");  //NOI18N
                     }
-                });
+                })tre;
             }
             public String getDescription() {
                 return "containing any replace dialog";  //NOI18N
