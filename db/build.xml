@@ -115,7 +115,7 @@ Microsystems, Inc. All Rights Reserved.
       <description>
         Database Explorer
       </description>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>
 
