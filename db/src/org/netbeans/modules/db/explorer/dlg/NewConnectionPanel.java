@@ -36,16 +36,12 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     private DatabaseConnection connection;
 
     private final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
-    
-    /** The support for firing property changes */
-    private PropertyChangeSupport propertySupport;
 
     public NewConnectionPanel(Vector templates, String driver, String database, String loginname) {
         this(templates, new DatabaseConnection(driver, database, loginname, null));
     }
 
     public NewConnectionPanel(Vector templates, DatabaseConnection connection) {
-        propertySupport = new PropertyChangeSupport(this);
         this.templates = templates;
         this.connection = connection;
         initComponents();
@@ -380,25 +376,9 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     }
 
     private void fireChange() {
-        propertySupport.firePropertyChange("argumentChanged", null, null);
+        firePropertyChange("argumentChanged", null, null);
         connectProgressBar.setBorderPainted(false);
         connectProgressBar.setValue(connectProgressBar.getMinimum());
         connectProgressBar.setString(""); //NOI18N
-    }
-
-    /** Add property change listener
-    * Registers a listener for the PropertyChange event. The connection object
-    * should fire a PropertyChange event whenever somebody changes driver, database,
-    * login name or password.
-    */
-    public void addPropertyChangeListener (PropertyChangeListener l) {
-        propertySupport.addPropertyChangeListener (l);
-    }
-
-    /** Remove property change listener
-    * Remove a listener for the PropertyChange event.
-    */
-    public void removePropertyChangeListener (PropertyChangeListener l) {
-        propertySupport.removePropertyChangeListener (l);
     }
 }
