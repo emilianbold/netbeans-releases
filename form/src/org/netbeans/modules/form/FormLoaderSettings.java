@@ -136,7 +136,7 @@ public class FormLoaderSettings extends SystemOption {
         { "boolean", "sun.beans.editors.BoolEditor" }, // NOI18N
         { "float", "sun.beans.editors.FloatEditor" }, // NOI18N
         { "double", "sun.beans.editors.DoubleEditor" }, // NOI18N
-        { String[].class.getName(), "org.netbeans.beaninfo.editors.StringArrayEditor.class"}, // NOI18N
+        { String[].class.getName(), "org.openide.explorer.propertysheet.editors.StringArrayEditor"}, // NOI18N
     };
 
     private static int outputLevel = OUTPUT_NORMAL;
