@@ -128,6 +128,7 @@ public class J2SEProjectProperties {
     // CustomizerSources
     DefaultTableModel SOURCE_ROOTS_MODEL;
     DefaultTableModel TEST_ROOTS_MODEL;
+    ComboBoxModel JAVAC_SOURCE_MODEL;
      
     // CustomizerLibraries
     DefaultListModel JAVAC_CLASSPATH_MODEL;
@@ -205,7 +206,7 @@ public class J2SEProjectProperties {
         
         // CustomizerSources
         SOURCE_ROOTS_MODEL = J2SESourceRootsUi.createModel( project.getSourceRoots() );
-        TEST_ROOTS_MODEL = J2SESourceRootsUi.createModel( project.getTestSourceRoots() );
+        TEST_ROOTS_MODEL = J2SESourceRootsUi.createModel( project.getTestSourceRoots() );        
                 
         // CustomizerLibraries
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                
@@ -214,7 +215,8 @@ public class J2SEProjectProperties {
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_TEST_CLASSPATH ) ) );
         RUN_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_CLASSPATH ) ) );
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_TEST_CLASSPATH ) ) );
-        PLATFORM_MODEL = PlatformUiSupport.createComboBoxModel (projectProperties.getProperty(JAVA_PLATFORM));
+        PLATFORM_MODEL = PlatformUiSupport.createComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
+        JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE));
                 
         // CustomizerCompile
         JAVAC_DEPRECATION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVAC_DEPRECATION );
@@ -306,6 +308,12 @@ public class J2SEProjectProperties {
         
         //Handle platform selection
         PlatformUiSupport.storePlatform (projectProperties, updateHelper, (String) PLATFORM_MODEL.getSelectedItem());
+        
+        //Save javac.source
+        if (JAVAC_SOURCE_MODEL.getSelectedItem()!=null) {
+            //Not broken platform
+            projectProperties.setProperty(JAVAC_SOURCE, JAVAC_SOURCE_MODEL.getSelectedItem().toString());
+        }
                 
         // Handle other special cases
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N

@@ -7,13 +7,15 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
 import java.io.File;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -22,7 +24,7 @@ import org.netbeans.modules.java.j2seproject.J2SEProject;
 
 /**
  *
- * @author  tom
+ * @author  Tomas Zezula
  */
 public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider {
     
@@ -61,11 +63,29 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );
-        
+        this.sourceLevel.setModel(uiProperties.JAVAC_SOURCE_MODEL);        
+        uiProperties.JAVAC_SOURCE_MODEL.addListDataListener(new ListDataListener () {
+            public void intervalAdded(ListDataEvent e) {
+                enableSourceLevel ();
+            }
+
+            public void intervalRemoved(ListDataEvent e) {
+                enableSourceLevel ();
+            }
+
+            public void contentsChanged(ListDataEvent e) {
+                enableSourceLevel ();
+            }                                    
+        });
+        enableSourceLevel ();
     }
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx (CustomizerSources.class);
+    }
+    
+    private void enableSourceLevel () {
+        this.sourceLevel.setEnabled(sourceLevel.getItemCount()>0);
     }
     
     /** This method is called from within the constructor to
@@ -94,6 +114,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         removeTestRoot = new javax.swing.JButton();
         upTestRoot = new javax.swing.JButton();
         downTestRoot = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        sourceLevel = new javax.swing.JComboBox();
+        jPanel2 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -317,13 +341,48 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.45;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(testRootsPanel, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_SourceLevel").charAt(0));
+        jLabel4.setLabelFor(sourceLevel);
+        jLabel4.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("TXT_SourceLevel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        jPanel1.add(jLabel4, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.75;
+        jPanel1.add(sourceLevel, gridBagConstraints);
+        sourceLevel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AN_SourceLevel"));
+        sourceLevel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_SourceLevel"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(jPanel2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(jPanel1, gridBagConstraints);
 
     }//GEN-END:initComponents
     
@@ -336,11 +395,15 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField projectLocation;
     private javax.swing.JButton removeSourceRoot;
     private javax.swing.JButton removeTestRoot;
+    private javax.swing.JComboBox sourceLevel;
     private javax.swing.JTable sourceRoots;
     private javax.swing.JPanel sourceRootsPanel;
     private javax.swing.JTable testRoots;

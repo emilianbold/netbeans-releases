@@ -16,6 +16,9 @@ package org.netbeans.modules.java.j2seproject.ui.customizer;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.AbstractListModel;
@@ -24,12 +27,15 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -85,9 +91,26 @@ public class PlatformUiSupport {
         }
     }
     
-    private static String getAntPlatformName (String displayName) {
+    /**
+     * Creates {@link ComboBoxModel} of source levels for active platform.
+     * The model listens on the platform's {@link ComboBoxModel} and update its
+     * state according to changes
+     * @param platformComboBoxModel the platform's model used for listenning
+     * @param initialValue initial source level value
+     * @return {@link ComboBoxModel} of {@link SpecificationVersion}
+     */
+    public static ComboBoxModel createSourceLevelComboBoxModel (ComboBoxModel platformComboBoxModel, String initialValue) {
+        return new SourceLevelComboBoxModel (platformComboBoxModel, initialValue);
+    }
+    
+    private static JavaPlatform getPlatform (String displayName) {
         JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(displayName, new Specification("j2se",null));  //NOI18N
-        return platforms.length == 0 ? null : (String) platforms[0].getProperties().get("platform.ant.name");    //NOI18N
+        return platforms.length == 0 ? null : platforms[0];
+    }
+    
+    private static String getAntPlatformName (String displayName) {        
+        JavaPlatform platform = getPlatform(displayName);
+        return  platform == null ? null : (String) platform.getProperties().get("platform.ant.name");    //NOI18N
     }
            
     private static class PlatformComboBoxModel extends AbstractListModel implements ComboBoxModel, PropertyChangeListener {
@@ -170,6 +193,93 @@ public class PlatformUiSupport {
             return this.platformNamesCache;                    
         }
         
+    }
+    
+    private static class SourceLevelComboBoxModel extends AbstractListModel implements ComboBoxModel, ListDataListener {
+        
+        private static final String VERSION_PREFIX = "1.";      //The version prefix
+        private static final int INITIAL_VERSION_MINOR = 2;     //1.2
+        
+        private SpecificationVersion selectedSourceLevel;
+        private SpecificationVersion[] sourceLevelCache;
+        private final ComboBoxModel platformComboBoxModel;
+        
+        public SourceLevelComboBoxModel (ComboBoxModel platformComboBoxModel, String initialValue) {            
+            this.platformComboBoxModel = platformComboBoxModel;
+            this.platformComboBoxModel.addListDataListener (this);
+            if (initialValue != null && initialValue.length()>0) {
+                this.selectedSourceLevel = new SpecificationVersion (initialValue);
+            }
+        }
+                
+        public int getSize () {
+            SpecificationVersion[] sLevels = getSourceLevels ();
+            return sLevels.length;
+        }
+        
+        public Object getElementAt (int index) {
+            SpecificationVersion[] sLevels = getSourceLevels ();
+            assert index >=0 && index< sLevels.length;
+            return sLevels[index];
+        }
+        
+        public Object getSelectedItem () {
+            List sLevels = Arrays.asList(getSourceLevels ());
+            if (this.selectedSourceLevel != null) {
+                if (!sLevels.contains(this.selectedSourceLevel)) {
+                    if (sLevels.size()>0) {
+                        this.selectedSourceLevel = (SpecificationVersion) sLevels.get(sLevels.size()-1);
+                    }
+                    else {
+                        this.selectedSourceLevel = null;
+                    }
+                }            
+            }
+            return this.selectedSourceLevel;
+        }
+        
+        public void setSelectedItem (Object obj) {
+            this.selectedSourceLevel = (SpecificationVersion) obj;
+            this.fireContentsChanged(this, -1, -1);
+        }
+        
+        public void intervalAdded(ListDataEvent e) {
+        }
+
+        public void intervalRemoved(ListDataEvent e) {
+        }
+
+        public void contentsChanged(ListDataEvent e) {
+            resetCache();
+        }
+        
+        private void resetCache () {            
+            synchronized (this) {
+                this.sourceLevelCache = null;                
+            }
+            this.fireContentsChanged(this, -1, -1);
+        }
+        
+        private SpecificationVersion[] getSourceLevels () {
+            if (this.sourceLevelCache == null) {
+                String selectedPlatform = (String) this.platformComboBoxModel.getSelectedItem();
+                JavaPlatform platform = getPlatform(selectedPlatform);
+                List/*<SpecificationVersion>*/ sLevels = new ArrayList ();
+                //If platform == null broken platform, the source level range is unknown
+                //The source level combo box should be empty and disabled
+                if (platform != null) {
+                    SpecificationVersion version = platform.getSpecification().getVersion();
+                    int index = INITIAL_VERSION_MINOR;
+                    SpecificationVersion template = new SpecificationVersion (VERSION_PREFIX + Integer.toString (index++));                    
+                    while (template.compareTo(version)<=0) {
+                        sLevels.add (template);
+                        template = new SpecificationVersion (VERSION_PREFIX + Integer.toString (index++));
+                    }
+                }
+                this.sourceLevelCache = (SpecificationVersion[]) sLevels.toArray(new SpecificationVersion[sLevels.size()]);
+            }
+            return this.sourceLevelCache;
+        }               
     }
     
 }
