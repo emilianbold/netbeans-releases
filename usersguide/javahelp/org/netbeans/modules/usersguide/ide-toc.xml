@@ -251,6 +251,7 @@
     <tocitem text="Default Debugger" target="debug.debugger.default"/>
     <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
     <tocitem text="JDK 1.1 Debugger" target="debug.debugger.jdk"/>
+    <tocitem text="Debugger Executor" target="debug.debugger.executor"/>
     <tocitem text="Specifying the Default Debugger" target="debug.debugger.project_default"/>
     <tocitem text="Defining a New Debugger Type" target="debug.service.new"/>
     <tocitem text="Setting a Debugger Type in a Template" target="debug.debugger.template" />
@@ -522,7 +523,9 @@
     <tocitem text="Setting a Proxy" target="proxy" />
     <tocitem text="Configuring HTTP Server Options" target="httpserver-options" />
     <tocitem text="Specifying the Default Web Browser" target="webbrowser.default" />
-    <tocitem text="External Browser" target="webbrowser.configure" />
+    <tocitem text="External Browser (Windows)" target="webbrowser.winwebbrowser" />
+    <tocitem text="External Browser (UNIX)" target="webbrowser.unixwebbrowser" />
+    <tocitem text="External Browser (Command Line)" target="webbrowser.simpleextbrowser" />
     <tocitem text="Swing HTML Browser" target="webbrowser.swing" />
   </tocitem>
   <tocitem text="Managing IDE Windows" target="workspace.jump">
