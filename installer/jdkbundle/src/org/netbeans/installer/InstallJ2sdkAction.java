@@ -217,12 +217,13 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             }
             
             //Delete _uninst dir on Windows
-            if (Util.isWindowsOS()) {
+            //XXX this must be reconsidered as storage builder is run after JDK install action
+            /*if (Util.isWindowsOS()) {
                 File uninstDirFile = new File(uninstDir);
                 if (uninstDirFile.exists()) {
                     deleteCompletely(uninstDirFile);
                 }
-            }
+            }*/
             
             //Move JDK up one dir level
             if (!Util.isWindowsOS()) {
