@@ -39,6 +39,12 @@ public final class EnumElementValue extends ElementValue {
 	enumName = ((CPName)pool.get(iEnumName)).getName();
     }
 
+    // for 1.5 beta1 classfile incompatibility
+    EnumElementValue(String type, String name) {
+	enumType = type;
+	enumName = name;
+    }
+
     /**
      * Returns the enum type as a string, rather than a ClassName.
      * This is necessary because an enum may have a primitive type.

@@ -163,7 +163,7 @@ public class ClassFile {
             
         minorVersion = in.readShort();
         majorVersion = in.readShort();
-        int count = in.readShort();
+        int count = in.readUnsignedShort();
         ConstantPool pool = new ConstantPool(count, in);
         classAccess = in.readUnsignedShort();
         classInfo = pool.getClass(in.readUnsignedShort());
@@ -185,11 +185,13 @@ public class ClassFile {
         return classes;
     }
     
+    //FIXME: rewrite to store all attributes as byte arrays, delay conversion
     private void loadAttributes(DataInputStream in, ConstantPool pool) 
       throws IOException {        
         int count = in.readUnsignedShort();
         attributes = new HashMap(count + 1, (float)1.0);
 	annotations = new HashMap(2);
+	final byte[] noBytes = new byte[0];
         for (int i = 0; i < count; i++) {
             try {
 		CPUTF8Info entry = 
@@ -198,11 +200,11 @@ public class ClassFile {
 		int len = in.readInt();
 		String name = entry.getName();
 		if (name.equals("Deprecated")){
-		    attributes.put(name, null);
+		    attributes.put(name, noBytes);
 		    deprecated = true;
 		}
 		else if (name.equals("Synthetic")){
-		    attributes.put(name, null);
+		    attributes.put(name, noBytes);
 		    synthetic = true;
 		}
 		else if (name.equals("SourceFile")) { //NOI18N
@@ -221,9 +223,15 @@ public class ClassFile {
 		else if (name.equals("EnclosingMethod")) { //NOI18N
 		    int classIndex = in.readUnsignedShort();
 		    int natIndex = in.readUnsignedShort();
-		    enclosingMethod = 
-			new EnclosingMethod(pool, classIndex, natIndex);
-		    attributes.put(name, enclosingMethod);
+		    CPEntry classInfo = pool.get(classIndex);
+		    if (classInfo.getTag() == ConstantPool.CONSTANT_Class) {
+			enclosingMethod = 
+			    new EnclosingMethod(pool, 
+						(CPClassInfo)classInfo, 
+						natIndex);
+			attributes.put(name, enclosingMethod);
+		    } else
+			; // Dasho bug in 1.5 beta1's jce.jar
 		}
 		else if (name.equals("RuntimeVisibleAnnotations")) //NOI18N
 		    Annotation.load(in, pool, true, annotations);
@@ -231,7 +239,7 @@ public class ClassFile {
 		    Annotation.load(in, pool, false, annotations);
 		else {
 		    skip(in, len);
-		    attributes.put(name, null);
+		    attributes.put(name, noBytes);
 		}
             } catch (ClassCastException e) {
                 throw new IOException("invalid constant pool entry");
@@ -388,7 +396,16 @@ public class ClassFile {
     public final boolean isEnum() {
 	return (classAccess & Access.ENUM) == Access.ENUM;
     }
-            
+
+    /**
+     * Returns a map of the raw attributes for this classfile.  The
+     * keys for this map are the names of the attributes (as Strings,
+     * not constant pool indexes).  The values are byte arrays that
+     * hold the contents of the attribute.  Field attributes are
+     * not returned in this map.
+     *
+     * @see org.netbeans.modules.classfile.Field#getAttributes
+     */
     public final Map getAttributes(){
         return attributes;
     }

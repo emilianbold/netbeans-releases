@@ -36,8 +36,8 @@ public final class EnclosingMethod {
     final CPClassInfo classInfo;
     final CPNameAndTypeInfo methodInfo;
 
-    EnclosingMethod(ConstantPool pool, int iClass, int iMethod) {
-	classInfo = (CPClassInfo)pool.get(iClass);
+    EnclosingMethod(ConstantPool pool, CPClassInfo classInfo, int iMethod) {
+	this.classInfo = classInfo;
 	methodInfo = iMethod > 0 ? (CPNameAndTypeInfo)pool.get(iMethod) : null;
     }
 
@@ -78,8 +78,7 @@ public final class EnclosingMethod {
     public String toString() {
 	String methodString = methodInfo != null 
 	    ? methodInfo.toString() : "<no method>";
-        return getClass().getName() + 
-	    ": class=" + getClassName() + //NOI18N
+        return "enclosing method: class=" + getClassName() + //NOI18N
 	    ", method=" + methodString;   //NOI18N
     }
 }

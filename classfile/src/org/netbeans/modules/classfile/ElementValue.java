@@ -33,13 +33,9 @@ public abstract class ElementValue {
 	throws IOException {
 	char tag = (char)in.readByte();
 	switch (tag) {
-	  case 'e': {
-	      int enumType = in.readShort();
-	      int enumConst = in.readShort();
-	      return new EnumElementValue(pool, enumType, enumConst);
-	  }
+	case 'e': return loadEnumValue(in, pool);
 	  case 'c': {
-	      int classType = in.readShort();
+	      int classType = in.readUnsignedShort();
 	      return new ClassElementValue(pool, classType);
 	  }
 	  case '@': {
@@ -47,14 +43,31 @@ public abstract class ElementValue {
 	      return new NestedElementValue(pool, value);
 	  }
 	  case '[': {
-	      ElementValue[] values = new ElementValue[in.readShort()];
+	      ElementValue[] values = new ElementValue[in.readUnsignedShort()];
 	      for (int i = 0; i < values.length; i++)
 		  values[i] = load(in, pool);
 	      return new ArrayElementValue(pool, values);
 	  }
 	  default:
 	      assert "BCDFIJSZs".indexOf(tag) >= 0 : "invalid annotation tag";
-	      return new PrimitiveElementValue(pool, in.readShort());
+	      return new PrimitiveElementValue(pool, in.readUnsignedShort());
+	}
+    }
+
+    private static ElementValue loadEnumValue(DataInputStream in, 
+					      ConstantPool pool) 
+	throws IOException {
+	int type = in.readUnsignedShort();
+	CPEntry cpe = pool.get(type);
+	if (cpe.getTag() == ConstantPool.CONSTANT_FieldRef) {
+	    // workaround for 1.5 beta 1 and earlier builds
+	    CPFieldInfo fe = (CPFieldInfo)cpe;
+	    String enumType = fe.getClassName().getInternalName();
+	    String enumName = fe.getFieldName();
+	    return new EnumElementValue(enumType, enumName);
+	} else {
+	    int name = in.readUnsignedShort();
+	    return new EnumElementValue(pool, type, name);
 	}
     }
 

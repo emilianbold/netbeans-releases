@@ -43,6 +43,7 @@ public abstract class Field {
     private boolean deprecated = false;
     private boolean synthetic = false;
     private HashMap annotations;
+    private HashMap attributes;
 
     /** Creates new Field */
     Field(DataInputStream in, ConstantPool pool, ClassFile classFile) throws IOException {
@@ -67,8 +68,10 @@ public abstract class Field {
     
     final void loadAttributes(DataInputStream in, ConstantPool pool) throws IOException {       
 	annotations = new HashMap(2);
-        int n = in.readUnsignedShort();
-        for (int i = 0; i < n; i++) {
+        int count = in.readUnsignedShort();
+        attributes = new HashMap(count + 1, (float)1.0);
+	//FIXME: attributes map is currently empty.
+        for (int i = 0; i < count; i++) {
             CPUTF8Info entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
             int len = in.readInt();
             String name = entry.getName();
@@ -185,6 +188,20 @@ public abstract class Field {
      */
     public final boolean isAnnotationPresent(final ClassName annotationClass) {
 	return annotations.get(annotationClass) != null;
+    }
+    
+    /**
+     * Returns a map of the raw attributes for this field.  The
+     * keys for this map are the names of the attributes (as Strings,
+     * not constant pool indexes).  The values are byte arrays that
+     * hold the contents of the attribute.  If the ClassFile was
+     * created with an <code>includeCode</code> parameter that is
+     * false, then <b>Code</b> attributes are not included in this map.
+     *
+     * @see org.netbeans.modules.classfile.ClassFile#getAttributes
+     */
+    public final Map getAttributes(){
+        return attributes;
     }
     
     public String toString() {
