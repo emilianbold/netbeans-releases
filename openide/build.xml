@@ -308,7 +308,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <!-- Build separate libraries for the IDE -->
   
-  <target name="libs" depends="lib-util,lib-fs,lib-nodes,lib-explorer" />
+  <target name="libs" depends="lib-util,lib-fs,lib-nodes,lib-explorer,lib-lookup" />
   
   <target name="lib-util" depends="compile,13javac-workaround,vers-prep">
 	<mkdir dir="standalone"/>
@@ -444,6 +444,27 @@ Microsystems, Inc. All Rights Reserved.
                   <exclude name="org/openide/explorer/propertysheet/*_*" />
                   <exclude name="org/openide/explorer/propertysheet/editors/*_*" />
                   <exclude name="org/openide/explorer/view/*_*" />
+             </fileset>
+        </jar>
+  </target>        
+  
+  <target name="lib-lookup" depends="compile,13javac-workaround,vers-prep">
+	<mkdir dir="standalone"/>
+        <copy file="openide-lookup.mf" tofile="openide-lookup-subst.mf" filtering="on"/>
+        
+        <!-- include only lookup classes + WeakSet -->
+  	<jar jarfile="standalone/openide-lookup.jar"
+	     manifest="openide-lookup-subst.mf"
+	     compress="false">
+             <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
+                  <include name="org/openide/ErrorManager*class"/>
+                  <include name="org/openide/util/lookup/*"/>
+                  <include name="org/openide/util/*Lookup*"/>
+                  <include name="org/openide/util/WeakSet*"/>
+                  
+                  <!-- exlude localized resources, they are part of openide.jar -->
+                  <exclude name="org/openide/**/*_*" />
+                  <exclude name="org/openide/util/*_*" />
              </fileset>
         </jar>
   </target>        
