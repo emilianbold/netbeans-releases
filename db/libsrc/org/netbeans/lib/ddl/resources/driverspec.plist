@@ -55,22 +55,6 @@
   };
 
 // ****************************************************
-// MS SQLServer - Sprinta JDBC driver
-// ****************************************************
-  "Sprinta JDBC driver" = {
-    DriverName = "Sprinta JDBC driver";
-    get_Schema = null;
-  };
-
-// ****************************************************
-// MS SQLServer - weblogic.jdbc.mssqlserver4.Driver
-// ****************************************************
-  "weblogic.jdbc.mssqlserver4.Driver" = {
-    DriverName = "weblogic.jdbc.mssqlserver4.Driver";
-    get_Schema = null;
-  };
-
-// ****************************************************
 // MySQL JDBC-ODBC bridge
 // ****************************************************
   "JDBC-ODBC Bridge (myodbc.dll)" = {
