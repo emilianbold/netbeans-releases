@@ -53,7 +53,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-MoveDownAction.instance"/>
             <file name="org-openide-actions-MoveUpAction.instance"/>
             <file name="org-openide-actions-NewAction.instance"/>
-            <!--<file name="org-netbeans-core-actions-OpenExplorerAction.instance"/>-->
             <file name="org-openide-actions-OpenAction.instance"/>
             <file name="org-openide-actions-PopupAction.instance"/>
             <file name="org-openide-actions-PrintAction.instance"/>
