@@ -103,13 +103,15 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         split.add(sheet = new PropertySheetView(), SplittedPanel.ADD_SECOND);
         split.setSplitType(SplittedPanel.VERTICAL);
         split.setSplitPosition(DEFAULT_INSPECTOR_PERCENTS);
+
         sheet.setDisplayWritableOnly(
             FormEditor.getFormSettings().getDisplayWritableOnly());
+        sheet.addPropertyChangeListener(new PropertiesDisplayListener());
+
         add(BorderLayout.CENTER, split);
     }
 
-    class NodeSelectedListener implements PropertyChangeListener
-    {
+    class NodeSelectedListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             if (!ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()))
                 return;
@@ -150,6 +152,18 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
                             cookie.getRADComponent());
                     }
                 }
+            }
+        }
+    }
+
+    class PropertiesDisplayListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PropertySheet.PROPERTY_DISPLAY_WRITABLE_ONLY.equals(
+                                              evt.getPropertyName()))
+            {
+                System.out.println("display writable properties changed");
+                FormEditor.getFormSettings().setDisplayWritableOnly(
+                                               sheet.getDisplayWritableOnly());
             }
         }
     }

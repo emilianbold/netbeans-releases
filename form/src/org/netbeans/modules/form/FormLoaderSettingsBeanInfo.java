@@ -99,6 +99,9 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        "getShowComponentsNames", "setShowComponentsNames"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_VARIABLES_LOCAL, FormLoaderSettings.class, // NOI18N
                                        "getVariablesLocal", "setVariablesLocal"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_DISPLAY_WRITABLE_ONLY,
+                                       FormLoaderSettings.class,
+                                       "getDisplayWritableOnly", "setDisplayWritableOnly") // NOI18N
             };
 
 //            desc[0].setDisplayName(formBundle.getString("PROP_INDENT_AWT_HIERARCHY"));
@@ -194,6 +197,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[20].setDisplayName(formBundle.getString("PROP_VARIABLES_LOCAL"));
             desc[20].setShortDescription(formBundle.getString("HINT_VARIABLES_LOCAL"));
             desc[20].setExpert(true);
+
+            desc[21].setHidden(true);
 
             return desc;
             
