@@ -516,7 +516,7 @@ public class NewTemplateAction extends NodeAction {
             }
             
             // in this case the modified wizard will be used as default
-            TemplateWizard wizard = getWizard (null);
+            TemplateWizard wizard = getWizard (n);
             
             try {
                 wizard.setTargetName (null);
