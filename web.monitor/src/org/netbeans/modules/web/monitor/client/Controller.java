@@ -107,12 +107,6 @@ class Controller  {
     
     private transient Comparator comp = null;
 
-    /*
-    private HtmlBrowser.BrowserComponent browser = null;
-    private SettingsListener browserListener = null;
-    private SystemOption settings = null;
-    */
-
     private boolean useBrowserCookie = true;
 
     private static Controller instance = null; 
@@ -1358,133 +1352,9 @@ class Controller  {
         // window system code must be run in AWT thread
         SwingUtilities.invokeLater(new Runnable() {
             public void run () {
-                /*
-                if(browser == null) 
-                    browser = 
-                        new HtmlBrowser.BrowserComponent(getFactory(), true, true);
-		
-		if(browser != null) {
-		    browser.setURL(url);
-		    browser.open();
-		    if(!browser.isShowing()) browser.setVisible(true);
-		}
-                */
                 HtmlBrowser.URLDisplayer.getDefault().showURL(url);
 	    }});
     }
-
-    // XXX TBD whether this is useful...
-    /* 
-     * Get a factory objects for browsers. 
-     * /
-    private  HtmlBrowser.Factory getFactory() {
-
-	if(debug) log("getFactory()"); //NOI18N
-	try {
-
-	    FileObject fo = 
-		Repository.getDefault().getDefaultFileSystem()
-		.findResource("Services/Browsers"); //NOI18N
-	    DataFolder folder = DataFolder.findFolder(fo);
-	    DataObject[] dobjs = folder.getChildren();
-	    for(int i = 0; i<dobjs.length; ++i) {
-		Object attr = 
-		    dobjs[i].getPrimaryFile()
-		    .getAttribute("DEFAULT_BROWSER"); //NOI18N
-		if(attr instanceof Boolean) {
-		    if(Boolean.TRUE.equals(attr)) {
-			try {
-			    Object factory = 
-				((InstanceCookie)dobjs[i].getCookie
-				 (InstanceCookie.class)).instanceCreate(); 
-			    if(debug) log("found the factory"); //NOI18N
-			    return (HtmlBrowser.Factory)factory;
-			}
-			catch (java.io.IOException ex) {}
-			catch (ClassNotFoundException ex) {}
-		    }
-		}
-	    }
-	    // There was no default browser set yet. Use the first 
-	    // attribute that is not hidden. 
-	    for (int i = 0; i<dobjs.length; ++i) {
-		Object attr = 
-		    dobjs[i].getPrimaryFile().getAttribute("hidden"); // NOI18N
-		if(!Boolean.TRUE.equals(attr)) {
-		    try {
-			Object factory = 
-			    ((InstanceCookie)dobjs[i].getCookie 
-			     (InstanceCookie.class)).instanceCreate ();
-			if(debug) log("Found a factory"); // NOI18N
-			return(HtmlBrowser.Factory)factory;
-		    }
-		    catch (java.io.IOException ex) {}
-		    catch (ClassNotFoundException ex) {}
-		}
-	    }
-                
-	    Lookup.Result result = 
-		Lookup.getDefault().lookup
-		(new Lookup.Template (HtmlBrowser.Factory.class));
-	    java.util.Iterator it = result.allInstances().iterator();
-	    if(it.hasNext()) {
-		if(debug) log("used lookup"); //NOI18N
-		return (HtmlBrowser.Factory)it.next ();
-	    }
-	    else return null;
-	}
-	catch (Exception ex) {
-	    ErrorManager.getDefault().notify(ex);
-	}
-	return null;	 
-    }
-    */
-
-    /** 
-     * Registers a listener to core events so that we know if the
-     * browser has changed on the system. 
-     * /
-    private void registerBrowserListener() {
-        FileObject fo =	Repository.getDefault().getDefaultFileSystem()
-	    .findResource("Services/org-netbeans-core-IDESettings.settings"); // NOI18N
-        if (fo != null) {
-            try {
-                DataObject dobj = DataObject.find(fo);
-                InstanceCookie.Of ic = 
-		    (InstanceCookie.Of)dobj.getCookie(InstanceCookie.Of.class);
-                if(ic.instanceOf(SystemOption.class)) {
-                    try {
-                        settings = (SystemOption)ic.instanceCreate();
-                        browserListener = new SettingsListener(settings);
-			settings.addPropertyChangeListener(browserListener);
-		    }
-                    catch (IOException ex) {
-                    }
-                    catch (ClassNotFoundException ex) {
-		    }
-                }
-            }
-            catch (DataObjectNotFoundException ex) {
-                if(debug) ErrorManager.getDefault().notify(ex);
-            }
-        }
-    }
-    */
-
-
-    /** 
-     * Removes the listener which detectes whether the browser setting
-     * has changed on the system.
-     * /
-    private void removeBrowserListener() {
-	if(settings == null || browserListener == null) return;
-	try {
-	    settings.removePropertyChangeListener(browserListener);
-	}
-	catch(Exception ex) {
-	}
-    }
-    */
 
     // PENDING - use the logger instead
     private static void log(final String s) {
@@ -1541,27 +1411,6 @@ class Controller  {
 	}
 	return false;
     }
-    
-
-    /*
-    class SettingsListener implements PropertyChangeListener {
-	
-	private SystemOption source;
-
-	public SettingsListener(SystemOption source) {
-	    this.source = source;
-	}
-	
-	public void propertyChange(PropertyChangeEvent evt)  {
-	    if(debug) 
-		log("SettingsListener got property change event"); //NOI18N
-	    if("WWWBrowser".equals(evt.getPropertyName())) { //NOI18N
-		browser = null;
-	    }
-	}
-    }
-    */
-     
     
     /**
      * Does the server we try to replay on exist? 
