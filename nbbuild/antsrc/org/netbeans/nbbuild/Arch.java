@@ -316,7 +316,7 @@ public class Arch extends Task implements ErrorHandler {
     }
     
     private void generateTemplateFile (String versionOfQuestions, Set missing) throws IOException {
-        String nbRoot = findNbRoot (questionsFile);
+        String nbRoot = findNbRoot (questionsFile).replace (File.separatorChar, '/');
         
         Writer w = new FileWriter (questionsFile);
         
