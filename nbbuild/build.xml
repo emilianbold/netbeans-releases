@@ -133,7 +133,7 @@ workspaceswitcher
     <echo message="Building module crosscompile..."/>
     <ant dir="../crosscompile" target="netbeans"/>
   </target>
-  <target name="all-debuggercore" depends="all-openide,all-openidex">
+  <target name="all-debuggercore" depends="all-openide">
     <echo message="Building module debuggercore..."/>
     <ant dir="../debuggercore" target="netbeans"/>
   </target>
