@@ -15,7 +15,11 @@ package org.netbeans.core.actions;
 
 import java.io.ObjectStreamException;
 import java.text.MessageFormat;
-import java.awt.BorderLayout;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.table.JTableHeader;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -78,6 +82,19 @@ public class OptionsAction extends CallableSystemAction {
         /** Formatted title of this view */
         private static MessageFormat formatTitle;
 
+        private static final Node.Property indicator = new SettingChildren.IndicatorProperty ();
+
+        private static final Node.Property full_set [] = new Node.Property [] { 
+            indicator,
+            new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_PROJECT),
+            new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_SESSION),
+            new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_MODULES)
+        };
+
+        private static final Node.Property simple_set [] = new Node.Property [] { 
+            indicator
+        };
+        
         public OptionsPanel () {
             super();
             setRootContext (initRC ());
@@ -90,8 +107,8 @@ public class OptionsAction extends CallableSystemAction {
             );
         }
 
-        /** Accessor to the singleron instance */
-        static OptionsPanel singleton () {
+        /** Accessor to the singleton instance */
+        private static synchronized OptionsPanel singleton () {
             if (singleton == null) {
                 singleton = new OptionsPanel();
             }
@@ -102,13 +119,7 @@ public class OptionsAction extends CallableSystemAction {
             TreeView view;
 
             if (!Boolean.getBoolean ("netbeans.options.old")) {
-                view = new TreeTableView();
-                ((TreeTableView)view).setProperties ( new Node.Property [] { 
-                    new SettingChildren.IndicatorProperty () ,
-                    new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_PROJECT),
-                    new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_SESSION),
-                    new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_MODULES)
-                });
+                view = new TTW ();
             } else {
                 view = new BeanTreeView();
             }
@@ -117,9 +128,31 @@ public class OptionsAction extends CallableSystemAction {
             PropertySheetView propertyView = new PropertySheetView();
             split.add(view, SplittedPanel.ADD_LEFT);
             split.add(propertyView, SplittedPanel.ADD_RIGHT);
-            // add to the panel
-            setLayout(new BorderLayout());
-            add(split, BorderLayout.CENTER);
+
+            setLayout (new java.awt.GridBagLayout ());
+
+            GridBagConstraints gridBagConstraints = new GridBagConstraints ();
+            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.weighty = 1.0;
+            add (split, gridBagConstraints);
+
+            javax.swing.JButton close = new javax.swing.JButton (NbBundle.getMessage (OptionsAction.class, "CTL_close_button"));
+            close.setDefaultCapable (true);
+            gridBagConstraints = new GridBagConstraints ();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 1;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+            gridBagConstraints.insets.bottom = 11;
+            gridBagConstraints.insets.top = 11;
+            gridBagConstraints.insets.right = 11;
+            close.addActionListener (new ActionListener () {
+                public void actionPerformed (ActionEvent e) {
+                    singleton ().close ();
+                }
+            });
+            add (close, gridBagConstraints);
+
             return view;
         }
 
@@ -147,6 +180,51 @@ public class OptionsAction extends CallableSystemAction {
             return rc;
         }
 
+        private static class TTW extends TreeTableView implements MouseListener {
+            public TTW () {
+                super ();
+
+                setProperties (full_set);
+                setTableColumnPreferredWidth (0, 20);
+
+                addMouseListener (this);
+            }
+            public void mouseExited (MouseEvent evt) {
+            }
+            public void mouseReleased (MouseEvent evt) {
+            }
+            public void mousePressed (MouseEvent evt) {
+            }
+            public void mouseClicked (MouseEvent evt) {
+                Component c = evt.getComponent ();
+                if (c instanceof JTableHeader) {
+                    JTableHeader h = (JTableHeader)c;
+                    
+                    // show/hide additional properties
+                    int column = h.columnAtPoint (evt.getPoint ());
+                    if (column == 0) {
+                        // first column is the Indicator property
+                        if (h.getTable ().getColumnCount () == 1) {
+                            // show additional properties
+                            indicator.setDisplayName (NbBundle.getMessage (SettingChildren.class, "LBL_IndicatorProperty_Name_Expanded")); //NOI18N
+                            setProperties (full_set);
+                            setTableColumnPreferredWidth (0, 20);
+                            setTableColumnPreferredWidth (1, 150);
+                            setTableColumnPreferredWidth (2, 150);
+                            setTableColumnPreferredWidth (3, 150);
+                        } else {
+                            // hide additional properties
+                            indicator.setDisplayName (NbBundle.getMessage (SettingChildren.class, "LBL_IndicatorProperty_Name")); //NOI18N
+                            setProperties (simple_set);
+                            setTableColumnPreferredWidth (0, 20);
+                        }
+                    }
+                }
+            }
+            public void mouseEntered (MouseEvent evt) {
+            }
+        }
+        
         private static class OptionsFilterNode extends FilterNode {
             public OptionsFilterNode () {
                 super (
