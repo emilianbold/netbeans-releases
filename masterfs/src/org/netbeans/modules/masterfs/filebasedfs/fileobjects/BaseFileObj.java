@@ -274,7 +274,6 @@ public abstract class BaseFileObj extends FileObject {
     final void fireFileDataCreatedEvent(final boolean expected) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
         stopWatch.start();
-        assert getFileName().getFile().isFile();         
 
         final BaseFileObj parent = getExistingParent();
         Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
@@ -292,7 +291,6 @@ public abstract class BaseFileObj extends FileObject {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
         stopWatch.start();
         
-        assert getFileName().getFile().isDirectory(); 
         
         final BaseFileObj parent = getExistingParent();
         Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
@@ -317,7 +315,6 @@ public abstract class BaseFileObj extends FileObject {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
         stopWatch.start();
         
-        assert getFileName().getFile().exists();        
         FileObject p = getParent();
         final BaseFileObj parent = (BaseFileObj)((p instanceof BaseFileObj) ? p : null);//getExistingParent();
         Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
@@ -334,8 +331,6 @@ public abstract class BaseFileObj extends FileObject {
     final void fireFileDeletedEvent(final boolean expected) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
         stopWatch.start();
-        
-        assert !getFileName().getFile().exists(); 
         FileObject p = getParent();
         final BaseFileObj parent = (BaseFileObj)((p instanceof BaseFileObj) ? p : null);//getExistingParent();
         Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
@@ -353,7 +348,6 @@ public abstract class BaseFileObj extends FileObject {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
         stopWatch.start();
         
-        //assert getFileName().getFile().exists();
         final BaseFileObj parent = getExistingParent();
         Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
         
@@ -418,8 +412,6 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     abstract protected void setValid(boolean valid);
-
-    abstract protected void refresh(final boolean expected, final boolean isFileDeletedAllowed);
     //TODO: attributes written by VCS must be readable by FileBaseFS and vice versa  
 /**
  * FileBaseFS 

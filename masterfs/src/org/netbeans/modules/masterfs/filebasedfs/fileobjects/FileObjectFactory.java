@@ -50,7 +50,11 @@ public final class FileObjectFactory {
         synchronized (allInstances) {
             retVal = this.get(f);
             if (retVal != null) {
-                ((BaseFileObj)retVal).setValid(f.exists());
+                if (!fInfo.exists()) {
+                    retVal = null;
+                } else {
+                    ((BaseFileObj)retVal).setValid(true);
+                }
             } else {
                 final File parent = f.getParentFile();
                 if (parent != null) {
@@ -127,7 +131,7 @@ public final class FileObjectFactory {
 
         for (Iterator iterator = all2Refresh.iterator(); iterator.hasNext();) {
             final BaseFileObj fo = (BaseFileObj) iterator.next();
-            fo.refresh(expected, fo.getExistingParent()==null );
+            fo.refresh(expected);
         }
     }
 

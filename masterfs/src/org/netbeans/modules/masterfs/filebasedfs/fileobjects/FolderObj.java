@@ -31,7 +31,7 @@ import java.util.*;
 /**
  * @author rm111737
  */
-public final class FolderObj extends BaseFileObj {
+public final class FolderObj extends BaseFileObj {    
     static final long serialVersionUID = -1022430210876356809L;
     private static final Mutex.Privileged mp = new Mutex.Privileged();
     private static final Mutex mutex = new Mutex(FolderObj.mp);
@@ -202,87 +202,88 @@ public final class FolderObj extends BaseFileObj {
 
 
     public final void refresh(final boolean expected) {
-        refresh(expected, true);
-    }
-
-    protected final void refresh(final boolean expected, final boolean isFileDeletedAllowed) {
 //        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FOLDER);
 //        stopWatch.start();
 
-        boolean isFileCreatedFired = false;
-        final ChildrenCache cache = getChildrenCache();
-        final Mutex.Privileged mutexPrivileged = cache.getMutexPrivileged();
+        if (isValid()) {
+            boolean isFileCreatedFired = false;
+            final ChildrenCache cache = getChildrenCache();
+            final Mutex.Privileged mutexPrivileged = cache.getMutexPrivileged();
 
-        Set oldChildren = null;
-        Map refreshResult = null;
-        mutexPrivileged.enterWriteAccess();
-        try {
-            oldChildren = cache.getChildren(false);
-            refreshResult = cache.refresh();
-        } finally {
-            mutexPrivileged.exitWriteAccess();
-        }
-
-        oldChildren.removeAll(refreshResult.keySet());
-        for (Iterator iterator = oldChildren.iterator(); iterator.hasNext();) {
-            final FileName child = (FileName) iterator.next();
-            final BaseFileObj childObj = getLocalFileSystem().getFactory().get(child.getFile());
-            if (childObj != null && childObj.isData()) {
-                ((FileObj)childObj).refresh(expected, false);
+            Set oldChildren = null;
+            Map refreshResult = null;
+            mutexPrivileged.enterWriteAccess();
+            try {
+                oldChildren = cache.getChildren(false);
+                refreshResult = cache.refresh();
+            } finally {
+                mutexPrivileged.exitWriteAccess();
             }
-        }
 
-        final FileBasedFileSystem localFileSystem = this.getLocalFileSystem();
-        final FileObjectFactory factory = localFileSystem.getFactory();
-        
-        final Iterator iterator = refreshResult.entrySet().iterator();
-        while (iterator.hasNext()) {
-            final Map.Entry entry = (Map.Entry) iterator.next();
-            final FileName child = (FileName) entry.getKey();
-            final Integer operationId = (Integer) entry.getValue();
-
-            BaseFileObj newChild = factory.get(child.getFile());
-            newChild = (BaseFileObj) ((newChild != null) ? newChild : getFileObject(child.getName()));
-            if (operationId == ChildrenCache.ADDED_CHILD && newChild != null) {
-                newChild.setValid(true);
-                
-                if (newChild.isFolder()) {
-                    isFileCreatedFired = true;
-                    newChild.fireFileFolderCreatedEvent(expected);
-                } else {
-                    isFileCreatedFired = true;
-                    newChild.fireFileDataCreatedEvent(expected);
+            oldChildren.removeAll(refreshResult.keySet());
+            for (Iterator iterator = oldChildren.iterator(); iterator.hasNext();) {
+                final FileName child = (FileName) iterator.next();
+                final BaseFileObj childObj = getLocalFileSystem().getFactory().get(child.getFile());
+                if (childObj != null && childObj.isData()) {
+                    ((FileObj)childObj).refresh(expected);
                 }
+            }
 
-            } else if (operationId == ChildrenCache.REMOVED_CHILD) {
-                if (newChild != null) {
-                    newChild.fireFileDeletedEvent(expected);
-                } else {
-                    //TODO: should be rechecked
-                    //assert false;
-                    final File f = child.getFile();
-                    if (!(new FileInfo(f).isConvertibleToFileObject())) {
-                        final BaseFileObj fakeInvalid;
-                        if (child.isFile()) {
-                            fakeInvalid = new FileObj(f, child);
-                        } else {
-                            fakeInvalid = new FolderObj(f, child);                            
-                        }
+            final FileBasedFileSystem localFileSystem = this.getLocalFileSystem();
+            final FileObjectFactory factory = localFileSystem.getFactory();
 
-                        fakeInvalid.fireFileDeletedEvent(expected);
+            final Iterator iterator = refreshResult.entrySet().iterator();
+            while (iterator.hasNext()) {
+                final Map.Entry entry = (Map.Entry) iterator.next();
+                final FileName child = (FileName) entry.getKey();
+                final Integer operationId = (Integer) entry.getValue();
+
+                BaseFileObj newChild = factory.get(child.getFile());
+                newChild = (BaseFileObj) ((newChild != null) ? newChild : getFileObject(child.getName()));
+                if (operationId == ChildrenCache.ADDED_CHILD && newChild != null) {
+                    newChild.setValid(true);
+
+                    if (newChild.isFolder()) {
+                        isFileCreatedFired = true;
+                        newChild.fireFileFolderCreatedEvent(expected);
+                    } else {
+                        isFileCreatedFired = true;
+                        newChild.fireFileDataCreatedEvent(expected);
                     }
+
+                } else if (operationId == ChildrenCache.REMOVED_CHILD) {
+                    if (newChild != null) {
+                        if (newChild.isValid()) {
+                            newChild.setValid(false);
+                            newChild.fireFileDeletedEvent(expected);
+                        }
+                    } else {
+                        //TODO: should be rechecked
+                        //assert false;
+                        final File f = child.getFile();
+                        if (!(new FileInfo(f).isConvertibleToFileObject())) {
+                            final BaseFileObj fakeInvalid;
+                            if (child.isFile()) {
+                                fakeInvalid = new FileObj(f, child);
+                            } else {
+                                fakeInvalid = new FolderObj(f, child);                            
+                            }
+
+                            fakeInvalid.fireFileDeletedEvent(expected);
+                        }
+                    }
+
+                } else {
+                    assert !(new FileInfo(child.getFile()).isConvertibleToFileObject());
                 }
 
-            } else {
-                assert !(new FileInfo(child.getFile()).isConvertibleToFileObject());
             }
-
-        }
-        setValid(getFileName().getFile().exists());        
-        if (!isValid() && !isFileCreatedFired && isFileDeletedAllowed) {
-            fireFileDeletedEvent(expected);    
-        }
-        
+            
+            setValid(getFileName().getFile().exists());        
+            if (!isValid()) {
+                fireFileDeletedEvent(expected);    
+            }
+        }         
 //        stopWatch.stop();        
     }
     
@@ -385,6 +386,10 @@ public final class FolderObj extends BaseFileObj {
 
         public final String toString() {
             return getFileName().toString();
+        }
+
+        public boolean existsInCache(String childName) {
+            return ch.existsldInCache(getFileName(), childName);
         }
     }
 

@@ -27,6 +27,8 @@ public interface ChildrenCache {
 
     FileNaming getChild(String childName, boolean rescan);
 
+    boolean existsInCache(String childName);    
+
     Map refresh();
 
     Mutex.Privileged getMutexPrivileged();

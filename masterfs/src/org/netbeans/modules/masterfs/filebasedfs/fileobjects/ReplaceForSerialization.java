@@ -101,8 +101,5 @@ public class ReplaceForSerialization extends Object implements java.io.Serializa
         public FileObject createData(String name, String ext) throws IOException {
             throw new IOException (getPath());
         }
-
-        protected void refresh(boolean expected, boolean isFileDeletedAllowed) {
-        }
     }    
 }

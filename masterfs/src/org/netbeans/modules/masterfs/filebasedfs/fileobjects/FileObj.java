@@ -35,7 +35,7 @@ final class FileObj extends BaseFileObj {
 
     FileObj(final File file, final FileNaming name) {
         super(file, name);
-        lastModified(null);
+        setLastModified(System.currentTimeMillis());
     }
     
     public final java.io.OutputStream getOutputStream(final org.openide.filesystems.FileLock lock) throws java.io.IOException {
@@ -49,7 +49,7 @@ final class FileObj extends BaseFileObj {
                                     if (!closable.isClosed()) {
                                         super.close();
                                         closable.close();
-                                        lastModified();
+                                        setLastModified(f.lastModified());
                                         fireFileChangedEvent(false);
                                     }
                                 }
@@ -88,25 +88,19 @@ final class FileObj extends BaseFileObj {
             throw fileNotFoundException;
         }
         assert inputStream != null;
-        lastModified ();
         return inputStream;
     }
 
     public final Date lastModified() {
         final File f = getFileName().getFile();
-        return new Date(lastModified(f));
+        return new Date(f.lastModified());
     }
 
-    private final long lastModified(File f) {
-        if (f == null) {
-            lastModified = System.currentTimeMillis();
-        } else {
-            lastModified = (f.exists()) ? f.lastModified() : -1;
-        }
-        
-        return (lastModified < 0) ? 0 : lastModified;
-    }
 
+    private final void setLastModified(long lastModified) {
+            this.lastModified = lastModified;
+    }
+    
     
     public final FileObject createFolder(final String name) throws IOException {
         throw new IOException(getPath());//isn't directory - cannot create neither file nor folder
@@ -126,14 +120,17 @@ final class FileObj extends BaseFileObj {
     }
 
     public boolean isValid() {
-        return lastModified != -1;
+        //0 - because java.io.File.lastModififed returns 0 for not existing files        
+        return lastModified != 0;
     }
 
     protected void setValid(boolean valid) {
         if (!valid) {
-            lastModified = -1;
+            //0 - because java.io.File.lastModififed returns 0 for not existing files
+            lastModified = 0;
         } else {
-            if (!isValid()) lastModified();
+            
+            if (!isValid()) setLastModified(System.currentTimeMillis());
         }
     }
 
@@ -143,32 +140,25 @@ final class FileObj extends BaseFileObj {
 
 
     public final void refresh(final boolean expected) {
-        refresh(expected, true);
+//        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FILE);
+//        stopWatch.start();                
+        if (isValid()) {
+            final long oldLastModified = lastModified;
+            setLastModified(getFileName().getFile().lastModified());
+
+            if (oldLastModified != -1 && lastModified != -1 && lastModified != 0 && oldLastModified < lastModified) {
+                fireFileChangedEvent(expected);
+            }
+            
+            setValid(getFileName().getFile().exists());        
+            if (!isValid()) {
+                fireFileDeletedEvent(expected);    
+            }            
+        }                 
+//        stopWatch.stop();
     }
     
 
-    protected final void refresh(final boolean expected, final boolean isFileDeletedAllowed) {
-//        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FILE);
-//        stopWatch.start();        
-        boolean isFileChangeFired = false;
-        
-        if (isValid()) {
-            final long oldLastModified = lastModified;
-            lastModified();
-
-            if (oldLastModified != -1 && lastModified != -1 && oldLastModified < lastModified) {
-                fireFileChangedEvent(expected);
-                isFileChangeFired = true;
-            }
-        } 
-        
-        setValid(getFileName().getFile().exists());        
-        if (!isValid() && !isFileChangeFired && isFileDeletedAllowed) {
-            fireFileDeletedEvent(expected);    
-        }
-        
-//        stopWatch.stop();
-    }
     
 
     public final Enumeration getChildren(final boolean rec) {

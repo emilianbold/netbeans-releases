@@ -83,9 +83,13 @@ public final class ChildrenSupport {
         return retVal;
     }
     
+    public boolean existsldInCache(final FileNaming folder, final String childName) {    
+        return lookupChildInCache(folder, childName) != null;
+    }
+    
     private FileName lookupChildInCache(final FileNaming folder, final String childName) {
-        final File f = new File (folder.getFile (), childName);
-        final Integer id = NamingFactory.createID (f);
+        final File f = new File(folder.getFile(), childName);
+        final Integer id = NamingFactory.createID(f);
         
         class FakeNaming implements FileNaming {
             public FileName lastEqual;
@@ -99,21 +103,21 @@ public final class ChildrenSupport {
             public boolean isRoot() {
                 return false;
             }
-
+            
             public File getFile() {
                 return f;
             }
-
+            
             public Integer getId() {
                 return id;
             }
             public boolean rename(String name) {
                 // not implemented, as it will not be called
-                throw new IllegalStateException ();
+                throw new IllegalStateException();
             }
             
-            public boolean equals (Object obj) {
-                if (hashCode () == obj.hashCode ()) {
+            public boolean equals(Object obj) {
+                if (hashCode() == obj.hashCode()) {
                     assert lastEqual == null : "Just one can be there"; // NOI18N
                     lastEqual = (FileName)obj;
                     return true;
@@ -121,22 +125,22 @@ public final class ChildrenSupport {
                 return false;
             }
             
-            public int hashCode () {
-                return id.intValue ();
+            public int hashCode() {
+                return id.intValue();
             }
-
+            
             public Integer getId(boolean recompute) {
                 return id;
             }
-
+            
             public boolean isFile() {
-                return this.getFile ().isFile();
+                return this.getFile().isFile();
             }
         }
-        FakeNaming fake = new FakeNaming ();
+        FakeNaming fake = new FakeNaming();
         
         final Set cache = getChildrenCache();
-        if (cache.contains (fake)) {
+        if (cache.contains(fake)) {
             assert fake.lastEqual != null : "If cache contains the object, we set lastEqual"; // NOI18N
             return fake.lastEqual;
         } else {
