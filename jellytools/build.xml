@@ -19,9 +19,6 @@ Microsystems, Inc. All Rights Reserved.
   <property name="license.file" value="${nbext}/standard-nbm-license.txt"/>
   <property name="build.compiler.debug" value="true"/>
 
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
-
     <path id="jellytools.classpath">
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
@@ -179,6 +176,7 @@ Microsystems, Inc. All Rights Reserved.
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="module-manifest.mf" tofile="module-manifest-subst.mf" filtering="on"/>
     <mkdir dir="netbeans/modules"/>
+    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
     <locjar jarfile="netbeans/modules/jellytools.jar"
          manifest="module-manifest-subst.mf"
          basedir="modulesrc"
@@ -195,6 +193,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="nbm" depends="release">
+    <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
     <makenbm file="jellytools.nbm"
              topdir="."
              module="netbeans/modules/jellytools.jar"
