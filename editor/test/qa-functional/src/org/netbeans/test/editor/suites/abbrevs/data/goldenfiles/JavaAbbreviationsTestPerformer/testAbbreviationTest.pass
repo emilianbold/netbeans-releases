@@ -24,6 +24,7 @@ synchronized CARET_POSITION
 System.err.println("CARET_POSITION");
 public static final String CARET_POSITION
 protected CARET_POSITION
+abstract CARET_POSITION
 public static final int CARET_POSITION
 ExceptionCARET_POSITION
 static CARET_POSITION
@@ -56,4 +57,3 @@ return CARET_POSITION
 breakCARET_POSITION
 throw new InternalError();CARET_POSITION
 import javax.sql.CARET_POSITION
-abstract CARET_POSITION
