@@ -46,12 +46,10 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   transient private PropertyChangeListener workspacesListener;
 
   private UndoRedo.Manager undoManager;
-
   private RADComponentNode formRootNode;
-
   private FormManager2 formManager;
-
   private PersistenceManager saveManager;
+  private PropertyChangeListener settingsListener;
 
   /** lock for opening form */
   private static final Object OPEN_FORM_LOCK = new Object ();
@@ -60,6 +58,19 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     super (javaEntry);
     this.formObject = formObject;
     formLoaded = false;
+    settingsListener = new PropertyChangeListener () {
+      public void propertyChange (PropertyChangeEvent evt) {
+        if (formLoaded) {
+          if (FormLoaderSettings.PROP_INDENT_AWT_HIERARCHY.equals (evt.getPropertyName ())) {
+            formManager.fireCodeChange ();
+          } else if (FormLoaderSettings.PROP_VARIABLES_MODIFIER.equals (evt.getPropertyName ())) {
+            formManager.fireFormChange ();
+          } else if (FormLoaderSettings.PROP_NULL_LAYOUT.equals (evt.getPropertyName ())) {
+            formManager.fireCodeChange ();
+          }
+        }
+      }
+    };
   }
     
   /** Focuses existing component to open, or if none exists creates new.
@@ -230,6 +241,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     sc.remove (new RADComponentNode [] { formRootNode });
     formRootNode = null;
     formManager = null;
+    FormEditor.getFormSettings ().removePropertyChangeListener (settingsListener);
     formLoaded = false;
   }
   
@@ -318,6 +330,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       sc.add (new RADComponentNode [] { formRootNode });
         
       formLoaded = true;
+      FormEditor.getFormSettings ().addPropertyChangeListener (settingsListener);
     } catch (Throwable t) {
       if (t instanceof ThreadDeath) {
         throw (ThreadDeath)t;
@@ -408,6 +421,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  35   Gandalf   1.34        9/29/99  Ian Formanek    Fixed bug 3853 - 
+ *       Changing variable Modifier property doesn't force the opened code to be
+ *        modified  too.
  *  34   Gandalf   1.33        9/10/99  Ian Formanek    Better exception 
  *       notification
  *  33   Gandalf   1.32        9/8/99   Ian Formanek    openAt behaves correctly
