@@ -358,6 +358,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Compiles all tests -->
     <target name="compile" depends="init" unless="xtest.distexec">
         <ant dir="unit/src/org/netbeans/core/modules"/>
+        <ant dir="unit/src/org/netbeans/core/lookup/data"/>
         <javac srcdir="unit/src" 
                deprecation="${build.compiler.deprecation}"
                debug="${build.compiler.debug}">
@@ -369,7 +370,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement path="${junit.path}"/>
 		<pathelement path="${xerces.path}"/>
             </classpath>            
-            <exclude name="org/netbeans/core/windows/data/"/>
+            <exclude name="**/data/"/>
             <exclude name="org/netbeans/core/modules/jars/"/>
         </javac>
     </target>
@@ -393,6 +394,7 @@ Microsystems, Inc. All Rights Reserved.
         </delete>
         <delete dir="${xtest.file.location}"/>
         <ant dir="unit/src/org/netbeans/core/modules" target="clean"/>
+        <ant dir="unit/src/org/netbeans/core/lookup/data" target="clean"/>
     </target>
     
     <!-- Removes results from previous test execution of given testtype  -->
