@@ -65,8 +65,8 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
     
     // remember last thread that invoked query method
     private ThreadLocal thread;
-    
-    /** 
+
+    /**
      * Perform the query on the given component. The query usually
      * gets the component's document, the caret position and searches back
      * to examine surrounding context. Then it returns the result.
@@ -127,11 +127,44 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                         list = queryNotations(helper, doc, sup);
                         break;
                 }
-                
-                 if (list != null && list.isEmpty() == false) {
+
+                if (list != null && list.isEmpty() == false) {
                     String debugMsg = Boolean.getBoolean("netbeans.debug.xml") ? " " + helper.getOffset() + "-" + helper.getEraseCount() : "";
                     String title = Util.THIS.getString("MSG_result", helper.getPreText()) + debugMsg;
-                    return new CompletionQuery.DefaultResult( component, title, list, helper.getOffset() - helper.getEraseCount(), helper.getEraseCount() );
+
+                     // add to the list end tag if detected '<'
+                     // unless following end tag is of the same name
+
+                     if (helper.getPreText().endsWith("<") && helper.getToken().getTokenID() == TEXT) { // NOI18N
+                         List startTags = findStartTag((SyntaxNode)helper.getSyntaxElement(), "/"); // NOI18N
+
+                         boolean addEndTag = list.isEmpty() == false;
+                         if (addEndTag) {
+                             SyntaxNode ctx = (SyntaxNode)helper.getSyntaxElement();
+                             SyntaxElement nextElement = ctx != null ? ctx.getNext() : null;
+                             if (nextElement instanceof EndTag) {
+                                 EndTag endtag = (EndTag) nextElement;
+                                 String nodename = endtag.getNodeName();
+                                 if (nodename != null) {
+                                     ElementResultItem item = (ElementResultItem)startTags.get(0);
+                                     if (("/" + nodename).equals(item.getItemText())) {  // NOI18N
+                                         addEndTag = false;
+                                     }
+                                 }
+                             }
+                         }
+                         if (addEndTag) {
+                             list.addAll(startTags);
+                         }
+                     }
+
+                    return new CompletionQuery.DefaultResult(
+                            component,
+                            title,
+                            list,
+                            helper.getOffset() - helper.getEraseCount(),
+                            helper.getEraseCount()
+                    );
                 } else {
                     
                     // auto complete end tag without showing popup
@@ -141,10 +174,15 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                         if (list != null && list.size() == 1) {
                             ElementResultItem item = (ElementResultItem)list.get(0);
                             item.substituteText(component, helper.getOffset(), 0, 0);
+                            return null;
                         }
                     }
-                    
-                    return null;
+
+                    if (list == null) { // broken document
+                        return cannotSuggest(component);
+                    } else { // grammar has no suggestion
+                        return noSuggestion(component);
+                    }
                 }
             } else {
                 // prolog, internal DTD no completition yet
@@ -162,16 +200,47 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                         );
                     }
                 }
-                return null; 
+                return noSuggestion(component);
             }
 
         } catch (BadLocationException e) {
             Util.THIS.debug(e);
         }
 
-        return null;
+        // nobody knows what happened...
+        return noSuggestion(component);
     }
-    
+
+    /**
+     * Contruct result indicating that grammar is not able to give
+     * a hint because document is too broken or invalid. Grammar
+     * knows that it's broken.
+     */
+    private static Result cannotSuggest(JTextComponent component) {
+        return new CompletionQuery.DefaultResult(
+            component,
+            Util.THIS.getString("BK0002"),
+            Collections.EMPTY_LIST,
+            0,
+            0
+        );
+    }
+
+    /**
+     * Contruct result indicating that grammar is not able to give
+     * a hint because in given context is not nothing allowed what
+     * the grammar know of. May grammar is missing at all.
+     */
+    private static Result noSuggestion(JTextComponent component) {
+        return new CompletionQuery.DefaultResult(
+            component,
+            Util.THIS.getString("BK0003"),
+            Collections.EMPTY_LIST,
+            0,
+            0
+        );
+    }
+
     // Grammar binding ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     /**
@@ -265,8 +334,11 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
     /**
      * User just typed <sample>&lt;/</sample> so we must locate
      * paing start tag.
+     * @param text pointer to starting context
+     * @param prefix that is prepended to created ElementResult e.g. '</'
+     * @return list with one ElementResult or empty.
      */
-    private static List findStartTag(SyntaxNode text) {
+    private static List findStartTag(SyntaxNode text, String prefix) {
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("XMLCompletionQuery.findStartTag: text=" + text);
 
         Node parent = text.getParentNode();
@@ -282,7 +354,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
             return Collections.EMPTY_LIST;
         }
 
-        XMLResultItem res = new ElementResultItem(name);
+        XMLResultItem res = new ElementResultItem(prefix + name);
         if ( Util.THIS.isLoggable() ) /* then */ {
             Util.THIS.debug ("    result=" + res);
         }
@@ -291,5 +363,9 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         list.add (res);
 
         return list;
+    }
+
+    private static List findStartTag(SyntaxNode text) {
+        return findStartTag(text, "");
     }
 }
