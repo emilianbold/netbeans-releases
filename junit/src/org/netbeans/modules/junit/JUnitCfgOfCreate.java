@@ -380,9 +380,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setMaximumSize(null);
         setMinimumSize(new java.awt.Dimension(500, 320));
-        setPreferredSize(null);
         lblFileSystem.setText(bundle.getString("JUnitCfgOfCreate.lblFileSystem.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -390,7 +388,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         add(lblFileSystem, gridBagConstraints);
 
         cboFileSystem.setMinimumSize(new java.awt.Dimension(200, 26));
-        cboFileSystem.setPreferredSize(new java.awt.Dimension(200, 26));
+        cboFileSystem.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -415,7 +413,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         jpTemplates.add(lblTestClass, gridBagConstraints);
 
         cboSuiteClass.setMinimumSize(new java.awt.Dimension(200, 26));
-        cboSuiteClass.setPreferredSize(new java.awt.Dimension(200, 26));
+        cboSuiteClass.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -423,7 +421,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         jpTemplates.add(cboSuiteClass, gridBagConstraints);
 
         cboTestClass.setMinimumSize(new java.awt.Dimension(200, 26));
-        cboTestClass.setPreferredSize(new java.awt.Dimension(200, 26));
+        cboTestClass.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
