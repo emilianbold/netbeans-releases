@@ -98,8 +98,8 @@ Controller, ActionListener {
             cbConnectors.getAccessibleContext ().setAccessibleDescription (
                 NbBundle.getMessage (ConnectPanel.class, "ACSD_CTL_Connector")
             );
-            //String lacn = getLastAttachingConnectorName ();
-            String lacn = "";
+            String lacn = Properties.getDefault ().getProperties ("debugger").
+                getString ("last_attaching_connector", "");
             int i, k = connectors.size ();
             for (i = 0; i < k; i++) {
                 Connector connector = (Connector) connectors.get (i);
@@ -342,13 +342,8 @@ Controller, ActionListener {
         Map args = connector.defaultArguments ();
 
         // 2) load saved version of args
-//        JPDADebuggerProjectSettings settings = (JPDADebuggerProjectSettings) 
-//            JPDADebuggerProjectSettings.findObject (
-//                JPDADebuggerProjectSettings.class,
-//                true
-//            );
-        Map savedArgs = new HashMap ();// settings.getConnectionSettings ();
-        if (savedArgs == null) return args;
+        Map savedArgs = Properties.getDefault ().getProperties ("debugger").
+                getMap ("connection_settings", new HashMap ());
         savedArgs = (Map) savedArgs.get (connector.name ());
         if (savedArgs == null) return args;
         
@@ -396,18 +391,14 @@ Controller, ActionListener {
                 argsToSave.put (argName, value.value ());
         }
 
-//        JPDADebuggerProjectSettings settings = (JPDADebuggerProjectSettings) 
-//            JPDADebuggerProjectSettings.findObject (
-//                JPDADebuggerProjectSettings.class,
-//                true
-//            );
-        Map m = new HashMap ();// settings.getConnectionSettings ();
-        if (m == null)
-            m = new HashMap ();
+        Map m = Properties.getDefault ().getProperties ("debugger").
+            getMap ("connection_settings", new HashMap ());
         String name = connector.name ();
         m.put (name, argsToSave);
-//        settings.setLastConnector (name);
-//        settings.setConnectionSettings (m);
+        Properties.getDefault ().getProperties ("debugger").
+                setString ("last_attaching_connector", name);
+        Properties.getDefault ().getProperties ("debugger").
+                setMap ("connection_settings", m);
     }
     
     private static String translate (String str) {
