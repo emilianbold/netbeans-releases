@@ -11,19 +11,19 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.nodes;
+package org.netbeans.modules.db.explorer.nodes;
 
 import java.sql.*;
 import java.util.*;
-import com.netbeans.ddl.*;
-import com.netbeans.ddl.impl.*;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.impl.*;
 import org.openide.nodes.*;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.options.SystemOption;
-import com.netbeans.enterprise.modules.db.*;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.*;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.infos.*;
 
 /** Abstract class that can be used as super class of all data objects that
 * should contain some nodes. It provides methods for adding/removing

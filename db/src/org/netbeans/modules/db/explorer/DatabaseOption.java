@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer;
+package org.netbeans.modules.db.explorer;
 
 import java.beans.*;
 import java.io.*;
@@ -23,9 +23,9 @@ import org.openide.actions.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.options.SystemOption;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.nodes.*;
 
 /** Root system option. It stores a list of available drivers and open connections.
 * These connections will be restored at startup, drivers will be placed in Drivers

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.beans.beaninfo;
+package org.netbeans.modules.beans.beaninfo;
  
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;

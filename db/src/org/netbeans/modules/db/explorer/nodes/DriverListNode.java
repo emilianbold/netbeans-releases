@@ -11,14 +11,14 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.nodes;
+package org.netbeans.modules.db.explorer.nodes;
 
 import java.util.Vector;
 import java.util.Enumeration;
-import com.netbeans.enterprise.modules.db.*;
-import com.netbeans.enterprise.modules.db.explorer.DatabaseDriver;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
-import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
+import org.netbeans.modules.db.*;
+import org.netbeans.modules.db.explorer.DatabaseDriver;
+import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 
 public class DriverListNode extends DatabaseNode
 {		

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl.beaninfo;
+package org.netbeans.beaninfo;
 
 import java.beans.*;
 import java.util.ResourceBundle;

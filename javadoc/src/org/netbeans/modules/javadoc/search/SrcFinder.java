@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.javadoc.search;
+package org.netbeans.modules.javadoc.search;
 
 import java.net.URL;
 import java.util.StringTokenizer;

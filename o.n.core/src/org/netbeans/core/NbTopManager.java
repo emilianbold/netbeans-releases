@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl;
+package org.netbeans.core;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -52,10 +52,10 @@ import org.openide.nodes.*;
 import org.openide.execution.ExecutionEngine;
 import org.openide.compiler.CompilationEngine;
 
-import com.netbeans.developer.impl.actions.*;
-import com.netbeans.developer.impl.output.OutputTab;
-import com.netbeans.developer.impl.windows.WindowManagerImpl;
-import com.netbeans.developer.impl.compiler.CompilationEngineImpl;
+import org.netbeans.core.actions.*;
+import org.netbeans.core.output.OutputTab;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.compiler.CompilationEngineImpl;
 
 
 /** This class is a TopManager for Corona environment.
@@ -388,7 +388,7 @@ public abstract class NbTopManager extends TopManager {
     
     synchronized (this) {
       if (execEngine == null) {
-        execEngine = com.netbeans.developer.impl.execution.ExecutionEngine.getExecutionEngine ();
+        execEngine = org.netbeans.core.execution.ExecutionEngine.getExecutionEngine ();
       }
     }
     return execEngine;

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.beans.beaninfo;
+package org.netbeans.modules.beans.beaninfo;
 
 import java.beans.*;
 import java.util.Collection;
@@ -25,8 +25,8 @@ import org.openide.src.ClassElement;
 import org.openide.src.MethodElement;
 import org.openide.TopManager;
 
-import com.netbeans.developer.modules.beans.PatternAnalyser;
-import com.netbeans.developer.modules.loaders.java.JavaEditor;
+import org.netbeans.modules.beans.PatternAnalyser;
+import org.netbeans.modules.java.JavaEditor;
 
 /** 
  * Finds or creates BeanInfo source elemnet for the class.

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text;
+package org.netbeans.modules.editor;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
@@ -22,11 +22,11 @@ import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import com.netbeans.editor.BaseKit;
-import com.netbeans.editor.EditorUI;
-import com.netbeans.editor.Utilities;
-import com.netbeans.editor.ext.ExtEditorUI;
-import com.netbeans.editor.ext.ExtKit;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ExtEditorUI;
+import org.netbeans.editor.ext.ExtKit;
 import org.openide.TopManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;

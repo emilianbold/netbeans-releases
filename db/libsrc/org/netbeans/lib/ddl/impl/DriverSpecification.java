@@ -11,14 +11,14 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.impl;
+package org.netbeans.lib.ddl.impl;
 
 import java.beans.*;
 import java.sql.*;
 import java.util.*;
-import com.netbeans.ddl.*;
-import com.netbeans.ddl.adaptors.*;
-import com.netbeans.ddl.impl.*;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.adaptors.*;
+import org.netbeans.lib.ddl.impl.*;
 
 import org.openide.*;
 

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import java.awt.*;
 import java.beans.*;
@@ -25,7 +25,7 @@ import javax.swing.JComponent;
 import org.openide.util.Utilities;
 import org.openide.util.io.*;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
-import com.netbeans.developer.modules.loaders.form.util.*;
+import org.netbeans.modules.form.util.*;
 
 /** A class that contains utility methods for the formeditor.
 *

@@ -11,13 +11,13 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.impl;
+package org.netbeans.lib.ddl.impl;
 
 import java.util.*;
 import java.sql.*;
 import java.text.ParseException;
-import com.netbeans.ddl.*;
-import com.netbeans.ddl.util.*;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.util.*;
 import java.io.Serializable;
 
 /** 

@@ -11,15 +11,15 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.actions;
+package org.netbeans.modules.db.explorer.actions;
 
 import java.sql.Connection;
 import org.openide.*;
 import org.openide.nodes.*;
-import com.netbeans.ddl.impl.Specification;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
-import com.netbeans.enterprise.modules.db.explorer.dlg.AddTableColumnDialog;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.dlg.AddTableColumnDialog;
 
 public class AddColumnAction extends DatabaseAction
 {

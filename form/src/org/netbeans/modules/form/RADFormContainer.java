@@ -11,9 +11,9 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
-import com.netbeans.developer.modules.loaders.form.forminfo.FormInfo;
+import org.netbeans.modules.form.forminfo.FormInfo;
 
 /** 
 *

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 
-<Form version="1.0" type="com.netbeans.developer.modules.loaders.form.forminfo.JPanelFormInfo">
+<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
-    <Property name="border" type="javax.swing.border.Border" editor="com.netbeans.developer.explorer.propertysheet.editors.BorderEditor">
-      <Border info="com.netbeans.developerx.loaders.form.formeditor.border.EmptyBorderInfo">
+    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
         <EmptyBorder bottom="8" left="8" right="8" top="8"/>
       </Border>
     </Property>
@@ -18,28 +18,28 @@
     <SyntheticProperty name="encoding" type="java.lang.String" value="ISO-8859-1"/>
   </SyntheticProperties>
 
-  <Layout class="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout"/>
+  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
   <SubComponents>
     <Container class="javax.swing.JScrollPane" name="abbrevsPane">
       <Constraints>
-        <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints anchor="10" fill="1" gridHeight="4" gridWidth="1" gridX="-1" gridY="-1" insetsBottom="0" insetsLeft="0" insetsRight="8" insetsTop="0" ipadX="0" ipadY="0" weightX="1.0" weightY="1.0"/>
         </Constraint>
-        <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout$BorderConstraintsDescription">
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
           <BorderConstraints direction="North"/>
         </Constraint>
       </Constraints>
 
-      <Layout class="com.netbeans.developerx.loaders.form.formeditor.layouts.support.JScrollPaneSupportLayout"/>
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JTable" name="abbrevsTable">
           <Properties>
-            <Property name="border" type="javax.swing.border.Border" editor="com.netbeans.developer.explorer.propertysheet.editors.BorderEditor">
-              <Border info="com.netbeans.developerx.loaders.form.formeditor.border.EmptyBorderInfo">
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                 <EmptyBorder bottom="8" left="8" right="8" top="8"/>
               </Border>
             </Property>
-            <Property name="model" type="javax.swing.table.TableModel" editor="com.netbeans.developer.modules.loaders.form.RADConnectionPropertyEditor">
+            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="model" type="code"/>
             </Property>
             <Property name="showVerticalLines" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
@@ -50,14 +50,14 @@
             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="abbrevsTable.setSelectionMode( DefaultListSelectionModel.SINGLE_SELECTION );&#xa;// Set the width of columns to 30% and 70%&#xa;TableColumnModel col = abbrevsTable.getColumnModel();&#xa;col.getColumn( 0 ).setMaxWidth( 3000 );    &#xa;col.getColumn( 0 ).setPreferredWidth( 30 );&#xa;col.getColumn( 1 ).setMaxWidth( 7000 );    &#xa;col.getColumn( 1 ).setPreferredWidth( 70 );"/>
           </AuxValues>
           <Constraints>
-            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.support.JScrollPaneSupportLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription"/>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription"/>
           </Constraints>
         </Component>
       </SubComponents>
     </Container>
     <Component class="javax.swing.JButton" name="addButton">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="com.netbeans.developer.modules.loaders.form.RADConnectionPropertyEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="bundle.getString( &quot;AEP_Add&quot; )" type="code"/>
         </Property>
       </Properties>
@@ -66,17 +66,17 @@
         <EventHandler event="actionPerformed" handler="addButtonActionPerformed"/>
       </Events>
       <Constraints>
-        <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="-1" gridY="-1" insetsBottom="5" insetsLeft="0" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
         </Constraint>
-        <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout$BorderConstraintsDescription">
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
           <BorderConstraints direction="Center"/>
         </Constraint>
       </Constraints>
     </Component>
     <Component class="javax.swing.JButton" name="editButton">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="com.netbeans.developer.modules.loaders.form.RADConnectionPropertyEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="bundle.getString( &quot;AEP_Edit&quot; )" type="code"/>
         </Property>
       </Properties>
@@ -85,14 +85,14 @@
         <EventHandler event="actionPerformed" handler="editButtonActionPerformed"/>
       </Events>
       <Constraints>
-        <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="1" gridY="1" insetsBottom="5" insetsLeft="0" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
         </Constraint>
       </Constraints>
     </Component>
     <Component class="javax.swing.JButton" name="removeButton">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="com.netbeans.developer.modules.loaders.form.RADConnectionPropertyEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="bundle.getString( &quot;AEP_Remove&quot; )" type="code"/>
         </Property>
       </Properties>
@@ -101,7 +101,7 @@
         <EventHandler event="actionPerformed" handler="removeButtonActionPerformed"/>
       </Events>
       <Constraints>
-        <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="1" gridY="2" insetsBottom="0" insetsLeft="0" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
         </Constraint>
       </Constraints>

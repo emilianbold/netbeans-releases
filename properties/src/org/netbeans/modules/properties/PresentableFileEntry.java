@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.properties;
+package org.netbeans.modules.properties;
  
 import java.awt.BorderLayout;
 import java.awt.Image;
@@ -377,7 +377,7 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
   /** Getter for a text from resource bundle.
   */
   static String getString (String name) {
-    return NbBundle.getBundle ("com.netbeans.developer.modules.loaders.properties.Bundle").getString (name);
+    return NbBundle.getBundle ("org.netbeans.modules.properties.Bundle").getString (name);
   }
 
 

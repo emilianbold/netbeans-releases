@@ -11,14 +11,14 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl.actions;
+package org.netbeans.core.actions;
 
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-import com.netbeans.developer.impl.ShortcutsEditor;
+import org.netbeans.core.ShortcutsEditor;
 
 /** The action that shows the Configere Shortcuts dialog.
 *
@@ -47,7 +47,7 @@ public class ConfigureShortcutsAction extends org.openide.util.actions.CallableS
   * @return URL to the action icon
   */
   public String iconResource () {
-    return "/com/netbeans/developer/impl/resources/actions/configureShortcuts.gif"; // NOI18N
+    return "/org/netbeans/core/resources/actions/configureShortcuts.gif"; // NOI18N
   }
 
   public HelpCtx getHelpCtx() {

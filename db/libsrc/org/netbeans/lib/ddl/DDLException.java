@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl;
+package org.netbeans.lib.ddl;
 
 /** Generic DDL operation-related exception.
 * This is a generic DDL-operation related exception. 

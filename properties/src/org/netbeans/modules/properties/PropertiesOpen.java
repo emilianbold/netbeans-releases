@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.properties;
+package org.netbeans.modules.properties;
 
 import java.io.IOException;
 import java.awt.*;
@@ -247,7 +247,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     public Image getIcon () {
       if (icon == null)
         icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource (
-          "/com/netbeans/developer/modules/loaders/properties/propertiesEditorMode.gif"));      
+          "/org/netbeans/modules/properties/propertiesEditorMode.gif"));      
       return icon;
     }
 
@@ -351,7 +351,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       PropertiesCloneableTopComponent pctc = new PropertiesCloneableTopComponent (dobj);
       
       
-      /*String PROPERTIES_MODE = "com.netbeans.developer.modules.loaders.properties";
+      /*String PROPERTIES_MODE = "org.netbeans.modules.properties";
       Workspace cur = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
       Mode m = cur.findMode(PROPERTIES_MODE);
       if (m == null) {

@@ -1,41 +1,41 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 
-<Form version="1.0" type="com.netbeans.developer.modules.loaders.form.forminfo.JPanelFormInfo">
+<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
 
-  <Layout class="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout"/>
+  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
   <SubComponents>
     <Container class="javax.swing.JPanel" name="jPanel1">
       <Constraints>
-        <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints anchor="10" fill="1" gridHeight="-1" gridWidth="0" gridX="-1" gridY="-1" insetsBottom="0" insetsLeft="0" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="1.0" weightY="1.0"/>
         </Constraint>
       </Constraints>
 
-      <Layout class="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout"/>
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
       <SubComponents>
         <Container class="javax.swing.JScrollPane" name="scrollPane">
           <Constraints>
-            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints anchor="10" fill="1" gridHeight="0" gridWidth="0" gridX="-1" gridY="-1" insetsBottom="8" insetsLeft="8" insetsRight="8" insetsTop="8" ipadX="0" ipadY="0" weightX="1.0" weightY="1.0"/>
             </Constraint>
-            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout$FlowConstraintsDescription"/>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout" value="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout$FlowConstraintsDescription"/>
           </Constraints>
 
-          <Layout class="com.netbeans.developerx.loaders.form.formeditor.layouts.support.JScrollPaneSupportLayout"/>
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
             <Component class="javax.swing.JTable" name="theTable">
               <Properties>
-                <Property name="preferredScrollableViewportSize" type="java.awt.Dimension" editor="com.netbeans.developer.editors.DimensionEditor">
+                <Property name="preferredScrollableViewportSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[600, 300]"/>
                 </Property>
-                <Property name="model" type="javax.swing.table.TableModel" editor="com.netbeans.developer.editors.TableModelEditor">
+                <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.beaninfo.editors.TableModelEditor">
                   <SerializedValue value="-84,-19,0,5,115,114,0,60,99,111,109,46,110,101,116,98,101,97,110,115,46,100,101,118,101,108,111,112,101,114,46,101,100,105,116,111,114,115,46,84,97,98,108,101,77,111,100,101,108,69,100,105,116,111,114,36,78,98,84,97,98,108,101,77,111,100,101,108,-95,8,-65,-35,21,111,108,-106,12,0,0,120,114,0,36,106,97,118,97,120,46,115,119,105,110,103,46,116,97,98,108,101,46,65,98,115,116,114,97,99,116,84,97,98,108,101,77,111,100,101,108,-83,-41,-21,125,-105,-50,-22,5,2,0,1,76,0,12,108,105,115,116,101,110,101,114,76,105,115,116,116,0,37,76,106,97,118,97,120,47,115,119,105,110,103,47,101,118,101,110,116,47,69,118,101,110,116,76,105,115,116,101,110,101,114,76,105,115,116,59,120,112,119,8,0,0,0,0,0,0,0,0,117,114,0,19,91,76,106,97,118,97,46,108,97,110,103,46,83,116,114,105,110,103,59,-83,-46,86,-25,-23,29,123,71,2,0,0,120,112,0,0,0,0,117,114,0,2,91,90,87,-113,32,57,20,-72,93,-30,2,0,0,120,112,0,0,0,0,120"/>
                 </Property>
                 <Property name="autoResizeMode" type="int" editor="org.openide.util.SwingEditors$AutoResizePropertyEditor" value="4"/>
                 <Property name="cellSelectionEnabled" type="boolean" editor="sun.beans.editors.BoolEditor" value="true"/>
               </Properties>
               <Constraints>
-                <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.support.JScrollPaneSupportLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription"/>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription"/>
               </Constraints>
             </Component>
           </SubComponents>
@@ -44,33 +44,33 @@
     </Container>
     <Container class="javax.swing.JPanel" name="jPanel2">
       <Constraints>
-        <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints anchor="10" fill="1" gridHeight="0" gridWidth="-1" gridX="-1" gridY="-1" insetsBottom="0" insetsLeft="0" insetsRight="0" insetsTop="8" ipadX="0" ipadY="0" weightX="1.0" weightY="0.3"/>
         </Constraint>
       </Constraints>
 
-      <Layout class="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout"/>
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
       <SubComponents>
         <Component class="javax.swing.JLabel" name="commentLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="com.netbeans.developer.modules.i18n.ResourceBundleStringFormEditor">
-              <ResourceString bundle="com/netbeans/developer/modules/loaders/properties/Bundle.properties" key="LBL_CommentLabel"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+              <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="LBL_CommentLabel"/>
             </Property>
           </Properties>
           <Constraints>
-            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="1" gridX="-1" gridY="-1" insetsBottom="0" insetsLeft="8" insetsRight="8" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
             </Constraint>
           </Constraints>
         </Component>
         <Container class="javax.swing.JScrollPane" name="jScrollPane2">
           <Constraints>
-            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints anchor="10" fill="1" gridHeight="1" gridWidth="0" gridX="-1" gridY="-1" insetsBottom="8" insetsLeft="0" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="1.0" weightY="1.0"/>
             </Constraint>
           </Constraints>
 
-          <Layout class="com.netbeans.developerx.loaders.form.formeditor.layouts.support.JScrollPaneSupportLayout"/>
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
             <Component class="javax.swing.JTextArea" name="textComment">
               <Properties>
@@ -80,31 +80,31 @@
                 <Property name="enabled" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
               </Properties>
               <Constraints>
-                <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.support.JScrollPaneSupportLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription"/>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription"/>
               </Constraints>
             </Component>
           </SubComponents>
         </Container>
         <Component class="javax.swing.JLabel" name="valueLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="com.netbeans.developer.modules.i18n.ResourceBundleStringFormEditor">
-              <ResourceString bundle="com/netbeans/developer/modules/loaders/properties/Bundle.properties" key="LBL_ValueLabel"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+              <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="LBL_ValueLabel"/>
             </Property>
           </Properties>
           <Constraints>
-            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints anchor="17" fill="2" gridHeight="1" gridWidth="1" gridX="-1" gridY="-1" insetsBottom="0" insetsLeft="8" insetsRight="8" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
             </Constraint>
           </Constraints>
         </Component>
         <Container class="javax.swing.JScrollPane" name="jScrollPane3">
           <Constraints>
-            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints anchor="10" fill="1" gridHeight="0" gridWidth="0" gridX="-1" gridY="-1" insetsBottom="8" insetsLeft="0" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="1.0" weightY="1.0"/>
             </Constraint>
           </Constraints>
 
-          <Layout class="com.netbeans.developerx.loaders.form.formeditor.layouts.support.JScrollPaneSupportLayout"/>
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
             <Component class="javax.swing.JTextArea" name="textValue">
               <Properties>
@@ -114,7 +114,7 @@
                 <Property name="enabled" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
               </Properties>
               <Constraints>
-                <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.support.JScrollPaneSupportLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription"/>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription"/>
               </Constraints>
             </Component>
           </SubComponents>
@@ -123,17 +123,17 @@
     </Container>
     <Container class="javax.swing.JPanel" name="jPanel3">
       <Constraints>
-        <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints anchor="10" fill="1" gridHeight="1" gridWidth="0" gridX="-1" gridY="-1" insetsBottom="0" insetsLeft="0" insetsRight="0" insetsTop="8" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
         </Constraint>
       </Constraints>
 
-      <Layout class="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout"/>
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
       <SubComponents>
         <Component class="javax.swing.JButton" name="addButton">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="com.netbeans.developer.modules.i18n.ResourceBundleStringFormEditor">
-              <ResourceString bundle="com/netbeans/developer/modules/loaders/properties/Bundle.properties" key="LBL_AddPropertyButton"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+              <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="LBL_AddPropertyButton"/>
             </Property>
           </Properties>
 
@@ -141,16 +141,16 @@
             <EventHandler event="actionPerformed" handler="addButtonActionPerformed"/>
           </Events>
           <Constraints>
-            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="0" gridX="-1" gridY="-1" insetsBottom="0" insetsLeft="8" insetsRight="8" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
             </Constraint>
-            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout$FlowConstraintsDescription"/>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout" value="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout$FlowConstraintsDescription"/>
           </Constraints>
         </Component>
         <Component class="javax.swing.JButton" name="removeButton">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="com.netbeans.developer.modules.i18n.ResourceBundleStringFormEditor">
-              <ResourceString bundle="com/netbeans/developer/modules/loaders/properties/Bundle.properties" key="LBL_RemovePropertyButton"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+              <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="LBL_RemovePropertyButton"/>
             </Property>
           </Properties>
 
@@ -158,20 +158,20 @@
             <EventHandler event="actionPerformed" handler="removeButtonActionPerformed"/>
           </Events>
           <Constraints>
-            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="0" gridX="-1" gridY="-1" insetsBottom="8" insetsLeft="8" insetsRight="8" insetsTop="8" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
             </Constraint>
-            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout$FlowConstraintsDescription"/>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout" value="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout$FlowConstraintsDescription"/>
           </Constraints>
         </Component>
         <Container class="javax.swing.JPanel" name="jPanel4">
           <Constraints>
-            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints anchor="10" fill="1" gridHeight="0" gridWidth="0" gridX="-1" gridY="-1" insetsBottom="0" insetsLeft="0" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="1.0" weightY="1.0"/>
             </Constraint>
           </Constraints>
 
-          <Layout class="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout"/>
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
         </Container>
       </SubComponents>
     </Container>

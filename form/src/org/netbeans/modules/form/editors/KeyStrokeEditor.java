@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.editors;
+package org.netbeans.modules.form.editors;
 
 import java.beans.PropertyEditorSupport;
 import java.awt.event.*;
@@ -19,7 +19,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.lang.reflect.*;
-import com.netbeans.developer.modules.loaders.form.util.*;
+import org.netbeans.modules.form.util.*;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 

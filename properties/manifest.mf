@@ -1,13 +1,13 @@
-OpenIDE-Module: com.netbeans.developer.modules.loaders.properties/1
+OpenIDE-Module: org.netbeans.modules.properties/1
 OpenIDE-Module-Name: Resource Bundles
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: 1.0
-OpenIDE-Module-Install: com/netbeans/developer/modules/loaders/properties/PropertiesModule.class
-OpenIDE-Module-Description: com.netbeans.developer.modules.loaders.properties.docs.HelpSet
+OpenIDE-Module-Install: org/netbeans/modules/properties/PropertiesModule.class
+OpenIDE-Module-Description: org.netbeans.modules.properties.docs.HelpSet
 
-Name: com/netbeans/developer/modules/loaders/properties/PropertiesDataLoader.class
+Name: org/netbeans/modules/properties/PropertiesDataLoader.class
 OpenIDE-Module-Class: Loader
-Install-Before: com.netbeans.developer.modules.loaders.txt.TXTDataObject
+Install-Before: org.netbeans.modules.text.TXTDataObject
 
-Name: com/netbeans/developer/modules/loaders/properties/InsertLocalStringAction.class
+Name: org/netbeans/modules/properties/InsertLocalStringAction.class
 OpenIDE-Module-Class: Action

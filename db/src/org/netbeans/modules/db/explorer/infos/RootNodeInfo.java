@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.infos;
+package org.netbeans.modules.db.explorer.infos;
 
 import java.util.*;
 
@@ -25,12 +25,12 @@ import org.openide.nodes.*;
 import org.openide.options.SystemOption;
 import org.openide.TopManager;
 
-import com.netbeans.ddl.*;
-import com.netbeans.enterprise.modules.db.DatabaseException;
-import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
+import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class RootNodeInfo extends DatabaseNodeInfo
 implements ConnectionOwnerOperations

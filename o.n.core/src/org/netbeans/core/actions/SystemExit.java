@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl.actions;
+package org.netbeans.core.actions;
 
 import org.openide.TopManager;
 import org.openide.util.HelpCtx;

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.html;
+package org.netbeans.modules.html;
 
 import org.openide.*;
 import org.openide.actions.ViewAction;
@@ -28,7 +28,7 @@ import org.openide.util.actions.*;
 public class HtmlDataObject extends MultiDataObject {
 
   private static final String HTML_ICON_BASE =
-    "/com/netbeans/developer/modules/loaders/html/htmlObject"; // NOI18N
+    "/org/netbeans/modules/html/htmlObject"; // NOI18N
 
 static final long serialVersionUID =8354927561693097159L;
   /** New instance.

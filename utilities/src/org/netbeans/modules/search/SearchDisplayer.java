@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.search;
+package org.netbeans.modules.search;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -32,9 +32,9 @@ import org.openide.util.NbBundle;
 
 import org.openidex.search.*;
 
-import com.netbeans.developer.modules.search.res.*;
+import org.netbeans.modules.search.res.*;
 
-import com.netbeans.editor.*;
+import org.netbeans.editor.*;
 
 /** 
  *

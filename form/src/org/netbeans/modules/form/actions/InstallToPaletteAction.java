@@ -11,14 +11,14 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.actions;
+package org.netbeans.modules.form.actions;
 
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
-import com.netbeans.developer.modules.loaders.form.palette.BeanInstaller;
+import org.netbeans.modules.form.palette.BeanInstaller;
 
 /** InstallToPalette action - enabled on RADContainerNodes and RADLayoutNodes.
 *

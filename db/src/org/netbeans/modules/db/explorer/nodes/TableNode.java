@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.nodes;
+package org.netbeans.modules.db.explorer.nodes;
 
 import java.io.IOException;
 import java.util.*;
@@ -27,11 +27,11 @@ import org.openide.nodes.Node;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.NbBundle;
 
-import com.netbeans.ddl.*;
-import com.netbeans.ddl.impl.*;
-import com.netbeans.enterprise.modules.db.*;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.impl.*;
+import org.netbeans.modules.db.*;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.infos.*;
 
 // Node for Table/View/Procedure things.
 
@@ -45,12 +45,12 @@ public class TableNode extends DatabaseNode implements InstanceCookie
 
 	public String instanceName() 
 	{
-		return "com.netbeans.sql.ConnectionSource";
+		return "org.netbeans.lib.sql.ConnectionSource";
     }    
 
 	public Class instanceClass() throws IOException, ClassNotFoundException
 	{
-		return Class.forName("com.netbeans.sql.ConnectionSource", true, org.openide.TopManager.getDefault ().currentClassLoader ());
+		return Class.forName("org.netbeans.lib.sql.ConnectionSource", true, org.openide.TopManager.getDefault ().currentClassLoader ());
 	}
 	
 	public Object instanceCreate()
@@ -155,7 +155,7 @@ public class TableNode extends DatabaseNode implements InstanceCookie
 		/* @return Human presentable name of this paste type. */
 		public String getName() 
 		{
-			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 			return bundle.getString("PasteTableName");
 		}
 
@@ -167,7 +167,7 @@ public class TableNode extends DatabaseNode implements InstanceCookie
 		public Transferable paste() throws IOException 
 		{
 			TableNodeInfo info = (TableNodeInfo)getInfo();
-			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 			TableListNodeInfo ownerinfo = (TableListNodeInfo)getInfo().getParent(DatabaseNode.TABLELIST);
 			if (info != null) {
 				TableNodeInfo exinfo = ownerinfo.getChildrenTableInfo(info);
@@ -216,7 +216,7 @@ public class TableNode extends DatabaseNode implements InstanceCookie
 		/* @return Human presentable name of this paste type. */
 		public String getName() 
 		{
-			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 			return bundle.getString("PasteColumnName");
 		}
 
@@ -227,7 +227,7 @@ public class TableNode extends DatabaseNode implements InstanceCookie
 		*/
 		public Transferable paste() throws IOException 
 		{
-			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 			TableNodeInfo ownerinfo = (TableNodeInfo)getInfo();
 			if (info != null) {
 				try {

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl.beaninfo;
+package org.netbeans.beaninfo;
 
 import java.awt.Component;
 import java.beans.*;
@@ -25,7 +25,7 @@ import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 
-import com.netbeans.developer.impl.ActionsPoolNode;
+import org.netbeans.core.ActionsPoolNode;
 
 /** Custom editor for data loader actions list.
  *

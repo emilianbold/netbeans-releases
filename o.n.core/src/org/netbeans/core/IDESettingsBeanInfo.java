@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl;
+package org.netbeans.core;
 
 import java.awt.Image;
 import java.beans.*;
@@ -92,8 +92,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
   /** Returns the IDESettings' icon */
   public Image getIcon(int type) {
     if (icon == null) {
-      icon = loadImage("/com/netbeans/developer/impl/resources/ideSettings.gif"); // NOI18N
-      icon32 = loadImage ("/com/netbeans/developer/impl/resources/ideSettings32.gif"); // NOI18N
+      icon = loadImage("/org/netbeans/core/resources/ideSettings.gif"); // NOI18N
+      icon32 = loadImage ("/org/netbeans/core/resources/ideSettings32.gif"); // NOI18N
     }
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
       return icon;

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.url;
+package org.netbeans.modules.url;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;

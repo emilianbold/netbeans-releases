@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -32,7 +32,7 @@ import org.openide.windows.WindowManager;
 import org.openide.windows.Workspace;
 import org.openide.windows.TopComponent;
 
-import com.netbeans.developer.modules.loaders.java.JavaEditor;
+import org.netbeans.modules.java.JavaEditor;
 
 /** 
 *

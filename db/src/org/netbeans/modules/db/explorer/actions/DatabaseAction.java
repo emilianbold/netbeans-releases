@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.actions;
+package org.netbeans.modules.db.explorer.actions;
 
 import java.io.*;
 import java.beans.*;
@@ -21,9 +21,9 @@ import org.openide.*;
 import org.openide.util.*;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.nodes.*;
 
 public class DatabaseAction extends CookieAction
 {

@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.adaptors;
+package org.netbeans.lib.ddl.adaptors;
 
 import java.sql.*;
 

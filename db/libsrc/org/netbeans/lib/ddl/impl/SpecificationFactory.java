@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.impl;
+package org.netbeans.lib.ddl.impl;
 
 import java.sql.*;
 import java.util.Set;
@@ -21,8 +21,8 @@ import java.net.URL;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.text.ParseException;
-import com.netbeans.ddl.*;
-import com.netbeans.ddl.impl.*;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.impl.*;
 
 /** 
 * The factory used for creating instances of Specification class. 
@@ -30,7 +30,7 @@ import com.netbeans.ddl.impl.*;
 * description files and is able to specify if system can control 
 * the database (specified by product name or live connection) or not. 
 * It also provides a list of supported databases. Information about databases
-* reads from file com/netbeans/ddl/DatabaseSpecification.plist. It's possible to replace it
+* reads from file org/netbeans/lib/ddl/DatabaseSpecification.plist. It's possible to replace it
 * by setting db.specifications.file system property pointing to another one.
 *
 * @author Slavek Psenicka
@@ -40,12 +40,12 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
 	/** Database description file
 	* You should use PListReader to parse it.
 	*/		
-	private final String dbFile = "com/netbeans/ddl/resources/dbspec.plist";	
+	private final String dbFile = "org/netbeans/lib/ddl/resources/dbspec.plist";	
 			
 	/** Driver description file
 	* You should use PListReader to parse it.
 	*/		
-	private final String drvFile = "com/netbeans/ddl/resources/driverspec.plist";	
+	private final String drvFile = "org/netbeans/lib/ddl/resources/driverspec.plist";	
 			
 	/** Array of SpecificationFiles, found (but not read) files 
 	* which describes database products.

@@ -11,9 +11,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.infos;
+package org.netbeans.modules.db.explorer.infos;
 
-import com.netbeans.enterprise.modules.db.DatabaseException;
+import org.netbeans.modules.db.DatabaseException;
 
 /** 
 * Interface of driver-related nodes.

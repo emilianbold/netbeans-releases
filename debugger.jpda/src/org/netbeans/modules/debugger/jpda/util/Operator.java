@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.debugger.jpda.util;
+package org.netbeans.modules.debugger.jpda.util;
 
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VMDisconnectedException;

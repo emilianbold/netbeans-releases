@@ -11,21 +11,21 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.infos;
+package org.netbeans.modules.db.explorer.infos;
 
 import java.sql.*;
 import java.util.*;
 import java.io.*;
 import java.lang.reflect.*;
-import com.netbeans.ddl.*;
-import com.netbeans.ddl.impl.*;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.impl.*;
 import org.openide.nodes.Node;
-import com.netbeans.enterprise.modules.db.DatabaseException;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
-import com.netbeans.enterprise.modules.db.explorer.dlg.UnsupportedDatabaseDialog;
+import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.actions.DatabaseAction;
+import org.netbeans.modules.db.explorer.dlg.UnsupportedDatabaseDialog;
 import org.openide.TopManager;
 
 public class ConnectionNodeInfo extends DatabaseNodeInfo

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.javadoc;
+package org.netbeans.modules.javadoc;
  
 import java.io.File;
 import java.io.IOException;
@@ -31,11 +31,11 @@ import org.openide.TopManager;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 
-import com.netbeans.developer.modules.javadoc.settings.StdDocletSettings;
-import com.netbeans.developer.modules.javadoc.comments.JavaDocPropertySupportFactory;
-import com.netbeans.developer.modules.javadoc.comments.AutoCommentAction;
-import com.netbeans.developer.modules.javadoc.search.SearchDocAction;
-import com.netbeans.developer.modules.javadoc.search.DocFileSystem;
+import org.netbeans.modules.javadoc.settings.StdDocletSettings;
+import org.netbeans.modules.javadoc.comments.JavaDocPropertySupportFactory;
+import org.netbeans.modules.javadoc.comments.AutoCommentAction;
+import org.netbeans.modules.javadoc.search.SearchDocAction;
+import org.netbeans.modules.javadoc.search.DocFileSystem;
 
 import org.openidex.util.Utilities2;
 
@@ -115,10 +115,10 @@ public class JavadocModule extends ModuleInstall {
     }
       
     // Install the factory for adding JavaDoc property to nodes
-    invokeDynamic( "com.netbeans.developer.modules.loaders.java.JavaDataObject", // NOI18N
+    invokeDynamic( "org.netbeans.modules.java.JavaDataObject", // NOI18N
                    "addExplorerFilterFactory", // NOI18N
                    new JavaDocPropertySupportFactory() );
-    invokeDynamic( "com.netbeans.developer.modules.loaders.java.JavaDataObject", // NOI18N
+    invokeDynamic( "org.netbeans.modules.java.JavaDataObject", // NOI18N
                    "addBrowserFilterFactory", // NOI18N
                    new JavaDocPropertySupportFactory() );
     
@@ -127,7 +127,7 @@ public class JavadocModule extends ModuleInstall {
     /*
     Keymap map = TopManager.getDefault ().getGlobalKeymap ();
     try {
-      assign ("C-F1", "com.netbeans.developer.modules.javadoc.search.SearchDocAction", map);
+      assign ("C-F1", "org.netbeans.modules.javadoc.search.SearchDocAction", map);
     } catch (ClassNotFoundException e) {
       // print and go on
       e.printStackTrace();

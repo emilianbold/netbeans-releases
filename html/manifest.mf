@@ -1,9 +1,9 @@
-OpenIDE-Module: com.netbeans.developer.modules.loaders.html/1
+OpenIDE-Module: org.netbeans.modules.html/1
 OpenIDE-Module-Name: HTML
-OpenIDE-Module-Install: com/netbeans/developer/modules/loaders/html/HtmlModule.class
+OpenIDE-Module-Install: org/netbeans/modules/html/HtmlModule.class
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: 1.0
 
-Name: com/netbeans/developer/modules/loaders/html/HtmlLoader.class
+Name: org/netbeans/modules/html/HtmlLoader.class
 OpenIDE-Module-Class: Loader
 

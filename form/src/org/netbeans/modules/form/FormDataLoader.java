@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import org.openide.*;
 import org.openide.actions.*;
@@ -19,7 +19,7 @@ import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
-import com.netbeans.developer.modules.loaders.java.JavaDataLoader;
+import org.netbeans.modules.java.JavaDataLoader;
 
 /** Loader for Forms. Recognizes file with extension .form and .java and with extension class if
 * there is their source and form file.

@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.properties;
+package org.netbeans.modules.properties;
 
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -44,7 +44,7 @@ public class FileEntryNode extends AbstractNode {
 //  static final long serialVersionUID = -7882925922830244768L;
 
   /** default base for icons for data objects */
-  private static final String ICON_BASE = "/com/netbeans/developer/impl/resources/x";
+  private static final String ICON_BASE = "/org/netbeans/core/resources/x";
 
   /** FileEntry of this node. */
   private PresentableFileEntry entry;

@@ -11,11 +11,11 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.impl;
+package org.netbeans.lib.ddl.impl;
 
 import java.util.*;
-import com.netbeans.ddl.*;
-import com.netbeans.ddl.impl.*;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.impl.*;
 
 /** 
 * Remove column command.

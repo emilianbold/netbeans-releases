@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.properties;
+package org.netbeans.modules.properties;
 
 import java.net.URL;
 import java.util.ResourceBundle;

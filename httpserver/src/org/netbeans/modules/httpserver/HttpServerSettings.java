@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.httpserver;
+package org.netbeans.modules.httpserver;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

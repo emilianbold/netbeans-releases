@@ -15,7 +15,7 @@ package org.openidex.search;
 
 import java.beans.*;
 
-import com.netbeans.developer.modules.search.res.*;
+import org.netbeans.modules.search.res.*;
 
 public class SearchTypeBeanInfo extends SimpleBeanInfo {
             
@@ -68,7 +68,7 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
   private static java.awt.Image iconColor32 = null;
   private static java.awt.Image iconMono16 = null;
   private static java.awt.Image iconMono32 = null; //GEN-END:IconsDef
-  private static String iconNameC16 = "/com/netbeans/developer/modules/filter/res/find.gif";//GEN-BEGIN:Icons // NOI18N
+  private static String iconNameC16 = "/org/netbeans/modules/filter/res/find.gif";//GEN-BEGIN:Icons // NOI18N
   private static String iconNameC32 = null;
   private static String iconNameM16 = null;
   private static String iconNameM32 = null;//GEN-END:Icons

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.image;
+package org.netbeans.modules.image;
 
 import org.openide.*;
 import org.openide.cookies.OpenCookie;
@@ -32,7 +32,7 @@ public class ImageDataObject extends MultiDataObject {
   static final long serialVersionUID = -6035788991669336965L;
 
   private static final String IMAGE_ICON_BASE =
-    "com/netbeans/developer/modules/loaders/image/imageObject"; // NOI18N
+    "org/netbeans/modules/image/imageObject"; // NOI18N
 
   /** New instance.
   * @param pf primary file object for this data object

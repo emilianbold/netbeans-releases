@@ -11,9 +11,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl;
+package org.netbeans.lib.ddl;
 
-import com.netbeans.ddl.DDLException;
+import org.netbeans.lib.ddl.DDLException;
 
 /** 
 * Interface of database action command. Instances should remember connection 

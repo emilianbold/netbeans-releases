@@ -11,13 +11,13 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.palette;
+package org.netbeans.modules.form.palette;
 
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.InstanceDataObject;
-import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
-import com.netbeans.developerx.loaders.form.formeditor.border.DesignBorder;
-import com.netbeans.developerx.loaders.form.formeditor.border.BorderInfo;
+import org.netbeans.modules.form.compat2.layouts.DesignLayout;
+import org.netbeans.modules.form.compat2.border.DesignBorder;
+import org.netbeans.modules.form.compat2.border.BorderInfo;
 
 import java.lang.ref.WeakReference;
 

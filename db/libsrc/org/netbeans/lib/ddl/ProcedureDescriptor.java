@@ -11,11 +11,11 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl;
+package org.netbeans.lib.ddl;
 
 import java.util.Vector;
 import java.sql.*;
-import com.netbeans.ddl.*;
+import org.netbeans.lib.ddl.*;
 
 /** 
 * Interface of procedure description object.

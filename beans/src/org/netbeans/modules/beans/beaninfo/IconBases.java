@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.beans.beaninfo;
+package org.netbeans.modules.beans.beaninfo;
 
 /** Resource string constants for pattern node icons.
 *
@@ -23,28 +23,28 @@ interface IconBases {
   // and N for non selected features at the end of the string.
 
   public static final String BIF_PROPERTY_RW =
-    "/com/netbeans/developer/modules/beans/resources/bifPropertyRW_"; // NOI18N
+    "/org/netbeans/modules/beans/resources/bifPropertyRW_"; // NOI18N
 
   public static final String BIF_PROPERTY_RO =
-    "/com/netbeans/developer/modules/beans/resources/bifPropertyRO_"; // NOI18N
+    "/org/netbeans/modules/beans/resources/bifPropertyRO_"; // NOI18N
 
   public static final String BIF_PROPERTY_WO =
-    "/com/netbeans/developer/modules/beans/resources/bifPropertyWO_"; // NOI18N
+    "/org/netbeans/modules/beans/resources/bifPropertyWO_"; // NOI18N
     
   public static final String BIF_IDXPROPERTY_RW =
-    "/com/netbeans/developer/modules/beans/resources/bifIndexedPropertyRW_"; // NOI18N
+    "/org/netbeans/modules/beans/resources/bifIndexedPropertyRW_"; // NOI18N
 
   public static final String BIF_IDXPROPERTY_RO =
-    "/com/netbeans/developer/modules/beans/resources/bifIndexedPropertyRO_"; // NOI18N
+    "/org/netbeans/modules/beans/resources/bifIndexedPropertyRO_"; // NOI18N
 
   public static final String BIF_IDXPROPERTY_WO =
-    "/com/netbeans/developer/modules/beans/resources/bifIndexedPropertyWO_"; // NOI18N
+    "/org/netbeans/modules/beans/resources/bifIndexedPropertyWO_"; // NOI18N
   
   public static final String BIF_EVENTSET_MULTICAST =
-    "/com/netbeans/developer/modules/beans/resources/bifEventSetMC_"; // NOI18N
+    "/org/netbeans/modules/beans/resources/bifEventSetMC_"; // NOI18N
 
   public static final String BIF_EVENTSET_UNICAST =
-    "/com/netbeans/developer/modules/beans/resources/bifEventSetUC_"; // NOI18N
+    "/org/netbeans/modules/beans/resources/bifEventSetUC_"; // NOI18N
   
   }
 /*

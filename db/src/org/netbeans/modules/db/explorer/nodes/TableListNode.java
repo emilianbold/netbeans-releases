@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.nodes;
+package org.netbeans.modules.db.explorer.nodes;
 
 public class TableListNode extends DatabaseNode 
 {		

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl;
+package org.netbeans.core;
 
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -51,7 +51,7 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
     //JST: it displays only Menu as name!    super.setDisplayName(NbBundle.getBundle (ActionsPoolNode.class).getString("CTL_Actions_name"));
     super.setShortDescription(NbBundle.getBundle (ActionsPoolNode.class).getString("CTL_Actions_hint"));
 
-    super.setIconBase ("/com/netbeans/developer/impl/resources/actions"); // NOI18N
+    super.setIconBase ("/org/netbeans/core/resources/actions"); // NOI18N
   }
 
   public HelpCtx getHelpCtx () {
@@ -132,12 +132,12 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
           (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
         if (itemIcon == null)
           itemIcon = Toolkit.getDefaultToolkit ().getImage (
-            getClass ().getResource ("/com/netbeans/developer/impl/resources/action.gif")); // NOI18N
+            getClass ().getResource ("/org/netbeans/core/resources/action.gif")); // NOI18N
         return itemIcon;
       } else {
         if (itemIcon32 == null)
           itemIcon32 = Toolkit.getDefaultToolkit ().getImage (
-            getClass ().getResource ("/com/netbeans/developer/impl/resources/action32.gif")); // NOI18N
+            getClass ().getResource ("/org/netbeans/core/resources/action32.gif")); // NOI18N
         return itemIcon32;
       }
     }

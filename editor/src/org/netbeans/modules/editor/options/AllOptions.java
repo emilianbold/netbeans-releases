@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text.options;
+package org.netbeans.modules.editor.options;
 
 import java.util.List;
 import org.openide.options.ContextSystemOption;

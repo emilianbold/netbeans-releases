@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.actions;
+package org.netbeans.modules.form.actions;
 
 import java.util.ArrayList;
 import javax.swing.*;
@@ -21,9 +21,9 @@ import javax.swing.event.MenuEvent;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
 import org.openide.nodes.Node;
-import com.netbeans.developer.modules.loaders.form.palette.*;
-import com.netbeans.developer.modules.loaders.form.*;
-import com.netbeans.developerx.loaders.form.formeditor.layouts.support.DesignSupportLayout;
+import org.netbeans.modules.form.palette.*;
+import org.netbeans.modules.form.*;
+import org.netbeans.modules.form.compat2.layouts.support.DesignSupportLayout;
 
 /** SelectLayout action - subclass of NodeAction - enabled on RADContainerNodes and RADLayoutNodes.
 *
@@ -67,7 +67,7 @@ public class SelectLayoutAction extends CookieAction {
   * @return name of resource for icon
   */
   protected String iconResource () {
-    return "/com/netbeans/developer/modules/loaders/form/resources/selectLayout.gif"; // NOI18N
+    return "/org/netbeans/modules/form/resources/selectLayout.gif"; // NOI18N
   }
 
   /**

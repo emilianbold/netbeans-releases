@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text;
+package org.netbeans.modules.editor;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,9 +21,9 @@ import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import com.netbeans.editor.BaseDocument;
-import com.netbeans.editor.Utilities;
-import com.netbeans.editor.JumpList;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.JumpList;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;

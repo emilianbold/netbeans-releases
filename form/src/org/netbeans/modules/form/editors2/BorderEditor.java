@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.explorer.propertysheet.editors;
+package org.netbeans.modules.form.editors2;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -36,8 +36,8 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-import com.netbeans.developerx.loaders.form.formeditor.border.*;
-import com.netbeans.developer.modules.loaders.form.palette.*;
+import org.netbeans.modules.form.compat2.border.*;
+import org.netbeans.modules.form.palette.*;
 
 /**
 * A property editor for swing border class.
@@ -51,9 +51,9 @@ import com.netbeans.developer.modules.loaders.form.palette.*;
 public final class BorderEditor extends PropertyEditorSupport implements org.openide.explorer.propertysheet.editors.XMLPropertyEditor { // [PENDING - not for now]
 
   /** Icon bases for unknown border node. */
-  private static final String UNKNOWN_BORDER_BASE = "com/netbeans/developer/explorer/propertysheet/editors/unknownBorder"; // NOI18N
+  private static final String UNKNOWN_BORDER_BASE = "org/netbeans/modules/form/editors2/unknownBorder"; // NOI18N
   /** Icon bases for no border node. */
-  private static final String NO_BORDER_BASE = "com/netbeans/developer/explorer/propertysheet/editors/nullBorder"; // NOI18N
+  private static final String NO_BORDER_BASE = "org/netbeans/modules/form/editors2/nullBorder"; // NOI18N
 
   private static final ResourceBundle bundle = NbBundle.getBundle(BorderEditor.class);
 

@@ -11,15 +11,15 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.impl;
+package org.netbeans.lib.ddl.impl;
 
 import java.util.*;
 import java.sql.*;
 import java.io.Serializable;
 import java.text.ParseException;
 import org.openide.*;
-import com.netbeans.ddl.*;
-import com.netbeans.ddl.util.*;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.util.*;
 import org.openide.windows.OutputWriter;
 
 /** 

@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.nodes;
+package org.netbeans.modules.db.explorer.nodes;
 
 import java.awt.datatransfer.Transferable;
 import java.beans.*;
@@ -25,17 +25,17 @@ import org.openide.util.MapFormat;
 import org.openide.nodes.*;
 import org.openide.util.datatransfer.*;
 
-import com.netbeans.ddl.*;
-import com.netbeans.ddl.impl.SpecificationFactory;
-import com.netbeans.ddl.impl.Specification;
-import com.netbeans.ddl.adaptors.*;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
-import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
-import com.netbeans.enterprise.modules.db.explorer.DatabaseConnection;
-import com.netbeans.enterprise.modules.db.explorer.dlg.ConnectDialog;
-import com.netbeans.developer.modules.loaders.form.RADComponentNode;
-import com.netbeans.developer.modules.loaders.form.RADComponent;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.impl.SpecificationFactory;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.lib.ddl.adaptors.*;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.dlg.ConnectDialog;
+import org.netbeans.modules.form.RADComponentNode;
+import org.netbeans.modules.form.RADComponent;
 
 /** 
 * Node representing open or closed connection to database.
@@ -90,12 +90,12 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 
   public String instanceName() 
   {
-    return "com.netbeans.sql.ConnectionSource";
+    return "org.netbeans.lib.sql.ConnectionSource";
   }    
 
   public Class instanceClass() throws IOException, ClassNotFoundException
   {
-    return Class.forName("com.netbeans.sql.ConnectionSource", true, org.openide.TopManager.getDefault ().currentClassLoader ());
+    return Class.forName("org.netbeans.lib.sql.ConnectionSource", true, org.openide.TopManager.getDefault ().currentClassLoader ());
   }
   
   public Object instanceCreate()

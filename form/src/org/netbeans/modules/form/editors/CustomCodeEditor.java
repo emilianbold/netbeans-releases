@@ -11,9 +11,9 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.editors;
+package org.netbeans.modules.form.editors;
 
-import com.netbeans.developer.modules.loaders.form.FormEditor;
+import org.netbeans.modules.form.FormEditor;
 
 import org.openide.nodes.PropertySupport;
 

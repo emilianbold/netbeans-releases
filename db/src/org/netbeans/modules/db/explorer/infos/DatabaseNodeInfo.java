@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.infos;
+package org.netbeans.modules.db.explorer.infos;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -22,14 +22,14 @@ import java.beans.PropertyChangeSupport;
 import java.util.*;
 import java.sql.*;
 
-import com.netbeans.ddl.*;
-import com.netbeans.ddl.adaptors.*;
-import com.netbeans.ddl.impl.*;
-import com.netbeans.ddl.util.PListReader;
-import com.netbeans.enterprise.modules.db.DatabaseException;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.adaptors.*;
+import org.netbeans.lib.ddl.impl.*;
+import org.netbeans.lib.ddl.util.PListReader;
+import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.openide.*;
 import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
@@ -77,7 +77,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	public static final String ADAPTOR_CLASSNAME = "adaptorClass";
 	
 	private static Map gtab = null;
-	private static final String gtabfile = "com/netbeans/enterprise/modules/db/resources/explorer.plist";
+	private static final String gtabfile = "org/netbeans/modules/db/resources/explorer.plist";
 	
 	public static Map getGlobalNodeInfo()
 	{
@@ -346,7 +346,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 			if (driver.getURL().equals(drv)) adac = driver.getDatabaseAdaptor();
 		}
 
-		if (adac == null) adac = "com.netbeans.ddl.adaptors.DefaultAdaptor";
+		if (adac == null) adac = "org.netbeans.lib.ddl.adaptors.DefaultAdaptor";
 		return adac;
 	}
 
@@ -576,7 +576,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		}
 		
 		if (actions.size() == 0) return actions;
-		ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");		
+		ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");		
 		Object xaction = actions.elementAt(0);
 		if (xaction != null && xaction instanceof DatabaseAction) return actions;
 		boolean ro = isReadOnly();

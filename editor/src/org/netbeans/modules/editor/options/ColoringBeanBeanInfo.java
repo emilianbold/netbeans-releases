@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text.options;
+package org.netbeans.modules.editor.options;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -28,7 +28,7 @@ import java.beans.PropertyDescriptor;
 
 public class ColoringBeanBeanInfo extends SimpleBeanInfo {
   /** Prefix of the icon location. */
-  private String iconPrefix = "/com/netbeans/editor/resources/coloring"; // NOI18N
+  private String iconPrefix = "/org/netbeans/editor/resources/coloring"; // NOI18N
 
   /** Icons for compiler settings objects. */
   private Image icon;

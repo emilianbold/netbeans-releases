@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.actions;
+package org.netbeans.modules.db.explorer.actions;
 
 import java.util.*;
 //import java.sql.Connection;
@@ -19,9 +19,9 @@ import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
-import com.netbeans.enterprise.modules.db.explorer.dataview.*;
+import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.dataview.*;
 
 public class ViewDataAction extends DatabaseAction
 {
@@ -42,7 +42,7 @@ public class ViewDataAction extends DatabaseAction
 		String expression = "";
 		StringBuffer cols = new StringBuffer();
 		Node node;
-    ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+    ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 
 		if (activatedNodes != null && activatedNodes.length>0) {
 			try {

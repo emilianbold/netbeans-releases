@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.httpserver;
+package org.netbeans.modules.httpserver;
 
 import java.util.Enumeration;
 import java.io.*;
@@ -198,21 +198,21 @@ ex.printStackTrace();
     cm.addContext(ctxt);
 
     ServletWrapper nf = new ServletWrapper();
-    nf.setServletClass("com.netbeans.developer.modules.httpserver.NotFoundServlet");
+    nf.setServletClass("org.netbeans.modules.httpserver.NotFoundServlet");
     nf.setServletName("NotFoundServlet");
     ctxt.addServlet(nf);
     ctxt.addServletMapping("/", "NotFoundServlet");
     nf.setContext(ctxt);
     
     ServletWrapper repo = new ServletWrapper();
-    repo.setServletClass("com.netbeans.developer.modules.httpserver.RepositoryServlet");
+    repo.setServletClass("org.netbeans.modules.httpserver.RepositoryServlet");
     repo.setServletName("RepositoryServlet");
     ctxt.addServlet(repo);
     ctxt.addServletMapping(op.getRepositoryBaseURL() + "*", "RepositoryServlet");
     repo.setContext(ctxt);
     
     ServletWrapper claz = new ServletWrapper();
-    claz.setServletClass("com.netbeans.developer.modules.httpserver.ClasspathServlet");
+    claz.setServletClass("org.netbeans.modules.httpserver.ClasspathServlet");
     claz.setServletName("ClasspathServlet");
     ctxt.addServlet(claz);
     ctxt.addServletMapping(op.getClasspathBaseURL() + "*", "ClasspathServlet");
@@ -240,10 +240,10 @@ ex.printStackTrace();
     
     Container container = context.getContainer();
 
-    container.addServlet("repositoryHandler", "com.netbeans.developer.modules.httpserver.RepositoryServlet"); // NOI18N
+    container.addServlet("repositoryHandler", "org.netbeans.modules.httpserver.RepositoryServlet"); // NOI18N
     container.addMapping("repositoryHandler", op.getRepositoryBaseURL()); // NOI18N
     
-    container.addServlet("classpathHandler", "com.netbeans.developer.modules.httpserver.ClasspathServlet"); // NOI18N
+    container.addServlet("classpathHandler", "org.netbeans.modules.httpserver.ClasspathServlet"); // NOI18N
     container.addMapping("classpathHandler", op.getClasspathBaseURL()); // NOI18N
     
     return server;

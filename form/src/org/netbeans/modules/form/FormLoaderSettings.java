@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -134,7 +134,7 @@ public class FormLoaderSettings extends SystemOption {
     { "boolean", "sun.beans.editors.BoolEditor" }, // NOI18N
     { "float", "sun.beans.editors.FloatEditor" }, // NOI18N
     { "double", "sun.beans.editors.DoubleEditor" }, // NOI18N
-    { String[].class.getName (), "com.netbeans.developer.editors.StringArrayEditor.class"}, // NOI18N
+    { String[].class.getName (), "org.netbeans.beaninfo.editors.StringArrayEditor.class"}, // NOI18N
   };
 
   private static int outputLevel = OUTPUT_NORMAL;
@@ -153,7 +153,7 @@ public class FormLoaderSettings extends SystemOption {
     String[] defaultPath = java.beans.PropertyEditorManager.getEditorSearchPath ();
     editorSearchPath = new String[defaultPath.length + 1];
     System.arraycopy (defaultPath, 0, editorSearchPath, 0, defaultPath.length);
-    editorSearchPath[editorSearchPath.length-1] = "com.netbeans.developer.explorer.propertysheet.editors"; // NOI18N
+    editorSearchPath[editorSearchPath.length-1] = "org.netbeans.modules.form.editors2"; // NOI18N
   }
   
 // ------------------------------------------
@@ -431,14 +431,14 @@ public class FormLoaderSettings extends SystemOption {
   }
 
   /** Getter for nullLayout property.
-  * @return True, if null layout should be generated, false if com.netbeans.developer.awt.AbsoluteLayout should be used
+  * @return True, if null layout should be generated, false if org.netbeans.lib.awtextra.AbsoluteLayout should be used
   */
   public boolean isNullLayout() {
     return nullLayout;
   }
 
   /** Setter for nullLayout property.
-  * @param value True, if null layout should be generated, false if com.netbeans.developer.awt.AbsoluteLayout should be used
+  * @param value True, if null layout should be generated, false if org.netbeans.lib.awtextra.AbsoluteLayout should be used
   */
   public void setNullLayout(boolean value) {
     if (nullLayout == value) return;

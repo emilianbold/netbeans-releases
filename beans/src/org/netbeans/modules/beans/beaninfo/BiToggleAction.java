@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.beans.beaninfo;
+package org.netbeans.modules.beans.beaninfo;
  
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -53,7 +53,7 @@ static final long serialVersionUID =3773842179168178798L;
   */
   protected String iconResource () {
     return null;
-    //return "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"; // NOI18N
+    //return "/org/netbeans/modules/javadoc/resources/searchDoc.gif"; // NOI18N
   }
   
   /*

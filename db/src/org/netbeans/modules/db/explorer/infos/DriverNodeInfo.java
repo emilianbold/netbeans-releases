@@ -11,24 +11,24 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.infos;
+package org.netbeans.modules.db.explorer.infos;
 
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.*;
 import java.sql.*;
-import com.netbeans.ddl.*;
+import org.netbeans.lib.ddl.*;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 import org.openide.nodes.Node;
-import com.netbeans.ddl.util.PListReader;
-import com.netbeans.ddl.impl.*;
-import com.netbeans.enterprise.modules.db.*;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
-import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
-import com.netbeans.enterprise.modules.db.explorer.DatabaseDriver;
-import com.netbeans.enterprise.modules.db.explorer.nodes.RootNode;
+import org.netbeans.lib.ddl.util.PListReader;
+import org.netbeans.lib.ddl.impl.*;
+import org.netbeans.modules.db.*;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.netbeans.modules.db.explorer.actions.DatabaseAction;
+import org.netbeans.modules.db.explorer.DatabaseDriver;
+import org.netbeans.modules.db.explorer.nodes.RootNode;
 
 public class DriverNodeInfo extends DriverListNodeInfo 
 {

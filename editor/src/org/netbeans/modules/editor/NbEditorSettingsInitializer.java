@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text;
+package org.netbeans.modules.editor;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
@@ -20,18 +20,18 @@ import java.util.HashMap;
 import java.util.Arrays;
 import java.util.ArrayList;
 import javax.swing.KeyStroke;
-import com.netbeans.editor.BaseSettingsInitializer;
-import com.netbeans.editor.Settings;
-import com.netbeans.editor.SettingsUtil;
-import com.netbeans.editor.MultiKeyBinding;
-import com.netbeans.editor.ext.ExtSettingsNames;
-import com.netbeans.editor.ext.ExtSettingsInitializer;
-import com.netbeans.editor.ext.html.HTMLSettingsInitializer;
-import com.netbeans.editor.ext.java.JavaSettingsInitializer;
-import com.netbeans.developer.modules.text.html.HTMLKit;
-import com.netbeans.developer.modules.text.html.NbHTMLSettingsInitializer;
-import com.netbeans.developer.modules.text.java.JavaKit;
-import com.netbeans.developer.modules.text.java.NbJavaSettingsInitializer;
+import org.netbeans.editor.BaseSettingsInitializer;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsUtil;
+import org.netbeans.editor.MultiKeyBinding;
+import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.editor.ext.ExtSettingsInitializer;
+import org.netbeans.editor.ext.html.HTMLSettingsInitializer;
+import org.netbeans.editor.ext.java.JavaSettingsInitializer;
+import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.editor.html.NbHTMLSettingsInitializer;
+import org.netbeans.modules.editor.java.JavaKit;
+import org.netbeans.modules.editor.java.NbJavaSettingsInitializer;
 import org.openide.actions.SaveAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.CopyAction;

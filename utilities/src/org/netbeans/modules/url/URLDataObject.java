@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.url;
+package org.netbeans.modules.url;
 
 import java.io.*;
 
@@ -36,7 +36,7 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
 //  static final long serialVersionUID = -6035788991669336965L;
 
   private final static String URL_ICON_BASE =
-    "com/netbeans/developer/modules/loaders/url/urlObject"; // NOI18N
+    "org/netbeans/modules/url/urlObject"; // NOI18N
 
   /* The FileObject containing the URL String */
   private FileObject urlFile;

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl;
+package org.netbeans.core;
 
 import org.openide.*;
 import org.openide.loaders.*;
@@ -23,7 +23,7 @@ import org.openide.util.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import com.netbeans.developer.impl.actions.*;
+import org.netbeans.core.actions.*;
 
 /** This object represents environment settings in the Corona system.
 * This class is final only for performance purposes.
@@ -35,7 +35,7 @@ final class EnvironmentNode extends AbstractNode {
   /** generated Serialized Version UID */
   static final long serialVersionUID = 4782447107972624693L;
   /** icon base for icons of this node */
-  private static final String EN_ICON_BASE = "/com/netbeans/developer/impl/resources/environment"; // NOI18N
+  private static final String EN_ICON_BASE = "/org/netbeans/core/resources/environment"; // NOI18N
 
   /** base instance of the node */
   private static EnvironmentNode node;

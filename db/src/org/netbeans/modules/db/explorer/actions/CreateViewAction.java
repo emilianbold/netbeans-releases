@@ -11,15 +11,15 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.actions;
+package org.netbeans.modules.db.explorer.actions;
 
 import java.sql.*;
-import com.netbeans.ddl.impl.*;
+import org.netbeans.lib.ddl.impl.*;
 import org.openide.*;
 import org.openide.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.dlg.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.dlg.*;
+import org.netbeans.modules.db.explorer.infos.*;
 
 public class CreateViewAction extends DatabaseAction
 {

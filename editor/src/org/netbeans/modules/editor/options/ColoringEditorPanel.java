@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text.options;
+package org.netbeans.modules.editor.options;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -22,11 +22,11 @@ import javax.swing.border.*;
 
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.propertysheet.PropertyModel;
-import com.netbeans.editor.Coloring;
-import com.netbeans.editor.Settings;
-import com.netbeans.editor.SettingsDefaults;
-import com.netbeans.developer.editors.FontEditor;
-import com.netbeans.developer.editors.ColorEditor;
+import org.netbeans.editor.Coloring;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsDefaults;
+import org.netbeans.beaninfo.editors.FontEditor;
+import org.netbeans.beaninfo.editors.ColorEditor;
 
 /** 
  * ColoringEditorPanel is custom property editor operating
@@ -267,7 +267,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
             try {
               newValue = model.getValue();
             } catch( InvocationTargetException e ) {
-              if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
+              if( Boolean.getBoolean( "org.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
             }
           
             if( value == null && newValue.equals( defaultValue ) ) {  // setValue( null ) or setDefaultValue( )
@@ -335,7 +335,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
       try {
         model.setValue( val );
       } catch( InvocationTargetException e ) {
-        if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
+        if( Boolean.getBoolean( "org.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
       }          
       repaint(); // XXX - hack for updating PropertyPanel
     }

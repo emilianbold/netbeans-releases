@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -121,7 +121,7 @@ public class RADMenuItemComponent extends RADComponent {
   */
   static int recognizeType(Class cl) {
     if (JSeparator.class.isAssignableFrom(cl)) return T_JSEPARATOR;
-    if (com.netbeans.developer.modules.loaders.form.Separator.class.isAssignableFrom(cl)) return T_SEPARATOR;
+    if (org.netbeans.modules.form.Separator.class.isAssignableFrom(cl)) return T_SEPARATOR;
     if (PopupMenu.class.isAssignableFrom(cl)) return T_POPUPMENU;
     if (Menu.class.isAssignableFrom(cl)) return  T_MENU;
     if (CheckboxMenuItem.class.isAssignableFrom(cl)) return T_CHECKBOXMENUITEM;

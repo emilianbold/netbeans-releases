@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.actions;
+package org.netbeans.modules.db.explorer.actions;
 
 import java.util.Vector;
 import java.text.MessageFormat;
@@ -21,17 +21,17 @@ import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
-import com.netbeans.ddl.*;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.RootNode;
-import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
-import com.netbeans.enterprise.modules.db.explorer.dlg.NewConnectionDialog;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.netbeans.modules.db.explorer.actions.DatabaseAction;
+import org.netbeans.modules.db.explorer.dlg.NewConnectionDialog;
 
 public class ConnectUsingDriverAction extends DatabaseAction
 {
 	private final static String CLASS_NOT_FOUND = "EXC_ClassNotFound";
-	private final static String BUNDLE_PATH = "com.netbeans.enterprise.modules.db.resources.Bundle";
+	private final static String BUNDLE_PATH = "org.netbeans.modules.db.resources.Bundle";
 
         static final long serialVersionUID =8245005834483564671L;
 	public void performAction(Node[] activatedNodes) 

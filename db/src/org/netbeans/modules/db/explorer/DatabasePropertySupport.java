@@ -11,10 +11,10 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer;
+package org.netbeans.modules.db.explorer;
 
 import java.util.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.openide.nodes.PropertySupport;
 
 public class DatabasePropertySupport extends PropertySupport

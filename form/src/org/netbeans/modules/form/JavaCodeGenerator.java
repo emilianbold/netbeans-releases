@@ -11,15 +11,15 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import org.openide.explorer.propertysheet.editors.ModifierEditor;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.text.IndentEngine;
 import org.openide.util.Utilities;
-import com.netbeans.developer.modules.loaders.java.JavaEditor;
-import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
+import org.netbeans.modules.java.JavaEditor;
+import org.netbeans.modules.form.compat2.layouts.DesignLayout;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -1453,7 +1453,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     public PropertyEditor getPropertyEditor () {
       return new PropertyEditorSupport () {
         public java.awt.Component getCustomEditor () {
-          return new com.netbeans.developer.modules.loaders.form.editors.CustomCodeEditor (CodePropertySupportRW.this);
+          return new org.netbeans.modules.form.editors.CustomCodeEditor (CodePropertySupportRW.this);
         }
         public boolean supportsCustomEditor () {
           return true;

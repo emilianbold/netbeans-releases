@@ -11,12 +11,12 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.impl;
+package org.netbeans.lib.ddl.impl;
 
 import java.text.ParseException;
 import java.util.*;
-import com.netbeans.ddl.*;
-import com.netbeans.ddl.impl.*;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.impl.*;
 
 /** 
 * Interface of database action command. Instances should remember connection 

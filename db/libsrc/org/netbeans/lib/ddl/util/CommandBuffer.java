@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.util;
+package org.netbeans.lib.ddl.util;
 
 import java.util.*;
 import java.text.Format;
@@ -24,7 +24,7 @@ import java.text.ParseException;
 import org.openide.*;
 import org.openide.util.MapFormat;
 
-import com.netbeans.ddl.*;
+import org.netbeans.lib.ddl.*;
 
 /**
 * Command buffer used to execute a bunch of commands. Main advantages of using

@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.dlg;
+package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -21,7 +21,7 @@ import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 
-import com.netbeans.enterprise.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.*;
 
 /** 
 * xxx

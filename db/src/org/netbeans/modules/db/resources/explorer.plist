@@ -20,30 +20,30 @@
 	*/
 	root = {
 		name = Databases;
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.RootNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.RootNodeInfo;
+		class = org.netbeans.modules.db.explorer.nodes.RootNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 		children_ordering = {
 			org.openide.loaders.DataFolder$FolderNode = 0;
-			com.netbeans.enterprise.modules.db.explorer.nodes.DriverListNode = 1;
-			com.netbeans.enterprise.modules.db.explorer.nodes.ConnectionNode = 2;
+			org.netbeans.modules.db.explorer.nodes.DriverListNode = 1;
+			org.netbeans.modules.db.explorer.nodes.ConnectionNode = 2;
 		};
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/database";
+		iconbase = "/org/netbeans/modules/db/resources/database";
 		children = (driverlist);
 		properties = ();
 		options = {};
 		actions = (
 			{
 				name = "AddConnection";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddConnectionAction;
+				class = org.netbeans.modules.db.explorer.actions.AddConnectionAction;
 			},
 			delimiter,
 			{
 				name = "EnableDebug";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.EnableDebugAction;
+				class = org.netbeans.modules.db.explorer.actions.EnableDebugAction;
 			},
 			{
 				name = "DisableDebug";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.DisableDebugAction;
+				class = org.netbeans.modules.db.explorer.actions.DisableDebugAction;
 			},
 			delimiter,
 			{
@@ -72,9 +72,9 @@
 	*/
 	driverlist = {
 		name = Drivers;
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.DriverListNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.DriverListNodeInfo;
-		iconbase = "/com/netbeans/developer/impl/resources/defaultFolder";
+		class = org.netbeans.modules.db.explorer.nodes.DriverListNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.DriverListNodeInfo;
+		iconbase = "/org/netbeans/core/resources/defaultFolder";
 		children = ();
 		properties = ();
 		options = {};
@@ -188,7 +188,7 @@
 		actions = (
 			{
 				name = "AddNewDriver";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddDriverAction;
+				class = org.netbeans.modules.db.explorer.actions.AddDriverAction;
 			},
 			delimiter
 		);
@@ -201,10 +201,10 @@
 	*/
 	driver = {
 		name = Driver;
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.DriverNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.DriverNodeInfo;
+		class = org.netbeans.modules.db.explorer.nodes.DriverNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
 		creator = driverlist;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/driver";
+		iconbase = "/org/netbeans/modules/db/resources/driver";
 		children = ();
 		options = {
 			cut = YES;
@@ -238,18 +238,18 @@
 		actions = (
 			{
 				name = "ConnectUsing";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ConnectUsingDriverAction;
+				class = org.netbeans.modules.db.explorer.actions.ConnectUsingDriverAction;
 				node = root;
 			},
 			{
 				name = "AddNewDriver";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddDriverAction;
+				class = org.netbeans.modules.db.explorer.actions.AddDriverAction;
 				node = driverlist;
 			},
 			delimiter,
 			{
 				name = "TestDriver";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.TestDriverAction;
+				class = org.netbeans.modules.db.explorer.actions.TestDriverAction;
 				node = driver;
 			},
 			delimiter,
@@ -291,10 +291,10 @@
 		name = Connection;
 		displayname = "{0} [disconnected]";
 		activedisplayname = "{0}";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.ConnectionNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ConnectionNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/connectionDisconnected";
-		activeiconbase = "/com/netbeans/enterprise/modules/db/resources/connection";
+		class = org.netbeans.modules.db.explorer.nodes.ConnectionNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/connectionDisconnected";
+		activeiconbase = "/org/netbeans/modules/db/resources/connection";
 		children = ();
 		options = {
 			cut = YES;
@@ -302,42 +302,42 @@
 			delete = YES;
 		};	
 		children_ordering = {
-			com.netbeans.enterprise.modules.db.explorer.nodes.TableListNode = 0;
-			com.netbeans.enterprise.modules.db.explorer.nodes.ViewListNode = 1;
-			com.netbeans.enterprise.modules.db.explorer.nodes.ProcedureListNode = 2;
+			org.netbeans.modules.db.explorer.nodes.TableListNode = 0;
+			org.netbeans.modules.db.explorer.nodes.ViewListNode = 1;
+			org.netbeans.modules.db.explorer.nodes.ProcedureListNode = 2;
 		};
 		actions = (
 			{
 				name = "AddConnection";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddConnectionAction;
+				class = org.netbeans.modules.db.explorer.actions.AddConnectionAction;
 				node = root;
 			},
 			delimiter,
 			{
 				name = "Connect";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ConnectAction;
+				class = org.netbeans.modules.db.explorer.actions.ConnectAction;
 			},
 			{
 				name = "ConnectAs";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ConnectAsAction;
+				class = org.netbeans.modules.db.explorer.actions.ConnectAsAction;
 			},
 			{
 				name = "Disconnect";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.DisconnectAction;
+				class = org.netbeans.modules.db.explorer.actions.DisconnectAction;
 			},
 			delimiter,
 //			{
 //				name = "ViewData";
-//				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+//				class = org.netbeans.modules.db.explorer.actions.ViewDataAction;
 //			},
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,
 			{
 				name = "TestDriver";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.TestDriverAction;
+				class = org.netbeans.modules.db.explorer.actions.TestDriverAction;
 				node = driver;
 			},
 			delimiter,
@@ -1150,32 +1150,32 @@
 	tablelist = {
 		name = Tables;
 		displayname = "{name}";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.TableListNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.TableListNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/folder";
+		class = org.netbeans.modules.db.explorer.nodes.TableListNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.TableListNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {};	
 		actions = (
 			{
 				name = "CreateTable";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
+				class = org.netbeans.modules.db.explorer.actions.CreateTableAction;
 				perm = "write";
 			},
 			{
 				name = "RecreateTable";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateTableAction;
+				class = org.netbeans.modules.db.explorer.actions.RecreateTableAction;
 				perm = "write";
 			},
 			delimiter,
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,
 			{
 				name = "Refresh";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.RefreshChildrenAction;
+				class = org.netbeans.modules.db.explorer.actions.RefreshChildrenAction;
 				perm = "write";
 			},
 			delimiter
@@ -1188,10 +1188,10 @@
 	*/
 	table = {
 		name = Table;
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.TableNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.TableNodeInfo;
+		class = org.netbeans.modules.db.explorer.nodes.TableNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.TableNodeInfo;
 		creator = tablelist;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/table";
+		iconbase = "/org/netbeans/modules/db/resources/table";
 		children = (ilist);
 /*		resultset = (catalog,schema,name,type,remarks); */
 		resultset = (catalog,schema,name,type);
@@ -1201,45 +1201,45 @@
 			delete = YES;
 		};	
 		children_ordering = {
-			com.netbeans.enterprise.modules.db.explorer.nodes.PrimaryKeyNode = 0;
-			com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode = 1;
+			org.netbeans.modules.db.explorer.nodes.PrimaryKeyNode = 0;
+			org.netbeans.modules.db.explorer.nodes.ColumnNode = 1;
 		};
 		actions = (
 			{
 				name = "CreateTable";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
+				class = org.netbeans.modules.db.explorer.actions.CreateTableAction;
 				node = tablelist;
 				perm = "write";
 			},
 			{
 				name = "AddColumn";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+				class = org.netbeans.modules.db.explorer.actions.AddColumnAction;
 				perm = "write";
 			},
 			{
 				name = "Refresh";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.RefreshChildrenAction;
+				class = org.netbeans.modules.db.explorer.actions.RefreshChildrenAction;
 			},
 			delimiter,
 			{
 				name = "GrabStructure";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.GrabTableAction;
+				class = org.netbeans.modules.db.explorer.actions.GrabTableAction;
 				perm = "write";
 			},
 			{
 				name = "RecreateTable";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateTableAction;
+				class = org.netbeans.modules.db.explorer.actions.RecreateTableAction;
 				node = tablelist;
 				perm = "write";
 			},
 			delimiter,
 			{
 				name = "ViewData";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+				class = org.netbeans.modules.db.explorer.actions.ViewDataAction;
 			},
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,
 			{
@@ -1304,9 +1304,9 @@
 	*/
 	column = {
 		name = "Column";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ColumnNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/column";
+		class = org.netbeans.modules.db.explorer.nodes.ColumnNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.ColumnNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/column";
 		resultset = (catalog,schema,tablename,name,datatype,typename,columnsize,bufflen,decdigits,radix,nullable,remarks,coldef,reserved1,reserved2,octetlen,ordpos,isnullable);
 		options = {
 			cut = YES;
@@ -1316,18 +1316,18 @@
 		actions = (
 			{
 				name = "AddColumn";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+				class = org.netbeans.modules.db.explorer.actions.AddColumnAction;
 				perm = "write";
 				node = table;
 			},
 			delimiter,
 			{
 				name = "ViewData";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+				class = org.netbeans.modules.db.explorer.actions.ViewDataAction;
 			},
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,
 			{
@@ -1414,26 +1414,26 @@
 	*/
 	icolumn = {
 		name = "Index";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.IndexColumnNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/columnIndex";
+		class = org.netbeans.modules.db.explorer.nodes.ColumnNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.IndexColumnNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/columnIndex";
 		resultset = (catalog,schema,tablename,unique,qual,idxname,type,ordpos,name,ord,card,pages,filter);
 		options = {};	
 		actions = (
 			{
 				name = "AddColumn";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+				class = org.netbeans.modules.db.explorer.actions.AddColumnAction;
 				perm = "write";
 				node = table;
 			},
 			delimiter,
 			{
 				name = "ViewData";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+				class = org.netbeans.modules.db.explorer.actions.ViewDataAction;
 			},
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,
 			{
@@ -1528,9 +1528,9 @@
 	*/
 	pcolumn = {
 		name = "Primary key";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.PrimaryKeyNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.PrimaryColumnNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/columnPrimary";
+		class = org.netbeans.modules.db.explorer.nodes.PrimaryKeyNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.PrimaryColumnNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/columnPrimary";
 		resultset = (catalog,schema,tablename,name,keyseq,pkname);
 		options = {
 			cut = YES;
@@ -1540,18 +1540,18 @@
 		actions = (
 			{
 				name = "AddColumn";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+				class = org.netbeans.modules.db.explorer.actions.AddColumnAction;
 				perm = "write";
 				node = table;
 			},
 			delimiter,
 			{
 				name = "ViewData";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+				class = org.netbeans.modules.db.explorer.actions.ViewDataAction;
 			},
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,
 			{
@@ -1640,9 +1640,9 @@
 	*/
 	fcolumn = {
 		name = "Foreign key";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ForeignColumnNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/columnForeign";
+		class = org.netbeans.modules.db.explorer.nodes.ColumnNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.ForeignColumnNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/columnForeign";
 		options = {
 			cut = YES;
 			copy = YES;
@@ -1651,18 +1651,18 @@
 		actions = (
 			{
 				name = "AddColumn";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+				class = org.netbeans.modules.db.explorer.actions.AddColumnAction;
 				perm = "write";
 				node = table;
 			},
 			delimiter,
 			{
 				name = "ViewData";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+				class = org.netbeans.modules.db.explorer.actions.ViewDataAction;
 			},
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,			
 			{
@@ -1747,9 +1747,9 @@
 
 	ekeylist = {
 		name = "Exported keys";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.RefTableListNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/folder";
+		class = org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.RefTableListNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {};	
@@ -1758,9 +1758,9 @@
 
 	ilist = {
 		name = "Indexes";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.IndexListNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/folder";
+		class = org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.IndexListNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {
@@ -1771,13 +1771,13 @@
 		actions = (			
 			{
 				name = "AddIndex";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddIndexAction;
+				class = org.netbeans.modules.db.explorer.actions.AddIndexAction;
 				perm = "write";
 			},
 			delimiter,
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter
 		);
@@ -1785,9 +1785,9 @@
 
 	index = {
 		name = "Index";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.IndexNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.IndexNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/index";
+		class = org.netbeans.modules.db.explorer.nodes.IndexNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.IndexNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/index";
 		resultset = (unused,unused,unused,unused,unused,name);
 		children = ();
 		options = {
@@ -1798,24 +1798,24 @@
 		actions = (			
 			{
 				name = "AddColumn";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddToIndexAction;
+				class = org.netbeans.modules.db.explorer.actions.AddToIndexAction;
 				perm = "write";
 			},
 			{
 				name = "AddIndex";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.AddIndexAction;
+				class = org.netbeans.modules.db.explorer.actions.AddIndexAction;
 				node = ilist;
 				perm = "write";
 			},
 			delimiter,
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,
 			{
 				name = "Refresh";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.RefreshChildrenAction;
+				class = org.netbeans.modules.db.explorer.actions.RefreshChildrenAction;
 			},
 			delimiter,
 			{
@@ -1848,10 +1848,10 @@
 
 	indexcolumn = {
 		name = "IndexColumn";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.LeafNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.IndexColumnNodeInfo;
-		iconbaseA = "/com/netbeans/enterprise/modules/db/resources/indexDown";
-		iconbaseD = "/com/netbeans/enterprise/modules/db/resources/indexUp";
+		class = org.netbeans.modules.db.explorer.nodes.LeafNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.IndexColumnNodeInfo;
+		iconbaseA = "/org/netbeans/modules/db/resources/indexDown";
+		iconbaseD = "/org/netbeans/modules/db/resources/indexUp";
 		resultset = (catalog,schema,tablename,unique,qual,ixname,type,ordpos,name,ord,card,pages,filter);
 		options = {
 			cut = YES;
@@ -1861,7 +1861,7 @@
 		actions = (
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,
 			{
@@ -1921,9 +1921,9 @@
 
 	ekey = {
 		name = "Exported key";
-		class = com.netbeans.enterprise.modules.db.explorer.node.LeafNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.RefTableNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/tableReferenced";
+		class = org.netbeans.modules.db.explorer.node.LeafNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.RefTableNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/tableReferenced";
 		resultset = (pcatalog,pschema,pname,pcolname,catalog,schema,name,colname,keyseq,updaterule,deleterule,fkname,pkname,defer);
 		children = ();
 		options = {};	
@@ -2007,22 +2007,22 @@
 	viewlist = {
 		name = "Views";
 		displayname = "{name}";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.ViewListNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ViewListNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/folder";
+		class = org.netbeans.modules.db.explorer.nodes.ViewListNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.ViewListNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {};	
 		actions = (
 			{
 				name = "AddView";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateViewAction;
+				class = org.netbeans.modules.db.explorer.actions.CreateViewAction;
 				perm = "write";
 			},
 			delimiter,
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter
 		);
@@ -2030,9 +2030,9 @@
 
 	view = {
 		name = "View";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.ViewNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ViewNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/view";
+		class = org.netbeans.modules.db.explorer.nodes.ViewNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.ViewNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/view";
 		resultset = (catalog,schema,name,type,remarks);
 		children = ();
 		options = {
@@ -2043,18 +2043,18 @@
 		actions = (
 			{
 				name = "AddView";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateViewAction;
+				class = org.netbeans.modules.db.explorer.actions.CreateViewAction;
 				perm = "write";
 				node = viewlist;
 			},
 			delimiter,
 			{
 				name = "ViewData";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+				class = org.netbeans.modules.db.explorer.actions.ViewDataAction;
 			},
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,			
 			{
@@ -2097,20 +2097,20 @@
 		
 	viewcolumn = {
 		name = "Column";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.LeafNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ViewColumnNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/columnView";
+		class = org.netbeans.modules.db.explorer.nodes.LeafNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.ViewColumnNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/columnView";
 		resultset = (catalog,schema,tablename,name,datatype,typename,columnsize,bufflen,decdigits,radix,nullable,remarks,coldef,reserved1,reserved2,octetlen,ordpos,isnullable);
 		children = ();
 		options = {};	
 		actions = (
 			{
 				name = "ViewData";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+				class = org.netbeans.modules.db.explorer.actions.ViewDataAction;
 			},
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,			
 			{
@@ -2177,16 +2177,16 @@
 	procedurelist = {
 		name = "Procedures";
 		displayname = "{name}";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.ProcedureListNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ProcedureListNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/folder";
+		class = org.netbeans.modules.db.explorer.nodes.ProcedureListNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.ProcedureListNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {};	
 		actions = (
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter
 		);
@@ -2194,9 +2194,9 @@
 
 	procedure = {
 		name = "Procedure";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.ProcedureNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ProcedureNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/procedure";
+		class = org.netbeans.modules.db.explorer.nodes.ProcedureNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.ProcedureNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/procedure";
 		resultset = (catalog,schema,name,reserved1,reserverd2,reserverd3,remarks,type);
 		options = {
 			cut = YES;
@@ -2206,13 +2206,13 @@
 		actions = (
 //			{
 //				name = "AddProcedure";
-//				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
+//				class = org.netbeans.modules.db.explorer.actions.CreateProcedureAction;
 //				node = procedurelist;
 //			},
 //			delimiter,
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,			
 			{
@@ -2259,14 +2259,14 @@
 	
 	procedurecolumn = {
 		name = "ProcedureColumn";
-		class = com.netbeans.enterprise.modules.db.explorer.nodes.ProcedureParamNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ProcedureParamNodeInfo;
-		iconbase = "/com/netbeans/enterprise/modules/db/resources/param";
-		iconbase_in = "/com/netbeans/enterprise/modules/db/resources/paramIn";
-		iconbase_out = "/com/netbeans/enterprise/modules/db/resources/paramOut";
-		iconbase_inout = "/com/netbeans/enterprise/modules/db/resources/paramInOut";
-		iconbase_result = "/com/netbeans/enterprise/modules/db/resources/paramResult";
-		iconbase_return = "/com/netbeans/enterprise/modules/db/resources/paramReturn";
+		class = org.netbeans.modules.db.explorer.nodes.ProcedureParamNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.ProcedureParamNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/param";
+		iconbase_in = "/org/netbeans/modules/db/resources/paramIn";
+		iconbase_out = "/org/netbeans/modules/db/resources/paramOut";
+		iconbase_inout = "/org/netbeans/modules/db/resources/paramInOut";
+		iconbase_result = "/org/netbeans/modules/db/resources/paramResult";
+		iconbase_return = "/org/netbeans/modules/db/resources/paramReturn";
 		resultset = (catalog, schema, procname, name, type, dtype, typename, precision, length, scale, radix, nullable, remarks);
 		options = {
 			cut = YES;
@@ -2276,13 +2276,13 @@
 		actions = (
 //			{
 //				name = "AddProcedure";
-//				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
+//				class = org.netbeans.modules.db.explorer.actions.CreateProcedureAction;
 //				node = procedurelist;
 //			},
 //			delimiter,
 			{
 				name = "ExecuteCommand";
-				class = com.netbeans.enterprise.modules.db.explorer.actions.ExecuteCommandAction;
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			delimiter,			
 			{

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text.options;
+package org.netbeans.modules.editor.options;
 
 import java.awt.*;
 import java.beans.*;
@@ -25,8 +25,8 @@ import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.propertysheet.PropertyModel;
 import org.openide.util.HelpCtx;
 
-import com.netbeans.editor.Coloring;
-import com.netbeans.editor.SettingsNames;
+import org.netbeans.editor.Coloring;
+import org.netbeans.editor.SettingsNames;
 
 /** 
  * ColoringArrayEditorPanel is custom property editor operating over HashMap 
@@ -89,7 +89,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
             support.firePropertyChange( "value", null, null ); // NOI18N
           }
         } catch( InvocationTargetException e ) {
-          if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
+          if( Boolean.getBoolean( "org.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
         }
       }
     });
@@ -175,7 +175,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
     try {
       coloringModel.setValue( bean );
     } catch( java.lang.reflect.InvocationTargetException e ) {
-      if( Boolean.getBoolean( "com.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
+      if( Boolean.getBoolean( "org.netbeans.exceptions" ) ) e.printStackTrace();   // NOI18N
     }
   }
 

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl;
+package org.netbeans.core;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -38,7 +38,7 @@ final class NbErrorManager extends ErrorManager {
 
   /** Creates new NbExceptionManager. */
   public NbErrorManager() {
-    System.setProperty("sun.awt.exception.handler", "com.netbeans.developer.impl.NbErrorManager$AWTHandler");
+    System.setProperty("sun.awt.exception.handler", "org.netbeans.core.NbErrorManager$AWTHandler");
   }
   
   /** Adds these values. All the 
@@ -360,7 +360,7 @@ final class NbErrorManager extends ErrorManager {
     
     /** The name MUST be handle and MUST be public */
     public static void handle(Throwable t) {
-      if (t instanceof com.netbeans.developer.impl.execution.ExitSecurityException) {
+      if (t instanceof org.netbeans.core.execution.ExitSecurityException) {
         return;
       }
       TopManager.getDefault().getErrorManager().notify((ERROR << 1), t);

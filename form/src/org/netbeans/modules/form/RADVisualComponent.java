@@ -11,10 +11,10 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import org.openide.nodes.*;
-import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
+import org.netbeans.modules.form.compat2.layouts.DesignLayout;
 
 import java.awt.Component;
 import java.util.HashMap;

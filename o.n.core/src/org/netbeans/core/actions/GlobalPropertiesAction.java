@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl.actions;
+package org.netbeans.core.actions;
 
 import org.openide.TopManager;
 import org.openide.windows.TopComponent;
@@ -20,7 +20,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallableSystemAction;
 
-import com.netbeans.developer.impl.*;
+import org.netbeans.core.*;
 
 /** Opens properties that listen on global changes of selected nodes and update itself.
 *
@@ -49,7 +49,7 @@ static final long serialVersionUID =-4072717465854016148L;
   * @return resource for the action icon
   */
   protected String iconResource () {
-    return "/com/netbeans/developer/impl/resources/frames/globalProperties.gif"; // NOI18N
+    return "/org/netbeans/core/resources/frames/globalProperties.gif"; // NOI18N
   }
 
 }

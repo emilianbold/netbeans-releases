@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.properties;
+package org.netbeans.modules.properties;
 
 import java.awt.Image;
 import java.beans.*;
@@ -49,11 +49,11 @@ public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage("/com/netbeans/developer/modules/loaders/properties/propertiesObject.gif");
+        icon = loadImage("/org/netbeans/modules/properties/propertiesObject.gif");
       return icon;
     } else {
       if (icon32 == null)
-        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/properties/propertiesObject32.gif");
+        icon32 = loadImage ("/org/netbeans/modules/properties/propertiesObject32.gif");
       return icon32;
     }
   }

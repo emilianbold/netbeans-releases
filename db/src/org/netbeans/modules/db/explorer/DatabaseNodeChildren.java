@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer;
+package org.netbeans.modules.db.explorer;
 
 import java.util.Map;
 import java.util.Collection;
@@ -22,9 +22,9 @@ import java.util.TreeSet;
 import java.sql.*;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
-import com.netbeans.enterprise.modules.db.DatabaseException;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 public class DatabaseNodeChildren extends Children.Array 
 {		

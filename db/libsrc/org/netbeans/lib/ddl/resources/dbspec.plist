@@ -67,62 +67,62 @@
 /////////////////////
     
     Column = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}]";
     };
 
     UniqueColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] unique";
     };
 
     PrimaryKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] primary key";
     };
 
     ForeignKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] references {fkobject.name}[({fkcolumn.name})]";
     };
 
     CheckColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] check ({check.condition})";
     };      
 
     UniqueConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "unique ({column.name})";
     };
 
     PrimaryKeyConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "primary key ({column.name})";
     };
 
     ForeignKeyConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "foreign key ({column.name}) references {fkobject.name}[({fkcolumn.name})]";
     };
 
     CheckConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "check ({check.condition})";
     };
 
     ColumnName = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name}[ {direction}]";
     };
 
 //    ProcedureArgument = {
-//      Class = com.netbeans.ddl.impl.ProcedureArgument;
+//      Class = org.netbeans.lib.ddl.impl.ProcedureArgument;
 //      Format = "{argument.name}[ {argument.type}] {argument.datatype}";
 //    };    
 
 //    TriggerEvent = {
-//      Class = com.netbeans.ddl.impl.TriggerEvent;
+//      Class = org.netbeans.lib.ddl.impl.TriggerEvent;
 //      Format = "{event.name}[ OF {event.column}]";
 //    };    
 
@@ -131,7 +131,7 @@
 //////////////////////
 
     CreateTableCommand = {
-      Class = com.netbeans.ddl.impl.CreateTable;
+      Class = org.netbeans.lib.ddl.impl.CreateTable;
       Format = "create table [{object.owner}.]{object.name}\n(\n\t{columns}\n)";
       Binding = {
         COLUMN = Column;
@@ -147,12 +147,12 @@
     };
 
     DropTableCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop table [{object.owner}.]{object.name}";
     };
 
     AddColumnCommand = {
-      Class = com.netbeans.ddl.impl.AddColumn;
+      Class = org.netbeans.lib.ddl.impl.AddColumn;
       Format = "alter table [{object.owner}.]{object.name} add {columns}";
       Binding = {
         COLUMN = Column;
@@ -168,7 +168,7 @@
     };    
 
     RemoveColumnCommand = {
-      Class = com.netbeans.ddl.impl.RemoveColumn;
+      Class = org.netbeans.lib.ddl.impl.RemoveColumn;
       Format = "alter table [{object.owner}.]{object.name} drop {column}";
       Binding = {
         COLUMN = ColumnName;
@@ -176,17 +176,17 @@
     };
     
     CreateViewCommand = {
-      Class = com.netbeans.ddl.impl.CreateView;
+      Class = org.netbeans.lib.ddl.impl.CreateView;
       Format = "create view [{object.owner}.]{object.name} as {query}";
     };
 
     DropViewCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop view [{object.owner}.]{object.name}";
     };
 
     CreateIndexCommand = {
-      Class = com.netbeans.ddl.impl.CreateIndex;
+      Class = org.netbeans.lib.ddl.impl.CreateIndex;
       Format = "create index {index.name} on [{object.owner}.]{object.name}\n(\n\t{columns}\n)";
       Binding = {
         COLUMN = ColumnName;
@@ -194,7 +194,7 @@
     };
     
     DropIndexCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop index [{object.owner}.]{object.name}";
     };
 
@@ -251,17 +251,17 @@
 // Definice sloupcu
 //
     ColumnTypeless = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} [{column.notnull}not null][ default {default.value}]";
     };
     
     UniqueColumnTypeless = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} [{column.notnull}not null][ default {default.value}] unique";
     };
 
     CheckColumnTypeless = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} [{column.notnull}not null][ default {default.value}] check ({check.condition})";
     };      
 
@@ -270,12 +270,12 @@
 //
 
     CommentTableCommand = {
-      Class = com.netbeans.ddl.impl.CommentTable;
+      Class = org.netbeans.lib.ddl.impl.CommentTable;
       Format = "comment on table [{object.owner}.]{object.name} is {comment}";
     };
 
     RenameColumnCommand = {
-      Class = com.netbeans.ddl.impl.RenameColumn;
+      Class = org.netbeans.lib.ddl.impl.RenameColumn;
       Format = "alter table [{object.owner}.]{object.name} rename {column} to {column.newname}";
       Binding = {
         COLUMN = ColumnName;
@@ -283,7 +283,7 @@
     };
 
     ModifyColumnCommand = {
-      Class = com.netbeans.ddl.impl.ModifyColumn;
+      Class = org.netbeans.lib.ddl.impl.ModifyColumn;
       Format = "alter table [{object.owner}.]{object.name} modify {column}";
       Binding = {
         COLUMN = ColumnTypeless;
@@ -293,7 +293,7 @@
     };
 
     RemoveColumnCommand = {
-      Class = com.netbeans.ddl.impl.RemoveColumn;
+      Class = org.netbeans.lib.ddl.impl.RemoveColumn;
       Format = "alter table [{object.owner}.]{object.name} delete {column}";
       Binding = {
         COLUMN = ColumnName;
@@ -304,18 +304,18 @@
     };    
 
     CommentViewCommand = {
-      Class = com.netbeans.ddl.impl.CommentView;
+      Class = org.netbeans.lib.ddl.impl.CommentView;
       Format = "comment on view [{object.owner}.]{object.name} is {comment}";
     };
 
     RenameTableCommand = {
-      Class = com.netbeans.ddl.impl.RenameTable;
+      Class = org.netbeans.lib.ddl.impl.RenameTable;
       Format = "alter table [{object.owner}.]{object.name} rename {object.newname}";
     
     };
 
     CreateProcedureCommand = {
-      Class = com.netbeans.ddl.impl.CreateProcedure;
+      Class = org.netbeans.lib.ddl.impl.CreateProcedure;
       Format = "create procedure [{object.owner}.]{object.name} [({arguments})] as\n{body}";
       Binding = {
         ARGUMENT = ProcedureArgument;
@@ -323,12 +323,12 @@
     };
 
     DropProcedureCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop procedure [{object.owner}.]{object.name}";
     };
 
     CreateFunctionCommand = {
-      Class = com.netbeans.ddl.impl.CreateFunction;
+      Class = org.netbeans.lib.ddl.impl.CreateFunction;
       Format = "create function [{object.owner}.]{object.name} [({arguments})] returns {return.type} as\n{body}";
       Binding = {
         ARGUMENT = ProcedureArgument;
@@ -336,12 +336,12 @@
     };
 
     DropFunctionCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop function [{object.owner}.]{object.name}";
     };
   
     CreateTriggerCommand = {
-      Class = com.netbeans.ddl.impl.CreateTrigger;
+      Class = org.netbeans.lib.ddl.impl.CreateTrigger;
       Format = "create trigger [{object.owner}.]{object.name}\n{trigger.timing} {trigger.events}\non {table.name}\nreferencing old as old_{object.name} new as new_{object.name}[\n{each.row}for each row][\nwhen {trigger.condition}\n{trigger.body}";
       Binding = {
         EVENT = TriggerEvent;
@@ -349,7 +349,7 @@
     };
 
     DropTriggerCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop trigger [{object.owner}.]{object.name}";
     };
   };
@@ -405,57 +405,57 @@
 // Definice sloupcu
 //
     ColumnTypeless = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} [{column.notnull}not null][ default {default.value}]";
     };
     
     UniqueColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] unique";
     };
 
     UniqueColumnTypeless = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} [{column.notnull}not null][ default {default.value}] unique";
     };
 
     PrimaryKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] primary key";
     };
 
     ForeignKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] references {fkobject.name}[({fkcolumn.name})]";
     };
 
     CheckColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] check ({check.condition})";
     };      
 
     CheckColumnTypeless = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} [{column.notnull}not null][ default {default.value}] check ({check.condition})";
     };      
 
     UniqueConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "unique {column.name}";
     };
 
     PrimaryKeyConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "primary key {column.name}";
     };
 
     ForeignKeyConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "foreign key {column.name} references {fkobject.name}[({fkcolumn.name})]";
     };
 
     CheckConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "check ({check.condition})";
     };      
 
@@ -464,12 +464,12 @@
 //
 
     CommentTableCommand = {
-      Class = com.netbeans.ddl.impl.CommentTable;
+      Class = org.netbeans.lib.ddl.impl.CommentTable;
       Format = "comment on table [{object.owner}.]{object.name} is {comment}";
     };
 
     RenameColumnCommand = {
-      Class = com.netbeans.ddl.impl.RenameColumn;
+      Class = org.netbeans.lib.ddl.impl.RenameColumn;
       Format = "alter table [{object.owner}.]{object.name} rename {column} to {column.newname}";
       Binding = {
         COLUMN = ColumnName;
@@ -477,7 +477,7 @@
     };
 
     ModifyColumnCommand = {
-      Class = com.netbeans.ddl.impl.ModifyColumn;
+      Class = org.netbeans.lib.ddl.impl.ModifyColumn;
       Format = "alter table [{object.owner}.]{object.name} modify {column}";
       Binding = {
         COLUMN = ColumnTypeless;
@@ -487,7 +487,7 @@
     };
 
     RemoveColumnCommand = {
-      Class = com.netbeans.ddl.impl.RemoveColumn;
+      Class = org.netbeans.lib.ddl.impl.RemoveColumn;
       Format = "alter table [{object.owner}.]{object.name} delete {column}";
       Binding = {
         COLUMN = ColumnName;
@@ -498,18 +498,18 @@
     };    
 
     CommentViewCommand = {
-      Class = com.netbeans.ddl.impl.CommentView;
+      Class = org.netbeans.lib.ddl.impl.CommentView;
       Format = "comment on view [{object.owner}.]{object.name} is {comment}";
     };
 
     RenameTableCommand = {
-      Class = com.netbeans.ddl.impl.RenameTable;
+      Class = org.netbeans.lib.ddl.impl.RenameTable;
       Format = "alter table [{object.owner}.]{object.name} rename {object.newname}";
     
     };
 
     CreateProcedureCommand = {
-      Class = com.netbeans.ddl.impl.CreateProcedure;
+      Class = org.netbeans.lib.ddl.impl.CreateProcedure;
       Format = "create procedure [{object.owner}.]{object.name} [({arguments})] as\n{body}";
       Binding = {
         ARGUMENT = ProcedureArgument;
@@ -517,12 +517,12 @@
     };
 
     DropProcedureCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop procedure [{object.owner}.]{object.name}";
     };
 
     CreateFunctionCommand = {
-      Class = com.netbeans.ddl.impl.CreateFunction;
+      Class = org.netbeans.lib.ddl.impl.CreateFunction;
       Format = "create function [{object.owner}.]{object.name} [({arguments})] returns {return.type} as\n{body}";
       Binding = {
         ARGUMENT = ProcedureArgument;
@@ -530,12 +530,12 @@
     };
 
     DropFunctionCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop function [{object.owner}.]{object.name}";
     };
   
     CreateTriggerCommand = {
-      Class = com.netbeans.ddl.impl.CreateTrigger;
+      Class = org.netbeans.lib.ddl.impl.CreateTrigger;
       Format = "create trigger [{object.owner}.]{object.name}\n{trigger.timing} {trigger.events}\non {table.name}\nreferencing old as old_{object.name} new as new_{object.name}[\n{each.row}for each row][\nwhen {trigger.condition}\n{trigger.body}";
       Binding = {
         EVENT = TriggerEvent;
@@ -543,7 +543,7 @@
     };
 
     DropTriggerCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop trigger [{object.owner}.]{object.name}";
     };
   };
@@ -591,47 +591,47 @@
 //
 
     Column = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}]";
     };
     
     UniqueColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] constraint {object.name} unique";
     };
 
     PrimaryKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] constraint {object.name} primary key";
     };
 
     ForeignKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] constraint {object.name} references {fkobject.name}[({fkcolumn.name})]";
     };
 
     CheckColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] constraint {object.name} check ({check.condition})";
     };      
 
     UniqueConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "constraint {object.name} unique {column.name}";
     };
 
     PrimaryKeyConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "constraint {object.name} primary key {column.name}";
     };
 
     ForeignKeyConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "constraint {object.name} foreign key {column.name} references {fkobject.name}[({fkcolumn.name})]";
     };
 
     CheckConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "constraint {object.name} check ({check.condition})";
     };      
 
@@ -640,23 +640,23 @@
 //
 
     CommentTableCommand = {
-      Class = com.netbeans.ddl.impl.CommentTable;
+      Class = org.netbeans.lib.ddl.impl.CommentTable;
       Format = "comment on table [{object.owner}.]{object.name} is {comment}";
     };
 
     RenameTableCommand = {
-      Class = com.netbeans.ddl.impl.RenameTable;
+      Class = org.netbeans.lib.ddl.impl.RenameTable;
       Format = "rename [{object.owner}.]{object.name} to {object.newname}";
     
     };
 
     CommentViewCommand = {
-      Class = com.netbeans.ddl.impl.CommentView;
+      Class = org.netbeans.lib.ddl.impl.CommentView;
       Format = "comment on view [{object.owner}.]{object.name} is {comment}";
     };
 
 /*    RenameColumnCommand = {
-      Class = com.netbeans.ddl.impl.RenameColumn;
+      Class = org.netbeans.lib.ddl.impl.RenameColumn;
       Format = "alter table [{object.owner}.]{object.name} rename {column} to {column.newname}";
       Binding = {
         COLUMN = ColumnName;
@@ -664,7 +664,7 @@
     };
 */
     RemoveColumnCommand = {
-      Class = com.netbeans.ddl.impl.RemoveColumn;
+      Class = org.netbeans.lib.ddl.impl.RemoveColumn;
       Format = "alter table [{object.owner}.]{object.name} drop ({column})";
       Binding = {
         COLUMN = ColumnName;
@@ -675,12 +675,12 @@
     };    
 
     RenameViewCommand = {
-      Class = com.netbeans.ddl.impl.RenameView;
+      Class = org.netbeans.lib.ddl.impl.RenameView;
       Format = "rename [{object.owner}.]{object.name} to {object.newname}";
     };
 
     CreateProcedureCommand = {
-      Class = com.netbeans.ddl.impl.CreateProcedure;
+      Class = org.netbeans.lib.ddl.impl.CreateProcedure;
       Format = "create procedure [{object.owner}.]{object.name} [({arguments})] as\n{body}";
       Binding = {
         ARGUMENT = ProcedureArgument;
@@ -688,12 +688,12 @@
     };
 
     DropProcedureCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop procedure [{object.owner}.]{object.name}";
     };
 
     CreateFunctionCommand = {
-      Class = com.netbeans.ddl.impl.CreateFunction;
+      Class = org.netbeans.lib.ddl.impl.CreateFunction;
       Format = "create function [{object.owner}.]{object.name} [({arguments})] returns {return.type} as\n{body}";
       Binding = {
         ARGUMENT = ProcedureArgument;
@@ -701,12 +701,12 @@
     };
 
     DropFunctionCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop function [{object.owner}.]{object.name}";
     };
   
     CreateTriggerCommand = {
-      Class = com.netbeans.ddl.impl.CreateTrigger;
+      Class = org.netbeans.lib.ddl.impl.CreateTrigger;
       Format = "create trigger [{object.owner}.]{object.name}\n{trigger.timing} {trigger.events}\non {table.name}\nreferencing old as old_{object.name} new as new_{object.name}[\n{each.row}for each row][\nwhen {trigger.condition}\n{trigger.body}";
       Binding = {
         EVENT = TriggerEvent;
@@ -714,12 +714,12 @@
     };
 
     DropTriggerCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop trigger [{object.owner}.]{object.name}";
     };
 
     CreateIndexCommand = {
-      Class = com.netbeans.ddl.impl.CreateIndex;
+      Class = org.netbeans.lib.ddl.impl.CreateIndex;
       Format = "create index {index.name} on [{object.owner}.]{object.name}[\n(\n\t{columns}\n)]";
       Binding = {
         COLUMN = ColumnName;
@@ -727,17 +727,17 @@
     };
     
     DropIndexCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop index [{object.owner}.]{object.name}";
     };
 
     CreateViewCommand = {
-      Class = com.netbeans.ddl.impl.CreateView;
+      Class = org.netbeans.lib.ddl.impl.CreateView;
       Format = "create view [{object.owner}.]{object.name} as {query}";
     };
 
     DropViewCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop view [{object.owner}.]{object.name}";
     };
   };
@@ -825,7 +825,7 @@
 //////////////////////
 
     RemoveColumnCommand = {
-      Class = com.netbeans.ddl.impl.RemoveColumn;
+      Class = org.netbeans.lib.ddl.impl.RemoveColumn;
       Format = "alter table [{object.owner}.]{object.name} drop column {column}";
       Binding = {
         COLUMN = ColumnName;
@@ -833,7 +833,7 @@
     };
     
     DropIndexCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop index {object.owner}.{object.name}";
     };
 
@@ -908,7 +908,7 @@
     CharacterTypes = (CHAR,VARCHAR);
 
     CreateTableCommand = {
-      Class = com.netbeans.ddl.impl.CreateTable;
+      Class = org.netbeans.lib.ddl.impl.CreateTable;
       Format = "create table [{object.owner}.]{object.name}\n(\n\t{columns}\n)";
       Binding = {
         COLUMN = Column;
@@ -917,12 +917,12 @@
     };
 
     Column = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}]";
     };
     
     PrimaryKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] primary key";
     };
   };
@@ -1076,7 +1076,7 @@
 //////////////////////
 
     CreateTableCommand = {
-      Class = com.netbeans.ddl.impl.CreateTable;
+      Class = org.netbeans.lib.ddl.impl.CreateTable;
       Format = "create table {object.name}\n(\n\t{columns}\n)";
       Binding = {
         COLUMN = Column;
@@ -1120,7 +1120,7 @@
 //////////////////////
 
     CreateTableCommand = {
-      Class = com.netbeans.ddl.impl.CreateTable;
+      Class = org.netbeans.lib.ddl.impl.CreateTable;
       Format = "create table {object.name}\n(\n\t{columns}\n)";
       Binding = {
         COLUMN = Column;
@@ -1209,47 +1209,47 @@
 //
 
     Column = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}]";
     };
     
     UniqueColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] constraint {object.name} unique";
     };
 
     PrimaryKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] constraint {object.name} primary key";
     };
 
     ForeignKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] constraint {object.name} references {fkobject.name}[({fkcolumn.name})]";
     };
 
     CheckColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] constraint {object.name} check ({check.condition})";
     };      
 
     UniqueConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "constraint {object.name} unique {column.name}";
     };
 
     PrimaryKeyConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "constraint {object.name} primary key {column.name}";
     };
 
     ForeignKeyConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "constraint {object.name} foreign key {column.name} references {fkobject.name}[({fkcolumn.name})]";
     };
 
     CheckConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "constraint {object.name} check ({check.condition})";
     };      
 
@@ -1258,23 +1258,23 @@
 //
 
     CommentTableCommand = {
-      Class = com.netbeans.ddl.impl.CommentTable;
+      Class = org.netbeans.lib.ddl.impl.CommentTable;
       Format = "comment on table [{object.owner}.]{object.name} is {comment}";
     };
 
     RenameTableCommand = {
-      Class = com.netbeans.ddl.impl.RenameTable;
+      Class = org.netbeans.lib.ddl.impl.RenameTable;
       Format = "rename [{object.owner}.]{object.name} to {object.newname}";
     
     };
 
     CommentViewCommand = {
-      Class = com.netbeans.ddl.impl.CommentView;
+      Class = org.netbeans.lib.ddl.impl.CommentView;
       Format = "comment on view [{object.owner}.]{object.name} is {comment}";
     };
 
 /*    RenameColumnCommand = {
-      Class = com.netbeans.ddl.impl.RenameColumn;
+      Class = org.netbeans.lib.ddl.impl.RenameColumn;
       Format = "alter table [{object.owner}.]{object.name} rename {column} to {column.newname}";
       Binding = {
         COLUMN = ColumnName;
@@ -1282,7 +1282,7 @@
     };
 */
     RemoveColumnCommand = {
-      Class = com.netbeans.ddl.impl.RemoveColumn;
+      Class = org.netbeans.lib.ddl.impl.RemoveColumn;
       Format = "alter table [{object.owner}.]{object.name} drop ({column})";
       Binding = {
         COLUMN = ColumnName;
@@ -1293,12 +1293,12 @@
     };    
 
     RenameViewCommand = {
-      Class = com.netbeans.ddl.impl.RenameView;
+      Class = org.netbeans.lib.ddl.impl.RenameView;
       Format = "rename [{object.owner}.]{object.name} to {object.newname}";
     };
 
     CreateProcedureCommand = {
-      Class = com.netbeans.ddl.impl.CreateProcedure;
+      Class = org.netbeans.lib.ddl.impl.CreateProcedure;
       Format = "create procedure [{object.owner}.]{object.name} [({arguments})] as\n{body}";
       Binding = {
         ARGUMENT = ProcedureArgument;
@@ -1306,12 +1306,12 @@
     };
 
     DropProcedureCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop procedure [{object.owner}.]{object.name}";
     };
 
     CreateFunctionCommand = {
-      Class = com.netbeans.ddl.impl.CreateFunction;
+      Class = org.netbeans.lib.ddl.impl.CreateFunction;
       Format = "create function [{object.owner}.]{object.name} [({arguments})] returns {return.type} as\n{body}";
       Binding = {
         ARGUMENT = ProcedureArgument;
@@ -1319,12 +1319,12 @@
     };
 
     DropFunctionCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop function [{object.owner}.]{object.name}";
     };
   
     CreateTriggerCommand = {
-      Class = com.netbeans.ddl.impl.CreateTrigger;
+      Class = org.netbeans.lib.ddl.impl.CreateTrigger;
       Format = "create trigger [{object.owner}.]{object.name}\n{trigger.timing} {trigger.events}\non {table.name}\nreferencing old as old_{object.name} new as new_{object.name}[\n{each.row}for each row][\nwhen {trigger.condition}\n{trigger.body}";
       Binding = {
         EVENT = TriggerEvent;
@@ -1332,12 +1332,12 @@
     };
 
     DropTriggerCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop trigger [{object.owner}.]{object.name}";
     };
 
     CreateIndexCommand = {
-      Class = com.netbeans.ddl.impl.CreateIndex;
+      Class = org.netbeans.lib.ddl.impl.CreateIndex;
       Format = "create index {index.name} on [{object.owner}.]{object.name}[\n(\n\t{columns}\n)]";
       Binding = {
         COLUMN = ColumnName;
@@ -1345,17 +1345,17 @@
     };
     
     DropIndexCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop index [{object.owner}.]{object.name}";
     };
 
     CreateViewCommand = {
-      Class = com.netbeans.ddl.impl.CreateView;
+      Class = org.netbeans.lib.ddl.impl.CreateView;
       Format = "create view [{object.owner}.]{object.name} as {query}";
     };
 
     DropViewCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop view [{object.owner}.]{object.name}";
     };
   };
@@ -1403,47 +1403,47 @@
 //
 
     Column = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}]";
     };
     
     UniqueColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] constraint {object.name} unique";
     };
 
     PrimaryKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] constraint {object.name} primary key";
     };
 
     ForeignKeyColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] constraint {object.name} references {fkobject.name}[({fkcolumn.name})]";
     };
 
     CheckColumn = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] constraint {object.name} check ({check.condition})";
     };      
 
     UniqueConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "constraint {object.name} unique {column.name}";
     };
 
     PrimaryKeyConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "constraint {object.name} primary key {column.name}";
     };
 
     ForeignKeyConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "constraint {object.name} foreign key {column.name} references {fkobject.name}[({fkcolumn.name})]";
     };
 
     CheckConstraint = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "constraint {object.name} check ({check.condition})";
     };      
 
@@ -1452,23 +1452,23 @@
 //
 
     CommentTableCommand = {
-      Class = com.netbeans.ddl.impl.CommentTable;
+      Class = org.netbeans.lib.ddl.impl.CommentTable;
       Format = "comment on table [{object.owner}.]{object.name} is {comment}";
     };
 
     RenameTableCommand = {
-      Class = com.netbeans.ddl.impl.RenameTable;
+      Class = org.netbeans.lib.ddl.impl.RenameTable;
       Format = "rename [{object.owner}.]{object.name} to {object.newname}";
     
     };
 
     CommentViewCommand = {
-      Class = com.netbeans.ddl.impl.CommentView;
+      Class = org.netbeans.lib.ddl.impl.CommentView;
       Format = "comment on view [{object.owner}.]{object.name} is {comment}";
     };
 
 /*    RenameColumnCommand = {
-      Class = com.netbeans.ddl.impl.RenameColumn;
+      Class = org.netbeans.lib.ddl.impl.RenameColumn;
       Format = "alter table [{object.owner}.]{object.name} rename {column} to {column.newname}";
       Binding = {
         COLUMN = ColumnName;
@@ -1476,7 +1476,7 @@
     };
 */
     RemoveColumnCommand = {
-      Class = com.netbeans.ddl.impl.RemoveColumn;
+      Class = org.netbeans.lib.ddl.impl.RemoveColumn;
       Format = "alter table [{object.owner}.]{object.name} drop ({column})";
       Binding = {
         COLUMN = ColumnName;
@@ -1487,12 +1487,12 @@
     };    
 
     RenameViewCommand = {
-      Class = com.netbeans.ddl.impl.RenameView;
+      Class = org.netbeans.lib.ddl.impl.RenameView;
       Format = "rename [{object.owner}.]{object.name} to {object.newname}";
     };
 
     CreateProcedureCommand = {
-      Class = com.netbeans.ddl.impl.CreateProcedure;
+      Class = org.netbeans.lib.ddl.impl.CreateProcedure;
       Format = "create procedure [{object.owner}.]{object.name} [({arguments})] as\n{body}";
       Binding = {
         ARGUMENT = ProcedureArgument;
@@ -1500,12 +1500,12 @@
     };
 
     DropProcedureCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop procedure [{object.owner}.]{object.name}";
     };
 
     CreateFunctionCommand = {
-      Class = com.netbeans.ddl.impl.CreateFunction;
+      Class = org.netbeans.lib.ddl.impl.CreateFunction;
       Format = "create function [{object.owner}.]{object.name} [({arguments})] returns {return.type} as\n{body}";
       Binding = {
         ARGUMENT = ProcedureArgument;
@@ -1513,12 +1513,12 @@
     };
 
     DropFunctionCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop function [{object.owner}.]{object.name}";
     };
   
     CreateTriggerCommand = {
-      Class = com.netbeans.ddl.impl.CreateTrigger;
+      Class = org.netbeans.lib.ddl.impl.CreateTrigger;
       Format = "create trigger [{object.owner}.]{object.name}\n{trigger.timing} {trigger.events}\non {table.name}\nreferencing old as old_{object.name} new as new_{object.name}[\n{each.row}for each row][\nwhen {trigger.condition}\n{trigger.body}";
       Binding = {
         EVENT = TriggerEvent;
@@ -1526,12 +1526,12 @@
     };
 
     DropTriggerCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop trigger [{object.owner}.]{object.name}";
     };
 
     CreateIndexCommand = {
-      Class = com.netbeans.ddl.impl.CreateIndex;
+      Class = org.netbeans.lib.ddl.impl.CreateIndex;
       Format = "create index {index.name} on [{object.owner}.]{object.name}[\n(\n\t{columns}\n)]";
       Binding = {
         COLUMN = ColumnName;
@@ -1539,17 +1539,17 @@
     };
     
     DropIndexCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop index [{object.owner}.]{object.name}";
     };
 
     CreateViewCommand = {
-      Class = com.netbeans.ddl.impl.CreateView;
+      Class = org.netbeans.lib.ddl.impl.CreateView;
       Format = "create view [{object.owner}.]{object.name} as {query}";
     };
 
     DropViewCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop view [{object.owner}.]{object.name}";
     };
   };
@@ -1585,7 +1585,7 @@
 //////////////////////
 
     CreateTableCommand = {
-      Class = com.netbeans.ddl.impl.CreateTable;
+      Class = org.netbeans.lib.ddl.impl.CreateTable;
       Format = "create table {object.name}\n(\n\t{columns}\n)";
       Binding = {
         COLUMN = Column;
@@ -1599,17 +1599,17 @@
     };
     
     CreateViewCommand = {
-      Class = com.netbeans.ddl.impl.CreateView;
+      Class = org.netbeans.lib.ddl.impl.CreateView;
       Format = "create view {object.name} as {query}";
     };
 
     DropViewCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop view {object.name}";
     };
     
     CreateIndexCommand = {
-      Class = com.netbeans.ddl.impl.CreateIndex;
+      Class = org.netbeans.lib.ddl.impl.CreateIndex;
       Format = "create index {index.name} on {object.name}\n(\n\t{columns}\n)";
       Binding = {
         COLUMN = ColumnName;
@@ -1617,7 +1617,7 @@
     };
       
     DropIndexCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop index {object.name}";
     };
     
@@ -1667,22 +1667,22 @@
 // Definice sloupcu
 //
     Column = {
-      Class = com.netbeans.ddl.impl.TableColumn;
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not] null[ default {default.value}]";
     };
     
 //    ColumnTypeless = {
-//      Class = com.netbeans.ddl.impl.TableColumn;
+//      Class = org.netbeans.lib.ddl.impl.TableColumn;
 //      Format = "{column.name}[ {column.notnull}not] null[ default {default.value}]";
 //    };
     
 //    UniqueColumnTypeless = {
-//      Class = com.netbeans.ddl.impl.TableColumn;
+//      Class = org.netbeans.lib.ddl.impl.TableColumn;
 //      Format = "{column.name}[ {column.notnull}not] null[ default {default.value}] unique";
 //    };
 
 //    CheckColumnTypeless = {
-//      Class = com.netbeans.ddl.impl.TableColumn;
+//      Class = org.netbeans.lib.ddl.impl.TableColumn;
 //      Format = "{column.name}[ {column.notnull}not] null[ default {default.value}] check ({check.condition})";
 //    };      
 
@@ -1691,7 +1691,7 @@
 //
 
     AddColumnCommand = {
-      Class = com.netbeans.ddl.impl.AddColumn;
+      Class = org.netbeans.lib.ddl.impl.AddColumn;
       Format = "alter table [{object.owner}.]{object.name} add {columns}";
       Binding = {
         COLUMN = Column;
@@ -1699,12 +1699,12 @@
     };    
 
     CommentTableCommand = {
-      Class = com.netbeans.ddl.impl.CommentTable;
+      Class = org.netbeans.lib.ddl.impl.CommentTable;
       Format = "comment on table [{object.owner}.]{object.name} is {comment}";
     };
 
 //    RenameColumnCommand = {
-//      Class = com.netbeans.ddl.impl.RenameColumn;
+//      Class = org.netbeans.lib.ddl.impl.RenameColumn;
 //      Format = "alter table [{object.owner}.]{object.name} rename {column} to {column.newname}";
 //      Binding = {
 //        COLUMN = ColumnName;
@@ -1712,7 +1712,7 @@
 //    };
 
 //    ModifyColumnCommand = {
-//      Class = com.netbeans.ddl.impl.ModifyColumn;
+//      Class = org.netbeans.lib.ddl.impl.ModifyColumn;
 //      Format = "alter table [{object.owner}.]{object.name} modify {column}";
 //      Binding = {
 //        COLUMN = ColumnTypeless;
@@ -1722,17 +1722,17 @@
 //    };
 
     CommentViewCommand = {
-      Class = com.netbeans.ddl.impl.CommentView;
+      Class = org.netbeans.lib.ddl.impl.CommentView;
       Format = "comment on view [{object.owner}.]{object.name} is {comment}";
     };
 
 //    RenameTableCommand = {
-//      Class = com.netbeans.ddl.impl.RenameTable;
+//      Class = org.netbeans.lib.ddl.impl.RenameTable;
 //      Format = "alter table [{object.owner}.]{object.name} rename {object.newname}";    
 //    };
 
     CreateProcedureCommand = {
-      Class = com.netbeans.ddl.impl.CreateProcedure;
+      Class = org.netbeans.lib.ddl.impl.CreateProcedure;
       Format = "create procedure [{object.owner}.]{object.name} [({arguments})] as\n{body}";
       Binding = {
         ARGUMENT = ProcedureArgument;
@@ -1740,12 +1740,12 @@
     };
 
     DropProcedureCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop procedure [{object.owner}.]{object.name}";
     };
 
     CreateFunctionCommand = {
-      Class = com.netbeans.ddl.impl.CreateFunction;
+      Class = org.netbeans.lib.ddl.impl.CreateFunction;
       Format = "create function [{object.owner}.]{object.name} [({arguments})] returns {return.type} as\n{body}";
       Binding = {
         ARGUMENT = ProcedureArgument;
@@ -1753,12 +1753,12 @@
     };
 
     DropFunctionCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop function [{object.owner}.]{object.name}";
     };
   
     CreateTriggerCommand = {
-      Class = com.netbeans.ddl.impl.CreateTrigger;
+      Class = org.netbeans.lib.ddl.impl.CreateTrigger;
       Format = "create trigger [{object.owner}.]{object.name}\n{trigger.timing} {trigger.events}\non {table.name}\nreferencing old as old_{object.name} new as new_{object.name}[\n{each.row}for each row][\nwhen {trigger.condition}\n{trigger.body}";
       Binding = {
         EVENT = TriggerEvent;
@@ -1766,7 +1766,7 @@
     };
 
     DropTriggerCommand = {
-      Class = com.netbeans.ddl.impl.AbstractCommand;
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
       Format = "drop trigger [{object.owner}.]{object.name}";
     };
   };

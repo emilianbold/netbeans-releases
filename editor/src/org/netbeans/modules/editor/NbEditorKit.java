@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text;
+package org.netbeans.modules.editor;
 
 import java.awt.event.ActionEvent;
 import javax.swing.JEditorPane;
@@ -23,11 +23,11 @@ import javax.swing.text.Document;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
-import com.netbeans.editor.ActionFactory;
-import com.netbeans.editor.EditorUI;
-import com.netbeans.editor.ext.ExtKit;
-import com.netbeans.editor.ext.FindDialogSupport;
-import com.netbeans.editor.ext.GotoDialogSupport;
+import org.netbeans.editor.ActionFactory;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.editor.ext.FindDialogSupport;
+import org.netbeans.editor.ext.GotoDialogSupport;
 import org.openide.TopManager;
 import org.openide.windows.TopComponent;
 import org.openide.util.actions.SystemAction;

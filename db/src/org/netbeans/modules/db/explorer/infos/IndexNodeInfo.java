@@ -11,19 +11,19 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.infos;
+package org.netbeans.modules.db.explorer.infos;
 
 import java.sql.*;
 import java.util.*;
 import java.io.IOException;
-import com.netbeans.ddl.*;
+import org.netbeans.lib.ddl.*;
 import org.openide.nodes.Node;
-import com.netbeans.enterprise.modules.db.DatabaseException;
-import com.netbeans.ddl.impl.*;
-import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
+import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.lib.ddl.impl.*;
+import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
+import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class IndexNodeInfo extends TableNodeInfo
 {

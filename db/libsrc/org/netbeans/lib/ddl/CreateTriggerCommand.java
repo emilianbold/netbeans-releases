@@ -11,10 +11,10 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl;
+package org.netbeans.lib.ddl;
 
 import java.sql.*;
-import com.netbeans.ddl.*;
+import org.netbeans.lib.ddl.*;
 
 /** 
 * Interface of create trigger action command. 

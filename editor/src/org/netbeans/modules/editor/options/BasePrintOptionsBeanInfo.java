@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text.options;
+package org.netbeans.modules.editor.options;
 
 import java.beans.*;
 import java.awt.Image;
@@ -38,7 +38,7 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
   private static PropertyDescriptor[] descriptors;
 
   public BasePrintOptionsBeanInfo() {
-    this("/com/netbeans/developer/modules/text/resources/baseOptions"); // NOI18N
+    this("/org/netbeans/modules/editor/resources/baseOptions"); // NOI18N
   }
 
   public BasePrintOptionsBeanInfo(String iconPrefix) {

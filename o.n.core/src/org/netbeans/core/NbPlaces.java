@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl;
+package org.netbeans.core;
 
 import java.util.ArrayList;
 
@@ -22,8 +22,8 @@ import org.openide.util.NotImplementedException;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import com.netbeans.developer.impl.windows.nodes.WorkspacePoolContext;
-import com.netbeans.developer.impl.execution.ExecutionEngine;
+import org.netbeans.core.windows.nodes.WorkspacePoolContext;
+import org.netbeans.core.execution.ExecutionEngine;
 
 /** Important places in the system.
 *
@@ -31,7 +31,7 @@ import com.netbeans.developer.impl.execution.ExecutionEngine;
 */
 final class NbPlaces extends Object implements Places, Places.Nodes, Places.Folders {
   /** session settings icon base */
-  private static final String SESSION_SETTINGS_ICON_BASE="/com/netbeans/developer/impl/resources/sessionSettings"; // NOI18N
+  private static final String SESSION_SETTINGS_ICON_BASE="/org/netbeans/core/resources/sessionSettings"; // NOI18N
   
   /** default */
   private static NbPlaces places;
@@ -245,7 +245,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
         // resource not found, try to create new folder
         fo = NbTopManager.get ().getRepository ().getDefaultFileSystem ().getRoot ().createFolder (name);
         try {
-          fo.setAttribute ("SystemFileSystem.localizingBundle", "com.netbeans.developer.impl.Bundle"); // NOI18N
+          fo.setAttribute ("SystemFileSystem.localizingBundle", "org.netbeans.core.Bundle"); // NOI18N
         } catch (java.io.IOException ioe) {
           if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
             ioe.printStackTrace ();

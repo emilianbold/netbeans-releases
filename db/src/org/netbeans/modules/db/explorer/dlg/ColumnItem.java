@@ -11,18 +11,18 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.dlg;
+package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import com.netbeans.ddl.*;
+import org.netbeans.lib.ddl.*;
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
-import com.netbeans.enterprise.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.*;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.beans;
+package org.netbeans.modules.beans;
 
 /** Resource string constants for pattern node icons.
 *
@@ -20,28 +20,28 @@ package com.netbeans.developer.modules.beans;
 interface IconBases {
 
   public static final String PROPERTY_RW =                           
-    "/com/netbeans/developer/modules/beans/resources/propertyRW"; // NOI18N
+    "/org/netbeans/modules/beans/resources/propertyRW"; // NOI18N
 
   public static final String PROPERTY_RO =
-    "/com/netbeans/developer/modules/beans/resources/propertyRO"; // NOI18N
+    "/org/netbeans/modules/beans/resources/propertyRO"; // NOI18N
 
   public static final String PROPERTY_WO =
-    "/com/netbeans/developer/modules/beans/resources/propertyWO"; // NOI18N
+    "/org/netbeans/modules/beans/resources/propertyWO"; // NOI18N
 
   public static final String IDXPROPERTY_RW =                           
-    "/com/netbeans/developer/modules/beans/resources/propertyIndexedRW"; // NOI18N
+    "/org/netbeans/modules/beans/resources/propertyIndexedRW"; // NOI18N
 
   public static final String IDXPROPERTY_RO =
-    "/com/netbeans/developer/modules/beans/resources/propertyIndexedRO"; // NOI18N
+    "/org/netbeans/modules/beans/resources/propertyIndexedRO"; // NOI18N
 
   public static final String IDXPROPERTY_WO =
-    "/com/netbeans/developer/modules/beans/resources/propertyIndexedWO"; // NOI18N
+    "/org/netbeans/modules/beans/resources/propertyIndexedWO"; // NOI18N
 
   public static final String EVENTSET_MULTICAST =
-    "/com/netbeans/developer/modules/beans/resources/eventSetMulticast"; // NOI18N
+    "/org/netbeans/modules/beans/resources/eventSetMulticast"; // NOI18N
 
   public static final String EVENTSET_UNICAST =
-    "/com/netbeans/developer/modules/beans/resources/eventSetUnicast"; // NOI18N
+    "/org/netbeans/modules/beans/resources/eventSetUnicast"; // NOI18N
   
   }
 /*

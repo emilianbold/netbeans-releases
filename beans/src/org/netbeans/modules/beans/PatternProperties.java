@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.beans;
+package org.netbeans.modules.beans;
 
 /** Names of properties of patterns.
 *

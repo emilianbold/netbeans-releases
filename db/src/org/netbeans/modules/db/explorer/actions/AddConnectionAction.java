@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.actions;
+package org.netbeans.modules.db.explorer.actions;
 
 import java.io.*;
 import java.beans.*;
@@ -24,16 +24,16 @@ import org.openide.util.*;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
-import com.netbeans.ddl.*;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.dlg.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.dlg.*;
+import org.netbeans.modules.db.explorer.infos.*;
 
 public class AddConnectionAction extends DatabaseAction
 {
 	private final static String CLASS_NOT_FOUND = "EXC_ClassNotFound";
-	private final static String BUNDLE_PATH = "com.netbeans.enterprise.modules.db.resources.Bundle";
+	private final static String BUNDLE_PATH = "org.netbeans.modules.db.resources.Bundle";
 	
         static final long serialVersionUID =5370365696803042542L;
 	public void performAction (Node[] activatedNodes) 

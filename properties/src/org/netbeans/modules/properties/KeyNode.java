@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.properties;
+package org.netbeans.modules.properties;
 
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -47,7 +47,7 @@ public class KeyNode extends AbstractNode {
 
   /** Icon base for the KeyNode node */
   static final String ITEMS_ICON_BASE =
-    "com/netbeans/developer/modules/loaders/properties/propertiesKey";
+    "org/netbeans/modules/properties/propertiesKey";
                               
   /** Structure on top of which this element lives */
   private PropertiesStructure struct;                

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl.beaninfo;
+package org.netbeans.beaninfo;
 
 import java.awt.Image;
 import java.beans.*;
@@ -68,10 +68,10 @@ public class DataLoaderPool {
     
     public Image getIcon (int type) {
       if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-        if (instanceIcon == null) instanceIcon = loadImage ("/com/netbeans/developer/impl/resources/action.gif"); // NOI18N
+        if (instanceIcon == null) instanceIcon = loadImage ("/org/netbeans/core/resources/action.gif"); // NOI18N
         return instanceIcon;
       } else {
-        if (instanceIcon32 == null) instanceIcon32 = loadImage ("/com/netbeans/developer/impl/resources/action32.gif"); // NOI18N
+        if (instanceIcon32 == null) instanceIcon32 = loadImage ("/org/netbeans/core/resources/action32.gif"); // NOI18N
         return instanceIcon32;
       }
     }

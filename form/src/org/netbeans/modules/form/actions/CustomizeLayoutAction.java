@@ -11,12 +11,12 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.actions;
+package org.netbeans.modules.form.actions;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
 import org.openide.nodes.Node;
-import com.netbeans.developer.modules.loaders.form.*;
+import org.netbeans.modules.form.*;
 
 /** CustomizeLayout action - enabled on RADContainerNodes and RADLayoutNodes.
 *

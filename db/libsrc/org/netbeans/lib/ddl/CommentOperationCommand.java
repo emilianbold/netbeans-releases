@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl;
+package org.netbeans.lib.ddl;
 
 /** 
 * Interface for comment commands. Command CommentTable must implement it. If another

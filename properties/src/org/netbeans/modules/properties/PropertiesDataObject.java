@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.properties;
+package org.netbeans.modules.properties;
 
 import java.util.Set;
 import java.util.Iterator;
@@ -55,9 +55,9 @@ public final class PropertiesDataObject extends MultiDataObject {
 
   /** Icon base for the PropertiesNode node */
   static final String PROPERTIES_ICON_BASE =
-    "com/netbeans/developer/modules/loaders/properties/propertiesObject";
+    "org/netbeans/modules/properties/propertiesObject";
   static final String PROPERTIES_ICON_BASE2 =
-    "com/netbeans/developer/modules/loaders/properties/propertiesLocale";
+    "org/netbeans/modules/properties/propertiesLocale";
 
   /** Constructor */                        
   public PropertiesDataObject (final FileObject obj, final MultiFileLoader loader)

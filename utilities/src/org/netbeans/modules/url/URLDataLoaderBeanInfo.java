@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.url;
+package org.netbeans.modules.url;
 
 import java.beans.*;
 import java.awt.Image;
@@ -45,11 +45,11 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage("/com/netbeans/developer/modules/loaders/url/urlObject.gif"); // NOI18N
+        icon = loadImage("/org/netbeans/modules/url/urlObject.gif"); // NOI18N
       return icon;
     } else {
       if (icon32 == null)
-        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/url/urlObject32.gif"); // NOI18N
+        icon32 = loadImage ("/org/netbeans/modules/url/urlObject32.gif"); // NOI18N
       return icon32;
     }
   }

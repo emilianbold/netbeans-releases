@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.openfile;
+package org.netbeans.modules.openfile;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +34,7 @@ static final long serialVersionUID =-3424129228987962529L;
   }
   
   protected String iconResource () {
-    return "/com/netbeans/developer/modules/openfile/openFile.gif"; // NOI18N
+    return "/org/netbeans/modules/openfile/openFile.gif"; // NOI18N
   }
   
   /** Last-used directory. */

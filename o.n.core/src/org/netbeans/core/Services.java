@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl;
+package org.netbeans.core;
 
 import java.io.*;
 import java.beans.*;
@@ -24,9 +24,9 @@ import org.openide.util.enum.*;
 import org.openide.util.Mutex;
 import org.openide.util.io.NbMarshalledObject;
 
-import com.netbeans.developer.editors.ExecutorEditor;
-import com.netbeans.developer.editors.CompilerTypeEditor;
-import com.netbeans.developer.editors.DebuggerTypeEditor;
+import org.netbeans.beaninfo.editors.ExecutorEditor;
+import org.netbeans.beaninfo.editors.CompilerTypeEditor;
+import org.netbeans.beaninfo.editors.DebuggerTypeEditor;
 
 /** Work with all service types.
 *

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl.actions;
+package org.netbeans.core.actions;
 
 import org.openide.TopManager;
 import org.openide.util.HelpCtx;
@@ -19,7 +19,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallableSystemAction;
 
-import com.netbeans.developer.impl.IDESettings;
+import org.netbeans.core.IDESettings;
 
 /** Opens a HTML Browser on the home URL specified in IDESettings.
 * (Or activates last opened).
@@ -34,7 +34,7 @@ public class HTMLViewAction extends CallableSystemAction {
   * @return name of resource for icon
   */
   protected String iconResource () {
-    return "/com/netbeans/developer/impl/resources/actions/htmlView.gif"; // NOI18N
+    return "/org/netbeans/core/resources/actions/htmlView.gif"; // NOI18N
   }
 
   public void performAction() {

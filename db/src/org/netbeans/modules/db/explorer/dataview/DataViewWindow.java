@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.dataview;
+package org.netbeans.modules.db.explorer.dataview;
 
 import java.awt.*;
 import java.awt.datatransfer.*;
@@ -37,9 +37,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.*;
 import org.openide.windows.TopComponent;
 
-import com.netbeans.ddl.DBConnection;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
+import org.netbeans.lib.ddl.DBConnection;
+import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.nodes.*;
 
 public class DataViewWindow extends TopComponent {
 	private JTextArea queryarea;
@@ -57,7 +57,7 @@ public class DataViewWindow extends TopComponent {
     node = info.getNode();
     
   	try {
-    	bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+    	bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
       
       setName(bundle.getString("CommandEditorTitle"));
     	setBorder(new EmptyBorder(new Insets(5,5,5,5)));

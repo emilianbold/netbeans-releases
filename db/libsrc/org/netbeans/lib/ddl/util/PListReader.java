@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.util;
+package org.netbeans.lib.ddl.util;
 
 import java.io.*;
 import java.util.*;

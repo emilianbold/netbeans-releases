@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer;
+package org.netbeans.modules.db.explorer;
 
 import java.beans.*;
 import java.awt.*;

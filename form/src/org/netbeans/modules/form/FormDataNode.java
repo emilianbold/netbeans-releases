@@ -11,12 +11,12 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import java.lang.reflect.InvocationTargetException;
 
 import org.openide.util.HelpCtx;
-import com.netbeans.developer.modules.loaders.java.JavaNode;
+import org.netbeans.modules.java.JavaNode;
 
 /** The DataNode for Forms.
 *
@@ -31,7 +31,7 @@ public class FormDataNode extends JavaNode {
   private static final String[] FORM_ICONS = { "form", "formMain", "formError", "form", "formMain" }; // NOI18N
 
   /** Icon base for form data objects. */
-  private static final String FORM_ICON_BASE = "com/netbeans/developer/modules/loaders/form/resources/"; // NOI18N
+  private static final String FORM_ICON_BASE = "org/netbeans/modules/form/resources/"; // NOI18N
     
   transient private String currentIcon;
 

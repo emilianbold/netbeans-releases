@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.openfile;
+package org.netbeans.modules.openfile;
 
 import java.beans.*;
 import java.io.*;

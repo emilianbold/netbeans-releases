@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text.options;
+package org.netbeans.modules.editor.options;
 
 import java.beans.*;
 import java.awt.Image;
@@ -32,9 +32,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-import com.netbeans.editor.BaseCaret;
-import com.netbeans.editor.Coloring;
-import com.netbeans.editor.MultiKeyBinding;
+import org.netbeans.editor.BaseCaret;
+import org.netbeans.editor.Coloring;
+import org.netbeans.editor.MultiKeyBinding;
 
 /** BeanInfo for base options
 *
@@ -81,7 +81,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
 
   public BaseOptionsBeanInfo() {
-    this("/com/netbeans/developer/modules/text/resources/baseOptions"); // NOI18N
+    this("/org/netbeans/modules/editor/resources/baseOptions"); // NOI18N
   }
 
   public BaseOptionsBeanInfo(String iconPrefix) {

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.beans.beaninfo;
+package org.netbeans.modules.beans.beaninfo;
 
 import java.util.ResourceBundle;
 import javax.swing.SwingUtilities;
@@ -27,7 +27,7 @@ import org.openide.util.Task;
 import org.openide.util.actions.NodeAction;
 import org.openide.src.ClassElement;
 
-import com.netbeans.developer.modules.beans.PatternAnalyser;
+import org.netbeans.modules.beans.PatternAnalyser;
 
 /** 
 * Search doc action.
@@ -61,7 +61,7 @@ static final long serialVersionUID =-4937492476805017833L;
   */
   protected String iconResource () {
     return null;
-    //return "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"; // NOI18N
+    //return "/org/netbeans/modules/javadoc/resources/searchDoc.gif"; // NOI18N
   }
   
   /** Help context where to find more about the action.

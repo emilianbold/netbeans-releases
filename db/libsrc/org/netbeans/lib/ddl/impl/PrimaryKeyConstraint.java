@@ -11,12 +11,12 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.impl;
+package org.netbeans.lib.ddl.impl;
 
 import java.util.*;
 import java.sql.*;
 import java.text.ParseException;
-import com.netbeans.ddl.*;
+import org.netbeans.lib.ddl.*;
 
 /** 
 * Implementation of table primary key constraint.

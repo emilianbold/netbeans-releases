@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl.actions;
+package org.netbeans.core.actions;
 
 import java.io.ObjectStreamException;
 import java.text.MessageFormat;
@@ -24,7 +24,7 @@ import org.openide.TopManager;
 import org.openide.nodes.Node;
 import org.openide.explorer.ExplorerManager;
 
-import com.netbeans.developer.impl.NbMainExplorer;
+import org.netbeans.core.NbMainExplorer;
 
 /** Action that opens explorer view which displays global
 * options of the IDE.
@@ -48,7 +48,7 @@ public class OptionsAction extends CallableSystemAction {
   * @return URL to the action icon
   */
   public String iconResource () {
-    return "/com/netbeans/developer/impl/resources/sessionSettings.gif"; // NOI18N
+    return "/org/netbeans/core/resources/sessionSettings.gif"; // NOI18N
   }
 
   public HelpCtx getHelpCtx() {

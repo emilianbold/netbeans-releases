@@ -11,17 +11,17 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.nodes;
+package org.netbeans.modules.db.explorer.nodes;
 
 import org.openide.nodes.Children;
 import java.io.IOException;
 import java.util.*;
 import java.text.MessageFormat;
-import com.netbeans.ddl.*;
-import com.netbeans.ddl.impl.*;
-import com.netbeans.enterprise.modules.db.*;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.impl.*;
+import org.netbeans.modules.db.*;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.infos.*;
 import org.openide.util.datatransfer.PasteType;
 import java.awt.datatransfer.Transferable;
 import org.openide.nodes.NodeTransfer;

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.javadoc.search;
+package org.netbeans.modules.javadoc.search;
 
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
@@ -36,7 +36,7 @@ public class SearchDocAction extends CallableSystemAction {
    * @return the action's icon location
    */
   protected String iconResource () {
-    return "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"; // NOI18N
+    return "/org/netbeans/modules/javadoc/resources/searchDoc.gif"; // NOI18N
   }
   
   /** Help context where to find more about the action.

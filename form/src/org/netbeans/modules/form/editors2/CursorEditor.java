@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.explorer.propertysheet.editors;
+package org.netbeans.modules.form.editors2;
 
 import org.openide.explorer.propertysheet.editors.*;
 

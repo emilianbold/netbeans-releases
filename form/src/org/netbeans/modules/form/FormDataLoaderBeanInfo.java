@@ -11,12 +11,12 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import java.beans.*;
 import java.awt.Image;
 
-import com.netbeans.developer.modules.loaders.java.JavaDataLoader;
+import org.netbeans.modules.java.JavaDataLoader;
 
 /** Form data loader bean info.
 *
@@ -45,11 +45,11 @@ public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage("/com/netbeans/developer/modules/loaders/form/resources/form.gif"); // NOI18N
+        icon = loadImage("/org/netbeans/modules/form/resources/form.gif"); // NOI18N
       return icon;
     } else {
       if (icon32 == null)
-        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/form/resources/form32.gif"); // NOI18N
+        icon32 = loadImage ("/org/netbeans/modules/form/resources/form32.gif"); // NOI18N
       return icon32;
     }
   }

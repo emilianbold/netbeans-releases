@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.dlg;
+package org.netbeans.modules.db.explorer.dlg;
 
 
 import java.awt.*;
@@ -22,18 +22,18 @@ import javax.swing.border.*;
 import javax.swing.table.*;
 import javax.swing.text.DefaultCaret;
 import java.io.InputStream;
-import com.netbeans.ddl.impl.Specification;
-import com.netbeans.ddl.impl.CreateTable;
-import com.netbeans.ddl.util.CommandBuffer;
-import com.netbeans.ddl.impl.CreateIndex;
-import com.netbeans.ddl.util.PListReader;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.lib.ddl.impl.CreateTable;
+import org.netbeans.lib.ddl.util.CommandBuffer;
+import org.netbeans.lib.ddl.impl.CreateIndex;
+import org.netbeans.lib.ddl.util.PListReader;
 import javax.swing.event.TableModelEvent;
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.util.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.util.*;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 /** 
 * Table data model

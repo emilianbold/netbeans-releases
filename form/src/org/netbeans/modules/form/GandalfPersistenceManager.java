@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
@@ -27,8 +27,8 @@ import org.openide.TopManager;
 import org.openide.loaders.XMLDataObject;
 import org.openide.util.io.NbObjectInputStream;
 
-import com.netbeans.developerx.loaders.form.formeditor.layouts.*;
-import com.netbeans.developer.modules.loaders.form.forminfo.*;
+import org.netbeans.modules.form.compat2.layouts.*;
+import org.netbeans.modules.form.forminfo.*;
 
 /** 
 *

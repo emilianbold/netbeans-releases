@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -23,9 +23,9 @@ import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
-import com.netbeans.developer.modules.loaders.java.JavaDataObject;
-import com.netbeans.developer.modules.loaders.java.JavaEditor;
-import com.netbeans.developer.modules.loaders.form.*;
+import org.netbeans.modules.java.JavaDataObject;
+import org.netbeans.modules.java.JavaEditor;
+import org.netbeans.modules.form.*;
 
 /** The DataObject for forms.
 *

@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer;
+package org.netbeans.modules.db.explorer;
 
 import java.beans.*;
 import java.awt.*;
@@ -41,7 +41,7 @@ public class DatabaseOptionBeanInfo extends SimpleBeanInfo
 				new PropertyDescriptor("fetchStep", DatabaseOption.class)
 			};
 
-			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 			desc[0].setDisplayName(bundle.getString("PROP_DEBUG_MODE"));
 			desc[0].setShortDescription(bundle.getString ("HINT_DEBUG_MODE"));
 			desc[1].setDisplayName(bundle.getString("PROP_FETCH_LIMIT"));
@@ -61,10 +61,10 @@ public class DatabaseOptionBeanInfo extends SimpleBeanInfo
 	public Image getIcon(int type) 
 	{
 		if (type == BeanInfo.ICON_COLOR_16x16) {
-			if (image == null) image = Toolkit.getDefaultToolkit().getImage(DatabaseOptionBeanInfo.class.getResource ("/com/netbeans/enterprise/modules/db/resources/optionIcon.gif"));
+			if (image == null) image = Toolkit.getDefaultToolkit().getImage(DatabaseOptionBeanInfo.class.getResource ("/org/netbeans/modules/db/resources/optionIcon.gif"));
 			return image;
 		} else if (type == BeanInfo.ICON_COLOR_32x32) {
-			if (image32 == null) image32 = Toolkit.getDefaultToolkit().getImage(DatabaseOptionBeanInfo.class.getResource ("/com/netbeans/enterprise/modules/db/resources/optionIcon32.gif"));
+			if (image32 == null) image32 = Toolkit.getDefaultToolkit().getImage(DatabaseOptionBeanInfo.class.getResource ("/org/netbeans/modules/db/resources/optionIcon32.gif"));
 			return image32;
 		} 
 		

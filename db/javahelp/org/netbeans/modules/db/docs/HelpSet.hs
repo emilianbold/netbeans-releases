@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 <helpset version="1.0">
   <title>Database Explorer Module Documentation</title>
   <maps>
-     <homeID>com.netbeans.enterprise.modules.db.HOMEID</homeID>
+     <homeID>org.netbeans.modules.db.HOMEID</homeID>
      <mapref location="Map.jhm"/>
   </maps>
 </helpset>

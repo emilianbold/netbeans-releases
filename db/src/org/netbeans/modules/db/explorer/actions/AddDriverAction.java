@@ -11,16 +11,16 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.actions;
+package org.netbeans.modules.db.explorer.actions;
 
 import org.openide.*;
 import org.openide.util.*;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
-import com.netbeans.enterprise.modules.db.explorer.DatabaseDriver;
-import com.netbeans.enterprise.modules.db.explorer.dlg.AddDriverDialog;
+import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.DatabaseDriver;
+import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
 
 public class AddDriverAction extends DatabaseAction
 {

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.image;
+package org.netbeans.modules.image;
 
 import java.awt.Dimension;
 import java.io.*;

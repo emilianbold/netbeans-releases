@@ -11,15 +11,15 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text.options;
+package org.netbeans.modules.editor.options;
 
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
   
-import com.netbeans.editor.SettingsNames;
-import com.netbeans.editor.SettingsUtil;
-import com.netbeans.editor.BaseKit;
+import org.netbeans.editor.SettingsNames;
+import org.netbeans.editor.SettingsUtil;
+import org.netbeans.editor.BaseKit;
 
 import org.openide.util.HelpCtx;
 

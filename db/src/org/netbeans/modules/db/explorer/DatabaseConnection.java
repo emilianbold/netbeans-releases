@@ -11,14 +11,14 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer;
+package org.netbeans.modules.db.explorer;
 
 import java.sql.*;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 import java.lang.String;
 import java.util.Properties;
-import com.netbeans.ddl.*;
+import org.netbeans.lib.ddl.*;
 import org.openide.TopManager;
 import java.lang.reflect.*;
 

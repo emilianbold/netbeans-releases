@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.actions;
+package org.netbeans.modules.form.actions;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -25,11 +25,11 @@ import javax.swing.plaf.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
 import org.openide.nodes.Node;
-import com.netbeans.developer.modules.loaders.form.EventsManager;
-import com.netbeans.developer.modules.loaders.form.FormEditor;
-import com.netbeans.developer.modules.loaders.form.RADComponent;
-import com.netbeans.developer.modules.loaders.form.EventsList;
-import com.netbeans.developer.modules.loaders.form.RADComponentCookie;
+import org.netbeans.modules.form.EventsManager;
+import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.RADComponent;
+import org.netbeans.modules.form.EventsList;
+import org.netbeans.modules.form.RADComponentCookie;
 
 /** Events action - subclass of NodeAction - enabled on RADComponents.
 *
@@ -71,7 +71,7 @@ public class EventsAction extends CookieAction {
   * @return name of resource for icon
   */
   protected String iconResource () {
-    return "/com/netbeans/developer/modules/loaders/form/resources/events.gif"; // NOI18N
+    return "/org/netbeans/modules/form/resources/events.gif"; // NOI18N
   }
 
   /**

@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.actions;
+package org.netbeans.modules.db.explorer.actions;
 
 import java.util.ResourceBundle;
 import org.openide.*;
@@ -21,11 +21,11 @@ import java.io.*;
 import java.sql.Connection;
 import java.text.MessageFormat;
 import org.openide.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
-import com.netbeans.enterprise.modules.db.explorer.dlg.*;
+import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.dlg.*;
 import javax.swing.JFileChooser;
-import com.netbeans.ddl.impl.*;
+import org.netbeans.lib.ddl.impl.*;
 
 public class RecreateTableAction extends DatabaseAction
 {
@@ -37,7 +37,7 @@ public class RecreateTableAction extends DatabaseAction
 		else return;
 		try {
 
-			final ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
 			TableListNodeInfo nfo = (TableListNodeInfo)info.getParent(nodename);
 			Specification spec = (Specification)nfo.getSpecification();

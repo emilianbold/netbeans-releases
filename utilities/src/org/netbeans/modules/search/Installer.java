@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.search;
+package org.netbeans.modules.search;
 
 import org.openide.*;
 import org.openide.modules.ModuleInstall;
@@ -20,8 +20,8 @@ import org.openide.loaders.*;
 import org.openidex.search.SearchEngine;
 import org.openidex.util.*;
 
-import com.netbeans.developer.modules.search.res.*;
-import com.netbeans.developer.modules.search.types.*;
+import org.netbeans.modules.search.res.*;
+import org.netbeans.modules.search.types.*;
 
 /** 
 * During restored() hooks SearchPresenter on FindAction. 

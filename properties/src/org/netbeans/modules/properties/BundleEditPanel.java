@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.properties;
+package org.netbeans.modules.properties;
 
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
@@ -238,7 +238,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
     java.awt.GridBagConstraints gridBagConstraints3;
 
     commentLabel = new javax.swing.JLabel ();
-    commentLabel.setText (java.util.ResourceBundle.getBundle("com/netbeans/developer/modules/loaders/properties/Bundle").getString("LBL_CommentLabel"));
+    commentLabel.setText (java.util.ResourceBundle.getBundle("org/netbeans/modules/properties/Bundle").getString("LBL_CommentLabel"));
 
     gridBagConstraints3 = new java.awt.GridBagConstraints ();
     gridBagConstraints3.insets = new java.awt.Insets (0, 8, 0, 8);
@@ -264,7 +264,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
     jPanel2.add (jScrollPane2, gridBagConstraints3);
 
     valueLabel = new javax.swing.JLabel ();
-    valueLabel.setText (java.util.ResourceBundle.getBundle("com/netbeans/developer/modules/loaders/properties/Bundle").getString("LBL_ValueLabel"));
+    valueLabel.setText (java.util.ResourceBundle.getBundle("org/netbeans/modules/properties/Bundle").getString("LBL_ValueLabel"));
 
     gridBagConstraints3 = new java.awt.GridBagConstraints ();
     gridBagConstraints3.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -306,7 +306,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
     java.awt.GridBagConstraints gridBagConstraints4;
 
     addButton = new javax.swing.JButton ();
-    addButton.setText (java.util.ResourceBundle.getBundle("com/netbeans/developer/modules/loaders/properties/Bundle").getString("LBL_AddPropertyButton"));
+    addButton.setText (java.util.ResourceBundle.getBundle("org/netbeans/modules/properties/Bundle").getString("LBL_AddPropertyButton"));
     addButton.addActionListener (new java.awt.event.ActionListener () {
       public void actionPerformed (java.awt.event.ActionEvent evt) {
         addButtonActionPerformed (evt);
@@ -321,7 +321,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
     jPanel3.add (addButton, gridBagConstraints4);
 
     removeButton = new javax.swing.JButton ();
-    removeButton.setText (java.util.ResourceBundle.getBundle("com/netbeans/developer/modules/loaders/properties/Bundle").getString("LBL_RemovePropertyButton"));
+    removeButton.setText (java.util.ResourceBundle.getBundle("org/netbeans/modules/properties/Bundle").getString("LBL_RemovePropertyButton"));
     removeButton.addActionListener (new java.awt.event.ActionListener () {
       public void actionPerformed (java.awt.event.ActionEvent evt) {
         removeButtonActionPerformed (evt);

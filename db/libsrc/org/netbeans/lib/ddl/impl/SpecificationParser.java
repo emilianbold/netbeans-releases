@@ -11,13 +11,13 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.impl;
+package org.netbeans.lib.ddl.impl;
 
 import java.io.*;
 import java.util.*;
 import java.text.ParseException;
-import com.netbeans.ddl.*;
-import com.netbeans.ddl.util.PListReader;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.util.PListReader;
 
 /** 
 * SpecificationParser extends PListReader. It should be removed (it's functionality

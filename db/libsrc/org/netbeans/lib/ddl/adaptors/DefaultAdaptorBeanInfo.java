@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.adaptors;
+package org.netbeans.lib.ddl.adaptors;
 
 import java.awt.*;
 import java.beans.*;
@@ -27,7 +27,7 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
 	static {
 		try {
 
-			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.ddl.resources.Bundle");
+			ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle");
 			desc = new PropertyDescriptor[] {
 				
 				// Basic properties: 65 items

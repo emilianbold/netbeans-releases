@@ -1,13 +1,13 @@
-OpenIDE-Module: com.netbeans.developer.modules.text/1
+OpenIDE-Module: org.netbeans.modules.editor/1
 OpenIDE-Module-Name: Editor
-OpenIDE-Module-Install: com/netbeans/developer/modules/text/EditorModule.class
+OpenIDE-Module-Install: org/netbeans/modules/editor/EditorModule.class
 OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-Implementation-Version: 1.1
 OpenIDE-Module-Module-Dependencies: org.openidex.util/1
 
-Name: com/netbeans/developer/modules/text/options/AllOptions.class
+Name: org/netbeans/modules/editor/options/AllOptions.class
 OpenIDE-Module-Class: Option
 
-Name: com/netbeans/developer/modules/text/java/JCUpdateAction.class
+Name: org/netbeans/modules/editor/java/JCUpdateAction.class
 OpenIDE-Module-Class: Action
 

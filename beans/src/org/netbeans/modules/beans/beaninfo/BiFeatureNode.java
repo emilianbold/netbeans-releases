@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.beans.beaninfo;
+package org.netbeans.modules.beans.beaninfo;
 
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -46,7 +46,7 @@ import org.openide.nodes.Sheet;
   // static variables ...........................................................................
 
   private static final String ICON_BASE =
-    "/com/netbeans/developer/modules/beans/resources/dvoj"; // NOI18N
+    "/org/netbeans/modules/beans/resources/dvoj"; // NOI18N
 
   /** Property display name constant */
   public static final String PROP_DISPLAY_NAME = "displayName"; // NOI18N
@@ -344,7 +344,7 @@ import org.openide.nodes.Sheet;
                }
              }
             public PropertyEditor getPropertyEditor () {
-              return new com.netbeans.developer.modules.beans.ModePropertyEditor();
+              return new org.netbeans.modules.beans.ModePropertyEditor();
             }
            });               
     ps.put(new PropertySupport.ReadWrite (

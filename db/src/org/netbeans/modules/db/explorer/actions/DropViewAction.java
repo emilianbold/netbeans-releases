@@ -11,16 +11,16 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.actions;
+package org.netbeans.modules.db.explorer.actions;
 
 import java.util.ResourceBundle;
 import org.openide.*;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
-import com.netbeans.enterprise.modules.db.explorer.DatabaseDriver;
-import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
-import com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.DatabaseDriver;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.netbeans.modules.db.explorer.infos.*;
 
 public class DropViewAction extends DatabaseAction
 {
@@ -32,7 +32,7 @@ public class DropViewAction extends DatabaseAction
       node = activatedNodes[0];
 		else
       return;
-		ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+		ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 //		try {			
 //		} catch(Exception e) {
 //			TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DropIndexErrorPrefix")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));

@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.dlg;
+package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -22,7 +22,7 @@ import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
 
-import com.netbeans.enterprise.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.*;
 
 /** 
 * xxx
@@ -39,7 +39,7 @@ public class AddIndexDialog
 	public AddIndexDialog(Collection columns)
 	{  
 		try {
-			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 			JPanel pane = new JPanel();
 			pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
 			GridBagLayout layout = new GridBagLayout();

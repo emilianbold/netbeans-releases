@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.explorer.propertysheet.editors;
+package org.netbeans.modules.form.editors2;
 
 import java.awt.*;
 import java.io.*;
@@ -39,7 +39,7 @@ public class IconEditor extends Object {
   static final String FILE_PREFIX = "File"; // NOI18N
   static final String CLASSPATH_PREFIX = "Classpath"; // NOI18N
 
-  public static final String BAD_ICON_NAME = "/com/netbeans/developer/explorer/propertysheet/editors/badIcon.gif"; // NOI18N
+  public static final String BAD_ICON_NAME = "/org/netbeans/modules/form/editors2/badIcon.gif"; // NOI18N
 
   // innerclasses ...............................................................
 

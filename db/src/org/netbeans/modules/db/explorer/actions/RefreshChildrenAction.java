@@ -11,16 +11,16 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.actions;
+package org.netbeans.modules.db.explorer.actions;
 
 import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
-import com.netbeans.ddl.impl.*;
+import org.netbeans.lib.ddl.impl.*;
 import org.openide.*;
 import org.openide.nodes.Node;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.infos.*;
 
 public class RefreshChildrenAction extends DatabaseAction
 {
@@ -31,7 +31,7 @@ public class RefreshChildrenAction extends DatabaseAction
 		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
 		else return;
 
-		ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");		
+		ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");		
 		try {
 			DatabaseNodeInfo nfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
 			nfo.refreshChildren();

@@ -11,10 +11,10 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.util;
+package org.netbeans.lib.ddl.util;
 
 import java.sql.*;
-import com.netbeans.ddl.*;
+import org.netbeans.lib.ddl.*;
 
 /** 
 * Interface of command buffer handler. When you use CommandBuffer to execute

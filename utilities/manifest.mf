@@ -1,36 +1,36 @@
-OpenIDE-Module: com.netbeans.developer.modules.utilities/1
+OpenIDE-Module: org.netbeans.modules.utilities/1
 OpenIDE-Module-Name: User Utilities
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: 1.0
-OpenIDE-Module-Install: com/netbeans/developer/modules/utilities/Installer.class
+OpenIDE-Module-Install: org/netbeans/modules/utilities/Installer.class
 OpenIDE-Module-Module-Dependencies: org.openidex.util/1 > 1.0
 Class-Path: ext/regexp.jar
-Main-Class: com.netbeans.developer.modules.openfile.Main
+Main-Class: org.netbeans.modules.openfile.Main
 
-Name: com/netbeans/developer/modules/search/types/FullTextType.class
+Name: org/netbeans/modules/search/types/FullTextType.class
 OpenIDE-Module-Class: Service
 
-Name: com/netbeans/developer/modules/search/types/ObjectNameType.class
+Name: org/netbeans/modules/search/types/ObjectNameType.class
 OpenIDE-Module-Class: Service
 
-Name: com/netbeans/developer/modules/search/types/ModificationDateType.class
+Name: org/netbeans/modules/search/types/ModificationDateType.class
 OpenIDE-Module-Class: Service
 
-Name: com/netbeans/developer/modules/search/types/ObjectTypeType.class
+Name: org/netbeans/modules/search/types/ObjectTypeType.class
 OpenIDE-Module-Class: Service
 
-Name: com/netbeans/developer/modules/openfile/Settings.class
+Name: org/netbeans/modules/openfile/Settings.class
 OpenIDE-Module-Class: Option
 
-Name: com/netbeans/enterprise/modules/group/GroupShadowLoader.class
+Name: org/netbeans/modules/group/GroupShadowLoader.class
 OpenIDE-Module-Class: Loader
 
-Name: com/netbeans/enterprise/modules/group/CreateGroupAction.class
+Name: org/netbeans/modules/group/CreateGroupAction.class
 OpenIDE-Module-Class: Action
 
-Name: com/netbeans/developer/modules/loaders/url/URLDataLoader.class
+Name: org/netbeans/modules/url/URLDataLoader.class
 OpenIDE-Module-Class: Loader
 
-Name: com/netbeans/developer/modules/loaders/url/BookmarksNode.class
+Name: org/netbeans/modules/url/BookmarksNode.class
 OpenIDE-Module-Class: Node
 Type: Session

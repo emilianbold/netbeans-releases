@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text;
+package org.netbeans.modules.editor;
 
 import java.awt.Font;
 import java.awt.Color;
@@ -20,10 +20,10 @@ import java.util.ArrayList;
 import java.text.AttributedCharacterIterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.JEditorPane;
-import com.netbeans.editor.GuardedDocument;
-import com.netbeans.editor.PrintContainer;
-import com.netbeans.editor.Syntax;
-import com.netbeans.editor.Utilities;
+import org.netbeans.editor.GuardedDocument;
+import org.netbeans.editor.PrintContainer;
+import org.netbeans.editor.Syntax;
+import org.netbeans.editor.Utilities;
 import org.openide.text.NbDocument;
 import org.openide.text.AttributedCharacters;
 

@@ -11,12 +11,12 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.actions;
+package org.netbeans.modules.form.actions;
 
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
-import com.netbeans.developer.modules.loaders.form.palette.BeanInstaller;
+import org.netbeans.modules.form.palette.BeanInstaller;
 
 /** This action installs new bean into the system.
 *
@@ -45,7 +45,7 @@ public class InstallBeanAction extends CallableSystemAction {
   * @return name of resource for icon
   */
   protected String iconResource () {
-    return "/com/netbeans/developer/modules/loaders/form/resources/installBean.gif"; // NOI18N
+    return "/org/netbeans/modules/form/resources/installBean.gif"; // NOI18N
   }
   
   /** This method is called by one of the "invokers" as a result of

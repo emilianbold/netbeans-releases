@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.editors;
+package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
 import java.util.ArrayList;

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import java.awt.*;
 import java.beans.*;
@@ -29,13 +29,13 @@ import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import com.netbeans.developer.util.NbVersion;
-import com.netbeans.developer.modules.loaders.form.actions.*;
-import com.netbeans.developer.modules.loaders.form.FormDataObject;
-import com.netbeans.developer.modules.loaders.form.FormLoaderSettings;
-import com.netbeans.developer.modules.loaders.form.palette.*;
-import com.netbeans.developerx.loaders.form.formeditor.layouts.*;
-import com.netbeans.developerx.loaders.form.formeditor.layouts.support.*;
+import org.netbeans.modules.form.util2.NbVersion;
+import org.netbeans.modules.form.actions.*;
+import org.netbeans.modules.form.FormDataObject;
+import org.netbeans.modules.form.FormLoaderSettings;
+import org.netbeans.modules.form.palette.*;
+import org.netbeans.modules.form.compat2.layouts.*;
+import org.netbeans.modules.form.compat2.layouts.support.*;
 
 /** A static class that manages global FormEditor issues.
 *
@@ -95,7 +95,7 @@ final public class FormEditor extends Object {
   
   /** Default icon base for control panel. */
   private static final String EMPTY_INSPECTOR_ICON_BASE =
-    "/com/netbeans/developer/modules/loaders/form/resources/emptyInspector"; // NOI18N
+    "/org/netbeans/modules/form/resources/emptyInspector"; // NOI18N
 
 // -----------------------------------------------------------------------------
 // Static methods
@@ -207,7 +207,7 @@ final public class FormEditor extends Object {
       if ((tm == null) || ((tm instanceof javax.swing.table.DefaultTableModel) &&
           (tm.getRowCount () == 0) && (tm.getColumnCount () == 0))) 
       {
-        propValue = new com.netbeans.developer.editors.TableModelEditor.NbTableModel (new javax.swing.table.DefaultTableModel (
+        propValue = new org.netbeans.beaninfo.editors.TableModelEditor.NbTableModel (new javax.swing.table.DefaultTableModel (
             new String[] {"Title 1", "Title 2", "Title 3", "Title 4"}, // NOI18N
             4
           ));
@@ -374,7 +374,7 @@ final public class FormEditor extends Object {
         newDesignLayout = new DesignGridBagLayout ();
       } else if (lm instanceof EqualFlowLayout) {
         newDesignLayout = new DesignEqualFlowLayout ();
-      } else if (lm instanceof com.netbeans.developer.awt.AbsoluteLayout) {
+      } else if (lm instanceof org.netbeans.lib.awtextra.AbsoluteLayout) {
         newDesignLayout = new DesignAbsoluteLayout ();
       } else if (lm instanceof BoxLayout) {
         newDesignLayout = new DesignBoxLayout ();
@@ -417,7 +417,7 @@ final public class FormEditor extends Object {
 
     /** The Inspector's icon */
     private final static java.awt.Image inspectorIcon = java.awt.Toolkit.getDefaultToolkit ().getImage (
-      ComponentInspector.class.getResource ("/com/netbeans/developer/modules/loaders/form/resources/inspector.gif")); // NOI18N
+      ComponentInspector.class.getResource ("/org/netbeans/modules/form/resources/inspector.gif")); // NOI18N
 
 static final long serialVersionUID =4248268998485315927L;
     ComponentInspector () {

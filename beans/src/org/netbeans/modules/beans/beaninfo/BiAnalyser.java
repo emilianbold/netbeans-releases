@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.beans.beaninfo;
+package org.netbeans.modules.beans.beaninfo;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -29,11 +29,11 @@ import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-import com.netbeans.developer.modules.beans.PatternAnalyser;
-import com.netbeans.developer.modules.beans.Pattern;
-import com.netbeans.developer.modules.beans.PropertyPattern;
-import com.netbeans.developer.modules.beans.IdxPropertyPattern;
-import com.netbeans.developer.modules.beans.EventSetPattern;
+import org.netbeans.modules.beans.PatternAnalyser;
+import org.netbeans.modules.beans.Pattern;
+import org.netbeans.modules.beans.PropertyPattern;
+import org.netbeans.modules.beans.IdxPropertyPattern;
+import org.netbeans.modules.beans.EventSetPattern;
 
 /** Analyses the ClassElement trying to find source code patterns i.e.
  * properties or event sets;

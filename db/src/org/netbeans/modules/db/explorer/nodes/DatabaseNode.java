@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.nodes;
+package org.netbeans.modules.db.explorer.nodes;
 
 import java.io.IOException;
 import java.util.*;
@@ -21,10 +21,10 @@ import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import java.awt.datatransfer.Transferable;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.explorer.actions.*;
-import com.netbeans.enterprise.modules.db.DatabaseException;
-import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.explorer.actions.*;
+import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 public class DatabaseNode extends AbstractNode implements Node.Cookie
 {
@@ -200,7 +200,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
     	Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
     	Vector prop = (Vector)info.get(DatabaseNodeInfo.PROPERTIES);
 		Enumeration prop_i = prop.elements();
-		ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+		ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 		while (prop_i.hasMoreElements()) {
 			boolean canWrite, expert = false;
 			Map propmap = (Map)prop_i.nextElement();

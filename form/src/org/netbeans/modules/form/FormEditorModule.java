@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
@@ -24,8 +24,8 @@ import org.openide.util.Utilities;
 import org.openide.modules.ModuleInstall;
 
 import org.openidex.util.Utilities2;
-import com.netbeans.developer.modules.loaders.form.actions.*;
-import com.netbeans.developer.modules.loaders.form.palette.*;
+import org.netbeans.modules.form.actions.*;
+import org.netbeans.modules.form.palette.*;
 
 import java.beans.*;
 
@@ -70,17 +70,17 @@ public class FormEditorModule extends ModuleInstall {
     if (charEditor == null)
       FormPropertyEditorManager.registerEditor(
           Character.TYPE,
-          com.netbeans.developer.modules.loaders.form.editors.CharacterEditor.class);
+          org.netbeans.modules.form.editors.CharacterEditor.class);
     
     charEditor = PropertyEditorManager.findEditor(Character.class);
     if (charEditor == null)
       FormPropertyEditorManager.registerEditor(
           Character.class,
-          com.netbeans.developer.modules.loaders.form.editors.CharacterEditor.class);
+          org.netbeans.modules.form.editors.CharacterEditor.class);
 
     FormPropertyEditorManager.registerEditor(
           javax.swing.KeyStroke.class,
-          com.netbeans.developer.modules.loaders.form.editors.KeyStrokeEditor.class);
+          org.netbeans.modules.form.editors.KeyStrokeEditor.class);
   }
 
   /** Module was uninstalled. */
@@ -199,7 +199,7 @@ public class FormEditorModule extends ModuleInstall {
     try {
       FileUtil.extractJar (
         TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
-        NbBundle.getLocalizedFile ("com.netbeans.developer.modules.loaders.form.resources.templates", "jar").openStream () // NOI18N
+        NbBundle.getLocalizedFile ("org.netbeans.modules.form.resources.templates", "jar").openStream () // NOI18N
       );
     } catch (java.io.IOException e) {
       TopManager.getDefault ().notifyException (e);
@@ -353,7 +353,7 @@ public class FormEditorModule extends ModuleInstall {
   private static void localizeFile (FileObject file) {
     try {
       // This attribute is private to the system file system and must be specially added this way:
-      file.setAttribute ("SystemFileSystem.localizingBundle", "com.netbeans.developer.modules.loaders.form.Bundle"); // NOI18N
+      file.setAttribute ("SystemFileSystem.localizingBundle", "org.netbeans.modules.form.Bundle"); // NOI18N
     } catch (java.io.IOException ioe) {
       if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
         ioe.printStackTrace ();
@@ -459,8 +459,8 @@ public class FormEditorModule extends ModuleInstall {
   };
 
 //  private final static String[] defaultDBComponents = new String[] {
-//    "com.netbeans.sql.JDBCRowSet", // NOI18N
-//    "com.netbeans.sql.components.DataNavigator", // NOI18N
+//    "org.netbeans.lib.sql.JDBCRowSet", // NOI18N
+//    "org.netbeans.lib.sql.components.DataNavigator", // NOI18N
 //  };
 
   /** The default Swing Components - beans category */
@@ -470,50 +470,50 @@ public class FormEditorModule extends ModuleInstall {
 
   /** The default Layout Components */
   private final static String[] defaultLayoutsComponents = new String[] {
-    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout", // NOI18N
-    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout", // NOI18N
-    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridLayout", // NOI18N
-    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignCardLayout", // NOI18N
-    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignAbsoluteLayout", // NOI18N
-    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout", // NOI18N
-    "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBoxLayout", // NOI18N
+    "org.netbeans.modules.form.compat2.layouts.DesignFlowLayout", // NOI18N
+    "org.netbeans.modules.form.compat2.layouts.DesignBorderLayout", // NOI18N
+    "org.netbeans.modules.form.compat2.layouts.DesignGridLayout", // NOI18N
+    "org.netbeans.modules.form.compat2.layouts.DesignCardLayout", // NOI18N
+    "org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout", // NOI18N
+    "org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout", // NOI18N
+    "org.netbeans.modules.form.compat2.layouts.DesignBoxLayout", // NOI18N
   };
 
   /** The default Layout Components */
   private final static String[] defaultLayoutsIcons = new String[] {
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/flowLayout.gif", // NOI18N
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/borderLayout.gif", // NOI18N
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/gridLayout.gif", // NOI18N
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/cardLayout.gif", // NOI18N
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/absoluteLayout.gif", // NOI18N
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/gridBagLayout.gif", // NOI18N
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/boxLayout.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/flowLayout.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/borderLayout.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/gridLayout.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/cardLayout.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/absoluteLayout.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/gridBagLayout.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/boxLayout.gif", // NOI18N
   };
   
   /** The default Swing Borders */
   private final static String[] defaultBorders = new String[] {
-    "com.netbeans.developerx.loaders.form.formeditor.border.EmptyBorderInfo", // NOI18N
-    "com.netbeans.developerx.loaders.form.formeditor.border.LineBorderInfo", // NOI18N
-    "com.netbeans.developerx.loaders.form.formeditor.border.MatteIconBorderInfo", // NOI18N
-    "com.netbeans.developerx.loaders.form.formeditor.border.MatteColorBorderInfo", // NOI18N
-    "com.netbeans.developerx.loaders.form.formeditor.border.TitledBorderInfo", // NOI18N
-    "com.netbeans.developerx.loaders.form.formeditor.border.EtchedBorderInfo", // NOI18N
-    "com.netbeans.developerx.loaders.form.formeditor.border.BevelBorderInfo", // NOI18N
-    "com.netbeans.developerx.loaders.form.formeditor.border.SoftBevelBorderInfo", // NOI18N
-    "com.netbeans.developerx.loaders.form.formeditor.border.CompoundBorderInfo", // NOI18N
+    "org.netbeans.modules.form.compat2.border.EmptyBorderInfo", // NOI18N
+    "org.netbeans.modules.form.compat2.border.LineBorderInfo", // NOI18N
+    "org.netbeans.modules.form.compat2.border.MatteIconBorderInfo", // NOI18N
+    "org.netbeans.modules.form.compat2.border.MatteColorBorderInfo", // NOI18N
+    "org.netbeans.modules.form.compat2.border.TitledBorderInfo", // NOI18N
+    "org.netbeans.modules.form.compat2.border.EtchedBorderInfo", // NOI18N
+    "org.netbeans.modules.form.compat2.border.BevelBorderInfo", // NOI18N
+    "org.netbeans.modules.form.compat2.border.SoftBevelBorderInfo", // NOI18N
+    "org.netbeans.modules.form.compat2.border.CompoundBorderInfo", // NOI18N
   };
   
   /** The default Swing Borders */
   private final static String[] defaultBordersIcons = new String[] {
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/border.gif", // NOI18N
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/lineBorder.gif", // NOI18N
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/matteIconBorder.gif", // NOI18N
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/matteColorBorder.gif", // NOI18N
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/titledBorder.gif", // NOI18N
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/etchedBorder.gif", // NOI18N
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/bevelBorder.gif", // NOI18N
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/softBevelBorder.gif", // NOI18N
-    "/com/netbeans/developer/modules/loaders/form/resources/palette/compoundBorder.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/border.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/lineBorder.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/matteIconBorder.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/matteColorBorder.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/titledBorder.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/etchedBorder.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/bevelBorder.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/softBevelBorder.gif", // NOI18N
+    "/org/netbeans/modules/form/resources/palette/compoundBorder.gif", // NOI18N
   };
 }
 

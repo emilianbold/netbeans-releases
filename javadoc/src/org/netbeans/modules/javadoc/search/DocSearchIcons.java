@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.javadoc.search;
+package org.netbeans.modules.javadoc.search;
 
 import javax.swing.ImageIcon;
 
@@ -43,14 +43,14 @@ class DocSearchIcons extends Object {
       icons[ ICON_PACKAGE ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/defaultFolder.gif")); // NOI18N
       icons[ ICON_CLASS ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/class.gif")); // NOI18N
       icons[ ICON_INTERFACE ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/interface.gif")); // NOI18N
-      icons[ ICON_EXCEPTION ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/exception.gif")); // NOI18N
-      icons[ ICON_ERROR ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/error.gif")); // NOI18N
+      icons[ ICON_EXCEPTION ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/netbeans/modules/javadoc/resources/exception.gif")); // NOI18N
+      icons[ ICON_ERROR ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/netbeans/modules/javadoc/resources/error.gif")); // NOI18N
       icons[ ICON_CONSTRUCTOR ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/constructorPublic.gif")); // NOI18N
       icons[ ICON_METHOD ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/methodPublic.gif")); // NOI18N
       icons[ ICON_METHOD_ST ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/methodStPublic.gif")); // NOI18N
       icons[ ICON_VARIABLE ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/variablePublic.gif")); // NOI18N
       icons[ ICON_VARIABLE_ST ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/variableStPublic.gif")); // NOI18N
-      icons[ ICON_NOT_FOUND ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/notFound.gif")); // NOI18N
+      icons[ ICON_NOT_FOUND ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/netbeans/modules/javadoc/resources/notFound.gif")); // NOI18N
       icons[ ICON_WAIT ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/wait.gif")); // NOI18N
     } 
     catch (Throwable w) {

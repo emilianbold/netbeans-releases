@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.beans;
+package org.netbeans.modules.beans;
 
 import java.awt.Dialog;
 import java.awt.event.ActionListener;
@@ -38,7 +38,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 
-import com.netbeans.developer.modules.beans.beaninfo.GenerateBeanInfoAction;
+import org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction;
 
 /** Subnodes of this node are nodes representing source code patterns i.e. 
  * PropertyPatternNode or EventSetPatternNode.
@@ -102,7 +102,7 @@ public class  PatternGroupNode extends AbstractNode {
   }
 
   public static final String ICON_BASE =              
-    "/com/netbeans/developer/modules/beans/resources/patternGroup"; // NOI18N
+    "/org/netbeans/modules/beans/resources/patternGroup"; // NOI18N
   
   public PatternGroupNode( PatternChildren children ) {
     super( (Children)children );

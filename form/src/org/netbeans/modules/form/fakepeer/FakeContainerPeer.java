@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.fakepeer;
+package org.netbeans.modules.form.fakepeer;
 
 import java.awt.*;
 import java.awt.peer.ContainerPeer;

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.beans;
+package org.netbeans.modules.beans;
 
 import java.beans.Introspector;
 import java.beans.IntrospectionException;
@@ -33,7 +33,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
-//import com.netbeans.developer.modules.loaders.java.support.AutoCommenter;
+//import org.netbeans.modules.java.support.AutoCommenter;
 
 /** Class representing a JavaBeans Property 
  * @author Petr Hrebejk

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl.beaninfo;
+package org.netbeans.beaninfo;
 
 import java.awt.Component;
 import java.awt.Image;
@@ -45,10 +45,10 @@ public class DataLoaderBeanInfo extends SimpleBeanInfo {
   private static Image icon32;
   public Image getIcon (int type) {
     if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-      if (icon == null) icon = loadImage ("/com/netbeans/developer/impl/resources/objectTypes.gif"); // NOI18N
+      if (icon == null) icon = loadImage ("/org/netbeans/core/resources/objectTypes.gif"); // NOI18N
       return icon;
     } else {
-      if (icon32 == null) icon32 = loadImage ("/com/netbeans/developer/impl/resources/objectTypes32.gif"); // NOI18N
+      if (icon32 == null) icon32 = loadImage ("/org/netbeans/core/resources/objectTypes32.gif"); // NOI18N
       return icon32;
     }
   }

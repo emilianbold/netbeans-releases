@@ -11,13 +11,13 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text.options;
+package org.netbeans.modules.editor.options;
 
 import java.awt.Font;
 import java.awt.Color;
 import java.beans.*;     
 
-import com.netbeans.editor.Coloring;
+import org.netbeans.editor.Coloring;
 
 public class ColoringBean implements java.io.Serializable {
     

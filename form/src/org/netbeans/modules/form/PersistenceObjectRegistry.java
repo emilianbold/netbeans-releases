@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -76,7 +76,7 @@ public class PersistenceObjectRegistry
   }
   
   static {
-//      registerPrimaryName("com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout$ConstraintsDesc",
-//                          "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout$BorderConstraintsDescription");
+//      registerPrimaryName("org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$ConstraintsDesc",
+//                          "org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription");
   }
 }

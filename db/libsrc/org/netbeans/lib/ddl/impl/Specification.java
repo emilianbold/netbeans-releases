@@ -11,13 +11,13 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.impl;
+package org.netbeans.lib.ddl.impl;
 
 import java.beans.*;
 import java.sql.*;
 import java.util.*;
-import com.netbeans.ddl.*;
-import com.netbeans.ddl.adaptors.*;
+import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.adaptors.*;
 
 import org.openide.*;
 
@@ -106,7 +106,7 @@ public class Specification implements DatabaseSpecification {
 	public String getMetaDataAdaptorClassName()
 	{
 		if (adaptorClass == null || adaptorClass.length() == 0) {
-			adaptorClass = "com.netbeans.ddl.adaptors.DefaultAdaptor";
+			adaptorClass = "org.netbeans.lib.ddl.adaptors.DefaultAdaptor";
 		}
 		
 		return adaptorClass;

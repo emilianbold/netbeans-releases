@@ -11,15 +11,15 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text.options;
+package org.netbeans.modules.editor.options;
 
 import java.awt.*;
 import java.beans.*;
 import java.util.HashMap;
 import javax.swing.event.*;
 
-import com.netbeans.editor.Coloring;
-//import com.netbeans.developer.modules.text.options.ColoringBean;
+import org.netbeans.editor.Coloring;
+//import org.netbeans.modules.editor.options.ColoringBean;
 import org.openide.explorer.propertysheet.PropertyPanel;
 
 /** 

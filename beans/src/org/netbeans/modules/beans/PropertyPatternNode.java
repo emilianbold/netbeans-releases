@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.beans;
+package org.netbeans.modules.beans;
 
 import java.beans.*;
 import java.io.IOException;
@@ -251,7 +251,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
       /** Define property editor for this property. */
     
       public PropertyEditor getPropertyEditor () {
-        return new com.netbeans.developer.modules.beans.ModePropertyEditor();
+        return new org.netbeans.modules.beans.ModePropertyEditor();
       }
       
     };

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl;
+package org.netbeans.core;
 
 import java.io.File;
 
@@ -80,7 +80,7 @@ public class Plain extends NbTopManager implements Runnable {
     
     java.util.Properties versions = new java.util.Properties ();
     try {
-      versions.load (Main.class.getClassLoader ().getResourceAsStream ("com/netbeans/developer/impl/Versioning.properties")); // NOI18N
+      versions.load (Main.class.getClassLoader ().getResourceAsStream ("org/netbeans/core/Versioning.properties")); // NOI18N
     } catch (java.io.IOException ioe) {
       ioe.printStackTrace ();
     }

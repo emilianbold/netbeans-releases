@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl;
+package org.netbeans.core;
 
 import java.awt.Image;
 import java.awt.Image;
@@ -53,7 +53,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
     fileSystemPool = fsp;
     this.filter = filter;
     initialize();
-    setIconBase ("/com/netbeans/developer/impl/resources/repository"); // NOI18N
+    setIconBase ("/org/netbeans/core/resources/repository"); // NOI18N
     setName (NbBundle.getBundle (DataSystem.class).getString ("dataSystemName"));
     setShortDescription (NbBundle.getBundle (DataSystem.class).getString ("CTL_Repository_Hint"));
     getCookieSet().add(fsp);
@@ -127,8 +127,8 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
   */
   public org.openide.util.actions.SystemAction[] createActions() {
     return new SystemAction[] {
-      SystemAction.get (com.netbeans.developer.impl.actions.AddFSAction.class),
-      SystemAction.get (com.netbeans.developer.impl.actions.AddJarAction.class),
+      SystemAction.get (org.netbeans.core.actions.AddFSAction.class),
+      SystemAction.get (org.netbeans.core.actions.AddJarAction.class),
       null,
       SystemAction.get (org.openide.actions.NewAction.class),
       null,

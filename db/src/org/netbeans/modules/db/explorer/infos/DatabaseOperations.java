@@ -11,10 +11,10 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.infos;
+package org.netbeans.modules.db.explorer.infos;
 
-import com.netbeans.enterprise.modules.db.*;
-import com.netbeans.enterprise.modules.db.explorer.DatabaseDriver;
+import org.netbeans.modules.db.*;
+import org.netbeans.modules.db.explorer.DatabaseDriver;
 
 /** 
 * Interface of driver-related nodes.

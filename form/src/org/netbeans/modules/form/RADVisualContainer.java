@@ -11,11 +11,11 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import org.openide.nodes.Node;
-import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
-import com.netbeans.developerx.loaders.form.formeditor.layouts.support.DesignSupportLayout;
+import org.netbeans.modules.form.compat2.layouts.DesignLayout;
+import org.netbeans.modules.form.compat2.layouts.support.DesignSupportLayout;
 
 import java.awt.Container;
 import java.util.ArrayList;

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.awt;
+package org.netbeans.lib.awtextra;
 
 import java.awt.Dimension;
 import java.awt.Point;

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text;
+package org.netbeans.modules.editor;
 
 import java.io.Writer;
 import java.io.File;
@@ -21,17 +21,17 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
 
-import com.netbeans.editor.BaseDocument;
-import com.netbeans.editor.BaseKit;
-import com.netbeans.editor.Settings;
-import com.netbeans.editor.SettingsChangeListener;
-import com.netbeans.editor.SettingsChangeEvent;
-import com.netbeans.editor.LocaleSupport;
-import com.netbeans.editor.Formatter;
-import com.netbeans.developer.modules.text.java.JavaKit;
-import com.netbeans.developer.modules.text.html.HTMLKit;
-import com.netbeans.developer.modules.text.java.JCStorage;
-import com.netbeans.developer.modules.text.java.JCUpdateAction;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsChangeListener;
+import org.netbeans.editor.SettingsChangeEvent;
+import org.netbeans.editor.LocaleSupport;
+import org.netbeans.editor.Formatter;
+import org.netbeans.modules.editor.java.JavaKit;
+import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.editor.java.JCStorage;
+import org.netbeans.modules.editor.java.JCUpdateAction;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.text.IndentEngine;
@@ -237,7 +237,7 @@ public class EditorModule extends ModuleInstall {
  *       constructor
  *  9    Gandalf   1.8         4/13/99  Ian Formanek    Fixed bug #1518 - 
  *       java.lang.NoClassDefFoundError: 
- *       com/netbeans/developer/modules/text/NbEditorBaseKit thrown on startup.
+ *       org/netbeans/modules/editor/NbEditorBaseKit thrown on startup.
  *  8    Gandalf   1.7         4/8/99   Miloslav Metelka 
  *  7    Gandalf   1.6         3/18/99  Miloslav Metelka 
  *  6    Gandalf   1.5         3/11/99  Jaroslav Tulach Works with plain 

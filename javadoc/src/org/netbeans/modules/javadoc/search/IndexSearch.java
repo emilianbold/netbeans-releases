@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.javadoc.search;
+package org.netbeans.modules.javadoc.search;
 
 import java.io.*;
 import java.net.URL;
@@ -40,7 +40,7 @@ import org.openide.src.Element;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.HelpCtx;
 
-import com.netbeans.developer.modules.javadoc.settings.DocumentationSettings;
+import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 
 /** Main window for documentation index search
  *
@@ -68,15 +68,15 @@ public class IndexSearch
   private String quickFind;
   
   /* Button icons */
-  //private static final ImageIcon windowIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif")); // NOI18N
-  private static final ImageIcon refSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/refSort.gif")); // NOI18N
-  private static final ImageIcon typeSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/typeSort.gif")); // NOI18N
-  private static final ImageIcon alphaSortIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/alphaSort.gif")); // NOI18N
-  private static final ImageIcon listOnlyIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/list_only.gif")); // NOI18N
-  private static final ImageIcon listHtmlIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/list_html.gif")); // NOI18N
-  private static final ImageIcon showSourceIcon = new ImageIcon (IndexSearch.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/showSource.gif")); // NOI18N
+  //private static final ImageIcon windowIcon = new ImageIcon (IndexSearch.class.getResource ("/org/netbeans/modules/javadoc/resources/searchDoc.gif")); // NOI18N
+  private static final ImageIcon refSortIcon = new ImageIcon (IndexSearch.class.getResource ("/org/netbeans/modules/javadoc/resources/refSort.gif")); // NOI18N
+  private static final ImageIcon typeSortIcon = new ImageIcon (IndexSearch.class.getResource ("/org/netbeans/modules/javadoc/resources/typeSort.gif")); // NOI18N
+  private static final ImageIcon alphaSortIcon = new ImageIcon (IndexSearch.class.getResource ("/org/netbeans/modules/javadoc/resources/alphaSort.gif")); // NOI18N
+  private static final ImageIcon listOnlyIcon = new ImageIcon (IndexSearch.class.getResource ("/org/netbeans/modules/javadoc/resources/list_only.gif")); // NOI18N
+  private static final ImageIcon listHtmlIcon = new ImageIcon (IndexSearch.class.getResource ("/org/netbeans/modules/javadoc/resources/list_html.gif")); // NOI18N
+  private static final ImageIcon showSourceIcon = new ImageIcon (IndexSearch.class.getResource ("/org/netbeans/modules/javadoc/resources/showSource.gif")); // NOI18N
   
-  private final static String ICON_RESOURCE = "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif"; // NOI18N
+  private final static String ICON_RESOURCE = "/org/netbeans/modules/javadoc/resources/searchDoc.gif"; // NOI18N
   private final static java.awt.Image windowIcon = java.awt.Toolkit.getDefaultToolkit ().getImage (
       IndexSearch.class.getResource (ICON_RESOURCE));
 

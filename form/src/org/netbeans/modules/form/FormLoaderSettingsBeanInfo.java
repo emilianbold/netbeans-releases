@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import java.awt.Image;
 import java.beans.*;
@@ -156,11 +156,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage("/com/netbeans/developer/modules/loaders/form/resources/formSettings.gif"); // NOI18N
+        icon = loadImage("/org/netbeans/modules/form/resources/formSettings.gif"); // NOI18N
       return icon;
     } else {
       if (icon32 == null)
-        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/form/resources/formSettings32.gif"); // NOI18N
+        icon32 = loadImage ("/org/netbeans/modules/form/resources/formSettings32.gif"); // NOI18N
       return icon32;
     }
   }

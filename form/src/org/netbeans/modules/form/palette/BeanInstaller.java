@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.palette;
+package org.netbeans.modules.form.palette;
 
 import java.io.*;
 import java.awt.*;
@@ -33,8 +33,8 @@ import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import com.netbeans.developer.modules.loaders.form.FormLoaderSettings;
-import com.netbeans.developer.modules.loaders.clazz.ClassDataObject;
+import org.netbeans.modules.form.FormLoaderSettings;
+import org.netbeans.modules.clazz.ClassDataObject;
 
 /** Bean Installer
 *
@@ -578,7 +578,7 @@ public final class BeanInstaller extends Object {
       FileOutputStream fos = null;
       try {
         fos = new FileOutputStream(localBase + "installed.properties"); // NOI18N
-        alreadyInstalled.store(fos, com.netbeans.developer.modules.loaders.form.FormEditor.getFormBundle().getString ("MSG_InstalledArchives"));
+        alreadyInstalled.store(fos, org.netbeans.modules.form.FormEditor.getFormBundle().getString ("MSG_InstalledArchives"));
       } catch (IOException e) {
         if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
         // ignore 

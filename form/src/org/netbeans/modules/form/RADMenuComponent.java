@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import org.openide.util.datatransfer.*;
 
@@ -286,7 +286,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
       RADMenuItemComponent newSeparatorComp = new RADMenuItemComponent ();
       newSeparatorComp.initialize (getFormManager ());
       if ((getMenuItemType () == T_MENU) || (getMenuItemType () == T_POPUPMENU)) {
-        newSeparatorComp.setComponent (com.netbeans.developer.modules.loaders.form.Separator.class);
+        newSeparatorComp.setComponent (org.netbeans.modules.form.Separator.class);
       } else {
         newSeparatorComp.setComponent (JSeparator.class);
       }

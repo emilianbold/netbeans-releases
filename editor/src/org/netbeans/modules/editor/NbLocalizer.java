@@ -11,12 +11,12 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text;
+package org.netbeans.modules.editor;
 
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import org.openide.util.NbBundle;
-import com.netbeans.editor.LocaleSupport;
+import org.netbeans.editor.LocaleSupport;
 
 /** 
 * Locale support localizer that uses the bundle to get

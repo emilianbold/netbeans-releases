@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.dlg;
+package org.netbeans.modules.db.explorer.dlg;
 
 import java.sql.*;
 import java.awt.*;
@@ -31,12 +31,12 @@ import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
 
-import com.netbeans.ddl.impl.*;
-import com.netbeans.ddl.util.*;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.util.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.*;
-import com.netbeans.enterprise.modules.db.explorer.nodes.*;
+import org.netbeans.lib.ddl.impl.*;
+import org.netbeans.lib.ddl.util.*;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.util.*;
+import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.nodes.*;
 
 /** 
 * xxx
@@ -65,7 +65,7 @@ public class AddTableColumnDialog
 			GridBagLayout layout = new GridBagLayout();
 			GridBagConstraints con = new GridBagConstraints ();
 			pane.setLayout (layout);
-			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 
 			TextFieldListener fldlistener = new TextFieldListener(dmodel);
 			IntegerFieldListener intfldlistener = new IntegerFieldListener(dmodel);
@@ -377,12 +377,12 @@ public class AddTableColumnDialog
 								colname = colnamefield.getText();
 								ColumnItem citem = (ColumnItem)dmodel.getData().elementAt(0);
 								AddColumn cmd = spec.createCommandAddColumn(tablename);
-								com.netbeans.ddl.impl.TableColumn col = null;
+								org.netbeans.lib.ddl.impl.TableColumn col = null;
 								if (citem.isPrimaryKey()) {
-									col = (com.netbeans.ddl.impl.TableColumn)cmd.createPrimaryKeyColumn(colname);
+									col = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createPrimaryKeyColumn(colname);
 								} else if (citem.isUnique()) {
-									col = (com.netbeans.ddl.impl.TableColumn)cmd.createUniqueColumn(colname);
-								} else col = (com.netbeans.ddl.impl.TableColumn)cmd.createColumn(colname);
+									col = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createUniqueColumn(colname);
+								} else col = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createColumn(colname);
 								if (citem.isIndexed()) use_idx = true;
 								col.setColumnType(Specification.getType(citem.getType().getType()));
 								col.setColumnSize(citem.getSize());

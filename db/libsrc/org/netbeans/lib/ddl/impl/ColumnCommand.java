@@ -11,11 +11,11 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.ddl.impl;
+package org.netbeans.lib.ddl.impl;
 
 import java.text.ParseException;
 import java.util.*;
-import com.netbeans.ddl.*;
+import org.netbeans.lib.ddl.*;
 
 /** 
 * Instances of this command operates with one column.

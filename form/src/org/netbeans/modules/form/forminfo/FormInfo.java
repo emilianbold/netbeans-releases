@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.forminfo;
+package org.netbeans.modules.form.forminfo;
 
 import java.awt.Container;
 import org.openide.nodes.Node;

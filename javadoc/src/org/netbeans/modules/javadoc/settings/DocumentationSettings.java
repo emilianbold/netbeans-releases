@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.javadoc.settings;
+package org.netbeans.modules.javadoc.settings;
 
 import java.io.File;
 import java.lang.reflect.Modifier;
@@ -20,7 +20,7 @@ import org.openide.options.ContextSystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-import com.netbeans.developer.modules.javadoc.comments.AutoCommenter;
+import org.netbeans.modules.javadoc.comments.AutoCommenter;
 
 /** Options for applets - which applet viewer use ...
 *

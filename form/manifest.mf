@@ -1,20 +1,20 @@
-OpenIDE-Module: com.netbeans.developer.modules.loaders.form/1
+OpenIDE-Module: org.netbeans.modules.form/1
 OpenIDE-Module-Name: Form Editor
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: 1.0
-OpenIDE-Module-Install: com/netbeans/developer/modules/loaders/form/FormEditorModule.class
-OpenIDE-Module-Module-Dependencies: com.netbeans.developer.modules.loaders.java/1, com.netbeans.developer.modules.loaders.clazz/1, org.openidex.util/1
+OpenIDE-Module-Install: org/netbeans/modules/form/FormEditorModule.class
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1, org.netbeans.modules.clazz/1, org.openidex.util/1
 
-Name: com/netbeans/developer/modules/loaders/form/FormDataLoader.class
+Name: org/netbeans/modules/form/FormDataLoader.class
 OpenIDE-Module-Class: Loader
-Install-Before: com.netbeans.developer.modules.loaders.java.JavaDataObject
+Install-Before: org.netbeans.modules.java.JavaDataObject
 
-Name: com/netbeans/developer/modules/loaders/form/FormLoaderSettings.class
+Name: org/netbeans/modules/form/FormLoaderSettings.class
 OpenIDE-Module-Class: Option
 
-Name: com/netbeans/developer/modules/loaders/form/palette/PaletteNode.class
+Name: org/netbeans/modules/form/palette/PaletteNode.class
 OpenIDE-Module-Class: Node
 Type: Session
 
-Name: com/netbeans/developer/modules/loaders/form/actions/InstallToPaletteAction.class
+Name: org/netbeans/modules/form/actions/InstallToPaletteAction.class
 OpenIDE-Module-Class: Action

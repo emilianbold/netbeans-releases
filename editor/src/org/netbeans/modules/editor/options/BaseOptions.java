@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.text.options;
+package org.netbeans.modules.editor.options;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -23,15 +23,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.text.JTextComponent;
   
-import com.netbeans.editor.Settings;
-import com.netbeans.editor.SettingsNames;
-import com.netbeans.editor.SettingsDefaults;
-import com.netbeans.editor.SettingsUtil;
-import com.netbeans.editor.Coloring;
-import com.netbeans.editor.BaseKit;
-import com.netbeans.editor.Syntax;
-import com.netbeans.editor.MultiKeyBinding;
-import com.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsNames;
+import org.netbeans.editor.SettingsDefaults;
+import org.netbeans.editor.SettingsUtil;
+import org.netbeans.editor.Coloring;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.Syntax;
+import org.netbeans.editor.MultiKeyBinding;
+import org.netbeans.editor.ext.ExtSettingsNames;
 
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.impl;
+package org.netbeans.core;
 
 import java.awt.*;
 import java.awt.event.ItemListener;
@@ -51,9 +51,9 @@ import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 
-import com.netbeans.developer.impl.windows.WellKnownModeNames;
-import com.netbeans.developer.impl.windows.DeferredPerformer;
-import com.netbeans.developer.impl.windows.WindowManagerImpl;
+import org.netbeans.core.windows.WellKnownModeNames;
+import org.netbeans.core.windows.DeferredPerformer;
+import org.netbeans.core.windows.WindowManagerImpl;
 
 /** Main explorer - the class remains here for backward compatibility
 * with older serialization protocol. Its responsibilty is also
@@ -369,7 +369,7 @@ public final class NbMainExplorer extends CloneableTopComponent
       result = workspace.createMode(
         WellKnownModeNames.EXPLORER, displayName,
         NbMainExplorer.class.getResource(
-          "/com/netbeans/developer/impl/resources/frames/explorer.gif" // NOI18N
+          "/org/netbeans/core/resources/frames/explorer.gif" // NOI18N
         )
       );
     }

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 import org.openide.TopManager;
 import org.openide.actions.*;
@@ -25,9 +25,9 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.datatransfer.NewType;
 
-import com.netbeans.developer.modules.loaders.form.actions.*;
-import com.netbeans.developer.modules.loaders.form.palette.PaletteItem;
-import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
+import org.netbeans.modules.form.actions.*;
+import org.netbeans.modules.form.palette.PaletteItem;
+import org.netbeans.modules.form.compat2.layouts.DesignLayout;
 
 import java.awt.Image;
 import java.awt.datatransfer.*;

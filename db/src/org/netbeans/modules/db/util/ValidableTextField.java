@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.util;
+package org.netbeans.modules.db.util;
 
 import javax.swing.JTextField;
 import java.awt.Toolkit;

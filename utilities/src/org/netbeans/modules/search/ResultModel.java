@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.search;
+package org.netbeans.modules.search;
 
 import java.awt.*;
 import java.util.*;
@@ -24,7 +24,7 @@ import org.openide.util.*;
 
 import org.openidex.search.*;
 
-import com.netbeans.developer.modules.search.res.*;
+import org.netbeans.modules.search.res.*;
 
 /** 
  * Holds search result data.

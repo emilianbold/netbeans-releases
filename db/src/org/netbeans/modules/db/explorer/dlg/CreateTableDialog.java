@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db.explorer.dlg;
+package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -21,18 +21,18 @@ import javax.swing.border.*;
 import javax.swing.table.*;
 import javax.swing.text.DefaultCaret;
 import java.io.InputStream;
-import com.netbeans.ddl.impl.Specification;
-import com.netbeans.ddl.impl.CreateTable;
-import com.netbeans.ddl.util.CommandBuffer;
-import com.netbeans.ddl.impl.CreateIndex;
-import com.netbeans.ddl.util.PListReader;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.lib.ddl.impl.CreateTable;
+import org.netbeans.lib.ddl.util.CommandBuffer;
+import org.netbeans.lib.ddl.impl.CreateIndex;
+import org.netbeans.lib.ddl.util.PListReader;
 import javax.swing.event.TableModelEvent;
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
-import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.enterprise.modules.db.util.*;
-import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.*;
+import org.netbeans.modules.db.util.*;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 /** 
 * xxx
@@ -51,7 +51,7 @@ public class CreateTableDialog
 	private Vector ttab;
 
 	private static Map dlgtab = null;
-	private static final String filename = "com/netbeans/enterprise/modules/db/resources/CreateTableDialog.plist";
+	private static final String filename = "org/netbeans/modules/db/resources/CreateTableDialog.plist";
 
 	public static final Map getProperties()
 	{
@@ -82,7 +82,7 @@ public class CreateTableDialog
 			pane.setLayout(layout);
 			pane.setMinimumSize(new Dimension(200,100));
 			pane.setPreferredSize(new Dimension(502,200));
-			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+			ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
          
 			// Table name field
 		
@@ -231,18 +231,18 @@ public class CreateTableDialog
 								cmd.setObjectOwner((String)ownercombo.getSelectedItem());
 								CreateIndex icmd = spec.createCommandCreateIndex(tablename);
 								icmd.setIndexName(tablename+"_IDX");
-								com.netbeans.ddl.impl.TableColumn cmdcol = null;
+								org.netbeans.lib.ddl.impl.TableColumn cmdcol = null;
 								Enumeration enu = data.elements();
 								while (enu.hasMoreElements()) {
 									ColumnItem enuele = (ColumnItem)enu.nextElement();
 									String name = enuele.getName();
 									if (enuele.isPrimaryKey())
-										cmdcol = (com.netbeans.ddl.impl.TableColumn)cmd.createPrimaryKeyColumn(name);
+										cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createPrimaryKeyColumn(name);
 									else
                     if (enuele.isUnique())
-										  cmdcol = (com.netbeans.ddl.impl.TableColumn)cmd.createUniqueColumn(name);
+										  cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createUniqueColumn(name);
 									  else
-                      cmdcol = (com.netbeans.ddl.impl.TableColumn)cmd.createColumn(name);
+                      cmdcol = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createColumn(name);
 									cmdcol.setColumnType(Specification.getType(enuele.getType().getType()));
 									cmdcol.setColumnSize(enuele.getSize());
 									cmdcol.setDecimalSize(enuele.getScale());
@@ -250,7 +250,7 @@ public class CreateTableDialog
 									String defval = enuele.getDefaultValue();
 									if (defval != null && defval.length()>0) cmdcol.setDefaultValue(defval);
 									if (enuele.isIndexed()) {
-										com.netbeans.ddl.impl.TableColumn icol = icmd.specifyColumn(name);
+										org.netbeans.lib.ddl.impl.TableColumn icol = icmd.specifyColumn(name);
 									}
 								}
 									

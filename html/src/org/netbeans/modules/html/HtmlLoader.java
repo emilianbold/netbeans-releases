@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.html;
+package org.netbeans.modules.html;
 
 import java.util.*;
 import java.io.IOException;

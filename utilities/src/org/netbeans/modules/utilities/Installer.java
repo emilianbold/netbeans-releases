@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.utilities;
+package org.netbeans.modules.utilities;
 
 import java.io.IOException;
 
@@ -27,11 +27,11 @@ import org.openide.util.RequestProcessor;
 
 import org.openidex.util.Utilities2;
 
-import com.netbeans.developer.modules.loaders.url.*;
+import org.netbeans.modules.url.*;
 
-import com.netbeans.developer.modules.openfile.*;
+import org.netbeans.modules.openfile.*;
 
-import com.netbeans.enterprise.modules.group.CreateGroupAction;
+import org.netbeans.modules.group.CreateGroupAction;
 
 /** ModuleInstall class for Utilities module
 *
@@ -41,10 +41,10 @@ public class Installer extends ModuleInstall {
 
   private final static long serialVersionUID = 1;
   
-  private final com.netbeans.developer.modules.search.Installer searchInstaller;
+  private final org.netbeans.modules.search.Installer searchInstaller;
   
   public Installer() {
-    searchInstaller = new com.netbeans.developer.modules.search.Installer();
+    searchInstaller = new org.netbeans.modules.search.Installer();
   }
   
   /** Module installed for the first time. */
@@ -110,7 +110,7 @@ public class Installer extends ModuleInstall {
     try {
       FileUtil.extractJar (
         TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
-        NbBundle.getLocalizedFile ("com.netbeans.developer.modules.loaders.url.templates", "jar").openStream () // NOI18N
+        NbBundle.getLocalizedFile ("org.netbeans.modules.url.templates", "jar").openStream () // NOI18N
       );
     } catch (IOException e) {
       TopManager.getDefault ().notifyException (e);
@@ -121,7 +121,7 @@ public class Installer extends ModuleInstall {
     try {
       FileUtil.extractJar (
         TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
-        NbBundle.getLocalizedFile ("com.netbeans.enterprise.modules.group.toinstall.templates", "jar").openStream () // NOI18N
+        NbBundle.getLocalizedFile ("org.netbeans.modules.group.toinstall.templates", "jar").openStream () // NOI18N
       );
     } catch (IOException e) {
       TopManager.getDefault ().notifyException (e);
@@ -132,7 +132,7 @@ public class Installer extends ModuleInstall {
     try {
       FileUtil.extractJar (
         TopManager.getDefault ().getPlaces ().folders().bookmarks ().getPrimaryFile (),
-        NbBundle.getLocalizedFile ("com.netbeans.developer.modules.loaders.url.bookmarks", "jar").openStream () // NOI18N
+        NbBundle.getLocalizedFile ("org.netbeans.modules.url.bookmarks", "jar").openStream () // NOI18N
       );
     } catch (IOException e) {
       TopManager.getDefault ().notifyException (e);

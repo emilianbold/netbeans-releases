@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form;
+package org.netbeans.modules.form;
 
 /** FormAwareEditor is an interface implemented by property editors
 * and Customizers, which want to be aware of extended design-time 

@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.enterprise.modules.db;
+package org.netbeans.modules.db;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
@@ -29,7 +29,7 @@ import org.openide.util.NbBundle;
 * @author Slavek Psenicka
 */
 public class DatabaseModule extends ModuleInstall {
-	private ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+	private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 	
   static final long serialVersionUID =5426465356344170725L;
   
@@ -43,7 +43,7 @@ public class DatabaseModule extends ModuleInstall {
       if (databaseFileObject == null) {
         databaseFileObject = rootFolder.createFolder("Database");
         FileObject adaptorsFileObject = databaseFileObject.createFolder("Adaptors");
-        InstanceDataObject.create(DataFolder.findFolder(adaptorsFileObject), "DefaultAdaptor", com.netbeans.ddl.adaptors.DefaultAdaptor.class);
+        InstanceDataObject.create(DataFolder.findFolder(adaptorsFileObject), "DefaultAdaptor", org.netbeans.lib.ddl.adaptors.DefaultAdaptor.class);
       }
 		} catch (LinkageError ex) {
 			String msg = MessageFormat.format(bundle.getString("FMT_CLASSNOTFOUND"), new String[] {ex.getMessage()});
