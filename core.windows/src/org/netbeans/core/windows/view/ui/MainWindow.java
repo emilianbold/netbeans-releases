@@ -59,6 +59,9 @@ public final class MainWindow extends JFrame {
     /** Desktop. */
     private Component desktop;
     
+    /** Inner panel which contains desktop component */
+    private JPanel desktopPanel;
+    
     /** Flag indicating main window is initialized. */ 
     private boolean inited;
 
@@ -97,23 +100,31 @@ public final class MainWindow extends JFrame {
     
         JComponent tb = getToolbarComponent();
         
-        if (UIUtils.isWindowsLF()) {
-            Color borderC = null;
-            if (UIUtils.isXPLF()) {
-                // install our XP color scheme
-                // XXX - should be flexible, also for other LFs
-                UIUtils.installXPColors();
-                borderC = (Color)UIManager.get("nb_workplace_fill"); //NOI18N
-            } else {
-                borderC = tb.getBackground();
-            }
-            // decorate toolbars with extra botton border
-            Border orig = tb.getBorder();
-            tb.setBorder(new CompoundBorder(new MatteBorder(0, 0, 4, 0, borderC), orig));
-        }
-
         getContentPane().add(tb, BorderLayout.NORTH);        
         getContentPane().add(StatusLine.createLabel(), BorderLayout.SOUTH);
+        // initialize desktop panel
+        desktopPanel = new JPanel();
+        desktopPanel.setBorder(getDesktopBorder());
+        desktopPanel.setLayout(new BorderLayout());
+        if (UIUtils.isXPLF()) {
+            // install our XP color scheme
+            // XXX - should be flexible, also for other LFs
+            UIUtils.installXPColors();
+            Color fillC = (Color)UIManager.get("nb_workplace_fill"); //NOI18N
+            desktopPanel.setBackground(fillC);
+        }
+        getContentPane().add(desktopPanel, BorderLayout.CENTER);
+    }
+
+    /** Creates and returns border for desktop which is visually aligned
+     * with currently active LF */
+    private static Border getDesktopBorder () {
+        if (UIUtils.isXPLF()) {
+            return new EmptyBorder(6, 5, 4, 6);
+        } else if (UIUtils.isWindowsLF()) {
+            return new EmptyBorder(4, 2, 1, 2);
+        }
+        return new EmptyBorder(1, 1, 1, 1);
     }
     
     private Image createIDEImage() {
@@ -190,8 +201,8 @@ public final class MainWindow extends JFrame {
             // XXX PENDING revise how to better manipulate with components
             // so there don't happen unneeded removals.
             if(desktop != null
-            && !Arrays.asList(getContentPane().getComponents()).contains(desktop)) {
-                getContentPane().add(desktop, BorderLayout.CENTER);
+            && !Arrays.asList(desktopPanel.getComponents()).contains(desktop)) {
+                desktopPanel.add(desktop, BorderLayout.CENTER);
             }
             
             return;
@@ -200,13 +211,13 @@ public final class MainWindow extends JFrame {
         Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
 
         if(desktop != null) {
-            getContentPane().remove(desktop);
+            desktopPanel.remove(desktop);
         }
         
         desktop = comp;
         
         if(desktop != null) {
-            getContentPane().add(desktop, BorderLayout.CENTER);
+            desktopPanel.add(desktop, BorderLayout.CENTER);
         }
          
         invalidate();
