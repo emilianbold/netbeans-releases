@@ -82,7 +82,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         addButton.setMnemonic(Util.getChar("MNE_element_attributelist_add")); // NOI18N
         initAccessibility();
         
-        // Add header renderer
+        // Add custom header renderer supporting sorting
         attrTable.getTableHeader().setDefaultRenderer(new HeaderRenderer());
         
         // Set ListSelectionModel
@@ -254,17 +254,23 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         add(removeButton, gridBagConstraints);
 
     }//GEN-END:initComponents
-    
+
+    /**
+     * The button at right side was pressed
+     */
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        // Add your handling code here:
+
         AttlistTableModel tm = (AttlistTableModel) attrTable.getModel();
         tm.addRow();
         int actualIndex = numRows() - 1;
         attrTable.getSelectionModel().setSelectionInterval(actualIndex, actualIndex);
     }//GEN-LAST:event_addButtonActionPerformed
-    
+
+    /**
+     * The button at right side was pressed
+     */    
     private void upButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upButtonActionPerformed
-        // Add your handling code here:
+
         AttlistTableModel tm = (AttlistTableModel) attrTable.getModel();
         int index = attrTable.getSelectedRow();
         if (index > 0) {
@@ -272,9 +278,12 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
             attrTable.getSelectionModel().setSelectionInterval(index - 1,index - 1);
         }
     }//GEN-LAST:event_upButtonActionPerformed
-    
+
+    /**
+     * The button at right side was pressed
+     */    
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        // Add your handling code here:
+
         AttlistTableModel tm = (AttlistTableModel) attrTable.getModel();
         
         int sel = attrTable.getSelectedRow();
@@ -289,8 +298,11 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         }
     }//GEN-LAST:event_removeButtonActionPerformed
     
+    /**
+     * The button at right side was pressed
+     */    
     private void downButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downButtonActionPerformed
-        // Add your handling code here:
+
         AttlistTableModel tm = (AttlistTableModel) attrTable.getModel();
         int index = attrTable.getSelectedRow();
         if (index > -1 && index < numRows() - 1) {
@@ -319,7 +331,8 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         peer = (TreeNamedObjectMap) obj;
         tableModel = new AttlistTableModel(/*peer*/);
         attrTable.setModel(tableModel);
-        attrTable.addKeyListener(new RowKeyListener(attrTable));
+// we do not "delete" column anymore
+//        attrTable.addKeyListener(new RowKeyListener(attrTable));
         
         /** First table column is row selector. */
         TableColumn column = null;
@@ -352,7 +365,10 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
     // class RowKeyListener
     //
     
-    /** deletes whole row by pressing DELETE on row column. */
+    /** 
+     * Deletes whole row by pressing DELETE on row column. 
+     * Unused...
+     */
     private class RowKeyListener extends KeyAdapter {
         
         /** */
