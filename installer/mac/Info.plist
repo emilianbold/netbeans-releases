@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
+<plist version="0.9">
+  <dict>
+
+    <key>CFBundleName</key>
+    <string>@APPNAME@</string>
+    
+    <key>CFBundleVersion</key>
+    <string>@APPVERSION@</string>
+    
+    <key>CFBundleExecutable</key>
+    <string>@EXENAME@</string>
+    
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    
+    <key>CFBundleShortVersionString</key>
+    <string>@VERSION@</string>
+    
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    
+    <key>CFBundleIconFile</key>
+    <string>@ICONFILENAME@</string>
+  </dict>
+</plist>

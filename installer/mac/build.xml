@@ -8,269 +8,70 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project basedir="." default="create-app" name="osx">
 
-  <property file="build.properties"/>
+<project basedir="." default="tarball" name="NetBeans.app">
 
-  <!-- Where to build the .app -->   
-  <property name="appdir" value="${appname}/${appname}.app/Contents"/>
-  <property name="installerdir" value="${basedir}/installer"/>
+  <property name="nbdir" value="../../nbbuild/netbeans"/>
+  <property name="appname" value="NetBeans"/>
+  <property name="appversion" value="4.0"/>
+  <property name="version" value="4.0"/>
   
-  <!-- Where to build the installer -->   
-  <property name="package" value="${installerdir}/${appname}.pkg"/>
-  <property name="installcontents" value="${package}/Contents"/>
-  <property name="installresources" value="${installcontents}/Resources"/>
+  <property name="appdir" value="${appname}.app"/>
+  <property name="tarball-name" value="${appname}-macosx.tar.gz"/>
   
-  <!-- Misc filenames for things the installer needs -->
-  <property name="archivefile" value="${installcontents}/Archive.pax.gz"/>
-  <property name="archivebom" value="${installcontents}/Archive.bom"/>
-  <property name="infofile" value="${installresources}/${appname}.info"/>
-  <property name="descfile" value="${installresources}/Description.plist"/>
-  <property name="tarball-name" value="${appname}${majorversion}${minorversion}.tar.gz"/>
-  
+  <target name="create-app" description="Organize NetBeans into a standard mac-os NetBeans.app application layout">
+    <echo>
+Creating NetBeans.app bundle using ${nbdir} as master
+================================================================
+    </echo>
 
-  <target name="clean" depends="clean-app,clean-dist,clean-installer,clean-installerimage" description="Clean all build targets (except the IDE)"/>
-  <target name="real-clean" depends="clean" description="Runs the netbeans build clean target and cleans the installer">
-      <ant dir="${nbbuild.dir}" target="clean"/>
+    <delete dir="${appdir}"/>
+    
+    <mkdir dir="${appdir}/Contents"/>
+    <mkdir dir="${appdir}/Contents/MacOS"/>
+    <mkdir dir="${appdir}/Contents/Resources"/>
+    
+    <echo message="Copying netbeans home dir to ${appdir}/Contents/Resources/NetBeans"/>
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value="cp -r ${nbdir} ${appdir}/Contents/Resources/NetBeans"/>
+    </exec>
+    
+    <echo message="Copying the icon into the correct place" />
+    <copy file="${appdir}/Contents/Resources/NetBeans/nb4.0/netbeans.icns" todir="${appdir}/Contents/Resources"/>
+    
+    <echo message="Generating Info.plist" />
+    <copy file="Info.plist" filtering="true" tofile="${appdir}/Contents/Info.plist">
+      <filterset>
+        <filter token="APPNAME" value="${appname}"/>
+        <filter token="APPVERSION" value="${appversion}"/>
+        <filter token="VERSION" value="${version}"/>
+        <filter token="EXENAME" value="netbeans"/>
+        <filter token="ICONFILENAME" value="netbeans.icns"/>
+      </filterset>
+    </copy>
+
+    <echo message="Creating launch script symlink ${appdir}/Contents/MacOS/netbeans"/>
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value="ln -s ../Resources/NetBeans/bin/netbeans ${appdir}/Contents/MacOS/netbeans"/>
+    </exec>
   </target>
   
-  <target name="clean-image">
-    <delete file="${appname}.dmg"/>
+  <target name="tarball" depends="create-app" description="Build a gzipped tarball containing NetBeans.app">
+    <echo message="Creating tarball ${tarball-name}"/>
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value="tar cf - ${appdir} | gzip > ${tarball-name}"/>
+    </exec>
+  </target>
+
+  <target name="clean">
+    <delete dir="${appdir}"/>
     <delete file="${tarball-name}"/>
   </target>
-  
-  <target name="clean-app">
-     <delete dir="${appname}"/>
-  </target>
-  
-    
-  <target depends="clean-image" name="clean-dist">
-     <delete file="NetBeans36.tar.gz"/>
-     <delete file="${appname}.dmg"/>
-  </target>
-  
-  
-  <target name="clean-installer">
-     <delete dir="${installerdir}"/>
-  </target>
-  
-  <target name="clean-installerimage">
-     <delete file="${installerimagename}.dmg"/>
-  </target>
-  
-    
-  <target name="create-pkgstructure">
-        <mkdir dir="${package}"/>
-        <mkdir dir="${installcontents}"/>
-        <mkdir dir="${installresources}"/>
-  </target>
-    
-  
-  <target name="create-app" description="Organize NetBeans into a standard mac-os NetBeans.app application layout" unless="${appdir}.exists">
-      <echo message="Creating .app directory structure"/>
-      <mkdir dir="${appdir}"/>
-      <mkdir dir="${appdir}/MacOS"/>
-      <mkdir dir="${appdir}/Resources"/>
-      <mkdir dir="${appdir}/Resources/nbhome"/>
-      
-      <echo message="Copying netbeans home dir to ${appdir}/Resources/Home"/>
-      <copy todir="${appdir}/Resources/nbhome">
-          <fileset dir="${nbdir}">
-            <include name="**"/>
-          </fileset>
-      </copy>
-      
-      <echo message="Copying the icon into the correct place" />
-      <copy file="${iconfilepath}${iconfilename}" tofile="${appdir}/Resources/${iconfilename}"/>
 
-      <echo message="Generating info.plist" />
-      <copy file="resources/Info.plist" filtering="true" tofile="${appdir}/Info.plist">
-        <filterset>
-            <filter token="APPNAME" value="${appname}"/>
-            <filter token="APPVERSION" value="${appversion}"/>
-            <filter token="VERSION" value="${version}"/>
-            <filter token="EXENAME" value="${exename}"/>
-            <filter token="ICONFILENAME" value="${iconfilename}"/>
-        </filterset>
-      </copy>
-
-      <echo message="Adding apple-specific jvm flags and system arguments to ${configfilename}: ${jvmflags}" />     
-      <property location="${appdir}/Resources/nbhome/etc/${configfilename}" name="config-file"/>    
-      <replace file="${config-file}" token="-J-Xmx160m" value="${jvmflags}"/>
-
-      <echo message="Creating launch script in ${appdir}/MacOS/${exename}"/>       
-      <copy file="resources/launcher.sh" tofile="${appdir}/MacOS/${exename}"/>
-      <echo message="Setting execute permissions on ${appdir}/MacOS/${exename}"/>
-      <chmod file="${appdir}/MacOS/${exename}" perm="755"/>
-      
-      <echo message="Setting execute permissions on ${appdir}/Resources/nbhome/platform4/lib/nbexec"/>
-      <chmod file="${appdir}/Resources/nbhome/platform4/lib/nbexec" perm="755"/>
-      
-      <echo message="Setting execute permissions on real launch script"/>
-      <chmod file="${appdir}/Resources/nbhome/bin/${exename}" perm="755"/>
-        
-  </target>
-  
-  <!-- Create a tarball of the NetBeans application -->
-  <target name="tarball" depends="create-app" description="Build a gzipped tarball containing NetBeans.app">
-    <tar basedir="${appdir}" compression="gzip" tarfile="${tarball-name}"/>
-    <echo message="Tarball created in ${appname}${majorversion}${minorversion}.tar.gz"/>
-  </target>
-  
-  <!-- Create a disk image - this will fail on non-mac platforms -->
-  <target name="image" depends="create-app">
-    <exec command="hdiutil create -srcfolder ${appname} ${appname}.dmg"/>
-    <exec command="hdiutil internet-enable -yes ${appname}.dmg"/>
-  </target>
-  
-  
-  <!-- Create the archive file that the installer will unpack.  This uses 
-       pax, a variant on tar that has some semantics for case insensitive
-       filesystems -->
-  <target name="create-archive" depends="create-app,create-pkgstructure" unless="${archivefile}.exists">
-     <echo message="Running pax (${pax}) to create archive"/>
-     <!-- Note:  MUST be cpio format, and MUST contain the . directory or install
-          will fail cryptically -->     
-     <exec dir="${appname}" command="${pax} -x cpio -w ." output="${installcontents}/Archive.pax"/>
-     <gzip destfile="${archivefile}" src="${installcontents}/Archive.pax"/> 
-        
-     <echo message="Deleting uncompressed archive"/>        
-     <delete file="${installcontents}/Archive.pax"/> 
-  </target>
-
-  <!-- Create a "bill of materials" file -->
-  <target name="create-bom" depends="create-archive">        
-     <echo message="Running mkbom to make bill of materials"/>   
-     <exec command="mkbom ${appname} ${archivebom}"/>
-  </target>
-  
-  <!-- Create the required symlink inside the installer package -->
-  <target name="link-archive" depends="create-bom">
-     <echo message="Linking archive and bill of materials"/>
-     <exec command="ln -s ../Archive.pax.gz ${installresources}/${appname}.pax.gz" failonerror="false" logerror="true"/>
-     <exec command="ln -s ../Archive.bom ${installresources}/${appname}.bom" failonerror="false" logerror="true"/>
-  </target>
-  
-
-  <!-- Create a .sizes file the installer uses to calculate the change in disk space -->
-  <target  name="create-sizes-file" depends="link-archive">
-    <echo message="Creating ${appname}.sizes file using lsbom and du"/>
-    <!--
-        The code below is put together from old NEXT docs, some reverse 
-        engineering and the following resources:
-            http://www.channelu.com/NeXT/NeXTStep/3.3/nd/Concepts/Installer.htmld/        
-            http://mail.python.org/pipermail/python-checkins/2002-September/029441.html
-    -->
-    <exec executable="lsbom" failonerror="true" logerror="true" outputproperty="bomout">
-        <arg value="-s"/>
-        <arg value="${archivebom}"/>
-    </exec>
-    <exec executable="wc" failonerror="true" inputstring="${bomout}" logerror="true" outputproperty="numfiles">
-        <arg value="-l"/>
-    </exec>
-    <echo append="true" file="${installresources}/${appname}.sizes">NumFiles ${numfiles}
-</echo>
-    <exec command="du -s -k ${appname}" failonerror="true" logerror="true" outputproperty="installedSize"/>
-    <echo append="true" file="${installresources}/${appname}.sizes">InstalledSize ${installedSize}
-</echo>            
-    <exec dir="${installcontents}" command="du  -s -k Archive.bom" failonerror="true" logerror="true" outputproperty="compressedSize"/>
-    <echo append="true" file="${installresources}/${appname}.sizes">CompressedSize ${compressedSize}
-</echo>
-    <!-- du -s -k will append the filename, unlike on NEXT.  Delete it -->
-    <replace file="${installresources}/${appname}.sizes" token="${appname}" value=""/>    
-    <replace file="${installresources}/${appname}.sizes" token="Archive.bom"/>
-  </target>
-
-
-  <!-- Copies the assorted files the installer should contain, performing the
-       appropriate substitutions -->    
-  <target name="assemble-misc-resources">
-     <echo message="Generating Description.plist"/>
-     <copy file="resources/Description.plist" tofile="${descfile}">
-        <filterset>
-            <filter token="INSTALLERNAME" value="${installername}"/>
-            <filter token="INSTALLERVERSION" value="${installerversion}"/>
-            <filter token="INSTALLERDESCRIPTION" value="${installerdescription}"/>
-        </filterset>
-     </copy>
-     
-     <echo message="Generating ${appname}.info"/>
-     <copy file="resources/app.info" tofile="${infofile}">
-        <filterset>
-            <filter token="INSTALLERNAME" value="${installername}"/>
-            <filter token="INSTALLERVERSION" value="${installerversion}"/>
-            <filter token="INSTALLERDESCRIPTION" value="${installerdescription}"/>
-        </filterset>
-     </copy>
-     
-     <echo message="Packaging license, readme, welcome"/>
-     <copy todir="${installresources}">
-         <fileset dir="resources/docs">
-            <include name="*.rtf"/>
-          </fileset>
-     </copy>
-     
-    <echo message="Copying PkgInfo"/>
-    <copy file="resources/PkgInfo" tofile="${installcontents}/PkgInfo"/>
-     
-    <echo message="Setting executable attribute on ReadMe and License files (don't ask)"/>
-     <!-- No, the next few lines are not a mistake, and yes, they are 
-          ridiculous.  But consistent with PackageMaker -->
-     <chmod perm="755">
-        <fileset dir="${installresources}">
-            <include name="*.rtf"/>
-        </fileset>
-        <fileset dir="${installcontents}">
-            <include name="Archive*"/>
-        </fileset>
-     </chmod>
-  </target>
-  
-    
-  <target name="create-info-plist">
-     <echo message="Generating Info.plist for the installer"/>
-     <copy file="resources/installer.plist" tofile="${installcontents}/Info.plist">
-        <filterset>
-            <filter token="APPNAME" value="${appname}"/>
-            <filter token="MAJORVERSION" value="${majorversion}"/>
-            <filter token="MINORVERSION" value="${minorversion}"/>
-            <filter token="INSTALLERNAME" value="${installername}"/>
-            <filter token="INSTALLERID" value="${installerid}"/>
-            <filter token="INSTALLERVERSION" value="${installerversion}"/>
-            <filter token="INSTALLERDESCRIPTION" value="${installerdescription}"/>
-        </filterset>
-     </copy>
-  </target>  
-  
-  
-  <target name="installer" depends="create-app, assemble-misc-resources, create-sizes-file, create-info-plist" description="Build the OS-X installer">
-    <echo message="Installer created in ${installerdir}"/>
-  </target>
-
-  
-  <target name="package-installer" depends="clean-installer,installer" description="Creates the installer and packages it in a .dmg disk image">
-    <echo message="Packaging installer into a disk image file"/>
-    <exec command="hdiutil create -srcfolder ${installerdir} ${installerimagename}.dmg"/>
-    <exec command="hdiutil internet-enable -yes ${installerdir} ${installerimagename}.dmg"/>
-    <echo message="Disk image of installer created in ${basedir}/${installerimagename}.dmg"/>
-  </target>
-
-  
-  <target name="build" depends="package-installer">
-      <echo message="Cleaning up interim build products - if you want to keep the .app, run ant installer instead"/>
-      <antcall target="clean-installer"/>
-      <antcall target="clean-app"/>
-  </target>
-  
-  <available classname="com.apple.eawt.Application" property="AppleExts.present"/>
-  
-  <target name="clean-build" depends="real-clean" description="Clean and build NetBeans, and package a new NetBeans installer for OSX">
-      <echo message="Building NetBeans"/>
-       
-      <antcall target="build"/>  
-  </target>
-      
 </project>
