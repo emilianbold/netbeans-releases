@@ -204,7 +204,7 @@ workspaceswitcher
     <echo message="Building module innertesters..."/>
     <ant dir="../innertesters" target="netbeans"/>
   </target>
-  <target name="all-jarpackager" depends="all-openide,all-openidex">
+  <target name="all-jarpackager" depends="all-openide">
     <echo message="Building module jarpackager..."/>
     <ant dir="../jarpackager" target="netbeans"/>
   </target>
