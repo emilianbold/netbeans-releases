@@ -365,6 +365,8 @@ public class AntTargetNode extends ElementNode {
             JLabel jLabel1 = new javax.swing.JLabel(NbBundle.getMessage (AntTargetNode.class, "LBL_choose_task"));
             final JButton help = new javax.swing.JButton();
             final JComboBox combo = new javax.swing.JComboBox(names.toArray ());
+            combo.getAccessibleContext().setAccessibleName(NbBundle.getMessage (AntTargetNode.class, "ACSN_choose_task_combo"));
+            combo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AntTargetNode.class, "ACSD_choose_task_combo"));
 
             help.setText(NbBundle.getMessage(AntTargetNode.class, "LBL_task_help"));
             jLabel1.setFont(new java.awt.Font("Arial", 0, 11));
@@ -408,6 +410,8 @@ public class AntTargetNode extends ElementNode {
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.insets = new java.awt.Insets(12, 6, 11, 6);
             pane.add(combo, gridBagConstraints);
+            pane.getAccessibleContext().setAccessibleName(NbBundle.getMessage (AntTargetNode.class, "ACSN_target_node_panel"));
+            pane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AntTargetNode.class, "ACSD_target_node_panel"));
     
             
             DialogDescriptor dlg = new DialogDescriptor (pane, NbBundle.getMessage (AntTargetNode.class, "TITLE_select_task"));
