@@ -38,6 +38,14 @@ public class Installer extends ModuleInstall {
         // by the time F1 is first pressed. Otherwise only the second
         // F1 actually gets anything other than the main window help.
         HelpAction.WindowActivatedDetector.install();
+
+        // XXX(-ttran) quick fix for #25470: Help viewer frozen on first open
+        // over modal dialogs.  JavaHelp seems to try to be lazy with the
+        // installation of its Dialog detector (an AWTEventListener) but it
+        // doesn't work on Windows.  Here we force JavaHelp instance to be
+        // created and thus its AWTEventListener be registered early enough.
+        
+        getDefaultHelp();
     }
     
     public void uninstalled() {
