@@ -17,12 +17,13 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.modules.java.classpath.*;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -99,9 +100,12 @@ public class ClassPathSupport {
             if (roots[i] == null) {
                 continue;
             }
-            URL u = URLMapper.findURL(roots[i], URLMapper.EXTERNAL);
-            assert u != null : "Should have found an EXTERNAL URL matching " + roots[i];
-            l.add(createResource(u));
+            try {
+                URL u = roots[i].getURL();            
+                l.add(createResource(u));
+            } catch (FileStateInvalidException e) {
+                ErrorManager.getDefault().notify (e);
+            }
         }
         return createClassPath (l);
     }
