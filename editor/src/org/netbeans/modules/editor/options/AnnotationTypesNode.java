@@ -32,6 +32,7 @@ import org.netbeans.editor.AnnotationTypes;
 import java.lang.Boolean;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.openide.TopManager;
 
 /** Node representing the Annotation Types in Options window.
  *
@@ -153,29 +154,35 @@ public class AnnotationTypesNode extends AbstractNode {
 
             java.util.List list = new java.util.LinkedList();
 
-            BeanNode bn;
-            String icon;
-
             for( ; types.hasNext(); ) {
                 String name = (String)types.next();
                 AnnotationType type = AnnotationTypes.getTypes().getType(name);
                 if (!type.isVisible())
                     continue;
                 try {
-                    bn = new BeanNode(new AnnotationTypeOptions(type));
+                    list.add(new AnnotationTypesSubnode(type));
                 } catch (IntrospectionException e) {
+                    TopManager.getDefault().getErrorManager().notify(e);
                     continue;
                 }
-                list.add(bn);
-                bn.setName(type.getDescription());
-                icon = type.getGlyph().getFile();
-                icon = icon.substring(0, icon.lastIndexOf('.'));
-                bn.setIconBase(icon);
             }
 
             return list;
         }
         
+        // Cf. #7925, though not quite the same.
+        private static final class AnnotationTypesSubnode extends BeanNode {
+            public AnnotationTypesSubnode(AnnotationType type) throws IntrospectionException {
+                super(new AnnotationTypeOptions(type));
+                setName(type.getDescription());
+                String icon = type.getGlyph().getFile();
+                icon = icon.substring(0, icon.lastIndexOf('.'));
+                setIconBase(icon);
+            }
+            public boolean canDestroy() {
+                return false;
+            }
+        }
     }
 
 }

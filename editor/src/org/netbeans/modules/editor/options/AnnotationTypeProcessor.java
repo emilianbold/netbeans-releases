@@ -32,6 +32,7 @@ import java.util.MissingResourceException;
 import java.net.MalformedURLException;
 import javax.swing.Action;
 import org.netbeans.modules.editor.options.AnnotationTypeActionsFolder;
+import org.openide.TopManager;
 
 /** Processor of the XML file. The result of parsing is instance of AnnotationType
  * class.
@@ -162,8 +163,7 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                 annotationType.setInheritForegroundColor(true);
             }
         } catch (NumberFormatException ex) {
-            if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
-                ex.printStackTrace();
+            TopManager.getDefault().getErrorManager().notify(ex);
             return false;
         }
         try {
@@ -171,8 +171,7 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                 annotationType.setGlyph(new URL(def.getAttribute(ATTR_TYPE_GLYPH)));
 
         } catch (MalformedURLException ex) {
-            if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
-                ex.printStackTrace();
+            TopManager.getDefault().getErrorManager().notify(ex);
             return false;
         }
         if (annotationType.isVisible())
@@ -181,8 +180,7 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                 annotationType.setDescription(bundle.getString(def.getAttribute(ATTR_TYPE_DESCRIPTION_KEY)));
                 annotationType.putProp(AnnotationType.PROP_DESCRIPTION_KEY, def.getAttribute(ATTR_TYPE_DESCRIPTION_KEY));
             } catch (MissingResourceException ex) {
-                if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
-                    ex.printStackTrace();
+                TopManager.getDefault().getErrorManager().notify(ex);
                 return false;
             }
         }
