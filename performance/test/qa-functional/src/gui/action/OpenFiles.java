@@ -25,7 +25,7 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class OpenFiles extends testUtilities.PerformanceTestCase {
+public class OpenFiles extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Node to be opened/edited */
     public static Node openNode ;

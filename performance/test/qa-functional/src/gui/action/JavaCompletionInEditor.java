@@ -35,7 +35,7 @@ import org.netbeans.jemmy.ComponentChooser;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class JavaCompletionInEditor extends testUtilities.PerformanceTestCase {
+public class JavaCompletionInEditor extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Creates a new instance of JavaCompletionInEditor */
     public JavaCompletionInEditor(String testName) {

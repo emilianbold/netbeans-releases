@@ -20,7 +20,7 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class EmptyTestCase extends testUtilities.PerformanceTestCase {
+public class EmptyTestCase extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     
     /** Creates a new instance of EmptyTestCase */

@@ -28,7 +28,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class CloseEditorModified extends testUtilities.PerformanceTestCase {
+public class CloseEditorModified extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Editor with opened file */
     public static EditorOperator editorOperator;

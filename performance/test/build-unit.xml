@@ -16,17 +16,13 @@ Microsystems, Inc. All Rights Reserved.
 
     
     <!-- Imports defaults for Performance testing. -->
-    <import file="build-performance-tests.xml"/>
-
-<!--    <import file="../../nbbuild/default.xml"/>
-    <property file="../../nbbuild/directories.properties"/>
--->
+    <import file="../performancetestutilities/build-performance-tests.xml"/>
 
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
     
-    <target name="unit-compiler" depends="compile_guitracker">
+    <target name="unit-compiler" depends="compile_performance_testutilities">
         <buildTests srcDir="unit/src" compileexcludes="**/data/**">
             <classpath refid="jemmy.and.jelly.path"/>
         </buildTests>
@@ -51,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
-            <property name="xtest.userdata|guitracker.dist.jar" value="${guitracker.dist.jar}"/>
+            <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
             
             <property name="xtest.enable.assertions" value="false" /> 
             
@@ -89,11 +85,16 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.ide.reuse.userdir" value="true"/>
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
             <property name="xtest.userdata|userdir.prepared" value="${xtest.workdir}"/>
-            <property name="xtest.userdata|guitracker.dist.jar" value="${guitracker.dist.jar}"/>
+            <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
             
             <!-- Property for repeatedly used userdir with opened files -->
             <property name="xtest.userdata|org.netbeans.performance.repeat" value="5"/>
         </executeTests>
+        
+        <copy todir="${xtest.sketchpad}">
+            <fileset dir="${xtest.workdir}/sys/ide/var/log"/>
+        </copy>
+        
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
 

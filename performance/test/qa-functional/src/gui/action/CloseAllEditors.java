@@ -27,7 +27,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class CloseAllEditors extends testUtilities.PerformanceTestCase {
+public class CloseAllEditors extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Nodes represent files to be opened */
     private static Node[] openFileNodes;

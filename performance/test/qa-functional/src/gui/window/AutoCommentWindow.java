@@ -25,7 +25,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org 
  */
-public class AutoCommentWindow extends testUtilities.PerformanceTestCase {
+public class AutoCommentWindow extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static EditorOperator editor;
     private String MENU, TITLE;

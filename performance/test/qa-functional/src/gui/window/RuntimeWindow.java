@@ -23,7 +23,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  anebuzelsky@netbeans.org
  */
-public class RuntimeWindow extends testUtilities.PerformanceTestCase {
+public class RuntimeWindow extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Creates a new instance of RuntimeWindow */
     public RuntimeWindow(String testName) {

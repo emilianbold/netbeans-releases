@@ -26,7 +26,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class FindInProjects extends testUtilities.PerformanceTestCase {
+public class FindInProjects extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private String MENU, TITLE;
     

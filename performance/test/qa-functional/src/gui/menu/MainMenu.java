@@ -28,7 +28,7 @@ import org.netbeans.junit.NbTestSuite;
  * The menu is then close using escape key.
  * @author mmirilovic@netbeans.org
  */
-public class MainMenu extends testUtilities.PerformanceTestCase {
+public class MainMenu extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     protected static String menuPath;
     

@@ -29,7 +29,7 @@ import org.netbeans.jemmy.operators.JTableOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public abstract class PropertyEditors extends testUtilities.PerformanceTestCase {
+public abstract class PropertyEditors extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     protected static NbDialogOperator propertiesWindow = null;
     

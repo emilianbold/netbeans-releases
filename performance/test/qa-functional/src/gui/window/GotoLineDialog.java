@@ -27,7 +27,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class GotoLineDialog extends testUtilities.PerformanceTestCase {
+public class GotoLineDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static EditorOperator editor;
     private String TITLE;

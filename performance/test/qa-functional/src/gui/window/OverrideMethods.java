@@ -25,7 +25,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class OverrideMethods extends testUtilities.PerformanceTestCase {
+public class OverrideMethods extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static EditorOperator editor;
     private String MENU, TITLE;

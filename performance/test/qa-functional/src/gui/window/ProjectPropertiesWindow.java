@@ -26,7 +26,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class ProjectPropertiesWindow extends testUtilities.PerformanceTestCase {
+public class ProjectPropertiesWindow extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static Node testNode;
     private String TITLE;

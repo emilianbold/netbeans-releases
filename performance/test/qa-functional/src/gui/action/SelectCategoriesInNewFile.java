@@ -23,7 +23,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class SelectCategoriesInNewFile extends testUtilities.PerformanceTestCase {
+public class SelectCategoriesInNewFile extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Category name */
     private static String category;

@@ -22,7 +22,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * Test opening Files Tab.
  * @author  mmirilovic@netbeans.org
  */
-public class FilesWindow extends testUtilities.PerformanceTestCase {
+public class FilesWindow extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Creates a new instance of FilesWindow */
     public FilesWindow(String testName) {

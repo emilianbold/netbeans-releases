@@ -22,7 +22,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * Test opening Projects Tab.
  * @author  mmirilovic@netbeans.org
  */
-public class ProjectsWindow extends testUtilities.PerformanceTestCase {
+public class ProjectsWindow extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Creates a new instance of ProjectsWindow */
     public ProjectsWindow(String testName) {

@@ -36,7 +36,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  anebuzelsky@netbeans.org
  */
-public class TypingInEditor extends testUtilities.PerformanceTestCase {
+public class TypingInEditor extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Creates a new instance of TypingInEditor */
     public TypingInEditor(String testName) {

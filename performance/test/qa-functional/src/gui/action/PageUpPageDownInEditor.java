@@ -31,7 +31,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  anebuzelsky@netbeans.org
  */
-public class PageUpPageDownInEditor extends testUtilities.PerformanceTestCase {
+public class PageUpPageDownInEditor extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private boolean pgup;
     

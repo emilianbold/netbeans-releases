@@ -30,7 +30,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class SetDefaultServerDialog extends testUtilities.PerformanceTestCase {
+public class SetDefaultServerDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private String MENU, TITLE;
     

@@ -24,7 +24,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class AddJDBCDriverDialog extends testUtilities.PerformanceTestCase {
+public class AddJDBCDriverDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private String BUNDLE, MENU, TITLE;
     private Node thenode;

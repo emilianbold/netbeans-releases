@@ -26,7 +26,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class CloseEditorTab extends testUtilities.PerformanceTestCase {
+public class CloseEditorTab extends org.netbeans.performance.test.utilities.PerformanceTestCase {
 
     /** File to be closed */
     private String closeFile;

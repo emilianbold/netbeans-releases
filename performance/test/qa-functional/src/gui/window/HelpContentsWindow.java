@@ -23,7 +23,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  anebuzelsky@netbeans.org
  */
-public class HelpContentsWindow extends testUtilities.PerformanceTestCase {
+public class HelpContentsWindow extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Creates a new instance of HelpContentsWindow */
     public HelpContentsWindow(String testName) {

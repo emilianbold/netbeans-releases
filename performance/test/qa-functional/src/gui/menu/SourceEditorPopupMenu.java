@@ -31,7 +31,7 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class SourceEditorPopupMenu extends testUtilities.PerformanceTestCase {
+public class SourceEditorPopupMenu extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static String stringToInvokePopup;
     private static boolean setCaretPositionAfterString;

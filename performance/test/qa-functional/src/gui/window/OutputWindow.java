@@ -23,7 +23,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  anebuzelsky@netbeans.org
  */
-public class OutputWindow extends testUtilities.PerformanceTestCase {
+public class OutputWindow extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Creates a new instance of ValidateOutputWindow */
     public OutputWindow(String testName) {

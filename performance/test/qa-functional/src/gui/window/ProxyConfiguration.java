@@ -25,7 +25,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class ProxyConfiguration extends testUtilities.PerformanceTestCase {
+public class ProxyConfiguration extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     JButtonOperator openProxyButton;
     WizardOperator wizard;

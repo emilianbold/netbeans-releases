@@ -25,7 +25,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class FindInSourceEditor extends testUtilities.PerformanceTestCase {
+public class FindInSourceEditor extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static EditorOperator editor;
     

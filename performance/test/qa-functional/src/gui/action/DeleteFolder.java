@@ -35,7 +35,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class DeleteFolder extends testUtilities.PerformanceTestCase {
+public class DeleteFolder extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Projects tab */
     private static ProjectsTabOperator projectTab;

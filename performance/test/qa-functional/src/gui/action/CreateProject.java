@@ -26,7 +26,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class CreateProject extends testUtilities.PerformanceTestCase {
+public class CreateProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private NewProjectNameLocationStepOperator wizard_location;
     
@@ -100,4 +100,7 @@ public class CreateProject extends testUtilities.PerformanceTestCase {
         ProjectSupport.closeProject(project_name);
     }
     
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(new CreateProject("testCreateJavaApplicationProject"));
+    }
 }

@@ -25,7 +25,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class ToDoWindow extends testUtilities.PerformanceTestCase {
+public class ToDoWindow extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private String MENU, TITLE;
     

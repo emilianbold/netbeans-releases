@@ -27,7 +27,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class RefactorFindUsagesDialog extends testUtilities.PerformanceTestCase {
+public class RefactorFindUsagesDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static Node testNode;
     private String TITLE, ACTION;

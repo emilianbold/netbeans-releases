@@ -24,7 +24,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class JavadocIndexSearch extends testUtilities.PerformanceTestCase {
+public class JavadocIndexSearch extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private String BUNDLE, MENU, TITLE;
     

@@ -31,7 +31,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class PasteInEditor extends testUtilities.PerformanceTestCase {
+public class PasteInEditor extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Creates a new instance of PasteInEditor */
     public PasteInEditor(String testName) {

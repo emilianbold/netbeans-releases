@@ -25,7 +25,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class OpenProjectDialog extends testUtilities.PerformanceTestCase {
+public class OpenProjectDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private String MENU, TITLE;
     

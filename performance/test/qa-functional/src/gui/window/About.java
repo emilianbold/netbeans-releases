@@ -24,7 +24,7 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class About extends testUtilities.PerformanceTestCase {
+public class About extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     protected String MENU, ABOUT, DETAIL;
     

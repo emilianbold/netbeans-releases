@@ -31,7 +31,7 @@ import org.netbeans.junit.NbTestSuite;
  * @author mmirilovic@netbeans.org
  * @author Radim Kubacki
  */
-public class MainSubMenus extends testUtilities.PerformanceTestCase {
+public class MainSubMenus extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     protected static String mainMenuPath;
     protected static JMenuOperator testedMainMenu;

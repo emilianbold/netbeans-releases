@@ -30,7 +30,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class RefactorFindUsages extends testUtilities.PerformanceTestCase {
+public class RefactorFindUsages extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static Node testNode;
     private String TITLE, ACTION, NEXT;

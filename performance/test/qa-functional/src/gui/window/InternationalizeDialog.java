@@ -25,7 +25,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class InternationalizeDialog extends testUtilities.PerformanceTestCase {
+public class InternationalizeDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static EditorOperator editor;
     private String BUNDLE, MENU, TITLE;

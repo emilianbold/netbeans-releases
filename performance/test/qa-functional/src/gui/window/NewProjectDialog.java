@@ -23,7 +23,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class NewProjectDialog extends testUtilities.PerformanceTestCase {
+public class NewProjectDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Creates a new instance of NewProjectDialog */
     public NewProjectDialog(String testName) {

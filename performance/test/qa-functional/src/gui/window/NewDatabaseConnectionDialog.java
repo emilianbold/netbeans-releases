@@ -25,7 +25,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class NewDatabaseConnectionDialog extends testUtilities.PerformanceTestCase {
+public class NewDatabaseConnectionDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private Node thenode;
     private String BUNDLE, MENU, TITLE;

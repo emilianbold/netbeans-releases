@@ -27,7 +27,7 @@ import javax.swing.JPopupMenu;
  * Common test case for test of context menu invocation on various nodes in the tree views.
  * @author mmirilovic@netbeans.org
  */
-public abstract class ValidatePopupMenuOnNodes extends testUtilities.PerformanceTestCase {
+public abstract class ValidatePopupMenuOnNodes extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     protected static Node dataObjectNode;
     

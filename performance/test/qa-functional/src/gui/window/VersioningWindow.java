@@ -24,7 +24,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class VersioningWindow extends testUtilities.PerformanceTestCase {
+public class VersioningWindow extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private String MENU;
     

@@ -28,7 +28,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
+public class ExpandNodesProjectsView extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Name of the folder which test creates and expands */
     private static String project;

@@ -23,7 +23,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class Options extends testUtilities.PerformanceTestCase {
+public class Options extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     OptionsOperator options;
     

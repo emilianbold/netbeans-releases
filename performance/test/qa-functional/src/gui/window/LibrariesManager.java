@@ -24,7 +24,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class LibrariesManager extends testUtilities.PerformanceTestCase {
+public class LibrariesManager extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private String MENU, TITLE;
     

@@ -28,7 +28,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class DeleteFileDialog extends testUtilities.PerformanceTestCase {
+public class DeleteFileDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static Node testNode;
     private String TITLE;

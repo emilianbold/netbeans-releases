@@ -25,7 +25,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * Test List Of The Recent Opened Windows popup menu on Editor Window down button if 10 files opened
  * @author  juhrik@netbeans.org, mmirilovic@netbeans.org
  */
-public class EditorDownButtonPopupMenu extends testUtilities.PerformanceTestCase {
+public class EditorDownButtonPopupMenu extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static EditorWindowOperator editor;
     

@@ -22,7 +22,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * Test opening Favorites Tab.
  * @author  mmirilovic@netbeans.org
  */
-public class FavoritesWindow extends testUtilities.PerformanceTestCase {
+public class FavoritesWindow extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Creates a new instance of FavoritesWindow */
     public FavoritesWindow(String testName) {

@@ -27,7 +27,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class RefactorRenameDialog extends testUtilities.PerformanceTestCase {
+public class RefactorRenameDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static Node testNode;
     private String TITLE, ACTION;

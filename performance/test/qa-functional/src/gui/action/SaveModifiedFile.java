@@ -26,7 +26,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class SaveModifiedFile extends testUtilities.PerformanceTestCase {
+public class SaveModifiedFile extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     /** Editor with opened file */
     public static EditorOperator editorOperator;

@@ -28,7 +28,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class ExpandNodesInComponentInspector extends testUtilities.PerformanceTestCase {
+public class ExpandNodesInComponentInspector extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static Node nodeToBeExpanded;
     

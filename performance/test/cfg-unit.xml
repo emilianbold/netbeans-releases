@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="Performance unit tests config">
 
 
-    <testbag testattribs="measure_ide or measure_startup" prio="1" executor="measure_startup" name="Measure IDE startup time">
+    <testbag testattribs="measure_ide or measure_startup or temp" prio="1" executor="measure_startup" name="Measure IDE startup time">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureIDEStartupTime.class/testStartIDE"/>

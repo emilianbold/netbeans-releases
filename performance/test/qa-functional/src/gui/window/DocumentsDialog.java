@@ -24,7 +24,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class DocumentsDialog extends testUtilities.PerformanceTestCase {
+public class DocumentsDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static EditorWindowOperator editor;
     
