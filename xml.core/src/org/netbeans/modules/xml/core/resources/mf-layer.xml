@@ -28,8 +28,14 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- register templates -->  
     <folder name="Templates">
-        <folder name="XML">
 
+        <!-- Follow these nice template groups -->
+        <attr name="Beans/XML" boolvalue="true"/>
+        <attr name="GUIForms/XML" boolvalue="true"/>
+        <attr name="Classes/XML" boolvalue="true"/>
+        <attr name="JSP_Servlet/XML" boolvalue="true"/>
+    
+        <folder name="XML">            
             <file name="XMLWizard.xml" url="templates/emptyXML.xml.template">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
