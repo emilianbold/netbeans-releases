@@ -18,6 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xml_root" location=".."/>
     <property name="api_root" location="${xml_root}/api"/>
     <property name="core_root" location="${xml_root}/core"/>
+    <property name="build.compiler.debug" value="on"/>
 
     <target name="init" depends="default.init">
         <ant dir="${nb_all}/xml/external" target="unscramble"/>

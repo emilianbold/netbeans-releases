@@ -20,18 +20,13 @@ import java.util.*;
 import java.net.*;
 
 import org.xml.sax.*;
-import org.xml.sax.helpers.*;
 
-import org.openide.util.*;
-import org.openide.loaders.XMLDataObject;
-import org.openide.xml.XMLUtil;
 
 import org.netbeans.modules.xml.catalog.spi.*;
-import org.netbeans.modules.xml.catalog.lib.*;
 
-import com.sun.resolver.tools.CatalogResolver;
-import com.sun.resolver.readers.*;
-import com.sun.resolver.CatalogException;
+import org.apache.xml.resolver.tools.CatalogResolver;
+import org.apache.xml.resolver.CatalogException;
+import org.apache.xml.resolver.CatalogManager;
 
 /**
  * SPI implementation that bridges to Sun's Resolvers 1.1.
@@ -165,8 +160,8 @@ public final class Catalog
      */
     public Iterator getPublicIDs() {
         Object p = getPeer();
-        if (p instanceof com.sun.resolver.tools.CatalogResolver) {
-            com.sun.resolver.Catalog cat = ((com.sun.resolver.tools.CatalogResolver) p).getCatalog();
+        if (p instanceof org.apache.xml.resolver.tools.CatalogResolver) {
+            org.apache.xml.resolver.Catalog cat = ((org.apache.xml.resolver.tools.CatalogResolver) p).getCatalog();
             return cat.getPublicIDs();
         }
         return null;
@@ -191,9 +186,9 @@ public final class Catalog
      */
     public String getSystemID(String publicId) {
         Object p = getPeer();
-        if (p instanceof com.sun.resolver.tools.CatalogResolver) 
+        if (p instanceof org.apache.xml.resolver.tools.CatalogResolver)
             try {
-                return ((com.sun.resolver.tools.CatalogResolver) p).getCatalog().resolveSystem(publicId);
+                return ((org.apache.xml.resolver.tools.CatalogResolver) p).getCatalog().resolveSystem(publicId);
             } catch (java.net.MalformedURLException ex) {}
               catch (java.io.IOException ex) {}
         return null;
@@ -249,31 +244,18 @@ public final class Catalog
      */
     private EntityResolver createPeer(String location, boolean pref) {
         try {
-            CatalogResolver res = new CatalogResolver(pref);
-            com.sun.resolver.Catalog cat = res.getCatalog();
+            CatalogManager manager = new CatalogManager(null);
+            manager.setUseStaticCatalog(false);
+            manager.setPreferPublic(pref);
 
-            // try to handle as a XML format, if fail try a text format
-            try {
-                cat.parseCatalog("application/xml", new URL(location));
-                setShortDescription(Util.THIS.getString("DESC_loaded"));
-                return res;  
-            } catch (CatalogException cex) {
-                try {
-                    cat.parseCatalog("text/plain", new URL(location));
-                    setShortDescription(Util.THIS.getString("DESC_loaded"));
-                    return res;                
-                } catch (RuntimeException ex) {
-                    setShortDescription(Util.THIS.getString("DESC_error_loading", ex.getLocalizedMessage()));
-                    if ( Util.THIS.isLoggable() )  Util.THIS.debug("Internal resolvers library error!", ex);
-                }
-            }
-            
+            CatalogResolver catalogResolver = new CatalogResolver(manager);
+            org.apache.xml.resolver.Catalog cat = catalogResolver.getCatalog();
+            cat.parseCatalog(new URL(location));
+            setShortDescription(Util.THIS.getString("DESC_loaded"));
+            return catalogResolver;
         } catch (IOException ex) {
             setShortDescription(Util.THIS.getString("DESC_error_loading", ex.getLocalizedMessage()));
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("I/O error loading catalog " + location, ex);
-        } catch (CatalogException ex) {
-            setShortDescription(Util.THIS.getString("DESC_error_loading", ex.getLocalizedMessage()));
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Error loading catalog " + location, ex);
         }
         
         // return dumb peer
@@ -307,9 +289,9 @@ public final class Catalog
      */
     public String resolveURI(String name) {
         Object p = getPeer();
-        if (p instanceof com.sun.resolver.tools.CatalogResolver) 
+        if (p instanceof org.apache.xml.resolver.tools.CatalogResolver)
             try {
-                return ((com.sun.resolver.tools.CatalogResolver) p).getCatalog().resolveURI(name);
+                return ((org.apache.xml.resolver.tools.CatalogResolver) p).getCatalog().resolveURI(name);
             } catch (java.net.MalformedURLException ex) {}
               catch (java.io.IOException ex) {}
         return null;
@@ -320,9 +302,9 @@ public final class Catalog
      */ 
     public String resolvePublic(String publicId) {
         Object p = getPeer();
-        if (p instanceof com.sun.resolver.tools.CatalogResolver) 
+        if (p instanceof org.apache.xml.resolver.tools.CatalogResolver)
             try {
-                return ((com.sun.resolver.tools.CatalogResolver) p).getCatalog().resolvePublic(publicId,null);
+                return ((org.apache.xml.resolver.tools.CatalogResolver) p).getCatalog().resolvePublic(publicId,null);
             } catch (java.net.MalformedURLException ex) {}
               catch (java.io.IOException ex) {}
         return null;
