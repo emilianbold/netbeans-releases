@@ -28,7 +28,7 @@ ToDo:
     <echo message="or otherwise have jpda.jar in your classpath when invoking Ant."/>
   </target>
   <target name="compile" depends="check,no-such-luck" if="jpda">
-    <javac srcdir="src" destdir="src">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
 	<pathelement location="../debuggercore/netbeans/modules/debuggerCore.jar"/>

@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="binroot" value=".."/>
 
   <target name="compile">
-    <javac srcdir="src" destdir="src">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <pathelement location="${binroot}/core/release/modules/ext/webserver.jar"/>

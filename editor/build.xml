@@ -17,12 +17,12 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
 
   <target name="compile">
-    <javac srcdir="libsrc" destdir="libsrc">
+    <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
        <pathelement location="../core/release/lib/ext/regexp.jar"/>
       </classpath>
     </javac>
-    <javac srcdir="src" destdir="src">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
        <!-- XXX illegal dependency on core! -->
        <pathelement location="../core/netbeans/lib/core.jar"/>

@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 <project name="beans" default="netbeans" basedir=".">
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <target name="compile">
-    <javac srcdir="src" destdir="src">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>

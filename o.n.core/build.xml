@@ -17,8 +17,8 @@ Microsystems, Inc. All Rights Reserved.
   <property name="binroot" value=".."/>
 
   <target name="compile">
-    <javac srcdir="libsrc" destdir="libsrc"/>
-    <javac srcdir="src" destdir="src">
+    <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}"/>
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
