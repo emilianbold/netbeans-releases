@@ -94,7 +94,11 @@ public abstract class NbTopManager /*extends TopManager*/ {
         Object ignoreme = FileSystem.class;
         Package p = Package.getPackage ("org.openide.filesystems"); // NOI18N
         
-        putSystemProperty ("org.openide.specification.version", p.getSpecificationVersion (), "3.21"); // NOI18N
+        // Normally the defaults here should not be used. openide.jar, not just openide/src/,
+        // must be in your classpath (this applies to tests too, even openide/test/build.xml).
+        // When that is done correctly, the package will be defined and these properties will
+        // be defined too. Otherwise there is no manifest and they will all be null.
+        putSystemProperty ("org.openide.specification.version", p.getSpecificationVersion (), "99.9"); // NOI18N
         putSystemProperty ("org.openide.version", p.getImplementationVersion (), "OwnBuild"); // NOI18N
         putSystemProperty ("org.openide.major.version", p.getSpecificationTitle (), "IDE/1"); // NOI18N
         putSystemProperty ("netbeans.buildnumber", p.getImplementationVersion (), "OwnBuild"); // NOI18N

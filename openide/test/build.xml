@@ -355,6 +355,7 @@ Microsystems, Inc. All Rights Reserved.
                 <fileset dir="../../core/windows/netbeans/lib">
             		<include name="core-windows.jar"/>
                 </fileset>             
+                <pathelement location="../netbeans/lib/openide.jar"/> <!-- for the manifest -->
 
        	</path>
     </target>
