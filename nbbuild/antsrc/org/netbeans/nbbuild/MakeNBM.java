@@ -223,6 +223,12 @@ public class MakeNBM extends MatchingTask {
     private Blurb description = null;
     private Signature signature = null;
     private long mostRecentInput = 0L;
+    private boolean isStandardInclude = true;
+
+    /** Include netbeans directory - default is true */
+    public void setIsStandardInclude(boolean isStandardInclude) {
+	this.isStandardInclude = isStandardInclude;
+    }
 
     /** Name of resulting NBM file. */
     public void setFile (File file) {
@@ -476,7 +482,10 @@ public class MakeNBM extends MatchingTask {
     public FileSet getFileSet() {
         FileSet fs = fileset;		//makes in apperance to excludes and includes files defined in XML
         fs.setDir (topdir);
-        fs.createInclude ().setName ("netbeans/");
+
+	if (isStandardInclude)
+	    fs.createInclude ().setName ("netbeans/");
+
 	fs.createInclude ().setName ("Info/info.xml");
         return fs;
     }
