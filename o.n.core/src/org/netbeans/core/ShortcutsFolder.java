@@ -86,9 +86,16 @@ final class ShortcutsFolder extends FolderInstance {
         //
         HashMap map = new HashMap(80);
         for (int i = 0; i < cookies.length; i++) {
-                KeyStroke stroke = Utilities.stringToKey (cookies[i].instanceName());
-                Action action = (Action)cookies[i].instanceCreate();
-                map.put (stroke, action);
+            String keyname = cookies[i].instanceName();
+            KeyStroke stroke = Utilities.stringToKey (keyname);
+            if (stroke == null) {
+                TopManager.getDefault ().getErrorManager ().
+                    getInstance ("org.netbeans.core.ShortcutsFolder"). // NOI18N
+                    log ("Warning: unparsable keystroke: " + keyname); // NOI18N
+                continue;
+            }
+            Action action = (Action)cookies[i].instanceCreate();
+            map.put (stroke, action);
         }
         
         Keymap globalMap = TopManager.getDefault ().getGlobalKeymap ();
