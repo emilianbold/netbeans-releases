@@ -27,8 +27,8 @@ public class EditorModule implements ModuleInstall {
 
   /** Kit replacements that will be installed into JEditorPane */
   KitInfo[] replacements = new KitInfo[] {
-    new KitInfo("text/plain", com.netbeans.editor.BaseEditorKit.class.getName()),
-    new KitInfo("text/x-java", com.netbeans.editor.ext.JavaEditorKit.class.getName())
+    new KitInfo("text/plain", NbEditorBaseKit.class.getName()),
+    new KitInfo("text/x-java", NbEditorJavaKit.class.getName())
   };
 
   /** Module installed for the first time. */
@@ -77,6 +77,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  7    Gandalf   1.6         3/18/99  Miloslav Metelka 
  *  6    Gandalf   1.5         3/11/99  Jaroslav Tulach Works with plain 
  *       document.
  *  5    Gandalf   1.4         3/10/99  Jaroslav Tulach body of install moved to
