@@ -544,6 +544,9 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     }
 
     public LayoutConstraints getConstraints(RADVisualComponent metacomp) {
+        if (layoutDelegate == null)
+            return null;
+
         int index = metaContainer.getIndexOf(metacomp);
         return index >= 0 && index < layoutDelegate.getComponentCount() ?
                layoutDelegate.getConstraints(index) : null;
