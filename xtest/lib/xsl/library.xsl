@@ -52,7 +52,8 @@
     <xsl:param name="html-title">XTest Report - unknown</xsl:param>
 	<HTML>		
 		<xsl:call-template name="copyright"/>
-		<STYLE>
+		<HEAD>
+		<STYLE TYPE="text/css">
 			BODY  {
   				font-family: Verdana, sans-serif, helvetica, arial;
   				font-size: 13px;
@@ -145,7 +146,6 @@
   			}			
 	    	
 		</STYLE>
-		<HEAD>
 			<TITLE><xsl:value-of select="$html-title"/></TITLE>
 		</HEAD>
 		<BODY>		
