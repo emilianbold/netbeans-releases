@@ -13,6 +13,8 @@
 
 package com.netbeans.developer.impl;
 
+import java.util.ArrayList;
+
 import com.netbeans.ide.*;
 import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.filesystems.*;
@@ -27,6 +29,8 @@ import com.netbeans.developer.impl.workspace.WorkspacePoolContext;
 final class NbPlaces extends Object implements Places, Places.Nodes, Places.Folders {
   /** default */
   private static NbPlaces places;
+  /** set of roots */
+  private static ArrayList roots = new ArrayList ();
 
   /** No instance outside this class.
   */
@@ -39,6 +43,21 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
       places = new NbPlaces ();
     }
     return places;
+  }
+
+  /** Adds new root node.
+  */
+  public static void addRoot (Node n) {
+    roots.add (n);
+    NbTopManager.change.firePropertyChange (NbTopManager.PROP_PLACES, null, null);
+  }
+  
+  /** Removes new root node.
+  */
+  public static void removeRoot (Node n) {
+    if (roots.remove (n)) {
+      NbTopManager.change.firePropertyChange (NbTopManager.PROP_PLACES, null, null);
+    }
   }
 
   /** Interesting places for nodes.
@@ -101,6 +120,11 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     return NbProjectOperation.getProject ().projectDesktop ();
   }
 
+  /** Root nodes.
+  */
+  public Node[] roots () {
+    return (Node[])roots.toArray (new Node[0]);
+  }
 
   /** Default folder for templates.
   */
@@ -164,6 +188,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  14   Gandalf   1.13        3/13/99  Jaroslav Tulach Places.roots ()
 *  13   Gandalf   1.12        3/11/99  Ian Formanek    
 *  12   Gandalf   1.11        3/11/99  Ian Formanek    Bookmarks & Startup added
 *       to Session Settings
