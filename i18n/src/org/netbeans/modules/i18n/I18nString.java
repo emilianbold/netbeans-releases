@@ -158,7 +158,16 @@ public class I18nString {
     }
 
     /** 
-     * Derive replacing string.
+     * Derive replacing string. The method substitutes parameters into
+     * a format string using <code>MapFormat.format</code>. If you
+     * override this method, you must not call <code>.format</code>
+     * on the return value because values substituted in the previous 
+     * round can contain control codes. All replacements
+     * must take place simultaneously in a single, the first, call. Thus, if you
+     * need to substitute some additional parameters not substituted by
+     * default, use 
+     * the provided hook {@link #fillFormatMap}.
+     * 
      * @return replacing string or null if this instance is invalid 
      */
     public String getReplaceString() {
@@ -182,6 +191,17 @@ public class I18nString {
         DataObject sourceDataObject = getSupport().getSourceDataObject();
         map.put("sourceFileName", sourceDataObject == null ? "" : sourceDataObject.getPrimaryFile().getName()); // NOI18N
 
+        fillFormatMap(map);
+
         return MapFormat.format(replaceFormat, map);
+    }
+
+    /**
+     * Hook for filling in additional format key/value pair in
+     * subclasses. Within the method, the provided substituion map can
+     * be arbitrarilly modified.
+     * @param subst Map to be filled in with key/value pairs
+     */ 
+    protected void fillFormatMap(Map subst) {
     }
 }

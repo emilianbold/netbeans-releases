@@ -81,18 +81,9 @@ public class JavaI18nString extends I18nString {
     }
     
     /** 
-     * Derive replacing string. Overrides superclass method.
-     * Process java specific replacing values. 
-     * @return replacing string or null if this instance is invalid 
+     * Add java specific replacing values. 
      */
-    public String getReplaceString() {
-        String result = super.getReplaceString();
-        
-        if(result == null) return null;
-
-        // Create map.
-        Map map = new HashMap(2);
-
+    protected void fillFormatMap(Map map) {
         map.put("identifier", ((JavaI18nSupport)getSupport()).getIdentifier()); // NOI18N
 
         // Arguments.
@@ -110,11 +101,6 @@ public class JavaI18nString extends I18nString {
         stringBuffer.append("}"); // NOI18N
         
         map.put("arguments", stringBuffer.toString());
-        
-        // Replace java specific.
-        result = MapFormat.format(result, map);
-        
-        return result;
     }
     
 }
