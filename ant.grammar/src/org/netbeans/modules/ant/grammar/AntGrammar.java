@@ -460,6 +460,49 @@ class AntGrammar implements GrammarQuery {
         return list;
     }
     
+    /**
+     * Names of Ant properties that are generally present and defined in any script.
+     */
+    private static final String[] STOCK_PROPERTY_NAMES = {
+        // Present in most Ant installations:
+        "ant.home", // NOI18N
+        // Defined by Ant as standard properties:
+        "basedir", // NOI18N
+        "ant.file", // NOI18N
+        "ant.project.name", // NOI18N
+        "ant.java.version", // NOI18N
+        "ant.version", // NOI18N
+        // Defined by System.getProperties as standard system properties:
+        "java.version", // NOI18N
+        "java.vendor", // NOI18N
+        "java.vendor.url", // NOI18N
+        "java.home", // NOI18N
+        "java.vm.specification.version", // NOI18N
+        "java.vm.specification.vendor", // NOI18N
+        "java.vm.specification.name", // NOI18N
+        "java.vm.version", // NOI18N
+        "java.vm.vendor", // NOI18N
+        "java.vm.name", // NOI18N
+        "java.specification.version", // NOI18N
+        "java.specification.vendor", // NOI18N
+        "java.specification.name", // NOI18N
+        "java.class.version", // NOI18N
+        "java.class.path", // NOI18N
+        "java.library.path", // NOI18N
+        "java.io.tmpdir", // NOI18N
+        "java.compiler", // NOI18N
+        "java.ext.dirs", // NOI18N
+        "os.name", // NOI18N
+        "os.arch", // NOI18N
+        "os.version", // NOI18N
+        "file.separator", // NOI18N
+        "path.separator", // NOI18N
+        "line.separator", // NOI18N
+        "user.name", // NOI18N
+        "user.home", // NOI18N
+        "user.dir", // NOI18N
+    };
+    
     private static String[] likelyPropertyNames(HintContext ctx) {
         // XXX ctx.getOwnerDocument returns some bogus unusable empty thing
         // so find the root element manually
@@ -484,7 +527,7 @@ class AntGrammar implements GrammarQuery {
             parent = (Element)parent.getParentNode();
         }
         // XXX getElementsByTagName just throws an exception, you can't use it...
-        Set/*<String>*/ choices = new TreeSet();
+        Set/*<String>*/ choices = new TreeSet(Arrays.asList(STOCK_PROPERTY_NAMES));
         visitForLikelyPropertyNames(parent, choices);
         Iterator it = choices.iterator();
         while (it.hasNext()) {
