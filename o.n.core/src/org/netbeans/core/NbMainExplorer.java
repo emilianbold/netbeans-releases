@@ -650,6 +650,7 @@ public final class NbMainExplorer extends CloneableTopComponent
             }
             
             public void nodeDestroyed(org.openide.nodes.NodeEvent nodeEvent) {
+                ExplorerTab.this.setCloseOperation(TopComponent.CLOSE_EACH);
                 ExplorerTab.this.close();
             }            
             
