@@ -56,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
 	 compress="false"/>
   </target>
   <target name="release">
-    <copy todir="netbeans">
+    <copy todir="netbeans" includeEmptyDirs="false">
       <fileset dir="release">
         <exclude name="**/lib/ext/regexp.jar"/>
       </fileset>

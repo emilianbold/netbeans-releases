@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="javahelp">
-    <copy todir="netbeans/docs">
+    <copy todir="netbeans/docs" includeEmptyDirs="false">
       <fileset dir="javahelp">
         <!-- Temporary files, or preprocessing scripts: -->
         <exclude name="**/check-anchors.pl"/>
