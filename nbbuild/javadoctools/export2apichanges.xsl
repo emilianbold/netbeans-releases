@@ -12,14 +12,14 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:import href="apichanges.xsl" />
+    
     <xsl:output method="html"/>
     <xsl:param name="date" />
     <xsl:param name="changes-since-year"  />
     <xsl:param name="changes-since-month"  />
     <xsl:param name="changes-since-day"  />
 
-    <xsl:import href="apichanges.xsl" />
-    
     <xsl:template match="/" >
         <html>
         <head>
