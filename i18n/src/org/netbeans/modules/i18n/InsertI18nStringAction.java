@@ -115,16 +115,36 @@ public class InsertI18nStringAction extends CookieAction {
         JButton OKButton = new JButton(I18nUtil.getBundle().getString("CTL_OKButton"));
         OKButton.setMnemonic((I18nUtil.getBundle().getString("CTL_OKButton_Mnem")).charAt(0));                 
         OKButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_OKButton"));  
+        
         JButton cancelButton = new JButton(I18nUtil.getBundle().getString("CTL_CancelButton"));
         cancelButton.setMnemonic((I18nUtil.getBundle().getString("CTL_CancelButton_Mnem")).charAt(0));        
         cancelButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_CancelButton"));  
-
+        
+        JButton helpButton = new JButton(I18nUtil.getBundle().getString("CTL_HelpButton"));
+        helpButton.setMnemonic((I18nUtil.getBundle().getString("CTL_HelpButton_Mnem")).charAt(0));        
+        helpButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_HelpButton"));
+        
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         JPanel rightPanel = new JPanel(new java.awt.GridLayout(1, 2, 5, 0));
         
         rightPanel.add(OKButton); 
         rightPanel.add(cancelButton);
-                
+        rightPanel.add(helpButton);
+        
+        helpButton.addActionListener(new ActionListener() {
+           public void actionPerformed(java.awt.event.ActionEvent evt) {
+              HelpCtx help = new HelpCtx(InsertI18nStringAction.class);
+
+              String sysprop = System.getProperty("org.openide.actions.HelpAction.DEBUG"); // NOI18N
+
+              if("true".equals(sysprop) || "full".equals(sysprop)) // NOI18N
+                  System.err.println ("I18n module: Help button showing: " + help); // NOI18N, please do not comment out
+
+              TopManager.getDefault().showHelp(help);
+
+              return;               
+           }
+        });
                 
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
