@@ -1336,7 +1336,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-projects">
     <fail>projects is no more</fail>
   </target>
-  <target name="all-properties" depends="init,all-editor">
+  <target name="all-properties" depends="init,all-openide,all-openide/loaders">
     <echo message="Building module properties..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1344,6 +1344,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../properties" target="netbeans"/>
+  </target>
+  <target name="all-properties/syntax" depends="init,all-openide,all-properties,all-editor,all-editor/lib">
+    <echo message="Building module properties/syntax..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../properties/syntax" target="netbeans"/>
   </target>
   <target name="all-remotefs" depends="init">
     <echo message="Building module remotefs..."/>

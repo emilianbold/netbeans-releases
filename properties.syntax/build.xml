@@ -12,9 +12,9 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="properties" default="netbeans" basedir=".">
+<project name="properties/syntax" default="netbeans" basedir=".">
 
-  <import file="../nbbuild/templates/projectized.xml"/>
+  <import file="../../nbbuild/templates/projectized.xml"/>
 
 </project>
 
