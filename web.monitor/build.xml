@@ -18,7 +18,8 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="init" depends="default.init">
     <patternset id="monitor.files">
-      <include name="${nb.modules.dir}/module.jar"/>
+      <include name="${nb.modules.dir}/monitor.jar"/>
+      <include name="${nb.modules.dir}/docs/monitor.jar"/>
       <include name="${nb.modules.dir}/ext/httpmonitor.jar"/>
     </patternset>
     <path id="core-cp">

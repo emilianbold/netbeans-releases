@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
       <include name="${nb.modules/docs.dir}/usersguide.jar"/>
       <include name="${nb.beans.dir}/TimerBean.jar"/>
       <include name="${nb.sources.dir}/org/netbeans/examples/lib/timerbean/**"/>
+      <include name="${nb.docs.dir}/org/netbeans/modules/usersguide/ide.css"/>
     </patternset>
   </target>
 
