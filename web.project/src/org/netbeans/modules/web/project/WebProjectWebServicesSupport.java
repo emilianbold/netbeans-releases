@@ -712,12 +712,6 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             }
         }
         
-        // Set websvc.generated.dir property, if not set.
-        if(projectProperties.getProperty(WEBSVC_GENERATED_DIR) == null) {
-            projectProperties.setProperty(WEBSVC_GENERATED_DIR, "${build.generated.dir}/wssrc"); // NOI18N
-            projectPropertiesChanged = true;
-        }
-        
         // set tools.jar property if not set
         if(projectProperties.getProperty(WSCOMPILE_TOOLS_CLASSPATH) == null) {
             projectProperties.setProperty(WSCOMPILE_TOOLS_CLASSPATH, "${java.home}\\..\\lib\\tools.jar"); // NOI18N
