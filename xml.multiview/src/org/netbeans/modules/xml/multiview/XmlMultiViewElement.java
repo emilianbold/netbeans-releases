@@ -20,7 +20,6 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
 
-import java.beans.PropertyVetoException;
 /**
  * XmlMultiviewElement.java
  *
@@ -43,15 +42,11 @@ public class XmlMultiViewElement implements MultiViewElement {
     }
 
     public CloseOperationState canCloseElement() {
-        final XmlMultiViewDataObject dataObject = (XmlMultiViewDataObject) this.support.getDataObject();
-        if (dataObject.isModified()) {
-            try {
-                dataObject.setValid(false);
-            } catch (PropertyVetoException e) {
-                return MultiViewFactory.createUnsafeCloseState("Data object modified", null, null);
-            }
+        if (this.support.getDataObject().isModified()) {
+            return MultiViewFactory.createUnsafeCloseState("Data object modified", null, null);
+        } else {
+            return CloseOperationState.STATE_OK;
         }
-        return CloseOperationState.STATE_OK;
     }
 
     public void componentActivated() {

@@ -23,6 +23,8 @@ import org.openide.text.DataEditorSupport;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.*;
 
+import java.beans.PropertyVetoException;
+
 /**
  * XmlMultiviewEditorSupport.java
  *
@@ -75,7 +77,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
      *    or false if it has refused and the document should remain unmodified
      */
     protected boolean notifyModified () {
-        if (!super.notifyModified()) 
+        if (!super.notifyModified())
             return false;
         addSaveCookie();
         if (!dObj.isChangedFromUI()) restartTimer();
@@ -124,12 +126,14 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
         CloneableTopComponent mvtc = MultiViewFactory.createCloneableMultiView(descs, descs[0],
                 new CloseOperationHandler() {
                     public boolean resolveCloseOperation(CloseOperationState[] elements) {
-                        if (elements != null) {
-                            for (int i = 0; i < elements.length; i++) {
-                                if (!elements[i].canClose()) {
-                                    return false;
-                                }
+                        try {
+                            if(dObj.isChangedFromUI()) {
+                                dObj.updateDocument();
+                                dObj.updateModelFromSource();
                             }
+                            dObj.setValid(false);
+                        } catch (PropertyVetoException e) {
+                            return false;
                         }
                         return true;
                     }
