@@ -90,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
         </jhindexer>
 
         <mkdir dir="netbeans/modules/docs"/>
-        <locjar jarfile="netbeans/modules/docs/xml-core.jar"
+        <locjar jarfile="netbeans/modules/autoload/docs/xml-core.jar"
                 compress="true">
             <fileset dir="javahelp" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
             <locale name="ja"/>
