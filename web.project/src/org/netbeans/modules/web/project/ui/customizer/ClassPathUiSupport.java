@@ -275,7 +275,7 @@ public class ClassPathUiSupport {
             
             if (value == Boolean.TRUE) {
                 ClassPathSupport.Item item = getItem(row);
-                String pathInWar = (item.getFile().isDirectory() ? ClassPathSupport.Item.PATH_IN_WAR_DIR : ClassPathSupport.Item.PATH_IN_WAR_LIB);
+                String pathInWar = (item.getType() == ClassPathSupport.Item.TYPE_JAR && item.getFile().isDirectory()) ? ClassPathSupport.Item.PATH_IN_WAR_DIR : ClassPathSupport.Item.PATH_IN_WAR_LIB;
                 item.setPathInWAR(pathInWar);
             } else
                 getItem(row).setPathInWAR(ClassPathSupport.Item.PATH_IN_WAR_NONE);
