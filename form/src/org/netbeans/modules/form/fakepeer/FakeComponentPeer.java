@@ -195,8 +195,11 @@ abstract class FakeComponentPeer implements FakePeer
     }
 
     // JDK 1.4
-    public boolean requestFocus(boolean temporary,
-                         boolean focusedWindowChangeAllowed) {
+    public boolean requestFocus(Component lightweightChild,
+                                boolean temporary,
+                                boolean focusedWindowChangeAllowed,
+                                long time)
+    {
         return false;
     }
 
@@ -219,12 +222,13 @@ abstract class FakeComponentPeer implements FakePeer
     }
 
     // JDK 1.4 (VolatileImage not before 1.4)
-//  public VolatileImage createVolatileImage(int width, int height) {
+//    public VolatileImage createVolatileImage(int width, int height) {
 //        return null;
 //    }
 
     public boolean prepareImage(Image img, int w, int h,
-                                ImageObserver imageObserver) {
+                                ImageObserver imageObserver)
+    {
         return _delegate.prepareImage(img, w, h, imageObserver);
     }
 
