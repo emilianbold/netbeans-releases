@@ -40,8 +40,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
-import org.openide.src.*;
-import org.openide.cookies.SourceCookie;
 import org.netbeans.modules.j2ee.deployment.impl.projects.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.execution.*;
@@ -72,6 +70,12 @@ import org.openide.NotifyDescriptor;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+
+import org.netbeans.modules.javacore.JMManager;
+import org.netbeans.jmi.javamodel.*;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import java.lang.reflect.Modifier;
+
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
@@ -451,54 +455,78 @@ class WebActionProvider implements ActionProvider {
         return b.toString();
     }
     
-    // THIS METHOD IS COPIED FROM org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser
-    private static String getMainMethod (Object obj, String expectedName) {
-        if (obj == null || !(obj instanceof SourceCookie)) {
-            return null;
-        }
-        SourceCookie cookie = (SourceCookie) obj;
-        // check the main class
-        String fullName = null;
-        SourceElement source = cookie.getSource ();
-        ClassElement[] classes = source.getClasses();
-        boolean hasMain = false;
-        for (int i = 0; i < classes.length; i++) {
-          if (expectedName == null || classes[i].getName().getName().equals (expectedName)) {
-            if (classes[i].hasMainMethod()) {
-                hasMain = true;
-                fullName = classes[i].getName ().getFullName ();
-                break;
-            }
-          }
-        }
-        if (hasMain) {
-            return fullName;
-        }
-        return null;
-    }
     
-    // THIS METHOD IS COPIED FROM org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser
+    // THIS METHOD IS (almost) COPIED FROM org.netbeans.modules.java.j2seproject.J2SEProjectUtil
     /** Checks if given file object contains the main method.
      *
      * @param classFO file object represents java 
      * @return false if parameter is null or doesn't contain SourceCookie
      * or SourceCookie doesn't contain the main method
      */    
-    public static boolean hasMainMethod (FileObject classFO) {
-        if (classFO == null) {
-            return false;
-
+    final public static boolean hasMainMethod (FileObject fo) {
+        // support for unit testing
+        /*if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
+            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
         }
-        try {
-            DataObject classDO = DataObject.find (classFO);
-            return getMainMethod (classDO.getCookie (SourceCookie.class), null) != null;
-        } catch (DataObjectNotFoundException ex) {
-            // can ignore it, classFO could be wrongly set
+        */
+        if (fo == null) {
+            // ??? maybe better should be thrown IAE
             return false;
         }
-        
+        Resource res = JavaMetamodel.getManager ().getResource (fo);
+        assert res != null : "Resource found for FileObject " + fo;
+        return hasMainMethod (res);
+    }
+    
+    // copied from JavaNode.hasMain
+    private static boolean hasMainMethod (Resource res) {
+        if (res != null && res.containsIdentifier ("main")) { //NOI18N
+            for (Iterator i = res.getClassifiers ().iterator (); i.hasNext (); ) {
+                JavaClass clazz = (JavaClass) i.next ();
+                // now it is only important top-level class with the same 
+                // name as file. Continue if the file name differs
+                // from top level class name.
+                if (!clazz.getSimpleName ().equals (((JMManager)JMManager.getManager ()).getFileObject (res).getName ()))
+                    continue;
 
+                for (Iterator j = clazz.getFeatures ().iterator(); j.hasNext ();) {
+                    Object o = j.next ();
+                    // if it is not a method, continue with next feature
+                    if (!(o instanceof Method))
+                        continue;
 
+                    Method m = (Method) o;
+                    int correctMods = (Modifier.PUBLIC | Modifier.STATIC);
+                    // check that method is named 'main' and has set public 
+                    // and static modifiers! Method has to also return
+                    // void type.
+                    if (!"main".equals (m.getName()) || // NOI18N
+                       ((m.getModifiers () & correctMods) != correctMods) ||
+                       (!"void".equals (m.getType().getName ())))
+                       continue;
+
+                    // check parameters - it has to be one of type String[]
+                    // or String...
+                    if (m.getParameters ().size ()==1) {
+                        Parameter par = ((Parameter) m.getParameters ().get (0));
+                        String typeName = par.getType ().getName ();
+                        if (par.isVarArg () && ("java.lang.String".equals (typeName) || "String".equals (typeName))) { // NOI18N
+                            // Main methods written with variable arguments parameter:
+                            // public static main(String... args) {
+                            // }
+                            return true; 
+                        } else if (typeName.equals ("String[]") || typeName.equals ("java.lang.String[]")) { // NOI18N
+                            // Main method written with array parameter:
+                            // public static main(String[] args) {
+                            // }
+                            return true;
+                        }
+
+                    } // end if parameters
+                } // end features cycle
+            }
+        }
+        return false;
     }
     
     public boolean isActionEnabled( String command, Lookup context ) {
@@ -537,7 +565,9 @@ class WebActionProvider implements ActionProvider {
         else {
             // other actions are global
             return true;
-        }   
+        }
+
+        
     }
     
     // Private methods -----------------------------------------------------
