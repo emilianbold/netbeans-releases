@@ -14,6 +14,7 @@
 package org.netbeans.modules.xml.multiview;
 
 import javax.swing.*;
+import javax.swing.text.AbstractDocument;
 import java.awt.*;
 
 /**
@@ -36,119 +37,65 @@ public class Utils {
      * @param newDoc new value of whole document
      * @param prefixMark - beginning part of the document before this mark should be preserved
      */
-    public static void replaceDocument(javax.swing.text.Document doc, String newDoc, String prefixMark) throws javax.swing.text.BadLocationException {
-        int origLen = doc.getLength();        
-        String origDoc = doc.getText(0, origLen);
-        int prefixInd=0;
+    public static void replaceDocument(javax.swing.text.Document doc, String newDoc, String prefixMark)
+            throws javax.swing.text.BadLocationException {
+        String origDoc = doc.getText(0, doc.getLength());
+        int prefixIndex = 0;
         if (prefixMark!=null) {
-            prefixInd = origDoc.indexOf(prefixMark);
-            if (prefixInd>0) {
-                origLen-=prefixInd;
-                origDoc=doc.getText(prefixInd,origLen);
+            prefixIndex = origDoc.indexOf(prefixMark);
+            if (prefixIndex < 0) {
+                prefixIndex = 0;
+            } else {
+                origDoc = origDoc.substring(prefixIndex);
             }
-            else {
-                prefixInd=0;
+            int prefixIndNewDoc = newDoc.indexOf(prefixMark);
+            if (prefixIndNewDoc > 0) {
+                newDoc = newDoc.substring(prefixIndNewDoc);
             }
-            int prefixIndNewDoc=newDoc.indexOf(prefixMark);
-            if (prefixIndNewDoc>0)
-            newDoc=newDoc.substring(prefixIndNewDoc);
         }
-        newDoc=filterEndLines(newDoc);
-        int newLen = newDoc.length();
-        
+        newDoc = filterEndLines(newDoc);
+
         if (origDoc.equals(newDoc)) {
             // no change in document
             return;
         }
 
-        final int granularity = 20;
-        
-        int prefix = -1;
-        int postfix = -1;
-        String toInsert = newDoc;
-        
-        if ((origLen > granularity) && (newLen > granularity)) {
-            int pos1 = 0;
-            int len = Math.min(origLen, newLen);
-            // find the prefix which both Strings begin with
-            for (;;) {
-                if (origDoc.regionMatches(pos1, newDoc, pos1, granularity)) {
-                    pos1 += granularity;
-                    if (pos1 + granularity >= len) {
-                        break;
-                    }
-                }
-                else {
-                    break;
-                }
+        char[] origChars = origDoc.toCharArray();
+        char[] newcChars = newDoc.toCharArray();
+        int offset = 0;
+        int tailIndex = origChars.length;
+        int delta = newcChars.length - tailIndex;
+        int n = delta < 0 ? tailIndex + delta : tailIndex;
+        for (offset = 0; offset < n; offset++) {
+            if (origChars[offset] != newcChars[offset]) {
+                break;
             }
-            if (pos1 > 0)
-                prefix = pos1;
-            
-            pos1 = origLen - granularity;
-            int pos2 = newLen - granularity;
-            for (;;) {
-                if (origDoc.regionMatches(pos1, newDoc, pos2, granularity)) {
-                    pos1 -= granularity;
-                    pos2 -= granularity;
-                    if (pos1 < 0) {
-                        pos1 += granularity;
-                        break;
-                    }
-                    if (pos2 < 0) {
-                        pos2 += granularity;
-                        break;
-                    }
-                }
-                else {
-                    pos1 += granularity;
-                    pos2 += granularity;
-                    break;
-                }
-            }
-            if (pos1 < origLen - granularity) {
-                postfix = pos1;
+        }
+        n = delta < 0 ? offset - delta : offset;
+        for (int i = tailIndex - 1; i >= n; i--) {
+            if (origChars[i] == newcChars[i + delta]) {
+                tailIndex = i;
+            } else {
+                i = tailIndex;
+                break;
             }
         }
 
-        if ((prefix != -1) && (postfix != -1)) {
-            if (postfix < prefix) {
-                postfix = prefix;
+        String s = newDoc.substring(offset, tailIndex + delta);
+        int length = tailIndex - offset;
+        offset += prefixIndex;
+        if (doc instanceof AbstractDocument) {
+            ((AbstractDocument) doc).replace(offset, length, s, null);
+        } else {
+            if (length > 0) {
+                doc.remove(offset, length);
             }
-            
-            int delta = (prefix + (origLen - postfix) - newLen);
-            if (delta > 0) {
-                postfix += delta;
-            }
-        }
-        
-        int removeBeginIndex = (prefix == -1) ? 0 : prefix;
-        int removeEndIndex;
-        if (postfix == -1){
-            if(doc.getText(0, doc.getLength()).charAt(doc.getLength()-1) == '>'){
-                removeEndIndex = origLen;
-            }
-            else
-                removeEndIndex = origLen-1;
-        }
-        else 
-            removeEndIndex = postfix;
-        
-        doc.remove(prefixInd+removeBeginIndex, removeEndIndex - removeBeginIndex);
-        
-        if (toInsert.length() > 0) {
-            int p1 = (prefix == -1) ? 0 : prefix;
-            int p2 = toInsert.length();
-            if (postfix != -1)
-                p2 = p2 - (origLen - postfix);
-
-            if (p2 > p1) {
-                toInsert = toInsert.substring(p1, p2);
-                doc.insertString(prefixInd+removeBeginIndex, toInsert, null);
+            if (s.length() > 0) {
+                doc.insertString(offset, s, null);
             }
         }
     }
-    
+
     public static void replaceDocument(javax.swing.text.Document doc, String newDoc) throws javax.swing.text.BadLocationException {
         replaceDocument(doc,newDoc,null);
     }
