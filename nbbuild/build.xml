@@ -29,10 +29,19 @@ workspaceswitcher
   <!-- To make people happy who want to do `ant clean all': -->
   <target name="all" depends="depucelee"/>
 
-  <target name="bootstrap"
+  <target name="bootstrap-init">
+    <available property="have-binaries-already" file="../core/release/lib/ext/jh.jar"/>
+  </target>
+
+  <target name="bootstrap" depends="check-for-binaries"
           description="Bootstrap NetBeans-specific Ant extensions.">
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
-    <javac srcdir="antsrc" destdir="antsrc" deprecation="true"/>
+    <javac srcdir="antsrc" destdir="antsrc" deprecation="true">
+      <classpath>
+        <!-- Needed for CheckLinks: -->
+        <pathelement location="../core/release/lib/ext/regexp.jar"/>
+      </classpath>
+    </javac>
     <jar jarfile="nbantext.jar" basedir="antsrc">
       <exclude name="**/*.java"/>
     </jar>
@@ -83,10 +92,9 @@ workspaceswitcher
       <!-- You are on your own for getting the binaries for some of these: -->
       <config name="bloated-plus-extrabins" modules="ant,apisupport,applet,autoupdate,beans,clazz,cpplite,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,jini,makefile,multicompile,objectbrowser,projects,properties,remotefs,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,web"/>
     </configmods>
-    <available property="have-binaries-already" file="../core/release/lib/ext/jh.jar"/>
   </target>
 
-  <target name="check-for-binaries" depends="init" unless="have-binaries-already">
+  <target name="check-for-binaries" depends="bootstrap-init" unless="have-binaries-already">
     <fail message="You seem to be missing the required download of binaries which are required to build the IDE. Please see: http://www.netbeans.org/downloads.html"/>
   </target>
 
