@@ -64,6 +64,7 @@ public class FormDataObject extends JavaDataObject {
 
   public FormDataObject (FileObject ffo, FileObject jfo, FormDataLoader loader) throws DataObjectExistsException {
     super(jfo, loader);
+    formEntry = (FileEntry)registerEntry (ffo);
     init ();
   }
 
@@ -135,6 +136,11 @@ public class FormDataObject extends JavaDataObject {
 
 /*
  * Log
+ *  20   Gandalf   1.19        7/23/99  Ian Formanek    Fixed Bug 2145 - 
+ *       Openning form throws exception and form is not opened. Occurs after 
+ *       some time  Bug 2673 - NullPointerException : choose from File menu New 
+ *       From Template | AWT ... | Form set name and click OK, class not opened 
+ *       but created
  *  19   Gandalf   1.18        6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  18   Gandalf   1.17        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
