@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -34,6 +34,9 @@ import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 */
 
 public class ConnectionNode extends DatabaseNode {
+    
+    private boolean createPropSupport = true;
+    
     public void setInfo(DatabaseNodeInfo nodeinfo) {
         super.setInfo(nodeinfo);
         DatabaseNodeInfo info = getInfo();
@@ -63,6 +66,14 @@ public class ConnectionNode extends DatabaseNode {
         setDisplayName(displayName);
     }
         
+    private boolean createPropSupport() {
+        return createPropSupport;
+    }
+    
+    private void setPropSupport(boolean value) {
+        createPropSupport = value;
+    }
+    
     private void update(Connection connection) {
         final boolean connecting = (connection != null);
         RequestProcessor.postRequest(new Runnable() {
@@ -74,37 +85,51 @@ public class ConnectionNode extends DatabaseNode {
                 Sheet.Set set = getSheet().get(Sheet.PROPERTIES);
                 
                 try {
+                    if (createPropSupport()) {
+                        Node.Property dbprop = set.get(DatabaseNodeInfo.DATABASE);
+                        PropertySupport newdbprop = createPropertySupport(dbprop.getName(), dbprop.getValueType(), dbprop.getDisplayName(), dbprop.getShortDescription(), info, !connecting);
+                        set.put(newdbprop);
+                        firePropertyChange("db",dbprop,newdbprop); //NOI18N
 
-                    Node.Property dbprop = set.get(DatabaseNodeInfo.DATABASE);
-                    PropertySupport newdbprop = createPropertySupport(dbprop.getName(), dbprop.getValueType(), dbprop.getDisplayName(), dbprop.getShortDescription(), info, !connecting);
-                    set.put(newdbprop);
-                    firePropertyChange("db",dbprop,newdbprop); //NOI18N
+                        Node.Property drvprop = set.get(DatabaseNodeInfo.DRIVER);
+                        PropertySupport newdrvprop = createPropertySupport(drvprop.getName(), drvprop.getValueType(), drvprop.getDisplayName(), drvprop.getShortDescription(), info, !connecting);
+                        set.put(newdrvprop);
+                        firePropertyChange("driver",drvprop,newdrvprop); //NOI18N
 
-                    Node.Property drvprop = set.get(DatabaseNodeInfo.DRIVER);
-                    PropertySupport newdrvprop = createPropertySupport(drvprop.getName(), drvprop.getValueType(), drvprop.getDisplayName(), drvprop.getShortDescription(), info, !connecting);
-                    set.put(newdrvprop);
-                    firePropertyChange("driver",drvprop,newdrvprop); //NOI18N
+                        Node.Property schemaprop = set.get(DatabaseNodeInfo.SCHEMA);
+                        PropertySupport newschemaprop = createPropertySupport(schemaprop.getName(), schemaprop.getValueType(), schemaprop.getDisplayName(), schemaprop.getShortDescription(), info, !connecting);
+                        set.put(newschemaprop);
+                        firePropertyChange("schema",schemaprop,newschemaprop); //NOI18N
 
-                    Node.Property schemaprop = set.get(DatabaseNodeInfo.SCHEMA);
-                    PropertySupport newschemaprop = createPropertySupport(schemaprop.getName(), schemaprop.getValueType(), schemaprop.getDisplayName(), schemaprop.getShortDescription(), info, !connecting);
-                    set.put(newschemaprop);
-                    firePropertyChange("schema",schemaprop,newschemaprop); //NOI18N
+                        Node.Property usrprop = set.get(DatabaseNodeInfo.USER);
+                        PropertySupport newusrprop = createPropertySupport(usrprop.getName(), usrprop.getValueType(), usrprop.getDisplayName(), usrprop.getShortDescription(), info, !connecting);
+                        set.put(newusrprop);
+                        firePropertyChange("user",usrprop,newusrprop); //NOI18N
 
-                    Node.Property dbproductprop = set.get(DatabaseNodeInfo.DBPRODUCT);
-                    PropertySupport newdbproductprop = createPropertySupport(dbproductprop.getName(), dbproductprop.getValueType(), dbproductprop.getDisplayName(), dbproductprop.getShortDescription(), info, false);
-                    set.put(newdbproductprop);
-                    firePropertyChange("dbproduct",dbproductprop,newdbproductprop); //NOI18N
+                        Node.Property rememberprop = set.get(DatabaseNodeInfo.REMEMBER_PWD);
+                        PropertySupport newrememberprop = createPropertySupport(rememberprop.getName(), rememberprop.getValueType(), rememberprop.getDisplayName(), rememberprop.getShortDescription(), info, connecting);
+                        set.put(newrememberprop);
+                        firePropertyChange("rememberpassword",rememberprop,newrememberprop); //NOI18N
+                        
+                        setPropSupport(false);
+                    } else {
+                        Node.Property dbprop = set.get(DatabaseNodeInfo.DATABASE);
+                        set.put(dbprop);
+                        firePropertyChange("db",null,dbprop); //NOI18N
 
-                    Node.Property usrprop = set.get(DatabaseNodeInfo.USER);
-                    PropertySupport newusrprop = createPropertySupport(usrprop.getName(), usrprop.getValueType(), usrprop.getDisplayName(), usrprop.getShortDescription(), info, !connecting);
-                    set.put(newusrprop);
-                    firePropertyChange("user",usrprop,newusrprop); //NOI18N
+                        Node.Property drvprop = set.get(DatabaseNodeInfo.DRIVER);
+                        firePropertyChange("driver",null,drvprop); //NOI18N
 
-                    Node.Property rememberprop = set.get(DatabaseNodeInfo.REMEMBER_PWD);
-                    PropertySupport newrememberprop = createPropertySupport(rememberprop.getName(), rememberprop.getValueType(), rememberprop.getDisplayName(), rememberprop.getShortDescription(), info, connecting);
-                    set.put(newrememberprop);
-                    firePropertyChange("rememberpassword",rememberprop,newrememberprop); //NOI18N
+                        Node.Property schemaprop = set.get(DatabaseNodeInfo.SCHEMA);
+                        firePropertyChange("schema",null,schemaprop); //NOI18N
 
+                        Node.Property usrprop = set.get(DatabaseNodeInfo.USER);
+                        firePropertyChange("user",null,usrprop); //NOI18N
+
+                        Node.Property rememberprop = set.get(DatabaseNodeInfo.REMEMBER_PWD);
+                        firePropertyChange("rememberpassword",null,rememberprop); //NOI18N
+                    }
+                    
                     if (!connecting)
                         children.remove(children.getNodes());
                     else {
