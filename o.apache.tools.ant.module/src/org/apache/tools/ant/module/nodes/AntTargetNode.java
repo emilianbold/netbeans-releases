@@ -154,7 +154,10 @@ public class AntTargetNode extends ElementNode {
             while (tok.hasMoreTokens ()) {
                 String target = tok.nextToken ();
                 if (! av.contains (target)) {
-                    throw new IllegalArgumentException (NbBundle.getMessage (AntTargetNode.class, "EXC_target_not_exist", target));
+                    IllegalArgumentException iae = new IllegalArgumentException ("no such target: " + target); // NOI18N
+                    //TopManager.getDefault ().getErrorManager ().annotate (iae, NbBundle.getMessage (AntTargetNode.class, "EXC_target_not_exist", target));
+                    AntModule.err.annotate (iae, NbBundle.getMessage (AntTargetNode.class, "EXC_target_not_exist", target));
+                    throw iae;
                 }
             }
             super.setValue (o);
