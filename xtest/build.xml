@@ -82,8 +82,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="makedist" depends="jars">
      <zip zipfile="xtest-distribution.zip">
      
-	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar"/>
-	<zipfileset dir="xslt" prefix="xslt"/>
+	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl"/>
         <zipfileset dir="." includes="dist_build.xml" fullpath="build.xml"/>
         <zipfileset dir="." includes="standard-test-includes.txt,standard-test-excludes.txt"/>
      </zip>
