@@ -80,6 +80,19 @@
     		.pass {
 		    	background:#EEEEE0;
 	    	}
+    		.error-matrix {
+	    		font-weight:bold; background:#e0a8e0; color:purple;
+	    		}
+	    	.fail-matrix {
+			    font-weight:bold; background:#ffa0a0; color:red;
+    		}
+    		.unknown-matrix {
+			    font-weight:bold; background:#EEEEE0; color:red;
+    		}    		
+    		.pass-matrix {
+		    	background:#EEEEE0;
+	    	}
+	    		    	
 	    	.header {
 		    	background:#A6CAF0;
 	    	}

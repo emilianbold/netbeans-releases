@@ -69,7 +69,7 @@
 							<xsl:for-each select = "HMTestedBuild">				
 								<xsl:choose>
 									<xsl:when test="@result">										
-										<TD class="{@result}">
+										<TD class="{@result}-matrix">
                                                                                     <xsl:if test="boolean($includeExceptions)">
 											<A HREF="../{@path}"><xsl:value-of select="@result"/></A>
                                                                                     </xsl:if>
@@ -79,7 +79,7 @@
 										</TD>
 									</xsl:when>
 									<xsl:otherwise>
-										<TD class="error">N/A</TD>
+										<TD class="error-matrix">N/A</TD>
 									</xsl:otherwise>
 								</xsl:choose>						
 							</xsl:for-each>
