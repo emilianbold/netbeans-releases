@@ -447,9 +447,9 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
 
   private static String getVariableGenString (RADComponent comp, boolean containerCode) {
-    if (comp instanceof RADContainer) {
+    if (comp instanceof FormContainer) {
       if (containerCode) {
-        return ((RADContainer)comp).getContainerGenName ();
+        return (((FormContainer)comp).getFormInfo ().getContainerGenName ());
       } else {
         return "";
       }
@@ -719,6 +719,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  21   Gandalf   1.20        6/7/99   Ian Formanek    Undone last change (a 
+ *       bad change indeed)
  *  20   Gandalf   1.19        6/6/99   Ian Formanek    Fixed container add code
  *  19   Gandalf   1.18        6/2/99   Ian Formanek    ToolsAction, Reorder
  *  18   Gandalf   1.17        5/31/99  Ian Formanek    
