@@ -78,6 +78,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="clean-nbjunit">
+    <!-- XXX the following line is obsolete -->
     <delete file="netbeans/modules/ext/nbjunit.jar"/>
     <delete>
       <fileset dir="src">
@@ -87,6 +88,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
       
   <target name="clean" depends="clean-javadoc-nbjunit, clean-nbjunit">
+     <!-- XXX the following line is obsolete -->
      <delete dir="netbeans"/>
      <delete dir="javadoc"/>
   </target>
