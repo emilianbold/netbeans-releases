@@ -214,8 +214,7 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
                     break;
                 }
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             if (Boolean.getBoolean ("netbeans.debug.exceptions")) {
                 // not a big problem: HtmlBrowser will create some browser
                 ex.printStackTrace ();
@@ -411,7 +410,7 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
         /** Updates display text and tooltip of associated button. Node's
          * name or display name has changed. Helper method. */
         private void updateText() {
-            String text = node.getDisplayName();
+            String text = node.getName();
             
             Actions.setMenuText(button, text, true);
             button.setToolTipText(Actions.cutAmpersand(text));
@@ -435,15 +434,68 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
         public URLNode (final DataObject dataObject) {
             super(dataObject, Children.LEAF);
             setIconBase("org/netbeans/modules/url/urlObject"); // NOI18N
+
+            // Trick: To have a node name localized but remain the object name 
+            // the same until renamed explictly. -> due to be able show
+            // node names without ampersands for shortcuts and be able to show
+            // shortcuts in bookmarks menu.
+            // Note: see getDisplayName method bellow.
+            setName(super.getDisplayName(), false);
         }
 
+
+        /** Gets display name. Overrides superclass method. 
+         * Cuts ampersand from the original display name. */
+        public String getDisplayName() {
+            return Actions.cutAmpersand(super.getDisplayName());
+        }
         
         /** Gets sheet of properties. Overrides superclass method. */
         protected Sheet createSheet() {
             Sheet sheet = super.createSheet();
-                sheet.get(Sheet.PROPERTIES).put(createURLStringProperty());
+            Sheet.Set sheetSet = sheet.get(Sheet.PROPERTIES);
+            
+            // Name property is replaced by so we could show the localized name
+            // of node instead of the non-localized name of file on the disk 
+            // which could differ at the start.
+            sheetSet.remove(DataObject.PROP_NAME);
+            sheetSet.put(createNameProperty());
+                        
+            sheetSet.put(createURLStringProperty());
             
             return sheet;
+        }
+
+        /** Creates a name property. */
+        private Node.Property createNameProperty() {
+            return new PropertySupport.ReadWrite (
+                DataObject.PROP_NAME,
+                String.class,
+                NbBundle.getBundle(URLDataObject.class).getString("PROP_Name"),
+                NbBundle.getBundle(URLDataObject.class).getString("PROP_NameShortDescription")) {
+
+                public Object getValue () {
+                  return URLNode.this.getName();
+                }
+
+                public void setValue (Object val) throws IllegalAccessException,
+                  IllegalArgumentException, InvocationTargetException {
+                  if (!canWrite())
+                      throw new IllegalAccessException();
+                  if (!(val instanceof String))
+                      throw new IllegalArgumentException();
+
+                  try {
+                      getDataObject().rename ((String)val);
+                  } catch (IOException ex) {
+                      throw new InvocationTargetException (ex);
+                  }
+                }
+
+                public boolean canWrite () {
+                  return getDataObject().isRenameAllowed();
+                }
+            };
         }
         
         /** Creates property for editing.
