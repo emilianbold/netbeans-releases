@@ -438,7 +438,10 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                 WebProjectProperties wpp = new WebProjectProperties (WebProject.this, helper, refHelper);
                     //DDDataObject initialization to be ready to listen on changes (#45771)
                     try {
-                        DataObject dobj = DataObject.find(webModule.getDeploymentDescriptor());
+                        FileObject ddFO = webModule.getDeploymentDescriptor();
+                        if (ddFO != null) {
+                            DataObject dobj = DataObject.find(ddFO);
+                        }
                     } catch (org.openide.loaders.DataObjectNotFoundException ex) {}
                 if (libFolderName != null && helper.resolveFile (libFolderName).isDirectory ()) {
                     List cpItems = (List) wpp.get (WebProjectProperties.JAVAC_CLASSPATH);
@@ -476,7 +479,6 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                 sysName = sysName.replace (' ', '_'); //NOI18N
                 webModule.setContextPath (sysName);
             }
-            
             // register project's classpaths to GlobalPathRegistry
             ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
