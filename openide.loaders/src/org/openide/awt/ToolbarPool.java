@@ -459,7 +459,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
         protected InstanceCookie acceptFolder (DataFolder df) {
             InstanceCookie ic = (InstanceCookie)foldersCache.get (df);
             if (ic == null) {
-                ic = new InstanceSupport.Instance(new Toolbar(df,true));
+                ic = (FolderInstance)new Toolbar (df, true).waitFinished ();
                 foldersCache.put (df, ic);
             }
             return ic;

@@ -104,20 +104,29 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     }
 
     /** Start tracking content of the underlaying folder if not doing so yet */
-    private void doInitialize() {
-	if(processor == null && isVisible()) {
-	    processor = new Folder(); // It will start tracking immediatelly
-	}
+    final Folder waitFinished() {
+        // check for too early call (from constructor and UI.setUp...)
+        if (backingFolder == null) return null;
+        
+        if(processor == null && isVisible()) {
+            processor = new Folder(); // It will start tracking immediatelly
+        }
+        return processor;
     }    
     
     public void addNotify() {
-	super.addNotify();
-	doInitialize();
+        super.addNotify();
+        waitFinished();
+    }
+    
+    public Component[] getComponents () {
+        waitFinished ();
+        return super.getComponents ();
     }
     
     public void setVisible(boolean b) {
 	super.setVisible(b);
-	doInitialize();	
+	waitFinished();	
     }
     
     /** Overridden to set focusable to false for any AbstractButton
