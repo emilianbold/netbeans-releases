@@ -238,7 +238,7 @@ public class CallStackFilter implements TreeModelFilter, NodeModel {
     
     public String getDisplayName (Object node) throws UnknownTypeException {
         if (node instanceof HiddenFrames)
-            return NbBundle.getMessage(CallStackFilter.class, "HIDDEN_FRAMES");
+            return NbBundle.getMessage(CallStackFilter.class, "LBL_HIDDEN_FRAMES");
         throw new UnknownTypeException (node);
     }
     
@@ -250,7 +250,7 @@ public class CallStackFilter implements TreeModelFilter, NodeModel {
     
     public String getShortDescription (Object node) throws UnknownTypeException {
         if (node instanceof HiddenFrames)
-            return NbBundle.getMessage(CallStackFilter.class, "HIDDEN_FRAMES");
+            return NbBundle.getMessage(CallStackFilter.class, "TLT_HIDDEN_FRAMES");
         throw new UnknownTypeException (node);
     }
     
