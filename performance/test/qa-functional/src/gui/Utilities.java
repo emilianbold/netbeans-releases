@@ -82,6 +82,7 @@ public class Utilities {
      */
     public static void open10FilesFromJEdit(){
         openFiles("jEdit", getTenSelectedFiles());
+        new EventTool().waitNoEvent(20000);
     }
     
     /**
