@@ -454,7 +454,7 @@ is divided into following sections:
                 <target name="{$wsname}_wscompile" depends="init, wscompile-init">
                   <wscompile import="true" 
                      config="${{src.dir}}/${{{$wsname}.config.name}}"
-                     features="norpcstructures" 
+                     features="${{wscompile.service.{$wsname}.features}}"
                      mapping="${{web.docbase.dir}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
                      classpath="${{wscompile.classpath}}" 
                      nonClassDir="${{build.web.dir}}/WEB-INF/wsdl" 
@@ -463,7 +463,7 @@ is divided into following sections:
                      base="${{build.generated.dir}}/wssrc"
                      sourceBase="${{src.dir}}" 
                      keep="true" 
-                     fork="true" />
+                     fork="true"/>
                 </target>  
               </xsl:when>
               <xsl:otherwise>
@@ -478,7 +478,8 @@ is divided into following sections:
                      nonClassDir="${{build.web.dir}}/WEB-INF/wsdl"
                      classpath="${{wscompile.classpath}}:build/web/WEB-INF/classes"
                      mapping="${{build.web.dir}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
-                     config="${{src.dir}}/${{{$wsname}.config.name}}">
+                     config="${{src.dir}}/${{{$wsname}.config.name}}"
+                     features="${{wscompile.service.{$wsname}.features}}">
                   </wscompile>
                 </target>
               </xsl:otherwise>
