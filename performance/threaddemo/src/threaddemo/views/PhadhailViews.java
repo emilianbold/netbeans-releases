@@ -31,6 +31,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.Mutex;
 import threaddemo.locking.LockAction;
 import threaddemo.locking.Locks;
 
@@ -44,7 +45,13 @@ public class PhadhailViews {
     private PhadhailViews() {}
     
     private static Component nodeBasedView(Node root) {
-        Node root2 = new EQReplannedNode(root);
+        Node root2;
+        if (Children.MUTEX == Mutex.EVENT) {
+            // #35833 branch.
+            root2 = root;
+        } else {
+            root2 = new EQReplannedNode(root);
+        }
         ExplorerPanel p = new ExplorerPanel();
         p.setLayout(new BorderLayout());
         JComponent tree = new BeanTreeView();
