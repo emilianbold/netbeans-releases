@@ -38,7 +38,7 @@ DATE_STAMP=`date +%Y.%m.%d-%H:%M`
 
 
 #
-# update xml/www
+# update xml
 #
 cd $CVS_ROOT/nb_all/xml
 cvs update -A -d -P 2>&1 >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
@@ -55,3 +55,9 @@ ant -logfile $CVS_ROOT/"${DATE_STAMP}__2.ant_all.txt" all #2>&1 >> $CVS_ROOT/"${
 # commit changes
 #
 cvs commit -m "Automatic update -- ${DATE_STAMP}." 2>&1 > $CVS_ROOT/"${DATE_STAMP}__3.commit.txt"
+
+
+#
+# post update xml - to log status after commit
+#
+cvs update -A -d -P 2>&1 >> $CVS_ROOT/"${DATE_STAMP}__4.post-update.txt"
