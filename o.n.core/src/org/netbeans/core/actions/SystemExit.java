@@ -55,7 +55,7 @@ public class SystemExit extends CallableSystemAction {
   * @return the name of the action
   */
   public String getName() {
-    return NbBundle.getBundle().getString("Exit");
+    return NbBundle.getBundle(SystemExit.class).getString("Exit");
   }
 
   /** Help context where to find more about the action.
@@ -115,7 +115,7 @@ public class SystemExit extends CallableSystemAction {
       );
 
 
-      setTitle(NbBundle.getBundle().getString("CTL_ExitTitle"));
+      setTitle(NbBundle.getBundle(SystemExit.class).getString("CTL_ExitTitle"));
       listModel = new DefaultListModel();
       Iterator iter = DataObject.getRegistry ().getModifiedSet ().iterator();
       while (iter.hasNext()) {
@@ -137,12 +137,12 @@ public class SystemExit extends CallableSystemAction {
     /** Creates the button bar for this dialog */
     private static ButtonBar createBB() {
       return new ButtonBar(new String[] {
-        NbBundle.getBundle().getString("CTL_Save"),
-        NbBundle.getBundle().getString("CTL_SaveAll"),
-        NbBundle.getBundle().getString("CTL_DiscardAll")
+        NbBundle.getBundle(SystemExit.class).getString("CTL_Save"),
+        NbBundle.getBundle(SystemExit.class).getString("CTL_SaveAll"),
+        NbBundle.getBundle(SystemExit.class).getString("CTL_DiscardAll")
       },
       new String[] {
-        NbBundle.getBundle().getString("CTL_Cancel")
+        NbBundle.getBundle(SystemExit.class).getString("CTL_Cancel")
       });
     }
 
@@ -221,7 +221,7 @@ public class SystemExit extends CallableSystemAction {
     private void saveExc(Exception e) {
       TopManager.getDefault().notify(
         new NotifyDescriptor.Exception(e,
-                                       NbBundle.getBundle().getString("EXC_Save"))
+                                       NbBundle.getBundle(SystemExit.class).getString("EXC_Save"))
       );
     }
   }
@@ -273,6 +273,7 @@ public class SystemExit extends CallableSystemAction {
 
 /*
  * Log
+ *  7    Gandalf   1.6         3/5/99   Ales Novak      
  *  6    Gandalf   1.5         1/20/99  Jaroslav Tulach 
  *  5    Gandalf   1.4         1/14/99  David Simonek   
  *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
