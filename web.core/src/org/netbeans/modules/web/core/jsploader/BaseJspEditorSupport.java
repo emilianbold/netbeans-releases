@@ -251,7 +251,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     }
     
     protected String getObjectEncoding(boolean useEditor) {
-        return ((JspDataObject)getDataObject()).getFileEncoding( useEditor);
+        return ((JspDataObject)getDataObject()).getFileEncoding( useEditor).trim();
     }
     
     /** Save the document in this thread and start reparsing it.
@@ -277,7 +277,14 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     private void saveDocument(boolean parse, boolean forceSave) throws IOException {
         if (forceSave || isModified()) {
             encoding = getObjectEncoding(true);
-            if (!java.nio.charset.Charset.isSupported(encoding)){
+            boolean supported;
+            try{
+                supported = java.nio.charset.Charset.isSupported(encoding);
+            }
+            catch (java.nio.charset.IllegalCharsetNameException e){
+                supported = false;
+            }
+            if (!supported){
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                 NbBundle.getMessage (BaseJspEditorSupport.class, "MSG_BadEncodingDuringSave", //NOI18N
                     new Object [] { getDataObject().getPrimaryFile().getNameExt(),
