@@ -29,13 +29,13 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
 
 /**
  *
@@ -55,7 +55,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
         return true;
     }
 
-    protected void setUp () throws java.lang.Exception {
+    protected void setUp () throws Exception {
         super.setUp ();
         TestUtil.setLookup (new Object[] { 
                                 TestSupport.testProjectFactory (),
@@ -92,12 +92,6 @@ public class ProjectUtilitiesTest extends NbTestCase {
         mode.dockInto (new SimpleTopComponent (do1_2_open));
         mode.dockInto (new SimpleTopComponent (do2_1_open));
         
-    }
-
-    public static junit.framework.Test suite () {
-        junit.framework.TestSuite suite = new junit.framework.TestSuite(ProjectUtilitiesTest.class);
-        
-        return suite;
     }
 
     public void testCloseAllDocuments () {
@@ -146,7 +140,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
         
     }
     
-    public void testCloseAntOpenProjectAndClosedWithoutOpenFiles () {
+    public void testCloseAndOpenProjectAndClosedWithoutOpenFiles () {
         closeProjectWithOpenedFiles ();
 
         OpenProjectList.getDefault ().open (project1, false);
@@ -175,8 +169,9 @@ public class ProjectUtilitiesTest extends NbTestCase {
             this.content = obj;
         }
         
-        public org.openide.util.Lookup getLookup () {
-            return  Lookups.singleton (content);
+        public Lookup getLookup () {
+            return Lookups.singleton (content);
         }
     }
+    
 }
