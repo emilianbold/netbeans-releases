@@ -90,19 +90,6 @@ Microsystems, Inc. All Rights Reserved.
       <exclude name="ja/"/>
       <exclude name="credits.html"/>
     </jhindexer>
-    <mkdir dir="javahelp/org/netbeans/modules/db/docs/ja/JavaHelpSearch2"/>
-    <jhindexer basedir="javahelp/org/netbeans/modules/db/docs/ja/"
-               db="javahelp/org/netbeans/modules/db/docs/ja/JavaHelpSearch2"
-               locale="ja">
-      <classpath>
-         <fileset dir="../nbbuild/external">
-	   <include name="jhall*.jar"/>
-	 </fileset>
-      </classpath>
-      <include name="**/*.html"/>
-      <exclude name="JavaHelpSearch2/"/>
-      <exclude name="credits.html"/>
-    </jhindexer>
     <mkdir dir="javahelp/org/netbeans/modules/usersguide"/>
     <copy file="../usersguide/javahelp/org/netbeans/modules/usersguide/ide.css" tofile="javahelp/org/netbeans/modules/usersguide/ide.css"/>
     <mkdir dir="netbeans/modules/docs"/>
@@ -143,7 +130,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="netbeans"/>
     <delete dir="Info"/>
     <delete dir="javahelp/org/netbeans/modules/db/docs/JavaHelpSearch"/>
-    <delete dir="javahelp/org/netbeans/modules/db/docs/ja/JavaHelpSearch"/>
     <delete dir="javahelp/org/netbeans/modules/usersguide"/>
   </target>
 
