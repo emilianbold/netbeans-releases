@@ -60,6 +60,8 @@ import org.openide.util.Utilities;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /** 
  * Support for viewing .properties files (EditCookie) by opening them in a text editor.
@@ -234,6 +236,16 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
         } else {
             return false;
         }
+    }
+    
+    protected Task reloadDocument(){
+        Task tsk = super.reloadDocument();
+        tsk.addTaskListener(new TaskListener(){
+            public void taskFinished(Task task){
+                myEntry.getHandler().autoParse();
+            }
+        });
+        return tsk;
     }
 
     /** Overrides superclass method. Adds checking for opened Table component. */
@@ -680,6 +692,7 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
             }
         }
 
+        
         /** Called from the <code>EnvironmentListener</code>.
          * The components are going to be closed anyway and in case of
          * modified document its asked before if to save the change. */
