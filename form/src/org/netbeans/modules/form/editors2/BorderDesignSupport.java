@@ -23,17 +23,21 @@ import org.openide.nodes.*;
 import org.netbeans.modules.form.*;
 
 /**
+ * A support class holding metadata for borders (javax.swing.border.Border),
+ * similar to RADComponent.
+ *
  * @author Tomas Pavek
  */
 
-public class BorderDesignSupport implements FormDesignValue, FormPropertyContainer {
-
-    Border theBorder;
-    boolean borderNeedsUpdate;
-    boolean propertiesNeedInit;
-    CreationDescriptor creationDesc;
-    FormPropertyContext propertyContext = null;
-    FormProperty[] properties = null;
+public class BorderDesignSupport implements FormDesignValue,
+                                            FormPropertyContainer
+{
+    private Border theBorder;
+    private boolean borderNeedsUpdate;
+    private boolean propertiesNeedInit;
+    private CreationDescriptor creationDesc;
+    private FormPropertyContext propertyContext = null;
+    private FormProperty[] properties = null;
 
     // -------------------------
     // constructors
@@ -63,14 +67,6 @@ public class BorderDesignSupport implements FormDesignValue, FormPropertyContain
             theBorder = border;
     }
 
-//    public BorderDesignSupport(Class borderClass, FormPropertyContext propContext)
-//        throws InstantiationException, IllegalAccessException,
-//               IllegalArgumentException, InvocationTargetException {
-//
-//        this(borderClass);
-//        setPropertyContext(propContext);
-//    }
-
     public BorderDesignSupport(Border border) {
         creationDesc = CreationFactory.getDescriptor(border.getClass());
         if (creationDesc == null) {
@@ -79,11 +75,6 @@ public class BorderDesignSupport implements FormDesignValue, FormPropertyContain
         }
         setBorder(border);
     }
-
-//    public BorderDesignSupport(Border border, FormPropertyContext propContext) {
-//        this(border);
-//        setPropertyContext(propContext);
-//    }
 
     public BorderDesignSupport(BorderDesignSupport borderDesignSupport)
         throws Exception
@@ -148,6 +139,7 @@ public class BorderDesignSupport implements FormDesignValue, FormPropertyContain
         this.propertyContext = propertyContext;
     }
 
+    // FormPropertyContainer implementation
     public Node.Property[] getProperties() {
         if (properties == null)
             createProperties();
@@ -170,8 +162,10 @@ public class BorderDesignSupport implements FormDesignValue, FormPropertyContain
         ArrayList nodeProps = new ArrayList();
         for (int i = 0; i < props.length; i++) {
             PropertyDescriptor pd = props[i];
-            if (!pd.isHidden() && (pd.getWriteMethod() != null 
-                || CreationFactory.containsProperty(creationDesc, pd.getName())))
+            if (!pd.isHidden()
+                && (pd.getWriteMethod() != null 
+                    || CreationFactory.containsProperty(creationDesc,
+                                                        pd.getName())))
             {
                 BorderProperty prop =
                     new BorderProperty(pd.getPropertyType().isPrimitive() ?
@@ -262,15 +256,17 @@ public class BorderDesignSupport implements FormDesignValue, FormPropertyContain
                 setAccessType(DETACHED_READ);
         }
 
-        public Object getTargetValue() throws IllegalAccessException,
-                                              InvocationTargetException {
+        public Object getTargetValue()
+            throws IllegalAccessException, InvocationTargetException
+        {
             Method readMethod = desc.getReadMethod();
             return readMethod.invoke(theBorder, new Object[0]);
         }
 
-        public void setTargetValue(Object value) throws IllegalAccessException,
-                                                     IllegalArgumentException,
-                                                     InvocationTargetException {
+        public void setTargetValue(Object value)
+            throws IllegalAccessException, IllegalArgumentException,
+                   InvocationTargetException
+        {
             Method writeMethod = desc.getWriteMethod();
             writeMethod.invoke(theBorder, new Object[] { value });
         }
@@ -294,8 +290,9 @@ public class BorderDesignSupport implements FormDesignValue, FormPropertyContain
             Object value = null;
             if (readMethod != null)
                 try {
-                    value = readMethod.invoke(BeanSupport.getDefaultInstance(theBorder.getClass()),
-                                              new Object[0]);
+                    value = readMethod.invoke(
+                        BeanSupport.getDefaultInstance(theBorder.getClass()),
+                        new Object[0]);
                 }
                 catch (Exception ex) { // do nothing
                 }
@@ -305,7 +302,8 @@ public class BorderDesignSupport implements FormDesignValue, FormPropertyContain
         public PropertyEditor getExpliciteEditor() {
             if (desc.getPropertyEditorClass() != null) {
                 try {
-                    return (PropertyEditor)desc.getPropertyEditorClass().newInstance();
+                    return (PropertyEditor)
+                           desc.getPropertyEditorClass().newInstance();
                 } 
                 catch (Exception ex) {
                     ex.printStackTrace();
