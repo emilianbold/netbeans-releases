@@ -2,25 +2,27 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.j2eeserver/1
 OpenIDE-Module-Display-Category: J2EE Support
 OpenIDE-Module-Install: org/netbeans/modules/j2ee/IntegrationModule.class
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 1.1.2
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Name: J2EE Server Registry
 OpenIDE-Module-Module-Dependencies: org.openidex.util/1,org.netbeans.modules.debugger.jpda/1
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/impl/layer.xml
+OpenIDE-Module-Description: org.netbeans.modules.j2ee.server.docs.j2eeserver
+OpenIDE-Module-Short-Description: Supports j2ee application servers
+OpenIDE-Module-Long-Description: The j2eeserver module enables j2ee development modules to configure,
+  deploy, and debug j2ee components on j2ee application servers that
+  have a server plugin module using the server integration api.
 
 Name: org/netbeans/modules/j2ee/ui/ServerRegistryNode.class
 OpenIDE-Module-Class: Node
 Type: Environment
+
+Name: org/netbeans/modules/j2ee/impl/ServerOptions.class
+OpenIDE-Module-Class: Option
 
 Name: org/netbeans/modules/j2ee/impl/ServerExecutor.class
 OpenIDE-Module-Class: Service
 
 Name: org/netbeans/modules/j2ee/impl/ServerDebuggerType.class
 OpenIDE-Module-Class: Service
-
-Name: org/netbeans/modules/j2ee/impl/ExecuteForceReloadAction.class
-OpenIDE-Module-Class: Action
-
-Name: org/netbeans/modules/j2ee/impl/DeployAction.class
-OpenIDE-Module-Class: Action
 

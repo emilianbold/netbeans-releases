@@ -1,15 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
 <project basedir="." default="netbeans" name="j2eeserver">
 
   <property name="nbroot" value="../../nb_all"/>
+  <property name="binroot" value="../../nbextra"/>
   <property name="nbext" value="${nbroot}/nbbuild"/>
 
+  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext}/nbantext.jar"/>
   <taskdef classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar" name="locjar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
 
   <!-- These are the primary targets. -->
 
-  <target depends="jars" name="netbeans"/>
+  <target depends="javahelp,jars" name="netbeans"/>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="j2eeserver.nbm"
@@ -76,6 +91,7 @@
         <pathelement location="${nbroot}/logger/netbeans/lib/ext/logger.jar"/>
         <pathelement location="${nbroot}/jarpackager/netbeans/modules/jarpackager.jar"/>
         <pathelement location="${nbroot}/debuggerjpda/netbeans/modules/jpdaDebugger.jar"/>
+        <pathelement location="${nbroot}/core/netbeans/lib/core.jar"/>
       </classpath>
       <link href="${jdk-docs-location}"
             offline="true"
@@ -128,13 +144,28 @@
         <pathelement location="${nbroot}/jarpackager/netbeans/modules/jarpackager.jar"/>
         <pathelement location="${nbroot}/debuggerjpda/netbeans/modules/jpdaDebugger.jar"/>
         <pathelement location="${nbroot}/debuggercore/netbeans/modules/debuggerCore.jar"/>
+        <pathelement location="${nbroot}/core/netbeans/lib/core.jar"/>
       </classpath>
     </javac>
   </target>
 
+  <target name="javahelp">
+    <copy todir="netbeans/docs">
+      <fileset dir="javahelp"/>
+    </copy>
+    <mkdir dir="netbeans/docs/org/netbeans/modules/j2ee/server/docs/JavaHelpSearch"/>
+    <jhindexer basedir="netbeans/docs/org/netbeans/modules/j2ee/server/docs/"
+               db="netbeans/docs/org/netbeans/modules/j2ee/server/docs/JavaHelpSearch"
+               jhall="${binroot}/nbbuild/lib/jhall.jar">
+      <include name="**/*.html"/>
+      <include name="**/*.htm"/>
+      <exclude name="JavaHelpSearch/"/>
+      <exclude name="credits.html"/>
+    </jhindexer>
+  </target>
+
   <!-- This target will only work *inside* the IDE! -->
-  <target depends="" description="Test the module inside the running IDE." name="test">
-    <taskdef classname="org.netbeans.modules.apisupport.ant.InstallModuleTask" name="nbinstaller"/>
+  <target depends="netbeans" description="Test the module inside the running IDE." name="test">
     <nbinstaller action="reinstall" module="netbeans/modules/j2eeserver.jar"/>
   </target>
 
