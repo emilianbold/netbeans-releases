@@ -18,6 +18,8 @@ import org.netbeans.modules.web.project.ProjectWebModule;
 import javax.swing.JPanel;
 
 import org.openide.util.NbBundle;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.openide.util.HelpCtx;
@@ -32,6 +34,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
     String[] serverNames;
     String[] serverURLs;
     boolean initialized = false;
+    private org.openide.util.RequestProcessor.Task checkCPTask;
 
     private WebProjectProperties webProperties;
 
@@ -121,6 +124,12 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 0);
         add(jLabelContextPath, gridBagConstraints);
+
+        jTextFieldContextPath.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTextFieldContextPathKeyReleased(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -217,6 +226,11 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
 
     }//GEN-END:initComponents
 
+    private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased
+        // TODO add your handling code here:
+        restartTimer();
+    }//GEN-LAST:event_jTextFieldContextPathKeyReleased
+
     private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxServerActionPerformed
         if (jComboBoxServer.getSelectedIndex() == -1 || !initialized)
             return;
@@ -252,4 +266,41 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerRun.class);
     }
+    
+    private boolean isCorrectCP(String contextPath) {
+        boolean correct=true;
+        if (!contextPath.startsWith("/")) correct=false; //NOI18N
+        else if (contextPath.length()>1 && contextPath.endsWith("/")) correct=false; //NOI18N
+        else if (contextPath.indexOf("//")>=0) correct=false; //NOI18N
+        return correct;
+    }
+    
+    /** Restart the timer which starts the task after the specified delay.
+    */
+    private void restartTimer() {
+        Runnable r = new Runnable() {
+            public void run() {
+                String contextPath = jTextFieldContextPath.getText();
+                if (!isCorrectCP(contextPath)) {
+                    java.util.StringTokenizer tok = new java.util.StringTokenizer(contextPath,"/"); //NOI18N
+                    StringBuffer buf = new StringBuffer(""); //NOI18N
+                    while (tok.hasMoreTokens()) {
+                        buf.append("/"+tok.nextToken()); //NOI18N
+                    }
+                    String updatedPath = (buf.length()==0?"/":buf.toString());
+                    jTextFieldContextPath.setText(updatedPath);
+                    String mes = java.text.MessageFormat.format (
+                            NbBundle.getMessage (CustomizerRun.class, "MSG_invalidCP"),
+                            new Object [] {contextPath});
+                    NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.INFORMATION_MESSAGE);
+                    DialogDisplayer.getDefault().notify(desc);
+                }
+            }
+	};
+        // attempt to cancel previous task
+        if (checkCPTask!=null && !checkCPTask.isFinished()) checkCPTask.cancel();
+        
+        checkCPTask = org.openide.util.RequestProcessor.getDefault().post(r,1000);             
+    } 
+    
 }
