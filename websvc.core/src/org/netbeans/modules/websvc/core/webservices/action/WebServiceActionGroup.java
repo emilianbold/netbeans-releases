@@ -16,19 +16,11 @@ import javax.swing.*;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.*;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
-import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
-import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
-import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
-import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
-import org.openide.src.ClassElement;
-import org.openide.src.MethodElement;
-import org.netbeans.modules.j2ee.dd.api.webservices.DDProvider;
-import org.openide.filesystems.FileObject;
+
 
 public class WebServiceActionGroup extends NodeAction implements Presenter.Popup
 {
