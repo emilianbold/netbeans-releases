@@ -353,13 +353,15 @@ public class JPDAStart extends Task implements Runnable {
                 continue;
             }
             FileObject fos[] = SourceForBinaryQuery.findSourceRoots (u).getRoots();
-            System.out.println("class: " + u);
+            if (startVerbose)
+                System.out.println("class: " + u);
             if (fos.length > 0) {
-            System.out.println("source : " + fos [0]);
+                if (startVerbose)
+                    System.out.println("source : " + fos [0]);
                 try {
-                  File file = FileUtil.toFile(fos [0]);
-                  if (file == null) continue;
-//                    u = FileUtil.toFile (fos [0]).toURI ().toURL ();
+                    File file = FileUtil.toFile(fos [0]);
+                    if (file == null) continue;
+    //                    u = FileUtil.toFile (fos [0]).toURI ().toURL ();
                     u = file.toURI ().toURL ();
                 } catch (MalformedURLException e) {
                     ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
