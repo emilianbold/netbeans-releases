@@ -7,13 +7,15 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.platform.classpath;
 
 
+import java.util.Collections;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -61,15 +63,26 @@ public class PlatformClassPathProvider implements ClassPathProvider {
                 this.setLastUsedPlatform (root,platforms[i]);
                 return bootClassPath;
             }
-            else if (ClassPath.COMPILE.equals(type) &&
-                    libraryPath != null && (root = libraryPath.findOwnerRoot(fo))!=null) {
-                this.setLastUsedPlatform (root,platforms[i]);
-                return libraryPath;
+            else if (ClassPath.COMPILE.equals(type)) {
+                if (libraryPath != null && (root = libraryPath.findOwnerRoot(fo))!=null) {
+                    this.setLastUsedPlatform (root,platforms[i]);
+                    return libraryPath;
+                }
+                else if ((bootClassPath != null && (root = bootClassPath.findOwnerRoot (fo))!=null) ||
+                    (sourcePath != null && (root = sourcePath.findOwnerRoot(fo)) != null)) {
+                    return this.getEmptyClassPath ();
+                }
             }
         }
         return null;
     }
 
+    private synchronized ClassPath getEmptyClassPath () {
+        if (this.emptyCp == null ) {
+            this.emptyCp = ClassPathSupport.createClassPath(Collections.EMPTY_LIST);
+        }
+        return this.emptyCp;
+    }
 
     private synchronized void setLastUsedPlatform (FileObject root, JavaPlatform platform) {
         this.lastUsedRoot = root;
@@ -87,4 +100,5 @@ public class PlatformClassPathProvider implements ClassPathProvider {
 
     private FileObject lastUsedRoot;
     private JavaPlatform lastUsedPlatform;
+    private ClassPath emptyCp;
 }
