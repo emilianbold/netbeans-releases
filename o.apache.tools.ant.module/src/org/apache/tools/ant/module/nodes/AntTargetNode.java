@@ -46,6 +46,8 @@ import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.run.TargetExecutor;
 import org.apache.tools.ant.module.xml.ElementSupport;
 import org.apache.tools.ant.module.wizards.properties.*;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
 
 /** A node representing an Ant build target.
  */
@@ -345,15 +347,24 @@ public class AntTargetNode extends ElementNode {
         public void create () throws IOException {
             // Ask the user which to choose.
             JPanel pane = new JPanel ();
-            pane.setLayout (new BorderLayout ());
-            final JComboBox combo = new JComboBox (names.toArray ());
-            // Not for now; helplistener does not update when the text is changed:
-            //combo.setEditable (true);
-            pane.add (combo, BorderLayout.CENTER);
-            pane.add (new JLabel (NbBundle.getMessage (AntTargetNode.class, "LBL_choose_task")), BorderLayout.WEST);
+            pane.setLayout (new GridBagLayout ());
+            GridBagConstraints gridBagConstraints;
+
+            // #20657 - the content of the panel was redesigned. The issue
+            // contain the .form file
+            JLabel jLabel1 = new javax.swing.JLabel(NbBundle.getMessage (AntTargetNode.class, "LBL_choose_task"));
+            final JButton help = new javax.swing.JButton();
+            final JComboBox combo = new javax.swing.JComboBox(names.toArray ());
+
+            jLabel1.setFont(new java.awt.Font("Arial", 0, 11));
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+            gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 6);
+            pane.add(jLabel1, gridBagConstraints);
+
+
             if (AntTaskNode.helpFor("property", "task") != null) { // NOI18N
                 // We have help available. (<property> is well-known.)
-                final JButton help = new JButton ();
                 ActionListener helplistener = new ActionListener () {
                         public void actionPerformed (ActionEvent ignore) {
                             help.setText (NbBundle.getMessage (AntTargetNode.class, "LBL_help_on_task", combo.getSelectedItem ()));
@@ -368,8 +379,27 @@ public class AntTargetNode extends ElementNode {
                                 AntTaskNode.helpFor((String)combo.getSelectedItem(), "task")); // NOI18N
                         }
                     });
-                pane.add (help, BorderLayout.EAST);
             }
+            
+            help.setFont(new java.awt.Font("Arial", 0, 11));
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 2;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 11);
+            pane.add(help, gridBagConstraints);
+
+            
+            combo.setFont(new java.awt.Font("Arial", 0, 12));
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.insets = new java.awt.Insets(12, 6, 11, 6);
+            pane.add(combo, gridBagConstraints);
+    
+            
             DialogDescriptor dlg = new DialogDescriptor (pane, NbBundle.getMessage (AntTargetNode.class, "TITLE_select_task"));
             dlg.setHelpCtx (getHelpCtx ());
             dlg.setModal (true);
