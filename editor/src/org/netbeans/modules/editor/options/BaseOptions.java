@@ -244,6 +244,10 @@ public class BaseOptions extends OptionSupport {
                 coloringMapInitializer.updateSettingsMap(kitClass, settingsMap);
             }
         }
+        
+        if (kitClass == BaseKit.class && coloringMapInitializer != null) {
+            coloringMapInitializer.updateSettingsMap(BaseKit.class, settingsMap);
+        }
     }
     
     public HelpCtx getHelpCtx() {
