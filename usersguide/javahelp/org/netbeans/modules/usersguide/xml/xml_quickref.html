@@ -25,25 +25,21 @@
     <td>Create a new XML document. </td>
     <td> 
 <ol>
-  <li>In the Versioning window, right-click the VCS working
-    directory's top level node and choose CVS&nbsp;<img src="../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Checkout.    </li>
-  <li>Specify the modules you wish to check out. 
-   <ul><li>To check out the entire repository
-    select All. 
-   <li>To check out a specific directory,  click the Select button
-    to choose from a list of all of the modules in the repository.
-   </ul></li>
-  <li>Click Finish to check out the files.</li>
-  </ol>
+  <li>From the main window, choose File <img src="../images/arrow.gif" alt="and choose" >&nbsp;New
+    File. </li>
+  <li>In the New File wizard, select the XML node in the left pane and the XML
+    Document node in the right pane. Then click Next.</li>
+  <li>Specify a name and location for the document and click Next.</li>
+  <li>Select the  Document type you wish to create and click Finish.</li>
+</ol>
     </td>
   </tr>
   <tr valign="top"> 
     <td>Open an XML document in the Source Editor. </td>
     <td> 
 <ol>
-  <li>Right-click the file's node that you wish to update.</li>
-  <li>Choose CVS <img src="../images/arrow.gif" alt="and choose">&nbsp;Update.
-  </li>
+  <li>Right-click the XML file's node in the Files window. </li>
+  <li>Choose Edit from the contextual menu. </li>
 </ol>
     </td>
   </tr>
@@ -52,18 +48,17 @@
     <td>Check an XML document.</td>
     <td> 
    <ol>
-    <li>Right-click the appropriate revision node in the Versioning window.
-    <li>Choose Diff Graphical from the contextual menu.
-  </ol>
+    <li>Right-click the document's node in the Files window.
+    <li>Choose Check XML, Check DTD, or Check CSS, depending on the document
+      you are checking.
+    </ol>
     </td>
   </tr>
     <tr valign="top"> 
     <td>Validate an XML document.</td>
-    <td><ol><li>Ensure that your local copies of the files are up-to-date by
-          right-clicking and choosing CVS <img src="../images/arrow.gif" width="5" height="11" alt="and choosing">&nbsp;Update
-          before committing your changes. </li>
-        <li>Right-click the files or directories you wish to commit and choose CVS <img src="../images/arrow.gif" width="5" height="11" alt="and choosing">&nbsp;Commit.
-        </li>
+    <td><ol>
+      <li>Right-click the document's node in the Files window.</li>
+        <li>Choose Validate XML.</li>
     </ol>
     </td>
   </tr>
@@ -72,11 +67,10 @@
     <td>Create a new CSS. </td>
     <td> 
 <ol>
-  <li>In the Versioning window, expand the file's node to reveal the subnodes
-    for each revision and branch.</li>
-  <li>Right-click the revision you wish to merge into your working copy and choose
-    Merge With Revision.
-  </li>
+  <li>In the main window, choose File <img src="../images/arrow.gif" alt=" and choose">&nbsp;New
+    File. </li>
+  <li>Expand the XML node and select Cascading Style Sheet. Click Next to proceed.</li>
+  <li>Enter a name and location for the CSS and click Finish. </li>
 </ol>
     </td>
   </tr>
@@ -85,39 +79,43 @@
     <td>Generate a CSS</td>
     <td> 
 <ol>
-  <li>Choose Versioning <img src="../images/arrow.gif" alt="and choose"> Versioning
-    Manager from the main window.</li>
-  <li>Click Add. The New Wizard appears allowing you to configure the necessary
-    versioning settings.</li>
-  <li>Select the CVS profile from the Version Control System Profile combo box.</li>
+  <li>Right-click an existing DTD node and choose Generate CSS. </li>
+  <li>In the dialog box, type a new name for the CSS or click OK to use the default
+    name.</li>
   </ol>
     </td>
   </tr>
   
 <tr valign="top"> 
-  <td>Create a new DTD</td>
+  <td>Create an empty DTD</td>
     <td> 
 <ol>
-  <li>Right-click the locally modified file or folder
-    and choose CVS&nbsp;<img src="../images/arrow.gif" alt="and choose">&nbsp;Diff
-    Textual. </li>
-  <li>In the Output dialog, ensure that the output shows the correct differences.</li>
-  <li>Right-click in the output pane and choose Save To File from the contextual
-    menu.
-    <p>A patch file is created containing the differences between the source code file
-  versions.</li>
-</ol>
+  <li>From the main window, choose File <img src="../images/arrow.gif" alt="and choose" >&nbsp;New
+    File. </li>
+  <li>Expand the XML node and select DTD Entity. Click Next to proceed.</li>
+  <li>Type a name and package for the DTD.</li>
+  <li>Click Finish to create the new file. </li>
+  </ol>
     </td>
 	
+<tr valign="top"> 
+    <td>Generate a DTD </td>
+    <td> 
+<ol>
+  <li>In the Files window, right-click an XML file's node and choose Generate
+    DTD. </li>
+  <li>Type a name for the new DTD and click OK. </li>
+  </ol>
+    </td>
+  </tr>
+
 <tr valign="top"> 
     <td>Generate a DOM Tree Scanner. </td>
     <td> 
 <ol>
-  <li>Choose Versioning <img src="../images/arrow.gif" alt="and choose"> Versioning
-    Manager from the main window.</li>
-  <li>Click Add. The New Wizard appears allowing you to configure the necessary
-    versioning settings.</li>
-  <li>Select the CVS profile from the Version Control System Profile combo box.</li>
+  <li>In the Files window, right-click a DTD node and choose Generate DOM Tree
+    Scanner.</li>
+  <li>In the dialog box, supply a name for the DOM scanner file and click OK.</li>
   </ol>
     </td>
   </tr>
@@ -126,11 +124,18 @@
     <td>Generate a SAX document handler</td>
     <td> 
 <ol>
-  <li>Choose Versioning <img src="../images/arrow.gif" alt="and choose"> Versioning
-    Manager from the main window.</li>
-  <li>Click Add. The New Wizard appears allowing you to configure the necessary
-    versioning settings.</li>
-  <li>Select the CVS profile from the Version Control System Profile combo box.</li>
+  <li>Right-click a DTD node and choose SAX Document Handler
+    Wizard. </li>
+  <li>Specify the versions of JAXP and the SAX parser you want to use.  Click
+    Next to proceed. </li>
+  <li>Customize your document handler interface on the Element Mappings page.
+    Click Next to proceed.</li>
+  <li>Configure your data convertor interface on the Data Convertors page.
+    Click Next to proceed.</li>
+  <li>Specify the desired names of the generated files and select
+    the Save Customized Bindings checkbox if you want to save your customizations
+    to the SAX code generation. </li>
+  <li>Click Finish.</li>
   </ol>
     </td>
   </tr>
@@ -139,13 +144,11 @@
     <td>Create an XML schema</td>
     <td> 
       <ol>
-        <li>Choose Versioning <img src="../images/arrow.gif" alt="and choose">&nbsp;Versioning
-          Manager.</li>
-        <li>Select the appropriate VCS  node and click
-            Edit. </li>
-        <li>Edit the necessary  VCS settings in the working directory's
-          Customizer.</li>
-      </ol>
+        <li>From the main window, choose File <img src="../images/arrow.gif" alt="and choose">&nbsp;New
+          File.</li>
+        <li>Expand the XML folder and select XML Schema.</li>
+        <li>Specify a name and location for the file and click Finish. </li>
+        </ol>
     </td>
   </tr>
 
@@ -153,14 +156,11 @@
     <td>Configure global XML settings. </td>
     <td> 
       <ol>
-        <li><!--To configure profile-specific VCS settings in a working directory's
-          Customizer, -->Choose Versioning <img src="../images/arrow.gif" alt="and choose">&nbsp;Versioning
-          Manager.</li>
-        <li>Select the appropriate VCS  node and click
-            Edit. </li>
-        <li>Edit the necessary  VCS settings in the working directory's
-          Customizer.</li>
-      </ol>
+        <li>From the main menu, choose Tools <img src="../images/arrow.gif" alt="and choosing">&nbsp;Options. 
+        <li>In the Options window, expand Editing&nbsp;<img src="../images/expand.gif" width="12" height="12" alt="and expanding">&nbsp;XML,
+        and select General Settings.         
+        <li>Edit the desired properties in the Option window's right pane.
+        </ol>
     </td>
   </tr>
   
@@ -168,10 +168,11 @@
     <td>Configure   XML and DTD Editor Properties.</td>
     <td> 
       <ol>
-        <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options,
-           expand the Source Creation and Management node, then select the Version
-        Control Settings node.</li>
-        <li>Edit the desired properties in the Option window's right pane. </li>
+        <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options
+          and expand Editing <img src="../images/expand.gif" width="12" height="12" alt="and expanding"> Editor
+        Settings and select the DTD Editor or XML Editor node.
+</li>
+        <li>Edit the desired properties in the Option window's right pane.</li>
       </ol>
     </td>
   </tr>
