@@ -19,9 +19,11 @@ import java.util.jar.*;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Location;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Jar;
-import org.apache.tools.ant.taskdefs.Java;
+import org.apache.tools.ant.taskdefs.SignJar;
+import org.apache.tools.ant.types.FileSet;
 
 /** Makes a <code>.nbm</code> (<b>N</b>et<b>B</b>eans <b>M</b>odule) file.
  *
@@ -31,6 +33,9 @@ public class MakeNBM extends Task {
 
     /** The same syntax may be used for either <samp>&lt;license&gt;</samp> or
      * <samp>&lt;description&gt;</samp> subelements.
+     * <p>By setting the property <code>makenbm.nocdata</code> to <code>true</code>,
+     * you can avoid using XML <code>CDATA</code> (for compatibility with older versions
+     * of Auto Update which could not handle it).
      */
     public class Blurb {
         /** You may embed a <samp>&lt;file&gt;</samp> element inside the blurb.
@@ -116,7 +121,30 @@ public class MakeNBM extends Task {
 	    }
 	}
 	public String getText () {
-	    return "<![CDATA[" + text.toString () + "]]>";
+            if (Boolean.valueOf (getProject ().getProperty ("makenbm.nocdata")).booleanValue ()) {
+                int max = text.length ();
+                StringBuffer text2 = new StringBuffer ((int) (max * 1.1 + 1));
+                for (int i = 0; i < max; i++) {
+                    char c = text.charAt (i);
+                    switch (c) {
+                    case '<':
+                        text2.append ("&lt;");
+                        break;
+                    case '>':
+                        text2.append ("&gt;");
+                        break;
+                    case '&':
+                        text2.append ("&amp;");
+                        break;
+                    default:
+                        text2.append (c);
+                        break;
+                    }
+                }
+                return text2.toString ();
+            } else {
+                return "<![CDATA[" + text.toString () + "]]>";
+            }
 	}
         /** You can either set a name for the blurb, or using the <code>file</code> attribute does this.
          * The name is mandatory for licenses, as this identifies the license in
@@ -153,7 +181,10 @@ public class MakeNBM extends Task {
 	public void setKeystore (File f) {
 	    keystore = f;
 	}
-        /** Password for the keystore. */
+        /** Password for the keystore.
+         * If a question mark (<samp>?</samp>), the NBM will not be signed
+         * and a warning will be printed.
+         */
 	public void setStorepass (String s) {
 	    storepass = s;
 	}
@@ -303,10 +334,15 @@ public class MakeNBM extends Task {
 	//log ("Ensuring existence of NBM file " + file);
 	Jar jar = (Jar) project.createTask ("jar");
 	jar.setJarfile (file.getAbsolutePath ());
-	jar.setBasedir (topdir.getAbsolutePath ());
+	//jar.setBasedir (topdir.getAbsolutePath ());
 	jar.setCompress ("true");
-	jar.createInclude ().setName ("netbeans/");
-	jar.createInclude ().setName ("Info/info.xml");
+	//jar.createInclude ().setName ("netbeans/");
+	//jar.createInclude ().setName ("Info/info.xml");
+        FileSet fs = new FileSet ();
+        fs.setDir (topdir);
+        fs.createInclude ().setName ("netbeans/");
+	fs.createInclude ().setName ("Info/info.xml");
+        jar.addFileset (fs);
 	jar.setLocation (location);
 	jar.init ();
 	jar.execute ();
@@ -318,15 +354,19 @@ public class MakeNBM extends Task {
 		throw new BuildException ("must define storepass attribute on <signature/>");
 	    if (signature.alias == null)
 		throw new BuildException ("must define alias attribute on <signature/>");
-	    log ("Signing NBM file " + file);
-	    // [PENDING] could also use <signjar> task, but this works
-	    Java java = (Java) project.createTask ("java");
-	    java.setClassname ("sun.security.tools.JarSigner");
-	    java.setArgs ("-keystore " + signature.keystore + " -storepass " + signature.storepass +
-			  " " + file.getAbsolutePath () + " " + signature.alias);
-	    java.setLocation (location);
-	    java.init ();
-	    java.execute ();
+            if (signature.storepass.equals ("?")) {
+                log ("Not signing NBM file " + file + "; no stored-key password provided", Project.MSG_WARN);
+            } else {
+                log ("Signing NBM file " + file);
+                SignJar signjar = (SignJar) project.createTask ("signjar");
+                signjar.setKeystore (signature.keystore.getAbsolutePath ());
+                signjar.setStorepass (signature.storepass);
+                signjar.setJar (file.getAbsolutePath ());
+                signjar.setAlias (signature.alias);
+                signjar.setLocation (location);
+                signjar.init ();
+                signjar.execute ();
+            }
 	}
     }
 
