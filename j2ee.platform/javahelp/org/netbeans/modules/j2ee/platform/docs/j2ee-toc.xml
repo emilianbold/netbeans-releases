@@ -75,36 +75,7 @@
          <tocitem text="Creating a Web Application Listener" target="listen_create"/>
          <tocitem text="Registering a Web Application Listener" target="listen_addtodd"/>
          <tocitem text="Running a Web Application Listener" target="listener_run"/>
-       </tocitem> <!-- Working With Listeners -->
-       <tocitem text="Web Services">
-         <tocitem text="About Web Services" target="about_web_service" />
-         <tocitem text="Creating a Web Service" target="create_ws" />
-	 <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
-	 <tocitem text="Adding a SOAP Message Handler" target="add_soap_message" />
-	 <tocitem text="Adding an Enterprise Resource" >
-	 <tocitem text="About Adding an Enterprise Resource" target="add_enterprise_resource" />
-	 	<tocitem text="Calling an EJB" target="call_an_ejb" />
-	 	<tocitem text="Using a Database" target="use_a_database" />
-		<tocitem text="Sending a JMS Message" target="send_JMS_message" />
-	 </tocitem> 
-         <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
-         <tocitem text="Running a Web Service" target="run_ws" />
-	 <tocitem text="Testing a Web Service" target="test_ws" />
-	 <tocitem text="Configuring Web Service Creation" target="create_ws_customize" />
-       </tocitem> <!-- Working With Web Services --> 
-       <tocitem text="Web Service Clients">
-         <tocitem text="About Web Service Clients" target="about_websvc_client.html" />
-	 <tocitem text="Creating a Web Service Client" target="create_wsc" />
-	 <tocitem text="Calling a Web Service Operation" target="call_ws_operation" />
-	<tocitem text="Adding an Enterprise Resource" >
-	 <tocitem text="About Adding an Enterprise Resource" target="add_enterprise_resource" />
-	 	<tocitem text="Calling an EJB" target="call_an_ejb" />
-	 	<tocitem text="Using a Database" target="use_a_database" />
-		<tocitem text="Sending a JMS Message" target="send_JMS_message" />
-	</tocitem>
-	 <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
-         <tocitem text="Running a Web Service Client" target="run_wsc" />
-      </tocitem> <!-- Working With Web Service Clients --> 
+       </tocitem> <!-- Working With Listeners --> 
       <tocitem text="Tags">
           <tocitem text="About Tag Libraries" target="webmod_addtglb"/>
           <tocitem text="About the JSTL" target="webmod_jstl" /> 
@@ -173,8 +144,6 @@
             <tocitem text="Running a Servlet" target="run_servlet" />
             <tocitem text="Running a Filter" target="filter_run"/>
 	    <tocitem text="Running a Web Application Listener" target="listener_run"/>
-	    <tocitem text="Running a Web Service" target="run_ws" />
-	    <tocitem text="Running a Web Service Client" target="run_wsc" />
 	    <tocitem text="Running an Applet" target="webmod_runapplet"/>
    	    </tocitem>
             <tocitem text="Changing Web Servers" target="webmod_server_set" />
@@ -232,4 +201,20 @@
             <tocitem text="Testing an EJB Module" target="tbd" />
         </tocitem>
 </tocitem>
+<tocitem text="Developing Web Services">
+         <tocitem text="About Web Services" target="about_web_service" />
+	 <tocitem text="Creating a Web Service" target="create_ws" />
+	 <tocitem text="Configuring Web Service Creation" target="create_ws_customize" />
+	 <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
+	 <tocitem text="Adding a SOAP Message Handler" target="add_soap_message" />
+	 <tocitem text="Adding an Enterprise Resource" >
+	 <tocitem text="About Adding an Enterprise Resource" target="add_enterprise_resource" />
+	 	<tocitem text="Calling an EJB" target="call_an_ejb" />
+	 	<tocitem text="Using a Database" target="use_a_database" />
+		<tocitem text="Sending a JMS Message" target="send_JMS_message" />
+	 </tocitem>  
+	 <tocitem text="Testing a Web Service" target="test_ws" />
+	 <tocitem text="Creating a Web Service Client" target="create_wsc" />
+	 <tocitem text="Calling a Web Service Operation" target="call_ws_operation" />
+      </tocitem> <!-- Working With Web Service Clients -->
 </toc>
