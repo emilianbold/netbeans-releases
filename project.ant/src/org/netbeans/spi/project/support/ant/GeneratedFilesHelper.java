@@ -433,6 +433,7 @@ public final class GeneratedFilesHelper {
         Checksum crc = new CRC32();
         int last = -1;
         int curr;
+        // XXX possibly can be optimized to use update(byte[], off, len) to make less JNI calls
         while ((curr = is.read()) != -1) {
             if (curr != '\n' && last == '\r') {
                 crc.update('\n');
