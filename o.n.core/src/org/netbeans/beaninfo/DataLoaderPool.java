@@ -103,10 +103,6 @@ public class DataLoaderPool {
     }
 
     public static class ShadowLoaderBeanInfo extends SimpleBeanInfo {
-        static {
-            System.err.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%A");
-        }
-
         public BeanInfo[] getAdditionalBeanInfo () {
             try {
                 return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
