@@ -287,10 +287,6 @@ public class NonGui extends NbTopManager implements Runnable {
         
         InstalledFileLocatorImpl.prepareCache();
         
-        // because of KL Group components, we define a property netbeans.design.time
-        // which serves instead of Beans.isDesignTime () (which returns false in the IDE)
-        System.getProperties ().put ("netbeans.design.time", "true"); // NOI18N
-
         // Initialize beans - [PENDING - better place for this ?]
         //                    [PENDING - can PropertyEditorManager garbage collect ?]
         String[] sysbisp = Introspector.getBeanInfoSearchPath();
