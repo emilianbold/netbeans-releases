@@ -259,6 +259,7 @@ is divided into following sections:
                             </batchtest>
                             <classpath>
                                 <path path="${{run.test.classpath}}"/>
+                                <path path="${{j2ee.platform.classpath}}"/>
                             </classpath>
                             <syspropertyset>
                                 <propertyref prefix="test-sys-prop."/>
@@ -994,7 +995,7 @@ is divided into following sections:
                     </xsl:attribute>
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
                     <xsl:attribute name="debug">true</xsl:attribute>
-                    <xsl:attribute name="classpath">${javac.test.classpath}</xsl:attribute>
+                    <xsl:attribute name="classpath">${javac.test.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                 </xsl:element>
                 <copy todir="${{build.test.classes.dir}}">
                     <xsl:call-template name="createFilesets">
@@ -1030,7 +1031,7 @@ is divided into following sections:
                     </xsl:attribute>
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
                     <xsl:attribute name="debug">true</xsl:attribute>
-                    <xsl:attribute name="classpath">${javac.test.classpath}</xsl:attribute>
+                    <xsl:attribute name="classpath">${javac.test.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                     <customize>
                         <patternset includes="${{javac.includes}}"/>
                     </customize>
