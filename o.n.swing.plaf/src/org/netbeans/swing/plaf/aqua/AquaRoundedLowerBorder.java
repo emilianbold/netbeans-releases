@@ -39,7 +39,7 @@ public class AquaRoundedLowerBorder implements Border {
     }
 
     public Insets getBorderInsets(Component component) {
-        return isFloating(component) ? new Insets (0,0,0,0) : new Insets (1,2,3,2);
+        return isFloating(component) ? new Insets (0,0,0,0) : new Insets (0,2,3,2);
     }
 
     public boolean isBorderOpaque() {
