@@ -18,6 +18,7 @@ import com.netbeans.ide.cookies.SaveCookie;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.actions.SystemAction;
+import com.netbeans.developer.modules.loaders.form.actions.*;
 
 import java.awt.Image;
 import java.text.MessageFormat;
@@ -26,7 +27,7 @@ import java.text.MessageFormat;
 *
 * @author Ian Formanek
 */
-public class RADComponentNode extends AbstractNode implements FormNodeCookie {
+public class RADComponentNode extends AbstractNode implements RADComponentCookie {
 
   private final static MessageFormat nameFormat = new MessageFormat (NbBundle.getBundle (RADComponentNode.class).getString ("FMT_ComponentName"));
   
@@ -79,16 +80,31 @@ public class RADComponentNode extends AbstractNode implements FormNodeCookie {
   * @return array of actions for this node, or <code>null</code> to use the default node actions
   */
   protected SystemAction [] createActions () {
-    return new SystemAction [] {
-      SystemAction.get(PasteAction.class),
-      SystemAction.get(CopyAction.class),
-      SystemAction.get(CutAction.class),
-      null,
-      SystemAction.get(RenameAction.class),
-      SystemAction.get(DeleteAction.class),
-      null,
-      SystemAction.get(PropertiesAction.class),
-    };
+    if (component instanceof RADVisualContainer) {
+      return new SystemAction [] {
+        SystemAction.get(SelectLayoutAction.class),
+        null,
+        SystemAction.get(PasteAction.class),
+        SystemAction.get(CopyAction.class),
+        SystemAction.get(CutAction.class),
+        null,
+        SystemAction.get(RenameAction.class),
+        SystemAction.get(DeleteAction.class),
+        null,
+        SystemAction.get(PropertiesAction.class),
+      };
+    } else {
+      return new SystemAction [] {
+        SystemAction.get(PasteAction.class),
+        SystemAction.get(CopyAction.class),
+        SystemAction.get(CutAction.class),
+        null,
+        SystemAction.get(RenameAction.class),
+        SystemAction.get(DeleteAction.class),
+        null,
+        SystemAction.get(PropertiesAction.class),
+      };
+    }
   }
 
   /** Can this node be renamed?
@@ -135,7 +151,7 @@ public class RADComponentNode extends AbstractNode implements FormNodeCookie {
   }
 
 // -----------------------------------------------------------------------------
-// FormNodeCookie implementation
+// RADComponentCookie implementation
   
   public RADComponent getRADComponent () {
     return component;
@@ -145,6 +161,7 @@ public class RADComponentNode extends AbstractNode implements FormNodeCookie {
 
 /*
  * Log
+ *  9    Gandalf   1.8         5/20/99  Ian Formanek    
  *  8    Gandalf   1.7         5/16/99  Ian Formanek    No canRename
  *  7    Gandalf   1.6         5/16/99  Ian Formanek    
  *  6    Gandalf   1.5         5/15/99  Ian Formanek    

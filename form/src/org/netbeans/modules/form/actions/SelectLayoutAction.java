@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form.actions;
 
-import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.event.MenuListener;
 import javax.swing.event.MenuEvent;
@@ -21,9 +21,9 @@ import javax.swing.event.MenuEvent;
 import com.netbeans.ide.util.HelpCtx;
 import com.netbeans.ide.util.actions.*;
 import com.netbeans.ide.nodes.Node;
-//import com.netbeans.ide.nodes.Cookies;
-//import com.netbeans.developer.modules.loaders.form.palette.*;
+import com.netbeans.developer.modules.loaders.form.palette.*;
 import com.netbeans.developer.modules.loaders.form.*;
+import com.netbeans.developerx.loaders.form.formeditor.layouts.support.DesignSupportLayout;
 
 /** SelectLayout action - subclass of NodeAction - enabled on RADContainerNodes and RADLayoutNodes.
 *
@@ -44,7 +44,7 @@ public class SelectLayoutAction extends CookieAction {
   * @return list of classes the that the cookie tests
   */
   protected Class[] cookieClasses () {
-    return new Class[] { FormNodeCookie.class, FormLayoutCookie.class };
+    return new Class[] { RADComponentCookie.class, FormLayoutCookie.class };
   }
 
   /** Human presentable name of the action. This should be
@@ -77,48 +77,78 @@ public class SelectLayoutAction extends CookieAction {
   protected void performAction (Node[] activatedNodes) {
   }
 
+  /*
+  * In this method the enable / disable action logic can be defined.
+  *
+  * @param activatedNodes gives array of actually activated nodes.
+  */
+  protected boolean enable (Node[] activatedNodes) {
+    if (super.enable (activatedNodes)) {
+      for (int i = 0; i < activatedNodes.length; i++) {
+        RADVisualContainer container = null;
+        FormLayoutCookie layoutCookie = (FormLayoutCookie)activatedNodes[i].getCookie (FormLayoutCookie.class);
+        if (layoutCookie != null) {
+          container = layoutCookie.getLayoutNode ().getRADContainer ();
+        } else {
+          RADComponentCookie nodeCookie = (RADComponentCookie)activatedNodes[i].getCookie (RADComponentCookie.class);
+          if (nodeCookie != null) {
+            if (nodeCookie.getRADComponent () instanceof RADVisualContainer) {
+              container = (RADVisualContainer)nodeCookie.getRADComponent ();
+            }
+          }
+        }
+
+        if ((container != null) && (!(container.getDesignLayout () instanceof DesignSupportLayout))) {
+          return true;
+        }
+
+      }
+    }
+    return false;
+  }
+
   /** Returns a JMenuItem that presents the Action, that implements this
   * interface, in a MenuBar.
   * @return the JMenuItem representation for the Action
-  * /
+  */
   public JMenuItem getMenuPresenter() {
     return getPopupPresenter ();
   }
 
-  private PaletteNode[] getAllLayouts () {
-    Vector layouts = new Vector ();
-    Node[] categories = PaletteContext.getPaletteContext().getPaletteCategories ();
-    for (int i = 0; i < categories.length; i++) {
-      Node[] paletteNodes = ((PaletteCategory)categories[i]).getPaletteNodes ();
-      for (int j = 0; j < paletteNodes.length; j++)
-        if ((paletteNodes[j] instanceof PaletteNode) &&
-            (((PaletteNode)paletteNodes[j]).isDesignLayout ()))
-          layouts.addElement (paletteNodes[j]);
+  private PaletteItem[] getAllLayouts () {
+    PaletteItem[] allItems = ComponentPalette.getDefault ().getAllItems ();
+    ArrayList layoutsList = new ArrayList ();
+    for (int i = 0; i < allItems.length; i++) {
+      if (allItems[i].isDesignLayout ()) {
+        layoutsList.add (allItems[i]);
+      }
     }
-    PaletteNode[] ret = new PaletteNode[layouts.size ()];
-    layouts.copyInto (ret);
-    return ret;
+
+    PaletteItem[] layouts = new PaletteItem[layoutsList.size ()];
+    layoutsList.toArray (layouts);
+    return layouts;
   }
     
   /** Returns a JMenuItem that presents the Action, that implements this
   * interface, in a Popup Menu.
   * @return the JMenuItem representation for the Action
-  * /
+  */
   public JMenuItem getPopupPresenter() {
-    JMenu popupMenu = new JMenu (FormEditor.getFormBundle ().getString ("ACT_SelectLayout"));
+    JMenu popupMenu = new JMenu (getName ());
     popupMenu.setEnabled (isEnabled ());
     popupMenu.addMenuListener(new MenuListener() {
         public void menuSelected(MenuEvent e) {
           JMenu menu = (JMenu)e.getSource ();
-          if (menu.getMenuComponentCount () > 0) // [IAN - Patch for Swing 1.1, which throws NullPointerException if removeAll is called on empty uninitialized JMenu]
+          if (menu.getMenuComponentCount () > 0) { // [IAN - Patch for Swing 1.1, which throws NullPointerException if removeAll is called on empty uninitialized JMenu]
             menu.removeAll ();
+          }
           Node[] nodes = getActivatedNodes ();
           if (nodes.length == 0) return;
 
-          PaletteNode[] layouts = getAllLayouts ();
+          PaletteItem[] layouts = getAllLayouts ();
           
           for (int i = 0; i < layouts.length; i++) {
-            JMenuItem mi = new JMenuItem (layouts[i].getDisplayName ());
+            JMenuItem mi = new JMenuItem (layouts[i].getName ());
             menu.add (mi);
             mi.addActionListener (new LayoutActionListener (nodes, layouts[i]));
           }
@@ -134,67 +164,44 @@ public class SelectLayoutAction extends CookieAction {
 
   class LayoutActionListener implements java.awt.event.ActionListener {
     private Node[] activatedNodes;
-    private PaletteNode paletteNode;
+    private PaletteItem paletteItem;
     
-    LayoutActionListener (Node[] activatedNodes, PaletteNode paletteNode) {
+    LayoutActionListener (Node[] activatedNodes, PaletteItem paletteItem) {
       this.activatedNodes = activatedNodes;
-      this.paletteNode = paletteNode;
+      this.paletteItem = paletteItem;
     }
     
     public void actionPerformed (java.awt.event.ActionEvent evt) {
       if (activatedNodes == null) return; // due to the swing's bug with popup menus, it can be null
-      RADContainerNode cont;
       for (int i = 0; i < activatedNodes.length; i++) {
-        Node.Cookie cookie = activatedNodes[i].getCookie ();
-        if (Cookies.isInstanceOf (cookie , FormNodeCookie.class))
-          cont = (RADContainerNode)Cookies.getInstanceOf (cookie, FormNodeCookie.class);
-        else if (Cookies.isInstanceOf (cookie, FormLayoutCookie.class))
-          cont = (RADContainerNode) (((FormLayoutCookie)Cookies.getInstanceOf (cookie, FormLayoutCookie.class)).getLayoutNode ()).getParentNode ();
-        else continue;
+        RADVisualContainer container = null;
+        FormLayoutCookie layoutCookie = (FormLayoutCookie)activatedNodes[i].getCookie (FormLayoutCookie.class);
+        if (layoutCookie != null) {
+          container = layoutCookie.getLayoutNode ().getRADContainer ();
+        } else {
+          RADComponentCookie nodeCookie = (RADComponentCookie)activatedNodes[i].getCookie (RADComponentCookie.class);
+          if (nodeCookie != null) {
+            if (nodeCookie.getRADComponent () instanceof RADVisualContainer) {
+              container = (RADVisualContainer)nodeCookie.getRADComponent ();
+            }
+          }
+        }
+
+        if (container == null) {
+          continue;
+        }
 
         // set the selected layout on the activated container 
         // (or activated layout's parent container)
-        cont.getFormManager ().setDesignLayout (cont, paletteNode);
+        container.getFormManager ().setDesignLayout (container, paletteItem);
       }
     }
   }
 
-
-  /** Instance of this class must be given to the constructor of NodeAction.
-  * In this class all the functionality of the NodeAction is stored.
-  * User of node action may automatically enable / disable this action
-  * dependently on the activated nodes.
-  * /
-  public static class SelectLayoutControl extends CookieAction.CookieControl {
-    public boolean enable (Node[] activatedNodes) {
-      boolean ret = super.enable(activatedNodes);
-
-      if (ret) {
-        Node[] supported = resolveSupported(activatedNodes);
-        if (Cookies.isInstanceOf (supported[0].getCookie (), FormNodeCookie.class))
-          if (!(((FormNodeCookie)Cookies.getInstanceOf (
-              supported[0].getCookie(), FormNodeCookie.class)).getFormNode() instanceof RADContainerNode))
-            return false;
-        return true;
-      }
-      else {
-        return false;
-      }
-    }
-
-    /**
-    * Standart perform action extended by actually activated nodes.
-    * @see CallableSystemAction#performAction
-    *
-    * @param activatedNodes gives array of actually activated nodes.
-    * /
-    public void performAction (Node[] activatedNodes) {
-    }
-  }
-  */
 }
 /*
  * Log
+ *  4    Gandalf   1.3         5/20/99  Ian Formanek    
  *  3    Gandalf   1.2         5/4/99   Ian Formanek    package change 
  *       (formeditor -> ..)
  *  2    Gandalf   1.1         3/28/99  Ian Formanek    Introduced changes done 
