@@ -70,7 +70,7 @@ public final class MainWindow extends JFrame {
             HelpCtx.setHelpIDString(
                     root, new HelpCtx(MainWindow.class).getHelpID());
         }
-        //Optimization related to jdk bug 4393857 - on pre 1.5 jdk's an
+        //Optimization related to jdk bug 4939857 - on pre 1.5 jdk's an
         //extra repaint is caused by the search for an opaque component up
         //to the component root.  Post 1.5, root pane will automatically be
         //opaque.
