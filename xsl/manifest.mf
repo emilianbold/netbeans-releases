@@ -10,6 +10,7 @@ OpenIDE-Module-Module-Dependencies:
  org.netbeans.modules.xml.tax/1 = @BUILD_NUMBER_SUBST@,
  org.netbeans.modules.xml.core/1 = @BUILD_NUMBER_SUBST@,
  org.netbeans.libs.jaxp/1,
+ org.netbeans.libs.xalan/1 > 1.1,
  org.netbeans.modules.servletapi/1
 OpenIDE-Module-Requires: org.openide.util.HttpServer$Impl
 

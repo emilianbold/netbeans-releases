@@ -61,6 +61,8 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${api_root}/src/"/>
                 <!--Servlet API-->
                 <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar" />
+                <!--Xalan-->
+                <pathelement location="${binroot}/libs/xalan/release/modules/autoload/ext/xalan-2.3.1.jar" />
             </classpath>
         </javac>
     </target>
@@ -95,10 +97,10 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="test"/>
 
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <jar jarfile="test/xsl-test.jar" manifest="manifest-subst.mf" compress="false">
+        <jar jarfile="test/xsltest.jar" manifest="manifest-subst.mf" compress="false">
             <fileset dir="src" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
         </jar>
-        <nbinstaller module="test/xsl-test.jar" action="reinstall"/>
+        <nbinstaller module="test/xsltest.jar" action="reinstall"/>
     </target>
     
     
