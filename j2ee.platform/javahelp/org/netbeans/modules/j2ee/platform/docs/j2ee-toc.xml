@@ -137,7 +137,7 @@
       </tocitem> <!-- Working With Applets -->
    </tocitem>
    <tocitem text="Configuring Web Applications" >
-	   <tocitem text="About Configuring Web Applications" target="tbd" />
+	   <tocitem text="About Configuring Web Applications" target="config_webapp_about" />
            <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
            <tocitem text="Configuring Web Application Deployment Descriptors" target="concepts_deploydes" />  
    </tocitem>
@@ -232,6 +232,13 @@
     	        <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
 	        <tocitem text="Adding a SOAP Message Handler" target="add_soap_message" />
 	</tocitem>
+        <tocitem text="Configuring Web Services" >
+	   <tocitem text="About Configuring Web Services" target="config_ws_about" />
+	   <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
+           <tocitem text="Configuring Web Service Deployment Descriptors" target="config_ws_dd" />
+	   <tocitem text="Configuring Web Application Deployment Descriptors" target="concepts_deploydes" />
+           <tocitem text="Configuring EJB Deployment Descriptors" target="config_ejb_dd" />
+        </tocitem>
 	<tocitem text="Building Web Services" >
 		 <tocitem text="About Building Web Services" target="select_wscompile_ws" />
 	         <tocitem text="About the Web Service Compiler" target="about_wscompile" />
