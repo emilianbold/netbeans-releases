@@ -105,15 +105,16 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                     delegate = LayoutSupportRegistry.createSupportForLayout(
                                                      layoutOrigin.getType());
                     // handle special case of null layout
-                    if (delegate == null
-                        && layoutOrigin.getType() == LayoutManager.class
-                        && layoutOrigin.getCreationParameters().length == 0
-                        && layoutOrigin.getParentExpression() == null
-                        && "null".equals(layoutOrigin.getJavaCodeString( // NOI18N
-                                                              null, null)))
-                    {
-                        delegate = new NullLayoutSupport();
-                    }
+                    if (delegate == null)
+                        if (layoutOrigin.getType() == LayoutManager.class
+                            && layoutOrigin.getCreationParameters().length == 0
+                            && layoutOrigin.getParentExpression() == null
+                            && "null".equals(layoutOrigin.getJavaCodeString( // NOI18N
+                                                                  null, null)))
+                        {
+                            delegate = new NullLayoutSupport();
+                        }
+                        else return false;
                 }
             }
 
@@ -126,6 +127,13 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                         LayoutSupportRegistry.createSupportForLayout(
                                                 lmInstance.getClass()) :
                         new NullLayoutSupport();
+                }
+                else {
+                    RuntimeException ex = new IllegalArgumentException();
+                    org.openide.ErrorManager.getDefault().annotate(
+                        ex, AbstractLayoutSupport.getBundle().getString(
+                                            "MSG_ERR_NonEmptyContainer")); // NOI18N
+                    throw ex;
                 }
             }
         }
