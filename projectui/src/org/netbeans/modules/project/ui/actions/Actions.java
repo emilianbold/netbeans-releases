@@ -225,7 +225,7 @@ public class Actions implements ActionsFactory {
     
     public static Action debugMainProject() {
         Action a = new MainProjectAction(
-            "debug", // XXX Define standard
+            ActionProvider.COMMAND_DEBUG, 
             NbBundle.getMessage(Actions.class, "LBL_DebugMainProjectAction_Name" ), // NOI18N
             new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/debugProject.gif" ) ) ); //NOI18N
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/debugProject.gif"); //NOI18N
