@@ -197,7 +197,7 @@ public class BundleStructure extends PropertyChangeSupport {
    
   /** Constructs a set of keys from the entries (from scratch) */ 
   protected synchronized void buildKeySet() {
-    keyList = new SortedArrayList(String.CASE_INSENSITIVE_ORDER);
+    keyList = new SortedArrayList(new KeyComparator());
       
     // for all entries add all keys  
     for (int index = 0; index < getEntryCount(); index++) {

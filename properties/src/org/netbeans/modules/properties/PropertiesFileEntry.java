@@ -105,8 +105,10 @@ public class PropertiesFileEntry extends PresentableFileEntry {
   
   /** Returns editor support for properties */                       
   protected PropertiesEditorSupport getPropertiesEditor() {
-    if (editorSupport == null)
+    if (editorSupport == null) {
+System.out.println("creating new editorsupport");  
       editorSupport = new PropertiesEditorSupport(this);
+    }  
     return editorSupport;
   }
   
@@ -204,19 +206,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     /** Sets all keys in the correct order */      
     protected void mySetKeys() {
       // use TreeSet because its iterator iterates in ascending order          
-      TreeSet ts = new TreeSet();
-/*        new Comparator() {
-          public int compare(Object o1, Object o2) {
-            if (o1 == o2)
-              return 0;
-            if (o1 instanceof Element.ItemElem && o2 instanceof Element.ItemElem)
-              return String.CASE_INSENSITIVE_ORDER.compare(((Element.ItemElem)o1).getKey(), 
-                                                           ((Element.ItemElem)o2).getKey());
-            else 
-              return 0;
-          }
-        }
-      );*/
+      TreeSet ts = new TreeSet(new KeyComparator());
       PropertiesStructure ps = getHandler().getStructure();
       if (ps != null) {
         for (Iterator it = ps.nonEmptyItems();it.hasNext();) {

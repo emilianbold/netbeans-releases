@@ -137,7 +137,7 @@ public final class PropertiesDataObject extends MultiDataObject {
                                          
   /** Comparator used for ordering secondary files, works over file names */
   public static Comparator getSecondaryFilesComparator() {
-    return String.CASE_INSENSITIVE_ORDER;
+    return new KeyComparator();
   }
   
   /** Deserialization */
@@ -236,6 +236,7 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  19   Gandalf   1.18        9/10/99  Petr Jiricka    Comparator change
  *  18   Gandalf   1.17        8/18/99  Petr Jiricka    Some fix
  *  17   Gandalf   1.16        8/17/99  Petr Jiricka    Changed node 
  *       initialization
