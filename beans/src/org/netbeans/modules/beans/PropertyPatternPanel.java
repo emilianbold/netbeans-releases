@@ -396,7 +396,6 @@ public class PropertyPatternPanel extends javax.swing.JPanel
            nameTextField.requestFocus();
            return;
          }
-         System.out.println ( typeComboBox.getEditor().getItem().toString() );
 
          try {
           Type.parse( typeComboBox.getEditor().getItem().toString() );

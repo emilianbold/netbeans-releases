@@ -242,11 +242,13 @@ public class PatternAnalyser extends Object implements Node.Cookie {
       if ( name.startsWith( "add" ) && params.length == 1 && returnType == Type.VOID ) {
                                                     // !! MAY BE PROBLEM
         String compound = name.substring(3) + ":" + params[0].getType(); 
+        //System.out.println ( method.getName() );
         adds.put( compound, method );
       }
       else if ( name.startsWith( "remove" ) && params.length == 1 && returnType == Type.VOID ) {
                                                     // !! MAY BE PROBLEM 
         String compound = name.substring(6) + ":" + params[0].getType(); 
+        //System.out.println ( method.getName() );
         removes.put( compound, method );
       }
     }
@@ -451,6 +453,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
 /* 
  * Log
+ *  2    Gandalf   1.1         7/9/99   Petr Hrebejk    Factory chaining fix
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
  * $ 
  */ 

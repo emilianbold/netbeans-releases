@@ -253,19 +253,11 @@ public class EventSetPattern extends Pattern {
   /** Sets the type of property */
   public void setType( Type newType ) throws SourceException {
     
-    System.out.println ( newType.getClassName().getFullName() );
-    System.out.println ( ClassElement.forName( newType.getClassName().getFullName() ) );
-
     if ( newType.compareTo(type, true))
       return;
-
-    // PENDING :: Search the source
     
     try {
-      //ClassElement.forName( newType.get
-
-
-
+    
       if (!java.util.EventListener.class.isAssignableFrom( newType.toClass() ) ) {
         TopManager.getDefault().notify(
           new NotifyDescriptor.Message(PatternNode.bundle.getString("MSG_InvalidListenerInterface"),
@@ -493,6 +485,7 @@ public class EventSetPattern extends Pattern {
 
 /* 
  * Log
+ *  2    Gandalf   1.1         7/9/99   Petr Hrebejk    Factory chaining fix
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
  * $ 
  */ 
