@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
  * @author  vstejskal
  * @author  Marian Petras
  */
-public final class JUnitCfgOfCreate extends JPanel
+public final class JUnitCfgOfCreate extends SelfResizingPanel
                                     implements ChangeListener {
     
     /** suffix of test classes */
@@ -91,8 +91,6 @@ public final class JUnitCfgOfCreate extends JPanel
     private boolean singleClass;
     /** registered change listeners */
     private List changeListeners;
-    /** is this panel painted? */
-    private boolean painted = false;
     /** */
     private String initialMessage;
     
@@ -627,33 +625,16 @@ public final class JUnitCfgOfCreate extends JPanel
     }
     
     /**
-     * Paints this panel's children and then displays the initial message
-     * (in the message area) if any.
-     * This method is overridden so that this panel receives a notification
-     * immediately after the children components are painted - it is necessary
-     * for computation of space needed by the message area for displaying
-     * the initial message.
+     * This method is called the first time this panel's children are painted.
+     * By default, this method just calls {@link #adjustWindowSize()}.
      *
-     * @param  g  the <code>Graphics</code> context in which to paint
+     * @param  g  <code>Graphics</code> used to paint this panel's children
      */
-    protected void paintChildren(java.awt.Graphics g) {
-        
-        /*
-         * This is a hack to make sure that window size adjustment
-         * is not done sooner than the text area is painted.
-         *
-         * The reason is that the window size adjustment routine
-         * needs the text area to compute height necessary for displaying
-         * the given message. But the text area does not return correct
-         * data (Dimension getPreferredSize()) until it is painted.
-         */
-        
-        super.paintChildren(g);
+    protected void paintedFirstTime(java.awt.Graphics g) {
         if (initialMessage != null) {
             displayMessage(initialMessage);
             initialMessage = null;
         }
-        painted = true;
     }
     
     /**
@@ -728,7 +709,7 @@ public final class JUnitCfgOfCreate extends JPanel
         }
 
         /* display the message: */
-        if (!painted) {
+        if (!isPainted()) {
             initialMessage = msgToDisplay;
         } else if (msgToDisplay != null) {
             displayMessage(msgToDisplay);
@@ -765,26 +746,6 @@ public final class JUnitCfgOfCreate extends JPanel
         txtAreaMessage.setForeground(color);
 
         return txtAreaMessage;
-    }
-    
-    /**
-     * Checks whether the dialog is large enough for the message (if any)
-     * to be displayed and adjusts the dialogs size if it is too small.
-     * <p>
-     * Note: Resizing the dialog works only once this panel and its children
-     * are {@linkplain #paintChildren(java.awt.Graphics) painted}.
-     */
-    private void adjustWindowSize() {
-        Dimension currSize = getSize();
-        int currWidth = currSize.width;
-        int currHeight = currSize.height;
-        int prefHeight = getPreferredSize().height;
-        if (currHeight < prefHeight) {
-            int delta = prefHeight - currHeight;
-            java.awt.Window win = SwingUtilities.getWindowAncestor(this);
-            Dimension winSize = win.getSize();
-            win.setSize(winSize.width, winSize.height + delta);
-        }
     }
     
     /**
