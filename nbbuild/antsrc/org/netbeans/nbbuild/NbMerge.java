@@ -103,9 +103,7 @@ public class NbMerge extends Task {
         project.executeTarget (dummyName);
         
         Delete delete = (Delete) project.createTask ("delete");
-        FileSet fs = new FileSet ();
-        fs.setDir (dest);
-        delete.addFileset (fs);
+        delete.setDir (dest);
         delete.init ();
         delete.setLocation (location);
         delete.execute ();
@@ -120,7 +118,7 @@ public class NbMerge extends Task {
                     continue;
                 }
                 Copy copy = (Copy) project.createTask ("copy");
-                fs = new FileSet ();
+                FileSet fs = new FileSet ();
                 fs.setDir (netbeans);
                 copy.addFileset (fs);
                 copy.setTodir (dest);
