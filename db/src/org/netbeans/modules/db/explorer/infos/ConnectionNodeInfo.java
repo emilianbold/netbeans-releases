@@ -34,16 +34,37 @@ import org.netbeans.modules.db.explorer.dlg.UnsupportedDatabaseDialog;
 
 public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOperations {
     
+    public static final String AUTOPBCONN = "automatically PB connection"; //NOI18N
     static final long serialVersionUID =-8322295510950137669L;
-    
+
     public void connect(String dbsys) throws DatabaseException {
         String drvurl = getDriver();
         String dburl = getDatabase();
 
-        Properties dbprops = getConnectionProperties();
         try {
 
+            if(AUTOPBCONN.equals(dbsys))
+                dbsys = null;
+            else
+
+                // check if there is connected connection by Pointbase driver
+                // Pointbase driver doesn't permit the concurrently connection
+                if (drvurl.startsWith("com.pointbase.jdbc.jdbcUniversalDriver")) {
+                    Node n[] = getParent().getNode().getChildren().getNodes();
+                    for (int i = 0; i < n.length; i++)
+                        if(n[i] instanceof ConnectionNode) {
+                            ConnectionNodeInfo cinfo = (ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo();
+                            if(cinfo.getDriver().startsWith("com.pointbase.jdbc.jdbcUniversalDriver")) //NOI18N
+                                if(!(cinfo.getDatabase().equals(dburl)&&cinfo.getUser().equals(getUser())))
+                                    if((cinfo.getConnection()!=null))
+                                        throw new Exception(bundle.getString("EXC_PBConcurrentConn")); // NOI18N
+                        }
+                }
+            
+            Properties dbprops = getConnectionProperties();
+
             DatabaseConnection con = new DatabaseConnection(drvurl, dburl, getUser(), getPassword());
+
             Connection connection = con.createJDBCConnection();
             SpecificationFactory factory = (SpecificationFactory)getSpecificationFactory();
             Specification spec;
@@ -52,6 +73,7 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             if (dbsys != null) {
                 spec = (Specification)factory.createSpecification(con, dbsys, connection);
             } else spec = (Specification)factory.createSpecification(con, connection);
+
             setSpecification(spec);
 
             drvSpec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
@@ -69,7 +91,6 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new DatabaseException(e.getMessage());
         }
     }
@@ -113,8 +134,6 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             Vector cons = RootNode.getOption().getConnections();
             DatabaseConnection cinfo = (DatabaseConnection)getDatabaseConnection();
             if (cons.contains(cinfo)) cons.remove(cinfo);
-            //			throw new Exception("connection does not exist");
-            //			cons.remove(cinfo);
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
