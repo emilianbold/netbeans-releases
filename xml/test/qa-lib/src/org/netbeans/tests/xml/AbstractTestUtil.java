@@ -15,8 +15,7 @@ package org.netbeans.tests.xml;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
@@ -28,19 +27,21 @@ import org.netbeans.tax.TreeDocument;
 import org.netbeans.tax.TreeException;
 import org.netbeans.tax.TreeNode;
 import org.netbeans.tax.io.XMLStringResult;
-import org.openide.TopManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.execution.NbfsURLConnection;
 import org.openide.filesystems.*;
+import org.openide.filesystems.FileSystem.AtomicAction;
+import org.openide.filesystems.LocalFileSystem.Impl;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.XMLDataObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle;
+import org.openide.util.Lookup.Template;
+
 
 /**
  * Provides the basic support for XML API tests.
@@ -92,8 +93,11 @@ public abstract class AbstractTestUtil {
     public static String replaceString(String original, String begin, String end, String replaceTo) {
         int bi = original.indexOf(begin);
         int ei = original.indexOf(end, bi) + end.length();
-        
-        return original.substring(0, bi) + replaceTo + original.substring(ei, original.length());
+        if (bi < 0 || ei < 0) {
+            return original;
+        } else {
+            return original.substring(0, bi) + replaceTo + original.substring(ei, original.length());
+        }
     }
     
     /**
@@ -208,7 +212,7 @@ public abstract class AbstractTestUtil {
     /**
      * Mounts local directory
      */
-    public static LocalFileSystem.Impl mountDirectory(File dir) throws PropertyVetoException, IOException {
+    public static Impl mountDirectory(File dir) throws PropertyVetoException, IOException {
         LocalFileSystem fs = new LocalFileSystem();
         fs.setRootDirectory(dir);
         Repository rep = Repository.getDefault();
@@ -217,7 +221,7 @@ public abstract class AbstractTestUtil {
             rep.removeFileSystem(ffs);
         }
         rep.addFileSystem(fs);
-        return new LocalFileSystem.Impl(fs);
+        return new Impl(fs);
     }
     
     /**
@@ -377,6 +381,45 @@ public abstract class AbstractTestUtil {
             return false;
         }
     }
+    
+    /**
+     * Creates new Data Object
+     */
+    public static DataObject createDataObject(DataFolder folder, final String name, final String extension, final String content) throws IOException {
+        final FileObject targetFolder = folder.getPrimaryFile();
+        FileSystem filesystem = targetFolder.getFileSystem();
+        
+        final FileObject[] fileObject = new FileObject[1];
+        AtomicAction fsAction = new AtomicAction() {
+            public void run() throws IOException {
+                FileObject fo = targetFolder.createData(name, extension);
+                FileLock lock = null;
+                try {
+                    lock = fo.lock();
+                    OutputStream out = fo.getOutputStream(lock);
+                    out = new BufferedOutputStream(out, 999);
+                    Writer writer = new OutputStreamWriter(out, "UTF8");        // NOI18N
+                    writer.write(content + '\n');  // NOI18N                    
+                    writer.flush();
+                    writer.close();
+                    
+                    // return DataObject
+                    lock.releaseLock();
+                    lock = null;
+                    
+                    fileObject[0] = fo;
+                    
+                } finally {
+                    if (lock != null) lock.releaseLock();
+                }
+            }
+        };
+        
+        filesystem.runAtomicAction(fsAction);
+        return DataObject.find(fileObject[0]);
+    }
+    
+    
     
     //--------------------------------------------------------------------------
     //                        * * *  O T H E R  * * *
