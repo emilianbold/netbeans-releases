@@ -140,10 +140,15 @@ public final class OpenProjectList {
         synchronized ( this ) {
             for (int i=0; i<projects.length; i++) {
                 assert projects[i] != null : "Projects can't be null";
+                
                 if ( !openProjects.contains( projects[i] ) ) {
                     openProjects.add( projects[i] );
                     recentProjectsChanged = recentProjects.remove( projects[i] );
                     notifyOpened(projects[i]);
+                    
+                    // open project files
+                    ProjectUtilities.openProjectFiles (projects[i]);
+                    
                 }
                 if ( openSubprojects ) {
                     recentProjectsChanged |= openSubprojects( projects[i] );
