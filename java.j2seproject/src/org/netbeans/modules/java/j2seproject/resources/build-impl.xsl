@@ -668,6 +668,7 @@ is divided into following sections:
                             <xsl:attribute name="version">${javadoc.version}</xsl:attribute>
                             <xsl:attribute name="windowtitle">${javadoc.windowtitle}</xsl:attribute>
                             <xsl:attribute name="private">${javadoc.private}</xsl:attribute>
+                            <xsl:attribute name="failonerror">true</xsl:attribute> <!-- #47325 -->
                             <classpath>
                                 <path path="${{javac.classpath}}"/>
                             </classpath>
