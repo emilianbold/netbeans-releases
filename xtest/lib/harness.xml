@@ -17,6 +17,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="build.sysclasspath" value="ignore"/>
 
     <property name="xtest.results" location="results"/>
+    <property name="xtest.workdir" location="work"/>
 
     <property name="xtest.home" location=".."/>
     <property name="xtest.basedir" location="../.."/>
