@@ -43,6 +43,10 @@ class NbWriter extends OutputWriter {
     }
 
     
+    public void println(String s, OutputListener l, boolean important) throws IOException {
+        ((OutWriter) out).println (s, l, important);
+    }
+
     /**
      * Replaces the wrapped OutWriter.
      *

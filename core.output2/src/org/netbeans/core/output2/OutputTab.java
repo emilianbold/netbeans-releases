@@ -164,23 +164,27 @@ final class OutputTab extends AbstractOutputTab {
         if (out != null) {
             if (Controller.log) Controller.log ("Looking for first appropriate" +
                 " listener line to send the caret to");
-            int[] lines = out.getLines().allListenerLines();
-            for (int i=0; i < lines.length; i++) {
-                try {
-                    String s = out.getLines().getLine(lines[i]);
-                    if (s.indexOf("[deprecation]") == -1 && s.indexOf("warning") == -1 && s.indexOf("stopped") == -1) {
-                        result = lines[i];
-                        if (Controller.log) Controller.log ("Line to navigate to" +
-                            "is line " + lines[i] + ": " + s);
-                        break;
-                    }
-                    if (Controller.log) Controller.log ("Ignoring " +
-                        " \"" + s + "\"\n  it is just a deprecation msg");
-                } catch (Exception e) {
-                    ErrorManager.getDefault().notify(e);
-                    break;
-                }
-            }
+            result = out.getLines().firstImportantListenerLine();
+            // mkleint - still use the old way as fallback until modules start using OutputWriter.println(String, Listener, boolean imporant);
+//            if (result == -1) {
+//                int[] lines = out.getLines().allListenerLines();
+//                for (int i=0; i < lines.length; i++) {
+//                    try {
+//                        String s = out.getLines().getLine(lines[i]);
+//                        if (s.indexOf("[deprecation]") == -1 && s.indexOf("warning") == -1 && s.indexOf("stopped") == -1) {
+//                            result = lines[i];
+//                            if (Controller.log) Controller.log("Line to navigate to" +
+//                                    "is line " + lines[i] + ": " + s);
+//                            break;
+//                        }
+//                        if (Controller.log) Controller.log("Ignoring " +
+//                                " \"" + s + "\"\n  it is just a deprecation msg");
+//                    } catch (Exception e) {
+//                        ErrorManager.getDefault().notify(e);
+//                        break;
+//                    }
+//                }
+//            }
         }
         return result;
     }

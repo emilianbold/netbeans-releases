@@ -49,7 +49,7 @@ class ExtPlainView extends PlainView {
             doc.getText(p0, p1 - p0, s);
             g.setColor(getColorForLocation(p0, doc, true));
             int ret = Utilities.drawTabbedText(s, x, y, g, this, p0);
-            if (g.getColor() == WrappedTextView.selectedLinkFg) {
+            if (g.getColor() == WrappedTextView.selectedLinkFg || g.getColor() == WrappedTextView.selectedImportantLinkFg) {
                 //#47263 - start hyperlink underline at first
                 //non-whitespace character
                 underline(g, s, x, p0, y);
@@ -70,7 +70,7 @@ class ExtPlainView extends PlainView {
             doc.getText(p0, p1 - p0, s);
             g.setColor(getColorForLocation(p0, doc, false));
             int ret = Utilities.drawTabbedText(s, x, y, g, this, p0);
-            if (g.getColor() == WrappedTextView.unselectedLinkFg) {
+            if (g.getColor() == WrappedTextView.selectedLinkFg || g.getColor() == WrappedTextView.selectedImportantLinkFg) {
                 //#47263 - start hyperlink underline at first
                 //non-whitespace character
                 underline(g, s, x, p0, y);
@@ -111,17 +111,24 @@ class ExtPlainView extends PlainView {
         OutputDocument od = (OutputDocument) d;
         int line = od.getElementIndex (start);
         boolean hyperlink = od.getLines().isHyperlink(line);
+        boolean important = hyperlink ? od.getLines().isImportantHyperlink(line) : false;
         boolean isErr = od.getLines().isErr(line);
+        
         return hyperlink ? 
-            selected ? 
-                WrappedTextView.selectedLinkFg : 
-                WrappedTextView.unselectedLinkFg :
-            selected ? isErr ? 
-                WrappedTextView.selectedErr : 
-                WrappedTextView.selectedFg : 
-            isErr ? 
-                WrappedTextView.unselectedErr : 
-                WrappedTextView.unselectedFg;
+            (important ? 
+                (selected ? 
+                    WrappedTextView.selectedImportantLinkFg : 
+                    WrappedTextView.unselectedImportantLinkFg) :
+                (selected ?
+                    WrappedTextView.selectedLinkFg : 
+                    WrappedTextView.unselectedLinkFg)) :
+            (selected ? 
+                (isErr ? 
+                    WrappedTextView.selectedErr : 
+                    WrappedTextView.selectedFg) : 
+                (isErr ? 
+                    WrappedTextView.unselectedErr : 
+                    WrappedTextView.unselectedFg));
     }
 
 }

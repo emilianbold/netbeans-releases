@@ -429,20 +429,25 @@ class OutWriter extends PrintWriter {
 
 
         public synchronized void println(String s, OutputListener l) throws IOException {
+            println(s, l, false);
+        }
+
+        
+        public synchronized void println(String s, OutputListener l, boolean important) throws IOException {
             if (checkError()) {
                 return;
             }
             int addedCount = doPrintln (s);
             if (addedCount == 1) {
-                lines.addListener(lines.getLineCount() - 1, l);
+                lines.addListener(lines.getLineCount() - 1, l, important);
             } else {
                 int newCount = lines.getLineCount();
                 for (int i=newCount - addedCount; i < newCount; i++) {
-                    lines.addListener (i, l);
+                    lines.addListener (i, l, important);
                 }
             }
         }
-
+        
     /**
      * A useless writer object to pass to the superclass constructor.  We override all methods
      * of it anyway.

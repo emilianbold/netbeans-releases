@@ -73,6 +73,15 @@ public interface Lines {
      * @return A line number, or -1 if there are no listeners
      */
     int firstListenerLine ();
+    
+    /**
+     * Get the index of the first line which has an important listener
+     * @return A line number, or -1 if there are no important listeners
+     */
+    
+    int firstImportantListenerLine();
+    
+    boolean isImportantHyperlink(int line);
 
     /**
      * Get the nearest listener to the passed line index

@@ -81,6 +81,8 @@ public class WrappedTextView extends View {
     static Color unselectedFg;
     static Color selectedLinkFg;
     static Color unselectedLinkFg;
+    static Color selectedImportantLinkFg;
+    static Color unselectedImportantLinkFg;
     static Color selectedErr;
     static Color unselectedErr;
     static final Color arrowColor = new Color (80, 162, 80);
@@ -98,11 +100,21 @@ public class WrappedTextView extends View {
         }
 
         selectedLinkFg = UIManager.getColor("nb.output.link.foreground.selected"); //NOI18N
-        if (selectedLinkFg == null) selectedLinkFg = Color.BLUE;
+        if (selectedLinkFg == null) selectedLinkFg = Color.BLUE.darker();
         
         unselectedLinkFg = UIManager.getColor("nb.output.link.foreground"); //NOI18N
         if (unselectedLinkFg == null) {
             unselectedLinkFg = selectedLinkFg;
+        }
+        
+        selectedImportantLinkFg = UIManager.getColor("nb.output.link.foreground.important.selected"); //NOI18N
+        if (selectedImportantLinkFg == null) {
+            selectedImportantLinkFg = selectedLinkFg.brighter();
+        }
+        
+        unselectedImportantLinkFg = UIManager.getColor("nb.output.link.foreground.important"); //NOI18N
+        if (unselectedImportantLinkFg == null) {
+            unselectedImportantLinkFg = selectedImportantLinkFg;
         }
 
         selectedErr = UIManager.getColor ("nb.output.err.foreground.selected"); //NOI18N
@@ -569,8 +581,11 @@ public class WrappedTextView extends View {
         OutputDocument od = (OutputDocument) d;
         int line = od.getElementIndex (start);
         boolean hyperlink = od.getLines().isHyperlink(line);
+        boolean important = hyperlink ? od.getLines().isImportantHyperlink(line) : false;
         boolean isErr = od.getLines().isErr(line);
-        return hyperlink ? selected ? selectedLinkFg : unselectedLinkFg :
-            selected ? isErr ? selectedErr : selectedFg : isErr ? unselectedErr : unselectedFg;
+        return hyperlink ? (important ? (selected ? selectedImportantLinkFg : unselectedImportantLinkFg) : 
+                                        (selected ? selectedLinkFg : unselectedLinkFg)) :
+                           (selected ? (isErr ? selectedErr : selectedFg) : 
+                                       (isErr ? unselectedErr : unselectedFg));
     }
 }

@@ -12,6 +12,8 @@
  */
 package org.netbeans.core.output2;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.openide.windows.OutputListener;
 import org.openide.ErrorManager;
 import org.openide.util.Mutex;
@@ -494,10 +496,23 @@ abstract class AbstractLines implements Lines, Runnable {
         }
     }
 
-    public void addListener (int line, OutputListener l) {
+    public void addListener (int line, OutputListener l, boolean important) {
         linesToListeners.put(line, l);
+        if (important) {
+            importantLines.add(line);
+        }
     }
-
+    
+    private IntList importantLines = new IntList(10);
+    
+    public int firstImportantListenerLine() {
+        return importantLines.size() == 0 ? -1 : importantLines.get(0);
+    }
+    
+    public boolean isImportantHyperlink(int line) {
+        return importantLines.contains(line);
+    }
+    
     /**
      * A minor hook to let unit tests decide if caching is on or off.
      * @param val
