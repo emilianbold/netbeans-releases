@@ -20,6 +20,9 @@ import java.net.*;
 import javax.swing.*;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import java.util.Timer;
+import java.util.TimerTask; 
+import java.util.Vector;
 
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
@@ -72,10 +75,10 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     private Thread  urlEchoThread = null;
 
     /** native thread that displays URLs */
-    private Thread nativeThread = null;
+    private static Thread nativeThread = null;
     
     /** runnable class that implements the work of nativeThread */
-    private NbDdeBrowserImpl.URLDisplayer nativeRunnable = null;
+    private static NbDdeBrowserImpl.URLDisplayer nativeRunnable = null;
     
     /** name of DDE server receiving progress */
     private String  ddeProgressSrvName;
@@ -156,28 +159,13 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
      * @param url URL to show in the browser.
      */
     public synchronized void setURL(final URL url) {
-        try {
-            if (nativeThread == null) {
-                nativeRunnable = new NbDdeBrowserImpl.URLDisplayer ();
-                nativeThread = new Thread(nativeRunnable, "URLdisplayer");
-            }
-        
-            nativeRunnable.url = url;
-            nativeThread.run ();        // PENDING: this should be nativeThread.start ();
-            // PENDING: add this timeout to browser properties
-            nativeThread.join(10000);
-            if (nativeThread.isAlive()) {
-                // something is wrong
-                nativeThread.stop();
-                TopManager.getDefault().notify(
-                new NotifyDescriptor.Message(bundle.getString("MSG_win_browser_invocation_failed"),
-                NotifyDescriptor.INFORMATION_MESSAGE)
-                );
-            }
+        if (nativeThread == null) {
+            nativeRunnable = new NbDdeBrowserImpl.URLDisplayer ();
+            nativeThread = new Thread(nativeRunnable, "URLdisplayer");
+            nativeThread.start ();
         }
-        catch (InterruptedException ex) {
-            TopManager.getDefault().getErrorManager().notify( ErrorManager.INFORMATIONAL, ex);
-        }
+
+        nativeRunnable.postTask (new DisplayTask (url, this));
     }
 
     /** Invoked when the history button is pressed.
@@ -217,6 +205,9 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
 
                 if (cmd.toUpperCase ().indexOf (ExtBrowserSettings.NETSCAPE) >= 0)
                     return ExtBrowserSettings.NETSCAPE;
+                
+                if (cmd.toUpperCase ().indexOf (ExtBrowserSettings.MOZILLA) >= 0)
+                    return ExtBrowserSettings.MOZILLA;
             }
         }
         catch (Exception ex) {
@@ -228,13 +219,86 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         return ExtBrowserSettings.IEXPLORE;
     }
     
-    class URLDisplayer implements Runnable { // NOI18N
+    
+    /**
+     * Singleton for doing all DDE operations.
+     */
+    static class URLDisplayer implements Runnable { // NOI18N
+
+        /** FIFO of urls that should be displayed */
+        Vector tasks;
         
-        /** url to be displayed */
-        private URL url;
+        /** flag for quiting of this thread */
+        boolean doProcessing = true;
+        
+        /** This is set to true during displaying of URL. 
+         *  Used by Timer to interrupt displaying and print error message 
+         */
+        boolean isDisplaying = false;
+
+        private URLDisplayer () {
+            tasks = new Vector ();
+        }
+        
+        private void postTask (DisplayTask task) {
+            synchronized (this) {
+                boolean shouldNotify = tasks.isEmpty ();
+                tasks.add (task);
+            
+                if (shouldNotify) {
+                    notifyAll();
+                }
+            }
+        }
+        
+        /**
+         * Returns next URL from queue that was posted for displaying.
+         * This method blocks other processing until there is an request
+         */
+        private synchronized DisplayTask getNextTask () throws InterruptedException {
+            do {
+                if (!tasks.isEmpty ())
+                    return (DisplayTask)tasks.remove (0);
+                
+                wait ();
+            }
+            while (true);
+        }
         
         public void run() {
+            while (doProcessing) {
+                try {
+                    /** url to be displayed */
+                    DisplayTask task = getNextTask ();
+                   
+                    isDisplaying = true;
+                    Timer timer = new Timer ();
+                    timer.schedule (new TimerTask () {
+                        public void run() {
+                            if (isDisplaying) {
+                                NbDdeBrowserImpl.nativeThread.interrupt ();
+                                TopManager.getDefault().notify(
+                                new NotifyDescriptor.Message(bundle.getString("MSG_win_browser_invocation_failed"),
+                                NotifyDescriptor.INFORMATION_MESSAGE)
+                                );
+                            }
+                        }
+                    }, 11000);  // PENDING: add this timeout to browser properties
+                    dispatchURL (task);
+                }
+                catch (InterruptedException ex) {
+                    // do nothing
+                }
+                finally {
+                    isDisplaying = false;
+                }
+            }
+        }
+
+        public void dispatchURL (DisplayTask task) {
             try {
+                URL url = task.url;
+                
                 // internal protocols cannot be displayed in external viewer
                 if (isInternalProtocol(url.getProtocol())) {
                     url = WrapperServlet.createHttpURL(url);
@@ -243,36 +307,36 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     url = url;
                 }
                 byte [] data;
-                boolean hasNoWindow = (currWinID == -1);
+                boolean hasNoWindow = (task.browser.currWinID == -1);
 
                 // initProgress ();
 
                 String winID;
                 // activate browser window (doesn't work on Win9x)
-                if (!win9xHack ()) {
+                if (!win9xHack (task) && !mozillaHack (task)) {
                     // IE problem
-                    if (realDDEServer().equals(ExtBrowserSettings.IEXPLORE))
+                    if (task.browser.realDDEServer().equals(ExtBrowserSettings.IEXPLORE))
                         winID = "0xFFFFFFFF";
                     else
-                        winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: currWinID).toUpperCase(); // NOI18N
+                        winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: task.browser.currWinID).toUpperCase(); // NOI18N
                     if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
 
                     try {
-                        data = reqDdeMessage(realDDEServer(),"WWW_Activate",winID,5000);
+                        data = task.browser.reqDdeMessage(task.browser.realDDEServer(),"WWW_Activate",winID,5000);
                     }
                     catch (NbBrowserException ex) {
-                        startBrowser ();
-                        data = reqDdeMessage(realDDEServer(),"WWW_Activate",winID,5000);
+                        startBrowser (task);
+                        data = task.browser.reqDdeMessage(task.browser.realDDEServer(),"WWW_Activate",winID,5000);
                         hasNoWindow = false;
                     }
                     
                     if (data != null && data.length >= 4) {
-                        currWinID=DdeBrowserSupport.getDWORDAtOffset(data, 0);
-                        setStatusMessage(bundle.getString("MSG_use_win")+currWinID);
+                        task.browser.currWinID=DdeBrowserSupport.getDWORDAtOffset(data, 0);
+                        task.browser.setStatusMessage(bundle.getString("MSG_use_win")+task.browser.currWinID);
                     }
                     else {
-                        currWinID = -1;
-                        setStatusMessage(bundle.getString("ERR_cant_activate_browser"));
+                        task.browser.currWinID = -1;
+                        task.browser.setStatusMessage(bundle.getString("ERR_cant_activate_browser"));
                         return;
                     }
                 }
@@ -281,40 +345,43 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 }
 
 
-                if (realDDEServer().equals(ExtBrowserSettings.IEXPLORE)) {
-                    winID = (hasNoWindow && !win9xHack())? "0": "-1";
+                if (task.browser.realDDEServer().equals(ExtBrowserSettings.IEXPLORE)) {
+                    winID = (hasNoWindow && !win9xHack(task))? "0": "-1";
                 }
                 else
-                    winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: currWinID).toUpperCase(); // NOI18N
+                    winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: task.browser.currWinID).toUpperCase(); // NOI18N
                 if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
 
                 // nbfs can be displayed internally and in ext. viewer too
                 String args1;
-                args1="\""+url.toString()+"\",,"+winID+",0x1,,,"+(ddeProgressSrvName==null?"":ddeProgressSrvName);  // NOI18N
-                if (!win9xHack ()) {
-                    data = reqDdeMessage(realDDEServer(),"WWW_OpenURL",args1,3000); // NOI18N
+                args1="\""+url.toString()+"\",,"+winID+",0x1,,,"+(task.browser.ddeProgressSrvName==null?"":task.browser.ddeProgressSrvName);  // NOI18N
+                if (!win9xHack (task) && !mozillaHack (task)) {
+                    data = task.browser.reqDdeMessage(task.browser.realDDEServer(),"WWW_OpenURL",args1,3000); // NOI18N
                 }
                 else {
                     // we've skipped WWW_Activate step so we need to start it if it doesn't run 
                     try {
-                        data = reqDdeMessage(realDDEServer(),"WWW_OpenURL",args1,3000); // NOI18N
+                        data = task.browser.reqDdeMessage(task.browser.realDDEServer(),"WWW_OpenURL",args1,3000); // NOI18N
                     }
                     catch (NbBrowserException ex) {
-                        startBrowser ();
-                        data = reqDdeMessage(realDDEServer(),"WWW_OpenURL",args1,3000); // NOI18N
+                        startBrowser (task);
+                        data = task.browser.reqDdeMessage(task.browser.realDDEServer(),"WWW_OpenURL",args1,3000); // NOI18N
                     }
                 }
                     
                 if (data != null && data.length >= 4) {
-                    if (!realDDEServer().equals("IEXPLORE")) {
-                        currWinID=DdeBrowserSupport.getDWORDAtOffset(data, 0);
-                        if (currWinID < 0) currWinID = -currWinID;
+                    if (!task.browser.realDDEServer().equals("IEXPLORE")) {
+                        task.browser.currWinID=DdeBrowserSupport.getDWORDAtOffset(data, 0);
+                        if (task.browser.currWinID < 0) task.browser.currWinID = -task.browser.currWinID;
                     }
-                    setStatusMessage(bundle.getString("MSG_use_win"));
+                    task.browser.setStatusMessage(bundle.getString("MSG_use_win"));
                 }
-                URL oldUrl = NbDdeBrowserImpl.this.url;
-                NbDdeBrowserImpl.this.url = url;
-                pcs.firePropertyChange(PROP_URL, oldUrl, url);
+                URL oldUrl = task.browser.url;
+                task.browser.url = url;
+                task.browser.pcs.firePropertyChange(PROP_URL, oldUrl, url);
+            }
+            catch (InterruptedException ex) {
+                // this can be timer interrupt
             }
             catch (Exception ex) {
                 final Exception ex1 = ex;
@@ -330,26 +397,40 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         /**
          * Checks for IExplorer & Win9x combination.
          */
-        private boolean win9xHack () {
-            return realDDEServer().equals(ExtBrowserSettings.IEXPLORE)
+        private boolean win9xHack (DisplayTask task) {
+            return task.browser.realDDEServer().equals(ExtBrowserSettings.IEXPLORE)
                    && (Utilities.getOperatingSystem() == Utilities.OS_WIN98 
                       ||  Utilities.getOperatingSystem() == Utilities.OS_WIN95);
         }
 
+        private boolean mozillaHack (DisplayTask task) {
+            return task.browser.realDDEServer().equals(ExtBrowserSettings.MOZILLA);
+        }
+        
         /** 
          * Utility function that tries to start new browser process.
          *
          * It is used when WWW_Activate or WWW_OpenURL fail
          */
-        private void startBrowser() throws NbBrowserException, java.io.IOException, InterruptedException {
+        private void startBrowser(DisplayTask task) throws NbBrowserException, java.io.IOException, InterruptedException {
             String b;
             if (ExtBrowserSettings.OPTIONS.isStartWhenNotRunning()) {
-                NbProcessDescriptor cmd = winBrowserFactory.getBrowserExecutable();
+                NbProcessDescriptor cmd = task.browser.winBrowserFactory.getBrowserExecutable();
                 // setStatusMessage(bundle.getString("MSG_Running_command")+cmd);
                 cmd.exec();
                 // wait for browser start
-                Thread.currentThread().sleep(7000);
+                Thread.currentThread().sleep(5000);
             }
+        }
+    }
+    /** Encapsulating class for URL and browser that asks for its displaying */
+    private static class DisplayTask {
+        URL url;
+        NbDdeBrowserImpl browser;
+        
+        DisplayTask (URL url, NbDdeBrowserImpl browser) {
+            this.url = url;
+            this.browser = browser;
         }
     }
 }

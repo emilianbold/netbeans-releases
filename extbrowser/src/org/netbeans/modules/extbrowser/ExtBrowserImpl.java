@@ -154,7 +154,7 @@ public abstract class ExtBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
      *
      * @return true if protocol is internal, false otherwise
      */
-    protected final boolean isInternalProtocol (String protocol) {
+    protected final static boolean isInternalProtocol (String protocol) {
         // internal protocols cannot be displayed in external viewer
         if (protocol.equals ("nbfs")               // NOI18N
         ||  protocol.equals ("nbres")              // NOI18N
