@@ -17,24 +17,20 @@ import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
-import java.util.ArrayList;
-import java.util.Enumeration;
 
 
-import java.util.HashMap;
-import java.util.Iterator;
-
-import java.util.List;
-
-import java.util.Map;
+import java.util.*;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeExpansionEvent;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.TreeNode;
 
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeModel;
 
 
 import org.netbeans.spi.viewmodel.Models;
@@ -95,7 +91,6 @@ ExplorerManager.Provider, PropertyChangeListener {
         
         // 2) save current settings (like columns, expanded paths)
         List ep = treeTable.getExpandedPaths ();
-        if (ep.size () > 0) expandedPaths = ep;
         saveWidths ();
         
         // 3) no model => set empty root node & return
@@ -129,6 +124,14 @@ ExplorerManager.Provider, PropertyChangeListener {
         // 6) update column widths & expanded nodes
         updateColumnWidths ();
         treeTable.expandNodes (expandedPaths);
+        // TODO: this is a workaround, we should find a better way later
+        final List backupPath = new ArrayList(expandedPaths);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                treeTable.expandNodes (backupPath);
+            }
+        });
+        if (ep.size () > 0) expandedPaths = ep;
     }
     
     public ExplorerManager getExplorerManager () {
@@ -236,8 +239,8 @@ ExplorerManager.Provider, PropertyChangeListener {
         JTable getTable () {
             return treeTable;
         }
-                        
-        public List getExpandedPaths () { 
+
+        public List getExpandedPaths () {
             List result = new ArrayList ();
             ExplorerManager em = ExplorerManager.find (this);
             TreeNode rtn = Visualizer.findVisualizer (
@@ -266,7 +269,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                 if (tp != null) showPath (tp);
             }
         }
-        
+
         /** Converts path of strings to TreePath if exists null otherwise
          */
         private TreePath stringPath2TreePath (String[] sp) {
