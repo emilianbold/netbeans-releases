@@ -271,17 +271,14 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             Dimension minsize = components[i].getMinimumSize();
             Dimension prefsize = components[i].getPreferredSize();
             
-            // issue 4617682
-            int factor = (System.getProperty("java.version").startsWith("1.4")) ? 1 : 2; // NOI18N
-            
             if (bounds.width > minsize.width)
-                gbc.ipadx = (bounds.width - minsize.width)/factor;
+                gbc.ipadx = bounds.width - minsize.width;
             else if (bounds.width < prefsize.width)
-                gbc.ipadx = (bounds.width - prefsize.width)/factor;
+                gbc.ipadx = bounds.width - prefsize.width;
             if (bounds.height > minsize.height)
-                gbc.ipady = (bounds.height - minsize.height)/factor;
+                gbc.ipady = bounds.height - minsize.height;
             else if (bounds.height < prefsize.height)
-                gbc.ipady = (bounds.height - prefsize.height)/factor;
+                gbc.ipady = bounds.height - prefsize.height;
             
             currentConstraints[i] = new GridBagLayoutConstraints(gbc);
         }
