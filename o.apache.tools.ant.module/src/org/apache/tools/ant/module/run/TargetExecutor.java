@@ -145,6 +145,9 @@ public final class TargetExecutor implements Runnable {
             if (io == null) {
                 io = IOProvider.getDefault().getIO(displayName, true);
             }
+            // XXX try passing null for displayName; probably no longer need these
+            // processes in displayed Processes list (Stop Building works); but would
+            // prevent them from being stopped during shutdown?
             task = ExecutionEngine.getDefault().execute(displayName, this, InputOutput.NULL);
         }
         WrapperExecutorTask wrapper = new WrapperExecutorTask(task, io);
