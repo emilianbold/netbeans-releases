@@ -105,13 +105,6 @@ public class Main extends Object {
         
         System.out.println("!!!!! testlist is "+System.getProperty("testlist"));
                         
-        // need to initialize org.openide.TopManager, not org.netbeans.core.Plain
-          System.getProperties().put (
-              // Note this is really the NbTopManager impl now:
-            "org.openide.TopManager", // NOI18N
-            "org.netbeans.core.Main" // NOI18N
-          );
-        
         // create the IDE flag file
         String workdir = System.getProperty("xtest.workdir");
         if (workdir!=null) {
