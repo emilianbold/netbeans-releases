@@ -356,10 +356,13 @@ final class LibrariesNode extends AbstractNode {
                 else if (prop.startsWith(FILE_REF_PREFIX)) {
                     //File reference
                     String evaluatedRef = eval.getProperty(propName);
-                    File file = helper.getAntProjectHelper().resolveFile(evaluatedRef);
-                    SourceGroup sg = createFileSourceGroup(file,rootsList);
-                    if (sg !=null) {
-                        result.add (new Key(sg,currentClassPath, propName));
+                    // XXX: hotfix for bunch of issues about NPE from resolveFile() method (#53600, #53688, #53659)
+                    if (evaluatedRef != null) {
+                        File file = helper.getAntProjectHelper().resolveFile(evaluatedRef);
+                        SourceGroup sg = createFileSourceGroup(file,rootsList);
+                        if (sg !=null) {
+                            result.add (new Key(sg,currentClassPath, propName));
+                        }
                     }
                 }
                 else if (prop.startsWith(REF_PREFIX)) {
