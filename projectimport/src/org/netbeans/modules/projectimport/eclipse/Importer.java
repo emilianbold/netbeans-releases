@@ -81,7 +81,7 @@ final class Importer {
     private Collection warnings;
     
     private JavaPlatform[] nbPlfs; // All netbeans platforms
-    private String nbDefPlfDir; // NetBeans default platform directory
+    private File nbDefPlfFile; // NetBeans default platform directory
     
     Importer(final Set eclProjects, String destination, boolean recursively) {
         this.eclProjects = eclProjects;
@@ -102,8 +102,7 @@ final class Importer {
             logWarning(NbBundle.getMessage(Importer.class, "MSG_NotValidPlatformsInNB")); // NOI18N
             return;
         } else {
-            nbDefPlfDir = FileUtil.toFile(
-                    (FileObject) installFolder.toArray()[0]).getAbsolutePath();
+            nbDefPlfFile = FileUtil.toFile((FileObject) installFolder.toArray()[0]);
         }
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -187,7 +186,8 @@ final class Importer {
                 nbProjectDir, eclProject.getName(), srcFiles, testDirs, null);
         // get NB project
         J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().
-                findProject(FileUtil.toFileObject(nbProjectDir));
+                findProject(FileUtil.toFileObject(
+                FileUtil.normalizeFile(nbProjectDir)));
         ProjectClassPathExtender nbProjectClassPath =
                 (ProjectClassPathExtender) nbProject.getLookup().lookup(ProjectClassPathExtender.class);
         assert nbProjectClassPath != null : "Cannot lookup ProjectClassPathExtender"; // NOI18N
@@ -205,7 +205,8 @@ final class Importer {
         for (Iterator it = eclProject.getAllLibrariesFiles().iterator(); it.hasNext(); ) {
             File eclLib = (File) it.next();
             if (eclLib.exists()) {
-                nbProjectClassPath.addArchiveFile(FileUtil.toFileObject(eclLib));
+                nbProjectClassPath.addArchiveFile(FileUtil.toFileObject(
+                        FileUtil.normalizeFile(eclLib)));
             } else {
                 logWarning(NbBundle.getMessage(Importer.class, "MSG_LibraryDoesnExist", // NOI18N
                         eclProject.getName(), eclLib.getAbsolutePath()), true);
@@ -228,7 +229,7 @@ final class Importer {
                             artifact[0], artifact[0].getArtifactLocations()[0]);
                 } else {
                     logger.warning("Project in directory \"" +  // NOI18N
-                            eclProject.getDirectory().getAbsolutePath() + 
+                            eclProject.getDirectory().getAbsolutePath() +
                             "\" is already being processed. Recursive " + // NOI18N
                             "dependencies reached. "); // NOI18N
                 }
@@ -253,17 +254,20 @@ final class Importer {
         // eclPlfDir can be null in a case when a JDK was set for an eclipse
         // project in Eclipse then the directory with JDK was deleted from
         // filesystem and then a project is imported into NetBeans
-        if (eclPlfDir == null || eclPlfDir.equals(nbDefPlfDir)) {
-            // use default platform
+        if (eclPlfDir == null) {
+            return;
+        }
+        File eclPlfFile = FileUtil.normalizeFile(new File(eclPlfDir));
+        if (eclPlfFile.equals(nbDefPlfFile)) { // use default platform
             return;
         }
         JavaPlatform nbPlf = null;
         for (int i = 0; i < nbPlfs.length; i++) {
             JavaPlatform current = nbPlfs[i];
-            String nbPlfDir = FileUtil.toFile(
-                    (FileObject) current.getInstallFolders().toArray()[0]).getAbsolutePath();
+            File nbPlfDir = FileUtil.toFile(
+                    (FileObject) current.getInstallFolders().toArray()[0]);
             
-            if (nbPlfDir.equals(eclPlfDir)) {
+            if (nbPlfDir.equals(eclPlfFile)) {
                 nbPlf = nbPlfs[i];
                 // found
                 break;
@@ -274,8 +278,8 @@ final class Importer {
         // Problems" feature. Such behaviour is much better then using a default
         // platform when user imports more projects.
         if (nbPlf == null) {
-            File f = FileUtil.normalizeFile(new File(eclPlfDir));
-            FileObject fo = FileUtil.toFileObject(f);
+            logger.fine("Creating new platform: " + eclPlfFile.getAbsolutePath()); // NOI18N
+            FileObject fo = FileUtil.toFileObject(eclPlfFile);
             if (fo != null) {
                 NewJ2SEPlatform plat = NewJ2SEPlatform.create(fo);
                 plat.run();
@@ -303,13 +307,12 @@ final class Importer {
                     // tzezula: TODO: User should be notified in the UI and
                     // probably default platform is used (not sure if it is
                     // according to UI spec)
-                    ErrorManager.getDefault().log(ErrorManager.ERROR,
-                            "Can not create new J2SE platform, the default " + // NOI18N
-                            "platform will be used."); // NOI18N
+                    logWarning( "Cannot create new J2SE platform, the " + // NOI18N
+                            "default platform will be used."); // NOI18N
                 }
             } else {
                 logWarning(NbBundle.getMessage(Importer.class, "MSG_JDKDoesnExistUseDefault", // NOI18N
-                        eclProject.getName(), f.getAbsolutePath()), true);
+                        eclProject.getName(), eclPlfFile.getAbsolutePath()), true);
             }
         }
         // tzezula: The platform is changed to explicit one only in case when
