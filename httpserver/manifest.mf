@@ -1,0 +1,8 @@
+Netbeans-Module: com.netbeans.developer.modules.httpserver/1
+Netbeans-Module-Name: Http Server Module
+NetBeans-Module-Install: com/netbeans/developer/modules/httpserver/HttpServerModule.class
+Class-Path: other/com.mortbay.Jetty.jar other/javax.servlet.jar
+
+Name: com/netbeans/developer/modules/httpserver/HttpServerSettings.class
+Netbeans-Module-Class: Option
+
