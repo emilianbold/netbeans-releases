@@ -777,7 +777,7 @@ public class XSLGrammarQuery implements GrammarQuery{
     /**
      * Looks up registered XSLCustomizer objects which will be used by this object 
      */
-    private XSLCustomizer lookupCustomizerInstance() {
+    private static XSLCustomizer lookupCustomizerInstance() {
         try {
             // Load the XSLCustomizer from the XML layer
             FileSystem fs = Repository.getDefault().getDefaultFileSystem();
@@ -798,7 +798,7 @@ public class XSLGrammarQuery implements GrammarQuery{
             }
 
             return (XSLCustomizer)lookupItem.getInstance();
-        } catch(Exception e) {
+        } catch (DataObjectNotFoundException e) {
             return null;
         }
     }
@@ -810,7 +810,7 @@ public class XSLGrammarQuery implements GrammarQuery{
      *          of the names in the set.
      * @param startWith Elements should only be added to enum if they start with this string
      */
-    private void addXslElementsToEnum(QueueEnumeration enum, Set set, String namespacePrefix, String startWith) {
+    private static void addXslElementsToEnum(QueueEnumeration enum, Set set, String namespacePrefix, String startWith) {
         if (startWith.startsWith(namespacePrefix) || namespacePrefix.startsWith(startWith)) {
             Iterator it = set.iterator();
             while ( it.hasNext()) {
@@ -825,7 +825,7 @@ public class XSLGrammarQuery implements GrammarQuery{
         }
     }
     
-    private void addItemsToEnum(QueueEnumeration enum, Set set, String startWith, String prefix) {
+    private static void addItemsToEnum(QueueEnumeration enum, Set set, String startWith, String prefix) {
         Iterator it = set.iterator();
         while ( it.hasNext()) {
             String nextText = (String)it.next();

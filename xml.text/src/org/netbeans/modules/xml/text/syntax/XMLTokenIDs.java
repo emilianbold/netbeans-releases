@@ -70,6 +70,7 @@ public interface XMLTokenIDs {
     public static final BaseTokenID DECLARATION = new BaseTokenID( "doctype", DECLARATION_ID );
     /** Character reference, e.g. &amp;lt; = &lt; */
     public static final BaseTokenID CHARACTER = new BaseTokenID( "ref", CHARACTER_ID );
+    
     /** End of line */
     public static final BaseTokenID EOL = new BaseTokenID( "EOL", EOL_ID );
 

@@ -74,7 +74,7 @@ public interface GrammarQuery {
      * @stereotype query
      * @output list of results that can be queried on name, and attributes
      * @time Performs fast up to 300 ms. 
-     * @param ctx represents virtual attribute <code>Node</code> to be replaced. Its parent is a element node.
+     * @param ctx represents owner <code>Element</code> that will host result.
      * @return enumeration of <code>GrammarResult</code>s (ATTRIBUTE_NODEs) that can be queried on name, and attributes.
      *         Every list member represents one possibility.  
      */
@@ -87,7 +87,7 @@ public interface GrammarQuery {
      * @postconditions Let ctx unchanged
      * @time Performs fast up to 300 ms.
      * @stereotype query
-     * @input ctx represents virtual Node that has to be replaced (parent can be either Attr or Element), its own attributes does not name sense, it can be used just as the navigation start point.
+     * @param ctx represents virtual Node that has to be replaced (parent can be either Attr or Element), its own attributes does not name sense, it can be used just as the navigation start point.
      * @return enumeration of <code>GrammarResult</code>s (TEXT_NODEs) that can be queried on name, and attributes.
      *         Every list member represents one possibility.  
      */
@@ -104,6 +104,9 @@ public interface GrammarQuery {
      * @return enumeration of <code>GrammarResult</code>s (NOTATION_NODEs)
      */    
     Enumeration queryNotations(String prefix);
+    
+    
+    // Candidates for separate interface ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     /**
      * Allows Grammars to supply customizer for the HintContext

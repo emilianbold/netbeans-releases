@@ -224,6 +224,9 @@ public class DTDGrammar implements GrammarQuery {
         }
         return EmptyEnumeration.EMPTY;
     }
+
+    
+    // customizers section ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     public java.awt.Component getCustomizer(HintContext ctx) {
         return null;

@@ -305,7 +305,7 @@ public class SyntaxQueryHelper {
             case XMLDefaultTokenContext.WS_ID:
                 if (StartTag.class.equals(syntaxNode.getClass()) 
                 || EmptyTag.class.equals(syntaxNode.getClass())) {
-                    ctx.initVirtualAttr((Element)syntaxNode, "");
+                    ctx.init((Element)syntaxNode, ""); // GrammarQuery.v2 takes Element ctx 
                     return COMPLETION_TYPE_ATTRIBUTE;
                 } else {
                     // end tag no attributes to complete
@@ -315,24 +315,8 @@ public class SyntaxQueryHelper {
                 
             case XMLDefaultTokenContext.ARGUMENT_ID:
                 if (StartTag.class.equals(syntaxNode.getClass()) 
-                || EmptyTag.class.equals(syntaxNode.getClass())) {
-                    NamedNodeMap attrs = syntaxNode.getAttributes();
-                    int minOffsetGreaterThanCurrent = 1000000000;
-                    Node curAttrNode = null;
-                    for (int ind = 0; ind < attrs.getLength(); ind++) {
-                        AttrImpl attr = (AttrImpl)attrs.item(ind);
-                        int attrTokOffset = attr.getFirstToken().getOffset();
-                        if (attrTokOffset < minOffsetGreaterThanCurrent && attrTokOffset + attr.getValue().length() > token.getOffset()) {
-                            minOffsetGreaterThanCurrent = attrTokOffset;
-                            curAttrNode = attr;
-                        }
-                    }
-                    
-                    if (curAttrNode != null) {
-                        ctx.init(curAttrNode, preText);
-                    } else {
-                        ctx.initVirtualAttr((Element)syntaxNode, preText);
-                    }
+                || EmptyTag.class.equals(syntaxNode.getClass())) {                    
+                    ctx.init((Element)syntaxNode, preText); // GrammarQuery.v2 takes Element ctx 
                     return COMPLETION_TYPE_ATTRIBUTE;
                 }
                 break;
@@ -343,10 +327,10 @@ public class SyntaxQueryHelper {
                     return COMPLETION_TYPE_UNKNOWN;
                 } else if (preText.endsWith(";")) {
                         ctx.init(syntaxNode, "");
-                        return COMPLETION_TYPE_VALUE;                    
+                        return COMPLETION_TYPE_VALUE;
                 } else if (preText.startsWith("&")) {
                     ctx.init(syntaxNode, preText.substring(1));
-                    return COMPLETION_TYPE_ENTITY;                    
+                    return COMPLETION_TYPE_ENTITY;
                 } else if ("".equals(preText)) {
                     if (token.getImage().endsWith(";")) {
                         ctx.init(syntaxNode, preText);
@@ -356,7 +340,7 @@ public class SyntaxQueryHelper {
                 break;
                 
             default:
-                
+
         }
         
 //        System.err.println("Cannot complete: " + syntaxNode + "\n\t" + token + "\n\t" + preText);

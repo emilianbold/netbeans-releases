@@ -32,6 +32,12 @@ import javax.swing.Icon;
  */
 public interface GrammarResult extends Node {
 
+    //Node getNode() use instead of extends Node
+    //boolean isDefault()
+    //boolean isImplied()
+    //boolean isRequired()
+    //boolean isFixed()
+    
     /**
      * @return name that is presented to user or <code>null</code> if
      * <code>getNodeName()</code> is enough.
