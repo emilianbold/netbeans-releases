@@ -37,6 +37,7 @@ import org.openide.util.Mutex;
 import org.openide.util.UserCancelException;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 // XXX Before as org.netbeans.core.NbNodeOperation.
@@ -55,12 +56,15 @@ public final class NodeOperationImpl extends NodeOperation {
     public void explore (final Node n) {
         Mutex.EVENT.readAccess (new Runnable () {
                 public void run () {
-                    NbMainExplorer.ExplorerTab et = new NbMainExplorer.ExplorerTab ();
+                    NbMainExplorer.ExplorerTab et = new NonPersistentExplorerTab ();
                     et.setRootContext (n);
                     et.adjustComponentPersistence();
-                    
-                    // PENDING, it will be automatically added into default editor mode.
-                    et.open ();
+
+                    Mode target = WindowManager.getDefault().findMode("explorer");
+                    if (target != null) {
+                        target.dockInto(et);
+                    }
+                    et.open();
                     et.requestActive();
                 }
             });
@@ -242,6 +246,12 @@ public final class NodeOperationImpl extends NodeOperation {
                     )).show();
                 }
             });
+    }
+    
+    private static class NonPersistentExplorerTab extends NbMainExplorer.ExplorerTab {
+        public int getPersistenceType() {
+            return PERSISTENCE_NEVER;
+        }
     }
     
 }
