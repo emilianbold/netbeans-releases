@@ -417,9 +417,9 @@
 <mapID target="debug.environment.classes" url="debug/environment/classestab.html" />
 
 <mapID target="debug.callstack.jump" url="debug/callstack/callstack_jump.html" />
-<mapID target="debug.callstack.method" url="debug/callstack/callstack_methods.html" />
 <mapID target="debug.callstack.callingmethod" url="debug/callstack/calling_method.html" />
 <mapID target="debug.callstack.source" url="debug/callstack/callstack_source.html" />
+<mapID target="debug.callstack.pop" url="debug/callstack/pop.html" />
 
 <mapID target="debug.fix" url="debug/fix/fix.html" />
 
@@ -427,8 +427,6 @@
 <mapID target="debug.threads.suspend" url="debug/threads/suspend.html" />
 <mapID target="debug.threads.change" url="debug/threads/change.html" />
 <mapID target="debug.threads.source" url="debug/threads/source.html" />
-<mapID target="debug.threads.variables" url="debug/threads/variables.html" />
-<mapID target="debug.threads.callstack" url="debug/threads/callstack.html" />
 <mapID target="debug.threads.properties" url="debug/threads/thread_props.html" />
 
 <mapID target="debug.debugger.jump" url="debug/debugger/debugger_jump.html" />

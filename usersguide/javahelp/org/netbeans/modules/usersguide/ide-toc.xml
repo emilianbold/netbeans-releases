@@ -220,10 +220,11 @@
       <tocitem text="Breakpoints View" target="debug.window.breakpoints"></tocitem>
       <tocitem text="Customizing the Display of a View" target="debug.view.customize"></tocitem>
     </tocitem>
+  <tocitem text="Source Editor Debugging Features" target="debug.source.editor"></tocitem>
   </tocitem>
   <tocitem text="Running a Program in the Debugger" target="debug.sessions.jump">
     <tocitem text="Starting a Debugging Session" target="debug.running.debugger" />
-    <tocitem text="Attaching to a Running Java VM" target="debug.attach" />
+    <tocitem text="Attaching to a Java VM" target="debug.attach" />
     <tocitem text="Debugging on a 64-Bit Java VM" target="debug.sessions.64bit" />
       </tocitem>
   
@@ -235,7 +236,6 @@
      <tocitem text="Continuing a Program" target="debug.running.resume" />
   </tocitem>
 
-  <tocitem text="Debugging in the Source Editor" target="debug.source.editor"></tocitem>
 
   <tocitem text="Fixing and Continuing" target="debug.fix"></tocitem>
 
@@ -270,45 +270,42 @@
     <tocitem text="Suspending and Resuming a Thread" target="debug.threads.suspend" />
     <tocitem text="Making a Thread Current" target="debug.threads.change" />
     <tocitem text="Viewing the Source Code of a Thread" target="debug.threads.source" />
-    <tocitem text="Viewing the Variables in a Thread" target="debug.threads.variables" />
-    <tocitem text="Viewing the Call Stack for a Thread" target="debug.threads.callstack" />
     <tocitem text="Thread Properties" target="debug.threads.properties" />
   </tocitem>
 
   <tocitem text="Using the Call Stack" target="debug.callstack.jump" >
-    <tocitem text="Browsing the Methods on the Call Stack" target="debug.callstack.callingmethod" />
-    <tocitem text="Viewing Variables for a Method on the Call Stack" target="debug.callstack.method" />
+    <tocitem text="Making a Call Current" target="debug.callstack.callingmethod" />
     <tocitem text="Viewing Source for a Method on the Call Stack" target="debug.callstack.source" />
+    <tocitem text="Removing a Call From the Call Stack" target="debug.callstack.pop" />
   </tocitem>
 
-  <tocitem text="Examining Variables" target="debug.variables.jump" >
+  <tocitem text="Examining Variables and Expressions" target="debug.variables.jump" >
     <tocitem text="Viewing the Value of a Variable" target="debug.variables.evaluate"/>
     <tocitem text="Modifying the Value of a Variable" target="debug.variables.value"/>
-  </tocitem>
-    
-  <tocitem text="Watching Variables and Expressions" target="debug.watch" >
+    <tocitem text="Creating a Watch" target="debug.watch" />
     <tocitem text="Creating a Fixed Watch" target="debug.watch.fix" />
     <tocitem text="Deleting a Watch" target="debug.watch.delete" />
   </tocitem>
+    
 
-  <tocitem text="Examining the Classes Loaded by the Program" target="debug.environment.classes" />
+  <tocitem text="Examining Classes Loaded by the Program" target="debug.environment.classes" />
 
 
   <tocitem text="Configuring the Debugger" target="debug.debugger.jump">
     <tocitem text="Setting General Debugging Options" target="debug.options"/>
     <tocitem text="Setting Options for the Java Debugger" target="debug.java.options"></tocitem>
+    <tocitem text="Enabling Assertion Checking" target="debug.debugger.assertion"/>
+    <tocitem text="Setting the Boot Class Path" target="debug.debugger.bootclasspath"/>
     <tocitem text="Debugger Types" target="debug.debugger.jump">
     <tocitem text="Default Debugger" target="debug.debugger.default"/>
     <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
     <tocitem text="JDK 1.1 Debugger" target="debug.debugger.jdk"/>
     <tocitem text="J2EE Server Debugger" target="debug.debugger.j2ee"/>
-    </tocitem>
-    <tocitem text="Enabling Assertion Checking" target="debug.debugger.assertion"/>
-    <tocitem text="Setting the Boot Class Path" target="debug.debugger.bootclasspath"/>
     <tocitem text="Specifying the Default Debugger" target="debug.debugger.project_default"/>
     <tocitem text="Defining a New Debugger Type" target="debug.service.new"/>
     <tocitem text="Setting a Debugger Type in a Template" target="debug.debugger.template" />
     <tocitem text="Removing a Debugger Type" target="debug.service.remove"/>
+    </tocitem>
   </tocitem>
 </tocitem>
 
