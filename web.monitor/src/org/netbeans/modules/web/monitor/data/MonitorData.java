@@ -616,6 +616,33 @@ public class MonitorData extends BaseBean implements DataRecord {
 	return str.toString();
     }
 
+    /** Writes the data to a temp file. 
+     * @param filename The name of the file to which the data is
+     * written
+     * @return the absolute path to the file as a String
+     *
+     */
+    public String createTempFile(String filename) { 
+
+	StringBuffer buf = new StringBuffer
+	    (System.getProperty("java.io.tmpdir")); // NOI18N
+	buf.append(System.getProperty("file.separator")); // NOI18N
+	buf.append(filename); 
+
+	try {
+	    File file = new File(buf.toString()); 
+	    FileOutputStream fout = new FileOutputStream(file);
+	    PrintWriter pw = new PrintWriter(fout);
+	    this.write(pw);
+	    pw.close();
+	    fout.close();
+	    return file.getAbsolutePath(); 
+	}
+	catch(Throwable throwable) {
+	    return "null"; //NOI18N
+	}     
+    }
+
     /*
     public TransactionNode createTransactionNode(boolean current) {
 	TransactionNode node = 
