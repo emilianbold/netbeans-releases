@@ -49,7 +49,7 @@ final class ActionPasteType {
                 for (int i = 0; i < pasteOperations.length; i++) {
                     final DataObject[] dataObjects = LoaderTransfer.getDataObjects(transfer, pasteOperations[i]);
                     if (dataObjects != null) {                                                
-                        if (canBePasted(dataObjects, folder, pasteOperations[i])) {
+                        if (canBePasted(dataObjects, targetFolder, pasteOperations[i])) {
                             retVal = new PasteTypeImpl(Arrays.asList(dataObjects), targetFolder, pasteOperations[i]);
                             break;
                         }
@@ -61,8 +61,11 @@ final class ActionPasteType {
         return retVal;
     }
 
-    private static boolean canBePasted(final DataObject[] dataObjects, final FileObject folder, final int operation) throws FileStateInvalidException {
+    private static boolean canBePasted(final DataObject[] dataObjects, final DataFolder targetFolder, final int operation) throws FileStateInvalidException {
         final Set pasteableDataObjects = new HashSet ();
+        final FileObject folder = targetFolder.getPrimaryFile();
+        
+        DataObject[] folderChildren = targetFolder.getChildren();
         
         for (int j = 0; j < dataObjects.length; j++) {
             final DataObject dataObject = dataObjects[j];
@@ -77,7 +80,16 @@ final class ActionPasteType {
                     !(fo.getParent() == folder);//prevents from cutting into the same folder where it was 
                             
             if (isCopyPaste || isCutPaste) {
-                pasteableDataObjects.add(dataObject);                        
+                
+                boolean isDuplicate = false;
+                for( int i=0; i<folderChildren.length; i++ ) {
+                    if( 0 == folderChildren[i].getName().compareTo( dataObject.getName() ) ) {
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+                if( !isDuplicate )
+                    pasteableDataObjects.add(dataObject);                        
             }
         }
         return (pasteableDataObjects.size() == dataObjects.length);

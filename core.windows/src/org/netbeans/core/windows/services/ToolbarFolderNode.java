@@ -14,7 +14,6 @@
 package org.netbeans.core.windows.services;
 
 import org.netbeans.core.NbPlaces;
-import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ui.toolbars.ToolbarConfiguration;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -35,14 +34,14 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
-
-import java.awt.*;
 import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import org.openide.loaders.LoaderTransfer;
+
 
 /** The node for the toolbar folder representation.
 * Delegates most of its functionality to the original data folder node.
@@ -81,8 +80,6 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
         PasteType pType = ActionPasteType.getPasteType((DataFolder)getDataObject() , t);
         if (pType != null) {
             s.add(pType);
-        } else {
-            super.createPasteTypes(t, s);    
         }        
     }
     
@@ -210,7 +207,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
             firePropertyChange("configuration", evt.getOldValue(), evt.getNewValue()); // NOI18N
         }
     }
-    
+
     /** Children for the ToolbarFolderNode. Creates ToolbarFolderNodes or
     * ToolbarItemNodes as filter subnodes...
     */
@@ -391,9 +388,8 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
         protected void createPasteTypes(Transferable t, List s) {
             PasteType pType = ActionPasteType.getPasteType((DataFolder)getDataObject() , t);
             if (pType != null) {
+                //now we know that the tranferable holds a paste-able Action
                 s.add(pType);
-            } else {
-                super.createPasteTypes(t, s);    
             }        
         }
         

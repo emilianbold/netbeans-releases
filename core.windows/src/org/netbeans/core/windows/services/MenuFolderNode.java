@@ -75,9 +75,8 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
     protected void createPasteTypes(Transferable t, List s) {
         PasteType pType = ActionPasteType.getPasteType((DataFolder)getDataObject() , t);
         if (pType != null) {
+            //now we know that the tranferable holds a paste-able Action
             s.add(pType);
-        } else {
-            super.createPasteTypes(t, s);    
         }        
     }
     
