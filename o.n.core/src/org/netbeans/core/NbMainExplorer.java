@@ -168,7 +168,6 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     tabs.addChangeListener (new javax.swing.event.ChangeListener () {
         public void stateChanged (javax.swing.event.ChangeEvent evt) {
           int index = tabs.getSelectedIndex ();
-          System.out.println("tabb state change, index:" + index);
           if (index < 0) {
             currentManager = null;
             return;
@@ -486,6 +485,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  23   Gandalf   1.22        7/30/99  David Simonek   
 *  22   Gandalf   1.21        7/30/99  David Simonek   serialization fixes
 *  21   Gandalf   1.20        7/28/99  David Simonek   canClose updates
 *  20   Gandalf   1.19        7/21/99  David Simonek   properties switcher fixed
