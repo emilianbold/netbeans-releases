@@ -184,6 +184,7 @@ public class AllOptionsFolder extends org.openide.loaders.FolderInstance{
                 // Add the initializer for the base options. It will not be removed
                 Settings.addInitializer(ret.getSettingsInitializer(),
                 Settings.OPTION_LEVEL);
+                Settings.reset();
                 baseInitialized = true;
             }
         }
