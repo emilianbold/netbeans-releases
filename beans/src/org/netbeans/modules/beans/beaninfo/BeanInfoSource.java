@@ -38,7 +38,8 @@ import org.netbeans.modules.java.JavaEditor;
 public class BeanInfoSource extends Object {
 
     private static final String BEANINFO_NAME_EXT = "BeanInfo"; // NOI18N
-
+    private static final String BEANINFONOICON_NAME_EXT = "BeanInfoNoIcon"; // NOI18N
+    
     private static final String DESCRIPTOR_SECTION = "BeanDescriptor"; // NOI18N
     private static final String PROPERTIES_SECTION = "Properties"; // NOI18N
     private static final String EVENTSETS_SECTION = "Events"; // NOI18N
@@ -74,16 +75,21 @@ public class BeanInfoSource extends Object {
             return false;
         }
 
-        JavaEditor.InteriorSection dis = javaEditor.findInteriorSection( DESCRIPTOR_SECTION );
+        //JavaEditor.InteriorSection dis = javaEditor.findInteriorSection( DESCRIPTOR_SECTION );
         JavaEditor.InteriorSection pis = javaEditor.findInteriorSection( PROPERTIES_SECTION );
         JavaEditor.InteriorSection eis = javaEditor.findInteriorSection( EVENTSETS_SECTION );
         JavaEditor.InteriorSection mis = javaEditor.findInteriorSection( METHODS_SECTION );
-        JavaEditor.SimpleSection iss = javaEditor.findSimpleSection( ICONS_SECTION );
+        //JavaEditor.SimpleSection iss = javaEditor.findSimpleSection( ICONS_SECTION );
         JavaEditor.SimpleSection dss = javaEditor.findSimpleSection( IDX_SECTION );
 
-        return ( pis != null && eis != null && iss != null && dss != null);
+        //return ( pis != null && eis != null && iss != null && dss != null);
+        return ( pis != null && eis != null && dss != null);
     }
 
+    boolean hasIconInfo(){
+        JavaEditor.SimpleSection iss = javaEditor.findSimpleSection( ICONS_SECTION );
+        return ( iss != null );
+    }
     /** Checks wether the bean descriptor object has Guarded sections i.e.
      * was created from new netbeans template.
      */
@@ -140,7 +146,7 @@ public class BeanInfoSource extends Object {
 
 
     /** Creates beanInfo data object */
-    void createFromTemplate() {
+    void createFromTemplate( boolean iconBlock ) {
 
         DataFolder dfTemplates = TopManager.getDefault().getPlaces().folders().templates();
         if ( dfTemplates == null ) {
@@ -157,11 +163,18 @@ public class BeanInfoSource extends Object {
             return;
         }    
             
-        FileObject foBiTemplate = foClassTemplates.getFileObject( "BeanInfo", "java" ); // NOI18N
+        FileObject foBiTemplate = null;
+        
+        if( iconBlock ){
+            foBiTemplate = foClassTemplates.getFileObject( "BeanInfo", "java" ); // NOI18N
+        }
+        else {
+            foBiTemplate = foClassTemplates.getFileObject( "BeanInfoNoIcon", "java" ); // NOI18N
+        }
+
         if ( foBiTemplate == null ) {
             return;
         }
-
 
         try {
             DataObject doBiTemplate = DataObject.find ( foBiTemplate );
@@ -169,7 +182,7 @@ public class BeanInfoSource extends Object {
             SourceElement sc = classElement.getSource();
             if ( sc == null )
                 return;
-            
+
             DataObject dataObject = (DataObject)sc.getCookie( DataObject.class );
 
             if ( dataObject == null ) {
@@ -177,16 +190,15 @@ public class BeanInfoSource extends Object {
             }
             
             DataFolder folder = dataObject.getFolder();
-
             biDataObject = doBiTemplate.createFromTemplate( folder, dataObject.getName() + BEANINFO_NAME_EXT );
             javaEditor = (JavaEditor)biDataObject.getCookie( JavaEditor.class );
         }
         catch ( org.openide.loaders.DataObjectNotFoundException e ) {
-            // System.out.println ( e );
+            //System.out.println ( e );
             // Do nothing if no data object is found
         }
         catch ( java.io.IOException e ) {
-            // System.out.println ( e );
+            //System.out.println ( e );
             // Do nothing if no data object is found
         }
     }

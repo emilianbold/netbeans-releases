@@ -336,7 +336,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
                     TopManager.getDefault().notify( nd );
                     return;
                 }
-                bis.createFromTemplate();
+                bis.createFromTemplate(iconBlockRequired());
             }
             else if ( !bis.isNbBeanInfoDescriptor() ) {
                 try {
@@ -349,12 +349,28 @@ public class BiAnalyser extends Object implements Node.Cookie {
                     TopManager.getDefault().notify( nd );
                     return;
                 }
-                bis.createFromTemplate();
+                
+                bis.createFromTemplate(iconBlockRequired());
+            }
+            else {
+                if( (!iconBlockRequired() && bis.hasIconInfo()) || (iconBlockRequired() && !bis.hasIconInfo()) ){
+                    try {
+                        bis.delete();
+                    }
+                    catch ( java.io.IOException e ) {
+                        String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoCantDelete" );
+                        NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
+                        nd = new NotifyDescriptor.Message ( mssg );
+                        TopManager.getDefault().notify( nd );
+                        return;
+                    }
+                }
+                bis.createFromTemplate(iconBlockRequired());
             }
         }
         else {
             
-            bis.createFromTemplate();
+            bis.createFromTemplate(iconBlockRequired());
 
             if ( !bis.isNbBeanInfo() ) {
                 return;
@@ -599,16 +615,22 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
     /** Generate image icon section */
     private void regenerateIcons() {
-        StringBuffer sb = new StringBuffer( 200 );
+        if(  iconBlockRequired() ) {
+            StringBuffer sb = new StringBuffer( 200 );
 
-        sb.append( getIconDeclaration( ICONNAME_C16, iconC16 ));
-        sb.append( getIconDeclaration( ICONNAME_C32, iconC32 ));
-        sb.append( getIconDeclaration( ICONNAME_M16, iconM16 ));
-        sb.append( getIconDeclaration( ICONNAME_M32, iconM32 ));
+            sb.append( getIconDeclaration( ICONNAME_C16, iconC16 ));
+            sb.append( getIconDeclaration( ICONNAME_C32, iconC32 ));
+            sb.append( getIconDeclaration( ICONNAME_M16, iconM16 ));
+            sb.append( getIconDeclaration( ICONNAME_M32, iconM32 ));
 
-        bis.setIconsSection( sb.toString() );
+            bis.setIconsSection( sb.toString() );
+        }
     }
 
+    private boolean iconBlockRequired(){
+        return (iconC16 != null | iconC32 != null | iconM16 != null | iconM32 != null);
+    }
+    
     private static String getIconDeclaration( String name, String resource ) {
         StringBuffer sb = new StringBuffer( 80 );
 

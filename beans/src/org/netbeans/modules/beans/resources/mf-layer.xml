@@ -15,6 +15,10 @@
          <attr name="template" boolvalue="true" />
          <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/beans/resources/BeanInfo.html" />
       </file>
+      <file name="BeanInfoNoIcon.java" url="templates/BeanInfoNoIcon.template">
+         <attr name="template" boolvalue="true" />
+         <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/beans/resources/BeanInfo.html" />
+      </file>
       <file name="Customizer.java" url="templates/Customizer.template">
          <attr name="template" boolvalue="true" />
          <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/beans/resources/Customizer.html" />
