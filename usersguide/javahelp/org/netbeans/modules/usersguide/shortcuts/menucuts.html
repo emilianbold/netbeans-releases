@@ -12,7 +12,7 @@
 
 <h2>Menu Shortcuts</h2>
 <p>
-Shortcuts for commands available from the main menu:
+Shortcuts for commands available from the main menu and other general commands:
 <ul>
 <li><a href="#menus">Menus</a>
 <li><a href="#file">File Menu</a>
@@ -31,6 +31,10 @@ Shortcuts for commands available from the main menu:
 <tr>
 <th align="left">Keys</th>
 <th align="left">Action</th>
+</tr>
+<tr>
+<td valign="top">F10</td>
+<td>Opens the File menu.</td>
 </tr>
 <tr>
 <td valign="top">Alt-F</td>
@@ -72,6 +76,10 @@ Shortcuts for commands available from the main menu:
 <td valign="top">Alt-H</td>
 <td>Opens the Help menu.</td>
 </tr>
+<tr>
+<td valign="top">Shift-F10</td>
+<td>Opens the contextual menu for the current window or node.</td>
+</tr>
 </table></p>
 
 <a name="file"></a>
@@ -86,7 +94,7 @@ Shortcuts for commands available from the main menu:
 <tr>
 <td valign="top">Ctrl-N</td>
 <td valign="top">New</td>
-<td>Creates a new object with the New From Template wizard.</td>
+<td>Creates a new object with the New wizard.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-O</td>
@@ -137,6 +145,10 @@ clipboard.</td>
 <td valign="top">Copies the current selection to the clipboard.</td>
 </tr>
 <tr>
+<td valign="top">Ctrl-V</td>
+<td valign="top">Paste</td>
+<td valign="top">Pastes the contents of the clipboard into the inserstion point.</td>
+</tr><tr>
 <td valign="top">Delete</td>
 <td valign="top">Delete</td>
 <td valign="top">Deletes the current selection.</td>
@@ -171,7 +183,9 @@ string specified.</td>
 <tr>
 <td valign="top">Ctrl-0</td>
 <td valign="top">Explore From Here</td>
-<td valign="top">Opens a new Explorer window. </td>
+<td valign="top">Opens a new Explorer window that displays only the hierarchy beginning at the 
+node currently selected in the Explorer. If the Source Editor is the current window, Explore From 
+Here is based on that file.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-1</td>
@@ -223,6 +237,31 @@ string specified.</td>
 <td valign="top">Javadoc Index Search</td>
 <td valign="top">Opens the Javadoc Index Search window.</td>
 </tr>
+<tr>
+<td valign="top">Ctrl-Shift-Down</td>
+<td valign="top">Focus Next Workspace</td>
+<td valign="top">Switches to the next workspace, in the order displayed in the workspace tabs.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-Shift-Up</td>
+<td valign="top">Focus Previous Workspace</td>
+<td valign="top">Switches to the previous workspace, in the order displayed in the workspace tabs.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-F4</td>
+<td valign="top">Close</td>
+<td valign="top">Closes the current tab in the current window. If the window has no tabs, the whole window 
+is closed.</td>
+<tr>
+<td valign="top">Ctrl-Shift-F12</td>
+<td valign="top">Open Workspace Explorer</td>
+<td valign="top">Opens the Workspace Explorer, which enables you to choose between workspaces.</td>
+</tr>
+<tr>
+<td valign="top">Ctrl-Shift-F12</td>
+<td valign="top">Open Workspace Explorer</td>
+<td valign="top">Opens the Workspace Explorer, which enables you to choose between workspaces.</td>
+</tr>
 </table></p>
 
 <a name="project"></a>
@@ -250,7 +289,7 @@ compiled.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-Shift-M</td>
-<td valign="top">Set Main Class</td>
+<td valign="top">Set Project Main Class</td>
 <td valign="top">Specifies the main class of a project.</td> 
 </tr>
 <tr>
@@ -265,7 +304,16 @@ the current project.</td>
 <td valign="top">Turns on debugging and changes workspace to the
 Debugging workspace.</td> 
 </tr>
-</table></p>
+<tr>
+<td valign="top">Ctrl-Shift-N</td>
+<td valign="top">New Project</td>
+<td valign="top">Creates a new project and switches the IDE to that project.</td> 
+</tr>
+<tr>
+<td valign="top">Ctrl-Shift-O</td>
+<td valign="top">Open Project</td>
+<td valign="top">Enables you to switch to a different IDE project.</td> 
+</tr></table></p>
 
 <a name="build"></a>
 <h3>Build Menu</h3>
@@ -302,7 +350,7 @@ last compile.</td>
 <td valign="top">Compiles all files within the selected folder
 regardless of whether they have changed since the last compile.</td> 
 </tr>
-<tr>
+<!--<tr>
 <td valign="top">F12</td>
 <td valign="top">Clean</td>
 <td valign="top">Remove obsolete and extraneous files of the selected
@@ -313,20 +361,20 @@ node.</td>
 <td valign="top">Clean All</td>
 <td valign="top">Remove obsolete and extraneous files of the selected
 node and its subnodes.</td> 
-</tr>
+</tr>-->
 <tr>
-<td valign="top">Ctrl-Alt-C</td>
+<td valign="top">Alt-Shift-C</td>
 <td valign="top">Stop Compile</td>
 <td valign="top">Stops compilation of the current program.</td>
 </tr>
 <tr>
-<td valign="top">Alt-F10</td>
+<td valign="top">F12</td>
 <td valign="top">Next Error</td>
 <td valign="top">Scrolls the editor window to the line that contains
 the next build error.</td>
 </tr>
 <tr>
-<td valign="top">Ctrl-Alt-F10</td>
+<td valign="top">Shift-F12</td>
 <td valign="top">Previous Error</td>
 <td valign="top">Scrolls the editor window to the line that contains
 the previous build error.</td>
@@ -372,7 +420,7 @@ breakpoint or the end of the program is reached.</td>
 the file and stop program execution.
 </td>
 <tr>
-<td valign="top">Shift-F7</td>
+<td valign="top">F8</td>
 <td valign="top">Step Over</td>
 <td valign="top">Executes one source line of a program. If the line is
 a method call, executes the entire method then stops.</td>
@@ -395,7 +443,8 @@ caller.</td>
 <tr>
 <td valign="top">Ctrl-Alt-Up</td>
 <td valign="top">Go To Called Method</td>
-<td valign="top"></td>
+<td valign="top">Displays the method called in the current line.</td>
+
 </tr>
 <tr>
 <td valign="top">Ctrl-Alt-Down</td>
@@ -442,6 +491,11 @@ exception, or method.</td>
 <td valign="top">Displays the source file containing the definition of
 the selected class in the filesystem.</td>
 </tr>
+<tr>
+<td valign="top">Alt-Shift-O</td>
+<td valign="top">Insert Internationalized String</td>
+<td valign="top">Enables you to add an internationalization string as you create the source.</td>
+</tr>
 </table></p>
 
 <a name="window"></a>
@@ -456,15 +510,29 @@ the selected class in the filesystem.</td>
 <tr>
 <td valign="top">Alt-right</td>
 <td valign="top">Next View</td>
-<td valign="top">Displays the next file.</td>
+<td valign="top">Displays the next tab in the current window.</td>
 </tr>
 <tr>
 <td valign="top">Alt-left</td>
 <td valign="top">Previous View</td>
 <td valign="top">Displays the previous file.</td>
 </tr>
-</table></p>
 
+</table></p>
+<h3>Help Menu</h3>
+<p>
+<table border="1">
+<tr>
+<th align="left">Keys</th>
+<th align="left">Command</th>
+<th align="left">Action</th>
+</tr>
+<tr>
+<td valign="top">F1</td>
+<td valign="top">Help</td>
+<td valign="top">Displays the JavaHelp viewer with all installed help sets.</td>
+</tr>
+</table></p>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>
 

@@ -1035,7 +1035,7 @@
    <mapID target="org.netbeans.modules.web.wizards.beanjsp.ide.netbeans.JSPPageWizardAction" url="pending.html" />
    <mapID target="org.netbeans.modules.web.core.ServletSettings" url="pending.html" />
 
-   <mapID target="org.netbeans.modules.web.core.execution.JakartaExecutor" url="run/jsp.html" />
+   <mapID target="org.netbeans.modules.web.core.execution.JakartaExecutor" url="jsp/jsp_run.html" />
 
    <mapID target="org.netbeans.modules.editor.java.NbEditorJavaKit$ToggleBreakpointAction" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.java.NbEditorJavaKit$AddWatchAction" url="pending.html" />
@@ -1141,7 +1141,7 @@
    
    <!-- From RMI module. -->
    <mapID target="rmi_intro" url="rmi/rmi_intro.html" />
-   <mapID target="rmi_wizard" url="rmi/rmi_wizard.html" />
+   <mapID target="rmi_wizard" url="rmi/rmi_intro.html" />
    <mapID target="rmi_concepts_intro" url="rmi/concepts/rmi_concepts.html" />
    <mapID target="rmi_concepts_basics" url="rmi/concepts/rmi_concepts_basics.html" />
    <mapID target="rmi_concepts_files" url="rmi/concepts/rmi_concepts_files.html" />
