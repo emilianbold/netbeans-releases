@@ -23,6 +23,10 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-objectbrowser-ShowBrowserAction.instance/org-netbeans-modules-javadoc-search-SearchDocAction.instance" boolvalue="true" />
             <attr name="org-netbeans-modules-javadoc-search-SearchDocAction.instance/Separator2.instance" boolvalue="true" />
         </folder>
+        <folder name="Tools">
+            <file name="org-netbeans-modules-javadoc-ManageDocAction.instance" />            
+            <attr name="org-netbeans-modules-javadoc-ManageDocAction.instance/org-netbeans-modules-autoupdate-UpdateAction" boolvalue="true" /> 
+        </folder>
   </folder>
 
   <folder name="Actions">
@@ -39,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Tools">
       <file name="Auto Comment Action.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.comments.AutoCommentAction"/>
-      </file>
+      </file>      
       <file name="Correct Javadoc Action.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction"/>
       </file>
@@ -92,9 +96,9 @@ Microsystems, Inc. All Rights Reserved.
 
   <folder name="NodeFactories">
     <folder name="java">
-      <folder name="explorer">
+		  <folder name="explorer">
         <file name="org-netbeans-modules-javadoc-comments-JavaDocPropertySupportFactory.instance"/>
-      </folder>
+			</folder> 
       <folder name="objectbrowser">
         <file name="org-netbeans-modules-javadoc-comments-JavaDocPropertySupportFactory.instance"/>
       </folder>
@@ -260,22 +264,5 @@ SystemFileSystem
       </folder>
    </folder>
 
-<!-- XML Workspace Layout part -->
-
-    <folder name="Windows">
-        <folder name="WindowManager">
-            <folder name="Editing">
-                <folder name="explorer">
-                    <attr name="filesystems.wstcref/Javadoc.wstcref" boolvalue="true" />
-                    <attr name="project.wstcref/Javadoc.wstcref" boolvalue="true" />
-                    <attr name="Javadoc.wstcref/runtime.wstcref" boolvalue="true" />
-                    <file name="Javadoc.wstcref" url="windowmanager/Editing/explorer/Javadoc.wstcref" />
-                </folder>
-            </folder>
-        </folder>
-        <folder name="Components">
-            <file name="Javadoc.settings" url="components/Javadoc.settings" />
-        </folder>
-    </folder>
 
 </filesystem>
