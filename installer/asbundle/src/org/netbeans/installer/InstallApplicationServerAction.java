@@ -254,11 +254,11 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 		    mutableOperationState.setStatusDescription("");
 		    logEvent(this, Log.DBG,"Deleted contents of: " + asSetupDirPath);
                 } else if (Util.isMacOSX()) {
-		    /*Util.deleteDirectory(new File(asSetupDirPath), this);
+		    Util.deleteDirectory(new File(asSetupDirPath), this);
 		    mutableOperationState.setStatusDescription("");
-		    logEvent(this, Log.DBG,"Deleted contents of: " + asSetupDirPath);*/
+		    logEvent(this, Log.DBG,"Deleted contents of: " + asSetupDirPath);
 		} else {
-		    /*File script = new File(instDirPath, INSTALL_SH);
+		    File script = new File(instDirPath, INSTALL_SH);
 		    if (script.exists()) {
 			script.delete();
 			logEvent(this, Log.DBG,"Deleted file: " + script.getAbsolutePath());
@@ -276,7 +276,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 			    installer.delete();
 			    logEvent(this, Log.DBG,"Deleted file: " + installer.getAbsolutePath());
 			}
-		    }*/
+		    }
 		}
 	    }
             removeAppserverFromAddRemovePrograms();
@@ -1030,7 +1030,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 	    winScriptSetup(reader, writer, logfile, scriptType);
 	} else if (Util.isMacOSX()) {
             String installerName = asSetupDirPath + File.separator + "setup";
-            unixScriptSetup(reader, writer, logfile, installerName);
+            macosxScriptSetup(reader, writer, logfile, installerName, scriptType);
 	} else {
             String installerName = instDirPath + File.separator + findASInstaller();
 	    unixScriptSetup(reader, writer, logfile, installerName);
@@ -1080,6 +1080,34 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         }
     }
 
+    private void macosxScriptSetup(BufferedReader reader, BufferedWriter writer,
+        String logfileName, String installerName, int type) throws Exception {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("EXECNAME")) {
+                line = "EXECNAME=" + installerName;
+            } else if (line.startsWith("APPSERVERDIR")) {
+                line = "APPSERVERDIR=" + imageDirPath;
+            } else if (line.startsWith("INSTDIR")) {
+                line = "INSTDIR=" + instDirPath;
+		if (type == INSTALL) {
+		    line = "INSTDIR=" + asSetupDirPath;
+		} else {
+		    line = "INSTDIR=" + instDirPath;
+		}
+            } else if (line.startsWith("STATEFILE")) {
+                line = "STATEFILE=" + statefilePath;
+            } else if (line.startsWith("LOGFILE")) {
+                line = "LOGFILE=" + instDirPath + File.separator + logfileName;
+            } else if (line.startsWith("TMPDIR")) {
+                line = "TMPDIR=" + tmpDir;
+            } else if (line.startsWith("JAVAHOME")) {
+                line = "JAVAHOME=" + jdkDirPath;
+	    }
+            writer.write(line + System.getProperty("line.separator"));
+        }
+    }
+    
     private void unixScriptSetup(BufferedReader reader, BufferedWriter writer,
         String logfileName, String installerName) throws Exception {
         String line;
