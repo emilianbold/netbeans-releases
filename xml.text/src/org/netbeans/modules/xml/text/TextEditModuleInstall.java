@@ -17,6 +17,7 @@ import javax.swing.JEditorPane;
 import org.openide.modules.ModuleInstall;
 import org.openide.text.PrintSettings;
 import org.openide.options.SystemOption;
+import org.openide.util.*;
 
 import org.netbeans.editor.Settings;
 import org.netbeans.modules.editor.options.AllOptions;
@@ -39,8 +40,18 @@ import org.netbeans.modules.xml.text.syntax.XMLSettingsInitializer;
  */
 public class TextEditModuleInstall extends ModuleInstall {
 
-private static final long serialVersionUID = -7645158417177075459L;
+    private static final long serialVersionUID = -7645158417177075459L;
 
+    // name of kit class that was replaced
+    private static transient String originalXMLKit;
+    
+    // name of kit class that was replaced    
+    private static transient String originalDTDKit;
+
+    public void installed() {
+        restored();
+    }
+    
     /**
      */
     public void restored () {
@@ -64,11 +75,21 @@ private static final long serialVersionUID = -7645158417177075459L;
         Settings.addInitializer (new XMLSettingsInitializer());
 
         ClassLoader loader = this.getClass().getClassLoader();
+        
+        
         // Registration of the editor kits to JEditorPane
+        
+        originalXMLKit =
+            JEditorPane.getEditorKitClassNameForContentType(XMLDataObject.MIME_TYPE);
+        originalDTDKit =
+            JEditorPane.getEditorKitClassNameForContentType(DTDDataObject.MIME_TYPE);
+        
         JEditorPane.registerEditorKitForContentType
             (XMLDataObject.MIME_TYPE, XMLKit.class.getName(), loader);
         JEditorPane.registerEditorKitForContentType
             (DTDDataObject.MIME_TYPE, DTDKit.class.getName(), loader);
+
+        // editor options
         
         AllOptions ao = (AllOptions)AllOptions.findObject (AllOptions.class, true);
         ao.addOption (new XMLOptions());
@@ -103,6 +124,20 @@ private static final long serialVersionUID = -7645158417177075459L;
         opt = (SystemOption) SystemOption.findObject (DTDPrintOptions.class, false);
         if (opt != null)
 	    ps.removeOption (opt);
-    }
+        
+        // uninstall kits
 
+        ClassLoader loader = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+        
+        if (XMLKit.class.getName().equals(JEditorPane.getEditorKitClassNameForContentType(XMLDataObject.MIME_TYPE))) {
+            JEditorPane.registerEditorKitForContentType(XMLDataObject.MIME_TYPE, originalXMLKit, loader);
+        }
+        
+        if (XMLKit.class.getName().equals(JEditorPane.getEditorKitClassNameForContentType(DTDDataObject.MIME_TYPE))) {
+            JEditorPane.registerEditorKitForContentType(DTDDataObject.MIME_TYPE, originalDTDKit, loader);
+        }
+        
+    }
+    
 }
+
