@@ -16,6 +16,7 @@ package org.netbeans.modules.web.project.ui.customizer;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +26,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListDataEvent;
@@ -35,7 +37,10 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -222,9 +227,11 @@ public class PlatformUiSupport {
         private SpecificationVersion selectedSourceLevel;
         private SpecificationVersion[] sourceLevelCache;
         private final ComboBoxModel platformComboBoxModel;
-        
+        private String activePlatform;
+
         public SourceLevelComboBoxModel (ComboBoxModel platformComboBoxModel, String initialValue) {            
             this.platformComboBoxModel = platformComboBoxModel;
+            this.activePlatform = (String) this.platformComboBoxModel.getSelectedItem();
             this.platformComboBoxModel.addListDataListener (this);
             if (initialValue != null && initialValue.length()>0) {
                 this.selectedSourceLevel = new SpecificationVersion (initialValue);
@@ -269,6 +276,18 @@ public class PlatformUiSupport {
         }
 
         public void contentsChanged(ListDataEvent e) {
+            String selectedPlatform = (String) this.platformComboBoxModel.getSelectedItem();
+            JavaPlatform platform = getPlatform(selectedPlatform);
+            if (platform != null) {
+                SpecificationVersion version = platform.getSpecification().getVersion();
+                if (this.selectedSourceLevel != null && this.selectedSourceLevel.compareTo(version)>0 &&
+                    !shouldChangePlatform (selectedSourceLevel, version)) {
+                    //Restore original
+                   this.platformComboBoxModel.setSelectedItem(this.activePlatform);                            
+                   return;
+                }
+            }
+            this.activePlatform = selectedPlatform;
             resetCache();
         }
         
@@ -298,7 +317,27 @@ public class PlatformUiSupport {
                 this.sourceLevelCache = (SpecificationVersion[]) sLevels.toArray(new SpecificationVersion[sLevels.size()]);
             }
             return this.sourceLevelCache;
-        }               
+        }
+        
+        private static boolean shouldChangePlatform (SpecificationVersion selectedSourceLevel, SpecificationVersion platformSourceLevel) {
+            JButton changeOption = new JButton (NbBundle.getMessage(PlatformUiSupport.class, "CTL_ChangePlatform"));
+            changeOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PlatformUiSupport.class, "AD_ChangePlatform"));
+            String message = MessageFormat.format (NbBundle.getMessage(PlatformUiSupport.class,"TXT_ChangePlatform"),new Object[] {
+                selectedSourceLevel.toString(),
+                platformSourceLevel.toString(),
+            });
+            return DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor (message,
+                        NbBundle.getMessage(PlatformUiSupport.class,"TXT_ChangePlatformTitle"),
+                        NotifyDescriptor.DEFAULT_OPTION,
+                        NotifyDescriptor.WARNING_MESSAGE,
+                        new Object[] {
+                            changeOption,
+                            NotifyDescriptor.CANCEL_OPTION
+                        },
+                        changeOption)) == changeOption;
+        }
+
     }
     
 }
