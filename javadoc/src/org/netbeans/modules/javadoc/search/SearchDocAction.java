@@ -64,7 +64,7 @@ public class SearchDocAction extends CallableSystemAction {
 
     String toFind = GetJavaWord.getCurrentJavaWord();
 
-    if (indexSearch != null) 
+    if (toFind != null) 
       indexSearch.setTextToFind( toFind );
       
     indexSearch.open ();
@@ -75,6 +75,8 @@ public class SearchDocAction extends CallableSystemAction {
 
 /*
  * Log
+ *  7    Gandalf   1.6         6/11/99  Petr Hrebejk    Better support for 
+ *       search from editor; Enter for start searching
  *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  5    Gandalf   1.4         5/27/99  Petr Hrebejk    Crtl+F1 documentation 

@@ -184,7 +184,9 @@ public class IndexSearch extends TopComponent {
   
   
   private void searchComboBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchComboBoxActionPerformed
-    //searchButtonActionPerformed( evt );
+    //System.out.println( "Combo in action " + evt );
+    if ( searchEngine == null )
+      searchButtonActionPerformed( evt );
   }//GEN-LAST:event_searchComboBoxActionPerformed
 
   private void searchButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
