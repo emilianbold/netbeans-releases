@@ -1149,18 +1149,14 @@ public class MergePanel extends javax.swing.JPanel {
         if (line2 < 0) line2 = org.openide.text.NbDocument.findLineNumber(doc1, doc1.getLength());
         int numLines = line2 - line1 + 1;
         //System.out.println("copy("+line1+", "+line2+", "+line3+"): resultLineNumbers.length = "+resultLineNumbers.length);
-        assureResultLineNumbersLength(line3 - 1 + numLines);
+        assureResultLineNumbersLength(line3 + numLines);
         if (resultLineNumbers[line3] == 0 && line3 > 0) resultLineNumbers[line3] = resultLineNumbers[line3 - 1] + 1;
         int resultLine = resultLineNumbers[line3];
         //System.out.println("resultLine = rln["+line3+"] = "+resultLine);
         //System.out.println("insertNumbers("+line3+", "+resultLine+", "+numLines+")");
         linesComp3.insertNumbers(line3 - 1, resultLine, numLines);
         linesComp3.changedAll();
-        try{
-            for (int i = 0; i < numLines; i++) resultLineNumbers[line3 + i] = resultLine + i;
-        }catch(IndexOutOfBoundsException exp){
-            //simply ignore - doesn't affect anything
-        }
+        for (int i = 0; i < numLines; i++) resultLineNumbers[line3 + i] = resultLine + i;
     }
     
     /**
@@ -1594,8 +1590,8 @@ public class MergePanel extends javax.swing.JPanel {
     public void addEmptyLines3(int line, int numLines) {
         StyledDocument doc = (StyledDocument) jEditorPane3.getDocument();
         //System.out.println("addEmptyLines3: line = "+line+", numLines = "+numLines); // NOI18N
-        addEmptyLines(doc, line, numLines);
-        linesComp3.addEmptyLines(line, numLines);
+        addEmptyLines(doc, line - 1, numLines);
+        linesComp3.addEmptyLines(line - 1, numLines);
         assureResultLineNumbersLength(line + numLines);
         if (resultLineNumbers[line] == 0 && line > 0) resultLineNumbers[line] = resultLineNumbers[line - 1];
         int resultLine = resultLineNumbers[line];
