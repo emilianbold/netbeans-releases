@@ -7,44 +7,33 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * OutputDocumentTest.java
- * JUnit based test
- *
- * Created on March 23, 2004, 5:34 PM
  */
 
 package org.netbeans.core.output2;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.*;
-import java.nio.channels.*;
-import java.util.ArrayList;
+import java.awt.EventQueue;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TooManyListenersException;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.UndoableEditListener;
-import javax.swing.text.*;
-import junit.framework.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.text.Position;
+import javax.swing.text.SimpleAttributeSet;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
- *
- * @author tim
+ * @author Tim Boudreau
  */
 public class OutputDocumentTest extends TestCase {
     
-    public OutputDocumentTest(java.lang.String testName) {
+    public OutputDocumentTest(String testName) {
         super(testName);
     }
     
@@ -54,7 +43,7 @@ public class OutputDocumentTest extends TestCase {
     }
 
     
-    public void testAddDocumentListener() {
+    public void testAddDocumentListener() throws Exception {
         System.out.println("testAddDocumentListener");
 
         OutWriter ow = new OutWriter ();
@@ -70,6 +59,11 @@ public class OutputDocumentTest extends TestCase {
         ow.println (third);
         ow.flush();
     
+        // Make sure we process EQ events (since AbstractLines.fire uses Mutex.EVENT):
+        EventQueue.invokeAndWait(new Runnable() {
+            public void run() {}
+        });
+        
         od.assertChanged();
     }
     
@@ -545,7 +539,7 @@ public class OutputDocumentTest extends TestCase {
     
     public void testGetStartOffset() {
         System.out.println("testGetStartOffset");
-        
+        // XXX
     }
     
     public void testIsLeaf() {
@@ -570,6 +564,7 @@ public class OutputDocumentTest extends TestCase {
 
     
     public void testDocumentEventSimilarity() throws Exception {
+        System.out.println("testDocumentEventSimilarity");
         DefaultStyledDocument styled = new DefaultStyledDocument();
         OutWriter ow = new OutWriter ();
         OutputDocument doc = new OutputDocument (ow);
@@ -855,15 +850,15 @@ public class OutputDocumentTest extends TestCase {
         public void assertChanged() {
             DocumentEvent e = evt;
             evt = null;
+            assertNotNull("No event received", e);
             //Trigger consumed on OutputDocument.DO
             e.getLength();
-            assertTrue ("No event received", e != null);
         }
         
         public void assertNoChange() {
             DocumentEvent e = evt;
             evt = null;
-            assertTrue ("Unexpected event was received " + e, e == null);
+            assertNull("Unexpected event was received " + e, e);
         }
         
         public DocumentEvent getEvent() {
@@ -871,15 +866,15 @@ public class OutputDocumentTest extends TestCase {
         }
         
         
-        public void changedUpdate(javax.swing.event.DocumentEvent documentEvent) {
+        public void changedUpdate(DocumentEvent documentEvent) {
             evt = documentEvent;
         }
         
-        public void insertUpdate(javax.swing.event.DocumentEvent documentEvent) {
+        public void insertUpdate(DocumentEvent documentEvent) {
             evt = documentEvent;
         }
         
-        public void removeUpdate(javax.swing.event.DocumentEvent documentEvent) {
+        public void removeUpdate(DocumentEvent documentEvent) {
             evt = documentEvent;
         }
         
