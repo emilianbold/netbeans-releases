@@ -106,7 +106,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "ACSN_BrowseFolders"));
         jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "MNE_BrowseFolders_jLabel1").charAt(0));
         jLabel1.setLabelFor(folderPanel);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "LBL_BrowseFolders_jLabel1"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BrowseFolders.class, "LBL_BrowseFolders_jLabel1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -155,7 +155,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         
         DialogDescriptor dialogDescriptor = new DialogDescriptor( 
             bf,                                     // innerPane
-            "Browse Folders",                       // displayName
+            NbBundle.getMessage( BrowseFolders.class, "LBL_BrowseFolders_Dialog"),                       // displayName
             true,                                   // modal
             options,                                // options
             options[ 0 ],                           // initial value
