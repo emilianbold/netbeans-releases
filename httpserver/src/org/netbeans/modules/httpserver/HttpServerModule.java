@@ -64,12 +64,23 @@ public class HttpServerModule implements ModuleInstall {
 
   /** initiates HTTPServer so it runs */
   static synchronized void initHTTPServer() {
+    if ((serverThread != null) && (!HttpServerSettings.OPTIONS.running)) {
+      // another thread is trying to start the server, wait for a while and then stop it if it's still bad
+      try {
+        Thread.currentThread().sleep(3000);
+      }
+      catch (InterruptedException e) {}
+      if ((serverThread != null) && (!HttpServerSettings.OPTIONS.running)) {
+        serverThread.stop();
+        serverThread = null;
+      }
+    }
     if (serverThread == null) {
       serverThread = new Thread("HTTPServer") {
         public void run() {
           try {                
             config = new NbServer(HttpServerSettings.OPTIONS);
-            server = new HttpServer(config);
+            server = new NbHttpServer(config);
             HttpServerSettings.OPTIONS.runSuccess();
           } catch (Exception ex) {
             // couldn't start
@@ -104,6 +115,7 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  8    Gandalf   1.7         5/31/99  Petr Jiricka    
  *  7    Gandalf   1.6         5/28/99  Petr Jiricka    
  *  6    Gandalf   1.5         5/25/99  Petr Jiricka    
  *  5    Gandalf   1.4         5/17/99  Petr Jiricka    

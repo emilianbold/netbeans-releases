@@ -66,7 +66,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   private static String classpathBaseURL = "/classpath/";
                                         
   /** Reflects whether the server is actually running, not the running property */
-  private static boolean running = false;
+  static boolean running = false;
 
   /** http settings */
   public final static HttpServerSettings OPTIONS = new HttpServerSettings();
@@ -263,7 +263,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   */
   public URL getResourceURL(String resourcePath) throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
-    return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + resourcePath);
+    return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + 
+      (resourcePath.startsWith("/") ? resourcePath.substring(1) : resourcePath));
   }
     
   /** Maps a resource root to a URL. Should ensure that all resources under the root are accessible under an URL
@@ -282,6 +283,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  6    Gandalf   1.5         5/31/99  Petr Jiricka    
  *  5    Gandalf   1.4         5/28/99  Petr Jiricka    
  *  4    Gandalf   1.3         5/11/99  Petr Jiricka    
  *  3    Gandalf   1.2         5/11/99  Petr Jiricka    
