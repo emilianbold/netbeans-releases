@@ -58,7 +58,7 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
           if (info != null) {
             Object ibase = null;
             String itype = "unknown";
-            int type = ((Integer)info.get("type")).intValue();
+            int type = ((Number)info.get("type")).intValue();
             switch (type) {
               case DatabaseMetaData.procedureColumnIn: 
                 ibase = info.get("iconbase_in"); 
@@ -96,6 +96,8 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  12   Gandalf   1.11        12/22/99 Radko Najman    Integer type -> Number 
+ *       type
  *  11   Gandalf   1.10        12/15/99 Radko Najman    driver adaptor
  *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
  *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS
