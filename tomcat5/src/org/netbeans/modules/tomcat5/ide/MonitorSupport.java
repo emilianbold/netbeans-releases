@@ -154,7 +154,7 @@ public class MonitorSupport {
         if (instDir==null) return;
         
         copyFromIDEInstToDir("modules/ext/httpmonitor.jar"  , instDir, "common/lib/httpmonitor.jar");  // NOI18N
-        copyFromIDEInstToDir("modules/autoload/schema2beans.jar" , instDir, "common/lib/schema2beans.jar"); // NOI18N
+        copyFromIDEInstToDir("modules/org-netbeans-modules-schema2beans.jar" , instDir, "common/lib/org-netbeans-modules-schema2beans.jar"); // NOI18N
         
         //copyFromIDEInstToDir("modules/ext/monitor-valve.jar", instDir, "server/lib/monitor-valve.jar"); // NOI18N
     }
