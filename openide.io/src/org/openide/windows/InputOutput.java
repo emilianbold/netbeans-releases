@@ -119,8 +119,6 @@ public interface InputOutput {
 
 }
 
-/** Will be made public by patching.
- * See <a href="http://www.netbeans.org/issues/show_bug.cgi?id=28470"/>. */
 final class InputOutput$Null extends Object implements InputOutput {
     public InputOutput$Null () {
     }
@@ -162,8 +160,6 @@ final class InputOutput$Null extends Object implements InputOutput {
     }
 }
 
-/** Will be made public by patching.
- * See <a href="http://www.netbeans.org/issues/show_bug.cgi?id=28470"/>. */
 final class InputOutput$NullOutputWriter extends OutputWriter {
     InputOutput$NullOutputWriter() {
         super(new OutputStreamWriter(new NullOutputStream()));
