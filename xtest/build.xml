@@ -71,6 +71,7 @@ Microsystems, Inc. All Rights Reserved.
     
         <antcall target="executor">
             <param name="target.name" value="runtest-helper"/>
+            <param name="running.mode" value="run"/>
         </antcall>
         
         <xreport tofile="summary.xml" 
@@ -200,7 +201,8 @@ Microsystems, Inc. All Rights Reserved.
         <xtest-runner targetname="${target.name}"
                       targetParamModule="xtest.module"
                       targetParamTesttype="xtest.testtype"
-                      targetParamTestAttributes="xtest.attributes"/>        
+                      targetParamTestAttributes="xtest.attributes"
+                      runningMode="${running.mode}"/>        
     </target>
 
     <target name="buildxtest" depends="setnobuildxtest"
