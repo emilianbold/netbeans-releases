@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.awt.datatransfer.*;
 
 import org.openide.nodes.*;
-import org.openide.cookies.InstanceCookie;
+//import org.openide.cookies.InstanceCookie;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.datatransfer.PasteType;
@@ -269,7 +269,7 @@ class CopySupport {
 
     /** Paste type for InstanceCookie.
      */
-    static class InstancePaste extends PasteType
+/*    static class InstancePaste extends PasteType
                                implements Mutex.ExceptionAction
     {
         private Transferable transferable;
@@ -318,5 +318,5 @@ class CopySupport {
                                                     ic, targetComponent, null);
             return transferable;
         }
-    }
+    } */
 }

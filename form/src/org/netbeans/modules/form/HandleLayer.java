@@ -65,7 +65,7 @@ class HandleLayer extends JPanel
     private DesignerResizer designerResizer;
 
     /** The FormLoaderSettings instance */
-    private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
+    private static FormLoaderSettings formSettings = FormLoaderSettings.getInstance();
 
 
     HandleLayer(FormDesigner fd) {
@@ -176,6 +176,7 @@ class HandleLayer extends JPanel
                          formDesigner.setSelectedComponent(nextComp);
                 }
                 e.consume();
+                return;
             }
         }
         else if (keyCode == KeyEvent.VK_SPACE) {
@@ -193,7 +194,7 @@ class HandleLayer extends JPanel
                             PaletteItem item = CPManager.getDefault().getSelectedItem();
                             if (item != null) {
                                 formDesigner.getModel().getComponentCreator()
-                                    .createComponent(item.getInstanceCookie(),
+                                    .createComponent(item.getComponentClass(),
                                                      comp, null);
                                 formDesigner.toggleSelectionMode();
                             }
@@ -202,10 +203,12 @@ class HandleLayer extends JPanel
                 }
             }
             e.consume();
+            return;
         }
         else if (keyCode == KeyEvent.VK_ESCAPE) {
             if (endDragging(null))
                 e.consume();
+                return;
         }
         else if (keyCode == KeyEvent.VK_F10) {
             if (e.isShiftDown()) {
@@ -224,12 +227,13 @@ class HandleLayer extends JPanel
 
                     showContextMenu(p);
                     e.consume();
+                    return;
                 }
             }
         }
-        else {
-            super.processKeyEvent(e);
-        }
+//        else {
+        super.processKeyEvent(e);
+//        }
     }
 
     public boolean isFocusTraversable() {
@@ -952,7 +956,7 @@ class HandleLayer extends JPanel
 
     private void showAddHint(RADComponent metacomp, Point p, PaletteItem item) {
         if ((!(metacomp instanceof RADVisualComponent) && metacomp != null)
-            || item == null || item.getItemClass() == null)
+            || item == null)
         {
             StatusDisplayer.getDefault().setStatusText(""); // NOI18N
             return;
@@ -960,9 +964,11 @@ class HandleLayer extends JPanel
 
         if (metacomp == null) {
             setStatusText("FMT_MSG_AddToOthers", // NOI18N
-                          new Object[] { item.getDisplayName() });
+                          new Object[] { item.getNode().getDisplayName() });
             return;
         }
+
+        String displayName = item.getNode().getDisplayName();
 
         RADVisualContainer metacont = metacomp instanceof RADVisualContainer ?
             (RADVisualContainer) metacomp :
@@ -972,7 +978,7 @@ class HandleLayer extends JPanel
             if (metacont != null) {
                 if (!metacont.getLayoutSupport().isDedicated())
                     setStatusText("FMT_MSG_SetLayout", // NOI18N
-                                  new Object[] { item.getDisplayName(),
+                                  new Object[] { displayName,
                                                  metacont.getName() });
                 else
                     setStatusText("FMT_MSG_CannotSetLayout", // NOI18N
@@ -985,8 +991,7 @@ class HandleLayer extends JPanel
         else if (item.isBorder()) {
             if (JComponent.class.isAssignableFrom(metacomp.getBeanClass()))
                 setStatusText("FMT_MSG_SetBorder", // NOI18N
-                              new Object[] { item.getDisplayName(),
-                                             metacomp.getName() });
+                              new Object[] { displayName, metacomp.getName() });
             else
                 setStatusText("FMT_MSG_CannotSetBorder", // NOI18N
                               new Object[] { metacomp.getName() });
@@ -994,16 +999,15 @@ class HandleLayer extends JPanel
         else if (metacont != null
                  && ((item.isMenu()
                         && metacont.getContainerMenu() == null
-                        && metacont.canHaveMenu(item.getItemClass()))
+                        && metacont.canHaveMenu(item.getComponentClass()))
                      || (item.isVisual() && !item.isMenu())))
         {
             setStatusText("FMT_MSG_AddComponent", // NOI18N
-                          new Object[] { item.getDisplayName(),
-                                         metacont.getName() });
+                          new Object[] { displayName, metacont.getName() });
         }
         else {
             setStatusText("FMT_MSG_AddToOthers", // NOI18N
-                          new Object[] { item.getDisplayName() });
+                          new Object[] { displayName });
         }
     }
 
@@ -1160,12 +1164,12 @@ class HandleLayer extends JPanel
 
                             if (!mouseOnVisual(lastLeftMousePoint)) {
                                 formDesigner.getModel().getComponentCreator()
-                                    .createComponent(item.getInstanceCookie(),
+                                    .createComponent(item.getComponentClass(),
                                                      null, null);
                             }
                             else {
                                 formDesigner.getModel().getComponentCreator()
-                                    .createComponent(item.getInstanceCookie(),
+                                    .createComponent(item.getComponentClass(),
                                                      hitMetaComp,
                                                      constraints);
                             }

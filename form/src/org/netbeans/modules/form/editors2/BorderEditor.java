@@ -259,15 +259,15 @@ public final class BorderEditor extends PropertyEditorSupport
 
             PaletteItem[] items = CPManager.getDefault().getAllItems();
             for (int i = 0; i < items.length; i++) {
-                PaletteItem palItem = items[i];
-                if (!palItem.isBorder())
+                PaletteItem paletteItem = items[i];
+                if (!paletteItem.isBorder())
                     continue;
 
                 BorderDesignSupport nodeBDS = null;
                 try {
                     CreationFactory.InstanceSource instSource =
                             new CreationFactory.InstanceSource(
-                                    palItem.getInstanceCookie());
+                                    paletteItem.getComponentClass());
                     nodeBDS = new BorderDesignSupport(instSource);
                 }
                 catch (Exception ex) {
@@ -288,12 +288,12 @@ public final class BorderEditor extends PropertyEditorSupport
                         continue;
                     }
                     nodeBDS.setPropertyContext(propertyContext);
-                    borderNode = new BorderNode(nodeBDS, palItem.getItemNode());
+                    borderNode = new BorderNode(nodeBDS, paletteItem.getNode());
                     selectNode = borderNode;
                 }
                 else {
                     nodeBDS.setPropertyContext(propertyContext);
-                    borderNode = new BorderNode(nodeBDS, palItem.getItemNode());
+                    borderNode = new BorderNode(nodeBDS, paletteItem.getNode());
                 }
 
                 bordersList.add(borderNode);
@@ -363,48 +363,29 @@ public final class BorderEditor extends PropertyEditorSupport
         }
     }
 
-    final class BorderNode extends AbstractNode implements PropertyChangeListener {
+    final class BorderNode extends FilterNode implements PropertyChangeListener {
+
         private BorderDesignSupport nodeBorder;
-        private Node palItemNode;
+        private PropertySet[] properties;
 
-        BorderNode(BorderDesignSupport bds, Node itemNode) {
-            super(Children.LEAF);
+        BorderNode(BorderDesignSupport bds, Node paletteItemNode) {
+            super(paletteItemNode, Children.LEAF);
             nodeBorder = bds;
-            palItemNode = itemNode;
-            setName(nodeBorder.getDisplayName());
         }
 
-        /** Find an icon for this node (in the closed state).
-         * @param type constant from {@link java.beans.BeanInfo}
-         * @return icon to use to represent the node
-         */
-        public Image getIcon(int type) {
-            return palItemNode.getIcon(type);
-        }
+        public PropertySet[] getPropertySets () {
+            if (properties == null) {
+                Node.Property[] props = nodeBorder.getProperties();
+                Sheet.Set propSet = Sheet.createPropertiesSet();
+                propSet.put(props);
 
-        /** Find an icon for this node (in the open state).
-         * This icon is used when the node may have children and is expanded.
-         * @param type constant from {@link java.beans.BeanInfo}
-         * @return icon to use to represent the node when open
-         */
-        public Image getOpenedIcon(int type) {
-            return getIcon(type);
-        }
+                for (int i=0; i < props.length; i++)
+                    if (props[i] instanceof FormProperty)
+                        ((FormProperty)props[i]).addPropertyChangeListener(this);
 
-        /** Creates property set for this node. */
-        protected Sheet createSheet() {
-            Node.Property[] props = nodeBorder.getProperties();
-            Sheet.Set propsSet = Sheet.createPropertiesSet();
-            propsSet.put(props);
-            Sheet sheet = new Sheet();
-            sheet.put(propsSet);
-
-            for (int i=0; i < props.length; i++) {
-                if (props[i] instanceof FormProperty)
-                    ((FormProperty)props[i]).addPropertyChangeListener(this);
+                properties = new PropertySet[] { propSet };
             }
-
-            return sheet;
+            return properties;
         }
 
         public BorderDesignSupport getBorderSupport() {

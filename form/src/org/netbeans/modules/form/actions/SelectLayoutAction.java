@@ -138,7 +138,7 @@ public class SelectLayoutAction extends NodeAction {
                 layoutMenu.removeAll();
                 PaletteItem[] layouts = getAllLayouts();
                 for (int i = 0; i < layouts.length; i++) {
-                    JMenuItem mi = new JMenuItem(layouts[i].getDisplayName());
+                    JMenuItem mi = new JMenuItem(layouts[i].getNode().getDisplayName());
                     HelpCtx.setHelpIDString(mi, SelectLayoutAction.class.getName());
                     layoutMenu.add(mi);
                     mi.addActionListener(new LayoutActionListener(nodes, layouts[i]));
@@ -171,7 +171,7 @@ public class SelectLayoutAction extends NodeAction {
                 
                 // set the selected layout on the activated container
                 container.getFormModel().getComponentCreator().createComponent(
-                    paletteItem.getItemClass(), container, null);
+                    paletteItem.getComponentClass(), container, null);
             }
         }
     }

@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.form.editors;
 
-import org.netbeans.modules.form.FormEditor;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 

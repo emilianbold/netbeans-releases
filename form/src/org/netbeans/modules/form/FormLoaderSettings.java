@@ -84,7 +84,7 @@ public class FormLoaderSettings extends SystemOption {
     /** Property name of the showComponentsNames property */
     public static final String PROP_SHOW_COMPONENTS_NAMES = "showComponentsNames"; // NOI18N
 
-    public static final String PROP_CONTAINER_BEANS = "containerBeans"; // NOI18N
+//    public static final String PROP_CONTAINER_BEANS = "containerBeans"; // NOI18N
 
     // ------------------------------------------
     // properties
@@ -156,7 +156,7 @@ public class FormLoaderSettings extends SystemOption {
     private static final int MIN_GRID_X = 2;
     private static final int MIN_GRID_Y = 2;
 
-    private static Map containerBeans;
+//    private static Map containerBeans;
 
     // --------
 
@@ -540,14 +540,14 @@ public class FormLoaderSettings extends SystemOption {
                            formDesignerBorderColor);
     }
 
-    public Map getContainerBeans() {
-        return containerBeans;
-    }
-
-    public void setContainerBeans(Map map) {
-        containerBeans = map;
-        firePropertyChange(PROP_CONTAINER_BEANS, null, null);
-    }
+//    public Map getContainerBeans() {
+//        return containerBeans;
+//    }
+//
+//    public void setContainerBeans(Map map) {
+//        containerBeans = map;
+//        firePropertyChange(PROP_CONTAINER_BEANS, null, null);
+//    }
 
     // XXX(-tdt) Hmm, backward compatibility with com.netbeans package name
     // again. The property editor search path is stored in user settings, we

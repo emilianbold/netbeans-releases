@@ -18,9 +18,9 @@ import javax.swing.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
-import org.openide.cookies.InstanceCookie;
 
-import org.netbeans.modules.form.palette.*;
+import org.netbeans.modules.form.palette.PaletteItem;
+import org.netbeans.modules.form.palette.PaletteMenuView;
 import org.netbeans.modules.form.*;
 
 /**
@@ -70,15 +70,14 @@ public class AddAction extends NodeAction {
 
     public JMenuItem getPopupPresenter() {
         JMenuItem menu = new PaletteMenuView(
-            PaletteNode.getPaletteNode(),
             new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
                     if (nodes.length == 0)
                         return false;
 
-                    InstanceCookie ic = (InstanceCookie)
-                                        nodes[0].getCookie(InstanceCookie.class);
-                    if (ic == null)
+                    PaletteItem paletteItem = (PaletteItem)
+                                         nodes[0].getCookie(PaletteItem.class);
+                    if (paletteItem == null)
                         return false;
 
                     Node[] activatedNodes = getActivatedNodes();
@@ -107,7 +106,8 @@ public class AddAction extends NodeAction {
 
                         RADComponent newComp =
                             formCookie.getFormModel().getComponentCreator()
-                                .createComponent(ic, targetComponent, null);
+                                .createComponent(paletteItem.getComponentClass(),
+                                                 targetComponent, null);
 
                         if (newComp != null)
                             added = true;

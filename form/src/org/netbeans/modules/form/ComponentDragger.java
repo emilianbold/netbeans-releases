@@ -44,8 +44,6 @@ class ComponentDragger
     private Container targetContainerDel;
 
     /** The FormLoaderSettings instance */
-    private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
-
     // constructor for dragging
     ComponentDragger(FormDesigner formDesigner,
                      HandleLayer handleLayer,
@@ -96,7 +94,7 @@ class ComponentDragger
         g.setStroke(stroke);
 
         Color oldColor = g.getColor();
-        g.setColor(formSettings.getSelectionBorderColor());
+        g.setColor(FormLoaderSettings.getInstance().getSelectionBorderColor());
 
         List constraints = new ArrayList(selectedComponents.length);
         List indices = new ArrayList(selectedComponents.length);
@@ -598,7 +596,7 @@ class ComponentDragger
         g.setStroke(stroke);
 
         Color oldColor = g.getColor();
-        g.setColor(formSettings.getDragBorderColor());
+        g.setColor(FormLoaderSettings.getInstance().getDragBorderColor());
         
         Rectangle rect = new Rectangle(new Point(0,0), cont.getSize());
         rect = SwingUtilities.convertRectangle(cont,

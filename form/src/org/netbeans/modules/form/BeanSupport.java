@@ -353,7 +353,7 @@ public class BeanSupport
             return (Image) img;
         } else {
             Image image = java.awt.Toolkit.getDefaultToolkit().createImage(
-                                     FormEditor.class.getResource((String)img));
+                                 BeanSupport.class.getResource((String)img));
             icons.put(name, image);
             return image;
         }

@@ -23,7 +23,7 @@ import java.text.MessageFormat;
 import org.openide.*;
 import org.openide.src.*;
 import org.openide.nodes.Node;
-import org.openide.cookies.InstanceCookie;
+//import org.openide.cookies.InstanceCookie;
 import org.openide.util.Mutex;
 
 import org.netbeans.modules.form.layoutsupport.*;
@@ -85,21 +85,21 @@ public class MetaComponentCreator {
      * @return the component if it was successfully created and added (all
      *         errors are reported immediately)
      */
-    public RADComponent createComponent(InstanceCookie ic,
-                                        RADComponent targetComp,
-                                        Object constraints)
-    {
-        CreationFactory.InstanceSource source;
-        try {
-            source = new CreationFactory.InstanceSource(ic);
-        }
-        catch (Exception ex) {
-            showInstErrorMessage(ex);
-            return null;
-        }
-
-        return createAndAddComponent(source, targetComp, constraints);
-    }
+//    public RADComponent createComponent(InstanceCookie ic,
+//                                        RADComponent targetComp,
+//                                        Object constraints)
+//    {
+//        CreationFactory.InstanceSource source;
+//        try {
+//            source = new CreationFactory.InstanceSource(ic);
+//        }
+//        catch (Exception ex) {
+//            showInstErrorMessage(ex);
+//            return null;
+//        }
+//
+//        return createAndAddComponent(source, targetComp, constraints);
+//    }
 
     /** Creates a copy of a metacomponent and adds it to FormModel. The new 
      * component is added to target component (if it is ComponentContainer)
@@ -1064,7 +1064,7 @@ public class MetaComponentCreator {
         em.notify(ex);
     }
 
-    private static Class getBeanClass(InstanceCookie ic) {
+/*    private static Class getBeanClass(InstanceCookie ic) {
         try {
             return ic.instanceClass();
         }
@@ -1078,7 +1078,7 @@ public class MetaComponentCreator {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return null;
         }
-    }
+    } */
 
     // --------
     // default component initialization

@@ -27,7 +27,7 @@ import org.openide.util.*;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatform;
+//import org.netbeans.api.java.platform.JavaPlatform;
 
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
 
@@ -83,7 +83,8 @@ public class FormUtils
                 "layout", PROP_HIDDEN },
         { javax.swing.JComponent.class, CLASS_AND_SUBCLASSES,
                 "debugGraphicsOptions", PROP_EXPERT,
-                "preferredSize", PROP_NORMAL },
+                "preferredSize", PROP_NORMAL,
+                "actionMap", PROP_HIDDEN },
         { javax.swing.JComponent.class, CLASS_AND_SWING_SUBCLASSES,
                 "graphics", PROP_HIDDEN,
                 "height", PROP_HIDDEN,
@@ -689,11 +690,11 @@ public class FormUtils
     // ---------
 
     public static boolean isContainer(Class beanClass) {
-        Map containerBeans = formSettings.getContainerBeans();
-        Object registered = containerBeans != null ?
-                              containerBeans.get(beanClass.getName()) : null;
-        if (registered instanceof Boolean)
-            return ((Boolean)registered).booleanValue();
+//        Map containerBeans = formSettings.getContainerBeans();
+//        Object registered = containerBeans != null ?
+//                              containerBeans.get(beanClass.getName()) : null;
+//        if (registered instanceof Boolean)
+//            return ((Boolean)registered).booleanValue();
 
         // not registered
         int containerStatus = canBeContainer(beanClass);
@@ -718,12 +719,13 @@ public class FormUtils
             }
         }
 
-        boolean isContainer = containerStatus == 1;
-
-        if (beanClass.getName().startsWith("javax.swing.")) // NOI18N
-            setIsContainer(beanClass, isContainer);
-
-        return isContainer;
+        return containerStatus == 1;
+//        boolean isContainer = containerStatus == 1;
+//
+//        if (beanClass.getName().startsWith("javax.swing.")) // NOI18N
+//            setIsContainer(beanClass, isContainer);
+//
+//        return isContainer;
     }
 
     /** @return 1 if the class is explicitly specified as container in BeanInfo;
@@ -743,7 +745,7 @@ public class FormUtils
 
         Object isContainerValue = null;
         try {
-            BeanDescriptor desc = Utilities.getBeanInfo(beanClass)
+            BeanDescriptor desc = Introspector.getBeanInfo(beanClass)
                                                     .getBeanDescriptor();
             if (desc != null)
                isContainerValue = desc.getValue("isContainer"); // NOI18N
@@ -757,26 +759,26 @@ public class FormUtils
         return -1; // "isContainer" attribute not specified
     }
 
-    public static void setIsContainer(Class beanClass, boolean isContainer) {
-        if (beanClass == null)
-            return;
-
-        Map containerBeans = formSettings.getContainerBeans();
-        if (containerBeans == null)
-            containerBeans = new HashMap();
-
-        containerBeans.put(beanClass.getName(), isContainer ? Boolean.TRUE : Boolean.FALSE);
-        formSettings.setContainerBeans(containerBeans);
-    }
-
-    public static void removeIsContainerRegistration(Class beanClass) {
-        Map containerBeans = formSettings.getContainerBeans();
-        if (containerBeans == null || beanClass == null)
-            return;
-
-        containerBeans.remove(beanClass.getName());
-        formSettings.setContainerBeans(containerBeans);
-    }
+//    public static void setIsContainer(Class beanClass, boolean isContainer) {
+//        if (beanClass == null)
+//            return;
+//
+//        Map containerBeans = formSettings.getContainerBeans();
+//        if (containerBeans == null)
+//            containerBeans = new HashMap();
+//
+//        containerBeans.put(beanClass.getName(), isContainer ? Boolean.TRUE : Boolean.FALSE);
+//        formSettings.setContainerBeans(containerBeans);
+//    }
+//
+//    public static void removeIsContainerRegistration(Class beanClass) {
+//        Map containerBeans = formSettings.getContainerBeans();
+//        if (containerBeans == null || beanClass == null)
+//            return;
+//
+//        containerBeans.remove(beanClass.getName());
+//        formSettings.setContainerBeans(containerBeans);
+//    }
 
     // ---------
 

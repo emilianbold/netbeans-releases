@@ -37,7 +37,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 
-import org.netbeans.modules.form.FormUtils;
+//import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.GlobalJarFileSystem;
 
 /**
@@ -262,7 +262,8 @@ public final class BeanInstaller
     static void createInstance(FileObject folder, String className) {
         // first check if the class is valid and can be loaded
         try {
-            Class.forName(className, true, FormUtils.getClassLoader());
+            ClassLoader loader = (ClassLoader)org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+            Class.forName(className, true, loader);
         }
         catch (Throwable ex) {
             if (ex instanceof ThreadDeath)

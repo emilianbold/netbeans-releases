@@ -90,7 +90,8 @@ class FormOthersNode extends FormNode {
                 s.add(new CopySupport.RADPaste(t, formModel, null));
             }
         }
-        else { // if there is not a RADComponent in the clipboard,
+        // TODO java or class node might be selected
+/*        else { // if there is not a RADComponent in the clipboard,
                // try if it is not InstanceCookie
             InstanceCookie ic =
                 (InstanceCookie) NodeTransfer.cookie(t,
@@ -98,7 +99,7 @@ class FormOthersNode extends FormNode {
                                                      InstanceCookie.class);
             if (ic != null)
                 s.add(new CopySupport.InstancePaste(t, formModel, null));
-        }
+        } */
     }
 
     // -------------

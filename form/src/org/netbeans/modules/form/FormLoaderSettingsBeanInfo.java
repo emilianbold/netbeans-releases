@@ -102,10 +102,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        FormLoaderSettings.class,
                                        "isPaletteInToolBar", // NOI18N
                                        "setPaletteInToolBar"), // NOI18N
-                new PropertyDescriptor(FormLoaderSettings.PROP_CONTAINER_BEANS,
-                                       FormLoaderSettings.class,
-                                       "getContainerBeans", // NOI18N
-                                       "setContainerBeans"), // NOI18N
+//                new PropertyDescriptor(FormLoaderSettings.PROP_CONTAINER_BEANS,
+//                                       FormLoaderSettings.class,
+//                                       "getContainerBeans", // NOI18N
+//                                       "setContainerBeans"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR,
                                        FormLoaderSettings.class,
                                        "getFormDesignerBackgroundColor", // NOI18N
@@ -197,30 +197,30 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[15].setDisplayName(bundle.getString("PROP_PALETTE_IN_TOOLBAR")); // NOI18N
             desc[15].setShortDescription(bundle.getString("HINT_PALETTE_IN_TOOLBAR")); // NOI18N
 
-            desc[16].setHidden(true);
+//            desc[16].setHidden(true);
 
-            desc[17].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BACKGROUND_COLOR")); // NOI18N
-            desc[17].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BACKGROUND_COLOR")); // NOI18N
+            desc[16].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BACKGROUND_COLOR")); // NOI18N
+            desc[16].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BACKGROUND_COLOR")); // NOI18N
 
-            desc[18].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BORDER_COLOR")); // NOI18N
-            desc[18].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BORDER_COLOR")); // NOI18N
+            desc[17].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BORDER_COLOR")); // NOI18N
+            desc[17].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BORDER_COLOR")); // NOI18N
 
-            desc[19].setDisplayName(bundle.getString("PROP_SHOW_COMPONENT_NAMES")); // NOI18N
-            desc[19].setShortDescription(bundle.getString("HINT_SHOW_COMPONENT_NAMES")); // NOI18N
+            desc[18].setDisplayName(bundle.getString("PROP_SHOW_COMPONENT_NAMES")); // NOI18N
+            desc[18].setShortDescription(bundle.getString("HINT_SHOW_COMPONENT_NAMES")); // NOI18N
 
-            desc[20].setDisplayName(bundle.getString("PROP_VARIABLES_LOCAL")); // NOI18N
-            desc[20].setShortDescription(bundle.getString("HINT_VARIABLES_LOCAL")); // NOI18N
-            desc[20].setExpert(true);
+            desc[19].setDisplayName(bundle.getString("PROP_VARIABLES_LOCAL")); // NOI18N
+            desc[19].setShortDescription(bundle.getString("HINT_VARIABLES_LOCAL")); // NOI18N
+            desc[19].setExpert(true);
 
-            desc[21].setHidden(true);
+            desc[20].setHidden(true);
 
-            desc[22].setDisplayName(bundle.getString("PROP_GENERATE_MNEMONICS")); // NOI18N
-            desc[22].setShortDescription(bundle.getString("HINT_GENERATE_MNEMONICS")); // NOI18N
+            desc[21].setDisplayName(bundle.getString("PROP_GENERATE_MNEMONICS")); // NOI18N
+            desc[21].setShortDescription(bundle.getString("HINT_GENERATE_MNEMONICS")); // NOI18N
+            desc[21].setExpert(true);
+
+            desc[22].setDisplayName(bundle.getString("PROP_SHOW_MNEMONICS_DIALOG")); // NOI18N
+            desc[22].setShortDescription(bundle.getString("HINT_SHOW_MNEMONICS_DIALOG")); // NOI18N
             desc[22].setExpert(true);
-
-            desc[23].setDisplayName(bundle.getString("PROP_SHOW_MNEMONICS_DIALOG")); // NOI18N
-            desc[23].setShortDescription(bundle.getString("HINT_SHOW_MNEMONICS_DIALOG")); // NOI18N
-            desc[23].setExpert(true);
 
             return desc;
         }

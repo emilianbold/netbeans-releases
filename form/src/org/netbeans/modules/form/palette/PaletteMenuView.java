@@ -22,8 +22,11 @@ import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.explorer.view.MenuView;
 
-/** Hacked MenuView.Menu to use ScrollablePopupMenu instead of JPopupMenu
- * as its popup, and to filter invalid palette item nodes. */
+/**
+ * Hacked MenuView.Menu to use ScrollablePopupMenu instead of JPopupMenu
+ * as its popup, and to filter invalid palette item nodes.
+ */
+
 public class PaletteMenuView extends org.openide.awt.JMenuPlus {
 
     private Node menuNode;
@@ -31,11 +34,22 @@ public class PaletteMenuView extends org.openide.awt.JMenuPlus {
 
     private boolean hacked = false;
     private boolean filled = false;
+    private int level;
+
     private static int maxHeight = Utilities.getUsableScreenBounds().height - 25;
 
+    public PaletteMenuView(NodeAcceptor acceptor) {
+        this(PaletteNode.getPaletteNode(), acceptor);
+    }
+
     public PaletteMenuView(Node node, NodeAcceptor acceptor) {
+        this(node, acceptor, 0);
+    }
+
+    private PaletteMenuView(Node node, NodeAcceptor acceptor, int level) {
         menuNode = node;
         menuAction = acceptor;
+        this.level = level;
         setText(node.getDisplayName());
         getSubNodes(); // force subnodes creation
     }
@@ -76,7 +90,7 @@ public class PaletteMenuView extends org.openide.awt.JMenuPlus {
                 for (int i=0; i < nodes.length; i++)
                     add(nodes[i].isLeaf() ?
                        (JMenuItem) new MenuView.MenuItem(nodes[i], menuAction) :
-                       (JMenuItem) new PaletteMenuView(nodes[i], menuAction));
+                       (JMenuItem) new PaletteMenuView(nodes[i], menuAction, level + 1));
             }
             else {
                 JMenuItem empty = new JMenuItem(
@@ -88,12 +102,8 @@ public class PaletteMenuView extends org.openide.awt.JMenuPlus {
     }
 
     private Node[] getSubNodes() {
-        if (menuNode instanceof PaletteNode)
-            return ((PaletteNode)menuNode).getCategoryNodes();
-        if (menuNode instanceof PaletteCategoryNode)
-            return ((PaletteCategoryNode)menuNode).getValidItemNodes();
-
-        return menuNode.getChildren().getNodes();
+        return level == 0 ? PaletteUtils.getCategoryNodes(menuNode, true) :
+                            PaletteUtils.getItemNodes(menuNode, true);
     }
 
     private class PopupListener implements PopupMenuListener {

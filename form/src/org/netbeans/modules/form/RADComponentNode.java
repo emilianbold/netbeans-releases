@@ -488,7 +488,8 @@ public class RADComponentNode extends FormNode
                                                component));
             }
         }
-        else { // if there is not a RADComponent in the clipboard,
+        // TODO java or class node might be selected
+/*        else { // if there is not a RADComponent in the clipboard,
                // try if it is not InstanceCookie
             InstanceCookie ic = (InstanceCookie)
                                 NodeTransfer.cookie(t,
@@ -511,7 +512,7 @@ public class RADComponentNode extends FormNode
                                                     component.getFormModel(),
                                                     component));
             }
-        }
+        } */
     }
 
     // -----------------------------------------------------------------------------

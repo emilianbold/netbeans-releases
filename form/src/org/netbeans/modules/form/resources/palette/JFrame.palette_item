@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+  <component classname="javax.swing.JFrame" type="visual" />
+  <icon16 urlvalue="nbres:/javax/swing/beaninfo/images/JFrameColor16.gif" />
+  <description localizing-bundle="org.netbeans.modules.form.resources.Bundle"
+               display-name-key="NAME_javax-swing-JFrame"
+               tooltip-key="HINT_javax-swing-JFrame" />
+</palette_item>

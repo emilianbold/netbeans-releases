@@ -142,8 +142,9 @@ class FormToolBar extends JToolBar {
         if (addLabel.isVisible()) {
             PaletteItem item = CPManager.getDefault().getSelectedItem();
             if (item != null && mode == FormDesigner.MODE_ADD) {
-                addLabel.setIcon(new ImageIcon(item.getItemNode().getIcon(BeanInfo.ICON_COLOR_16x16)));
-                addLabel.setText(item.getName());
+                addLabel.setIcon(
+                    new ImageIcon(item.getNode().getIcon(BeanInfo.ICON_COLOR_16x16)));
+                addLabel.setText(item.getNode().getDisplayName());
             }
             else {
                 addLabel.setText(""); // NOI18N
@@ -159,7 +160,7 @@ class FormToolBar extends JToolBar {
 
     private void showPaletteViewMenu() {
         if (paletteMenuView == null) {
-            paletteMenuView = new PaletteMenuView(PaletteNode.getPaletteNode(), listener);
+            paletteMenuView = new PaletteMenuView(listener);
             paletteMenuView.getPopupMenu().addPopupMenuListener(listener);
         }
 
@@ -207,7 +208,7 @@ class FormToolBar extends JToolBar {
             if (nodes.length == 0)
                 return false;
 
-            PaletteItem item = CPManager.createPaletteItem(nodes[0]);
+            PaletteItem item = (PaletteItem) nodes[0].getCookie(PaletteItem.class);
             CPManager.getDefault().setSelectedItem(item);
             return true;
         }

@@ -962,12 +962,12 @@ public class FormEditorSupport extends JavaEditor
             }
         };
 
-        FormEditor.getFormSettings().addPropertyChangeListener(settingsListener);
+        FormLoaderSettings.getInstance().addPropertyChangeListener(settingsListener);
     }
 
     private static void detachSettingsListener() {
         if (settingsListener != null) {
-            FormEditor.getFormSettings()
+            FormLoaderSettings.getInstance()
                     .removePropertyChangeListener(settingsListener);
             settingsListener = null;
         }

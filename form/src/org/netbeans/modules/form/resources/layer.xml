@@ -99,413 +99,152 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Swing">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
 
-            <file name="javax-swing-JLabel.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JLabelColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JButton.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JButtonColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JToggleButton.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JToggleButtonColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JCheckBox.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JCheckBoxColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JRadioButton.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JRadioButtonColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-ButtonGroup.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/resources/ButtonGroup16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JComboBox.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JComboBoxColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JList.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JListColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JTextField.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JTextFieldColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JTextArea.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JTextAreaColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JPanel.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JPanelColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JTabbedPane.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JTabbedPaneColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JScrollBar.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JScrollBarColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JScrollPane.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JScrollPaneColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JMenuBar.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JMenuBarColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JPopupMenu.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JPopupMenuColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JSlider.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JSliderColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JProgressBar.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JProgressBarColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JSplitPane.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JSplitPaneColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JFormattedTextField.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JFormattedTextFieldColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JPasswordField.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JPasswordFieldColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JSpinner.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JSpinnerColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JSeparator.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JSeparatorColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JTextPane.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JTextPaneColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JEditorPane.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JEditorPaneColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JTree.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JTreeColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JTable.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JTableColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JToolBar.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JToolBarColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JInternalFrame.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JInternalFrameColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JLayeredPane.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JLayeredPaneColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JDesktopPane.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JDesktopPaneColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JOptionPane.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JOptionPaneColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-                <attr name="isContainer" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JColorChooser.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JColorChooserColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JFileChooser.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JFileChooserColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JFrame.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JFrameColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-JDialog.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JDialogColor16.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
+            <file name="JLabel.palette_item" url="palette/JLabel.palette_item" />
+            <file name="JButton.palette_item" url="palette/JButton.palette_item" />
+            <file name="JToggleButton.palette_item" url="palette/JToggleButton.palette_item" />
+            <file name="JCheckBox.palette_item" url="palette/JCheckBox.palette_item" />
+            <file name="JRadioButton.palette_item" url="palette/JRadioButton.palette_item" />
+            <file name="ButtonGroup.palette_item" url="palette/ButtonGroup.palette_item" />
+            <file name="JComboBox.palette_item" url="palette/JComboBox.palette_item" />
+            <file name="JList.palette_item" url="palette/JList.palette_item" />
+            <file name="JTextField.palette_item" url="palette/JTextField.palette_item" />
+            <file name="JTextArea.palette_item" url="palette/JTextArea.palette_item" />
+            <file name="JPanel.palette_item" url="palette/JPanel.palette_item" />
+            <file name="JTabbedPane.palette_item" url="palette/JTabbedPane.palette_item" />
+            <file name="JScrollBar.palette_item" url="palette/JScrollBar.palette_item" />
+            <file name="JScrollPane.palette_item" url="palette/JScrollPane.palette_item" />
+            <file name="JMenuBar.palette_item" url="palette/JMenuBar.palette_item" />
+            <file name="JPopupMenu.palette_item" url="palette/JPopupMenu.palette_item" />
+            <file name="JSlider.palette_item" url="palette/JSlider.palette_item" />
+            <file name="JProgressBar.palette_item" url="palette/JProgressBar.palette_item" />
+            <file name="JSplitPane.palette_item" url="palette/JSplitPane.palette_item" />
+            <file name="JFormattedTextField.palette_item" url="palette/JFormattedTextField.palette_item" />
+            <file name="JPasswordField.palette_item" url="palette/JPasswordField.palette_item" />
+            <file name="JSpinner.palette_item" url="palette/JSpinner.palette_item" />
+            <file name="JSeparator.palette_item" url="palette/JSeparator.palette_item" />
+            <file name="JTextPane.palette_item" url="palette/JTextPane.palette_item" />
+            <file name="JEditorPane.palette_item" url="palette/JEditorPane.palette_item" />
+            <file name="JTree.palette_item" url="palette/JTree.palette_item" />
+            <file name="JTable.palette_item" url="palette/JTable.palette_item" />
+            <file name="JToolBar.palette_item" url="palette/JToolBar.palette_item" />
+            <file name="JInternalFrame.palette_item" url="palette/JInternalFrame.palette_item" />
+            <file name="JLayeredPane.palette_item" url="palette/JLayeredPane.palette_item" />
+            <file name="JDesktopPane.palette_item" url="palette/JDesktopPane.palette_item" />
+            <file name="JOptionPane.palette_item" url="palette/JOptionPane.palette_item" />
+            <file name="JColorChooser.palette_item" url="palette/JColorChooser.palette_item" />
+            <file name="JFileChooser.palette_item" url="palette/JFileChooser.palette_item" />
+            <file name="JFrame.palette_item" url="palette/JFrame.palette_item" />
+            <file name="JDialog.palette_item" url="palette/JDialog.palette_item" />
 
-            <attr name="javax-swing-JLabel.instance/javax-swing-JButton.instance" boolvalue="true" />
-            <attr name="javax-swing-JButton.instance/javax-swing-JToggleButton.instance" boolvalue="true" />
-            <attr name="javax-swing-JToggleButton.instance/javax-swing-JCheckBox.instance" boolvalue="true" />
-            <attr name="javax-swing-JCheckBox.instance/javax-swing-JRadioButton.instance" boolvalue="true" />
-            <attr name="javax-swing-JRadioButton.instance/javax-swing-ButtonGroup.instance" boolvalue="true" />
-            <attr name="javax-swing-ButtonGroup.instance/javax-swing-JComboBox.instance" boolvalue="true" />
-            <attr name="javax-swing-JComboBox.instance/javax-swing-JList.instance" boolvalue="true" />
-            <attr name="javax-swing-JList.instance/javax-swing-JTextField.instance" boolvalue="true" />
-            <attr name="javax-swing-JTextField.instance/javax-swing-JTextArea.instance" boolvalue="true" />
-            <attr name="javax-swing-JTextArea.instance/javax-swing-JPanel.instance" boolvalue="true" />
-            <attr name="javax-swing-JPanel.instance/javax-swing-JTabbedPane.instance" boolvalue="true" />
-            <attr name="javax-swing-JTabbedPane.instance/javax-swing-JScrollBar.instance" boolvalue="true" />
-            <attr name="javax-swing-JScrollBar.instance/javax-swing-JScrollPane.instance" boolvalue="true" />
-            <attr name="javax-swing-JScrollPane.instance/javax-swing-JMenuBar.instance" boolvalue="true" />
-            <attr name="javax-swing-JMenuBar.instance/javax-swing-JPopupMenu.instance" boolvalue="true" />
-            <attr name="javax-swing-JPopupMenu.instance/javax-swing-JSlider.instance" boolvalue="true" />
-            <attr name="javax-swing-JSlider.instance/javax-swing-JProgressBar.instance" boolvalue="true" />
-            <attr name="javax-swing-JProgressBar.instance/javax-swing-JSplitPane.instance" boolvalue="true" />
-            <attr name="javax-swing-JSplitPane.instance/javax-swing-JFormattedTextField.instance" boolvalue="true" />
-            <attr name="javax-swing-JFormattedTextField.instance/javax-swing-JPasswordField.instance" boolvalue="true" />
-            <attr name="javax-swing-JPasswordField.instance/javax-swing-JSpinner.instance" boolvalue="true" />
-            <attr name="javax-swing-JSpinner.instance/javax-swing-JSeparator.instance" boolvalue="true" />
-            <attr name="javax-swing-JSeparator.instance/javax-swing-JTextPane.instance" boolvalue="true" />
-            <attr name="javax-swing-JTextPane.instance/javax-swing-JEditorPane.instance" boolvalue="true" />
-            <attr name="javax-swing-JEditorPane.instance/javax-swing-JTree.instance" boolvalue="true" />
-            <attr name="javax-swing-JTree.instance/javax-swing-JTable.instance" boolvalue="true" />
-            <attr name="javax-swing-JTable.instance/javax-swing-JToolBar.instance" boolvalue="true" />
-            <attr name="javax-swing-JToolBar.instance/javax-swing-JInternalFrame.instance" boolvalue="true" />
-            <attr name="javax-swing-JInternalFrame.instance/javax-swing-JLayeredPane.instance" boolvalue="true" />
-            <attr name="javax-swing-JLayeredPane.instance/javax-swing-JDesktopPane.instance" boolvalue="true" />
-            <attr name="javax-swing-JDesktopPane.instance/javax-swing-JOptionPane.instance" boolvalue="true" />
-            <attr name="javax-swing-JOptionPane.instance/javax-swing-JColorChooser.instance" boolvalue="true" />
-            <attr name="javax-swing-JColorChooser.instance/javax-swing-JFileChooser.instance" boolvalue="true" />
-            <attr name="javax-swing-JFileChooser.instance/javax-swing-JFrame.instance" boolvalue="true" />
-            <attr name="javax-swing-JFrame.instance/javax-swing-JDialog.instance" boolvalue="true" />
+            <attr name="JLabel.palette_item/JButton.palette_item" boolvalue="true" />
+            <attr name="JButton.palette_item/JToggleButton.palette_item" boolvalue="true" />
+            <attr name="JToggleButton.palette_item/JCheckBox.palette_item" boolvalue="true" />
+            <attr name="JCheckBox.palette_item/JRadioButton.palette_item" boolvalue="true" />
+            <attr name="JRadioButton.palette_item/ButtonGroup.palette_item" boolvalue="true" />
+            <attr name="ButtonGroup.palette_item/JComboBox.palette_item" boolvalue="true" />
+            <attr name="JComboBox.palette_item/JList.palette_item" boolvalue="true" />
+            <attr name="JList.palette_item/JTextField.palette_item" boolvalue="true" />
+            <attr name="JTextField.palette_item/JTextArea.palette_item" boolvalue="true" />
+            <attr name="JTextArea.palette_item/JPanel.palette_item" boolvalue="true" />
+            <attr name="JPanel.palette_item/JTabbedPane.palette_item" boolvalue="true" />
+            <attr name="JTabbedPane.palette_item/JScrollBar.palette_item" boolvalue="true" />
+            <attr name="JScrollBar.palette_item/JScrollPane.palette_item" boolvalue="true" />
+            <attr name="JScrollPane.palette_item/JMenuBar.palette_item" boolvalue="true" />
+            <attr name="JMenuBar.palette_item/JPopupMenu.palette_item" boolvalue="true" />
+            <attr name="JPopupMenu.palette_item/JSlider.palette_item" boolvalue="true" />
+            <attr name="JSlider.palette_item/JProgressBar.palette_item" boolvalue="true" />
+            <attr name="JProgressBar.palette_item/JSplitPane.palette_item" boolvalue="true" />
+            <attr name="JSplitPane.palette_item/JFormattedTextField.palette_item" boolvalue="true" />
+            <attr name="JFormattedTextField.palette_item/JPasswordField.palette_item" boolvalue="true" />
+            <attr name="JPasswordField.palette_item/JSpinner.palette_item" boolvalue="true" />
+            <attr name="JSpinner.palette_item/JSeparator.palette_item" boolvalue="true" />
+            <attr name="JSeparator.palette_item/JTextPane.palette_item" boolvalue="true" />
+            <attr name="JTextPane.palette_item/JEditorPane.palette_item" boolvalue="true" />
+            <attr name="JEditorPane.palette_item/JTree.palette_item" boolvalue="true" />
+            <attr name="JTree.palette_item/JTable.palette_item" boolvalue="true" />
+            <attr name="JTable.palette_item/JToolBar.palette_item" boolvalue="true" />
+            <attr name="JToolBar.palette_item/JInternalFrame.palette_item" boolvalue="true" />
+            <attr name="JInternalFrame.palette_item/JLayeredPane.palette_item" boolvalue="true" />
+            <attr name="JLayeredPane.palette_item/JDesktopPane.palette_item" boolvalue="true" />
+            <attr name="JDesktopPane.palette_item/JOptionPane.palette_item" boolvalue="true" />
+            <attr name="JOptionPane.palette_item/JColorChooser.palette_item" boolvalue="true" />
+            <attr name="JColorChooser.palette_item/JFileChooser.palette_item" boolvalue="true" />
+            <attr name="JFileChooser.palette_item/JFrame.palette_item" boolvalue="true" />
+            <attr name="JFrame.palette_item/JDialog.palette_item" boolvalue="true" />
         </folder>
 
         <folder name="AWT">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
 
-            <file name="java-awt-Label.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/awt/label.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-Button.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/awt/button.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-TextField.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/awt/textfield.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-TextArea.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/awt/textarea.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-Checkbox.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/awt/checkbox.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-Choice.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/awt/choice.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-List.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/awt/list.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-Scrollbar.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/awt/scrollbar.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-ScrollPane.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/awt/scrollpane.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-Panel.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/awt/panel.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-Canvas.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/awt/canvas.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-MenuBar.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/awt/menubar.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-PopupMenu.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/awt/popupmenu.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
+            <file name="Label.palette_item" url="palette/Label.palette_item" />
+            <file name="Button.palette_item" url="palette/Button.palette_item" />
+            <file name="TextField.palette_item" url="palette/TextField.palette_item" />
+            <file name="TextArea.palette_item" url="palette/TextArea.palette_item" />
+            <file name="Checkbox.palette_item" url="palette/Checkbox.palette_item" />
+            <file name="Choice.palette_item" url="palette/Choice.palette_item" />
+            <file name="List.palette_item" url="palette/List.palette_item" />
+            <file name="Scrollbar.palette_item" url="palette/Scrollbar.palette_item" />
+            <file name="ScrollPane.palette_item" url="palette/ScrollPane.palette_item" />
+            <file name="Panel.palette_item" url="palette/Panel.palette_item" />
+            <file name="Canvas.palette_item" url="palette/Canvas.palette_item" />
+            <file name="MenuBar.palette_item" url="palette/MenuBar.palette_item" />
+            <file name="PopupMenu.palette_item" url="palette/PopupMenu.palette_item" />
 
-            <attr name="java-awt-Label.instance/java-awt-Button.instance" boolvalue="true" />
-            <attr name="java-awt-Button.instance/java-awt-TextField.instance" boolvalue="true" />
-            <attr name="java-awt-TextField.instance/java-awt-TextArea.instance" boolvalue="true" />
-            <attr name="java-awt-TextArea.instance/java-awt-Checkbox.instance" boolvalue="true" />
-            <attr name="java-awt-Checkbox.instance/java-awt-Choice.instance" boolvalue="true" />
-            <attr name="java-awt-Choice.instance/java-awt-List.instance" boolvalue="true" />
-            <attr name="java-awt-List.instance/java-awt-Scrollbar.instance" boolvalue="true" />
-            <attr name="java-awt-Scrollbar.instance/java-awt-ScrollPane.instance" boolvalue="true" />
-            <attr name="java-awt-ScrollPane.instance/java-awt-Panel.instance" boolvalue="true" />
-            <attr name="java-awt-Panel.instance/java-awt-Canvas.instance" boolvalue="true" />
-            <attr name="java-awt-Canvas.instance/java-awt-MenuBar.instance" boolvalue="true" />
-            <attr name="java-awt-MenuBar.instance/java-awt-PopupMenu.instance" boolvalue="true" />
+            <attr name="Label.palette_item/Button.palette_item" boolvalue="true" />
+            <attr name="Button.palette_item/TextField.palette_item" boolvalue="true" />
+            <attr name="TextField.palette_item/TextArea.palette_item" boolvalue="true" />
+            <attr name="TextArea.palette_item/Checkbox.palette_item" boolvalue="true" />
+            <attr name="Checkbox.palette_item/Choice.palette_item" boolvalue="true" />
+            <attr name="Choice.palette_item/List.palette_item" boolvalue="true" />
+            <attr name="List.palette_item/Scrollbar.palette_item" boolvalue="true" />
+            <attr name="Scrollbar.palette_item/ScrollPane.palette_item" boolvalue="true" />
+            <attr name="ScrollPane.palette_item/Panel.palette_item" boolvalue="true" />
+            <attr name="Panel.palette_item/Canvas.palette_item" boolvalue="true" />
+            <attr name="Canvas.palette_item/MenuBar.palette_item" boolvalue="true" />
+            <attr name="MenuBar.palette_item/PopupMenu.palette_item" boolvalue="true" />
         </folder>
 
         <folder name="Layouts">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
 
-            <file name="java-awt-FlowLayout.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/swing/flowLayout.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-BorderLayout.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/swing/borderLayout.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-GridLayout.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/swing/gridLayout.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-GridBagLayout.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/swing/gridBagLayout.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="java-awt-CardLayout.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/swing/cardLayout.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-BoxLayout.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/swing/boxLayout.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="org-netbeans-lib-awtextra-AbsoluteLayout.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/layoutsupport/resources/AbsoluteLayout.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="org-netbeans-modules-form-layoutsupport-delegates-NullLayoutSupport.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/layoutsupport/resources/NullLayout.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
+            <file name="FlowLayout.palette_item" url="palette/FlowLayout.palette_item" />
+            <file name="BorderLayout.palette_item" url="palette/BorderLayout.palette_item" />
+            <file name="GridLayout.palette_item" url="palette/GridLayout.palette_item" />
+            <file name="GridBagLayout.palette_item" url="palette/GridBagLayout.palette_item" />
+            <file name="CardLayout.palette_item" url="palette/CardLayout.palette_item" />
+            <file name="BoxLayout.palette_item" url="palette/BoxLayout.palette_item" />
+            <file name="AbsoluteLayout.palette_item" url="palette/AbsoluteLayout.palette_item" />
+            <file name="NullLayout.palette_item" url="palette/NullLayout.palette_item" />
 
-            <attr name="java-awt-FlowLayout.instance/java-awt-BorderLayout.instance" boolvalue="true" />
-            <attr name="java-awt-BorderLayout.instance/java-awt-GridLayout.instance" boolvalue="true" />
-            <attr name="java-awt-GridLayout.instance/java-awt-GridBagLayout.instance" boolvalue="true" />
-            <attr name="java-awt-GridBagLayout.instance/java-awt-CardLayout.instance" boolvalue="true" />
-            <attr name="java-awt-CardLayout.instance/javax-swing-BoxLayout.instance" boolvalue="true" />
-            <attr name="javax-swing-BoxLayout.instance/org-netbeans-lib-awtextra-AbsoluteLayout.instance" boolvalue="true" />
-            <attr name="org-netbeans-lib-awtextra-AbsoluteLayout.instance/org-netbeans-modules-form-layoutsupport-delegates-NullLayoutSupport.instance" boolvalue="true" />
+            <attr name="FlowLayout.palette_item/BorderLayout.palette_item" boolvalue="true" />
+            <attr name="BorderLayout.palette_item/GridLayout.palette_item" boolvalue="true" />
+            <attr name="GridLayout.palette_item/GridBagLayout.palette_item" boolvalue="true" />
+            <attr name="GridBagLayout.palette_item/CardLayout.palette_item" boolvalue="true" />
+            <attr name="CardLayout.palette_item/BoxLayout.palette_item" boolvalue="true" />
+            <attr name="BoxLayout.palette_item/AbsoluteLayout.palette_item" boolvalue="true" />
+            <attr name="AbsoluteLayout.palette_item/NullLayout.palette_item" boolvalue="true" />
         </folder>
 
         <folder name="Borders">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
             <attr name="hidden_category" boolvalue="true"/>
 
-            <file name="javax-swing-border-EmptyBorder.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/swing/emptyBorder.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-border-LineBorder.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/swing/lineBorder.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-border-MatteBorder.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/swing/matteBorder.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-border-TitledBorder.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/swing/titledBorder.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-border-EtchedBorder.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/swing/etchedBorder.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-border-BevelBorder.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/swing/bevelBorder.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-border-SoftBevelBorder.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/swing/softBevelBorder.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
-            <file name="javax-swing-border-CompoundBorder.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/beaninfo/swing/compoundBorder.gif" />
-                <attr name="beaninfo" boolvalue="false"/>
-            </file>
+            <file name="EmptyBorder.palette_item" url="palette/EmptyBorder.palette_item" />
+            <file name="LineBorder.palette_item" url="palette/LineBorder.palette_item" />
+            <file name="MatteBorder.palette_item" url="palette/MatteBorder.palette_item" />
+            <file name="TitledBorder.palette_item" url="palette/TitledBorder.palette_item" />
+            <file name="EtchedBorder.palette_item" url="palette/EtchedBorder.palette_item" />
+            <file name="BevelBorder.palette_item" url="palette/BevelBorder.palette_item" />
+            <file name="SoftBevelBorder.palette_item" url="palette/SoftBevelBorder.palette_item" />
+            <file name="CompoundBorder.palette_item" url="palette/CompoundBorder.palette_item" />
 
-            <attr name= "javax-swing-border-EmptyBorder.instance/javax-swing-border-LineBorder.instance" boolvalue="true"/>
-            <attr name= "javax-swing-border-LineBorder.instance/javax-swing-border-MatteBorder.instance" boolvalue="true"/>
-            <attr name= "javax-swing-border-MatteBorder.instance/javax-swing-border-TitledBorder.instance" boolvalue="true"/>
-            <attr name= "javax-swing-border-TitledBorder.instance/javax-swing-border-EtchedBorder.instance" boolvalue="true"/>
-            <attr name= "javax-swing-border-EtchedBorder.instance/javax-swing-border-BevelBorder.instance" boolvalue="true"/>
-            <attr name= "javax-swing-border-BevelBorder.instance/javax-swing-border-SoftBevelBorder.instance" boolvalue="true"/>
-            <attr name= "javax-swing-border-SoftBevelBorder.instance/javax-swing-border-CompoundBorder.instance" boolvalue="true"/>
+            <attr name= "EmptyBorder.palette_item/LineBorder.palette_item" boolvalue="true"/>
+            <attr name= "LineBorder.palette_item/MatteBorder.palette_item" boolvalue="true"/>
+            <attr name= "MatteBorder.palette_item/TitledBorder.palette_item" boolvalue="true"/>
+            <attr name= "TitledBorder.palette_item/EtchedBorder.palette_item" boolvalue="true"/>
+            <attr name= "EtchedBorder.palette_item/BevelBorder.palette_item" boolvalue="true"/>
+            <attr name= "BevelBorder.palette_item/SoftBevelBorder.palette_item" boolvalue="true"/>
+            <attr name= "SoftBevelBorder.palette_item/CompoundBorder.palette_item" boolvalue="true"/>
         </folder>
 
         <folder name="Beans">

@@ -35,8 +35,6 @@ import org.netbeans.modules.form.fakepeer.*;
 
 class ComponentLayer extends JPanel
 {
-    private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
-
     private static final int HORIZONTAL_MARGIN = 12;
     private static final int VERTICAL_MARGIN = 12;
 
@@ -109,7 +107,7 @@ class ComponentLayer extends JPanel
     }
 
     private void updateBackground() {
-        setBackground(formSettings.getFormDesignerBackgroundColor());
+        setBackground(FormLoaderSettings.getInstance().getFormDesignerBackgroundColor());
     }
 
     // ---------
@@ -125,8 +123,8 @@ class ComponentLayer extends JPanel
 
         void updateBorder() {
             setBorder(new javax.swing.border.LineBorder(
-                              formSettings.getFormDesignerBorderColor(),
-                              BORDER_THICKNESS));
+                FormLoaderSettings.getInstance().getFormDesignerBorderColor(),
+                BORDER_THICKNESS));
         }
 
         Dimension getDesignerSize() {

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+  <component classname="javax.swing.JCheckBox" type="visual" />
+  <icon16 urlvalue="nbres:/javax/swing/beaninfo/images/JCheckBoxColor16.gif" />
+  <description localizing-bundle="org.netbeans.modules.form.resources.Bundle"
+               display-name-key="NAME_javax-swing-JCheckBox"
+               tooltip-key="HINT_javax-swing-JCheckBox" />
+</palette_item>
