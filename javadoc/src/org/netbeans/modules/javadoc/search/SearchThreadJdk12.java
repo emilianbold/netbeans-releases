@@ -68,7 +68,8 @@ class SearchThreadJdk12 extends IndexSearchThread {
     }
     else {
      try {
-        contextURL = this.fo.getParent().getURL();
+        contextURL = this.fo.getURL();
+        //contextURL = this.fo.getParent().getURL();
       }
       catch ( org.openide.filesystems.FileStateInvalidException e ) {
         throw new InternalError( "Can't create documentation folder URL - file state invalid" );
@@ -90,8 +91,10 @@ class SearchThreadJdk12 extends IndexSearchThread {
 
     ParserDelegator pd = new ParserDelegator();
 
-    if ( fo == null || toFind == null )
+    if ( fo == null || toFind == null ) {
+      taskFinished();
       return;
+    }
 
     try {
       in = new BufferedReader( new InputStreamReader( fo.getInputStream () ));
@@ -263,6 +266,8 @@ class SearchThreadJdk12 extends IndexSearchThread {
 
 /*
  * Log
+ *  13   Gandalf   1.12        11/3/99  Petr Hrebejk    Missing index file and 
+ *       doc/api for single index file fixed
  *  12   Gandalf   1.11        10/27/99 Petr Hrebejk    Bug fixes & back button 
  *       in Javadoc Quickview
  *  11   Gandalf   1.10        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
