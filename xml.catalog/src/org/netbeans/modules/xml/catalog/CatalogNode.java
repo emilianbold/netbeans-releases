@@ -209,11 +209,16 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
         public void reload() {
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Reloading kids of " + peer + "..."); // NOI18N
 
+            Set previous = new HashSet(keys);
             keys.clear();
             Iterator it = peer.getPublicIDs();
             if (it != null) {
                 while (it.hasNext()) {
-                    keys.add(it.next());
+                    String publicID = (String) it.next();
+                    keys.add(publicID);
+                    if (previous.contains(publicID)) {
+                        refreshKey(publicID);  // recreate node, the systemId may have changed
+                    }
                 }
             }    
             setKeys(keys);
