@@ -161,13 +161,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
   private boolean loadNonVisuals (org.w3c.dom.Node node, FormManager2 formManager2) {
     org.w3c.dom.Node nonVisualsNode = findSubNode (node, XML_NON_VISUAL_COMPONENTS);
     org.w3c.dom.NodeList childNodes = (nonVisualsNode == null) ? null : nonVisualsNode.getChildNodes ();
-    System.out.println ("NonVisual children: "+childNodes);
+//    System.out.println ("NonVisual children: "+childNodes);
     ArrayList list = new ArrayList ();
     if (childNodes != null) {
-    System.out.println ("NonVisual children len: "+childNodes.getLength ());
+//    System.out.println ("NonVisual children len: "+childNodes.getLength ());
       for (int i = 0; i < childNodes.getLength (); i++) {
         if (childNodes.item (i).getNodeType () == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
-        System.out.println ("Processing node: "+childNodes.item (i).getNodeName ());
+//        System.out.println ("Processing node: "+childNodes.item (i).getNodeName ());
         if (XML_COMPONENT.equals (childNodes.item (i).getNodeName ())) {
           RADComponent comp = new RADComponent ();
           if (loadComponent (childNodes.item (i), formManager2, comp, null)) {
@@ -179,13 +179,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
             list.add (cont);
           }
         } else if (XML_MENU_COMPONENT.equals (childNodes.item (i).getNodeName ())) {
-          System.out.println ("$$$MenuItem");
+//          System.out.println ("$$$MenuItem");
           RADMenuItemComponent comp = new RADMenuItemComponent ();
           if (loadComponent (childNodes.item (i), formManager2, comp, null)) {
             list.add (comp);
           }
         } else if (XML_MENU_CONTAINER.equals (childNodes.item (i).getNodeName ())) {
-          System.out.println ("$$$Menu");
+//          System.out.println ("$$$Menu");
           RADMenuComponent cont = new RADMenuComponent ();
           if (loadContainer (childNodes.item (i), formManager2, cont, null)) {
             list.add (cont);
@@ -202,21 +202,21 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
   private boolean loadComponent (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
     try {
-      System.out.println (">>> loadComponent: "+node.getNodeName ());
+//      System.out.println (">>> loadComponent: "+node.getNodeName ());
       if (!(comp instanceof FormContainer)) {
         comp.initialize (formManager2);
         String className = findAttribute (node, ATTR_COMPONENT_CLASS);
         String compName = findAttribute (node, ATTR_COMPONENT_NAME);
         Class compClass = null;
-      System.out.println ("  name: "+compName);
-      System.out.println ("  class: "+className);
+//      System.out.println ("  name: "+compName);
+//      System.out.println ("  class: "+className);
         try {
           compClass = TopManager.getDefault ().systemClassLoader ().loadClass (className);
         } catch (Exception e) {
           e.printStackTrace (); // [PENDING - better notification]
           return false; // failed to load the component!!!
         }
-      System.out.println ("  class success: "+compClass.getName ());
+//      System.out.println ("  class success: "+compClass.getName ());
         comp.setComponent (compClass);
         comp.setName (compName);
       }
@@ -301,19 +301,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
       if (!loadComponent (node, formManager2, comp, parentContainer)) return false;
     }
 
-        System.out.println ("1...");
+//        System.out.println ("1...");
     if (comp instanceof ComponentContainer) {
-        System.out.println ("2...");
+//        System.out.println ("2...");
       org.w3c.dom.Node subCompsNode = findSubNode (node, XML_SUB_COMPONENTS);
       org.w3c.dom.NodeList children = null;
       if (subCompsNode != null) children = subCompsNode.getChildNodes ();
-        System.out.println ("3...");
+//        System.out.println ("3...");
       if (children != null) {
-        System.out.println ("4...");
+//        System.out.println ("4...");
         ArrayList list = new ArrayList ();
         for (int i = 0; i < children.getLength (); i++) {
           org.w3c.dom.Node componentNode = children.item (i);
-        System.out.println ("Processing node: "+componentNode.getNodeName ());
+//        System.out.println ("Processing node: "+componentNode.getNodeName ());
           if (componentNode.getNodeType () == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
 
           if (XML_COMPONENT.equals (componentNode.getNodeName ())) {  // [PENDING - visual x non-visual]
@@ -323,13 +323,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
           } else if (XML_MENU_COMPONENT.equals (componentNode.getNodeName ())) {  // [PENDING - visual x non-visual]
             RADMenuItemComponent newComp = new RADMenuItemComponent ();
-        System.out.println ("Processing menu node: "+componentNode.getNodeName ());
+//        System.out.println ("Processing menu node: "+componentNode.getNodeName ());
             if (loadContainer (componentNode, formManager2, newComp, (ComponentContainer)comp)) {
               list.add (newComp);
             }
           } else if (XML_MENU_CONTAINER.equals (componentNode.getNodeName ())) {  // [PENDING - visual x non-visual]
             RADMenuComponent newComp = new RADMenuComponent ();
-        System.out.println ("Processing menu container node: "+componentNode.getNodeName ());
+//        System.out.println ("Processing menu container node: "+componentNode.getNodeName ());
             if (loadContainer (componentNode, formManager2, newComp, (ComponentContainer)comp)) {
               list.add (newComp);
             }
@@ -387,14 +387,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if (prop instanceof RADComponent.RADProperty) {
           String propertyEditor = findAttribute (propNodes[i], ATTR_PROPERTY_EDITOR);
-          System.out.println("Property editor for property: "+propName+" , is: "+propertyEditor);
           if (propertyEditor != null) {
             try {
               Class editorClass = TopManager.getDefault ().systemClassLoader ().loadClass (propertyEditor);
               Class propertyClass = findPropertyType (propType);
               PropertyEditor ed = FormEditor.createPropertyEditor (editorClass, propertyClass, comp);
               ((RADComponent.RADProperty)prop).setCurrentEditor (ed);
-          System.out.println("Property editor succesfully set: "+propName+" , is: "+ed);
             } catch (Exception e) {
               // ignore
             }
@@ -979,7 +977,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * @return decoded value or null if specified object is not of supported type
   */
   private Object decodePrimitiveValue (String encoded, Class type) {
-    System.out.println ("Decode primitive value: "+encoded+", of type: "+type.getName ());
+//    System.out.println ("Decode primitive value: "+encoded+", of type: "+type.getName ());
     if (Integer.class.isAssignableFrom (type) || Integer.TYPE.equals (type)) {
       return Integer.valueOf (encoded);
     } else if (Short.class.isAssignableFrom (type) || Short.TYPE.equals (type)) {
@@ -1016,7 +1014,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * @return String containing encoded value or null if specified object is not of supported type
   */
   private String encodePrimitiveValue (Object value) {
-    System.out.println ("Encode primitive value: "+value);
+//    System.out.println ("Encode primitive value: "+value);
    
     if ((value instanceof Integer) || 
         (value instanceof Short) ||
@@ -1042,7 +1040,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   */
   private Object decodeValue (String value) throws IOException {
      if ((value == null) || (value.length () == 0)) return null;
-    System.out.println ("Decode value: "+value);
+//    System.out.println ("Decode value: "+value);
      char[] bisChars = value.toCharArray ();
      byte[] bytes = new byte[bisChars.length];
      String singleNum = "";
@@ -1069,7 +1067,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
      try {
        ObjectInputStream ois = new ObjectInputStream (bis);
        Object ret = ois.readObject ();
-    System.out.println ("Decoded value: "+ret);
+//    System.out.println ("Decoded value: "+ret);
        return ret;
      } catch (Exception e) {
        e.printStackTrace ();
@@ -1081,7 +1079,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * @return String containing textual representation of the serialized object
   */
   private String encodeValue (Object value) {
-    System.out.println ("Encode value: "+value);
+//    System.out.println ("Encode value: "+value);
 
     ByteArrayOutputStream bos = new ByteArrayOutputStream ();
     try {
@@ -1103,7 +1101,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         sb.append (""+bosBytes[i]);
       }
     }
-    System.out.println ("Encoded value: "+sb.toString ());
+//    System.out.println ("Encoded value: "+sb.toString ());
     return sb.toString ();
   }
   
@@ -1258,6 +1256,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  22   Gandalf   1.21        8/1/99   Ian Formanek    Really does what last 
+ *       checkin should have done
  *  21   Gandalf   1.20        8/1/99   Ian Formanek    Improved creation of 
  *       property editors, removed debug messages
  *  20   Gandalf   1.19        7/25/99  Ian Formanek    Variables management 
