@@ -83,7 +83,7 @@ class BaseTabLayoutModel implements TabLayoutModel {
     protected int textWidth(int index) {
         try {
             String text = model.getTab(index).getText();
-            return textWidth(text);
+            return textWidth(text, getFont());
         } catch (NullPointerException npe) {
             IllegalArgumentException iae = new IllegalArgumentException(
                     "Error fetching width for tab " + //NOI18N
@@ -100,7 +100,7 @@ class BaseTabLayoutModel implements TabLayoutModel {
 
     private static Map widthMap = new HashMap(31);
 
-    private int textWidth(String text) {
+    static int textWidth(String text, Font f) {
         //Note:  If we choose to support multiple fonts in different
         //tab controls in the system, make the cache non-static and
         //dump it if the font changes.
@@ -108,7 +108,7 @@ class BaseTabLayoutModel implements TabLayoutModel {
         if (result == null) {
             double wid = HtmlRenderer.renderString(text, TabListPopup.getOffscreenGraphics(), 0, 0,
                                            Integer.MAX_VALUE,
-                                           Integer.MAX_VALUE, getFont(),
+                                           Integer.MAX_VALUE, f,
                                            Color.BLACK, HtmlRenderer.STYLE_TRUNCATE,
                                            false);
             result = new Integer(Math.round(Math.round(wid)));

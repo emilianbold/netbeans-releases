@@ -20,6 +20,7 @@ import javax.swing.plaf.ComponentUI;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
+import org.openide.awt.HtmlRenderer;
 
 /**
  * Windows classic-like user interface of view type tabs. Implements Border just
@@ -142,7 +143,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
             int space4Icon = iconWidth + 2 * ICON_X_PAD + space4Pin;
             text2Paint = stripTextToFit(text,
                                         width - 2 * TXT_X_PAD - space4Icon, fm);
-            int txtWidth = fm.stringWidth(text2Paint);
+            int txtWidth = BaseTabLayoutModel.textWidth(text2Paint, getTxtFont());
             getCloseIconRect(tempRect, index);
             if (pinButton != null) {
                 pinButton.setLocation(tempRect.x - space4Pin, tempRect.y);
@@ -156,9 +157,12 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         
         // draw text in right color
         Color txtC = UIManager.getColor("TabbedPane.foreground"); //NOI18N
-        g.setColor(txtC);
-        g.drawString(text2Paint, x + TXT_X_PAD,
-                     y + fm.getAscent() + TXT_Y_PAD);
+        
+        HtmlRenderer.renderString(text, g, x + TXT_X_PAD, y + fm.getAscent()
+            + TXT_Y_PAD,
+            width, height, getTxtFont(),
+            txtC,
+            HtmlRenderer.STYLE_CLIP, true);
     }
 
     protected void paintTabBorder(Graphics g, int index, int x, int y,

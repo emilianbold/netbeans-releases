@@ -19,6 +19,7 @@ import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import org.openide.awt.HtmlRenderer;
 
 /**
  * Win XP-like user interface of view type tabs.
@@ -130,7 +131,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             int space4Icon = iconWidth + 2 * ICON_X_PAD + space4Pin;
             text2Paint = stripTextToFit(text,
                                         width - 2 * TXT_X_PAD - space4Icon, fm);
-            int txtWidth = fm.stringWidth(text2Paint);
+            int txtWidth = BaseTabLayoutModel.textWidth(text2Paint, getTxtFont());
             getCloseIconRect(tempRect, index);
             if (pinButton != null) {
                 pinButton.setLocation(tempRect.x - space4Pin, tempRect.y);
@@ -144,8 +145,11 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                  + BUMP_Y_PAD_UPPER, height - (BUMP_Y_PAD_UPPER
                  + BUMP_Y_PAD_BOTTOM));
         // draw text                            
-        g.setColor(txtC);
-        g.drawString(text2Paint, x + TXT_X_PAD, y + fm.getAscent() + TXT_Y_PAD);
+        HtmlRenderer.renderString(text, g, x + TXT_X_PAD, y + fm.getAscent()
+            + TXT_Y_PAD,
+            width, height, getTxtFont(),
+            txtC,
+            HtmlRenderer.STYLE_CLIP, true);
     }
 
     protected void paintTabBorder(Graphics g, int index, int x, int y,

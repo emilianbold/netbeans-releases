@@ -129,7 +129,7 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             int space4Icon = iconWidth + ICON_X_LEFT_PAD + ICON_X_RIGHT_PAD + space4Pin;
             text2Paint = stripTextToFit(text,
                                         width - 2 * TXT_X_PAD - space4Icon, fm);
-            int txtWidth = fm.stringWidth(text2Paint);
+            int txtWidth = BaseTabLayoutModel.textWidth(text2Paint, getTxtFont());
             int bumpWidth = width
                     - (TXT_X_PAD + txtWidth + BUMP_X_PAD + space4Icon);
             if (bumpWidth > 0) {
@@ -147,7 +147,7 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         HtmlRenderer.renderString(text, g, x + TXT_X_PAD, height - 
             fm.getDescent() - 4, width, height, getTxtFont(),
             UIManager.getColor("textText"),
-            HtmlRenderer.STYLE_TRUNCATE, true);
+            HtmlRenderer.STYLE_CLIP, true);
     }
 
     protected void paintTabBorder(Graphics g, int index, int x, int y,
