@@ -256,7 +256,7 @@ public class EntityHelper extends EntityAndSessionHelper {
         }
 
         public void addFinderMethod() {
-            new AddFinderMethodAction() {
+            new AddFinderMethodAction(null) {
                 protected void performAction(Node[] activatedNodes) {
                     super.performAction(activatedNodes);
                 }
@@ -264,7 +264,7 @@ public class EntityHelper extends EntityAndSessionHelper {
         }
 
         public void addSelectMethod() {
-            new AddSelectMethodAction() {
+            new AddSelectMethodAction(null) {
                 protected void performAction(Node[] activatedNodes) {
                     super.performAction(activatedNodes);
                 }
