@@ -229,8 +229,6 @@
 	*/
 	connection = {
 		name = Connection;
-//		displayname = "{db} as {user} [disconnected]";
-//		activedisplayname = "{db} as {user}";
 		displayname = "{0} [disconnected]";
 		activedisplayname = "{0}";
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.ConnectionNode;
@@ -281,26 +279,22 @@
 			{
 				name = "Cut";
 				class = org.openide.actions.CutAction;
-//				node = driverlist;
 				system = YES;
 			},
 			{
 				name = "Copy";
 				class = org.openide.actions.CopyAction;
-//				node = driverlist;
 				system = YES;
 			},
 			{
 				name = "Paste";
 				class = org.openide.actions.PasteAction;
-//				node = driverlist;
 				system = YES;
 			},
 			delimiter,
 			{
 				name = "RemoveConnection";
 				class = org.openide.actions.DeleteAction;
-				node = driverlist;
 				system = YES;
 			}
 		);
