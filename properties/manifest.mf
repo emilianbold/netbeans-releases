@@ -3,6 +3,7 @@ OpenIDE-Module-Name: Resource Bundles
 OpenIDE-Module-Specification-Version: 1.5
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/netbeans/modules/properties/PropertiesModule.class
+OpenIDE-Module-Layer: org/netbeans/modules/properties/Layer.xml
 
 Name: org/netbeans/modules/properties/PropertiesDataLoader.class
 OpenIDE-Module-Class: Loader
