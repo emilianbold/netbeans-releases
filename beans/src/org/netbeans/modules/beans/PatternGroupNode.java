@@ -225,6 +225,7 @@ public class  PatternGroupNode extends AbstractNode {
         PatternNode.bundle.getString( "CTL_TITLE_NewProperty"),            // Title
         true,                                                 // Modal
         propertyPanel );
+      dd.setHelpCtx (new HelpCtx (PatternGroupNode.class.getName () + ".dialogProperty"));
       dd.setClosingOptions( new Object[]{} );
       
       dialog = TopManager.getDefault().createDialog( dd );
@@ -383,6 +384,7 @@ public class  PatternGroupNode extends AbstractNode {
 
 /* 
  * Log
+ *  11   Gandalf   1.10        1/11/00  Jesse Glick     Context help.
  *  10   Gandalf   1.9         11/11/99 Jesse Glick     Display miscellany.
  *  9    Gandalf   1.8         11/10/99 Petr Hrebejk    Canged to work with 
  *       DialogDescriptor.setClosingOptions()
