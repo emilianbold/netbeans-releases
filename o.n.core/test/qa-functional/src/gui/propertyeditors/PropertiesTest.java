@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package gui.propertyeditors;
@@ -121,11 +121,10 @@ public class PropertiesTest {
             props.put(new TestProperty("Double",                java.lang.Double.class));            
             props.put(new TestProperty("double",                double.class));            
             props.put(new TestProperty("File",                  java.io.File.class));            
-            props.put(new TestProperty("Filesystem",            org.openide.filesystems.FileSystem.class));            
             props.put(new TestProperty("Float",                 java.lang.Float.class));            
             props.put(new TestProperty("float",                 float.class));            
             props.put(new TestProperty("Font",                  java.awt.Font.class));            
-            props.put(new TestProperty("Html Browser",          org.openide.awt.HtmlBrowser.Factory.class));            
+            props.put(new TestProperty("Html Browser",          org.openide.awt.HtmlBrowser.Factory.class));
             props.put(new TestProperty("Indent Engine",         org.openide.text.IndentEngine.class));            
             props.put(new TestProperty("Insets",                java.awt.Insets.class));            
             props.put(new TestProperty("Integer",               java.lang.Integer.class));            
@@ -143,7 +142,6 @@ public class PropertiesTest {
             props.put(new TestProperty("short",                 short.class));            
             props.put(new TestProperty("String",                java.lang.String.class));            
             props.put(new TestProperty("String []",             java.lang.String[].class));            
-            props.put(new TestProperty("Table Model",           javax.swing.table.TableModel.class));            
             props.put(new TestProperty("URL",                   java.net.URL.class));            
 
             return sheet;
