@@ -400,7 +400,7 @@ public class FormUtils
      * specified types are constructed directly, other are serialized and
      * deserialized (if not serializable exception is thrown).
      */
-    public static Object cloneObject(Object o) throws CloneNotSupportedException {
+    public static Object cloneObject(Object o, FormModel formModel) throws CloneNotSupportedException {
         if (o == null) return null;
 
         if ((o instanceof Byte) ||
@@ -428,7 +428,7 @@ public class FormUtils
         if (o instanceof Insets)
             return ((Insets)o).clone();
         if (o instanceof Serializable)
-            return cloneBeanInstance(o, null);
+            return cloneBeanInstance(o, null, formModel);
 
         throw new CloneNotSupportedException();
     }
@@ -438,7 +438,7 @@ public class FormUtils
      * If not serializable, then all properties (taken from BeanInfo) are
      * copied (property values cloned recursively).
      */
-    public static Object cloneBeanInstance(Object bean, BeanInfo bInfo)
+    public static Object cloneBeanInstance(Object bean, BeanInfo bInfo, FormModel formModel)
         throws CloneNotSupportedException
     {
         if (bean == null)
@@ -452,7 +452,7 @@ public class FormUtils
                 oos.close();
 
                 ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                return new OIS(bais, bean.getClass().getClassLoader()).readObject();
+                return new OIS(bais, formModel).readObject();
             }
             catch (Exception ex) {
                 ErrorManager em = ErrorManager.getDefault();
@@ -491,7 +491,7 @@ public class FormUtils
                     continue;
                 }
                 try {
-                    propertyValue = cloneObject(propertyValue);
+                    propertyValue = cloneObject(propertyValue, formModel);
                 }
                 catch (Exception e2) { // ignore - do not clone property value
                 }
@@ -549,7 +549,8 @@ public class FormUtils
                 Object propertyValue = snProp.getValue();
                 if (!(propertyValue instanceof FormDesignValue)) {
                     try { // clone common property value
-                        propertyValue = FormUtils.cloneObject(propertyValue);
+                        FormModel formModel = (sfProp == null) ? null : sfProp.getPropertyContext().getFormModel();
+                        propertyValue = FormUtils.cloneObject(propertyValue, formModel);
                     }
                     catch (CloneNotSupportedException ex) {} // ignore, don't report
                 }
@@ -624,7 +625,7 @@ public class FormUtils
                 if (realValue == FormDesignValue.IGNORED_VALUE)
                     continue; // ignore this value, as it is not a real value
 
-                realValue = FormUtils.cloneObject(realValue);
+                realValue = FormUtils.cloneObject(realValue, props[i].getPropertyContext().getFormModel());
                 writeMethod.invoke(targetBean, new Object[] { realValue });
             }
             catch (CloneNotSupportedException ex) { // ignore, don't report
@@ -1184,10 +1185,12 @@ public class FormUtils
 
     private static class OIS extends ObjectInputStream {
         private ClassLoader classLoader;
+        private FormModel formModel;
 
-        public OIS(InputStream is, ClassLoader loader) throws IOException {
+        public OIS(InputStream is, FormModel formModel) throws IOException {
             super(is);
-            classLoader = (loader == null) ? ClassLoader.getSystemClassLoader() : loader;
+            this.formModel = formModel;
+            classLoader = getClass().getClassLoader();
         }
 
         protected Class resolveClass(ObjectStreamClass streamCls)
@@ -1200,14 +1203,23 @@ public class FormUtils
                     char c = name.charAt(i);
                     if (c == 'L' && name.endsWith(";")) { // NOI18N
                         String clsName = name.substring(i+1, n-1);
-                        classLoader.loadClass(clsName);
+                        loadClass(clsName);
                         break;
                     }
                     else if (c != '[')
                         return super.resolveClass(streamCls);
                 }
             }
-            return classLoader.loadClass(name);
+            return loadClass(name);
         }
+        
+        private Class loadClass(String name) throws ClassNotFoundException {
+            try {
+                return classLoader.loadClass(name);
+            } catch (ClassNotFoundException ex) {
+                return FormUtils.loadClass(name, formModel);
+            }
+        }
+        
     }
 }

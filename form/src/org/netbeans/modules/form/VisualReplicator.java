@@ -439,7 +439,7 @@ public class VisualReplicator {
                 value = propertyComp;
             }
             else
-                value = FormUtils.cloneObject(value);
+                value = FormUtils.cloneObject(value, property.getPropertyContext().getFormModel());
 
             writeMethod.invoke(targetComp, new Object[] { value });
 

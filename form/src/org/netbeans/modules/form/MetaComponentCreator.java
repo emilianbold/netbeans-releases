@@ -489,7 +489,7 @@ public class MetaComponentCreator {
                 Object auxValue = auxValues.get(auxName);
                 try {
                     newComp.setAuxValue(auxName,
-                                        FormUtils.cloneObject(auxValue));
+                                        FormUtils.cloneObject(auxValue, formModel));
                 }
                 catch (Exception e) { // ignore problem with aux value
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
