@@ -25,7 +25,13 @@ Microsystems, Inc. All Rights Reserved.
         <resolver mime="text/x-jsp">
         </resolver>
     </file>
-        
+
+    <file>
+        <ext name="jspx"/>
+        <resolver mime="text/x-jsp">
+        </resolver>
+    </file>
+    
     <file>
         <ext name="tld"/>
         <resolver mime="text/xml">
