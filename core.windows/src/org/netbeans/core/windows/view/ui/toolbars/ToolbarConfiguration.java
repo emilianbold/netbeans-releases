@@ -45,6 +45,7 @@ import org.openide.windows.WindowManager;
 
 import org.netbeans.core.windows.services.ToolbarFolderNode;
 import org.netbeans.core.windows.WindowManagerImpl;
+import org.openide.loaders.DataNode;
 
 /** Toolbar configuration.
  * It can load configuration from DOM Document, store configuration int XML file. 
@@ -726,10 +727,22 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             it = configList.iterator ();
             ButtonGroup bg = new ButtonGroup ();
             String current = ToolbarPool.getDefault ().getConfiguration ();
+            boolean showExt = DataNode.getShowFileExtensions();
+            
             while (it.hasNext()) {
                 final String name = (String)it.next ();
+                //#40965 fix start
+                // how secure is to get display name.. maybe annotattions are appended??
+                String displName = findConfiguration(name).getName();
+                if (showExt) {
+                    int dotIndex = displName.lastIndexOf('.');
+                    if (dotIndex > -1) {
+                        displName = displName.substring(0, dotIndex);
+                    }
+                }
+                //#40965 fix end
                 JRadioButtonMenuItem mi = new JRadioButtonMenuItem (
-                    findConfiguration(name).getDisplayName(), (name != null && name.equals(current))
+                    displName, (name != null && name.equals(current))
                 );
                 mi.addActionListener (new ActionListener () {
                                           public void actionPerformed (ActionEvent e) {
