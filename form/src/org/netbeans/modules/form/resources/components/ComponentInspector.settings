@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.form/2" spec="1.7"/>
+    <instanceof class="org.netbeans.modules.form.ComponentInspector"/>
+    <instanceof class="java.awt.MenuContainer"/>
+    <instanceof class="java.lang.Object"/>
+    <instanceof class="java.awt.image.ImageObserver"/>
+    <instanceof class="org.openide.windows.TopComponent"/>
+    <instanceof class="java.awt.Container"/>
+    <instanceof class="org.openide.explorer.ExplorerManager$Provider"/>
+    <instanceof class="org.openide.explorer.ExplorerPanel"/>
+    <instanceof class="java.io.Serializable"/>
+    <instanceof class="javax.swing.JComponent"/>
+    <instanceof class="java.awt.Component"/>
+    <instanceof class="java.io.Externalizable"/>
+    <serialdata class="org.netbeans.modules.form.ComponentInspector">
+        ACED00057372003D6F72672E6E65746265616E732E6D6F64756C65732E666F726D2E436F6D706F6E656E74496E7370656374
+        6F72245265736F6C7661626C6548656C7065726709A43777F1AF080200007870
+    </serialdata>
+</settings>

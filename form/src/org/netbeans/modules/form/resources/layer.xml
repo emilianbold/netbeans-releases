@@ -658,9 +658,9 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="explorer.wsmode" url="windowmanager/Visual/explorer.wsmode" />
                 <folder name="explorer">
                     <attr name="filesystems.wstcref/Project Default.wstcref" boolvalue="true" />
-                    <attr name="Project Default.wstcref/Javadoc.wstcref" boolvalue="true" />
+                    <attr name="project.wstcref/Javadoc.wstcref" boolvalue="true" />
                     <file name="filesystems.wstcref" url="windowmanager/Visual/explorer/filesystems.wstcref" />
-                    <file name="Project Default.wstcref" url="windowmanager/Visual/explorer/Project Default.wstcref" />
+                    <file name="project.wstcref" url="windowmanager/Visual/explorer/project.wstcref" />
                     <file name="Javadoc.wstcref" url="windowmanager/Visual/explorer/Javadoc.wstcref" />
                 </folder>
                 <file name="properties.wsmode" url="windowmanager/Visual/properties.wsmode" />
@@ -673,8 +673,8 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
                 <file name="Form.wsmode" url="windowmanager/Visual/Form.wsmode" />
                 <folder name="Form">
-                    <file name="Component Inspector.wstcref" url="windowmanager/Visual/Form/Component Inspector.wstcref" />
-                    <file name="Component Palette.wstcref" url="windowmanager/Visual/Form/Component Palette.wstcref" />
+                    <file name="ComponentInspector.wstcref" url="windowmanager/Visual/Form/ComponentInspector.wstcref" />
+                    <file name="ComponentPalette.wstcref" url="windowmanager/Visual/Form/ComponentPalette.wstcref" />
                 </folder>
                 <file name="editor.wsmode" url="windowmanager/Visual/editor.wsmode" />
                 <folder name="editor">
@@ -682,8 +682,8 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
         <folder name="components">
-            <file name="Component Inspector.settings" url="components/Component Inspector.settings" />
-            <file name="Component Palette.settings" url="components/Component Palette.settings" />
+            <file name="ComponentInspector.settings" url="components/ComponentInspector.settings" />
+            <file name="ComponentPalette.settings" url="components/ComponentPalette.settings" />
         </folder>
     </folder>
 
