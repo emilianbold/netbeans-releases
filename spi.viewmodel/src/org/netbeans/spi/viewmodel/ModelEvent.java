@@ -21,6 +21,7 @@ import java.util.EventObject;
  * used to notify model listeners of the change.
  *
  * @author   Jan Jancura
+ * @since 1.4
  */
 public class ModelEvent extends EventObject {
     
@@ -29,7 +30,9 @@ public class ModelEvent extends EventObject {
     }
     
     /**
-     * All three has been changed event.
+     * Used to notify that whole content of tree has been changed.
+     *
+     * @since 1.4
      */
     public static class TreeChanged extends ModelEvent {
        
@@ -37,6 +40,8 @@ public class ModelEvent extends EventObject {
          * Creates a new instance of TreeChanged event.
          *
          * @param source a source if event.
+         *
+         * @since 1.4
          */
         public TreeChanged (Object source) {
             super (source);
@@ -44,7 +49,9 @@ public class ModelEvent extends EventObject {
     }
     
     /**
-     * One cell in table has been changed event.
+     * Used to notify that one cell in table has been changed.
+     *
+     * @since 1.4
      */
     public static class TableValueChanged extends ModelEvent {
         
@@ -57,6 +64,8 @@ public class ModelEvent extends EventObject {
          * @param source a source if event.
          * @param node a changed node instance
          * @param columnID a changed column name
+         *
+         * @since 1.4
          */
         public TableValueChanged (
             Object source, 
@@ -72,6 +81,8 @@ public class ModelEvent extends EventObject {
          * Returns changed node instance.
          *
          * @return changed node instance
+         *
+         * @since 1.4
          */
         public Object getNode () {
             return node;
@@ -81,6 +92,8 @@ public class ModelEvent extends EventObject {
          * Returns changed column name.
          *
          * @return changed column name
+         *
+         * @since 1.4
          */
         public String getColumnID () {
             return columnID;
@@ -88,7 +101,10 @@ public class ModelEvent extends EventObject {
     }
     
     /**
-     * Node has been changed event.
+     * Used to notify that one node has been changed (icon, displayName and 
+     * children).
+     *
+     * @since 1.4
      */
     public static class NodeChanged extends ModelEvent {
         
@@ -99,6 +115,8 @@ public class ModelEvent extends EventObject {
          *
          * @param source a source if event.
          * @param node a changed node instance
+         *
+         * @since 1.4
          */
         public NodeChanged (
             Object source, 
@@ -112,6 +130,8 @@ public class ModelEvent extends EventObject {
          * Returns changed node instance.
          *
          * @return changed node instance
+         *
+         * @since 1.4
          */
         public Object getNode () {
             return node;

@@ -286,7 +286,7 @@ We would like to test 100% of our APIs.
         </question>
 -->
 <answer id="deploy-dependencies">
-OpenIDE-Module-Module-Dependencies: org.netbeans.spi.viewmodel/1
+OpenIDE-Module-Module-Dependencies: org.netbeans.spi.viewmodel/2
 </answer>
 
 

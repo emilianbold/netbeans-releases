@@ -20,13 +20,15 @@ import java.util.EventListener;
  * Notifies about changes in view model.
  *
  * @author   Jan Jancura
+ * @since 1.4
  */
 public interface ModelListener extends EventListener {
 
     /**
-     * View model is changed notification.
+     * View model has been changed notification.
      * 
      * @param event an event object describing change
+     * @since 1.4
      */
     public void modelChanged (ModelEvent event);
 }
