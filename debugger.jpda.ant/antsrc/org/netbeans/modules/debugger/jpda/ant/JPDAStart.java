@@ -22,26 +22,31 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
+import org.netbeans.api.java.platform.JavaPlatform;
 
 /**
  * Ant task to start the NetBeans JPDA debugger in listening mode.
+ *
  * @author Jesse Glick, David Konecny
  */
-public class JPDAStart extends Task {
+public class JPDAStart extends Task implements Runnable {
 
     private static final boolean verbose = System.getProperty ("netbeans.debugger.debug") != null;
 
@@ -67,149 +72,150 @@ public class JPDAStart extends Task {
     /** Explicit bootclasspath of the debugged process. */
     private Path bootclasspath = null;
     
-    public void setAddressProperty(String propertyName) {
+    private Object [] lock = null; 
+    
+    
+    public void setAddressProperty (String propertyName) {
         this.addressProperty = propertyName;
     }
     
-    private String getAddressProperty() {
+    private String getAddressProperty () {
         return addressProperty;
     }
     
-    public void setTransport(String transport) {
+    public void setTransport (String transport) {
         this.transport = transport;
     }
     
-    private String getTransport() {
+    private String getTransport () {
         return transport;
     }
     
-    public void setName(String name) {
+    public void setName (String name) {
         this.name = name;
     }
     
-    private String getName() {
+    private String getName () {
         return name;
     }
     
-    public void addClasspath(Path path) {
-        if (classpath != null) {
-            throw new BuildException("Only one classpath subelement is supported");
-        }
+    public void addClasspath (Path path) {
+        if (classpath != null)
+            throw new BuildException ("Only one classpath subelement is supported");
         classpath = path;
     }
     
-    public void addBootclasspath(Path path) {
-        if (bootclasspath != null) {
-            throw new BuildException("Only one bootclasspath subelement is supported");
-        }
+    public void addBootclasspath (Path path) {
+        if (bootclasspath != null)
+            throw new BuildException ("Only one bootclasspath subelement is supported");
         bootclasspath = path;
     }
     
-    public void addSourcepath(Path path) {
-        if (sourcepath != null) {
-            throw new BuildException("Only one sourcepath subelement is supported");
-        }
+    public void addSourcepath (Path path) {
+        if (sourcepath != null)
+            throw new BuildException ("Only one sourcepath subelement is supported");
         sourcepath = path;
     }
 
-    public void execute() throws BuildException {
+    public void execute () throws BuildException {
 
-        debug("Execute started");
-
-        if (name == null) {
-            throw new BuildException("name attribute must specify name of this debugging session", getLocation());
-        }
-
-        if (addressProperty == null) {
+        debug ("Execute started");
+        if (name == null)
+            throw new BuildException ("name attribute must specify name of this debugging session", getLocation());
+        if (addressProperty == null)
             throw new BuildException("addressproperty attribute must specify name of property to which address will be set", getLocation());
-        }
-
-        if (transport == null) {
+        if (transport == null)
             transport = "dt_socket";
-        }
 
         debug("Entering synch lock");
-
-        final Object [] lock = new Object[2];
-        synchronized (lock)
-        {
-            debug("Entered synch lock");
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    debug("Entering synch lock");
-                    synchronized (lock) {
-                        debug("Entered synch lock");
-                        try {
-
-                            ListeningConnector lc = null;
-                            for (Iterator i = Bootstrap.virtualMachineManager().listeningConnectors().iterator (); i.hasNext(); ) {
-                                lc = (ListeningConnector) i.next();
-                                Transport t = lc.transport();
-                                if (t != null && t.name().equals(transport)) break;
-                            }
-                            if (lc == null) throw new BuildException("No trasports named " + transport + " found!");
-
-                            // TODO: revisit later when http://developer.java.sun.com/developer/bugParade/bugs/4932074.html gets integrated into JDK
-                            // This code parses the address string "HOST:PORT" to extract PORT and then point debugee to localhost:PORT
-                            // This is NOT a clean solution to the problem but it SHOULD work in 99% cases
-                            Map args = lc.defaultArguments();
-                            String address = lc.startListening(args);
-                            try
-                            {
-                                int port = Integer.parseInt(address.substring(address.indexOf(':') + 1));
-                                getProject().setNewProperty(getAddressProperty(), "localhost:" + port);
-                                Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port");
-                                portArg.setValue(port);
-                            }
-                            catch (Exception e)
-                            {
-                                // this address format is not known, use default
-                                getProject().setNewProperty(getAddressProperty(), address);
-                            }
-
-                            debug("Creating source path");
-                            ClassPath sessionSourcePath = (classpath == null) ? null : createSourceClassPath(getProject(), classpath);
-                            if (sourcepath != null) {
-                                sessionSourcePath = appendPath(getProject(), sessionSourcePath, sourcepath);
-                            }
-//                            ClassPath bootcp = (bootclasspath == null) ? null : createSourceClassPath(bootclasspath);
-
-                            debug("Creating cookie");
-                            ListeningDICookie ldic = ListeningDICookie.create(lc, args);
-                            debug("Cookie created");
-                            final DebuggerInfo di = DebuggerInfo.create(ListeningDICookie.ID, new Object [] { ldic, sessionSourcePath });
-
-                            debug("Debugger info created");
-                            DebuggerManager.getDebuggerManager().startDebugging(di);
-                            debug("Debugger started");
-                        }
-                        catch (Throwable e) {
-                            lock[1] = e;
-                        }
-                        finally  {
-                            debug("Notifying");
-                            lock.notify();
-                        }
-                    }
-                }
-            });
+        lock = new Object [2];
+        synchronized (lock) {
+            debug ("Entered synch lock");
+            RequestProcessor.getDefault ().post (this);
             try {
-                debug("Entering wait");
-                lock.wait();
-                debug("Wait finished");
-                if (lock[1] != null) {
-                    throw new BuildException((Throwable)lock[1]);
+                debug ("Entering wait");
+                lock.wait ();
+                debug ("Wait finished");
+                if (lock [1] != null) {
+                    throw new BuildException ((Throwable) lock [1]);
                 }
             } catch (InterruptedException e) {
-                throw new BuildException(e);
+                throw new BuildException (e);
             }
         }
 
     }
+    
+    public void run () {
+        debug ("Entering synch lock");
+        synchronized (lock) {
+            debug("Entered synch lock");
+            try {
 
-    private void debug(String msg) {
+                ListeningConnector lc = null;
+                for (Iterator i = Bootstrap.virtualMachineManager ().listeningConnectors ().iterator (); i.hasNext(); ) {
+                    lc = (ListeningConnector) i.next();
+                    Transport t = lc.transport ();
+                    if (t != null && t.name ().equals (transport)) break;
+                }
+                if (lc == null) throw new BuildException("No trasports named " + transport + " found!");
+
+                // TODO: revisit later when http://developer.java.sun.com/developer/bugParade/bugs/4932074.html gets integrated into JDK
+                // This code parses the address string "HOST:PORT" to extract PORT and then point debugee to localhost:PORT
+                // This is NOT a clean solution to the problem but it SHOULD work in 99% cases
+                Map args = lc.defaultArguments ();
+                String address = lc.startListening (args);
+                try
+                {
+                    int port = Integer.parseInt (address.substring (address.indexOf (':') + 1));
+                    getProject ().setNewProperty (getAddressProperty (), "localhost:" + port);
+                    Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port");
+                    portArg.setValue (port);
+                } catch (Exception e) {
+                    // this address format is not known, use default
+                    getProject ().setNewProperty (getAddressProperty (), address);
+                }
+
+                debug ("Creating source path");
+                ClassPath sessionSourcePath = (classpath == null) ? 
+                    null : 
+                    createSourcePath (getProject (), classpath);
+                if (sourcepath != null)
+                    sessionSourcePath = appendPath (
+                        getProject (), 
+                        sessionSourcePath, 
+                        sourcepath
+                    );
+                ClassPath bootcp = (bootclasspath == null) ? 
+                    null : //JavaPlatform.getDefault ().getSourceFolders () : 
+                    createSourcePath (getProject (), bootclasspath);
+
+                debug ("Creating cookie");
+                ListeningDICookie ldic = ListeningDICookie.create (lc, args);
+                debug ("Cookie created");
+                DebuggerInfo di = DebuggerInfo.create (
+                    ListeningDICookie.ID, 
+                    new Object [] {
+                        ldic, 
+                        sessionSourcePath
+                    }
+                );
+
+                debug ("Debugger info created");
+                DebuggerManager.getDebuggerManager ().startDebugging (di);
+                debug ("Debugger started");
+            } catch (Throwable e) {
+                lock [1] = e;
+            } finally {
+                debug ("Notifying");
+                lock.notify ();
+            }
+        }
+    } // run ()
+
+    private void debug (String msg) {
         if (!verbose) return;
-        System.out.println(new Date() + " [" + Thread.currentThread().getName() + "] - " + msg);
+        System.out.println (new Date() + " [" + Thread.currentThread().getName() + "] - " + msg);
     }
 
     /**
@@ -218,18 +224,18 @@ public class JPDAStart extends Task {
      * the sources were not found are omitted.
      *
      */
-    public static ClassPath createSourceClassPath(Project project, Path path) {
-        String[] paths = path.list();
-        List l = new ArrayList();
-        List exist = new ArrayList();
-        for (int i=0; i<paths.length; i++) {
+    public static ClassPath createSourcePath (Project project, Path path) {
+        String[] paths = path.list ();
+        List l = new ArrayList ();
+        List exist = new ArrayList ();
+        for (int i = 0; i < paths.length; i++) {
             URL u = null;
             try {
-                File f = FileUtil.normalizeFile(project.resolveFile(paths[i]));
-                if (!isValid(f, project)) {
+                File f = FileUtil.normalizeFile (project.resolveFile (paths [i]));
+                if (!isValid (f, project)) {
                     continue;
                 }
-                String pathString = paths[i].toLowerCase();
+                String pathString = paths [i].toLowerCase ();
                 if (pathString.endsWith(".jar")) {
                     u = new URL("jar:" + f.toURI() + "!/");
                 } else if (pathString.endsWith(".zip")) {
@@ -263,33 +269,35 @@ public class JPDAStart extends Task {
      *
      * @param cp classpath; can be null
      */
-    public static ClassPath appendPath(Project project, ClassPath cp, Path path) {
-        String[] paths = path.list();
-        List l = new ArrayList();
-        for (int i=0; i<paths.length; i++) {
+    public static ClassPath appendPath (Project project, ClassPath cp, Path path) {
+        String[] paths = path.list ();
+        List l = new ArrayList ();
+        for (int i = 0; i < paths.length; i++) {
             URL u = null;
             try {
-                File f = FileUtil.normalizeFile(project.resolveFile(paths[i]));
-                if (!isValid(f, project)) {
+                File f = FileUtil.normalizeFile (project.resolveFile (paths [i]));
+                if (!isValid (f, project)) {
                     continue;
                 }
-                u = f.toURI().toURL();
+                u = f.toURI ().toURL ();
             } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
                 continue;
             }
-            l.add(ClassPathSupport.createResource(u));
+            l.add (ClassPathSupport.createResource (u));
         }
         if (cp != null) {
-            return ClassPathSupport.createProxyClassPath(new ClassPath[]{cp, ClassPathSupport.createClassPath(l)});
+            return ClassPathSupport.createProxyClassPath (
+                new ClassPath [] {cp, ClassPathSupport.createClassPath (l)}
+            );
         } else {
-            return ClassPathSupport.createClassPath(l);
+            return ClassPathSupport.createClassPath (l);
         }
     }
 
-    private static boolean isValid(File f, Project project) {
-        if (f.getPath().indexOf("${") != -1 && !f.exists()) { // NOI18N
-            project.log("Classpath item "+f+" will be ignored.", Project.MSG_VERBOSE); // NOI18N
+    private static boolean isValid (File f, Project project) {
+        if (f.getPath ().indexOf ("${") != -1 && !f.exists ()) { // NOI18N
+            project.log ("Classpath item " + f + " will be ignored.", Project.MSG_VERBOSE); // NOI18N
             return false;
         }
         return true;
