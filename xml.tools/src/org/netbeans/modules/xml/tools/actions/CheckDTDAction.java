@@ -72,9 +72,8 @@ public class CheckDTDAction extends CookieAction implements CollectDTDAction.DTD
         return Util.THIS.getString("NAME_Validate_DTD");
     }
 
-    /** Do not slow by any icon. */
     protected String iconResource () {
-        return null;
+        return "org/netbeans/modules/xml/tools/resources/checkDTDAction.gif";   // NOI18N
     }
 
     /** Provide accurate help. */

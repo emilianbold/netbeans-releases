@@ -72,9 +72,8 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
         return Util.THIS.getString("NAME_Validate_XML");
     }
 
-    /** Do not slow by any icon. */
     protected String iconResource () {
-        return null;
+        return "org/netbeans/modules/xml/tools/resources/validateAction.gif";   // NOI18N
     }
 
     /** Provide accurate help. */
