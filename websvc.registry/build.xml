@@ -56,6 +56,10 @@ Microsystems, Inc. All Rights Reserved.
 	<target name="jar-with-module-deps" if="module.dependencies">
 		<property file="../../xml/spec-vers.properties"/>
 		<jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
+			<manifest>
+				<attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
+				<attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
+			</manifest>
 			<fileset dir="${build.classes.dir}">
 				<include name="META-INF/**"/>
 				<include name="org/netbeans/modules/websvc/registry/netbeans/**"/>
