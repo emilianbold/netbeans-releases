@@ -608,7 +608,12 @@ ToDo:
       <ant dir="../xml/xsl" target="netbeans"/>
   </target>
 
-  <target name="all-xml" depends="all-xml/api, all-xml/tax, all-xml/core, all-xml/catalog, all-xml/tools, all-xml/text-edit, all-xml/tree-edit, all-xml/css, all-xml/xsl"/>
+  <target name="all-xml/schema" depends="all-openide, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core">
+      <echo message="Building xml/schema module..."/>
+      <ant dir="../xml/schema" target="netbeans"/>
+  </target>
+
+  <target name="all-xml" depends="all-xml/api, all-xml/tax, all-xml/core, all-xml/catalog, all-xml/tools, all-xml/text-edit, all-xml/tree-edit, all-xml/css, all-xml/xsl, all-xml/schema"/>
 
 
   <target name="all-treefs" depends="all-openide">
