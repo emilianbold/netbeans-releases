@@ -34,6 +34,15 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath refid="cp"/>
         </javac>
+
+        <!-- Patching -->
+        <taskdef name="enhanceclass" classname="org.netbeans.nbbuild.NbEnhanceClass"
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <enhanceclass basedir="src" library="${nb_all}/core/netbeans/lib/ext/boot.jar" >
+            <!-- Making public -->
+            <patch class="org/openide/windows/InputOutput$$Null" /> 
+            <patch class="org/openide/windows/InputOutput$$NullOutputWriter" /> 
+        </enhanceclass>
     </target>
 
     <target name="jars" depends="compile">

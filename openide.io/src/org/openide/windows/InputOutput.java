@@ -32,7 +32,7 @@ public interface InputOutput {
 
 
     /** Null InputOutput */
-    /*public static final*/ InputOutput NULL = new Null();
+    /*public static final*/ InputOutput NULL = new InputOutput$Null();
 
     /** Acquire an output writer to write to the tab.
     * This is the usual use of a tab--it writes to the main output pane.
@@ -112,59 +112,62 @@ public interface InputOutput {
     public Reader flushReader();
 
     /** @deprecated Use {@link #NULL} instead. */
-    /*public static*/ final class Null extends Object implements InputOutput {
-        public OutputWriter getOut() {
-            return nullWriter;
-        }
-        public Reader getIn() {
-            return nullReader;
-        }
-        public OutputWriter getErr() {
-            return nullWriter;
-        }
-        public void closeInputOutput() {
-        }
-        public boolean isClosed() {
-            return true;
-        }
-        public void setOutputVisible(boolean value) {
-        }
-        public void setErrVisible(boolean value) {
-        }
-        public void setInputVisible(boolean value) {
-        }
-        public void select () {
-        }
-        public boolean isErrSeparated() {
-            return false;
-        }
-        public void setErrSeparated(boolean value) {
-        }
-        public boolean isFocusTaken() {
-            return false;
-        }
-        public void setFocusTaken(boolean value) {
-        }
-        public Reader flushReader() {
-            return nullReader;
-        }
-    }
-
-    /** @deprecated Use {@link #NULL} instead. */
-    /*public static*/ final class NullOutputWriter extends OutputWriter {
-        NullOutputWriter() {
-            super(new OutputStreamWriter(new NullOutputStream()));
-        }
-        public void reset() {
-        }
-        public void println(String s, OutputListener l) {
-        }
-    }
-
-    /** @deprecated Use {@link #NULL} instead. */
     /*public static final*/ Reader nullReader = new InputStreamReader(new NullInputStream());
 
     /** @deprecated Use {@link #NULL} instead. */
-    /*public static final*/ OutputWriter nullWriter = new NullOutputWriter();
+    /*public static final*/ OutputWriter nullWriter = new InputOutput$NullOutputWriter();
 
 }
+
+/** Will be made public by patching.
+ * See <a href="http://www.netbeans.org/issues/show_bug.cgi?id=28470"/>. */
+final class InputOutput$Null extends Object implements InputOutput {
+    public OutputWriter getOut() {
+        return nullWriter;
+    }
+    public Reader getIn() {
+        return nullReader;
+    }
+    public OutputWriter getErr() {
+        return nullWriter;
+    }
+    public void closeInputOutput() {
+    }
+    public boolean isClosed() {
+        return true;
+    }
+    public void setOutputVisible(boolean value) {
+    }
+    public void setErrVisible(boolean value) {
+    }
+    public void setInputVisible(boolean value) {
+    }
+    public void select () {
+    }
+    public boolean isErrSeparated() {
+        return false;
+    }
+    public void setErrSeparated(boolean value) {
+    }
+    public boolean isFocusTaken() {
+        return false;
+    }
+    public void setFocusTaken(boolean value) {
+    }
+    public Reader flushReader() {
+        return nullReader;
+    }
+}
+
+/** Will be made public by patching.
+ * See <a href="http://www.netbeans.org/issues/show_bug.cgi?id=28470"/>. */
+final class InputOutput$NullOutputWriter extends OutputWriter {
+    InputOutput$NullOutputWriter() {
+        super(new OutputStreamWriter(new NullOutputStream()));
+    }
+    public void reset() {
+    }
+    public void println(String s, OutputListener l) {
+    }
+}
+
