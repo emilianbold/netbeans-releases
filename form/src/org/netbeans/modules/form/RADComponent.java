@@ -617,9 +617,6 @@ public class RADComponent {
           defaultEditor = FormPropertyEditorManager.findEditor (desc.getPropertyType ());
         }
         if (defaultEditor != null) {
-/*              if (ed instanceof FormAwareEditor) {
-              ((FormAwareEditor)ed).setRADComponent(RADComponent.this);
-            } */ // [PENDING - do it inside the FormPropertyEditor]
           editor = new FormPropertyEditor (RADComponent.this, desc.getPropertyType (), defaultEditor);
         }
       }
@@ -895,6 +892,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  17   Gandalf   1.16        5/31/99  Ian Formanek    
  *  16   Gandalf   1.15        5/30/99  Ian Formanek    
  *  15   Gandalf   1.14        5/26/99  Ian Formanek    cleaned
  *  14   Gandalf   1.13        5/24/99  Ian Formanek    
