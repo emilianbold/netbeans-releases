@@ -29,6 +29,8 @@
 		    <Archive name="docs/junit-api.zip"/>
 		</Javadoc>
 	      ]]>
+               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
+               <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
             </file>
             <!-- NbJUnit JavaDoc -->  
             <file name="org-netbeans-modules-junit-nb-junit-javadoc.xml">
@@ -38,6 +40,8 @@
 		    <Archive name="docs/nbjunit-api.zip"/>
 		</Javadoc>
 	      ]]>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
             </file>
         </folder>
         <folder name="java">
@@ -48,6 +52,8 @@
 	              <Archive name="modules/ext/junit.jar"/>
 	          </Library>
 	      ]]>
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
+              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
            </file>
            <file name="org-netbeans-modules-junit-nbjunit-library.xml">
 	      <![CDATA[
@@ -56,6 +62,8 @@
 	              <Archive name="modules/ext/junit-ext.jar"/>
 	          </Library>
 	      ]]>
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
+              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
            </file>
          </folder>
     </folder>
