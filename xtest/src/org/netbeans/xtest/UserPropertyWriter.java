@@ -59,14 +59,10 @@ public class UserPropertyWriter extends Task {
                 String attr = attrtokens.nextToken();
                 if (prefix == null || key.startsWith(prefix+"|") || key.startsWith(PREFIX+"("+attr+")|")) {
                       int i = key.indexOf("|");
-                      if (prefix == null || i == -1) {
-                          log("!!! "+key+"="+project.getProperty(key));
+                      if (prefix == null || i == -1)
                           properties.setProperty(key,project.getProperty(key));
-                      }
-                      else {
-                          log("!!! "+key.substring(i+1)+"="+project.getProperty(key)+"  ("+key+")");
+                      else 
                           properties.setProperty(key.substring(i+1),project.getProperty(key));
-                      }
                       break;
                 }
             }
