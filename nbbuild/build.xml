@@ -834,12 +834,12 @@ the ${netbeans.dest}/bin/ directory.
       <suppress locale="ja" unless="netbeans.japanese"/>
     </nbmerge>
     <chmod perm="ugo+x">
-      <fileset dir="${netbeans.dest}/bin">
-        <include name="**/*.sh"/>
-        <include name="**/*.pl"/>
-        <include name="fastjavac/fastjavac.linux"/>
-        <include name="fastjavac/fastjavac.sun"/>
-        <include name="fastjavac/fastjavac.sun.intel"/>
+      <fileset dir="${netbeans.dest}">
+        <include name="bin/**/*.sh"/>
+        <include name="bin/**/*.pl"/>
+        <include name="bin/fastjavac/fastjavac.linux"/>
+        <include name="bin/fastjavac/fastjavac.sun"/>
+        <include name="bin/fastjavac/fastjavac.sun.intel"/>
       </fileset>
     </chmod>
   </target>
