@@ -7,7 +7,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.debugger.core/3 > 2.3, 
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
 OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine, org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
 OpenIDE-Module-Provides: org.openide.debugger.Debugger
-OpenIDE-Module-Specification-Version: 1.16
+OpenIDE-Module-Specification-Version: 1.17
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Package-Dependencies: com.sun.jdi[VirtualMachineManager]
 
