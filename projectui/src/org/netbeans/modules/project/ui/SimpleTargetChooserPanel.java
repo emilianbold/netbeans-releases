@@ -7,14 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,11 +23,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -154,8 +151,16 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
                 bottomPanel.storeSettings( settings );
             }
             
+            FileObject template = Templates.getTemplate( wizard );
+            
+            String name = gui.getTargetName ();
+            if (name.indexOf ('/') > 0) { // NOI18N
+                name = name.substring (name.lastIndexOf ('/') + 1);
+                System.out.println("name: " + name);
+            }
+            
             Templates.setTargetFolder( (WizardDescriptor)settings, getTargetFolderFromGUI () );
-            Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
+            Templates.setTargetName( (WizardDescriptor)settings, name );
         }
         ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
     }
@@ -167,6 +172,12 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     private FileObject getTargetFolderFromGUI () {
         FileObject rootFolder = gui.getTargetGroup().getRootFolder();
         String folderName = gui.getTargetFolder();
+        String newObject = gui.getTargetName ();
+        
+        if (newObject.indexOf ('/') > 0) { // NOI18N
+            String path = newObject.substring (0, newObject.lastIndexOf ('/')); // NOI18N
+            folderName = folderName == null || "".equals (folderName) ? path : folderName + '/' + path; // NOI18N
+        }
 
         FileObject targetFolder;
         if ( folderName == null ) {
