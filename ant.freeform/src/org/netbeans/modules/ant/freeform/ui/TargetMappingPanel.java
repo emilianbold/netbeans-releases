@@ -88,6 +88,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements java.awt.e
         custTargets = new ArrayList();
         customTargetsModel = new CustomTargetsModel();
         customTargets.setModel(customTargetsModel);
+        customTargets.getTableHeader().setReorderingAllowed(false);
         
         addTargets(extraTargets);
         showAdvancedPart(advancedPart);

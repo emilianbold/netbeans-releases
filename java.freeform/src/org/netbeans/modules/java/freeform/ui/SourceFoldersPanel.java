@@ -249,6 +249,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         add(removeFolder, gridBagConstraints);
         removeFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_SourceFoldersPanel_removeFolder"));
 
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 jScrollPane1ComponentResized(evt);
@@ -271,6 +272,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         add(jScrollPane1, gridBagConstraints);
         jScrollPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_SourceFoldersPanel_jScrollPanel1"));
 
+        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         testFolders.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jScrollPane2.setViewportView(testFolders);
 
@@ -729,7 +731,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
             preferedWidthFolder = jScrollPane1.getWidth();
         }
         // XXX: shorten it a bit to prevent horizontal scrollbar.
-        preferedWidthFolder -= 5;
+//        preferedWidthFolder -= 5;
         
         TableColumnModel tcm = sourceFolders.getColumnModel();
         if (updateColumnWidth(tcm, 0, preferedWidthFolder, fm) || updateColumnWidth(tcm, 1, preferedWidthLabel, fm)) {
