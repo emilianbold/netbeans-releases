@@ -1813,7 +1813,7 @@ public class XMLDataObject extends MultiDataObject {
 
         if (n == null) {
             DataNode d = new DataNode (XMLDataObject.this, Children.LEAF);
-            d.setIconBase ("org/openide/resources/xmlObject"); // NOI18N
+            d.setIconBase ("org/openide/loaders/xmlObject"); // NOI18N
             d.setDefaultAction (SystemAction.get (OpenAction.class));
             return d;
         } else {

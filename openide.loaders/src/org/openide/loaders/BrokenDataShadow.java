@@ -213,7 +213,7 @@ final class BrokenDataShadow extends MultiDataObject {
         /** the sheet computed for this node or null */
         private Sheet sheet;
 
-        private static final String ICON_NAME = "org/openide/resources/brokenShadow"; // NOI18N
+        private static final String ICON_NAME = "org/openide/loaders/brokenShadow"; // NOI18N
 
         /** Create a node.
          * @param broken data shadow

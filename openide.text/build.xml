@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -22,18 +22,17 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbroot}/nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbroot}/nbbuild/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbroot}/nbbuild/nbantext.jar"/>
   
+  <path id="classpath" >
+       <pathelement location="${nbroot}/openide/windows/netbeans/lib/openide-windows.jar"/>
+       <pathelement location="${nbroot}/openide/util/netbeans/lib/openide-util.jar"/>
+       <pathelement location="${nbroot}/openide/nodes/netbeans/lib/openide-nodes.jar"/>
+       <pathelement location="${nbroot}/openide/awt/netbeans/lib/openide-awt.jar"/>
+       <pathelement location="${nbroot}/openide/dialogs/netbeans/lib/openide-dialogs.jar"/>
+       <pathelement location="${nbroot}/openide/options/netbeans/lib/openide-options.jar"/>
+  </path>
   
   <target name="compile" >
-    <path id="classpath" >
-         <pathelement location="${nbroot}/openide/windows/netbeans/lib/openide-windows.jar"/>
-         <pathelement location="${nbroot}/openide/util/netbeans/lib/openide-util.jar"/>
-         <pathelement location="${nbroot}/openide/nodes/netbeans/lib/openide-nodes.jar"/>
-         <pathelement location="${nbroot}/openide/awt/netbeans/lib/openide-awt.jar"/>
-         <pathelement location="${nbroot}/openide/dialogs/netbeans/lib/openide-dialogs.jar"/>
-         <pathelement location="${nbroot}/openide/options/netbeans/lib/openide-options.jar"/>
-    </path>
     <ant dir="${nbroot}/openide" target="do-lib-javac" inheritRefs="true" >
       <property name="localdir" location="src" />
       <property name="selector" value="openide.text" />
@@ -78,20 +77,18 @@ Microsystems, Inc. All Rights Reserved.
     </target>
   
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="netbeans/lib"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/lib/openide-text.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
-	    excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"
-	    compress="false">
-      <locale name="ja"/>
-    </locjar>
+    <jar jarfile="netbeans/lib/openide-text.jar" manifest="manifest-subst.mf" compress="false">
+      <fileset dir="src">
+        <excludesfile name="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+      </fileset>
+    </jar>
   </target>
 
   <target name="netbeans" depends="jars">
-    <!-- No! Not yet. Not until it is really a module.
+    <!-- No! Not yet. Not an actual module, should be merged into other libs instead?
     <genlist targetname="nbm" outputfiledir="${nbroot}/nbbuild/netbeans"/>
     -->
   </target>
@@ -108,12 +105,28 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
+  <target name="javadoc">
+    <ant dir=".." target="do-lib-javadoc" inheritRefs="true" >
+      <property name="localdir" location="src" />
+      <property name="selector" value="openide.text" />
+      
+      <property name="javadoc.base" location="."/>
+      <property name="javadoc.name" value="TextAPI"/>
+      <property name="javadoc.title" value="Text API"/>
+      <!-- <property name="javadoc.apichanges" location="../api/doc/changes/apichanges.xml"/> -->
+      <property name="javadoc.arch" location="../arch/arch-openide-editor.xml"/>
+      <!-- <property name="javadoc.docfiles" location="api/doc"/> -->
+      <!-- <property name="javadoc.overview" location="api/doc/overview.html"/> -->
+    </ant>
+  </target>
+
   <target name="clean">
     <delete dir="gensrc" />
     <delete dir="src" />
     <delete file="manifest-subst.mf"/>
     <delete file="treefs.nbm"/>
     <delete dir="netbeans"/>
+    <delete dir="javadoc"/>
     <delete dir="Info"/>
     <delete dir="reload"/>
   </target>

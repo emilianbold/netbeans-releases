@@ -468,7 +468,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         public UnrecognizedSettingNode() {
             super(Children.LEAF);
             setName(NbBundle.getMessage(InstanceDataObject.class, "LBL_BrokenSettings")); //NOI18N
-            setIconBase("org/openide/resources/instanceBroken"); //NOI18N
+            setIconBase("org/openide/loaders/instanceBroken"); //NOI18N
             setShortDescription(InstanceDataObject.this.getPrimaryFile().toString());
         }
 

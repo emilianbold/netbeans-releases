@@ -59,7 +59,7 @@ public final class SaveAllAction extends CallableSystemAction {
     }
 
     protected String iconResource () {
-        return "org/openide/resources/actions/saveAll.gif"; // NOI18N
+        return "org/openide/actions/saveAll.gif"; // NOI18N
     }
 
     public void performAction() {

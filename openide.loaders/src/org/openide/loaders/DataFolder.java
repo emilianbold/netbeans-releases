@@ -68,7 +68,7 @@ implements Serializable, DataObject.Container {
 
     /** Icon resource string for folder node */
     static final String FOLDER_ICON_BASE =
-        "org/openide/resources/defaultFolder"; // NOI18N
+        "org/openide/loaders/defaultFolder"; // NOI18N
 
     /** name of a shadow file for a root */
     private static final String ROOT_SHADOW_NAME = "Root"; // NOI18N

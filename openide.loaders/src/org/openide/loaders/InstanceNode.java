@@ -45,7 +45,7 @@ final class InstanceNode extends DataNode {
     
     /** icon base */
     private static final String INSTANCE_ICON_BASE =
-        "org/openide/resources/instanceObject"; // NOI18N
+        "org/openide/loaders/instanceObject"; // NOI18N
     
     /** File extension for xml settings. */
     private static final String XML_EXT = "settings"; //NOI18N
@@ -106,7 +106,7 @@ final class InstanceNode extends DataNode {
         InstanceCookie.Of ic = ic();
         String iconBase = INSTANCE_ICON_BASE;
         if (ic == null) {//XXX && io.instanceOf(XMLSettingsSupport.BrokenSettings.class)) {
-            iconBase = "org/openide/resources/instanceBroken"; // NOI18N
+            iconBase = "org/openide/loaders/instanceBroken"; // NOI18N
         }
         setIconBase(iconBase);
     }
@@ -232,7 +232,7 @@ final class InstanceNode extends DataNode {
                 if (icon instanceof ImageIcon) {
                     beanInfoIcon = ((ImageIcon)icon).getImage();
                 } else {
-                    beanInfoIcon = Utilities.loadImage("org/openide/resources/actions/empty.gif", true); // NOI18N
+                    beanInfoIcon = Utilities.loadImage("org/openide/loaders/empty.gif", true); // NOI18N
                 }
             }
         } catch (Exception e) {

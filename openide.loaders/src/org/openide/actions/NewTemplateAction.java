@@ -169,7 +169,7 @@ public class NewTemplateAction extends NodeAction {
     }
 
     protected String iconResource () {
-        return "org/openide/resources/actions/new.gif"; // NOI18N
+        return "org/openide/actions/new.gif"; // NOI18N
     }
     
     public JMenuItem getMenuPresenter() {

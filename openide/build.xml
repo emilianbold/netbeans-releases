@@ -23,11 +23,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <property name="nbm_alias" value="nb_ide"/>
 
-  <taskdef name="enhanceclass" classname="org.netbeans.nbbuild.NbEnhanceClass" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
-
   <target name="init">
     <ant dir="../core/external" target="unscramble"/>
     <path id="openide-cp">
@@ -151,10 +146,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="old-jars" depends="compile,13javac-workaround,vers-prep,loaders_32143-compat" description="Create JAR files.">
     <mkdir dir="netbeans/lib"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/lib/openide.jar"
-            manifest="manifest-subst.mf"
-	    compress="false">
-      <locale name="ja"/>
+    <jar jarfile="netbeans/lib/openide.jar" manifest="manifest-subst.mf" compress="false">
       
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="windows/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
@@ -166,7 +158,7 @@ Microsystems, Inc. All Rights Reserved.
            <include name="**/$$*$$Patch$$.class" />
       </fileset>
       
-    </locjar>
+    </jar>
   </target>
 
   <target name="loaders_32143-compat" depends="libs" unless="loaders_32143-compat.skip" >
@@ -186,11 +178,12 @@ Microsystems, Inc. All Rights Reserved.
     </copy>
   </target>
 
-  <target name="netbeans" depends="jars-from-libs,release" description="Build everything needed for inclusion in the IDE.">
-    <genlist targetname="nbm" outputfiledir="netbeans"/>
+  <target name="netbeans" depends="jars-from-libs,release,libs,compile-compat,loaders_32143-compat" description="Build everything needed for inclusion in the IDE.">
+<!--    <genlist targetname="nbm" outputfiledir="netbeans"/> -->
   </target>
 
   <target name="nbm" depends="netbeans">
+    <!-- PENDING
     <makenbm file="openide.nbm"
              topdir="."
              module="netbeans/lib/openide.jar"
@@ -199,12 +192,17 @@ Microsystems, Inc. All Rights Reserved.
       <license file="${license.file}"/>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
+    -->
   </target>
 
   <!-- Define the sets of files for various libraries -->
   <selector id="openide.actions" >
     <or>
         <filename name="**/openide/actions/*" />
+        
+        <!-- resource -->
+        <filename name="**/openide/resources/actions/*" />
+        <filename name="**/openide/resources/propertysheet/customize.gif" />
 
         <!-- these might one day get deprecated, but until that
           lets keep them here -->
@@ -223,6 +221,10 @@ Microsystems, Inc. All Rights Reserved.
       <filename name="**/openide/text/*" />
       <filename name="**/openide/cookies/LineCookie*" />
       <filename name="**/openide/cookies/EditorCookie*" />
+
+      <!-- resources -->
+      <filename name="**/openide/resources/editorMode*" />
+      <filename name="**/openide/resources/printSettings*" />
     </or>
   </selector>
   <selector id="openide.nodes" >
@@ -232,7 +234,10 @@ Microsystems, Inc. All Rights Reserved.
          <filename name="**/openide/cookies/*" />
          <filename name="**/openide/util/actions/NodeAction*" />
          <filename name="**/openide/util/actions/CookieAction*" />
-         <filename name="**/openide/resources/defaultNode*"/>
+         
+         <!-- resources -->
+         <filename name="**/openide/resources/defaultNode*" />
+         <filename name="**/openide/resources/beans*" />
        </or>
        <not>
          <selector refid="openide.text" />
@@ -240,7 +245,14 @@ Microsystems, Inc. All Rights Reserved.
     </and>
   </selector>
   <selector id="openide.awt" >
-    <filename name="**/openide/awt/*" />
+    <or>
+        <filename name="**/openide/awt/*" />
+
+        <!-- resources -->
+        <filename name="**/openide/resources/html/*" />
+        <!-- already in openide.util -->
+        <!-- <filename name="**/openide/resources/actions/empty.gif" /> -->
+    </or>
   </selector>
   <selector id="openide.util" >
      <and>
@@ -254,6 +266,9 @@ Microsystems, Inc. All Rights Reserved.
             <filename name="**/openide/util/io/*" />
             <filename name="**/openide/util/actions/*" />
             <filename name="**/openide/xml/*" />         
+
+            <!-- resources -->
+            <filename name="**/openide/resources/actions/empty.gif" />
             <filename name="**/openide/resources/progress-cursor*"/>
         </or>
         
@@ -267,6 +282,8 @@ Microsystems, Inc. All Rights Reserved.
     <and>
         <or>
             <filename name="**/openide/*" />
+            <!-- resources -->
+            <filename name="**/openide/resources/defaultWizard.gif" />
         </or>
         <not>
             <selector refid="openide.util" />
@@ -287,10 +304,32 @@ Microsystems, Inc. All Rights Reserved.
   </selector>
   <selector id="openide.explorer" >
     <and>
-      <filename name="**/openide/explorer/**" />
-      <not>
+      <or>
+        <filename name="**/openide/explorer/**" />
+        
+        <!-- resources -->
+        <filename name="**/openide/resources/propertysheet/propertySheetHelp.gif" />
+        <filename name="**/openide/resources/propertysheet/propertySheetHelp.gif" />
+        <filename name="**/openide/resources/actions/setDefaultValue.gif" />
+        <filename name="**/openide/resources/propertysheet/invalid.gif" />
+        <filename name="**/openide/resources/propertysheet/modified.gif" />
+        <filename name="**/openide/resources/cursorscopysingle.gif" />
+        <filename name="**/openide/resources/cursorsnone.gif" />
+        <filename name="**/openide/resources/cursorsmovesingle.gif" />
+        <filename name="**/openide/resources/cursorsnone.gif" />
+        <filename name="**/openide/resources/cursorsunknownsingle.gif" />
+        <filename name="**/openide/resources/cursorsnone.gif" />
+        <filename name="**/openide/resources/cursorsnone.gif" />
+        <filename name="**/openide/resources/cursorscopysingle.gif" />
+        <filename name="**/openide/resources/defaultNode.gif" />
+        <filename name="**/openide/resources/columns.gif" />
+        <filename name="**/openide/resources/columnsSortedAsc.gif" />
+        <filename name="**/openide/resources/columnsSortedDesc.gif" />
+      </or>
+      <none>
         <selector refid="openide.actions" />
-      </not>
+        <selector refid="openide.nodes" />
+      </none>
     </and>
   </selector>
   
@@ -322,19 +361,32 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </copy>
   </target>
-  
+
+  <target name="do-lib-javadoc" >
+    <ant dir="${nbroot}/nbbuild/javadoctools" antfile="template.xml" target="javadoc" inheritRefs="true" >
+      <property name="javadoc.base" location="${localdir}/.."/>
+      <property name="javadoc.src" location="src"/>
+      <property name="javadoc.classpath" refid="classpath"/>
+      <property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>      
+<!--      <property name="javadoc.docfiles" location="api/doc"/>
+      <property name="javadoc.overview" location="api/doc/overview.html"/> -->
+      
+      <property name="javadoc.files" value="${selector}" />
+    </ant>
+  </target>
   <!-- Build whole openide.jar from separate libraries -->
-  <target name="jars-from-libs" depends="libs,vers-prep,compile-compat,loaders_32143-compat" description="Create JAR files from copied directories.">
+  <target name="jars-from-libs" depends="libs,vers-prep,compile-compat,loaders_32143-compat" description="Create JAR files from copied directories." unless="no-openide.jar">
     <property name="openide.jar" value="netbeans/lib/openide.jar" />
     <mkdir dir="netbeans/lib"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="${openide.jar}"
-            manifest="manifest-subst.mf"
-	    compress="false">
-      <locale name="ja"/>
+    <jar jarfile="${openide.jar}" manifest="manifest-subst.mf" compress="false">
       
       <fileset dir="actions/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="awt/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="awt/src" excludesfile="../nbbuild/standard-jar-excludes.txt">
+        <!-- Bogus version, already supplied by windows/src/: -->
+        <exclude name="org/openide/awt/HtmlBrowser$BrowserComponent.class"/>
+        <!-- To find others, use: zipinfo netbeans/lib/openide.jar|fgrep stor|cut -c21-29,54-|sort -k2|uniq|uniq -d -s9 -->
+      </fileset>
       <fileset dir="dialogs/src" excludesfile="../nbbuild/standard-jar-excludes.txt">
          <!-- will be provided by openide-windows -->
          <exclude name="org/openide/awt/HtmlBrowser$$BrowserComponent.class" />
@@ -362,7 +414,7 @@ Microsystems, Inc. All Rights Reserved.
            <include name="**/$$*$$Patch$$.class" />
       </fileset>
       
-    </locjar>
+    </jar>
   </target>
   
   
@@ -394,6 +446,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="text" target="clean" />
         <ant dir="util" target="clean" />
         <ant dir="windows" target="clean" />
+        <ant dir="compat" target="clean" />
   </target>
     
   
@@ -458,16 +511,13 @@ Microsystems, Inc. All Rights Reserved.
                   <include name="org/openide/util/*Lookup*"/>
                   <include name="org/openide/util/WeakSet*"/>
                   <include name="org/openide/util/enum/*"/>
-                  
-                  <!- exlude localized resources, they are part of openide.jar ->
-                  <exclude name="org/openide/**/*_*" />
-                  <exclude name="org/openide/util/*_*" />
              </fileset>
         </jar>
         -->
   </target>        
   
   
+  <!-- PENDING
   <target  name="lookup-src" description="Creates zip file with lookup sources.">
     <mkdir dir="standalone"/>
     <zip compress="true" zipfile="standalone/lookup-src.zip">
@@ -485,6 +535,7 @@ Microsystems, Inc. All Rights Reserved.
         </fileset>
     </zip>
   </target>
+  -->
   
   <!-- dependencies between libraries -->
   
@@ -550,8 +601,22 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
 </echo>
   </target>
   
-  <target name="javadoc" depends="javadoc-plain,export-interfaces" if="open-apis-force-rebuild"
-          description="Create Open API documentation." />
+  <target name="javadoc" depends="javadoc-plain,export-interfaces" if="open-apis-force-rebuild" />
+          
+  <target name="all-javadoc" description="Create Open API documentation." >
+        <ant dir="util" target="javadoc" />
+        <ant dir="awt" target="javadoc" />
+        <ant dir="dialogs" target="javadoc" />
+        <ant dir="explorer" target="javadoc" />
+        <ant dir="fs" target="javadoc" />
+        <ant dir="nodes" target="javadoc" />
+        <ant dir="modules" target="javadoc" />
+        <ant dir="options" target="javadoc" />
+        <ant dir="text" target="javadoc" />
+        <ant dir="windows" target="javadoc" />
+        <ant dir="actions" target="javadoc" />
+  </target>
+          
           
           
   <target name="javadoc-plain" depends="init,open-apis-check-timestamps,open-apis-maybe-skip" if="open-apis-force-rebuild" >
@@ -767,12 +832,15 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <delete file="openide-13javac-workaround.jar"/>
     <delete dir="javadoc"/>
     <delete file="nb-api-tutorial.zip"/>
+    <!-- PENDING
     <delete dir="standalone"/>
+    -->
     <delete dir="Info"/>
     <delete file="openide.nbm"/>
     <ant dir="api/examples" target="clean"/>
   </target>
 
+  <!-- PENDING
     <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates ZIP file suitable for download. ZIP file contains all JARs necessary for using standalone filesystems (excluding a JAXP implementation).">
         <zip compress="true" zipfile="standalone/nbfilesystems.zip">
             <fileset dir="standalone">
@@ -802,5 +870,6 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
 ]]></echo>
 
     </target>
+  -->
 
 </project>
