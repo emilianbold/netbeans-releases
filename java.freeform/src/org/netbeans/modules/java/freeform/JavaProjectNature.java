@@ -15,6 +15,7 @@ package org.netbeans.modules.java.freeform;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -39,18 +40,27 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.w3c.dom.Comment;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
+ * General hook for registration of the Java nature for freeform projects.
  * @author David Konecny
  */
 public class JavaProjectNature implements ProjectNature {
 
-    public static final String NS_JAVA = "http://www.netbeans.org/ns/freeform-project-java/1"; // NOI18N
-    private static final String SCHEMA = "nbres:/org/netbeans/modules/java/freeform/resources/freeform-project-java.xsd"; // NOI18N
+    public static final String NS_JAVA_1 = "http://www.netbeans.org/ns/freeform-project-java/1"; // NOI18N
+    public static final String NS_JAVA_2 = "http://www.netbeans.org/ns/freeform-project-java/2"; // NOI18N
+    public static final String EL_JAVA = "java-data"; // NOI18N
+    private static final String SCHEMA_1 = "nbres:/org/netbeans/modules/java/freeform/resources/freeform-project-java.xsd"; // NOI18N
+    private static final String SCHEMA_2 = "nbres:/org/netbeans/modules/java/freeform/resources/freeform-project-java-2.xsd"; // NOI18N
     public static final String STYLE_PACKAGES = "packages"; // NOI18N
     
     private static final WeakHashMap/*<Project,WeakReference<Lookup>>*/ lookupCache = new WeakHashMap();
@@ -87,14 +97,14 @@ public class JavaProjectNature implements ProjectNature {
     }
 
     public Set/*<String>*/ getSchemas() {
-        return Collections.singleton(SCHEMA);
+        return new HashSet(Arrays.asList(new String[] {SCHEMA_1, SCHEMA_2}));
     }
 
     public Set/*<String>*/ getSourceFolderViewStyles() {
         return Collections.singleton(STYLE_PACKAGES);
     }
     
-    public Node createSourceFolderView(Project project, FileObject folder, String style, String name, String displayName) throws IllegalArgumentException {
+    public org.openide.nodes.Node createSourceFolderView(Project project, FileObject folder, String style, String name, String displayName) throws IllegalArgumentException {
         if (style.equals(STYLE_PACKAGES)) {
             if (displayName == null) {
                 // Don't use folder.getNodeDelegate().getDisplayName() since we are not listening to changes anyway.
@@ -106,7 +116,7 @@ public class JavaProjectNature implements ProjectNature {
         }
     }
 
-    public Node findSourceFolderViewPath(Project project, Node root, Object target) {
+    public org.openide.nodes.Node findSourceFolderViewPath(Project project, org.openide.nodes.Node root, Object target) {
         // XXX
         return null;
     }
@@ -118,14 +128,16 @@ public class JavaProjectNature implements ProjectNature {
             new SourceLevelQueryImpl(projectHelper, projectEvaluator, aux), // SourceLevelQueryImplementation
             new SourceForBinaryQueryImpl(projectHelper, projectEvaluator, aux), // SourceForBinaryQueryImplementation
             new OpenHook(cp), // ProjectOpenedHook
-            new TestQuery(project), // UnitTestForSourceQueryImplementation
+            new TestQuery(projectHelper, projectEvaluator, aux), // MultipleRootsUnitTestForSourceQueryImplementation
+            new JavadocQuery(projectHelper, projectEvaluator, aux), // JavadocForBinaryQueryImplementation
             new PrivilegedTemplatesImpl(),           // List of templates in New action popup
             new LookupMergerImpl(),
         });
     }
     
     private static boolean isMyProject(AuxiliaryConfiguration aux) {
-        return aux.getConfigurationFragment("java-data", NS_JAVA, true) != null;
+        return aux.getConfigurationFragment(EL_JAVA, NS_JAVA_1, true) != null ||
+               aux.getConfigurationFragment(EL_JAVA, NS_JAVA_2, true) != null;
     }
 
     private static class OpenHook extends ProjectOpenedHook {
@@ -145,6 +157,81 @@ public class JavaProjectNature implements ProjectNature {
         }
         
     }
+    
+    /**
+     * Transparently handles /1 -> /2 schema upgrade (on read only, not write!).
+     */
+    private static final class UpgradingAuxiliaryConfiguration implements AuxiliaryConfiguration {
+        
+        private final AuxiliaryConfiguration delegate;
+        
+        public UpgradingAuxiliaryConfiguration(AuxiliaryConfiguration delegate) {
+            this.delegate = delegate;
+        }
+
+        public Element getConfigurationFragment(String elementName, String namespace, boolean shared) {
+            if (elementName.equals(EL_JAVA) && namespace.equals(NS_JAVA_2) && shared) {
+                Element nue = delegate.getConfigurationFragment(EL_JAVA, NS_JAVA_2, true);
+                if (nue == null) {
+                    Element old = delegate.getConfigurationFragment(EL_JAVA, NS_JAVA_1, true);
+                    if (old != null) {
+                        nue = upgradeSchema(old);
+                    }
+                }
+                return nue;
+            } else {
+                return delegate.getConfigurationFragment(elementName, namespace, shared);
+            }
+        }
+
+        public void putConfigurationFragment(Element fragment, boolean shared) throws IllegalArgumentException {
+            delegate.putConfigurationFragment(fragment, shared);
+        }
+        
+        public boolean removeConfigurationFragment(String elementName, String namespace, boolean shared) throws IllegalArgumentException {
+            return delegate.removeConfigurationFragment(elementName, namespace, shared);
+        }
+        
+    }
+
+    /* accessible for unit test */ static Element upgradeSchema(Element old) {
+        Document doc = old.getOwnerDocument();
+        Element nue = doc.createElementNS(NS_JAVA_2, EL_JAVA);
+        copyXMLTree(doc, old, nue, NS_JAVA_2);
+        return nue;
+    }
+
+    // Copied from org.netbeans.modules.java.j2seproject.UpdateHelper with changes; could be an API eventually:
+    private static void copyXMLTree(Document doc, Element from, Element to, String newNamespace) {
+        NodeList nl = from.getChildNodes();
+        int length = nl.getLength();
+        for (int i = 0; i < length; i++) {
+            org.w3c.dom.Node node = nl.item(i);
+            org.w3c.dom.Node newNode;
+            switch (node.getNodeType()) {
+                case org.w3c.dom.Node.ELEMENT_NODE:
+                    Element oldElement = (Element) node;
+                    newNode = doc.createElementNS(newNamespace, oldElement.getTagName());
+                    NamedNodeMap attrs = oldElement.getAttributes();
+                    int alength = attrs.getLength();
+                    for (int j = 0; j < alength; j++) {
+                        newNode.getAttributes().setNamedItemNS(attrs.item(j).cloneNode(false));
+                    }
+                    copyXMLTree(doc, oldElement, (Element) newNode, newNamespace);
+                    break;
+                case org.w3c.dom.Node.TEXT_NODE:
+                    newNode = doc.createTextNode(((Text) node).getData());
+                    break;
+                case org.w3c.dom.Node.COMMENT_NODE:
+                    newNode = doc.createComment(((Comment) node).getData());
+                    break;
+                default:
+                    // Other types (e.g. CDATA) not yet handled.
+                    throw new AssertionError(node);
+            }
+            to.appendChild(newNode);
+        }
+    }
 
     private static final class ProjectLookup extends ProxyLookup implements AntProjectListener {
 
@@ -159,7 +246,7 @@ public class JavaProjectNature implements ProjectNature {
             this.project = project;
             this.helper = helper;
             this.evaluator = evaluator;
-            this.aux = aux;
+            this.aux = new UpgradingAuxiliaryConfiguration(aux);
             this.isMyProject = isMyProject(aux);
             updateLookup();
             helper.addAntProjectListener(this);

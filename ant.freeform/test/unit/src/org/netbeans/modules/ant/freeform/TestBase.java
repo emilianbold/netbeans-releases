@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,6 +51,7 @@ public abstract class TestBase extends NbTestCase {
     protected File datadir;
     protected FileObject egdirFO;
     protected FreeformProject simple;
+    protected FreeformProject simple2;
     protected FreeformProject extsrcroot;
     protected FreeformProject extbuildroot;
     protected FileObject myAppJava;
@@ -74,6 +75,10 @@ public abstract class TestBase extends NbTestCase {
         assertNotNull("found SpecialTask.java", specialTaskJava);
         buildProperties = projdir.getFileObject("build.properties");
         assertNotNull("found build.properties", buildProperties);
+        projdir = egdirFO.getFileObject("simple2");
+        Project _simple2 = ProjectManager.getDefault().findProject(projdir);
+        assertNotNull("have a project", _simple2);
+        simple2 = (FreeformProject) _simple2;
         projdir = egdirFO.getFileObject("extsrcroot/proj");
         assertNotNull("found projdir", projdir);
         Project _extsrcroot = ProjectManager.getDefault().findProject(projdir);

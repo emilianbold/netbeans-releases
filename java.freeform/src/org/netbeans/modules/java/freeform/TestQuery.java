@@ -7,130 +7,137 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.freeform;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Locale;
-import java.util.Set;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation;
+import java.util.List;
+import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
+import org.w3c.dom.Element;
 
 /**
  * Reports location of unit tests.
- * XXX For promo-D, there is no project.xml information about this, so just guess:
- * if there is exactly one Java source root in the project whose folder name
- * begins with "test" (case-insensitively), that is considered the test root
- * (for any other source root). If there is exactly one other package root,
- * that is also considered the source root for that test root. Otherwise nothing
- * is reported.
+ * Rather than associating each test root to each source root, the project may
+ * have any number of source and test roots, and each source root is associated
+ * with all test roots, and each test root is associated with all source roots.
+ * This is not as precise as it could be but in practice it is unlikely to matter.
+ * Also all package roots within one compilation unit are treated interchangeably.
  * @see "#47835"
  * @author Jesse Glick
  */
-final class TestQuery implements UnitTestForSourceQueryImplementation {
+final class TestQuery implements MultipleRootsUnitTestForSourceQueryImplementation {
     
-    private static final String TEST_PREFIX = "test"; // NOI18N
+    private final AntProjectHelper helper;
+    private final PropertyEvaluator eval;
+    private final AuxiliaryConfiguration aux;
     
-    private final Project project;
-    
-    public TestQuery(Project project) {
-        this.project = project;
+    public TestQuery(AntProjectHelper helper, PropertyEvaluator eval, AuxiliaryConfiguration aux) {
+        this.helper = helper;
+        this.eval = eval;
+        this.aux = aux;
     }
 
-    public URL findUnitTest(FileObject source) {
-        Set/*<FileObject>*/ roots = findJavaRoots();
-        if (roots.contains(source)) {
-            FileObject testRoot = findTestRoot(roots);
-            if (testRoot != null && testRoot != source) {
-                // Distinct test root.
-                try {
-                    return testRoot.getURL();
-                } catch (FileStateInvalidException x) {
-                    assert false : x;
-                    return null;
-                }
-            } else {
-                // No test root, or this is the test root.
-                return null;
-            }
+    public URL[] findUnitTests(FileObject source) {
+        URL[][] data = findSourcesAndTests();
+        URL sourceURL;
+        try {
+            sourceURL = source.getURL();
+        } catch (FileStateInvalidException e) {
+            return null;
+        }
+        if (Arrays.asList(data[0]).contains(sourceURL)) {
+            return data[1];
         } else {
-            // What is it? not mine
             return null;
         }
     }
 
-    public URL findSource(FileObject unitTest) {
-        Set/*<FileObject>*/ roots = findJavaRoots();
-        if (roots.contains(unitTest)) {
-            FileObject testRoot = findTestRoot(roots);
-            if (testRoot == unitTest) {
-                // OK, this is really the test root; see if there is one other root.
-                if (roots.size() == 2) {
-                    roots.remove(unitTest);
-                    assert roots.size() == 1 : roots;
-                    FileObject src = (FileObject) roots.iterator().next();
-                    try {
-                        return src.getURL();
-                    } catch (FileStateInvalidException x) {
-                        assert false : x;
-                        return null;
+    public URL[] findSources(FileObject unitTest) {
+        URL[][] data = findSourcesAndTests();
+        URL testURL;
+        try {
+            testURL = unitTest.getURL();
+        } catch (FileStateInvalidException e) {
+            return null;
+        }
+        if (Arrays.asList(data[1]).contains(testURL)) {
+            return data[0];
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Look for all source roots and test source roots in the project.
+     * @return two-element array: first source roots, then test source roots
+     */
+    private URL[][] findSourcesAndTests() {
+        List/*<URL>*/ sources = new ArrayList();
+        List/*<URL>*/ tests = new ArrayList();
+        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+        if (data != null) {
+            Iterator/*<Element>*/ cus = Util.findSubElements(data).iterator();
+            while (cus.hasNext()) {
+                Element cu = (Element) cus.next();
+                assert cu.getLocalName().equals("compilation-unit") : cu;
+                boolean isTests = Util.findElement(cu, "unit-tests", JavaProjectNature.NS_JAVA_2) != null; // NOI18N
+                Iterator/*<Element>*/ prs = Util.findSubElements(cu).iterator();
+                while (prs.hasNext()) {
+                    Element pr = (Element) prs.next();
+                    if (pr.getLocalName().equals("package-root")) { // NOI18N
+                        String rawtext = Util.findText(pr);
+                        assert rawtext != null;
+                        String evaltext = eval.evaluate(rawtext);
+                        if (evaltext != null) {
+                            (isTests ? tests : sources).add(evalTextToURL(evaltext));
+                        }
                     }
-                } else {
-                    // Nope, forget it.
-                    return null;
                 }
-            } else {
-                // That wasn't the known test root, so skip it.
-                return null;
             }
+        }
+        return new URL[][] {
+            (URL[]) sources.toArray(new URL[sources.size()]),
+            (URL[]) tests.toArray(new URL[tests.size()]),
+        };
+    }
+
+    private URL evalTextToURL(String evaltext) {
+        File location = helper.resolveFile(evaltext);
+        URL u;
+        try {
+            u = location.toURI().toURL();
+        } catch (MalformedURLException e) {
+            throw new AssertionError(e);
+        }
+        if (FileUtil.isArchiveFile(u)) {
+            return FileUtil.getArchiveRoot(u);
         } else {
-            // Unknown.
-            return null;
-        }
-    }
-    
-    /**
-     * Find all registered Java package roots.
-     */
-    private Set/*<FileObject>*/ findJavaRoots() {
-        Sources s = ProjectUtils.getSources(project);
-        SourceGroup[] groups = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        Set/*<FileObject>*/ roots = new HashSet();
-        for (int i = 0; i < groups.length; i++) {
-            roots.add(groups[i].getRootFolder());
-        }
-        return roots;
-    }
-    
-    /**
-     * Find a "test" root, if there is exactly one.
-     */
-    private FileObject findTestRoot(Set/*<FileObject>*/ javaRoots) {
-        FileObject testRoot = null;
-        Iterator it = javaRoots.iterator();
-        while (it.hasNext()) {
-            FileObject root = (FileObject) it.next();
-            if (root.getNameExt().toLowerCase(Locale.US).startsWith(TEST_PREFIX)) {
-                if (testRoot == null) {
-                    testRoot = root;
-                } else {
-                    // More than one.
-                    return null;
+            String us = u.toExternalForm();
+            if (us.endsWith("/")) {
+                return u;
+            } else {
+                try {
+                    return new URL(us + '/');
+                } catch (MalformedURLException e) {
+                    throw new AssertionError(e);
                 }
             }
         }
-        return testRoot;
     }
     
 }

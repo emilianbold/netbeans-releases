@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
@@ -94,7 +106,7 @@
                 </context-menu>
             </view>
         </general-data>
-        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>
                 <package-root>src</package-root>
                 <classpath mode="compile">${build.cp}</classpath>
@@ -102,10 +114,12 @@
                 <built-to>${build.classes.dir}</built-to>
                 <built-to>${threaddemo.jar}</built-to>
                 <built-to>${threaddemo-complete.jar}</built-to>
+                <javadoc-built-to>${build.javadoc.dir}</javadoc-built-to>
                 <source-level>1.4</source-level>
             </compilation-unit>
             <compilation-unit>
                 <package-root>test</package-root>
+                <unit-tests/>
                 <classpath mode="compile">${test.build.cp}</classpath>
                 <classpath mode="execute">${test.run.cp}</classpath>
                 <built-to>${build.test.classes.dir}</built-to>

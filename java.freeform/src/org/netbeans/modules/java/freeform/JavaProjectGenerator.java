@@ -14,18 +14,13 @@
 package org.netbeans.modules.java.freeform;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
-import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -33,15 +28,15 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-
 /**
  * Reads/writes project.xml.
- *
+ * Handling of /1 vs. /2 namespace: either namespace can be read;
+ * when writing, attempts to keep existing namespace when possible, but
+ * will always write a /2 namespace when it is necessary (for isTests or javadoc).
  * @author  Jesse Glick, David Konecny, Pavel Buzek
  */
 public class JavaProjectGenerator {
@@ -309,7 +304,10 @@ public class JavaProjectGenerator {
             AntProjectHelper helper, AuxiliaryConfiguration aux) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
-        Element data = aux.getConfigurationFragment("java-data", JavaProjectNature.NS_JAVA, true); // NOI18N
+        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+        if (data == null) {
+            data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+        }
         if (data == null) {
             return list;
         }
@@ -319,6 +317,7 @@ public class JavaProjectGenerator {
             Element cuEl = (Element)it.next();
             JavaCompilationUnit cu = new JavaCompilationUnit();
             List outputs = new ArrayList();
+            List/*<String>*/ javadoc = new ArrayList();
             List cps = new ArrayList();
             List packageRoots = new ArrayList();
             Iterator it2 = Util.findSubElements(cuEl).iterator();
@@ -341,11 +340,19 @@ public class JavaProjectGenerator {
                     outputs.add(Util.findText(el));
                     continue;
                 }
+                if (el.getLocalName().equals("javadoc-built-to")) { // NOI18N
+                    javadoc.add(Util.findText(el));
+                    continue;
+                }
                 if (el.getLocalName().equals("source-level")) { // NOI18N
                     cu.sourceLevel = Util.findText(el);
                 }
+                if (el.getLocalName().equals("unit-tests")) { // NOI18N
+                    cu.isTests = true;
+                }
             }
             cu.output = outputs.size() > 0 ? outputs : null;
+            cu.javadoc = javadoc.size() > 0 ? javadoc : null;
             cu.classpath = cps.size() > 0 ? cps: null;
             cu.packageRoots = packageRoots.size() > 0 ? packageRoots: null;
             list.add(cu);
@@ -363,11 +370,38 @@ public class JavaProjectGenerator {
     public static void putJavaCompilationUnits(AntProjectHelper helper, 
             AuxiliaryConfiguration aux, List/*<JavaCompilationUnit>*/ compUnits) {
         //assert ProjectManager.mutex().isWriteAccess();
-        ArrayList list = new ArrayList();
-        Element data = aux.getConfigurationFragment("java-data", JavaProjectNature.NS_JAVA, true); // NOI18N
-        if (data == null) {
-            data = helper.getPrimaryConfigurationData(true).getOwnerDocument().
-                createElementNS(JavaProjectNature.NS_JAVA, "java-data"); // NOI18N
+        // First check whether we need /2 data.
+        boolean need2 = false;
+        Iterator/*<JavaCompilationUnit>*/ cuIt = compUnits.iterator();
+        while (cuIt.hasNext()) {
+            JavaCompilationUnit unit = (JavaCompilationUnit) cuIt.next();
+            if (unit.isTests || (unit.javadoc != null && !unit.javadoc.isEmpty())) {
+                need2 = true;
+                break;
+            }
+        }
+        String namespace;
+        // Look for existing /2 data.
+        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+        if (data != null) {
+            // Fine, use it as is.
+            namespace = JavaProjectNature.NS_JAVA_2;
+        } else {
+            // Or, for existing /1 data.
+            namespace = need2 ? JavaProjectNature.NS_JAVA_2 : JavaProjectNature.NS_JAVA_1;
+            data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+            if (data != null) {
+                if (need2) {
+                    // Have to upgrade.
+                    aux.removeConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+                    data = helper.getPrimaryConfigurationData(true).getOwnerDocument().
+                        createElementNS(JavaProjectNature.NS_JAVA_2, JavaProjectNature.EL_JAVA);
+                } // else can use it as is
+            } else {
+                // Create /1 or /2 data acc. to need.
+                data = helper.getPrimaryConfigurationData(true).getOwnerDocument().
+                    createElementNS(namespace, JavaProjectNature.EL_JAVA);
+            }
         }
         Document doc = data.getOwnerDocument();
         List cus = Util.findSubElements(data); // NOI18N
@@ -378,7 +412,7 @@ public class JavaProjectGenerator {
         }
         Iterator it2 = compUnits.iterator();
         while (it2.hasNext()) {
-            Element cuEl = doc.createElementNS(JavaProjectNature.NS_JAVA, "compilation-unit"); // NOI18N
+            Element cuEl = doc.createElementNS(namespace, "compilation-unit"); // NOI18N
             data.appendChild(cuEl);
             JavaCompilationUnit cu = (JavaCompilationUnit)it2.next();
             Element el;
@@ -386,16 +420,20 @@ public class JavaProjectGenerator {
                 Iterator it3 = cu.packageRoots.iterator();
                 while (it3.hasNext()) {
                     String packageRoot = (String)it3.next();
-                    el = doc.createElementNS(JavaProjectNature.NS_JAVA, "package-root"); // NOI18N
+                    el = doc.createElementNS(namespace, "package-root"); // NOI18N
                     el.appendChild(doc.createTextNode(packageRoot));
                     cuEl.appendChild(el);
                 }
+            }
+            if (cu.isTests) {
+                assert namespace.equals(JavaProjectNature.NS_JAVA_2);
+                cuEl.appendChild(doc.createElementNS(namespace, "unit-tests")); // NOI18N
             }
             if (cu.classpath != null) {
                 Iterator it3 = cu.classpath.iterator();
                 while (it3.hasNext()) {
                     JavaCompilationUnit.CP cp = (JavaCompilationUnit.CP)it3.next();
-                    el = doc.createElementNS(JavaProjectNature.NS_JAVA, "classpath"); // NOI18N
+                    el = doc.createElementNS(namespace, "classpath"); // NOI18N
                     el.appendChild(doc.createTextNode(cp.classpath));
                     el.setAttribute("mode", cp.mode); // NOI18N
                     cuEl.appendChild(el);
@@ -405,13 +443,23 @@ public class JavaProjectGenerator {
                 Iterator it3 = cu.output.iterator();
                 while (it3.hasNext()) {
                     String output = (String)it3.next();
-                    el = doc.createElementNS(JavaProjectNature.NS_JAVA, "built-to"); // NOI18N
+                    el = doc.createElementNS(namespace, "built-to"); // NOI18N
                     el.appendChild(doc.createTextNode(output));
                     cuEl.appendChild(el);
                 }
             }
+            if (cu.javadoc != null) {
+                Iterator it3 = cu.javadoc.iterator();
+                while (it3.hasNext()) {
+                    String javadoc = (String) it3.next();
+                    assert namespace.equals(JavaProjectNature.NS_JAVA_2);
+                    el = doc.createElementNS(namespace, "javadoc-built-to"); // NOI18N
+                    el.appendChild(doc.createTextNode(javadoc));
+                    cuEl.appendChild(el);
+                }
+            }
             if (cu.sourceLevel != null) {
-                el = doc.createElementNS(JavaProjectNature.NS_JAVA, "source-level"); // NOI18N
+                el = doc.createElementNS(namespace, "source-level"); // NOI18N
                 el.appendChild(doc.createTextNode(cu.sourceLevel));
                 cuEl.appendChild(el);
             }
@@ -428,10 +476,12 @@ public class JavaProjectGenerator {
         public List/*<String>*/ packageRoots;
         public List/*<CP>*/ classpath;
         public List/*<String>*/ output;
+        public List/*<String>*/ javadoc;
         public String sourceLevel;
+        public boolean isTests;
         
         public String toString() {
-            return "FPG.JCU[packageRoots="+packageRoots+", classpath="+classpath+", output="+output+", sourceLevel="+sourceLevel+"]"; // NOI18N
+            return "FPG.JCU[packageRoots=" + packageRoots + ", classpath=" + classpath + ", output=" + output + ", javadoc=" + javadoc + ", sourceLevel=" + sourceLevel + ",isTests=" + isTests + "]"; // NOI18N
         }
         
         public static final class CP {

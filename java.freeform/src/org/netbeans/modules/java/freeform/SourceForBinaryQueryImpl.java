@@ -65,7 +65,7 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
         if (roots == null) {
             // Need to compute it. Easiest to compute them all at once.
             roots = new HashMap();
-            Element java = aux.getConfigurationFragment("java-data", JavaProjectNature.NS_JAVA, true); // NOI18N
+            Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
             if (java == null) {
                 return null;
             }

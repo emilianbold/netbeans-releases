@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,6 +32,10 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Mutex;
+
+// XXX ProjectModel should automatically set JPG.JCU.isTests for any CU with all roots having names beginning with "test"
+// (later, such code can be removed in favor of a proper UI for this in SourceFoldersPanel)
+// XXX ProjectModel should also handle <javadoc-built-to> somehow (when there is a UI for this in OutputPanel)
 
 /**
  * Memory model of project. Used for creation or customization of project.

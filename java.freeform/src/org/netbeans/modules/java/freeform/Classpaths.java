@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -123,7 +123,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             }
         }
         // Need to create it.
-        Element java = aux.getConfigurationFragment("java-data", JavaProjectNature.NS_JAVA, true); // NOI18N
+        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
         if (java == null) {
             return null;
         }
@@ -173,7 +173,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             String type = TYPES[i];
             _registeredClasspaths.put(type, new HashSet());
         }
-        Element java = aux.getConfigurationFragment("java-data", JavaProjectNature.NS_JAVA, true); // NOI18N
+        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
         if (java == null) {
             return;
         }
@@ -512,7 +512,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         }
         
         private Element findCompilationUnit() {
-            Element java = aux.getConfigurationFragment("java-data", JavaProjectNature.NS_JAVA, true); // NOI18N
+            Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
             if (java == null) {
                 return null;
             }

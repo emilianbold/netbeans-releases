@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -735,7 +735,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         units = JavaProjectGenerator.getJavaCompilationUnits(helper, aux);
         JavaProjectGenerator.putJavaCompilationUnits(helper, aux, units);
 //        ProjectManager.getDefault().saveAllProjects();
-        Element el = aux.getConfigurationFragment("java-data", JavaProjectNature.NS_JAVA, true);
+        Element el = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
         assertNotNull("Java compilation units were not saved correctly",  el);
         List subElements = Util.findSubElements(el);
         assertEquals(2, subElements.size());
@@ -776,7 +776,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         units.add(cu);
         JavaProjectGenerator.putJavaCompilationUnits(helper, aux, units);
 //        ProjectManager.getDefault().saveAllProjects();
-        el = aux.getConfigurationFragment("java-data", JavaProjectNature.NS_JAVA, true);
+        el = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
         assertNotNull("Java compilation units were not saved correctly",  el);
         subElements = Util.findSubElements(el);
         assertEquals(1, subElements.size());
@@ -793,6 +793,86 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         validate(p);
     }
 
+    public void testCompilationUnitUpgrades() throws Exception {
+        AntProjectHelper helper = createEmptyProject("proj", "proj", false);
+        FileObject base = helper.getProjectDirectory();
+        Project p = ProjectManager.getDefault().findProject(base);
+        assertNotNull("Project was not created", p);
+        assertEquals("Project folder is incorrect", base, p.getProjectDirectory());
+        // Start with a /1-friendly data set.
+        List/*<JavaProjectGenerator.JavaCompilationUnit>*/ units = new ArrayList();
+        JavaProjectGenerator.JavaCompilationUnit cu = new JavaProjectGenerator.JavaCompilationUnit();
+        cu.packageRoots = new ArrayList();
+        cu.packageRoots.add("pkgroot1");
+        units.add(cu);
+        AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(helper);
+        JavaProjectGenerator.putJavaCompilationUnits(helper, aux, units);
+        // Check that the correct /1 data was saved.
+        Element el = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+        assertNotNull("Java compilation units were saved in /1",  el);
+        List/*<Element>*/ subElements = Util.findSubElements(el);
+        assertEquals(1, subElements.size());
+        // compare the compilation unit
+        Element el2 = (Element) subElements.get(0);
+        assertElement(el2, "compilation-unit", null);
+        assertElementArray(Util.findSubElements(el2),
+            new String[] {"package-root"},
+            new String[] {"pkgroot1"});
+        // validate against schema:
+        ProjectManager.getDefault().saveAllProjects();
+        validate(p);
+        // Now check that setting isTests = true on that element forces a /2 save.
+        units = new ArrayList();
+        cu = new JavaProjectGenerator.JavaCompilationUnit();
+        cu.packageRoots = new ArrayList();
+        cu.packageRoots.add("pkgroot1");
+        cu.isTests = true;
+        units.add(cu);
+        JavaProjectGenerator.putJavaCompilationUnits(helper, aux, units);
+        // Check that we now have it in /2.
+        el = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+        assertNull("No /1 data", el);
+        el = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+        assertNotNull("Have /2 data", el);
+        subElements = Util.findSubElements(el);
+        assertEquals(1, subElements.size());
+        // compare the compilation unit
+        el2 = (Element) subElements.get(0);
+        assertElement(el2, "compilation-unit", null);
+        assertElementArray(Util.findSubElements(el2),
+            new String[] {"package-root", "unit-tests"},
+            new String[] {"pkgroot1", null});
+        // validate against schema:
+        ProjectManager.getDefault().saveAllProjects();
+        validate(p);
+        // Now try fresh save of /2-requiring data (using javadoc).
+        assertTrue("removed /2 data", aux.removeConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true));
+        units = new ArrayList();
+        cu = new JavaProjectGenerator.JavaCompilationUnit();
+        cu.packageRoots = new ArrayList();
+        cu.packageRoots.add("pkgroot1");
+        cu.javadoc = new ArrayList();
+        cu.javadoc.add("javadoc1");
+        cu.javadoc.add("javadoc2");
+        units.add(cu);
+        JavaProjectGenerator.putJavaCompilationUnits(helper, aux, units);
+        // Check that we have it in /2.
+        el = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+        assertNull("No /1 data", el);
+        el = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+        assertNotNull("Have /2 data", el);
+        subElements = Util.findSubElements(el);
+        assertEquals(1, subElements.size());
+        // compare the compilation unit
+        el2 = (Element) subElements.get(0);
+        assertElement(el2, "compilation-unit", null);
+        assertElementArray(Util.findSubElements(el2),
+            new String[] {"package-root", "javadoc-built-to", "javadoc-built-to"},
+            new String[] {"pkgroot1", "javadoc1", "javadoc2"});
+        // validate against schema:
+        ProjectManager.getDefault().saveAllProjects();
+        validate(p);
+    }
 
     public void testGuessExports() throws Exception {
         JavaProjectGenerator.TargetMapping tm = new JavaProjectGenerator.TargetMapping();
@@ -1207,11 +1287,12 @@ public class JavaProjectGeneratorTest extends NbTestCase {
     }
 
     private static String[] getSchemas() throws Exception {
-        String[] URIs = new String[3];
-        URIs[0] = FreeformProjectGenerator.class.getResource("resources/freeform-project-general.xsd").toExternalForm();
-        URIs[1] = JavaProjectGenerator.class.getResource("resources/freeform-project-java.xsd").toExternalForm();
-        URIs[2] = AntBasedProjectFactorySingleton.class.getResource("project.xsd").toExternalForm();
-        return URIs;
+        return new String[] {
+            FreeformProjectGenerator.class.getResource("resources/freeform-project-general.xsd").toExternalForm(),
+            JavaProjectGenerator.class.getResource("resources/freeform-project-java.xsd").toExternalForm(),
+            JavaProjectGenerator.class.getResource("resources/freeform-project-java-2.xsd").toExternalForm(),
+            AntBasedProjectFactorySingleton.class.getResource("project.xsd").toExternalForm(),
+        };
     }
     
     public static void validate(Project proj) throws Exception {

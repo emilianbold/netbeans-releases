@@ -58,9 +58,16 @@ Microsystems, Inc. All Rights Reserved.
    <li>
     <api group="dtd" name="freeform-project-java.xsd" type="export" category="official" url="http://www.netbeans.org/ns/freeform-project-java/1.xsd">
      <p>
-      XML schema for the Java-specific section. Users are allowed
+      Old XML schema for the Java-specific section. Users are allowed
       to modify this section by hand and can refer to this schema for available
       syntax.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="dtd" name="freeform-project-java-2.xsd" type="export" category="official" url="http://www.netbeans.org/ns/freeform-project-java/2.xsd">
+     <p>
+      Current XML schema for the Java-specific section.
      </p>
     </api>
    </li>
