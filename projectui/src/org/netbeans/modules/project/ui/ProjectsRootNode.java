@@ -270,11 +270,14 @@ public class ProjectsRootNode extends AbstractNode {
 
         public String getHtmlDisplayName() {
             String htmlName = getOriginal().getHtmlDisplayName();
-            String dispName = super.getDisplayName();
-            try {
-                dispName = XMLUtil.toElementContent(dispName);
-            } catch (CharConversionException ex) {
-                // ignore
+            String dispName = null;
+            if (isMain() && htmlName == null) {
+                dispName = super.getDisplayName();
+                try {
+                    dispName = XMLUtil.toElementContent(dispName);
+                } catch (CharConversionException ex) {
+                    // ignore
+                }
             }
             return isMain() ? "<b>" + (htmlName == null ? dispName : htmlName) + "</b>" : htmlName; //NOI18N
         }

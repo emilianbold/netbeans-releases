@@ -14,8 +14,11 @@
 package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.Dialog;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.java.project.BrokenReferencesAlertPanel;
 import org.netbeans.modules.java.project.BrokenReferencesCustomizer;
 import org.netbeans.modules.java.project.BrokenReferencesModel;
+import org.netbeans.modules.java.project.JavaSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -38,6 +41,15 @@ import org.openide.util.NbBundle;
  * @author David Konecny
  */
 public class BrokenReferencesSupport {
+
+    /** Last time in ms when the Broken References alert was shown. */
+    private static long brokenAlertLastTime = 0;
+    
+    /** Is Broken References alert shown now? */
+    private static boolean brokenAlertShown = false;
+
+    /** Timeout within which request to show alert will be ignored. */
+    private static int BROKEN_ALERT_TIMEOUT = 1000;
     
     private BrokenReferencesSupport() {}
 
@@ -92,5 +104,40 @@ public class BrokenReferencesSupport {
                 dlg.dispose();
         }
     }
+
+    public static synchronized void showAlert() {
+        // Do not show alert if it is already shown or if it was shown
+        // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
+        if (brokenAlertShown || 
+            brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis() ||
+            !JavaSettings.getDefault().isShowAgainBrokenRefAlert()) {
+                return;
+        }
+        brokenAlertShown = true;
+        SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        Object ok = NbBundle.getMessage(BrokenReferencesAlertPanel.class,"MSG_Broken_References_OK");
+                        DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(), 
+                            NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
+                            true, new Object[] {ok}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                        Dialog dlg = null;
+                        try {
+                            dlg = DialogDisplayer.getDefault().createDialog(dd);
+                            dlg.setVisible(true);
+                        } finally {
+                            if (dlg != null)
+                                dlg.dispose();
+                        }
+                    } finally {
+                        synchronized (BrokenReferencesSupport.class) {
+                            brokenAlertLastTime = System.currentTimeMillis();
+                            brokenAlertShown = false;
+                        }
+                    }
+                }
+            });
+    }
+    
     
 }

@@ -30,8 +30,6 @@ public class FoldersListSettings extends SystemOption {
     
     private static final String NEW_LIB_COUNT = "newLibraryCount"; //NOI18N
 
-    private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; //NOI18N
-
     public String displayName() {
         return NbBundle.getMessage (FoldersListSettings.class,"TXT_J2SEProjectFolderList");
     }
@@ -78,15 +76,6 @@ public class FoldersListSettings extends SystemOption {
     
     public void setNewLibraryCount (int count) {
         this.putProperty(NEW_LIB_COUNT, new Integer(count),true);
-    }
-
-    public boolean isShowAgainBrokenRefAlert() {
-        Boolean b = (Boolean)getProperty(SHOW_AGAIN_BROKEN_REF_ALERT);
-        return b == null ? true : b.booleanValue();
-    }
-    
-    public void setShowAgainBrokenRefAlert(boolean again) {
-        this.putProperty(SHOW_AGAIN_BROKEN_REF_ALERT, Boolean.valueOf(again), true);
     }
 
     public static FoldersListSettings getDefault () {

@@ -47,8 +47,8 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.java.j2seproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
+import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.GenericSources;
@@ -220,49 +220,6 @@ final class J2SEProject implements Project, AntProjectListener {
         return helper.resolveFile(testClassesDir);
     }
     
-    /** Last time in ms when the Broken References alert was shown. */
-    private static long brokenAlertLastTime = 0;
-    
-    /** Is Broken References alert shown now? */
-    private static boolean brokenAlertShown = false;
-
-    /** Timeout within which request to show alert will be ignored. */
-    private static int BROKEN_ALERT_TIMEOUT = 1000;
-    
-    private static synchronized void showBrokenReferencesAlert() {
-        // Do not show alert if it is already shown or if it was shown
-        // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
-        if (brokenAlertShown || 
-            brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis() ||
-            !FoldersListSettings.getDefault().isShowAgainBrokenRefAlert()) {
-                return;
-        }
-        brokenAlertShown = true;
-        SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    try {
-                        Object ok = NbBundle.getMessage(BrokenReferencesAlertPanel.class,"MSG_Broken_References_OK");
-                        DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(), 
-                            NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
-                            true, new Object[] {ok}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
-                        Dialog dlg = null;
-                        try {
-                            dlg = DialogDisplayer.getDefault().createDialog(dd);
-                            dlg.setVisible(true);
-                        } finally {
-                            if (dlg != null)
-                                dlg.dispose();
-                        }
-                    } finally {
-                        synchronized (J2SEProject.class) {
-                            brokenAlertLastTime = System.currentTimeMillis();
-                            brokenAlertShown = false;
-                        }
-                    }
-                }
-            });
-    }
-    
     final class AntProjectHelperProvider {
         AntProjectHelper getAntProjectHelper () {
             return helper;
@@ -353,7 +310,8 @@ final class J2SEProject implements Project, AntProjectListener {
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
                 public Object run() {
                     EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    ep.setProperty("user.properties.file", System.getProperty("netbeans.user")+File.separatorChar+"build.properties"); //NOI18N
+                    String userdir = new File(System.getProperty("netbeans.user")).getAbsolutePath();
+                    ep.setProperty("user.properties.file", userdir+File.separatorChar+"build.properties"); //NOI18N
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                     try {
                         ProjectManager.getDefault().saveProject(J2SEProject.this);
@@ -364,7 +322,7 @@ final class J2SEProject implements Project, AntProjectListener {
                 }
             });
             if (J2SEPhysicalViewProvider.hasBrokenLinks(evaluator())) {
-                showBrokenReferencesAlert();
+                BrokenReferencesSupport.showAlert();
             }
         }
         

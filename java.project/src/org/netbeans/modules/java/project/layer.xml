@@ -63,5 +63,9 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
   </folder>
+  
+    <folder name="Services">
+        <file name="javaSettings.settings" url="javaSettings.settings"/>
+    </folder>
  
 </filesystem>
