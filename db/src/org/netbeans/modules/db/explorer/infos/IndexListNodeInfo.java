@@ -37,7 +37,7 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
             String table = (String)get(DatabaseNode.TABLE);
 
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+            drvSpec.getIndexInfo(catalog, dmd, table, false, false);
 
             //      boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
             boolean jdbcOdbcBridge = (((((String)get(DatabaseNode.DRIVER)).trim().equals("sun.jdbc.odbc.JdbcOdbcDriver")) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false); //NOI18N
@@ -82,27 +82,29 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
             String table = (String)get(DatabaseNode.TABLE);
 
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+            drvSpec.getIndexInfo(catalog, dmd, table, false, false);
             boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false); //NOI18N
 
             if (drvSpec.rs != null) {
+                IndexNodeInfo info=null;
                 while (drvSpec.rs.next()) {
                     if (jdbcOdbcBridge) drvSpec.rsTemp.next();
                     String findex = drvSpec.rs.getString("INDEX_NAME"); //NOI18N
-                    if (findex != null) {
-                        if (findex.equals(name)) {
-                            IndexNodeInfo info;
+                    if (findex != null)
+                        if(findex.equalsIgnoreCase(name))
                             if (jdbcOdbcBridge)
                                 info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rsTemp);
                             else
                                 info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rs);
-
-                            if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
-                        }
-                    }
                 }
                 drvSpec.rs.close();
                 if (jdbcOdbcBridge) drvSpec.rsTemp.close();
+
+                if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
+                // refersh list of indexes
+                refreshChildren();
+                //refresh list of columns due to the column's icons
+                getParent().refreshChildren();
             }
         } catch (Exception e) {
             e.printStackTrace();
