@@ -772,8 +772,8 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
                     fob = compileClassPath.findOwnerRoot(compileClassPath.findResource(name));
                 }
             }
-            FileObject[] sourceRoots = sourceClassPath.getRoots();
-            FileObject[] compileRoots = compileClassPath.getRoots();
+            FileObject[] sourceRoots = (sourceClassPath == null) ? new FileObject[0] : sourceClassPath.getRoots();
+            FileObject[] compileRoots = (compileClassPath == null) ? new FileObject[0] : compileClassPath.getRoots();
             FileObject[] roots = new FileObject[sourceRoots.length + compileRoots.length];
             System.arraycopy(sourceRoots, 0, roots, 0, sourceRoots.length);
             System.arraycopy(compileRoots, 0, roots, sourceRoots.length, compileRoots.length);
