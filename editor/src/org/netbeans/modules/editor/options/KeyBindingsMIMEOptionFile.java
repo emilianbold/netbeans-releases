@@ -30,6 +30,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import java.util.List;
 import org.netbeans.editor.MultiKeyBinding;
+import javax.swing.text.JTextComponent;
 
 /** MIME Option XML file for KeyBindings settings.
  *  KeyBindings settings are loaded and saved in XML format
@@ -56,6 +57,30 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
         super(base, proc);
     }
     
+    private List getKBList(){
+      Settings.KitAndValue[] kav = Settings.getValueHierarchy(base.getKitClass(), SettingsNames.KEY_BINDING_LIST);
+      List kbList = null;
+      for (int i = 0; i < kav.length; i++) {
+          if (kav[i].kitClass == base.getKitClass()) {
+              kbList = (List)kav[i].value;
+          }
+      }
+      if (kbList == null) {
+          kbList = new ArrayList();
+      }
+
+      // must convert all members to serializable MultiKeyBinding
+      int cnt = kbList.size();
+      for (int i = 0; i < cnt; i++) {
+          Object o = kbList.get(i);
+          if (!(o instanceof MultiKeyBinding) && o != null) {
+              JTextComponent.KeyBinding b = (JTextComponent.KeyBinding)o;
+              kbList.set(i, new MultiKeyBinding(b.key, b.actionName));
+          }
+      }
+      return new ArrayList( kbList );
+    }   
+    
     /** Loads settings from XML file.
      * @param propagate if true - propagates the loaded settings to Editor UI */
     protected synchronized void loadSettings(boolean propagate){
@@ -68,7 +93,7 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
         }
         
         // gets current keyBindings map
-        List keybs = (List) Settings.getValue(base.getKitClass(), SettingsNames.KEY_BINDING_LIST);
+        List keybs = getKBList();
         Map mapa = OptionUtilities.makeKeyBindingsMap(keybs);
         properties.clear();
         
