@@ -15,10 +15,7 @@ package org.netbeans.modules.settings.convertors;
 
 import java.io.*;
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
@@ -50,12 +47,15 @@ final class XMLSettingsSupport {
      * @param pw output
      */
     private static void storeInstanceOf (Set classes, PrintWriter pw) throws IOException {
+        SortedSet clazzNames = new TreeSet(); // sort them: #24661
         Iterator it = classes.iterator();
-        Class clazz;
         while (it.hasNext()) {
-            clazz = (Class) it.next();
+            clazzNames.add(((Class)it.next()).getName());
+        }
+        it = clazzNames.iterator();
+        while (it.hasNext()) {
             pw.print("    <instanceof class=\""); // NOI18N
-            pw.print(clazz.getName());
+            pw.print((String)it.next());
             pw.println("\"/>"); // NOI18N
         }
     }
