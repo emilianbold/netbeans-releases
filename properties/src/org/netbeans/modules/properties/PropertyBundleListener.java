@@ -16,13 +16,18 @@ package org.netbeans.modules.properties;
 import java.util.EventObject;
 import java.util.EventListener;
 
-/** Interface for property bundle events.
-*
-* @author Petr Jiricka
-*/
+/**
+ * Defines an interface for objects to be notified of changes to a bundle.
+ *
+ * @author Petr Jiricka
+ */
 public interface PropertyBundleListener extends EventListener {
 
-    /** Handles the PropertyBundleEvent */
+    /**
+     * Gives notification that a bundle has changed.
+     *
+     * @param  e  event that describes the change
+     */
     public void bundleChanged(PropertyBundleEvent e);
 
 }

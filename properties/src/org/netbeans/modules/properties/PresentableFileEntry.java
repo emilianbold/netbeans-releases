@@ -53,10 +53,14 @@ import org.openide.util.actions.Presenter;
 import org.openide.nodes.*;
 
 /** 
- * Object that represents one FileEntry and has support for presentation of this entry as a node.
+ * Object that represents one <code>FileEntry</code> and has support
+ * for presentation of this entry as a node. I.&thinsp;i. it contains methods
+ * required for a node, so that a node for the entry may just delegate to it.
+ *
  * @author Jaroslav Tulach, Petr Jiricka
  */
-public abstract class PresentableFileEntry extends FileEntry implements Node.Cookie {
+public abstract class PresentableFileEntry extends FileEntry
+                                           implements Node.Cookie {
     
     /** generated Serialized Version UID */
     static final long serialVersionUID = 3328227388376142699L;
@@ -83,7 +87,10 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
     // guard used in getNodeDelegate
     private transient Object nodeDelegateMutex = new Object();
     
-    /** Creates new presentable file entry initially attached to a given file object.
+    /**
+     * Creates a new presentable file entry initially attached
+     * to a given file object.
+     *
      * @param obj the data object this entry belongs to
      * @param fo the file object for the entry
      */
@@ -95,71 +102,82 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
     /** Creates a node delegate for this entry. */
     protected abstract Node createNodeDelegate();
     
-    /** Get the node delegate. Either {@link #createNodeDelegate creates it} (if it does not
-     * already exist) or
-     * returns a previously created instance of it.
+    /**
+     * Gets a node delegate for this data object entry. Either
+     * {@linkplain #createNodeDelegate creates it} (if it does not exist yet)
+     * or returns a previously created instance of it.
      *
-     * @return the node delegate (without parent) for this data object
+     * @return  the node delegate (without parent) for this data object
      */
     public final Node getNodeDelegate () {
         synchronized (nodeDelegateMutex) {
-        if (nodeDelegate == null) {
-                        nodeDelegate = createNodeDelegate();
-                    }
-        return nodeDelegate;
+            if (nodeDelegate == null) {
+                nodeDelegate = createNodeDelegate();
+            }
+            return nodeDelegate;
         }
     }
     
-    /** Package private method to assign template attribute to a file.
+    /**
+     * Sets value of attribute &quot;is template?&quot; for a given file.
      * Used also from FileEntry.
      *
-     * @param fo the file
-     * @param newTempl is template or not
-     * @return true if the value change/false otherwise
+     * @param  fo  file to assign the attribute to
+     * @param  newValue  new value of the attribute
+     * @return  <code>true</code> if the value was changed;
+     *          <code>false</code> if the new value was the same
+     *              as the old value
+     * @exception  java.io.IOException  if the operation failed
      */
-    private static boolean setTemplate (FileObject fo, boolean newTempl) throws IOException {
-        boolean oldTempl = false;
-        
-        Object o = fo.getAttribute(DataObject.PROP_TEMPLATE);
-        if ((o instanceof Boolean) && ((Boolean)o).booleanValue())
-            oldTempl = true;
-        if (oldTempl == newTempl)
+    private static boolean setTemplate(FileObject fo,
+                                       boolean newValue) throws IOException {
+        Object old = fo.getAttribute(DataObject.PROP_TEMPLATE);
+        boolean oldValue = Boolean.TRUE.equals(old);
+        if (newValue == oldValue) {
             return false;
-        
-        fo.setAttribute(DataObject.PROP_TEMPLATE, (newTempl ? Boolean.TRUE : null));
-        
+        }
+        fo.setAttribute(DataObject.PROP_TEMPLATE,
+                        newValue ? Boolean.TRUE : null);
         return true;
     }
     
-    /** Set the template status of this file object.
-     * @param newTempl <code>true</code> if the object should be a template
-     * @exception IOException if setting the template state fails
+    /**
+     * Sets value of attribute &quot;is template?&quot; for this entry's file.
+     *
+     * @param  newValue  new value of the attribute
+     * @return  <code>true</code> if the value was changed;
+     *          <code>false</code> if the new value was the same
+     *              as the old value
+     * @exception  java.io.IOException  if setting the template state fails
      */
-    public final void setTemplate (boolean newTempl) throws IOException {
-        if (!setTemplate (getFile(), newTempl)) {
+    public final void setTemplate(boolean newValue) throws IOException {
+        if (!setTemplate(getFile(), newValue)) {
             // no change in state
             return;
         }
-        
-        firePropertyChange(DataObject.PROP_TEMPLATE, !newTempl ? Boolean.TRUE : Boolean.FALSE, newTempl ? Boolean.TRUE : Boolean.FALSE);
+        firePropertyChange(DataObject.PROP_TEMPLATE,
+                           Boolean.valueOf(!newValue),
+                           Boolean.valueOf(newValue));
     }
     
-    /** Get the template status of this data object.
-     * @return <code>true</code> if it is a template
+    /**
+     * Get the template status of this data object entry.
+     *
+     * @return  <code>true</code> if it is a template;
+     *          <code>false</code> otherwise
      */
-    public boolean isTemplate () {
+    public boolean isTemplate() {
         Object o = getFile().getAttribute(DataObject.PROP_TEMPLATE);
-        boolean ret = false;
-        if (o instanceof Boolean)
-            ret = ((Boolean) o).booleanValue();
-        return ret;
+        return Boolean.TRUE.equals(o);
     }
     
-    /** Renames underlying fileobject. This implementation return the
+    /** 
+     * Renames underlying fileobject. This implementation returns the
      * same file. Fires property change. Called when the DO is renamed, not the entry
      *
      * @param name new name
      * @return file object with renamed file
+     * @see  #renameEntry
      */
     public FileObject rename (String name) throws IOException {
         String oldName = getName();
@@ -173,6 +191,7 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
      *
      * @param name new name
      * @return file object with renamed file
+     * @see  #rename
      */
     public FileObject renameEntry (String name) throws IOException {
         return rename(name);
@@ -224,33 +243,44 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
     
     /** Set whether the object is considered modified.
      * Also fires a change event.
-     * If the new value is <code>true</code>, the data object is added into a {@link #getRegistry registry} of opened data objects.
+     * If the new value is <code>true</code>, the data object is added into
+     * a {@link #getRegistry registry} of opened data objects.
      * If the new value is <code>false</code>,
      * the data object is removed from the registry.
      */
     public void setModified(boolean modif) {
         if (this.modif != modif) {
             this.modif = modif;
-            firePropertyChange(DataObject.PROP_MODIFIED, !modif ? Boolean.TRUE : Boolean.FALSE, modif ? Boolean.TRUE : Boolean.FALSE);
+            firePropertyChange(DataObject.PROP_MODIFIED,
+                               Boolean.valueOf(!modif),
+                               Boolean.valueOf(modif));
         }
     }
     
-    /** Get help context for this object.
+    /**
+     * Get help context for this object.
+     *
      * @return the help context
      */
     public abstract HelpCtx getHelpCtx ();
     
-    /** Get the name of the data object.
-     * <p>The default implementation uses the name of the primary file.
-     * @return the name
+    /**
+     * Returns name of the data object.
+     * <p>
+     * The default implementation returns name of the primary file.
+     *
+     * @return  the name of the data object
      */
     public String getName () {
         return getFile ().getName ();
     }
     
-    /** Get the folder this data object is stored in.
-     * @return the folder; <CODE>null</CODE> if the primary file
-     *   is the {@link FileObject#isRoot root} of its filesystem
+    /**
+     * Returns a folder this data object is stored in.
+     *
+     * @return  folder this data object is stored in;
+     *          or <code>null</code> if the data object's primary file
+     *          is the {@linkplain FileObject#isRoot root} of its filesystem
      */
     public final DataFolder getFolder () {
         FileObject fo = getFile ().getParent ();
@@ -328,17 +358,22 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
      */
     protected final CookieSet getCookieSet () {
         CookieSet s = cookieSet;
-        if (s != null) return s;
+        if (s != null) {
+            return s;
+        }
         synchronized (this) {
-            if (cookieSet != null) return cookieSet;
-            
-            // sets empty sheet and adds a listener to it
+            if (cookieSet != null) {
+                return cookieSet;
+            }
+            // sets an empty sheet and adds a listener to it
             setCookieSet (new CookieSet ());
             return cookieSet;
         }
     }
     
-    /** Looks for a cookie in the current cookie set matching the requested class.
+    /**
+     * Looks for a cookie in the current cookie set matching the requested class.
+     *
      * @param type the class to look for
      * @return an instance of that class, or <code>null</code> if this class of cookie
      *    is not supported
@@ -347,7 +382,9 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
         CookieSet c = cookieSet;
         if (c != null) {
             Node.Cookie cookie = c.getCookie (type);
-            if (cookie != null) return cookie;
+            if (cookie != null) {
+                return cookie;
+            }
         }
         
         if (type.isInstance (this)) {

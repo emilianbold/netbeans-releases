@@ -83,9 +83,9 @@ public abstract class Element implements Serializable {
      * If <code>bounds</code> is null does nothing. 
      * @see #bounds */
     public final void print() {
-        if(bounds == null)
+        if (bounds == null) {
             return;
-        
+        }
         try {
             bounds.setText(getDocumentString());
         } catch (BadLocationException e) {
@@ -107,7 +107,16 @@ public abstract class Element implements Serializable {
      * @return the string
      */
     public String toString() {
-        return (bounds == null) ? "(no bounds)" : "(" + bounds.getBegin().getOffset() + ", " + bounds.getEnd().getOffset() + ")"; // NOI18N
+        if (bounds == null) {
+            return "(no bounds)";
+        }
+        return new StringBuffer(16)
+                .append('(')
+                .append(bounds.getBegin().getOffset())
+                .append(", ")                                           //NOI18N
+                .append(bounds.getEnd().getOffset())
+                .append(')')
+                .toString();
     }
 
     

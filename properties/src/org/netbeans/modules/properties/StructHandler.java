@@ -23,12 +23,13 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
 
-/** Class for handling properties structure of one .properties file.
+/**
+ * Class for handling structure of a single <tt>.properties</tt> file.
  *
  * @author Petr Hamernik, Petr Jiricka
  * @see PropertiesStructure
  */
-public class StructHandler extends Object {
+public class StructHandler {
 
     /** Appropriate properties file entry. */
     private PropertiesFileEntry propFileEntry;
@@ -46,10 +47,14 @@ public class StructHandler extends Object {
     private boolean parsingAllowed = true;
 
     /** Generated serialized version UID. */
-    static final long serialVersionUID =-3367087822606643886L;
+    static final long serialVersionUID = -3367087822606643886L;
 
     
-    /** Constructor. */
+    /**
+     * Creates a new handler for a given data object entry.
+     *
+     * @param  propFileEntry  entry to create a handler for
+     */
     public StructHandler(PropertiesFileEntry propFileEntry) {
         this.propFileEntry = propFileEntry;
     }
@@ -60,10 +65,13 @@ public class StructHandler extends Object {
         return reparseNowBlocking(true);
     }
     
-    /** Reparses file. 
-     * @param fire true if should fire changes */
+    /**
+     * Reparses file. 
+     *
+     * @param  fire  true if should fire changes
+     */
     private synchronized PropertiesStructure reparseNowBlocking(boolean fire) {
-        if(!parsingAllowed) {
+        if (!parsingAllowed) {
             return null;
         }
         
@@ -87,18 +95,24 @@ public class StructHandler extends Object {
         }
     }
     
-    /** Stops parsing and prevent any other sheduled ones. File object is going to be
-     * deleted. Due actual delete or move operation. */
+    /**
+     * Stops parsing and prevent any other sheduled ones.
+     * File object is going to be deleted. Due actual delete or move operation.
+     */
     synchronized void stopParsing() {
         parsingAllowed = false;
         
-        PropertiesParser parser = (PropertiesParser)parserWRef.get();
+        PropertiesParser parser = (PropertiesParser) parserWRef.get();
         
-        if(parser != null)
+        if (parser != null) {
             parser.stop();
+        }
     }
     
-    /** Allows parsing when error during deleting or moving occured and the operation didn't succed. */
+    /**
+     * Allows parsing when error during deleting or moving occured and
+     * the operation didn't succed.
+     */
     synchronized void allowParsing() {
         parsingAllowed = true;
     }
@@ -115,10 +129,11 @@ public class StructHandler extends Object {
      */
     void autoParse() {
 
-        if (false == isStructureLoaded()) return;
-
-        Task previousTask = (Task)parsingTaskWRef.get();
-        if(previousTask != null) {
+        if (false == isStructureLoaded()) {
+            return;
+        }
+        Task previousTask = (Task) parsingTaskWRef.get();
+        if (previousTask != null) {
             // There was previous task already, reschedule it 500 ms later.
             previousTask.schedule(500);
         } else {
@@ -135,27 +150,31 @@ public class StructHandler extends Object {
         }
     }
 
-    /** When parser finishes its job, it's called this method to set new values.
+    /**
+     * When the parser finishes its job, it calls this method to set new values.
      *
      * @param newPropStructure new properties structure
      * @param fire if should fire change when structure created anew
      */
-    private void updatePropertiesStructure(PropertiesStructure newPropStructure, boolean fire) {
-        if(newPropStructure == null) {
+    private void updatePropertiesStructure(PropertiesStructure newPropStructure,
+                                           boolean fire) {
+        if (newPropStructure == null) {
             propStructureSRef = new SoftReference(null);
             return;
         }
         
-        PropertiesStructure propStructure = (PropertiesStructure)propStructureSRef.get();
+        PropertiesStructure propStructure = (PropertiesStructure)
+                                            propStructureSRef.get();
 
-        if(propStructure == null) {
+        if (propStructure == null) {
             // Set the parent.
             newPropStructure.setParent(this);
             propStructure = newPropStructure;
             propStructureSRef = new SoftReference(propStructure);
             
-            if(fire)
+            if (fire) {
                 propStructure.structureChanged();
+            }
         } else {
             // Update calls notification methods according to changes.
             propStructure.update(newPropStructure);
@@ -164,13 +183,14 @@ public class StructHandler extends Object {
 
     /** Gets properties structure handled by this handler. */
     public PropertiesStructure getStructure() {
-        PropertiesStructure propStructure = (PropertiesStructure)propStructureSRef.get();
+        PropertiesStructure propStructure = (PropertiesStructure)
+                                            propStructureSRef.get();
         
-        if(propStructure != null)
+        if (propStructure != null) {
             return propStructure;
-
+        }
         // No data available -> reparse file.
-        // PENDING don;t send change event when requesting data only.
+        // PENDING don't send change event when requesting data only.
         // They could be garbaged before so no fire changes.
         return reparseNowBlocking(false); 
     }
@@ -179,6 +199,6 @@ public class StructHandler extends Object {
      * Determine wheteher somebody have already asked for the model.
      */
     private boolean isStructureLoaded() {
-        return null != propStructureSRef.get();
+        return propStructureSRef.get() != null;
     }
 }

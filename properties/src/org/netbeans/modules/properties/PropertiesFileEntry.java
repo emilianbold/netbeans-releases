@@ -42,9 +42,15 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 
 
-/** This entry represents one properties file which is part of bunlde of properties files with same basic name.
- * This entry has some dataobject attributes, has cookies, node delegate etc. */
-public class PropertiesFileEntry extends PresentableFileEntry implements CookieSet.Factory {
+/**
+ * Item in a set of properties files represented by a single
+ * <code>PropertiesDataObject</code>.
+ *
+ * @see  PropertiesDataLoader#createPrimaryEntry
+ * @see  PropertiesDataLoader#createSecondaryEntry
+ */
+public class PropertiesFileEntry extends PresentableFileEntry
+                                 implements CookieSet.Factory {
 
     /** Basic name of bundle .properties file. */
     private String basicName;
@@ -56,10 +62,15 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
     private transient PropertiesEditorSupport editorSupport;
 
     /** Generated serial version UID. */    
-    static final long serialVersionUID =-3882240297814143015L;
+    static final long serialVersionUID = -3882240297814143015L;
     
     
-    /** Creates new PropertiesFileEntry */
+    /**
+     * Creates a new <code>PropertiesFileEntry</code>.
+     *
+     * @param  obj  data object this entry belongs to
+     * @param  file  file object for this entry
+     */
     PropertiesFileEntry(MultiDataObject obj, FileObject file) {
         super(obj, file);
         FileObject fo = getDataObject().getPrimaryFile();
@@ -128,10 +139,11 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
     
     /** Implements <code>CookieSet.Factory</code> interface method. */
     public Node.Cookie createCookie(Class clazz) {
-        if(clazz.isAssignableFrom(PropertiesEditorSupport.class)) {
+        if (clazz.isAssignableFrom(PropertiesEditorSupport.class)) {
             return getPropertiesEditor();
-        } else
+        } else {
             return null;
+        }
     }
     
     /** Creates a node delegate for this entry. Implements superclass abstract method. */
@@ -147,8 +159,9 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
     /** Gets struct handler for this entry. 
      * @return <StructHanlder</code> for this entry */
     public StructHandler getHandler() {
-        if (propStruct == null)
+        if (propStruct == null) {
             propStruct = new StructHandler(this);
+        }
         return propStruct;
     }
 

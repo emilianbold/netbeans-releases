@@ -15,48 +15,68 @@ package org.netbeans.modules.properties;
 
 import java.util.EventObject;
 
-/** Event type for property bundles.
-*
-* @author Petr Jiricka
-*/
+/**
+ * Notification of a change in a property bundle.
+ *
+ * @author Petr Jiricka
+ */
 public class PropertyBundleEvent extends EventObject {
 
-    /** Signifies that potentially all the structure has changed. */
+    static final long serialVersionUID = 1702449038200791321L;
+    
+    /** type of change - structure of the bundle may have been changed */
     public static final int CHANGE_STRUCT = 1;
 
-    /** Signifies that potentially all the data has changed. */
+    /** type of change - all data may have been changed */
     public static final int CHANGE_ALL = 2;
 
-    /** Signifies that one file has changed. */
+    /** type of change - single entry has changed */
     public static final int CHANGE_FILE = 3;
 
-    /** Signifies that one item has changed. */
+    /** type of change - single item has changed */
     public static final int CHANGE_ITEM = 4;
 
-    /** Name of the entry in which the change occurred. */
+    /** name of the changed entry */
     protected String entryName;
 
-    /** Key of the item in which the change occurred. */
+    /** key of the changed item */
     protected String itemName;
 
-    /** Type of the change that occurred. */
+    /** type of the change */
     protected int changeType;
 
-    static final long serialVersionUID =1702449038200791321L;
-    /** Everything has changed, specify the change type */
+    /**
+     * Creates an event representing a generic change.
+     *
+     * @param  source  source of the change
+     * @param  changeType  type of the change
+     *                     - one of the <code>CHANGE_xxx</code> constants
+     */
     public PropertyBundleEvent(Object source, int changeType) {
         super(source);
         this.changeType = changeType;
     }
 
-    /** One entry has changed and its node+children / table column needs redrawing */
+    /**
+     * Creates an event representing a change in a single entry.
+     *
+     * @param  source  source of the change
+     * @param  entryName  name of the changed entry
+     */
     public PropertyBundleEvent(Object source, String entryName) {
         super(source);
         this.entryName = entryName;
         changeType = CHANGE_FILE;
     }
 
-    /** One item has changed and its node / table cell needs redrawing */
+    /**
+     * Creates an event representing a change in a single item of a single
+     * entry.
+     *
+     * @param  source  source of the change
+     * @param  entryName  name of the changed entry
+     * @param  itemName  name of the changed item
+     */
     public PropertyBundleEvent(Object source, String entryName, String itemName) {
         super(source);
         this.entryName = entryName;
@@ -64,38 +84,67 @@ public class PropertyBundleEvent extends EventObject {
         changeType = CHANGE_ITEM;
     }
 
-    /** Returns the type of change that occurred. */
+    /**
+     * Returns the type of this notification.
+     *
+     * @return  one of the <code>CHANGE_xxx</code> constants defined
+     *          in this class
+     */
     public int getChangeType() {
         return changeType;
     }
 
-    /** Returns the name of entry in which the change occurred. */
+    /**
+     * Returns name of the modified entry.
+     *
+     * @return  name of the modified entry; or <code>null</code> if the change
+     *          may have touched multiple entries
+     */
     public String getEntryName() {
         return entryName;
     }
 
-    /** Returns the key for the item in which the change occurred. */
+    /**
+     * Returns name of the modified item.
+     *
+     * @return  name of the modified item; or <code>null</code> if the change
+     *          may have changed multiple items
+     */
     public String getItemName() {
         return itemName;
     }
 
+    /**
+     * @return  full description (English only) of this event
+     */
     public String toString() {
         try {
-            String doIdent = (getSource() instanceof BundleStructure) ?
-                             ((BundleStructure)getSource()).obj.getPrimaryFile().getName() : "";
-            String ct = "?";
+            String bundleName;
+            Object source = getSource();
+            bundleName = source instanceof BundleStructure
+                    ? ((BundleStructure) source).obj.getPrimaryFile().getName()
+                    : "";                                               //NOI18N
+                    
+            String changeType;
             switch (getChangeType()) {
-            case CHANGE_STRUCT : ct = "STRUCT"; break;
-            case CHANGE_ALL    : ct = "ALL"; break;
-            case CHANGE_FILE   : ct = "FILE"; break;
-            case CHANGE_ITEM   : ct = "ITEM"; break;
+                case CHANGE_STRUCT : changeType = "STRUCT"; break;      //NOI18N
+                case CHANGE_ALL    : changeType = "ALL"; break;         //NOI18N
+                case CHANGE_FILE   : changeType = "FILE"; break;        //NOI18N
+                case CHANGE_ITEM   : changeType = "ITEM"; break;        //NOI18N
+                default            : changeType = "?"; break;           //NOI18N
             }
 
-            return "PropertyBundleEvent: bundle " + doIdent + ", changeType " + ct +
-                   ", entry " + getEntryName() + ", item " + getItemName();
+            StringBuffer buf = new StringBuffer(80);
+            buf.append("PropertyBundleEvent: bundle ")                  //NOI18N
+               .append(bundleName);
+            buf.append(", changeType ").append(changeType);             //NOI18N
+            buf.append(", entry ").append(getEntryName());              //NOI18N
+            buf.append(", item ").append(getItemName());                //NOI18N
+            return buf.toString();
         }
         catch (Exception e) {
-            return "some PropertyBundleEvent (" + e.toString() + ") occurred";
+            return "some PropertyBundleEvent exception ("               //NOI18N
+                   + e.toString() + ") occurred";                       //NOI18N
         }
     }
 

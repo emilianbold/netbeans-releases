@@ -42,15 +42,16 @@ public class PropertiesStructure extends Element {
     private StructHandler handler;
 
     /** Generated serial version UID. */
-    static final long serialVersionUID =-78380271920882131L;
+    static final long serialVersionUID = -78380271920882131L;
     
     
     /** Constructs a new PropertiesStructure for the given bounds and items. */
     public PropertiesStructure(PositionBounds bounds, Map items) {
         super(bounds);
         // set this structure as a parent for all elements
-        for(Iterator it = items.values().iterator(); it.hasNext();)
-            ((Element.ItemElem)it.next()).setParent(this);
+        for (Iterator it = items.values().iterator(); it.hasNext(); ) {
+            ((Element.ItemElem) it.next()).setParent(this);
+        }
         this.items = items;
     }
 
@@ -69,23 +70,24 @@ public class PropertiesStructure extends Element {
             Map inserted = new HashMap();
             Map deleted  = new HashMap();
 
-            for(Iterator it = new_items.values().iterator(); it.hasNext(); ) {
+            for (Iterator it = new_items.values().iterator(); it.hasNext(); ) {
                 curItem = (Element.ItemElem)it.next();
                 curItem.setParent(this);
                 oldItem = getItem(curItem.getKey());
                 if (oldItem == null) {
                     inserted.put(curItem.getKey(), curItem);
                 } else {
-                    if (!curItem.equals(oldItem))
+                    if (!curItem.equals(oldItem)) {
                         changed.put(curItem.getKey(), curItem);
+                    }
                     items.remove(oldItem.getKey());
                 }
             }
 
             deleted = items;
-            if((deleted.size() > 0) || (inserted.size() > 0))
+            if ((deleted.size() > 0) || (inserted.size() > 0)) {
                 structChanged = true;
-
+            }
             // assign the new structure
             items = new_items;
 
@@ -93,12 +95,13 @@ public class PropertiesStructure extends Element {
             this.bounds = struct.getBounds();
             
             // notification
-            if(structChanged)
+            if (structChanged) {
                 structureChanged(changed, inserted, deleted);
-            else {
+            } else {
                 // notify about changes in all items
-                for (Iterator it = changed.values().iterator(); it.hasNext(); )
-                    itemChanged((Element.ItemElem)it.next());
+                for (Iterator it = changed.values().iterator(); it.hasNext();) {
+                    itemChanged((Element.ItemElem) it.next());
+                }
             }
         }
     }
@@ -111,14 +114,17 @@ public class PropertiesStructure extends Element {
     /** Gets parent for this properties structure. 
      * @return <code>StructureHandler</code> instance. */
     public StructHandler getParent() {
-        if(handler == null)
+        if (handler == null) {
             throw new IllegalStateException();
+        }
         return handler;
     }
 
     /** Gets bundle structure of bundles where this .properties file belongs to. */
     private BundleStructure getParentBundleStructure() {
-        return ((PropertiesDataObject)getParent().getEntry().getDataObject()).getBundleStructure();
+        PropertiesDataObject dataObj;
+        dataObj = (PropertiesDataObject) getParent().getEntry().getDataObject();
+        return dataObj.getBundleStructure();
     }
 
     /** Prints all structure to document.
@@ -127,7 +133,7 @@ public class PropertiesStructure extends Element {
         StringBuffer sb = new StringBuffer();
         Element.ItemElem item;
         for (Iterator it = items.values().iterator(); it.hasNext(); ) {
-            item = (Element.ItemElem)it.next();
+            item = (Element.ItemElem) it.next();
             sb.append(item.getDocumentString());
         }
         
@@ -139,10 +145,10 @@ public class PropertiesStructure extends Element {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         Element.ItemElem item;
-        for(Iterator it = items.values().iterator(); it.hasNext(); ) {
-            item = (Element.ItemElem)it.next();
+        for (Iterator it = items.values().iterator(); it.hasNext(); ) {
+            item = (Element.ItemElem) it.next();
             sb.append(item.toString());
-            sb.append("- - -\n"); // NOI18N
+            sb.append("- - -\n");                                       //NOI18N
         }
         
         return sb.toString();
@@ -153,7 +159,7 @@ public class PropertiesStructure extends Element {
      * @param key Java string (unescaped)
      */
     public Element.ItemElem getItem(String key) {
-        return (Element.ItemElem)items.get(key);
+        return (Element.ItemElem) items.get(key);
     }
 
     /**
@@ -167,7 +173,9 @@ public class PropertiesStructure extends Element {
             Element.ItemElem item = getItem(newKey);
             if (item == null) {
                 item = getItem(oldKey);
-                if (item == null) return false;
+                if (item == null) {
+                    return false;
+                }
                 items.remove(oldKey);
                 items.put(newKey, item);
                 item.setKey(newKey); // fires itemKeyChanged()
@@ -185,8 +193,9 @@ public class PropertiesStructure extends Element {
         synchronized(getParent()) {
             Element.ItemElem item = getItem(key);
             
-            if (item == null)
+            if (item == null) {
                 return false;
+            }
             try {
                 item.getBounds().setText(""); // NOI18N
                 items.remove(key);
@@ -202,13 +211,17 @@ public class PropertiesStructure extends Element {
         }
     }
 
-    /** Adds an item to the end of the file, or before the terminating comment, if exists.
-     * @return <code>true</code> if the item has been added successfully, <code>false</code> otherwise */
+    /**
+     * Adds an item to the end of the file, or before the terminating comment,
+     * if there is any.
+     *
+     * @return <code>true</code> if the item has been added successfully, <code>false</code> otherwise
+     */
     public boolean addItem(String key, String value, String comment) {
         Element.ItemElem item = getItem(key);
-        if (item != null)
+        if (item != null) {
             return false;
-
+        }
         // construct the new element
         item = new Element.ItemElem(null,
                                     new Element.KeyElem    (null, key),
@@ -219,7 +232,9 @@ public class PropertiesStructure extends Element {
             synchronized(getParent()) {
                 PositionBounds pos = getBounds();
                 
-                PositionBounds itemBounds = pos.insertAfter("\n").insertAfter(item.getDocumentString()); // NOI18N
+                PositionBounds itemBounds
+                        = pos.insertAfter("\n")
+                             .insertAfter(item.getDocumentString());
                 item.bounds = itemBounds;
 
                 //#17044 update in-memory model
@@ -254,11 +269,17 @@ public class PropertiesStructure extends Element {
     /** Notification that the structure has changed (items have been added or
      * deleted, also includes changing an item's key). */
     void structureChanged(Map changed, Map inserted, Map deleted) {
-        getParentBundleStructure().notifyOneFileChanged(getParent(), changed, inserted, deleted);
+        getParentBundleStructure().notifyOneFileChanged(
+                getParent(),
+                changed,
+                inserted,
+                deleted);
     }
 
-    /** Notification that an item's key has changed. Subcase of structureChanged().
-     * Think twice when using this - don't I need to reparse all files ? */
+    /**
+     * Notification that an item's key has changed. Subcase of structureChanged().
+     * Think twice when using this - don't I need to reparse all files ?
+     */
     void itemKeyChanged(String oldKey, Element.ItemElem newElem) {
         // structural change information - watch: there may be two properties of the same name !
         // maybe this is unnecessary
@@ -268,14 +289,18 @@ public class PropertiesStructure extends Element {
 
         // old key
         Element.ItemElem item = getItem(oldKey);
-        if(item == null)
+        if (item == null) {
             // old key deleted
-            deleted.put(oldKey, new Element.ItemElem( null, new Element.KeyElem(null, oldKey),
-                new Element.ValueElem(null, "") , new Element.CommentElem(null, "")));
-        else
+            Element.ItemElem emptyItem = new Element.ItemElem(
+                    null,
+                    new Element.KeyElem(null, oldKey),
+                    new Element.ValueElem(null, ""),                    //NOI18N
+                    new Element.CommentElem(null, ""));                 //NOI18N
+            deleted.put(oldKey, emptyItem);
+        } else {
             // old key changed
             changed.put(item.getKey(), item);
-
+        }
         // new key
         inserted.put(newElem.getKey(), newElem);
 

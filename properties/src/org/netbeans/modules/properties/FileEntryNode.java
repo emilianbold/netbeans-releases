@@ -29,6 +29,8 @@ import org.openide.util.WeakListener;
 
 /** 
  * Standard node representing a <code>PresentableFileEntry</code>.
+ *
+ * @see  PresentableFileEntry
  * @author Petr Jiricka
  */
 public class FileEntryNode extends AbstractNode {
@@ -43,8 +45,10 @@ public class FileEntryNode extends AbstractNode {
     private PresentableFileEntry entry;
 
 
-    /** Create a data node for a given file entry.
+    /**
+     * Creates a data node for a given file entry.
      * The provided children object will be used to hold all child nodes.
+     *
      * @param entry entry to work with
      * @param ch children container for the node
      */
@@ -53,7 +57,8 @@ public class FileEntryNode extends AbstractNode {
         this.entry = entry;
         
         PropL propListener = new PropL ();
-        entry.addPropertyChangeListener(WeakListener.propertyChange(propListener, entry));
+        entry.addPropertyChangeListener(
+                WeakListener.propertyChange(propListener, entry));
         entry.getDataObject().addPropertyChangeListener (propListener);
         
         super.setName (entry.getName ());
@@ -161,11 +166,12 @@ public class FileEntryNode extends AbstractNode {
 
                 public void setValue (Object val) throws IllegalAccessException,
                     IllegalArgumentException, InvocationTargetException {
-                    if (!canWrite())
+                    if (!canWrite()) {
                         throw new IllegalAccessException();
-                    if (!(val instanceof String))
+                    }
+                    if (!(val instanceof String)) {
                         throw new IllegalArgumentException();
-
+                    }
                     FileEntryNode.this.setName ((String)val);
                 }
 
@@ -191,17 +197,20 @@ public class FileEntryNode extends AbstractNode {
     }
 
 
-    /** Support for firing property change.
+    /**
+     * Support for firing property change.
+     *
      * @param ev event describing the change
      */
     void fireChange (PropertyChangeEvent ev) {
         // XXX this is wrong - e.g. if propertyName = PROP_COOKIE, should *not* call fPC
-        firePropertyChange (ev.getPropertyName (), ev.getOldValue (), ev.getNewValue ());
-        if (ev.getPropertyName().equals(DataObject.PROP_NAME)) {
+        String propertyName = ev.getPropertyName();
+        firePropertyChange(propertyName, ev.getOldValue(), ev.getNewValue());
+        if (propertyName.equals(DataObject.PROP_NAME)) {
             super.setName (entry.getName ());
             return;
         }
-        if (ev.getPropertyName().equals(Node.PROP_COOKIE)) {
+        if (propertyName.equals(Node.PROP_COOKIE)) {
             fireCookieChange();
         }
     }

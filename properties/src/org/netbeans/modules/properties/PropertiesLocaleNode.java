@@ -40,12 +40,14 @@ import org.openide.util.NbBundle;
 
 
 /** 
- * Object that provides main functionality for properties data loader.
- * This class is final only for performance reasons,
- * can be unfinaled if desired.
+ * Node representing a single properties file.
+ *
+ * @see  PropertiesDataNode
  * @author Ian Formanek
  */
-public final class PropertiesLocaleNode extends FileEntryNode implements CookieSet.Factory, Node.Cookie {
+public final class PropertiesLocaleNode extends FileEntryNode
+                                        implements CookieSet.Factory,
+                                                   Node.Cookie {
 
     /** Icon base for the <code>PropertiesDataNode</code> node. */
     private static final String LOCALE_ICON_BASE = "org/netbeans/modules/properties/propertiesLocale"; // NOI18N

@@ -65,12 +65,13 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     }
 
     
-    /** Gets default display name. Overrides superclass method. */
+    /** */
     protected String defaultDisplayName() {
-        return NbBundle.getBundle(PropertiesDataLoader.class).getString("PROP_PropertiesLoader_Name");
+        return NbBundle.getMessage(PropertiesDataLoader.class,
+                                   "PROP_PropertiesLoader_Name");       //NOI18N
     }
     
-    /** Gets default system actions. Overrides superclass method. */
+    /** */
     protected SystemAction[] defaultActions() {
         return new SystemAction[] {
             SystemAction.get(OpenAction.class),
@@ -92,27 +93,28 @@ public final class PropertiesDataLoader extends MultiFileLoader {
         };
     }
 
-    /** Creates new PropertiesDataObject for this FileObject.
-     * @param fo FileObject
-     * @return new PropertiesDataObject
+    /**
+     * @return  <code>PropertiesDataObject</code> for the specified
+     *          <code>FileObject</code>
      */
     protected MultiDataObject createMultiObject(final FileObject fo)
-    throws IOException {
+            throws IOException {
         return new PropertiesDataObject(fo, this);
     }
 
-    /** For a given file finds a primary file.
-     * @param fo the file to find primary file for
-     * @return the primary file for the file or null if the file is not
-     *   recognized by this loader
-     */
+    /** */
     protected FileObject findPrimaryFile (FileObject fo) {
         if (fo.getExt().equalsIgnoreCase(PROPERTIES_EXTENSION)) {
-            // returns a file whose name is the shortest valid prefix corresponding to an existing file
+            
+            /*
+             * returns a file whose name is the shortest valid prefix
+             * corresponding to an existing file
+             */
             String fName = fo.getName();
             int index = fName.indexOf(PRB_SEPARATOR_CHAR);
             while (index != -1) {
-                FileObject candidate = fo.getParent().getFileObject(fName.substring(0, index), fo.getExt());
+                FileObject candidate = fo.getParent().getFileObject(
+                        fName.substring(0, index), fo.getExt());
                 if (candidate != null) {
                     return candidate;
                 }
@@ -124,42 +126,46 @@ public final class PropertiesDataLoader extends MultiFileLoader {
         }
     }
 
-    /** 
-     * Creates the right primary entry for given primary file.
-     * @param primaryFile primary file recognized by this loader
-     * @return primary entry for that file
+    /**
+     * @return  <code>PropertiesFileEntry</code> for the given file
      */
-    protected MultiDataObject.Entry createPrimaryEntry (MultiDataObject obj, FileObject primaryFile) {
+    protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj,
+                                                       FileObject primaryFile) {
         return new PropertiesFileEntry(obj, primaryFile);
     }
 
-    /** Creates right secondary entry for given file. The file is said to
-     * belong to an object created by this loader.
-     *
-     * @param secondaryFile secondary file for which we want to create entry
-     * @return the entry
+    /**
+     * @return  <code>PropertiesFileEntry</code> for the given file
      */
-    protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject obj, FileObject secondaryFile) {
-        PropertiesFileEntry pfe = new PropertiesFileEntry(obj, secondaryFile);
-        return pfe;
+    protected MultiDataObject.Entry createSecondaryEntry(
+            MultiDataObject obj,
+            FileObject secondaryFile) {
+        return new PropertiesFileEntry(obj, secondaryFile);
     }
     
 
-    /** Set the extension list for this data loader.
-    * @param ext new list of extensions
-    */
+    /**
+     * Sets the extension list for this data loader.
+     * This data loader will then recognize all files having any extension
+     * of the given list.
+     *
+     * @param  extList  list of extensions
+     */
     public void setExtensions(ExtensionList ext) {
-        putProperty (PROP_EXTENSIONS, ext, true);
+        putProperty(PROP_EXTENSIONS, ext, true);
     }
 
-    /** Get the extension list for this data loader.
-    * @return list of extensions
-    */
+    /**
+     * Get the extension list for this data loader.
+     *
+     * @return  list of extensions
+     * @see  #setExtensions
+     */
     public ExtensionList getExtensions() {
-        ExtensionList l = (ExtensionList)getProperty (PROP_EXTENSIONS);
+        ExtensionList l = (ExtensionList) getProperty(PROP_EXTENSIONS);
         if (l == null) {
-            l = new ExtensionList ();
-            putProperty (PROP_EXTENSIONS, l, false);
+            l = new ExtensionList();
+            putProperty(PROP_EXTENSIONS, l, false);
         }
         return l;
     }

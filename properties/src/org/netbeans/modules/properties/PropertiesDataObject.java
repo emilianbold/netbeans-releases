@@ -62,9 +62,20 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     private transient String pasteSuffix;
 
 
-    /** Constructor. */
-    public PropertiesDataObject (final FileObject obj, final MultiFileLoader loader) throws DataObjectExistsException {
-        super(obj, loader);
+    /**
+     * Constructs a <code>PropertiesDataObject</code> for a specified
+     * primary file.
+     *
+     * @param  primaryFile  primary file to creata a data object for
+     * @param  loader  data loader which recognized the primary file
+     * @exception   org.openide.loaders.DataObjectExistsException 
+     *              if another <code>DataObject</code> already exists
+     *              for the specified file
+     */
+    public PropertiesDataObject(final FileObject primaryFile,
+                                final MultiFileLoader loader)
+            throws DataObjectExistsException {
+        super(primaryFile, loader);
         // use editor support
         initialize();
     }
@@ -241,7 +252,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     }
 
     
-    /** <code>Children</code> for <code>PropertiesDataNode</code>. */
+    /** Children of this <code>PropertiesDataObject</code>. */
     private class PropertiesChildren extends Children.Keys {
 
         /** Listens to changes on the dataobject */
@@ -261,25 +272,23 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
                     if (o1 == o2) {
                         return 0;
                     }
-                    
-                    if(o1 == null)
+                    if (o1 == null) {
                         return -1;
-                    
-                    if(o2 == null)
-                        return 1;
-                    
-                    if(o1 instanceof String) {
-                        return ((String)o1).compareTo((String)o2);
                     }
-                    
+                    if (o2 == null) {
+                        return 1;
+                    }
+                    if (o1 instanceof String) {
+                        return ((String) o1).compareTo((String) o2);
+                    }
                     return -1;
                 }
             });
 
             newKeys.add(getPrimaryEntry().getFile().getName());
             
-            for(Iterator it = secondaryEntries().iterator();it.hasNext();) {
-                FileEntry fe = (FileEntry)it.next();
+            for (Iterator it = secondaryEntries().iterator(); it.hasNext(); ) {
+                FileEntry fe = (FileEntry) it.next();
                 newKeys.add(fe.getFile().getName());
             }
 

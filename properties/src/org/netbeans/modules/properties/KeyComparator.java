@@ -15,21 +15,25 @@ package org.netbeans.modules.properties;
 
 import java.util.Comparator;
 
-/** Comparator for comparing property keys (Strings).
-*
-* @author Petr Jiricka
-*/
+/**
+ * Comparator for comparing property keys (Strings).
+ *
+ * @author Petr Jiricka
+ */
 public final class KeyComparator implements Comparator {
 
     public int compare(Object o1, Object o2) {
         int res1 = String.CASE_INSENSITIVE_ORDER.compare(o1, o2);
-        if (res1 != 0)
+        if (res1 != 0) {
             return res1;
-        if (o1 instanceof String)
-            return ((String)o1).compareTo(o2);
-        else
+        }
+        if (o1 instanceof String) {
+            return ((String) o1).compareTo(o2);
+        } else {
             throw new ClassCastException(o1.getClass().getName());
+        }
     }
+
 }
 /*
 * <<Log>>

@@ -14,7 +14,6 @@
 
 package org.netbeans.modules.properties;
 
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -23,194 +22,299 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.openide.util.WeakListener;
 
 
 /** 
- * Structure of bundle of .properties files. Provides structure of entries (which each corresponds
- * to one .properties file) for one <code>PropertiesDataObject</code>.
+ * Structure of a bundle of <code>.properties</code> files.
+ * Provides structure of entries (one entry per one .properties file)
+ * for one <code>PropertiesDataObject</code>.
  * <p>
- * This structure provides support for sorting <code>entries</code> and fast mapping of integers to <code>entries</code>.
+ * This structure provides support for sorting entries and fast mapping
+ * of integers to <code>entries</code>.
  * <p>
- * The sorting support in this class is design flaw and consider it deprecated.
+ * The sorting support in this class is a design flaw&nbsp;-
+ * consider it deprecated.
  *
  * @author Petr Jiricka
  */
-public class BundleStructure extends Object {
+public class BundleStructure {
     
-    /** <code>PropertiesDataObject</code> which structure is provided. */
+    /**
+     * <code>PropertiesDataObject</code> whose structure is described
+     * by this object
+     */
     PropertiesDataObject obj;
 
-    /** Array of <code>PropertiesFileEntry</code> entries. The first entry is always the primary entry. 
-     * @see PropertiesFileEntry */
+    /**
+     * file entries of the <code>PropertiesDataObject</code>.
+     * The first entry always represents the primary file.
+     * The other entries represent secondary files and are sorted
+     * by the corresponding files' names.
+     *
+     * @see  #updateEntries
+     */
     private PropertiesFileEntry[] entries;
 
-    /** Sorted list of non-escaped keys. */
+    /**
+     * sorted list of non-escaped keys from all entries
+     *
+     * @see  #buildKeySet
+     */
     private ArrayList keyList;
     
-    /** Compartor which sorts keylist.
+    /**
+     * Compartor which sorts keylist.
      * Default set is sort according keys in file order.
-     * */
+     */
     private KeyComparator comparator = new KeyComparator();
 
-    /** Support for firing events when changes made on this bundle. */
-    private PropertyBundleSupport propBundleSupport = new PropertyBundleSupport(this);
+    /**
+     * registry of <code>PropertyBundleListener</code>s and support
+     * for firing <code>PropertyBundleEvent</code>s.
+     * Methods for registering and notification of listeners delegate to it.
+     */
+    private PropertyBundleSupport propBundleSupport
+            = new PropertyBundleSupport(this);
 
-    /** Listens to changes on the underlying dataobject. */
+    /** listens to changes on the underlying <code>PropertyDataObject</code> */
     private PropertyChangeListener propListener;
-
     
-    /** Create a data node for a given data object.
-     * The provided children object will be used to hold all child nodes.
-     * @param obj object to work with
+    /**
+     * Creates a new instance describing a given
+     * <code>PropertiesDataObject</code>.
+     *
+     * @param  obj  <code>PropertiesDataObject</code> to be desribed
      * @param ch children container for the node
      */
-    public BundleStructure (PropertiesDataObject obj) {
+    public BundleStructure(PropertiesDataObject obj) {
         this.obj = obj;
         updateEntries();
 
         // Listen on the PropertiesDataObject.
-        propListener = new PropertyChangeListener () {
+        propListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(PropertiesDataObject.PROP_FILES)) {
+                if (evt.getPropertyName().equals(
+                        PropertiesDataObject.PROP_FILES)) {
                     updateEntries();
-                    
                     propBundleSupport.fireBundleStructureChanged();
                 }
             }
         };
-        obj.addPropertyChangeListener(WeakListener.propertyChange(propListener, obj));
+        obj.addPropertyChangeListener(
+                WeakListener.propertyChange(propListener, obj));
     }
 
     
-    /** Retrieves n-th entry from the list, indexed from 0.
+    /**
+     * Retrieves n-th entry from the list, indexed from <code>0</code>.
      * The first entry is always the primary entry.
-     * @return n-th ntry or null if index is out of bounds */
-    public PropertiesFileEntry getNthEntry(int i) {
-        if (entries == null)
-            throw new IllegalStateException("Resource Bundles: Entries not initialized"); // NOI18N
-
-        try {
-            return entries[i];
-        } catch(ArrayIndexOutOfBoundsException aibe) {
+     *
+     * @param  index  index of entry to be retrieved, starting at <code>0</code>
+     * @return  entry at the specified index;
+     *          or <code>null</code> if the index is out of bounds
+     */
+    public PropertiesFileEntry getNthEntry(int index) {
+        if (entries == null) {
+            notifyEntriesNotInitialized();
+        }
+        if (index >= 0 && index < entries.length) {
+            return entries[index];
+        } else {
             return null;
         }
     }
 
-    /** Retrieves the index of a file entry (primary or secondary) by the name of its file
-     *  @return index for entry with the given filename or -1 if not found
+    /**
+     * Retrieves an index of a file entry representing the given file.
+     *
+     * @param  fileName  simple name (excl. path, incl. extension) of the
+     *                   primary or secondary file
+     * @return  index of the entry representing a file with the given filename;
+     *          or <code>-1</code> if no such entry is found
+     * @exception  java.lang.IllegalStateException
+     *             if the list of entries has not been initialized yet
+     * @see  #getEntryByFileName
      */
     public int getEntryIndexByFileName(String fileName) {
-        if(entries == null)
-            throw new IllegalStateException("Resource Bundles: Entries not initialized"); // NOI18N
-            
+        if (entries == null) {
+            notifyEntriesNotInitialized();
+        }            
         for (int i = 0; i < getEntryCount(); i++) {
-            if (entries[i].getFile().getName().equals(fileName))
+            if (entries[i].getFile().getName().equals(fileName)) {
                 return i;
+            }
         }
-            
         return -1;
     }
 
-    /** Retrieves a file entry (primary or secondary) by the name of its file
-     *  @return entry with the given filename or null if not found
+    /**
+     * Retrieves a file entry representing the given file
+     *
+     * @param  fileName  simple name (excl. path, incl. extension) of the
+     *                   primary or secondary file
+     * @return  entry representing the given file;
+     *          or <code>null</code> if not such entry is found
+     * @exception  java.lang.IllegalStateException
+     *             if the list of entries has not been initialized yet
+     * @see  #getEntryIndexByFileName
      */
     public PropertiesFileEntry getEntryByFileName(String fileName) {
         int index = getEntryIndexByFileName(fileName);
         return ((index == -1) ? null : entries[index]);
     }
 
-    /** Retrieves number of all entries */
+    /**
+     * Retrieves number of file entries.
+     *
+     * @return  number of file entries
+     * @exception  java.lang.IllegalStateException
+     *             if the list of entries has not been initialized yet
+     */
     public int getEntryCount() {
-        if(entries == null)
-            throw new IllegalStateException("Resource Bundles: Entries not initialized"); // NOI18N
-
+        if (entries == null) {
+            notifyEntriesNotInitialized();
+        }
         return entries.length;
     }
 
-    // Sorted keys management ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Sorted keys management ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    /** Retrieves all un-escaped keys in bundle. */
+    /**
+     * Retrieves all un-escaped keys in bundle.
+     *
+     * @return  sorted array of non-escaped keys
+     * @exception  java.lang.IllegalStateException
+     *             if the list of keys has not been initialized yet
+     * @see  #sort
+     */
     public String[] getKeys() {
-        if (keyList == null)
-            throw new IllegalStateException("Resource Bundles: KeyList not initialized"); // NOI18N
-        
-        Object keyArray[] = keyList.toArray();
-        String stringArray[] = new String[keyArray.length];
-        System.arraycopy(keyArray, 0, stringArray, 0, keyArray.length);
-        
-        return stringArray;
+        if (keyList == null) {
+            notifyKeyListNotInitialized();
+        }
+        return (String[]) keyList.toArray(new String[0]);
     }
 
     /**
-     * Retrieves n-th key from the list, indexed from 0.
-     * @param keyIndex index accrding to current sort order
-     * @return unescaped key
-     * */
+     * Retrieves the n-th bundle key from the list, indexed from <code>0</code>.
+     *
+     * @param  keyIndex  index according to the current order of keys
+     * @return  non-escaped key at the given position;
+     *          or <code>null</code> if the given index is out of range
+     * @exception  java.lang.IllegalStateException
+     *             if the list of keys has not been initialized yet
+     */
     public String keyAt(int keyIndex) {
-        if (keyList == null)
-            throw new IllegalStateException("Resource Bundles: KeyList not initialized"); // NOI18N
-        
-        if ((keyIndex >= keyList.size()) || (keyIndex < 0)) {
+        if (keyList == null) {
+            notifyKeyListNotInitialized();
+        }
+        if (keyIndex < 0 || keyIndex >= keyList.size()) {
             return null;
         } else {
-            return (String)keyList.get(keyIndex);
+            return (String) keyList.get(keyIndex);
         }
     }
 
     /**
-     * Retrieves index for a key from the list, by name.
-     * @param keyName non-escaped key name
-     * @return 0-based position of key in current sort order or -1 it it does not exist
+     * Returns the index of the given key within the sorted list of keys
+     *
+     * @param  key  non-escaped key
+     * @return  position of the given key in the bundle;
+     *          or <code>-1</code> if the key was not found
+     * @exception  java.lang.IllegalStateException
+     *             if the list of keys has not been initialized yet
      */
-    public int getKeyIndexByName(String keyName) {
-        return keyList.indexOf(keyName);
+    public int getKeyIndexByName(String key) {
+        if (keyList == null) {
+            notifyKeyListNotInitialized();
+        }
+        return keyList.indexOf(key);
     }
 
-    /** Retrieves keyIndex-th key in the entryIndex-th entry from the list, indexed from 0
-     * @return item for keyIndex-th key in the entryIndex-th entry 
-     *  or null if the entry does not contain the key or entry doesn't exist
+    /**
+     * Retrieves keyIndex-th key in the entryIndex-th entry from the list,
+     * indexed from <code>0</code>.
+     *
+     * @return  item  for keyIndex-th key in the entryIndex-th entry;
+     *                or <code>null</code> if the entry does not contain
+     *                the key or entry doesn't exist
      */
     public Element.ItemElem getItem(int entryIndex, int keyIndex) {
         String key = keyAt(keyIndex);
         return getItem(entryIndex, key);
     }
 
+    /**
+     * Returns a property item having a given key, from a given file entry.
+     *
+     * @param  entryIndex  index of the file entry to get the item from
+     * @param  key  key of the property to receive
+     * @return  item from the given file entry, having the given key;
+     *          or <code>null</code> if one of the following is true:
+     *          <ul>
+     *              <li>entry index is out of bounds</li>
+     *              <li><code>null</code> was passed as a key</li>
+     *              <li>the given key was not found in the given entry</li>
+     *              <li>structure of the given file entry is not available
+     *                  because of an error while reading the entry
+     *                  or because parsing of the file entry was stopped
+     *                  for some reason</li>
+     *          </ul>
+     * @see  org.netbeans.modules.properties.Element.ItemElem
+     */
     public Element.ItemElem getItem(int entryIndex, String key) {
-        if (key == null) return null;
-        PropertiesFileEntry pfe = getNthEntry(entryIndex);
-        if(pfe == null) return null;
-
-        PropertiesStructure ps = pfe.getHandler().getStructure();
-        if (ps != null)
-            return ps.getItem(key);
-        else
+        if (key == null) {
             return null;
-
+        }
+        PropertiesFileEntry pfe = getNthEntry(entryIndex);
+        if (pfe == null) {
+            return null;
+        }
+        PropertiesStructure ps = pfe.getHandler().getStructure();
+        if (ps != null) {
+            return ps.getItem(key);
+        } else {
+            return null;
+        }
     }
 
-    /** Retrieves number of all keys. */
+    /**
+     * Returns count of all unique keys found in all file entries.
+     *
+     * @return  size of a union of keys from all entries
+     * @exception  java.lang.IllegalStateException
+     *             if the list of keys has not been initialized yet
+     */
     public int getKeyCount() {
-        if (keyList != null)
+        if (keyList != null) {
             return keyList.size();
-        else
-            throw new IllegalStateException("Resource Bundles: KeyList not initialized"); // NOI18N
+        } else {
+            notifyKeyListNotInitialized();
+            return 0;       //will not happen
+        }
     }
     
-    /** Sorts the keylist according the values of entry which index is given to this method.
-     * @param index sorts accordinng nth-1 entry values, 0 means sort by keys,
-     * if less than 0 it re-compares keylist with the same un-changed comparator.
+    /**
+     * Sorts the keylist according the values of entry which index is given
+     * to this method.
+     *
+     * @param  index  sorts accordinng nth-1 entry values, <code>0</code> means
+     *                sort by keys, if less than <code>0</code> it re-compares
+     *                keylist with the same un-changed comparator.
      */
     public void sort(int index) {
-        if(index >= 0)
+        if (index >= 0) {
             comparator.setIndex(index);
+        }
         Collections.sort(keyList, comparator);
         propBundleSupport.fireBundleDataChanged();
     }
 
-    /** Gets index accoring which is bundle key list sorted.
-     * @return index, 0 means according keys, -1 means sorting as in default
+    /**
+     * Gets index accoring which is bundle key list sorted.
+     *
+     * @return  index, <code>0</code> means according keys,
+     *                 <code>-1</code> means sorting as in default
      * properties file
      */
     public int getSortIndex() {
@@ -219,64 +323,86 @@ public class BundleStructure extends Object {
     
     /**
      * Gets current order of sort.
-     * @return true if ascending, alse descending order (until sort index is -1, then unsorted)
+     *
+     * @return  true  if ascending, alse descending order
+     *                (until sort index is <code>-1</code>, then unsorted)
      */
     public boolean getSortOrder() {
         return comparator.isAscending();
     }
 
-    /** Helper method. Updates internal entries from the underlying <code>PropertiesDataObject<code>. */
+    /**
+     * Builds (or rebuilds) a sorted list of entries of the underlying
+     * <code>PropertiesDataObject<code> and a sorted list of keys gathered
+     * from all the entries.
+     *
+     * @see  #entries
+     * @see  #keyList
+     */
     private void updateEntries() {
-        TreeMap tm = new TreeMap(PropertiesDataObject.getSecondaryFilesComparator());
-        PropertiesFileEntry pfe;
+        TreeMap tm = new TreeMap(
+                PropertiesDataObject.getSecondaryFilesComparator());
         for (Iterator it = obj.secondaryEntries().iterator(); it.hasNext(); ) {
-            pfe = (PropertiesFileEntry)it.next();
-            tm.put(pfe.getFile().getName(), pfe);
+            PropertiesFileEntry entry = (PropertiesFileEntry) it.next();
+            tm.put(entry.getFile().getName(), entry);
         }
 
-        synchronized(this) {
+        synchronized (this) {
             // Move the entries.
-            entries = new PropertiesFileEntry[tm.size() + 1];
-            entries[0] = (PropertiesFileEntry)obj.getPrimaryEntry();
+            int entriesCount = tm.size();
+            entries = new PropertiesFileEntry[entriesCount + 1];
+            entries[0] = (PropertiesFileEntry) obj.getPrimaryEntry();
+            
             int index = 0;
-            for (Iterator it = tm.keySet().iterator(); it.hasNext(); )
-                entries[++index] = (PropertiesFileEntry)tm.get(it.next());
+            for (Iterator i = tm.entrySet().iterator(); i.hasNext(); ) {
+                entries[++index] = (PropertiesFileEntry)
+                                   ((Map.Entry) i.next()).getValue();
+            }
         }
-
         buildKeySet();
     }
 
-    /** Helper method. Constructs a set of keys from the entries (from scratch). */
+    /**
+     * Constructs a sorted list of all keys gathered from all entries.
+     *
+     * @see  #keyList
+     */
     private void buildKeySet() {
         keyList = new ArrayList() {
             public boolean equals(Object obj) {
-                if(!(obj instanceof ArrayList))
+                if (!(obj instanceof ArrayList)) {
                     return false;
-                ArrayList list2 = (ArrayList)obj;
+                }
+                ArrayList list2 = (ArrayList) obj;
                 
-                if(this.size() != list2.size())
+                if (this.size() != list2.size()) {
                     return false;
-                for(int i=0; i<this.size(); i++) {
-                    if(!this.contains(list2.get(i)) || !list2.contains(this.get(i)))
+                }
+                for (int i = 0; i < this.size(); i++) {
+                    if (!this.contains(list2.get(i))
+                            || !list2.contains(this.get(i))) {
                         return false;
+                    }
                 }
                 return true;
             }
         };
 
         // for all entries add all keys
-        for (int index = 0; index < getEntryCount(); index++) {
+        int entriesCount = getEntryCount();
+        for (int index = 0; index < entriesCount; index++) {
             PropertiesFileEntry entry = getNthEntry(index);
             PropertiesStructure ps = entry.getHandler().getStructure();
-            if(ps != null) {
-                for(Iterator it = ps.allItems(); it.hasNext(); ) {
-                    Element.ItemElem item = (Element.ItemElem)it.next();
-                    if(item == null)
+            if (ps != null) {
+                for (Iterator it = ps.allItems(); it.hasNext(); ) {
+                    Element.ItemElem item = (Element.ItemElem) it.next();
+                    if (item == null) {
                         continue;
-                    
+                    }
                     String key = item.getKey();
-                    if(key != null && !(keyList.contains(key)) )
+                    if (key != null && !(keyList.contains(key))) {
                         keyList.add(item.getKey());
+                    }
                 }
             }
         }
@@ -284,24 +410,39 @@ public class BundleStructure extends Object {
         Collections.sort(keyList, comparator);
     }
 
-    /** Adds listener to the list that's notified each time a change
-     * to the property bundle occurs.
-     * @param l the <code>PropertyBundleListener</code>
+    /**
+     * Registers a given listener so that it will receive notifications
+     * about changes in a property bundle.
+     * If the given listener is already registered, a duplicite registration
+     * will be performed, so that it will get notifications multiple times.
+     *
+     * @param  l  listener to be registered
+     * @see  #removePropertyBundleListener
      */
     public void addPropertyBundleListener(PropertyBundleListener l) {
         propBundleSupport.addPropertyBundleListener(l);
     }
 
     /**
-     * Removes listener from the list.
-     * @param l the <code>PropertyBundleListener</code>
+     * Unregisters a given listener so that it will no more receive
+     * notifications about changes in a property bundle.
+     * If the given listener has been registered multiple times,
+     * only one registration item will be removed.
+     *
+     * @param	l		the PropertyBundleListener
+     * @see  #addPropertyBundleListener
      */
     public void removePropertyBundleListener(PropertyBundleListener l) {
         propBundleSupport.removePropertyBundleListener(l);
     }
 
-    /** Notification method.
-     * One item in a properties file has changed. Fires a change event for this item.
+    /**
+     * Notifies registered listeners of a change of a single item
+     * in a single file entry.
+     *
+     * @param  struct  object describing the file entry
+     * @param  item  changed item (within the entry)
+     * @see  #addPropertyBundleListener
      */
     void notifyItemChanged(PropertiesStructure struct, Element.ItemElem item) {
         propBundleSupport.fireItemChanged(
@@ -310,27 +451,45 @@ public class BundleStructure extends Object {
         );
     }
 
-    /** Notification method.
-     * One file in the bundle has changed - no further information.
-     * Fires changes for a bundle or a file according to the changes in the keys.
+    /**
+     * Notifies registered listeners of a change in a single file entry.
+     * Depending whether a list of keys has changed, either an event
+     * for a single file is fired (if the list of keys has remained unchanged)
+     * or a notification of a complex change is fired.
+     *
+     * @param  handler  handler of an object keeping structure of the modified
+     *                  file (entry)
      */
     void notifyOneFileChanged(StructHandler handler) {
         // PENDING - events should be finer
-        // find out whether global key table has changed and fire a change according to that
+        // find out whether global key table has changed and fire a change
+        // according to that
         ArrayList oldKeyList = keyList;         
         
         buildKeySet();
         if (!keyList.equals(oldKeyList)) {
             propBundleSupport.fireBundleDataChanged();
         } else {
-            propBundleSupport.fireFileChanged(handler.getEntry().getFile().getName());
+            propBundleSupport.fireFileChanged(
+                    handler.getEntry().getFile().getName());
         }
     }
 
-    /** One file in the bundle has changed, carries information about what particular items have changed.
-     * Fires changes for a bundle or a file according to the changes in the keys.
+    /**
+     * Notifies registered listeners of a change in a single file entry.
+     * The <code>Map</code> arguments are actually list of items,
+     * each <code>Map</code> entry is a pair &lt;item&nbsp;key, item&gt;.
+     *
+     * @param  handler  handler of an object keeping structure of the modified
+     *                  file (entry)
+     * @param  itemsChanged  list of modified items in the entry
+     * @param  itemsAdded    list of items added to the entry
+     * @param  itemsDeleted  list of items removed from the entry
      */
-    void notifyOneFileChanged(StructHandler handler, Map itemsChanged, Map itemsAdded, Map itemsDeleted) {
+    void notifyOneFileChanged(StructHandler handler,
+                              Map itemsChanged,
+                              Map itemsAdded,
+                              Map itemsDeleted) {
         // PENDING - events should be finer
         // find out whether global key table has changed
         // should use a faster algorithm of building the keyset
@@ -338,8 +497,33 @@ public class BundleStructure extends Object {
         propBundleSupport.fireBundleDataChanged();
     }
 
+    /**
+     * Throws a runtime exception with a message that the list of bundle keys
+     * has not been initialized yet.
+     *
+     * @exception  java.lang.IllegalStateException  thrown always
+     * @see  #buildKeySet
+     */
+    private void notifyKeyListNotInitialized() {
+        throw new IllegalStateException(
+                "Resource Bundles: KeyList not initialized");           //NOI18N
+    }
     
-    /** Inner class. Comparator which compares keys according which locale (column in table was selected). */
+    /**
+     * Throws a runtime exception with a message that the entries
+     * have not been initialized yet.
+     *
+     * @exception  java.lang.IllegalStateException  thrown always
+     * @see  #updateEntries
+     */
+    private void notifyEntriesNotInitialized() {
+        throw new IllegalStateException(
+                "Resource Bundles: Entries not initialized");           //NOI18N
+    }
+    
+    /**
+     * Comparator which compares keys according which locale (column in table was selected).
+     */
     private final class KeyComparator implements Comparator {
 
         /** Index of column to compare with. */
@@ -358,13 +542,16 @@ public class BundleStructure extends Object {
         
         /**
          * Setter for <code>index</code> property.
-         * ascending -> descending -> primary file key order -> ....
-         * @param index interval 0 .. entry count
-         * */
+         * ascending -&gt; descending -&gt; primary file key order -&gt; ....
+         *
+         * @param  index  interval <code>0</code> .. entry count
+         */
         public void setIndex(int index) {
-            if (index == -1) throw new IllegalArgumentException();
+            if (index == -1) {
+                throw new IllegalArgumentException();
+            }
             // if same column toggle order
-            if(this.index == index) {
+            if (this.index == index) {
                 if (ascending) {
                     ascending = false;
                 } else {
@@ -380,7 +567,8 @@ public class BundleStructure extends Object {
 
         /**
          * Getter for <code>index</code> property.
-         * @return -1 .. entry count, -1 means unsorted
+         *
+         * @return  <code>-1</code>..entry count, <code>-1</code> means unsorted
          * */
         public int getIndex() {
             return index;
@@ -392,8 +580,7 @@ public class BundleStructure extends Object {
         }
 
         /**
-         * Impements <code>Comparator</code>.
-         * It;s strange as it access just being compared list
+         * It's strange as it access just being compared list
          */
         public int compare(Object o1, Object o2) {
             String str1;
@@ -401,8 +588,8 @@ public class BundleStructure extends Object {
             
             // sort as in default properties file
             if (index < 0) {
-                Element.ItemElem item1 = getItem(0, (String)o1);
-                Element.ItemElem item2 = getItem(0, (String)o2);
+                Element.ItemElem item1 = getItem(0, (String) o1);
+                Element.ItemElem item2 = getItem(0, (String) o2);
                 if (item1 != null && item2 != null) {
                     int i1 = item1.getBounds().getBegin().getOffset();
                     int i2 = item2.getBounds().getBegin().getOffset();
@@ -412,40 +599,45 @@ public class BundleStructure extends Object {
                 } else if (item2 != null) {
                     return 1;
                 } else {
-                    // both keys are not in the default properties file
-                    // order keys by name
-                    str1 = (String)o1;
-                    str2 = (String)o2;
+                    /*
+                     * None of the keys is in the default (primary) properties
+                     * file. Order the files by name.
+                     */
+                    str1 = (String) o1;
+                    str2 = (String) o2;
                 }
             }
             // key column
-            if (index==0) {
-                str1 = (String)o1;
-                str2 = (String)o2;
+            if (index == 0) {
+                str1 = (String) o1;
+                str2 = (String) o2;
             } else {
-                Element.ItemElem item1 = getItem(index-1, (String)o1);
-                Element.ItemElem item2 = getItem(index-1, (String)o2);
-                if(item1 == null) {
-                    if(item2 == null)
+                Element.ItemElem item1 = getItem(index - 1, (String) o1);
+                Element.ItemElem item2 = getItem(index - 1, (String) o2);
+                if (item1 == null) {
+                    if (item2 == null) {
                         return 0;
-                    else
+                    } else {
                         return ascending ? 1 : -1;
-                } else
-                    if(item2 == null)
+                    }
+                } else {
+                    if (item2 == null) {
                         return ascending ? -1 : 1;
-                
+                    }
+                }
                 str1 = item1.getValue();
                 str2 = item2.getValue();
             }
 
-            if(str1 == null) {
-                if(str2 == null)
+            if (str1 == null) {
+                if (str2 == null) {
                     return 0;
-                else
+                } else {
                     return ascending ? 1 : -1;
-            } else if(str2 == null)
+                }
+            } else if (str2 == null) {
                 return ascending ? -1 : 1;
-            
+            }
             int res = str1.compareToIgnoreCase(str2);
 
             return ascending ? res : -res;

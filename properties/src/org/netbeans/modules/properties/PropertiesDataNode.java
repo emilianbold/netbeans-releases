@@ -50,7 +50,9 @@ import org.openide.util.NbBundle;
 
 
 /** 
- * Node representing <code>PropertiesDataObject</code>.
+ * Node representing a <code>PropertiesDataObject</code>.
+ * Its children ({@link PropertiesLocaleNode}s) represent
+ * the {@link PropertyFileEntry PropertyFileEntries}.
  *
  * @author Petr Jiricka, Peter Zavadsky
  * @see PropertiesDataObject
