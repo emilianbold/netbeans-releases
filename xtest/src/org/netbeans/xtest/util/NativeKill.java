@@ -42,7 +42,10 @@ public class NativeKill {
         {"SunOS,sparc",UNIX},
         {"Windows_NT,x86",WINDOWS},
         {"Windows_2000,x86",WINDOWS},
-        {"Windows_98,x86",WINDOWS} // is this really true ?*/
+        {"Windows_XP,x86",WINDOWS},
+        {"Windows_95,x86",WINDOWS},
+        {"Windows_98,x86",WINDOWS},        
+        {"Windows_Me,x86",WINDOWS} 
     };
     
     

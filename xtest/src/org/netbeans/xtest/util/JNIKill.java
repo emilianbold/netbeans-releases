@@ -40,7 +40,10 @@ public class JNIKill  {
         {"SunOS,sparc","lib.jnikill.solaris.sparc.so"},
         {"Windows_NT,x86","lib.jnikill.win32.x86.dll"},
         {"Windows_2000,x86","lib.jnikill.win32.x86.dll"},
-        {"Windows_95,x86","lib.jnikill.win32.x86.dll"} // is this really true ?*/
+        {"Windows_XP,x86","lib.jnikill.win32.x86.dll"},
+        {"Windows_95,x86","lib.jnikill.win32.x86.dll"},
+        {"Windows_98,x86","lib.jnikill.win32.x86.dll"},
+        {"Windows_Me,x86","lib.jnikill.win32.x86.dll"}
     };
     
     // static initializer of JNIKill - just load appropriate dynamic library
