@@ -27,8 +27,19 @@ import org.openide.util.Lookup;
 import org.openide.xml.EntityCatalog;
 
 
-/** Entity resolver which loads entities (typically DTDs) from fixed
+/** 
+ * Entity resolver which loads entities (typically DTDs) from fixed
  * locations in the system file system, according to public ID.
+ * <p>
+ * It expects that PUBLIC has at maximum three "//" parts 
+ * (standard // vendor // entity name // language). It is basically
+ * converted to <tt>"/xml/entities/{vendor}/{entity_name}"</tt> resource name.
+ * <p>
+ * It also attaches <tt>Environment</tt> according to registrations
+ * at <tt>/xml/lookups/</tt> area. There can be registered <tt>XMLDataObject.Processor</tt>
+ * or <tt>XMLDataObject.Info</tt> instances.
+ * <p>
+ * All above are core implementation features.
  *
  * @author  Jaroslav Tulach
  */
@@ -159,6 +170,11 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
     }
 
     /** Converts the publicID into filesystem friendly name.
+     * <p>
+     * It expects that PUBLIC has at maximum three "//" parts 
+     * (standard // vendor // entity name // language). It is basically
+     * converted to "vendor/entity_name" resource name.
+     *
      * @see EntityCatalog
      */
     private static String convertPublicId (String publicID) {
