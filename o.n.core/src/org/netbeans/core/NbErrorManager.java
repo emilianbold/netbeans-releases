@@ -123,10 +123,12 @@ final class NbErrorManager extends ErrorManager {
                              TopLogging.getLogOutputStream ()
                          );
 
-        ps.println ("*********** Exception occured ************"); // NOI18N
+	// [PENDING] does not seem to work, nothing is printed...?
+        ps.println ("*********** Exception occurred ************"); // NOI18N
 
 
         /** If netbeans.debug.exceptions is set, print the exception to console */
+	// [PENDING] if it is a severe error, shouldn't it be printed in any case?
         if (System.getProperty ("netbeans.debug.exceptions") != null) { // NOI18N
             PrintWriter pw = new PrintWriter (System.err);
             ex.printStackTrace (pw);
