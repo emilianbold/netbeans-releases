@@ -201,19 +201,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     }
     
     void read (WizardDescriptor settings) {
-        String projectName = (String) settings.getProperty ("displayName"); //NOI18N
-        if (projectName == null) {
-            if (this.type == NewJ2SEProjectWizardIterator.TYPE_APP) {
-                projectName = MessageFormat.format (NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaApplication"), new Object[]{
-                    new Integer (FoldersListSettings.getDefault().getNewApplicationCount()+1)});
-            }
-            else {
-                projectName = MessageFormat.format (NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaLibrary"), new Object[]{
-                    new Integer (FoldersListSettings.getDefault().getNewLibraryCount()+1)});                
-            }            
-        }
-        this.projectNameTextField.setText (projectName);
-        
         File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
         if (projectLocation == null) {
             projectLocation = ProjectChooser.getProjectsFolder();
@@ -222,6 +209,26 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             projectLocation = projectLocation.getParentFile();
         }
         this.projectLocationTextField.setText (projectLocation.getAbsolutePath());
+        
+        String projectName = (String) settings.getProperty ("displayName"); //NOI18N
+        if (projectName == null) {
+            if (this.type == NewJ2SEProjectWizardIterator.TYPE_APP) {
+                int baseCount = FoldersListSettings.getDefault().getNewApplicationCount() + 1;
+                String formater = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaApplication");
+                while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
+                    baseCount++;                
+                settings.putProperty (NewJ2SEProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
+            }
+            else {                
+                int baseCount = FoldersListSettings.getDefault().getNewLibraryCount() + 1;
+                String formater = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaLibrary");
+                while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
+                    baseCount++;                
+                settings.putProperty (NewJ2SEProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
+            }            
+        }
+        this.projectNameTextField.setText (projectName);                
+        this.projectNameTextField.selectAll();
     }
         
     
@@ -244,6 +251,12 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         chooser.setAcceptAllFileFilterUsed( false );
         chooser.setName( "Select Project Directory" ); // XXX
         return chooser;
+    }
+    
+    private String validFreeProjectName (final File parentFolder, final String formater, final int index) {
+        String name = MessageFormat.format (formater, new Object[]{new Integer (index)});                
+        File file = new File (parentFolder, name);
+        return file.exists() ? null : name;
     }
 
     // Implementation of DocumentListener --------------------------------------

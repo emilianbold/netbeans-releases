@@ -106,14 +106,6 @@ public class PanelSourceFolders extends SettingsPanel {
         if (path!=null) {
             this.tests.setText (path);
         }
-        String projectName = (String) settings.getProperty ("displayName"); //NOI18N
-        if (projectName == null) {
-            projectName = MessageFormat.format (NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaProject"), new Object[]{
-                new Integer (FoldersListSettings.getDefault().getNewProjectCount()+1)
-            });
-        }
-        this.projectName.setText (projectName);
-        
         File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
         if (projectLocation == null) {
             projectLocation = ProjectChooser.getProjectsFolder();
@@ -122,6 +114,20 @@ public class PanelSourceFolders extends SettingsPanel {
             projectLocation = projectLocation.getParentFile();
         }
         this.projectLocation.setText (projectLocation.getAbsolutePath());
+        String projectName = (String) settings.getProperty ("displayName"); //NOI18N
+        if (projectName == null) {
+            int index = FoldersListSettings.getDefault().getNewProjectCount();
+            String formater = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaProject");
+            File file;
+            do {
+                index++;                            
+                projectName = MessageFormat.format (formater, new Object[]{new Integer (index)});                
+                file = new File (projectLocation, projectName);                
+            } while (file.exists());                                
+            settings.putProperty (NewJ2SEProjectWizardIterator.PROP_NAME_INDEX, new Integer(index));                        
+        }
+        this.projectName.setText (projectName);                
+        this.sources.selectAll ();
     }
 
     void store (WizardDescriptor settings) {

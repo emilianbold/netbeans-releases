@@ -46,6 +46,8 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
     static final int TYPE_APP = 0;
     static final int TYPE_LIB = 1;
     static final int TYPE_EXT = 2;
+    
+    static final String PROP_NAME_INDEX = "nameIndex";      //NOI18N
 
     private static final String MANIFEST_FILE = "manifest.mf";
 
@@ -122,20 +124,20 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         
         // Returning FileObject of project diretory. 
         // Project will be open and set as main
+        Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         switch (this.type) {
             case TYPE_APP:
-                FoldersListSettings.getDefault().setNewApplicationCount(FoldersListSettings.getDefault().getNewApplicationCount() + 1);
+                FoldersListSettings.getDefault().setNewApplicationCount(index.intValue());
                 break;
             case TYPE_LIB:
-                FoldersListSettings.getDefault().setNewLibraryCount(FoldersListSettings.getDefault().getNewLibraryCount() + 1);
+                FoldersListSettings.getDefault().setNewLibraryCount(index.intValue());
                 break;
             case TYPE_EXT:
-                FoldersListSettings.getDefault().setNewProjectCount(FoldersListSettings.getDefault().getNewProjectCount() + 1);
+                FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
                 break;
         }        
         resultSet.add (dir);
         return resultSet;
-
     }
     
         
