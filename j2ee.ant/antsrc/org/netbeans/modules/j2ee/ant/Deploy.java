@@ -24,6 +24,7 @@ import org.netbeans.modules.j2ee.deployment.impl.projects.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.openide.filesystems.*;
 import org.apache.tools.ant.Project;
+import javax.enterprise.deploy.spi.Target;
 
 /**
  * Ant task that starts the server if needed and deploys module to the server
@@ -34,23 +35,21 @@ public class Deploy extends Task {
     static final int MAX_DEPLOY_PROGRESS = 5;
 
     /**
-     * Holds value of property debugMode.
+     * Holds value of property debugmode.
      */
-    private boolean debugMode = false;
-    
-    private boolean alsoStartTargets = true;
+    private boolean debugmode = false;
     
     /**
      * Holds value of property clientUrl.
      */
-    private String clientUrl;
+    private String clientUrlPart;
+
+    private boolean alsoStartTargets = true;    //TODO - make it a property? is it really needed?
     
- //TODO - make it a property? is it really needed?
     
     public void execute() throws BuildException { 
 
         J2eeDeploymentLookup jdl = null;
-        
         try {
             FileObject[] fobs = FileUtil.fromFile(getProject().getBaseDir());
             fobs[0].refresh(); // without this the "build" directory is not found in filesystems
@@ -83,8 +82,8 @@ public class Deploy extends Task {
             boolean serverReady = false;
             TargetServer targetserver = new TargetServer(target);
 
-            if (alsoStartTargets || debugMode) {
-                serverReady = targetserver.startTargets(debugMode, progress);
+            if (alsoStartTargets || debugmode) {
+                serverReady = targetserver.startTargets(debugmode, progress);
             } else { //PENDING: how do we know whether target does not need to start when deploy only
                 serverReady = server.getServerInstance().start(progress);
             }
@@ -107,51 +106,55 @@ public class Deploy extends Task {
         } else {
             throw new BuildException("Some other error.");
         }
-System.err.println("TAKEN URL:  " + getClientUrl());
-        target.startClient(getClientUrl());
+
+        String clientUrl = target.getClientUrl(getClientUrlPart());
+        getProject().setProperty("client.url", clientUrl);
+        
+        if (debugmode) {
+            Target t = null;
+            Target[] targs = server.toTargets();
+            if (targs != null && targs.length > 0) {
+                t = targs[0];
+            }
+            String h = server.getServerInstance().getStartServer().getDebugInfo(t).getHost();
+            String p = Integer.toString(server.getServerInstance().getStartServer().getDebugInfo(t).getPort());
+            
+            getProject().setProperty("jpda.host", h);
+            getProject().setProperty("jpda.port", p);
+        }
+        
     }
 
     /**
-     * Getter for property debugMode.
-     * @return Value of property debugMode.
+     * Getter for property debugmode.
+     * @return Value of property debugmode.
      */
-    public boolean getDebugMode() {
-        return this.debugMode;
+    public boolean getDebugmode() {
+        return this.debugmode;
     }
     
     /**
-     * Setter for property debugMode.
-     * @param debugMode New value of property debugMode.
+     * Setter for property debugmode.
+     * @param debugmode New value of property debugmode.
      */
-    public void setDebugMode(boolean debug) {
-        this.debugMode = debugMode;
+    public void setDebugmode(boolean debugmode) {
+        this.debugmode = debugmode;
     }
         
     /**
      * Getter for property clientUrl.
      * @return Value of property clientUrl.
      */
-    public String getClientUrl() {
-        return this.clientUrl;
+    public String getClientUrlPart() {
+        return this.clientUrlPart;
     }
     
     /**
      * Setter for property clientUrl.
      * @param clientUrl New value of property clientUrl.
      */
-    public void setClientUrl(String clientUrl) {
-        this.clientUrl = clientUrl;
+    public void setClientUrlPart(String clientUrlPart) {
+        this.clientUrlPart = clientUrlPart;
     }
-    
-//    public ExecutorTask execute(final DeploymentTarget target, final String uri) {
-//        Task t = RequestProcessor.getDefault().post(new Runnable() {
-//            public void run() {
-//                boolean success = doDeploy(target, false/*debug*/, true/*alsoStartTargets*/);
-//                if (success)
-//                    target.startClient(uri);
-//            }
-//        });
-//        return null; // PENDING produce executortask
-//    }
     
 }

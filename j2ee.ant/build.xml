@@ -30,6 +30,9 @@ Microsystems, Inc. All Rights Reserved.
                 <path refid="cp"/>
                 <pathelement location="${ant.jar}"/>
                 <pathelement location="${tools.jar}"/>
+                  <fileset dir="../external">
+                      <include name="*.jar"/>
+                  </fileset>
             </classpath>
         </javac>
         <copy todir="build/antclasses">
