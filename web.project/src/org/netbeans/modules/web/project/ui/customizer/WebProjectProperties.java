@@ -76,7 +76,6 @@ public class WebProjectProperties {
 
     public static final String WAR_NAME = "war.name";
     public static final String WAR_COMPRESS = "jar.compress";
-    public static final String WAR_CONTENT_EXCLUDES = "war.content.excludes";
     public static final String WAR_CONTENT_ADDITIONAL = "war.content.additional";
 
     public static final String LAUNCH_URL_RELATIVE = "client.urlPart";
@@ -145,7 +144,6 @@ public class WebProjectProperties {
 
         new PropertyDescriptor( WAR_NAME, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( WAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
-        new PropertyDescriptor( WAR_CONTENT_EXCLUDES, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( WAR_CONTENT_ADDITIONAL, PROJECT, PATH_PARSER ),
         
         new PropertyDescriptor( LAUNCH_URL_RELATIVE, PROJECT, STRING_PARSER ),
@@ -328,11 +326,8 @@ public class WebProjectProperties {
                         String newValueEncoded = pi.getNewValueEncoded();
                         if( pd.dest == null && newValueEncoded != null ) {
                             // Specialy handled properties
-                            if ( J2SE_PROJECT_NAME.equals( pd.name ) ) {
-                                System.out.println("setting name" + newValueEncoded );
-                                antProjectHelper.setDisplayName( newValueEncoded );
-                            }
-                            
+                            if (J2SE_PROJECT_NAME.equals(pd.name))
+                                antProjectHelper.setDisplayName(newValueEncoded);
                         }   
                         if ( JAVA_PLATFORM.equals( pd.name) && newValueEncoded != null ) {
                             setPlatform( pi.getNewValueEncoded().equals(

@@ -72,7 +72,7 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         vps.register(vws, WebProjectProperties.WAR_CONTENT_ADDITIONAL);
 
         dlm.removeAllElements();
-        String exclude = (String) webProperties.get(WebProjectProperties.WAR_CONTENT_EXCLUDES);
+        String exclude = (String) webProperties.get(WebProjectProperties.BUILD_CLASSES_EXCLUDES);
         if (exclude != null) {
             StringTokenizer excludeTokenizer = new StringTokenizer(exclude, ","); //NOI18N
             while (excludeTokenizer.hasMoreElements())
@@ -300,7 +300,7 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         String exclude = dlm.toString();
         exclude = exclude.replaceAll(" ", ""); //NOI18N
         exclude = exclude.substring(1, exclude.length() -1);
-        webProperties.put(WebProjectProperties.WAR_CONTENT_EXCLUDES, exclude);
+        webProperties.put(WebProjectProperties.BUILD_CLASSES_EXCLUDES, exclude);
     }
 
 }
