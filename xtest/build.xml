@@ -17,13 +17,14 @@ Microsystems, Inc. All Rights Reserved.
   <property name="build.sysclasspath" value="ignore"/>
   <property name="build.compiler.deprecation" value="off"/>    
   <property name="build.compiler.debug" value="on"/>
-
+  
   <property name="xtest.extra.home" location="../../nbextra/xtest"/>
+ <property name="junit.framework.jar" location="${xtest.extra.home}/lib/junit.jar"/>
 
   <target name="prepare-junit-extensions">
     <ant dir="../junit" antfile="build.xml" target="jar-junit-extensions"/>
     <mkdir dir="lib"/>
-    <copy file="../junit/netbeans/lib/ext/junit-ext.jar" todir="lib"/>
+    <copy file="../junit/netbeans/modules/ext/junit-ext.jar" todir="lib"/>
   </target>
 
   <target name="compile" depends="prepare-junit-extensions">
