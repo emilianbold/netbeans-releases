@@ -17,7 +17,6 @@
   <tocitem text="Getting Started" >
    <tocitem text="IDE Overview" target="gs.tour" />
     <tocitem text="Key Concepts" target="gs.key" />
-    <tocitem text="IDE Tutorials and Guides" target="gs.tutorials" />
   </tocitem>
   
   <tocitem text="Working with Projects" >

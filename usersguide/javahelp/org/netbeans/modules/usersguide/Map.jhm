@@ -16,7 +16,6 @@
 <mapID target="tbd" url="tbd.html" />
 <mapID target="gs.tour" url="getstart/idetour.html" />
 <mapID target="gs.key" url="getstart/keyconcepts.html" />
-<mapID target="gs.tutorials" url="getstart/tutorials.html" />
 
 <!--begin Projects section-->
 <mapID target="proj_about" url="project/proj_about.html" />
