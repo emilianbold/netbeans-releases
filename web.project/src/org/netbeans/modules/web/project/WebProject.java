@@ -617,22 +617,22 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                         WebProject.class.getResource("resources/build.xsl"),
                         true);
                     
-                    
-                    EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
-                    EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );                    
-                    String servInstID = (String) privateProperties.getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+                    WebProjectProperties wpp = getWebProjectProperties();
+                    String servInstID = (String) wpp.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
                     J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
                     if (platform != null) {
                         // updates j2ee.platform.cp & wscompile.cp & reg. j2ee platform listener
-                        privateProperties.setProperty(WebProjectProperties.J2EE_SERVER_INSTANCE, servInstID);
+                        wpp.setServerInstance(servInstID);
+                        wpp.store();
                     } else {
                         // if there is some server instance of the type which was used
                         // previously do not ask and use it
-                        String serverType = (String) projectProperties.get(WebProjectProperties.J2EE_SERVER_TYPE);
+                        String serverType = (String) wpp.get(WebProjectProperties.J2EE_SERVER_TYPE);
                         if (serverType != null) {
                             String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
                             if (servInstIDs.length > 0) {
-                                privateProperties.setProperty(WebProjectProperties.J2EE_SERVER_INSTANCE, servInstIDs[0]);
+                                wpp.setServerInstance(servInstIDs[0]);
+                                wpp.store();
                                 platform = Deployment.getDefault().getJ2eePlatform(servInstIDs[0]);
                             }
                         }
@@ -640,9 +640,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                             BrokenServerSupport.showAlert();
                         }
                     }
-                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-                    updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
-
                 }
                 
             } catch (IOException e) {
