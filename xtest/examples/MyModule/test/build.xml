@@ -12,7 +12,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="openidex tests" basedir="." default="all">
+<project name="MyModule tests" basedir="." default="all">
 
     <property name="build.sysclasspath" value="ignore"/>
 
