@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,8 +25,6 @@ import org.netbeans.core.ShortcutsEditor;
 */
 public class ConfigureShortcutsAction extends org.openide.util.actions.CallableSystemAction {
 
-    /** Shows the dialog.
-    */
     public void performAction () {
         ShortcutsEditor se = new ShortcutsEditor ();
         DialogDescriptor dd = new DialogDescriptor (
@@ -42,10 +40,11 @@ public class ConfigureShortcutsAction extends org.openide.util.actions.CallableS
         org.openide.DialogDisplayer.getDefault ().createDialog (dd).show ();
         se.flushChanges();
     }
+    
+    protected boolean asynchronous() {
+        return false;
+    }
 
-    /** URL to this action.
-    * @return URL to the action icon
-    */
     public String iconResource () {
         return "org/netbeans/core/resources/actions/configureShortcuts.gif"; // NOI18N
     }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,31 +22,27 @@ import org.netbeans.core.Splash;
 /** The action that shows the AboutBox.
 *
 * @author Ian Formanek
-* @version 0.10, Mar 01, 1998
 */
 public class AboutAction extends CallableSystemAction {
-    /** generated Serialized Version UID */
-    static final long serialVersionUID = 6074126305723764618L;
 
-    /** Shows the dialog.
-    */
     public void performAction () {
         Splash.showSplashDialog ();
     }
+    
+    protected boolean asynchronous() {
+        return false;
+    }
 
-    /** URL to this action.
-    * @return URL to the action icon
-    */
     public String iconResource () {
         return "org/netbeans/core/resources/actions/about.gif"; // NOI18N
     }
 
     public HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx (AboutAction.class);
+        return new HelpCtx(AboutAction.class);
     }
 
     public String getName() {
-        return NbBundle.getBundle (AboutAction.class).getString("About");
+        return NbBundle.getMessage(AboutAction.class, "About");
     }
 
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,12 +27,7 @@ import org.netbeans.core.IDESettings;
 * @author Ian Formanek
 */
 public class HTMLViewAction extends CallableSystemAction {
-    /** generated Serialized Version UID */
-    static final long serialVersionUID = 281181711813174400L;
 
-    /** Icon resource.
-    * @return name of resource for icon
-    */
     protected String iconResource () {
         return "org/netbeans/core/resources/actions/htmlView.gif"; // NOI18N
     }
@@ -94,14 +89,17 @@ public class HTMLViewAction extends CallableSystemAction {
         }
         org.openide.awt.StatusDisplayer.getDefault().setStatusText (""); // NOI18N
     }
+    
+    protected boolean asynchronous() {
+        return false;
+    }
 
     public String getName() {
         return NbBundle.getBundle(HTMLViewAction.class).getString("HTMLView");
     }
 
-    /** @return the action's help context */
     public HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx (HTMLViewAction.class);
+        return new HelpCtx(HTMLViewAction.class);
     }
 
 }

@@ -45,6 +45,7 @@ import org.netbeans.core.NbMainExplorer;
 import org.netbeans.core.NbPlaces;
 import org.openide.windows.Mode;
 import org.openide.ErrorManager;
+import org.openide.util.RequestProcessor;
 
 /** Action that opens explorer view which displays global
 * options of the IDE.
@@ -55,16 +56,17 @@ public class OptionsAction extends CallableSystemAction {
 
     private static final String HELP_ID = "org.netbeans.core.actions.OptionsAction"; // NOI18N 
 
-    /** Creates new OptionsAction. */
-    public OptionsAction() {
-    }
-
-    /** Shows options panel. */
     public void performAction () {
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
             NbBundle.getBundle(OptionsAction.class).getString("MSG_Preparing_options"));
-        OptionsPanel singleton = OptionsPanel.singleton();
-        singleton.prepareNodes ();
+        final OptionsPanel singleton = OptionsPanel.singleton();
+        // Have been in EQ, now do this asynch since it is slow:
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                singleton.prepareNodes();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        // Back to EQ for the display.
                 
         // dock Options into its mode if needed
         final Workspace w = WindowManager.getDefault().getCurrentWorkspace();
@@ -80,8 +82,6 @@ public class OptionsAction extends CallableSystemAction {
         final OptionsPanel optionPanel = singleton;
         final Mode mo = m;
         final boolean centerLoc = center;
-        Mutex.EVENT.readAccess(new Runnable() {
-            public void run() {
                 //Center only TOP_FRAME
                 if (centerLoc ) {
                     //Bugfix #33888: Initialize GUI of optionPanel here to get correct
@@ -97,12 +97,14 @@ public class OptionsAction extends CallableSystemAction {
                 
                 org.openide.awt.StatusDisplayer.getDefault ().setStatusText (""); // NOI18N
             }
-        });
+        }); // end SU.iL
+        }}); // end RP.d.p
+    }
+    
+    protected boolean asynchronous() {
+        return false;
     }
 
-    /** URL to this action.
-    * @return URL to the action icon
-    */
     public String iconResource () {
         return "org/netbeans/core/resources/session.gif"; // NOI18N
     }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,18 +25,16 @@ import org.netbeans.core.NbSheet;
 *
 * @author Jaroslav Tulach
 */
-public final class GlobalPropertiesAction extends CallableSystemAction implements Runnable
-{
-    private static final long serialVersionUID =-4072717465854016148L;
+public final class GlobalPropertiesAction extends CallableSystemAction {
 
     public void performAction() {
-        Mutex.EVENT.readAccess(this);
-    }
-
-    public void run() {
         TopComponent c = NbSheet.getDefault ();
         c.open ();
         c.requestFocus();
+    }
+    
+    protected boolean asynchronous() {
+        return false;
     }
 
     public String getName() {
@@ -50,4 +48,5 @@ public final class GlobalPropertiesAction extends CallableSystemAction implement
     protected String iconResource () {
         return "org/netbeans/core/resources/frames/globalProperties.gif"; // NOI18N
     }
+    
 }

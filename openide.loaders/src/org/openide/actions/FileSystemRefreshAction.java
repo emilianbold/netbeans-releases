@@ -7,13 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.actions;
-
-
 
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
@@ -27,10 +25,7 @@ import org.openide.util.NbBundle;
 * @author Jaroslav Tulach
 */
 public final class FileSystemRefreshAction extends CookieAction {
-    /** generated Serialized Version UID */
-    static final long serialVersionUID = -6022165630798612727L;
 
-    /** @return DataFolder class */
     protected Class[] cookieClasses () {
         return new Class[] { DataFolder.class };
     }
@@ -43,6 +38,10 @@ public final class FileSystemRefreshAction extends CookieAction {
                 fo.refresh ();
             }
         }
+    }
+    
+    protected boolean asynchronous() {
+        return false;
     }
 
     protected int mode () {

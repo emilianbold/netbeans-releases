@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -34,13 +34,6 @@ import org.openide.util.NbBundle;
 * @author  Ales Novak, Dafe Simonek
 */
 public final class SaveAsTemplateAction extends NodeAction {
-    /** generated Serialized Version UID */
-    static final long serialVersionUID = 5398459720576212987L;
-
-    /* constructor */
-    public SaveAsTemplateAction() {
-        super();
-    }
 
     public HelpCtx getHelpCtx () {
         return new HelpCtx (SaveAsTemplateAction.class);
@@ -55,22 +48,10 @@ public final class SaveAsTemplateAction extends NodeAction {
         return super.iconResource ();
     }
 
-    /* Returns false - action should be disabled when a window with no
-    * activated nodes is selected.
-    *
-    * @return false do not survive the change of focus
-    */
     protected boolean surviveFocusChange () {
         return false;
     }
 
-    /* Manages enable/disable logic. Action is enabled only
-    * if all activated nodes can be saved as templates.
-    * Overrides abstract enable(..) from superclass.
-    *
-    * @param activatedNodes Array of activated nodes.
-    * @return enable status
-    */
     protected boolean enable (Node[] activatedNodes) {
         if (activatedNodes == null || activatedNodes.length == 0)
             return false;
@@ -116,6 +97,10 @@ public final class SaveAsTemplateAction extends NodeAction {
                 (DataObject)activatedNodes[i].getCookie(DataObject.class),
                 targetFolder);
         }
+    }
+    
+    protected boolean asynchronous() {
+        return false;
     }
 
     /** Performs the work of creating a new template */

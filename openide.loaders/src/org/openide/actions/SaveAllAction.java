@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,15 +24,12 @@ import org.openide.util.WeakListener;
 import org.openide.util.actions.CallableSystemAction;
 
 /** Save all open objects.
-* This class is final only for performance reasons.
 * @see DataObject#getRegistry
 * @see LifecycleManager#saveAll
 *
 * @author   Jan Jancura, Ian Formanek
 */
 public final class SaveAllAction extends CallableSystemAction {
-    /** generated Serialized Version UID */
-    static final long serialVersionUID = 7654588299199250931L;
 
     /** Reference to the change listener
     * (we treat it weakly, so we have to to prevent it from
@@ -52,31 +49,24 @@ public final class SaveAllAction extends CallableSystemAction {
             (ChangeListener)(WeakListener.change(chl, DataObject.getRegistry ())));
     }
 
-    /* Human presentable name of the action. This should be
-    * presented as an item in a menu.
-    * @return the name of the action
-    */
     public String getName() {
         return NbBundle.getMessage(org.openide.loaders.DataObject.class, "SaveAll");
     }
 
-    /* Help context where to find more about the action.
-    * @return the help context for this action
-    */
     public HelpCtx getHelpCtx() {
         return new HelpCtx (SaveAllAction.class);
     }
 
-    /* Icon resource.
-    * @return name of resource for icon
-    */
     protected String iconResource () {
         return "org/openide/resources/actions/saveAll.gif"; // NOI18N
     }
 
-    /* Saves all. */
     public void performAction() {
         LifecycleManager.getDefault().saveAll();
+    }
+    
+    protected boolean asynchronous() {
+        return false;
     }
 
     /* Listens to the chnages in list of modified data objects
