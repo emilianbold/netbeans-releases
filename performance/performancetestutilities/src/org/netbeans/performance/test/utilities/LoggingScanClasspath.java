@@ -57,9 +57,18 @@ public class LoggingScanClasspath {
             // jar:file:/path_to_jdk/src.zip!/
             // file:/path_to_jEdit41/src/
             
-            int beginIndex = name.substring(0, name.lastIndexOf(java.io.File.separator)-1).lastIndexOf(java.io.File.separator)+1;
-            int endIndex = name.indexOf('!', beginIndex); // it's jar and it ends with '!/'
-            if (endIndex == -1) endIndex = name.length()-1; // it's directory and it ends with '/'
+            int beginIndex; 
+            int endIndex;
+            
+            try {
+                beginIndex = name.substring(0, name.lastIndexOf(java.io.File.separator)-1).lastIndexOf(java.io.File.separator)+1;
+                endIndex = name.indexOf('!', beginIndex); // it's jar and it ends with '!/'
+                if (endIndex == -1) endIndex = name.length()-1; // it's directory and it ends with '/'
+            } catch (Exception exc) {
+                exc.printStackTrace(System.err);  
+                beginIndex = 0;
+                endIndex = name.length()-1;
+            }
             
             this.setName(name.substring(beginIndex, endIndex));
             this.setValue(value.longValue());
