@@ -57,6 +57,7 @@ implements PropertyChangeListener {
         setEnabled (
             DebuggerManager.ACTION_TOGGLE_BREAKPOINT,
             (Context.getCurrentLineNumber () >= 0) && 
+            (Context.getCurrentURL () != null) &&
             (Context.getCurrentURL ().endsWith (".java"))
         );
         if ( debugger != null && 
