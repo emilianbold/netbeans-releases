@@ -346,15 +346,15 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Build">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-CompileAction.instance"/>
-            <attr name="org-openide-actions-CompileAction.instance/org-openide-actions-BuildAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-BuildAction.instance"/>
-            <attr name="org-openide-actions-BuildAction.instance/org-netbeans-core-actions-NextOutJumpAction.instance" boolvalue="true" />
-<!--
             <file name="org-openide-actions-CompileAllAction.instance"/>
             <attr name="org-openide-actions-CompileAllAction.instance/org-openide-actions-BuildAllAction.instance" boolvalue="true" />
             <file name="org-openide-actions-BuildAllAction.instance"/>
             <attr name="org-openide-actions-BuildAllAction.instance/org-netbeans-core-actions-NextOutJumpAction.instance" boolvalue="true" />
+<!--
+            <file name="org-openide-actions-CompileAction.instance"/>
+            <attr name="org-openide-actions-CompileAction.instance/org-openide-actions-BuildAction.instance" boolvalue="true" />
+            <file name="org-openide-actions-BuildAction.instance"/>
+            <attr name="org-openide-actions-BuildAction.instance/org-netbeans-core-actions-NextOutJumpAction.instance" boolvalue="true" />
 -->
             <file name="org-netbeans-core-actions-NextOutJumpAction.instance"/>
             <attr name="org-netbeans-core-actions-NextOutJumpAction.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true" />
@@ -425,6 +425,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-SaveAction.instance"/>
             <attr name="org-openide-actions-SaveAction.instance/org-openide-actions-SaveAllAction.instance" boolvalue="true" />
             <file name="org-openide-actions-SaveAllAction.instance"/>
+            <attr name="org-openide-actions-SaveAllAction.instance/org-openide-actions-PrintAction.instance" boolvalue="true" />
+            <file name="org-openide-actions-PrintAction.instance"/>
         </folder>
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
