@@ -20,6 +20,8 @@ import org.netbeans.api.debugger.jpda.*;
 
 import org.netbeans.modules.web.debug.util.Utils;
 import java.util.*;
+import org.openide.ErrorManager;
+
 
 /**
  *
@@ -43,7 +45,6 @@ public class JspLineBreakpoint extends Breakpoint {
     public static final String          PROP_CONDITION = LineBreakpoint.PROP_CONDITION;
     
     //private fields
-    private PropertyChangeSupport pcs;    
     private HashSet                     breakpointListeners = new HashSet ();
     
     private boolean                     enabled = true;
@@ -56,17 +57,35 @@ public class JspLineBreakpoint extends Breakpoint {
     private String                      condition = ""; // NOI18N
     
     private LineBreakpoint javalb;
-    
-    {
-        pcs = new PropertyChangeSupport(this);
-    }        
-    
+        
     /** Creates a new instance of JspLineBreakpoint */
     public JspLineBreakpoint() {
+        ErrorManager.getDefault().log(ErrorManager.EXCEPTION, "DEFAULT CONSTRUCTOR CALLED ON JSPLINEBREAKPOINT");
     }
     
     /** Creates a new instance of JspLineBreakpoint with url, linenumber*/
     public JspLineBreakpoint(String url, int lineNumber) {
+        super();
+        
+        this.url = url;
+        this.lineNumber = lineNumber;
+        
+        DebuggerManager d = DebuggerManager.getDebuggerManager();
+        
+        Utils.getEM().log("jsp url: " + url);
+
+        String filter = Utils.getClassFilter(url);
+        Utils.getEM().log("filter: " + filter);
+        
+        javalb = LineBreakpoint.create(filter, lineNumber);
+        javalb.setStratum("JSP"); // NOI18N
+        javalb.setSourceName(Utils.getJspName(url));
+        javalb.setHidden(true);
+        javalb.setPrintText(null);
+        d.addBreakpoint(javalb);
+
+        this.setURL(url);
+        this.setLineNumber(lineNumber);
     }
 
     /**
@@ -77,27 +96,7 @@ public class JspLineBreakpoint extends Breakpoint {
      * @return a new breakpoint for given parameters
      */
     public static JspLineBreakpoint create(String url, int lineNumber) {
-        
-        DebuggerManager d = DebuggerManager.getDebuggerManager();
-        if (d == null) {
-            return null;
-        }
-        
-        JspLineBreakpoint b = new JspLineBreakpoint();
-        
-        String servletClass = Utils.getServletClass(url);
-        Utils.getEM().log("jsp url: " + url);
-        Utils.getEM().log("servletClass: " + servletClass);
-        LineBreakpoint javalb = LineBreakpoint.create(servletClass, lineNumber);
-        javalb.setHidden(true);
-        
-        d.addBreakpoint(javalb);
-        
-        b.setURL(url);
-        b.setLineNumber(lineNumber);
-        b.setJavalb(javalb);
-
-        return b;
+        return new JspLineBreakpoint(url, lineNumber);
     }
     
     /**
@@ -121,7 +120,7 @@ public class JspLineBreakpoint extends Breakpoint {
         if (javalb != null) {
             javalb.setSuspend(s);
         }
-        pcs.firePropertyChange(PROP_SUSPEND, old, s);
+        firePropertyChange(PROP_SUSPEND, new Integer(old), new Integer(s));
     }
     
     /**
@@ -142,7 +141,7 @@ public class JspLineBreakpoint extends Breakpoint {
         if (h == hidden) return;
         boolean old = hidden;
         hidden = h;
-        pcs.firePropertyChange(PROP_HIDDEN, old, h);
+        firePropertyChange(PROP_HIDDEN, new Boolean(old), new Boolean(h));
     }
     
     /**
@@ -163,7 +162,7 @@ public class JspLineBreakpoint extends Breakpoint {
         if (this.printText == printText) return;
         String old = this.printText;
         this.printText = printText;
-        pcs.firePropertyChange(PROP_PRINT_TEXT, old, printText);
+        firePropertyChange(PROP_PRINT_TEXT, old, printText);
     }
     
     /**
@@ -193,7 +192,7 @@ public class JspLineBreakpoint extends Breakpoint {
         if (javalb != null) {
             javalb.disable();
         }
-        pcs.firePropertyChange(PROP_ENABLED, true, false);
+        firePropertyChange(PROP_ENABLED, Boolean.TRUE, Boolean.FALSE);
     }
     
     /**
@@ -205,7 +204,7 @@ public class JspLineBreakpoint extends Breakpoint {
         if (javalb != null) {
             javalb.enable();
         }
-        pcs.firePropertyChange(PROP_ENABLED, false, true);
+        firePropertyChange(PROP_ENABLED, Boolean.FALSE, Boolean.TRUE);
     }
 
     /**
@@ -219,7 +218,7 @@ public class JspLineBreakpoint extends Breakpoint {
         ) return;
         String old = url;
         this.url = url;
-        pcs.firePropertyChange(PROP_URL, old, url);
+        firePropertyChange(PROP_URL, old, url);
     }
 
     /**
@@ -252,7 +251,7 @@ public class JspLineBreakpoint extends Breakpoint {
         if (javalb != null) {
             javalb.setLineNumber(ln);
         }
-        pcs.firePropertyChange(PROP_LINE_NUMBER, old, getLineNumber());
+        firePropertyChange(PROP_LINE_NUMBER, new Integer(old), new Integer(getLineNumber()));
     }
     
     /**
@@ -270,7 +269,7 @@ public class JspLineBreakpoint extends Breakpoint {
         if (javalb != null) {
             javalb.setCondition(c);
         }        
-        pcs.firePropertyChange(PROP_CONDITION, old, condition);
+        firePropertyChange(PROP_CONDITION, old, condition);
     }
     
     /**
@@ -290,25 +289,7 @@ public class JspLineBreakpoint extends Breakpoint {
     public String toString () {
         return "JspLineBreakpoint " + url + " : " + lineNumber;
     }    
-    
-    /**
-     * Add a property change listener.
-     *
-     * @param l the listener to add
-     */
-    public void addPropertyChangeListener (PropertyChangeListener l) {
-        pcs.addPropertyChangeListener(l);        
-    }
-
-    /**
-     * Remove a property change listener.
-     *
-     * @param l the listener to remove
-     */
-    public void removePropertyChangeListener (PropertyChangeListener l) {
-        pcs.removePropertyChangeListener(l);        
-    }
-        
+            
     /**
      * Getter for property javalb.
      * @return Value of property javalb.
@@ -341,16 +322,5 @@ public class JspLineBreakpoint extends Breakpoint {
     */
     public synchronized void removeJPDABreakpointListener(JPDABreakpointListener listener) {
         breakpointListeners.remove (listener);
-    }
-
-    /**
-     * Fire JPDABreakpointEvent.
-     *
-     * @param event a event to be fired
-     */
-    void fireJPDABreakpointChange (JPDABreakpointEvent event) {
-        Iterator i = ((HashSet) breakpointListeners.clone ()).iterator ();
-        while (i.hasNext ())
-            ((JPDABreakpointListener) i.next ()).breakpointReached (event);
     }
 }

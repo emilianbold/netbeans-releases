@@ -39,6 +39,9 @@ import org.netbeans.modules.j2ee.deployment.impl.projects.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.api.project.*;
 
+import java.net.*;
+import org.netbeans.api.debugger.*;
+import org.netbeans.api.debugger.jpda.*;
 
 import java.net.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
@@ -87,7 +90,7 @@ public class Utils {
 //        return sorted;
 //    }
 
-    public static boolean isJsp(String url){
+    public static boolean isJsp(String url) {
         if (url != null) {
             URI uri = null;
             try {
@@ -96,13 +99,16 @@ public class Utils {
             if (uri != null) {
                 try {
                     File f = new File(uri);
+                    if (f != null) {
+                        f = FileUtil.normalizeFile(f);
+                    }
                     FileObject fo = FileUtil.toFileObject(f);
                     if (fo != null) {
                        return "text/x-jsp".equals(fo.getMIMEType());   //NOI18N
                     }    
                 } catch (IllegalArgumentException ex) {
-                    // PENDING - I do not know how to fix it - Martin?
-                    ex.printStackTrace();
+                    System.err.println("url: " + url);
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.toString());
                     return false;
                 }
             }
@@ -110,26 +116,105 @@ public class Utils {
         return false;
     }
 
+    public static String getJspName(String url) {
+        if (url != null) {
+            URI uri = null;
+            try {
+                uri = new URI(url);
+            } catch (Exception e) {};
+            if (uri != null) {
+                try {
+                    File f = new File(uri);
+                    if (f != null) {
+                        f = FileUtil.normalizeFile(f);
+                        return f.getName();
+                    }
+                } catch (IllegalArgumentException ex) {
+                    System.err.println("url: " + url);
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.toString());
+                }
+            }
+        }
+        return url.toString();
+    }
     
     public static String getServletClass(String jspUrl) {
-        System.err.println("url : " + jspUrl);
         URI jspUri = URI.create(jspUrl);
 
 
         java.io.File f = new java.io.File(jspUri);
         f = FileUtil.normalizeFile(f);
+
         FileObject fo = FileUtil.toFileObject(f);
         JSPServletFinder finder = JSPServletFinder.findJSPServletFinder (fo);
         WebModule wm = WebModule.getWebModule (fo);
         
         String jspRelativePath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
-
-        String servletPath = finder.getServletResourcePath(jspRelativePath); //TODO - context path
+        String servletPath = finder.getServletResourcePath(jspRelativePath); //TODO - context path        
+        
         servletPath = servletPath.substring(0, servletPath.length()-5); // length of ".java"
         servletPath = servletPath.replace('/', '.'); //NOI18N
         Utils.getEM().log("servlet class: " + servletPath);
         return servletPath;
     }
+
+    public static String getClassFilter(String url) {
+        String filter = getServletClass(url);
+        // get package only
+        filter = filter.substring(0, filter.lastIndexOf('.')); 
+        return filter;
+    }
+    
+//    public static String getCompoundClassFilter(String url) {
+//        URI jspUri = URI.create(url);
+//        Project project = FileOwnerQuery.getOwner(jspUri);
+//
+//        WebModuleImplementation wmi = (WebModuleImplementation)project.getLookup().lookup(WebModuleImplementation.class);
+//        Enumeration files = wmi.getDocumentBase().getChildren(true);
+//
+//        J2eeDeploymentLookup jdl = (J2eeDeploymentLookup)project.getLookup().lookup(J2eeDeploymentLookup.class);
+//        J2eeProfileSettings settings = jdl.getJ2eeProfileSettings();
+//        DeploymentTargetImpl target = new DeploymentTargetImpl(settings, jdl);
+//        
+//        FindJSPServlet findJspServlet = target.getServer().getServerInstance().getFindJSPServlet();        
+//                
+//        String filter = null; //NOI18N
+//        while (files.hasMoreElements()) {
+//            FileObject fo = (FileObject)files.nextElement();
+//            if (!fo.isFolder() && "text/x-jsp".equals(fo.getMIMEType()) && (fo != null)) {
+//                String jspRelPath = FileUtil.getRelativePath(wmi.getDocumentBase(), fo);
+//                String servletPath = findJspServlet.getServletResourcePath(wmi.getContextPath(), jspRelPath);
+//                if ((servletPath != null) && !servletPath.equals("")) {                
+//                    servletPath = servletPath.substring(0, servletPath.length()-5); // length of ".java"
+//                    servletPath = servletPath.substring(0, servletPath.lastIndexOf('/')); // get package only
+//                    if (filter == null) {
+//                        filter = servletPath;
+//                    } else {
+//                        if (!(servletPath.startsWith(filter))) {
+//                            while (!servletPath.startsWith(filter)) {
+//                                filter = filter.substring(0, filter.lastIndexOf('/'));
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        filter = filter.replace('/', '.') + "."; //NOI18N
+//        return filter;
+//    }
+    
+//    public static ClassLoadUnloadBreakpoint classLoadBreakpointExists(String filter){
+//	Breakpoint[] bps = DebuggerManager.getDebuggerManager().getBreakpoints();
+//        for (int i=0; i<bps.length; i++) {
+//            if ((bps[i] != null) && (bps[i] instanceof ClassLoadUnloadBreakpoint)) {
+//                if (((ClassLoadUnloadBreakpoint)bps[i]).getClassNameFilter().equals(filter)) {
+//                    return (ClassLoadUnloadBreakpoint)bps[i];
+//                }
+//            }
+//        }
+//        return null;
+//    }
     
 //    public static String getCurrentJspName() {
 //        FileObject fo = getCurrentFileObject();

@@ -95,14 +95,14 @@ public class Context {
         return getContext ().getCurrentLineNumber ();
     }
 
-    /**
-     * Returns name of class currently selected in editor or <code>null</code>.
-     *
-     * @return name of class currently selected in editor or <code>null</code>
-     */
-    public static String getCurrentClassName () {
-        return getContext ().getCurrentClassName ();
-    }
+//    /**
+//     * Returns name of class currently selected in editor or <code>null</code>.
+//     *
+//     * @return name of class currently selected in editor or <code>null</code>
+//     */
+//    public static String getCurrentClassName () {
+//        return getContext ().getCurrentClassName ();
+//    }
 
     /**
      * Returns URL of source currently selected in editor or <code>null</code>.
@@ -113,33 +113,41 @@ public class Context {
         return getContext ().getCurrentURL ();
     }
 
-    /**
-     * Returns name of method currently selected in editor or <code>null</code>.
-     *
-     * @return name of method currently selected in editor or <code>null</code>
-     */
-    public static String getCurrentMethodName () {
-        return getContext ().getCurrentMethodName ();
+//    /**
+//     * Returns name of method currently selected in editor or <code>null</code>.
+//     *
+//     * @return name of method currently selected in editor or <code>null</code>
+//     */
+//    public static String getCurrentMethodName () {
+//        return getContext ().getCurrentMethodName ();
+//    }
+//
+//    /**
+//     * Returns name of field currently selected in editor or <code>null</code>.
+//     *
+//     * @return name of field currently selected in editor or <code>null</code>
+//     */
+//    public static String getCurrentFieldName () {
+//        return getContext ().getCurrentFieldName ();
+//    }
+
+//    /**
+//     * Returns identifier currently selected in editor or <code>null</code>.
+//     *
+//     * @return identifier currently selected in editor or <code>null</code>
+//     */
+//    public static String getSelectedIdentifier () {
+//        return getContext ().getSelectedIdentifier ();
+//    }
+
+    public static void addPropertyChangeListener (PropertyChangeListener l) {
+        getContext ().addPropertyChangeListener (l);
     }
 
-    /**
-     * Returns name of field currently selected in editor or <code>null</code>.
-     *
-     * @return name of field currently selected in editor or <code>null</code>
-     */
-    public static String getCurrentFieldName () {
-        return getContext ().getCurrentFieldName ();
-    }
-
-    /**
-     * Returns identifier currently selected in editor or <code>null</code>.
-     *
-     * @return identifier currently selected in editor or <code>null</code>
-     */
-    public static String getSelectedIdentifier () {
-        return getContext ().getSelectedIdentifier ();
-    }
-        
+    public static void removePropertyChangeListener (PropertyChangeListener l) {
+        getContext ().removePropertyChangeListener (l);
+    }    
+    
     // utility methods .........................................................
 
     public static String getFileName (JspLineBreakpoint b) { 

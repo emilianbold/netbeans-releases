@@ -6,20 +6,20 @@
         <folder name="text">
             <folder name="x-jsp">
                 <folder name="Popup">
-                    <file name="org-netbeans-modules-web-debug-actions-ToggleJspBreakpointAction.instance"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
                     <file name="org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance"/>
                     <file name="SeparatorJSP.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                    <attr boolvalue="true" name="SeparatorJSP.instance/org-netbeans-modules-web-debug-actions-ToggleJspBreakpointAction.instance"/>
-                    <attr boolvalue="true" name="org-netbeans-modules-web-debug-actions-ToggleJspBreakpointAction.instance/org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance"/>
-                    <attr boolvalue="true" name="org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance/Separator1.instance"/>
+                    <attr boolvalue="true" name="SeparatorJSP.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                    <attr boolvalue="true" name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance/org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance"/>
+                    <attr boolvalue="true" name="org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance/Separator4.instance"/>
                 </folder>
                 <folder name="ToolTips">
                     <file name="org-netbeans-modules-web-debug-JspToolTipAnnotation.instance"/>
                 </folder>
                 <folder name="GlyphGutterActions">
-                    <file name="org-netbeans-modules-web-debug-actions-ToggleJspBreakpointAction.instance"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
                 </folder>
             </folder>
         </folder>
