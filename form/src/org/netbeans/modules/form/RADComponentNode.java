@@ -35,11 +35,11 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
   static DataFlavor RAD_COMPONENT_COPY_FLAVOR = new RADDataFlavor (
     RADComponentNode.class,
-    "RAD_COMPONENT_COPY_FLAVOR"//FormEditor.getFormBundle ().getString ("radVisualNodeFlavorName")
+    "RAD_COMPONENT_COPY_FLAVOR"
   );
   static DataFlavor RAD_COMPONENT_CUT_FLAVOR = new RADDataFlavor (
     RADComponentNode.class,
-    "RAD_COMPONENT_CUT_FLAVOR"//FormEditor.getFormBundle ().getString ("radVisualNodeFlavorName")
+    "RAD_COMPONENT_CUT_FLAVOR"
   );
 
 
@@ -247,10 +247,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   *    valid for this node
   */
   protected void createPasteTypes (final Transferable t, java.util.List s) {
-    System.out.println("Create paste types: "+t);
     if ((component instanceof RADVisualContainer) && 
         (t.isDataFlavorSupported (RAD_COMPONENT_COPY_FLAVOR) || t.isDataFlavorSupported (RAD_COMPONENT_CUT_FLAVOR))) {
-    System.out.println("Create paste types2: "+t);
       PasteType pasteType = new PasteType () {
       
         /** Perform the paste action.
@@ -268,23 +266,87 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
             for (int i = 0; i < flavors.length; i++) {
               System.out.println("Flavor["+i+"] = "+flavors[i]);
             }
-            if (t.isDataFlavorSupported (RAD_COMPONENT_CUT_FLAVOR)) {
-              System.out.println("CUT SUPPORTED !!!");
-              final RADComponent originalComp = (RADComponent)t.getTransferData (RAD_COMPONENT_CUT_FLAVOR);
-              originalComp.initialize (component.getFormManager ()); // if pasting into another form
-              component.getFormManager ().addVisualComponent ((RADVisualComponent)originalComp, (RADVisualContainer)component, null);
-              System.out.println("Original Component: "+originalComp);
-              // [PENDING!!! - visual component flavors]
-              
-              // put copy flavor as the new one, as the first instance was used already
-              return new RADTransferable (RAD_COMPONENT_COPY_FLAVOR, originalComp);
-            }
             
             if (t.isDataFlavorSupported (RAD_COMPONENT_COPY_FLAVOR)) {
               System.out.println("COPY SUPPORTED !!!");
-              RADComponent copyComp = (RADComponent)t.getTransferData (RAD_COMPONENT_COPY_FLAVOR);
+/*              RADComponent originalComp = (RADComponent)t.getTransferData (RAD_COMPONENT_COPY_FLAVOR);
+              FormManager2 pasteManager = component.getFormManager ();
+              RADComponent copyComponent;
+              if (originalComp instanceof RADVisualContainer) {
+                copyComponent = new RADVisualContainer ();
+              } else if (originalComp instanceof RADVisualComponent) {
+                copyComponent = new RADVisualComponent ();
+              } else {
+                copyComponent = new RADComponent ();
+              }
+              copyComponent.initialize (pasteManager);
+              copyComponent.setComponent (originalComp.getComponentClass ());
+//              copyComponent.setName (nodes[i].componentName);
+              
+//              formManager2.getVariablesPool ().createVariable (nodes[i].componentName, nodes[i].beanClass);
+                if (copyComponent instanceof RADVisualContainer) {
+// [PENDING]      ((RADVisualContainer)copyComponent).setDesignLayout (((RADContainerNode)nodes[i]).designLayout);
+
+            private static void convertComponent (RADNode node, RADComponent comp) {
+              Map origChanged = node.changedValues;
+              BeanInfo bi = comp.getBeanInfo ();
+              PropertyDescriptor[] pds = bi.getPropertyDescriptors ();
+              for (Iterator it = origChanged.keySet ().iterator (); it.hasNext (); ) {
+                Object key = it.next ();
+                for (int i = 0; i < pds.length; i++) {
+                  if (key.equals (pds[i].getName ())) {
+                    try {
+                      comp.restorePropertyValue (pds[i], origChanged.get (key));
+                    } catch (IllegalArgumentException e) {
+                      // [PENDING]
+                    } catch (IllegalAccessException e) {
+                      // [PENDING]
+                    } catch (java.lang.reflect.InvocationTargetException e) {
+                      // [PENDING]
+                    }
+                    break;
+                  }
+                }
+              }
+
+              Hashtable eventHandlers = node.eventHandlers;
+              comp.initDeserializedEvents (eventHandlers);
+
+              // process constraints on visual components
+              if (node instanceof RADVisualNode) {
+                HashMap map = ((RADVisualNode)node).constraints;
+                ((RADVisualComponent)comp).initConstraints (map);
+              }
+            }
+
+              
+              
+              
+  */            
               System.out.println("Copy!!!");
               return null;
+            }
+            
+            if (t.isDataFlavorSupported (RAD_COMPONENT_CUT_FLAVOR)) {
+              System.out.println("CUT SUPPORTED !!!");
+              final RADComponent originalComp = (RADComponent)t.getTransferData (RAD_COMPONENT_CUT_FLAVOR);
+              FormManager2 pasteManager = component.getFormManager ();
+              originalComp.initialize (pasteManager); // if pasting into another form
+              if (originalComp instanceof RADVisualComponent) {
+                pasteManager.addVisualComponent ((RADVisualComponent)originalComp, (RADVisualContainer)component, null);
+                // [PENDING - should the component be selected after paste or rather the selection should stay on the container to allow further pasting?]
+                //pasteManager.selectComponent (originalComp, false); 
+                pasteManager.getFormTopComponent ().validate();
+                pasteManager.fireFormChange ();
+              } else {
+                pasteManager.addNonVisualComponent (originalComp);
+                // [PENDING - should the component be selected after paste or rather the selection should stay on the container to allow further pasting?]
+                //pasteManager.selectComponent (originalComp, false);
+                pasteManager.fireFormChange ();
+              }
+              
+              // put copy flavor as the new one, as the first instance was used already
+              return new RADTransferable (RAD_COMPONENT_COPY_FLAVOR, originalComp);
             }
           } catch (java.awt.datatransfer.UnsupportedFlavorException e) {
             // ignored
@@ -403,6 +465,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  14   Gandalf   1.13        6/3/99   Ian Formanek    
  *  13   Gandalf   1.12        6/2/99   Ian Formanek    ToolsAction, Reorder
  *  12   Gandalf   1.11        6/1/99   Ian Formanek    Fixed last change
  *  11   Gandalf   1.10        6/1/99   Ian Formanek    Rename implemented 
