@@ -128,7 +128,7 @@ public class EditableProperties extends AbstractMap implements Cloneable {
         }
         if (tempList.size() > 0) {
             if (state == READING_KEY_VALUE) {
-                // XXX: value was not ended correctly? ignore.
+                // value was not ended correctly? ignore.
                 createKeyItem(tempList, commentLinesCount);
             } else {
                 createNonKeyItem(tempList);
