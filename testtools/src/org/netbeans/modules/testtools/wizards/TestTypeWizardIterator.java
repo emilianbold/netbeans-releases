@@ -25,7 +25,6 @@ import java.util.Vector;
 import java.util.HashSet;
 import java.io.IOException;
 
-import org.openide.TopManager;
 import org.openide.WizardDescriptor;
 import org.openide.src.MethodElement;
 import org.openide.loaders.DataObject;

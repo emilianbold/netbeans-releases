@@ -15,7 +15,6 @@ package org.netbeans.modules.testtools.generator;
 
 import java.util.StringTokenizer;
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -47,7 +46,7 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
     public static void showDialog(Node[] nodes){
         if (dialog==null) {
             panel = new NodeGeneratorPanel(nodes);
-            dialog = TopManager.getDefault().createDialog(new DialogDescriptor(panel, NbBundle.getMessage(NodeGeneratorPanel.class, "GeneratorTitle"), false, new Object[0], null, org.openide.DialogDescriptor.BOTTOM_ALIGN, null, null));  // NOI18N
+            dialog = org.openide.DialogDisplayer.getDefault().createDialog(new DialogDescriptor(panel, NbBundle.getMessage(NodeGeneratorPanel.class, "GeneratorTitle"), false, new Object[0], null, org.openide.DialogDescriptor.BOTTOM_ALIGN, null, null));  // NOI18N
             dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                 public void windowClosing(java.awt.event.WindowEvent evt) {
                     panel.closeButtonActionPerformed(null);
@@ -87,7 +86,7 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
     /** Creates node that displays all packages.
     */
     private Node createPackagesNode () {
-        Node orig = org.openide.TopManager.getDefault().getPlaces().nodes ().repository(this);
+        Node orig = org.openide.loaders.RepositoryNodeFactory.getDefault().repository(this);
         return orig;
     }
     

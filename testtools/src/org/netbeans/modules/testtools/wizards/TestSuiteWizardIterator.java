@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.HashSet;
 
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.src.MethodElement;

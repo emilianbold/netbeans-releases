@@ -30,7 +30,6 @@ import javax.swing.event.ChangeListener;
 import java.lang.reflect.Modifier;
 
 import org.openide.src.*;
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;

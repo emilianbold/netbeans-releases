@@ -28,7 +28,6 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 //import org.openide.util.Task;
-import org.openide.TopManager;
 import org.openide.ServiceType;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
@@ -37,7 +36,7 @@ import org.openide.compiler.CompilerType;
 import org.openide.compiler.CompilerJob;
 import org.openide.cookies.CompilerCookie;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.ExecSupport;
+import org.openide.loaders.ExecutionSupport;
 import org.openide.loaders.MultiDataObject;
 import org.openide.compiler.CompilerGroup;
 import org.openide.compiler.ProgressEvent;
@@ -46,7 +45,9 @@ import org.apache.tools.ant.module.run.AntCompiler;
 import org.apache.tools.ant.module.run.TargetExecutor;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.netbeans.modules.testtools.wizards.WizardIterator;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 
 /** class representing Compiler Type for XTest Workspace Build Script
@@ -108,14 +109,15 @@ public class XTestCompilerType extends CompilerType {
             throw new IllegalArgumentException (NbBundle.getMessage(XTestCompilerType.class, "Err_MissingAntProjectCookie")); // NOI18N
         }
         if (netbeansHome==null || netHome.equals(netbeansHome)) {
-            File home=WizardIterator.showFileChooser(TopManager.getDefault().getWindowManager().getMainWindow(), NbBundle.getMessage(XTestCompilerType.class, "Title_SelectNetbeansHome"), true, false); // NOI18N
+            File home=WizardIterator.showFileChooser(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(XTestCompilerType.class, "Title_SelectNetbeansHome"), true, false); // NOI18N
             if ((home!=null)&&(!netHome.equals(home))) {
                 setNetbeansHome(home);
                 if (obj instanceof MultiDataObject) {
-                    Object coo=ExecSupport.getExecutor(((MultiDataObject)obj).getPrimaryEntry());
-                    if ((coo==null)&&(obj instanceof XTestDataObject))
-                        coo=TopManager.getDefault().getServices().find(XTestExecutor.class);
-                    if ((coo!=null) && (coo instanceof XTestExecutor)) {
+                    Object coo=ExecutionSupport.getExecutor(((MultiDataObject)obj).getPrimaryEntry());
+                    if ((coo==null)&&(obj instanceof XTestDataObject)) {
+                        ServiceType.Registry reg=(ServiceType.Registry)Lookup.getDefault().lookup(ServiceType.Registry.class);
+                        coo=reg.find(XTestExecutor.class);
+                    } if ((coo!=null) && (coo instanceof XTestExecutor)) {
                         XTestExecutor exec=((XTestExecutor)coo);
                         if (exec.getNetbeansHome()==null)
                             exec.setNetbeansHome(home);

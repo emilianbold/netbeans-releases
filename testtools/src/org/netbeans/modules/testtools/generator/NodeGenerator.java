@@ -37,10 +37,10 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JMenuOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jellytools.actions.Action;
-import org.openide.TopManager;
 
 import org.openide.src.*;
 import org.openide.cookies.SourceCookie;
+import org.openide.execution.NbClassLoader;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -607,7 +607,7 @@ public class NodeGenerator {
     private void searchForActions() {
         allRecords = new ArrayList();
         Enumeration fsystems = Repository.getDefault().fileSystems();
-        ClassLoader loader=TopManager.getDefault().currentClassLoader();
+        ClassLoader loader=NbClassLoader.getSystemClassLoader();
         while (fsystems.hasMoreElements()) {
             Enumeration fobjects = ((FileSystem)fsystems.nextElement()).getRoot().getData(true);
             while (fobjects.hasMoreElements()) {

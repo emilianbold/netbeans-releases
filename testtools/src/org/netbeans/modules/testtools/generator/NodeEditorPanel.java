@@ -21,7 +21,6 @@ package org.netbeans.modules.testtools.generator;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
 import org.openide.nodes.Node;
@@ -242,7 +241,7 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
      * @return boolean false when operation canceled */    
     public static boolean showDialog(NodeGenerator gen) {
         DialogDescriptor desc = new DialogDescriptor(new NodeEditorPanel(gen), NbBundle.getMessage(NodeEditorPanel.class, "EditorTitle"), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);  // NOI18N
-        TopManager.getDefault().createDialog(desc).show();
+        org.openide.DialogDisplayer.getDefault().createDialog(desc).show();
         return desc.getValue()==DialogDescriptor.OK_OPTION;
     }
     

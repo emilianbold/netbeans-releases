@@ -39,6 +39,9 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${nbroot}/java/netbeans/modules">
           <include name="java.jar" />
         </fileset>
+        <fileset dir="${nbroot}/java/srcmodel/netbeans/modules/autoload">
+          <include name="java-src-model.jar" />
+        </fileset>
         <fileset dir="${nbroot}/ant/netbeans/modules">
           <include name="ant.jar" />
         </fileset>

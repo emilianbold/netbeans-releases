@@ -22,7 +22,6 @@ package org.netbeans.modules.testtools.wizards;
 import java.util.Set;
 import java.util.HashSet;
 
-import org.openide.TopManager;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;

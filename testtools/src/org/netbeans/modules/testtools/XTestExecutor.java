@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.openide.TopManager;
 import org.openide.ServiceType;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
@@ -41,6 +40,7 @@ import org.apache.tools.ant.module.run.TargetExecutor;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.netbeans.modules.testtools.wizards.WizardIterator;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /** Executor for XTest Workspace Build Script Data Object
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
@@ -103,7 +103,7 @@ public class XTestExecutor extends Executor {
             throw new IOException(NbBundle.getMessage(XTestExecutor.class, "Err_MissingAntProjectCookie")); // NOI18N
         }
         if (netbeansHome==null || XTestCompilerType.netHome.equals(netbeansHome)) {
-            File home=WizardIterator.showFileChooser(TopManager.getDefault().getWindowManager().getMainWindow(), NbBundle.getMessage(XTestExecutor.class, "Title_SelectNetbeansHome"), true, false); // NOI18N
+            File home=WizardIterator.showFileChooser(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(XTestExecutor.class, "Title_SelectNetbeansHome"), true, false); // NOI18N
             if ((home!=null)&&(!XTestCompilerType.netHome.equals(home)))
                 setNetbeansHome(home);
             else
@@ -125,7 +125,7 @@ public class XTestExecutor extends Executor {
                         FileObject fo=obj.getFolder().getPrimaryFile();
                         fo=fo.getFileObject("results"); // NOI18N
                         fo=fo.getFileObject("index", "html"); // NOI18N
-                        TopManager.getDefault().showUrl(fo.getURL());
+                        org.openide.awt.HtmlBrowser.URLDisplayer.getDefault().showURL(fo.getURL());
                     } catch (Exception e) {}
                 }
             }

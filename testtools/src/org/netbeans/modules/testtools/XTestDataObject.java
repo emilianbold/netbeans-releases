@@ -23,7 +23,6 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import org.openide.TopManager;
 import org.openide.ServiceType;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -33,10 +32,9 @@ import org.openide.execution.Executor;
 import org.openide.compiler.CompilerType;
 import org.openide.filesystems.FileObject;
 import org.openide.cookies.SaveCookie;
-import org.openide.cookies.DebuggerCookie;
 import org.openide.cookies.CompilerCookie;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.ExecSupport;
+import org.openide.loaders.ExecutionSupport;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
 
@@ -44,6 +42,7 @@ import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.nodes.AntProjectNode;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.apache.tools.ant.module.loader.AntCompilerSupport;
+import org.openide.util.Lookup;
 
 /** Data Object class representing XTest Workspace Build Script
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
@@ -76,13 +75,14 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
     /** returns requested cookie except DebuggerCookie
      * @return Node.Cookie
      * @param clazz Cookie Class */    
+/*
     public Node.Cookie getCookie(Class clazz) {
         if(clazz == DebuggerCookie.class) {
             return null;
         }
         return super.getCookie(clazz);
     }
-    
+*/    
     /** returns Help Context
      * @return HelpCtx */    
     public HelpCtx getHelpCtx() {
@@ -120,7 +120,7 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
     }
     
     /** Execution Support class for XTestDataObject */    
-    public static class XTestExecSupport extends ExecSupport {
+    public static class XTestExecSupport extends ExecutionSupport {
         /** creates new XTestExecSupport
          * @param entry MultiDataObject.Entry */        
         public XTestExecSupport (MultiDataObject.Entry entry) {
@@ -130,7 +130,7 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
         /** returns default Executor
          * @return XTestExecutor */        
         protected Executor defaultExecutor () {
-            ServiceType.Registry registry=TopManager.getDefault().getServices();
+            ServiceType.Registry registry=(ServiceType.Registry)Lookup.getDefault().lookup(ServiceType.Registry.class);
             registry.services();
             Executor e=(Executor)registry.find(XTestExecutor.class);
             return e==null?super.defaultExecutor():e;
@@ -150,7 +150,7 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
         /** returns default Compiler Type for XTestDataObject
          * @return XTestCompilerType */        
         protected CompilerType defaultCompilerType () {
-            ServiceType.Registry registry=TopManager.getDefault().getServices();
+            ServiceType.Registry registry=(ServiceType.Registry)Lookup.getDefault().lookup(ServiceType.Registry.class);
             registry.services();
             CompilerType c=(CompilerType)registry.find(XTestCompilerType.class);
             return c==null?super.defaultCompilerType():c;
