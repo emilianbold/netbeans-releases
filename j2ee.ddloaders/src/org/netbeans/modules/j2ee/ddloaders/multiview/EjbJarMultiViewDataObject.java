@@ -21,6 +21,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
@@ -72,7 +73,7 @@ import java.util.Map;
 public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         implements DDChangeListener, EjbJarProxy.OutputProvider, FileChangeListener, ChangeListener {
 
-    private EjbJar ejbJar;
+    private EjbJarProxy ejbJar;
     private FileObject srcRoots[];
     private boolean parseable;
     protected final static RequestProcessor RP = new RequestProcessor("XML Parsing");   // NOI18N
@@ -437,55 +438,63 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     }
 
     private boolean parse(InputSource is) throws IOException {
+        if (ejbJar == null || ejbJar.getOriginal() == null) {
+            try {
+                setEjbJar((EjbJarProxy) DDProvider.getDefault().getDDRoot(getPrimaryFile()));
+            } catch (IOException e) {
+                if (ejbJar == null) {
+                    setEjbJar(new EjbJarProxy(null, null));
+                }
+            }
+        }
         parseable = false;
         if (is != null) { // merging model with the document
             org.xml.sax.SAXParseException error = null;
             SAXException oldError = getSaxError();
-            String version = null;
-            final EjbJarProxy oldEjbJar = (EjbJarProxy) ejbJar;
+            final String oldDescription = getErrorMessage(oldError);
             try {
                 EjbJarProxy newEjbJar = (EjbJarProxy) EjbJarDDUtils.createEjbJar(is);
-                if (ejbJar != null && oldEjbJar.getOriginal() != null) {
+                if (ejbJar.getOriginal() != null) {
                     ejbJar.merge(newEjbJar, EjbJar.MERGE_UPDATE);
                 } else {
-                    setEjbJar(oldEjbJar, newEjbJar);
+                    ejbJar.setOriginal(newEjbJar);
                 }
-                if (oldEjbJar != null) {
-                    oldEjbJar.setStatus(error == null ? EjbJar.STATE_VALID : EjbJar.STATE_INVALID_PARSABLE);
-                    oldEjbJar.setError(error);
-                }
-                final String newDescription = error == null ? null : error.getMessage();
-                final String oldDescription = oldError == null ? null : oldError.getMessage();
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(oldDescription, newDescription);
-                    }
-                });
+                ejbJar.setStatus(error == null ? EjbJar.STATE_VALID : EjbJar.STATE_INVALID_PARSABLE);
+                ejbJar.setError(error);
+                descriptionChanged(oldDescription, getErrorMessage(error));
                 parseable = error == null;
                 setSaxError(error);
             } catch (SAXException ex) {
-                if (ejbJar == null || oldEjbJar.getOriginal() == null) {
-                    setEjbJar(oldEjbJar, new EjbJarProxy(null, version));
-                    if (oldEjbJar != null) {
-                        oldEjbJar.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
-                        if (ex instanceof org.xml.sax.SAXParseException) {
-                            oldEjbJar.setError((org.xml.sax.SAXParseException) ex);
-                        } else if (ex.getException() instanceof org.xml.sax.SAXParseException) {
-                            oldEjbJar.setError((org.xml.sax.SAXParseException) ex.getException());
-                        }
+                if (ejbJar.getOriginal() == null) {
+                    ejbJar.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
+                    if (ex instanceof org.xml.sax.SAXParseException) {
+                        ejbJar.setError((org.xml.sax.SAXParseException) ex);
+                    } else if (ex.getException() instanceof org.xml.sax.SAXParseException) {
+                        ejbJar.setError((org.xml.sax.SAXParseException) ex.getException());
                     }
                 }
-                ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(
-                        oldError == null ? null : oldError.getMessage(), ex.getMessage());
+                descriptionChanged(oldDescription, ex.getMessage());
                 setSaxError(ex);
             }
         }
         return parseable;
     }
 
-    private void setEjbJar(final EjbJarProxy oldEjbJar, EjbJarProxy newEjbJar) {
-        if(oldEjbJar != null) {
-            oldEjbJar.removePropertyChangeListener(ejbJarChangeListener);
+    private String getErrorMessage(SAXException error) {
+        return error == null ? null : error.getMessage();
+    }
+
+    private void descriptionChanged(final String oldDescription, final String newDescription) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(oldDescription, newDescription);
+            }
+        });
+    }
+
+    private void setEjbJar(EjbJarProxy newEjbJar) {
+        if(ejbJar != null) {
+            ejbJar.removePropertyChangeListener(ejbJarChangeListener);
         }
         ejbJar = newEjbJar;
         if (ejbJarChangeListener == null) {

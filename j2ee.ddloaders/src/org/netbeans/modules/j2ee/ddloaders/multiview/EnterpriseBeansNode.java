@@ -63,12 +63,10 @@ public class EnterpriseBeansNode extends EjbSectionNode {
         BoxPanel boxPanel = new BoxPanel(sectionNodeView) {
             public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
                 if (source == enterpriseBeans) {
-                    scheduleRefreshView();
+                    if (oldValue != null && newValue == null||oldValue== null && newValue!= null) {
+                        checkChildren();
+                    }
                 }
-            }
-
-            public void refreshView() {
-                checkChildren();
             }
         };
         populateBoxPanel(boxPanel);
