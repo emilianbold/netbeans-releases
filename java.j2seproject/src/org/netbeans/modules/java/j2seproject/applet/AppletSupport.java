@@ -138,15 +138,18 @@ public class AppletSupport {
                 if (activePlatform == null) {
                     platform = pm.getDefaultPlatform();
                 }
-                JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification ("j2se",null));   //NOI18N
-                for (int i=0; i<installedPlatforms.length; i++) {
-                    String antName = (String) installedPlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
-                    if (antName != null && antName.equals(activePlatform)) {
-                        platform = installedPlatforms[i];
+                else {
+                    JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification ("j2se",null));   //NOI18N
+                    for (int i=0; i<installedPlatforms.length; i++) {
+                        String antName = (String) installedPlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
+                        if (antName != null && antName.equals(activePlatform)) {
+                            platform = installedPlatforms[i];
+                            break;
+                        }
                     }
                 }
 
-                boolean workAround6193279 = platform != null    //In case of nonexisting platform don't use the workaround 
+                boolean workAround6193279 = platform != null    //In case of nonexisting platform don't use the workaround
                         && platform.getSpecification().getVersion().compareTo(JDK_15)>=0; //JDK1.5 and higher
                 if (workAround6193279) {
                     File f = FileUtil.toFile(html);
