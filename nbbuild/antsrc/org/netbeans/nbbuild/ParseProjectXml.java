@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -195,10 +195,8 @@ public final class ParseProjectXml extends Task {
                         for (int i = 0; i < pkgs.length; i++) {
                             b.append(sep);
                             if (pkgs[i].subpackages) {
-                                String msg = javadocPackagesProperty + " cannot be set as <subpackages> do not work for javadoc (was <subpackages>" + pkgs[i].name + "</subpackages> tag in " + getProjectFile () + ").";
-                                if (getProject ().getProperty (javadocPackagesProperty) == null) {
-                                    throw new BuildException (msg + " Set the property by hand.");
-                                }
+                                String msg = javadocPackagesProperty + " cannot be set as <subpackages> does not work for Javadoc (see <subpackages>" + pkgs[i].name + "</subpackages> tag in " + getProjectFile () + "). Set the property in project.properties if you want to build Javadoc.";
+                                // #52135: do not halt the build, just leave it.
                                 getProject().log("Warning: " + msg, Project.MSG_WARN);
                                 break NO_JAVA_DOC_PROPERTY_SET;
                             }
@@ -258,7 +256,7 @@ public final class ParseProjectXml extends Task {
             }
             if (domainProperty != null) {
                 String path = getPath(pDoc);
-                int index = path.lastIndexOf('/'); //NOI18N
+                int index = path.indexOf('/'); //NOI18N
                 String domain;
                 if (index == -1) {
                     domain = path;
