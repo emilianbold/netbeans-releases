@@ -30,8 +30,12 @@ Microsystems, Inc. All Rights Reserved.
     <!-- register entities with system entity resolver -->
     <folder name="xml">
         <folder name="entities">
-            <file name="DTD_XMLCatalog" url="nbres:/org/netbeans/modules/xml/catalog/impl/XCatalog-0_4.dtd"/>
-            <file name="DTD_XCatalog" url="nbres:/org/netbeans/modules/xml/catalog/impl/XCatalog-0_2.dtd"/>
+            <folder name="DTD_XMLCatalog">
+                <file name="EN" url="nbres:/org/netbeans/modules/xml/catalog/impl/XCatalog-0_4.dtd"/>
+            </folder>
+            <folder name="DTD_XCatalog">
+                <file name="EN" url="nbres:/org/netbeans/modules/xml/catalog/impl/XCatalog-0_2.dtd"/>
+            </folder>
         </folder>
     </folder>
 
