@@ -48,7 +48,7 @@ public class ForeignKeyNodeInfo extends TableNodeInfo {
                     if (jdbcOdbcBridge)
                         drvSpec.rsTemp.next();
                     if (drvSpec.rs.getString("FKCOLUMN_NAME") != null) { //NOI18N
-                        if (drvSpec.rs.getString("FK_NAME").startsWith(fk_name)) {
+                        if (drvSpec.rs.getString("FK_NAME").startsWith(fk_name)) { // NOI18N
                             ColumnNodeInfo info;
                             if (jdbcOdbcBridge)
                                 info = (ColumnNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.FOREIGN_COLUMN, drvSpec.rsTemp);
@@ -56,10 +56,10 @@ public class ForeignKeyNodeInfo extends TableNodeInfo {
                                 info = (ColumnNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.FOREIGN_COLUMN, drvSpec.rs);
 
                             if (info != null) {
-                                info.setName(info.getName()+" -> "+
-                                    drvSpec.rs.getString("PKTABLE_SCHEM")+"."+
-                                    drvSpec.rs.getString("PKTABLE_NAME")+"."+
-                                    drvSpec.rs.getString("PKCOLUMN_NAME"));
+                                String tempTName = drvSpec.rs.getString("PKTABLE_NAME"); // NOI18N
+                                tempTName = (tempTName=="")?"":tempTName+"."; // NOI18N
+                                info.setName(info.getName()+" -> " + tempTName + // NOI18N
+                                    drvSpec.rs.getString("PKCOLUMN_NAME")); // NOI18N
                                 children.add(info);
                             }
                             else
