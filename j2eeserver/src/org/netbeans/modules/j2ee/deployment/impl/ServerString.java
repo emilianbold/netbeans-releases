@@ -21,7 +21,7 @@ public class ServerString implements java.io.Serializable {
     
     private final String plugin;
     private final String instance;
-    private final String[] targets;
+    private String[] targets=null;
     private final transient ServerInstance serverInstance;
     private transient String[] theTargets;
     private static final long serialVersionUID = 923457209372L;
