@@ -869,6 +869,7 @@ Set jmf.home to the location of your JMF installation to continue."/>
             <fileset dir="standalone">
                 <include name="openide-fs.jar"/>
                 <include name="openide-util.jar"/>
+                <include name="openide-lookup.jar"/>
                 <include name="README-FS.txt"/>
             </fileset>
             <fileset dir="${binroot}/core/release/lib/ext" includes="xml-apis.jar"/>
@@ -881,12 +882,13 @@ Set jmf.home to the location of your JMF installation to continue."/>
             <fileset dir="standalone">
                 <include name="openide-fs.jar"/>
                 <include name="openide-util.jar"/>
+                <include name="openide-lookup.jar"/>
                 <include name="README-FS.txt"/>
             </fileset>
         </zip>
     </target>
 
-    <target name="standalone-fs-prepare" depends="lib-util,lib-fs">
+    <target name="standalone-fs-prepare" depends="lib-lookup,lib-util,lib-fs">
         <mkdir dir="standalone"/>
         <echo file="standalone/README-FS.txt"><![CDATA[Filesystems Library
 ===================
