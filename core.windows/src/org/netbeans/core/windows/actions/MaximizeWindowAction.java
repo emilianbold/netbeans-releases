@@ -28,7 +28,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 
-/**
+/** An action that can toggle maximized window system mode for specific window.
+ *
  * @author   Peter Zavadsky
  */
 public class MaximizeWindowAction extends AbstractAction {
@@ -118,8 +119,25 @@ public class MaximizeWindowAction extends AbstractAction {
         
         updateState();
     }
-    
+
+    /** Updates state of this action, may be called from non-AWT thread.
+     * #44825 - Shortcuts folder can call our constructor from non-AWT thread.
+     */
     private void updateState() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            doUpdateState();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    doUpdateState();
+                }
+            });
+        }
+    }
+    
+    /** Updates state and text of this action.
+     */
+    private void doUpdateState() {
         TopComponent active = null;
         if (topComponent != null) {
             active = topComponent;
