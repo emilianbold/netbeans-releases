@@ -254,7 +254,7 @@ public class PatternChildren extends ClassChildren {
 
     final class StyleChangeListener implements PropertyChangeListener {
         public void propertyChange ( PropertyChangeEvent e ) {
-            if( !e.getPropertyName().equals(PropertyActionSettings.PROP_STYLE) ) //ignore
+            if( !PropertyActionSettings.PROP_STYLE.equals(e.getPropertyName()) ) //ignore
                 return;            
             refreshKeys(PatternFilter.ALL);
         }
