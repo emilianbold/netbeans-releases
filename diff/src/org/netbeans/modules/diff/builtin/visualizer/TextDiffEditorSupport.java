@@ -252,11 +252,7 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
     }
     
     protected CloneableEditor createCloneableEditor() {
-        return new CloneableEditor(this) {
-            public HelpCtx getHelpCtx() {
-                return new HelpCtx(TextDiffEditorSupport.class);
-            }
-        };
+        return new DiffCloneableEditor(this);
     }
     
     /** Let's the super method create the document and also annotates it
@@ -410,6 +406,27 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
         }
         
     } // end of Env
+    
+    public static class DiffCloneableEditor extends CloneableEditor {
+        
+        DiffCloneableEditor(CloneableEditorSupport support) {
+            super(support);
+        }
+        
+        /**
+         * The componentShowing() method is used in CloneableEditor to make
+         * some initializations. Therefore it must have public access
+         * so that DiffPresenter will be able to call it when the component
+         * is made visible.
+         */
+        public void componentShowing() {
+            super.componentShowing();
+        }
+
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(TextDiffEditorSupport.class);
+        }
+    }
     
     /** Listener on file object that notifies the Env object
     * that a file has been modified.
