@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="build/server-classes"/>
         <javac srcdir="serversrc" destdir="build/server-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4" includeantruntime="false">
             <classpath>
-                <path path="${module.classpath}:${server.cp.extra}:build/classes"/>
+                <path path="${server.cp.extra}:build/classes"/>
             </classpath>
         </javac>
         <copy todir="build/server-classes">
