@@ -26,25 +26,12 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
   <property name="locales" value="nb"/>
   <property name="locjar.locales"       value="${locales}"/>
 
-  <!-- Need todo: Decide how to handle genlist, especially since it's changing. -->
-  <!-- Note: jars has to be the last use of locjar so that inferring the        -->
-  <!-- location of the localizing bundle works!					-->
-  <target name="netbeans" depends="init,release,jars">
-    <genlist 
-      outputfiledir="${netbeans.dest.dir}/${cluster.dir}" 
-      module="${nb.modules.dir}/org-netbeans-modules-ide-branding.jar"
-    >
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="ide/branding.files"/>
-      </fileset>
-    </genlist>
-  </target>
-
   <target name="init" depends="default.init" >
 
     <patternset id="ide/branding.files">
       <include name="**/*_nb.jar"/>
       <include name="${nb.modules.dir}/org-netbeans-modules-ide-branding.jar" />
+      <include name="${nb.system.dir}/Modules/org-netbeans-modules-ide-branding.xml" />
     </patternset>
   
   
@@ -62,6 +49,25 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     <taskdef name="makelayer" 
              classname="org.netbeans.nbbuild.MakeLayer" 
 	     classpath="${nbroot}/nbbuild/nbantext.jar"/>
+    <taskdef 
+        name="createmodulexml" 
+        classname="org.netbeans.nbbuild.CreateModuleXML" 
+        classpath="${nbroot}/nbbuild/nbantext.jar"
+    />
+  </target>
+
+  <!-- Need todo: Decide how to handle genlist, especially since it's changing. -->
+  <!-- Note: jars has to be the last use of locjar so that inferring the        -->
+  <!-- location of the localizing bundle works!					-->
+  <target name="netbeans" depends="init,release,jars">
+    <genlist 
+      outputfiledir="${netbeans.dest.dir}/${cluster.dir}" 
+      module="${nb.modules.dir}/org-netbeans-modules-ide-branding.jar"
+    >
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="ide/branding.files"/>
+      </fileset>
+    </genlist>
   </target>
 
   <target name="release">
@@ -73,13 +79,24 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
   <target name="jars" depends="init">
    <!-- <property name="locjar.writeSrcDir" value="true"/> -->
 
+    <mkdir  dir="build/org/netbeans/modules/ide/branding" />
+    <copy file="Bundle.properties" tofile="build/org/netbeans/modules/ide/branding/Bundle.properties" />
     <mkdir  dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}" />
     <!-- core (main core) -->
     <jar basedir="." 
       excludes="**/*"
       manifest="manifest.mf"
       jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-ide-branding.jar" 
-    />
+    >
+        <fileset dir="build" >
+            <include name="org/netbeans/modules/ide/branding/Bundle.properties" />
+        </fileset>
+    </jar>
+    <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
+      <autoload dir="${netbeans.dest.dir}/${cluster.dir}">
+        <include name="${nb.modules.dir}/org-netbeans-modules-ide-branding.jar"/>
+      </autoload>
+    </createmodulexml>
     
     <locjar 
       basedir="core/src"
