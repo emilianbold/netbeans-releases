@@ -20,18 +20,16 @@ Microsystems, Inc. All Rights Reserved.
    <folder name="Menu">
     
     <folder name="Debug">
-	<file name="HTTP Transaction Monitor[org-netbeans-modules-web-monitor-client-MonitorAction].instance" />
 
-    <file name="Separator5[javax-swing-JSeparator].instance" />
-    <attr name="org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance/Separator5[javax-swing-JSeparator].instance" boolvalue="true" />
-    <attr name="Separator5[javax-swing-JSeparator].instance/HTTP Transaction Monitor[org-netbeans-modules-web-monitor-client-MonitorAction].instance" boolvalue="true" />
+      <file name="HTTP Monitor.instance">
+        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.monitor.client.MonitorAction"/>
+      </file>
     </folder>
 
     <folder name="View">
-
-      <file name="HTTP Transaction Monitor[org-netbeans-modules-web-monitor-client-MonitorAction].instance"/>
-    <file name="org-netbeans-core-actions-HTMLViewAction.instance" />
-   <attr name="org-netbeans-core-actions-HTMLViewAction.instance/HTTP Transaction Monitor[org-netbeans-modules-web-monitor-client-MonitorAction].instance" boolvalue="true" />
+      <file name="HTTP Monitor.instance">
+        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.monitor.client.MonitorAction"/>
+      </file>
    </folder>
 
    <folder name="Help">

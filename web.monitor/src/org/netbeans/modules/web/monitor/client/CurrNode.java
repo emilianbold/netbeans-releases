@@ -35,7 +35,7 @@ public class CurrNode extends AbstractNode {
 
     public CurrNode(Children ch) {
 	super(ch);
-	setIconBase("/org/netbeans/modules/web/monitor/client/icons/folder"); //NOI18N
+	setIconBase("org/netbeans/modules/web/monitor/client/icons/folder"); //NOI18N
 	setName(NbBundle.getBundle(CurrNode.class).getString("MON_Current_Transactions_7"));
     }
 

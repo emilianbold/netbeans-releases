@@ -32,7 +32,7 @@ public class SavedNode extends AbstractNode {
     
     public SavedNode(Children ch) {
 	super(ch);
-	setIconBase("/org/netbeans/modules/web/monitor/client/icons/folder"); //NOI18N
+	setIconBase("org/netbeans/modules/web/monitor/client/icons/folder"); //NOI18N
 	setName(NbBundle.getBundle(SavedNode.class).getString("MON_Saved_Transactions_22"));
     }
     protected SystemAction[] createActions () {

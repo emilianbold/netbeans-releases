@@ -109,13 +109,13 @@ public class NestedNode extends AbstractNode {
 
 	// Get icon
 	if(method.equals(Constants.Http.GET))
-	    setIconBase("/org/netbeans/modules/web/monitor/client/icons/get"); //NOI18N
+	    setIconBase("org/netbeans/modules/web/monitor/client/icons/get"); //NOI18N
 	// Post icon
 	else if(method.equals(Constants.Http.POST))
-	    setIconBase("/org/netbeans/modules/web/monitor/client/icons/post"); //NOI18N
+	    setIconBase("org/netbeans/modules/web/monitor/client/icons/post"); //NOI18N
 	// Other 
 	else 
-	setIconBase("/org/netbeans/modules/web/monitor/client/icons/other"); //NOI18N
+	setIconBase("org/netbeans/modules/web/monitor/client/icons/other"); //NOI18N
 	
 	setNameString();
     }
