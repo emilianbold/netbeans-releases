@@ -309,9 +309,9 @@ is divided into following sections:
             <target name="do-compile">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
                 <earproject:javac xmlns:earproject="http://www.netbeans.org/ns/j2ee-earproject/1"/>
-                <copy todir="${{build.classes.dir}}">
+<!--                 <copy todir="${{build.classes.dir}}">
                     <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
-                </copy>
+                </copy> -->
                 <copy todir="${{build.dir}}/META-INF">
                   <fileset dir="${{meta.inf}}"/>
                 </copy>

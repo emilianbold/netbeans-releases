@@ -41,6 +41,12 @@ import org.w3c.dom.Element;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
 import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.modules.j2ee.dd.api.application.Application;
+import org.netbeans.modules.j2ee.dd.api.application.Module;
+import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  * Create a fresh EarProject from scratch.
@@ -194,6 +200,37 @@ public class EarProjectGenerator {
         FileObject pd = h.getProjectDirectory ();
         Project p = ProjectManager.getDefault().findProject(pd);
         
+        EarProject earProject = (EarProject) p.getLookup().lookup(EarProject.class);
+        if (null != earProject) {
+            Application app = null;
+            try {
+                FileObject backup, orig = earProject.getAppModule().getDeploymentDescriptor();
+                if (null != orig) {
+                    // make a backup copy of the application.xml
+                    backup = FileUtil.copyFile(orig, orig.getParent(), "original_application", "xml");
+                    if (null != backup) {
+                        app = DDProvider.getDefault().getDDRoot(orig);
+                        Module m[] = app.getModule();
+                        if (null != m && m.length > 0) {
+                            // notify the user here....
+                            DialogDisplayer.getDefault().notify(
+                                    new NotifyDescriptor(NbBundle.getMessage(EarProjectGenerator.class, "MESSAGE_CheckContextRoots"),
+                                        NbBundle.getMessage(EarProjectGenerator.class, "TITLE_CheckContextRoots"),NotifyDescriptor.OK_CANCEL_OPTION,
+                                        NotifyDescriptor.WARNING_MESSAGE, (Object[]) null, (Object) null));
+                            // delete the modules
+                            for (int k = 0; k < m.length; k++) {
+                                app.removeModule(m[k]);
+                            }
+                        }
+                //app.setDisplayName(name);
+                //kids.add(new Node[] { new LogicalViewNode(app) });
+                        app.write(earProject.getAppModule().getDeploymentDescriptor());
+                    }
+                }
+            } catch (java.io.IOException ioe) {
+                org.openide.ErrorManager.getDefault().log(ioe.getLocalizedMessage());
+            }
+        }
             AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
             ReferenceHelper refHelper = new ReferenceHelper(h, aux, h.getStandardPropertyEvaluator ());
             EarProjectProperties epp = new EarProjectProperties((EarProject) p, h, refHelper, new EarProjectType());
@@ -252,6 +289,8 @@ public class EarProjectGenerator {
                 
             }
         }
+                
+                // XXX all web module URI-to-ContextRoot mapping should happen here
         
         ProjectManager.getDefault().saveProject(p);
             ((EarProject)p).getAppModule().getConfigSupport ().createInitialConfiguration();
