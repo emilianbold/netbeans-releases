@@ -19,14 +19,26 @@ import org.xml.sax.*;
 
 /**
  * SAX parser wrapper allowing to parse XML entities (including DTDs) for 
- * wellformedness. It cannot be used for parsing of XML documents!
+ * wellformedness.
  * <p>
+ * Default implementation cannot be used for parsing of XML documents!
  * It wraps client's parser that it actually used for performing the parsing task.
+ * <p>
+ * <b>Primary use case (parse general entity):</b>
+ * <pre>
+ *   XMLReader entityParser = new SAXEntityParser(xmlReader);
+ *   entityParser.setErrorHandler(errorHandler);
+ *   entityParser.parse(inputSource);
+ * </pre>
+ * <b>Secondary use case (delegating parser):</b> It requires subclassing and
+ * allow subclass entirely define internal wrapping logic.
+ * 
+ * <b>Warning:</b> Implementation gurantees only proper ErrorHandler callbacks.
  *
  * @author  Petr Kuzel
  * @deprecated XML tools API candidate
  */
-public final class SAXEntityParser {
+public class SAXEntityParser implements XMLReader {
     
     //??? we are not fully bullet proof
     private static final long RANDOM = System.currentTimeMillis();
@@ -44,9 +56,11 @@ public final class SAXEntityParser {
         "<fakeDocument" + RANDOM + ">\n" +                                      // NOI18N
         "&fakeEntity" + RANDOM + ";\n" +                                        // NOI18N
         "</fakeDocument" + RANDOM + ">\n";                                      // NOI18N
-    
+
+    // we delegate almost everything on it
     private final XMLReader peer;
-    
+
+    // defines wrapping logic
     private final boolean generalEntity;
 
     /** 
@@ -58,9 +72,10 @@ public final class SAXEntityParser {
     }
     
     /** 
-     * Creates a new instance of EntityParser.
+     * Creates a new instance of SAXEntityParser.
      * @param peer parser that will be used for parsing
-     * @param generalEntity it true treat entity as general entity otherwise as parameter one
+     * @param generalEntity if <code>false</code> treat entity as parameter
+     *        entity (i.e. DTD entities).
      */
     public SAXEntityParser(XMLReader peer, boolean generalEntity) {
         if (peer == null) throw new NullPointerException();
@@ -69,7 +84,7 @@ public final class SAXEntityParser {
     }
 
     /**
-     * Start parsing
+     * Start entity parsing using peer parser.
      * @param entity entity input source
      */
     public void parse( InputSource entity) throws IOException, SAXException {     
@@ -86,15 +101,93 @@ public final class SAXEntityParser {
             peer.setErrorHandler( new EH( errorHandler));
         }
         
-        InputSource fakeInput = new InputSource(FAKE_SID);
-        String fakeDocument = generalEntity ? FAKE_ENTITY_DOCUMENT : FAKE_PARAMETER_ENTITY_DOCUMENT;
-        fakeInput.setCharacterStream(new StringReader(fakeDocument));
+        InputSource fakeInput = createInputSource();
+        if (fakeInput.getSystemId() == null) {
+            fakeInput.setSystemId(FAKE_SID);
+        }
         peer.parse(fakeInput);
         
     }
+
+    /**
+     * Create wrapper input source that utilizes fact that the first
+     * <code>EntityResolver</code> query is redirected to client's 
+     * <code>InputSource</code>.
+     * @return InputSource that hosts of client's one
+     */
+    protected InputSource createInputSource() {
+        InputSource fakeInput = new InputSource(FAKE_SID);
+        String fakeDocument = generalEntity ? FAKE_ENTITY_DOCUMENT : FAKE_PARAMETER_ENTITY_DOCUMENT;
+        fakeInput.setCharacterStream(new StringReader(fakeDocument));        
+        return fakeInput;
+    }
     
     /**
-     * Redirest to entity input source, it is always the first request.
+     * Examine if the exception should be propagated into client's <code>
+     * ErrorHandler</code>.
+     * @param ex examined exception
+     * @return <code>true</code> if the exception originates from client's
+     * <code>InputSource</code> and should be propagated.
+     */
+    protected boolean propagateException(SAXParseException ex) {
+        if (ex == null) return false;
+        return FAKE_SID != ex.getSystemId();
+    }
+    
+    public org.xml.sax.ContentHandler getContentHandler() {
+        return peer.getContentHandler();
+    }
+    
+    public org.xml.sax.DTDHandler getDTDHandler() {
+        return peer.getDTDHandler();
+    }
+    
+    public org.xml.sax.EntityResolver getEntityResolver() {
+        return peer.getEntityResolver();
+    }
+    
+    public org.xml.sax.ErrorHandler getErrorHandler() {
+        return peer.getErrorHandler();
+    }
+    
+    public boolean getFeature(String name) throws org.xml.sax.SAXNotRecognizedException, org.xml.sax.SAXNotSupportedException {
+        return peer.getFeature(name);
+    }
+    
+    public Object getProperty(String name) throws org.xml.sax.SAXNotRecognizedException, org.xml.sax.SAXNotSupportedException {
+        return peer.getProperty(name);
+    }
+    
+    public void parse(String sid) throws java.io.IOException, org.xml.sax.SAXException {
+        this.parse(new InputSource(sid));
+    }
+    
+    public void setContentHandler(org.xml.sax.ContentHandler contentHandler) {
+        peer.setContentHandler(contentHandler);
+    }
+    
+    public void setDTDHandler(org.xml.sax.DTDHandler dTDHandler) {
+        peer.setDTDHandler(dTDHandler);
+    }
+    
+    public void setEntityResolver(org.xml.sax.EntityResolver entityResolver) {
+        peer.setEntityResolver(entityResolver);
+    }
+    
+    public void setErrorHandler(org.xml.sax.ErrorHandler errorHandler) {
+        peer.setErrorHandler(errorHandler);
+    }
+    
+    public void setFeature(String name, boolean val) throws org.xml.sax.SAXNotRecognizedException, org.xml.sax.SAXNotSupportedException {
+        peer.setFeature(name, val);
+    }
+    
+    public void setProperty(String name, Object val) throws org.xml.sax.SAXNotRecognizedException, org.xml.sax.SAXNotSupportedException {
+        peer.setProperty(name, val);
+    }
+    
+    /**
+     * Redirect to entity input source, it is always the first request.
      * Pure FAKE_SID approach have problems with some parser implementations.
      */
     private class ER implements EntityResolver {
@@ -153,7 +246,7 @@ public final class SAXEntityParser {
         }
         
         public void error(SAXParseException ex) throws SAXException {
-            if (FAKE_SID != ex.getSystemId()) {
+            if (propagateException(ex)) {
                 peer.error(ex);
             } else {
                 Util.THIS.debug("SAXEntityParser: filtering out:", ex);
@@ -161,7 +254,7 @@ public final class SAXEntityParser {
         }
         
         public void fatalError(SAXParseException ex) throws SAXException {
-            if (FAKE_SID != ex.getSystemId()) {
+            if (propagateException(ex)) {
                 peer.fatalError(ex);
             } else {
                 Util.THIS.debug("SAXEntityParser: filtering out:", ex);
@@ -169,7 +262,7 @@ public final class SAXEntityParser {
         }
         
         public void warning(SAXParseException ex) throws SAXException {
-            if (FAKE_SID != ex.getSystemId()) {
+            if (propagateException(ex)) {
                 peer.warning(ex);
             } else {
                 Util.THIS.debug("SAXEntityParser: filtering out:", ex);
