@@ -71,4 +71,9 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
   </target>
 
+  <!-- This target will only work *inside* the IDE! -->
+  <target name= "test" depends="jars" description="Test the module inside the running IDE." >
+    <nbinstaller action="reinstall" module="netbeans/modules/html.jar"/>
+  </target>
+
 </project>
