@@ -234,6 +234,11 @@
 				prefix = "jdbc:postgresql://<HOST>:<PORT>/<DB>";
 			},
 			{
+				name = "Quadcap Embeddable Database";
+				driver = "com.quadcap.jdbc.JdbcDriver";
+				prefix = "jdbc:qed:<DB>";
+			},
+			{
 				name = "Sybase (jConnect 4.2 and earlier)";
 				driver = "com.sybase.jdbc.SybDriver";
 				prefix = "jdbc:sybase:Tds:<HOST>:<PORT>";

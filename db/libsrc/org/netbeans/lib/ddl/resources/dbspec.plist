@@ -2092,4 +2092,37 @@
     CharacterTypes = (CHAR,LONGVARCHAR,VARCHAR);
   };
 
+//  ********************************************************************************
+//
+//  QED
+//
+//  ********************************************************************************/
+
+  "QED" = {
+    DatabaseProductName = "QED";
+    TypeMap = {
+      java.sql.Types.BIGINT = BIGINT;
+      java.sql.Types.BINARY = BINARY;
+      java.sql.Types.BIT = BIT;
+      java.sql.Types.BLOB = BLOB;  //JDBC 2.0 A type representing an SQL Binary Large Object
+      java.sql.Types.CHAR = CHAR;
+      java.sql.Types.CLOB = CLOB;  //JDBC 2.0 A type representing an SQL Character Large Object
+      java.sql.Types.DATE = DATE;
+      java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.DOUBLE = "DOUBLE PRECISION";
+      java.sql.Types.FLOAT = FLOAT;
+      java.sql.Types.INTEGER = INTEGER;
+      java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.REAL = REAL;
+      java.sql.Types.SMALLINT = SMALLINT;
+      java.sql.Types.TIME = TIME;
+      java.sql.Types.TIMESTAMP = TIMESTAMP;
+      java.sql.Types.VARBINARY = VARBINARY;
+      java.sql.Types.VARCHAR = VARCHAR;
+    };
+    SizelessTypes = (BIGINT,BINARY,BIT,BLOB,CLOB,DATE,"DOUBLE PRECISION",INTEGER,REAL,SMALLINT,TIME,TIMESTAMP,VARBINARY);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
+    CharacterTypes = (CHAR,VARCHAR);
+  };
+
 }
