@@ -28,6 +28,9 @@ import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import org.openide.util.datatransfer.ExClipboard;
 import org.openide.*;
@@ -466,8 +469,17 @@ public class NonGui extends NbTopManager implements Runnable {
             } else {
                 moduleDirUser = new File(userDir, DIR_MODULES);
             }
+            // #27151: ${netbeans.dirs}
+            List extradirs = new ArrayList(5); // List<File>
+            String nbdirs = System.getProperty("netbeans.dirs");
+            if (nbdirs != null) {
+                StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
+                while (tok.hasMoreTokens()) {
+                    extradirs.add(new File(tok.nextToken(), "modules")); // NOI18N
+                }
+            }
             try {
-                moduleSystem = new ModuleSystem(Repository.getDefault().getDefaultFileSystem(), moduleDirHome, moduleDirUser);
+                moduleSystem = new ModuleSystem(Repository.getDefault().getDefaultFileSystem(), moduleDirHome, (File[])extradirs.toArray(new File[extradirs.size()]), moduleDirUser);
             } catch (IOException ioe) {
                 // System will be screwed up.
                 IllegalStateException ise = new IllegalStateException("Module system cannot be created"); // NOI18N

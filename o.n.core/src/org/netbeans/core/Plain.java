@@ -88,7 +88,7 @@ public class Plain extends NbTopManager implements Runnable, ChangeListener {
     protected ModuleSystem createModuleSystem() throws IOException {
         String userDir = System.getProperty("modules.dir"); // NOI18N
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        return new ModuleSystem(fs, userDir == null ? null : new File(userDir), null);
+        return new ModuleSystem(fs, userDir == null ? null : new File(userDir), new File[0], null);
     }
   
     /** Initializaton of modules if user directory provided.

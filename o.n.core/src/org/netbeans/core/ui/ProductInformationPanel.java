@@ -19,9 +19,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Font;
 import java.awt.Toolkit;
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.Locale;
-import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -122,8 +122,8 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(ideImageLabel, gridBagConstraints);
 
-        productVersionLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_ProductVersion"));
         productVersionLabel.setLabelFor(productVersionValueLabel);
+        productVersionLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_ProductVersion"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -131,8 +131,8 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(productVersionLabel, gridBagConstraints);
 
-        ideVersioningLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_IDEVersioning"));
         ideVersioningLabel.setLabelFor(ideVersioningValueLabel);
+        ideVersioningLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_IDEVersioning"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -140,8 +140,8 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(ideVersioningLabel, gridBagConstraints);
 
-        operatingSystemLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_OperationgSystem"));
         operatingSystemLabel.setLabelFor(operatingSystemValueLabel);
+        operatingSystemLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_OperationgSystem"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -149,8 +149,8 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(operatingSystemLabel, gridBagConstraints);
 
-        javaLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_Java"));
         javaLabel.setLabelFor(javaValueLabel);
+        javaLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_Java"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -158,8 +158,8 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(javaLabel, gridBagConstraints);
 
-        vmLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_VM"));
         vmLabel.setLabelFor(vmValueLabel);
+        vmLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_VM"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -167,8 +167,8 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(vmLabel, gridBagConstraints);
 
-        vendorLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_Vendor"));
         vendorLabel.setLabelFor(vendorValueLabel);
+        vendorLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_Vendor"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -176,8 +176,8 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(vendorLabel, gridBagConstraints);
 
-        javaHomeLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_JavaHome"));
         javaHomeLabel.setLabelFor(javaHomeValueLabel);
+        javaHomeLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_JavaHome"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
@@ -185,8 +185,8 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(javaHomeLabel, gridBagConstraints);
 
-        systemLocaleLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_SystemLocale"));
         systemLocaleLabel.setLabelFor(systemLocaleValueLabel);
+        systemLocaleLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_SystemLocale"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
@@ -194,8 +194,8 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(systemLocaleLabel, gridBagConstraints);
 
-        homeDirLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_HomeDir"));
         homeDirLabel.setLabelFor(homeDirValueLabel);
+        homeDirLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_HomeDir"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
@@ -203,8 +203,8 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(homeDirLabel, gridBagConstraints);
 
-        currentDirLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_CurrentDir"));
         currentDirLabel.setLabelFor(currentDirValueLabel);
+        currentDirLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_CurrentDir"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
@@ -212,8 +212,8 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(currentDirLabel, gridBagConstraints);
 
-        ideInstallLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_IDEInstall"));
         ideInstallLabel.setLabelFor(ideInstallValueLabel);
+        ideInstallLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_IDEInstall"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 11;
@@ -221,8 +221,8 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(ideInstallLabel, gridBagConstraints);
 
-        userDirLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString("LBL_UserDir"));
         userDirLabel.setLabelFor(userDirValueLabel);
+        userDirLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_UserDir"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 12;
@@ -345,37 +345,37 @@ public class ProductInformationPanel extends JPanel {
     }//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel ideVersioningValueLabel;
-    private javax.swing.JLabel javaHomeValueLabel;
-    private javax.swing.JLabel operatingSystemLabel;
-    private javax.swing.JLabel vmValueLabel;
-    private javax.swing.JLabel homeDirLabel;
-    private javax.swing.JLabel javaHomeLabel;
-    private javax.swing.JLabel productVersionLabel;
-    private javax.swing.JLabel systemLocaleValueLabel;
-    private javax.swing.JLabel productVersionValueLabel;
-    private javax.swing.JLabel javaLabel;
-    private javax.swing.JLabel currentDirLabel;
-    private javax.swing.JLabel vendorValueLabel;
-    private javax.swing.JLabel userDirValueLabel;
     private javax.swing.JLabel homeDirValueLabel;
-    private javax.swing.JLabel ideInstallLabel;
     private javax.swing.JLabel javaValueLabel;
     private javax.swing.JLabel operatingSystemValueLabel;
+    private javax.swing.JLabel systemLocaleLabel;
+    private javax.swing.JLabel homeDirLabel;
+    private javax.swing.JLabel productVersionLabel;
+    private javax.swing.JLabel vendorLabel;
+    private javax.swing.JLabel ideVersioningValueLabel;
+    private javax.swing.JLabel javaHomeValueLabel;
     private javax.swing.JLabel ideImageLabel;
+    private javax.swing.JLabel vendorValueLabel;
+    private javax.swing.JLabel javaLabel;
+    private javax.swing.JLabel currentDirLabel;
+    private javax.swing.JLabel vmValueLabel;
     private javax.swing.JLabel ideInstallValueLabel;
+    private javax.swing.JLabel systemLocaleValueLabel;
+    private javax.swing.JLabel ideInstallLabel;
+    private javax.swing.JLabel currentDirValueLabel;
+    private javax.swing.JLabel operatingSystemLabel;
+    private javax.swing.JLabel userDirValueLabel;
     private javax.swing.JLabel ideVersioningLabel;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JLabel systemLocaleLabel;
-    private javax.swing.JLabel vmLabel;
-    private javax.swing.JLabel currentDirValueLabel;
-    private javax.swing.JLabel vendorLabel;
-    private javax.swing.JLabel productInformationLabel;
+    private javax.swing.JLabel productVersionValueLabel;
     private javax.swing.JLabel userDirLabel;
+    private javax.swing.JLabel vmLabel;
+    private javax.swing.JLabel productInformationLabel;
+    private javax.swing.JLabel javaHomeLabel;
     // End of variables declaration//GEN-END:variables
     
     private String fromBundle (String bundleString) {
-        return java.util.ResourceBundle.getBundle("org/netbeans/core/ui/Bundle").getString(bundleString);
+        return NbBundle.getMessage(ProductInformationPanel.class, bundleString);
     }
     
     private void updateLabelFont (JLabel label, Color color) {
@@ -482,7 +482,13 @@ public class ProductInformationPanel extends JPanel {
     }
 
     private String getIDEInstallValue () {
-        return System.getProperty("netbeans.home");
+        String nbhome = System.getProperty("netbeans.home");
+        String nbdirs = System.getProperty("netbeans.dirs");
+        if (nbdirs != null) {
+            return nbhome + File.pathSeparator + nbdirs;
+        } else {
+            return nbhome;
+        }
     }
 
     private String getUserDirValue () {
