@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Templates">
-        <attr name="WebServices/Classes" boolvalue="true"/>
+        <attr name="Classes/WebServices" boolvalue="true"/>
         <folder name="WebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
             <attr name="WebServiceClient/MessageHandler" boolvalue="true"/>

@@ -16,6 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Templates">
+        <attr name="JSP_Servlet/J2EE" boolvalue="true"/>
         <folder name="J2EE">
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle"/>
          <file name="Session">
@@ -66,6 +67,7 @@ Microsystems, Inc. All Rights Reserved.
                       urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/logicalview/ejb/entity/EntityNodeIcon.gif"/>
             
         </file>
+        <attr name="ServiceLocator.java/CachingServiceLocator.java" boolvalue="true"/>
         <file name="CachingServiceLocator.java" url="CachingServiceLocator.template">
          <attr name="template" boolvalue="true"/>
          <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbjarproject.patterns.ServiceLocatorWizard" />
