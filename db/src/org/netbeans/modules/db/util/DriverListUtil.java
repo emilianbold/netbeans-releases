@@ -85,6 +85,10 @@ public class DriverListUtil {
         drivers.add("COM.FirstSQL.Dbcp.DbcpDriver");
         urls.add("jdbc:dbcp://local");
         
+        names.add("IBM DB2 (DataDirect Connect for JDBC)");
+        drivers.add("com.ddtek.jdbc.db2.DB2Driver");
+        urls.add("jdbc:datadirect:db2://<HOST>:<PORT>[;databaseName=<DB>]");
+
         names.add("IDS Server");
         drivers.add("ids.sql.IDSDriver");
         urls.add("jdbc:ids://<HOST>:<PORT>/conn?dsn='<ODBC_DSN_NAME>'");
@@ -92,6 +96,10 @@ public class DriverListUtil {
         names.add("Informix Dynamic Server");
         drivers.add("com.informix.jdbc.IfxDriver");
         urls.add("jdbc:informix-sqli://<HOST>:<PORT>/<DB>:INFORMIXSERVER=<SERVER_NAME>");
+
+        names.add("Informix Dynamic Server (DataDirect Connect for JDBC)");
+        drivers.add("com.ddtek.jdbc.informix.InformixDriver");
+        urls.add("jdbc:datadirect:informix://<HOST>:<PORT>;informixServer=<SERVER_NAME>;databaseName=<DB>");
         
         names.add("InstantDB (v3.13 and earlier)");
         drivers.add("jdbc.idbDriver");
@@ -137,6 +145,10 @@ public class DriverListUtil {
         drivers.add("com.mckoi.JDBCDriver");
         urls.add("jdbc:mckoi:local://<DB>");
         
+        names.add("Microsoft SQL Server (DataDirect Connect for JDBC)");
+        drivers.add("com.ddtek.jdbc.sqlserver.SQLServerDriver");
+        urls.add("jdbc:datadirect:sqlserver://<HOST>:<PORT>[;databaseName=<DB>]");
+        
         names.add("Microsoft SQL Server (JTurbo driver)");
         drivers.add("com.ashna.jturbo.driver.Driver");
         urls.add("jdbc:JTurbo://<HOST>:<PORT>/<DB>");
@@ -161,6 +173,10 @@ public class DriverListUtil {
         drivers.add("oracle.jdbc.driver.OracleDriver");
         urls.add("jdbc:oracle:oci:@<SID>");
         
+        names.add("Oracle (DataDirect Connect for JDBC)");
+        drivers.add("com.ddtek.jdbc.oracle.OracleDriver");
+        urls.add("jdbc:datadirect:oracle://<HOST>:<PORT>;SID=<SID>");
+        
         names.add("PostgreSQL (v6.5 and earlier)");
         drivers.add("postgresql.Driver");
         urls.add("jdbc:postgresql://<HOST>:<PORT>/<DB>");
@@ -180,6 +196,10 @@ public class DriverListUtil {
         names.add("Sybase (jConnect 5.2)");
         drivers.add("com.sybase.jdbc2.jdbc.SybDriver");
         urls.add("jdbc:sybase:Tds:<HOST>:<PORT>");
+        
+        names.add("Sybase (DataDirect Connect for JDBC)");
+        drivers.add("com.ddtek.jdbc.sybase.SybaseDriver");
+        urls.add("jdbc:datadirect:sybase://<HOST>:<PORT>[;databaseName=<DB>]");
     }
     
     public static Set getDrivers() {
