@@ -21,8 +21,6 @@ import org.netbeans.modules.j2ee.server.datamodel.WebStandardData;
 import org.netbeans.modules.j2ee.server.web.FfjJspCompileContext;
 import org.netbeans.modules.j2ee.server.ServerInstance;
 
-import org.netbeans.modules.web.webdata.WebDataFactory;
-
 import org.openide.filesystems.*;
 
 /** Data related to compilation attached to one JSP page.

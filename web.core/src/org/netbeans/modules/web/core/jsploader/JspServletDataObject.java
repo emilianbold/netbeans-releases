@@ -15,7 +15,6 @@ package org.netbeans.modules.web.core.jsploader;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.NoSuchElementException;
 import java.text.MessageFormat;
 
 import javax.swing.text.*;
@@ -24,20 +23,11 @@ import org.openide.cookies.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
-import org.openide.actions.OpenAction;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.Task;
 import org.openide.text.Line;
-import org.openide.src.SourceElement;
-import org.openide.compiler.Compiler;
-import org.openide.compiler.ExternalCompiler;
-import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.loaders.DataObjectNotFoundException;
 
 import org.netbeans.modules.java.JavaDataObject;
-import org.netbeans.modules.java.JavaEditor;
-import org.netbeans.modules.java.JavaDataLoader;
 
 /** Dataobject representing a servlet generated from a JSP page
 *

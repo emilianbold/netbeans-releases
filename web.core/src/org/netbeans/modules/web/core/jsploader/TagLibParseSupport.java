@@ -21,10 +21,6 @@ import java.io.IOException;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.MultiDataObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 

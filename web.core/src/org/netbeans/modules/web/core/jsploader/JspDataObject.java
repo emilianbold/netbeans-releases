@@ -13,51 +13,32 @@
 
 package org.netbeans.modules.web.core.jsploader;
 
-import java.util.Set;
 import java.util.Iterator;
-import java.util.Comparator;
 import java.util.Collection;
-import java.util.ArrayList;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Date;
-import java.lang.reflect.InvocationTargetException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.io.ObjectInputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.io.IOException;
-import java.io.NotActiveException;
-import java.io.FileNotFoundException;
 import java.io.File;
-import javax.swing.text.StyledDocument;
-import javax.swing.text.BadLocationException;
 
 import org.openide.*;
-import org.openide.util.WeakListener;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.CompilerCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.windows.*;
 import org.openide.execution.NbClassPath;
 import org.openide.execution.NbProcessDescriptor;
-import org.openide.actions.OpenAction;
-import org.openide.actions.ViewAction;
 import org.openide.text.*;
 import org.openide.util.*;
 import org.openide.util.enum.*;
 import org.openide.util.actions.*;
 import org.openide.nodes.Node;
-import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.NodeListener;
 import org.openide.compiler.Compiler;
 import org.openide.compiler.CompilerJob;
 import org.openide.compiler.CompilerType;
@@ -65,9 +46,6 @@ import org.openide.compiler.ExternalCompilerGroup;
 
 import org.netbeans.modules.web.core.ServletSettings;
 import org.netbeans.modules.web.core.QueryStringCookie;
-import org.netbeans.modules.web.webdata.WebModuleImpl;
-import org.netbeans.modules.web.webdata.WebDataFactory;
-import org.netbeans.modules.web.webdata.WebDataFactoryImpl;
 import org.netbeans.modules.j2ee.server.ServerInstance;
 import org.netbeans.modules.j2ee.server.web.FfjJspCompileContext;
 import org.netbeans.modules.j2ee.server.datamodel.WebStandardData;
@@ -75,7 +53,6 @@ import org.netbeans.modules.j2ee.impl.ServerExecSupport;
 import org.netbeans.modules.j2ee.impl.ServerRegistryImpl;
 import org.netbeans.modules.web.context.WebContextObject;
 
-import org.netbeans.modules.java.JavaDataObject;
 import org.netbeans.modules.java.JavaCompilerType;
 import org.netbeans.modules.java.JavaExternalCompilerType;
 import org.netbeans.modules.java.JExternalCompilerGroup;
@@ -83,7 +60,6 @@ import org.netbeans.modules.java.environment.Utilities;
 import org.netbeans.modules.java.Util;
 import org.openidex.nodes.looks.Look;
 import org.openidex.nodes.looks.DefaultLook;
-import org.openidex.nodes.looks.LookNode;
 import org.openidex.nodes.looks.CompositeLook;
 import org.netbeans.modules.web.core.WebExecSupport;
 

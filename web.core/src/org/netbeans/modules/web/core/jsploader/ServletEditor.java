@@ -20,11 +20,9 @@ import java.io.OutputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.util.Date;
-import java.util.NoSuchElementException;
 import java.beans.*;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.Timer;
@@ -32,15 +30,11 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.Caret;
 import javax.swing.event.CaretEvent;
 
-import org.openide.TopManager;
-import org.openide.actions.ToggleBreakpointAction;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.PrintCookie;
-import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
@@ -48,15 +42,9 @@ import org.openide.text.*;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
-import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.SystemAction;
-import org.openide.windows.CloneableTopComponent;
-import org.openide.windows.Mode;
-import org.openide.windows.Workspace;
-import org.openide.src.SourceElement;
 import org.openide.cookies.SourceCookie;
 
-import org.netbeans.modules.java.Util;
 import org.netbeans.modules.java.JavaDataObject;
  
 /*
@@ -302,7 +290,6 @@ public class ServletEditor extends CloneableEditorSupport
     	    // This local is to keep javac 1.2 happy.
             ServletEditor se = (ServletEditor)cloneableEditorSupport();
             if (se != null) {
-                JspDataObject jspdo = se.jspEnv().getJspDataObject();
                 timerSelNodes = new Timer(100, new java.awt.event.ActionListener() {
                                               public void actionPerformed(java.awt.event.ActionEvent e) {
                                                   if (lastCaretOffset == -1 && pane != null) {

@@ -13,12 +13,8 @@
 
 package org.netbeans.modules.web.core.jsploader;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.reflect.*;
 import java.net.URLEncoder;
@@ -39,12 +35,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.FileSystemCapability;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataFolder;
-import org.openide.compiler.Compiler;
 import org.openide.execution.NbClassPath;
 import org.openide.util.NbBundle;
 

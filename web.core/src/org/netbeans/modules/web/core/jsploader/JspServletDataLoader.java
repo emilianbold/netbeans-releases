@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.web.core.jsploader;
 
-import java.io.IOException;
-import java.util.Map;
 
 import org.openide.filesystems.*;
 import org.openide.loaders.*;

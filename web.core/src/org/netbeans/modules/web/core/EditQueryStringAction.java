@@ -13,21 +13,15 @@
 
 package org.netbeans.modules.web.core;
 
-import java.util.ResourceBundle;
 import java.io.IOException;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
-import org.openide.execution.Executor;
-import org.openide.cookies.ExecCookie;
 import org.openide.nodes.Node;
-import org.openide.loaders.ExecSupport;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.MultiDataObject;
 import org.openide.NotifyDescriptor;
 
-import org.netbeans.modules.j2ee.impl.ServerExecSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 

@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.web.core;
 
-import java.io.InputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -22,7 +21,6 @@ import java.net.URLConnection;
 import java.net.URL;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.net.MalformedURLException;
 
 /** Utility class
 * @author  Petr Jiricka
@@ -50,7 +48,6 @@ public class Util {
 
     public static String issueGetRequest(URL url) {
         BufferedReader in = null;
-        URLConnection connection;
         StringBuffer input = new StringBuffer();
         try {
             in = new BufferedReader(new InputStreamReader(
