@@ -220,17 +220,21 @@ public class AbstractVariable implements ObjectVariable {
      * @return toString () value of this instance
      */
     public String getToStringValue () throws InvalidExpressionException {
-        if (this.getInnerValue() == null) return null;
-        if (!(this.getInnerValue().type() instanceof ClassType)) return getValue ();
-        if (this.getInnerValue() instanceof StringReference)
-            return "\"" + ((StringReference) this.getInnerValue()).value () + "\"";
-        Method toStringMethod = ((ClassType) this.getInnerValue().type()).
-            concreteMethodByName ("toString", "()Ljava/lang/String;");
-        return ((StringReference) getModel().getDebugger ().invokeMethod (
-            (ObjectReference) this.getInnerValue(),
-            toStringMethod,
-            new Value [0]
-        )).value ();
+        try {
+            if (this.getInnerValue() == null) return null;
+            if (!(this.getInnerValue().type() instanceof ClassType)) return getValue ();
+            if (this.getInnerValue() instanceof StringReference)
+                return "\"" + ((StringReference) this.getInnerValue()).value () + "\"";
+            Method toStringMethod = ((ClassType) this.getInnerValue().type()).
+                concreteMethodByName ("toString", "()Ljava/lang/String;");
+            return ((StringReference) getModel().getDebugger ().invokeMethod (
+                (ObjectReference) this.getInnerValue(),
+                toStringMethod,
+                new Value [0]
+            )).value ();
+        } catch (VMDisconnectedException ex) {
+            return "";
+        }
     }
     
     /**
@@ -248,35 +252,39 @@ public class AbstractVariable implements ObjectVariable {
         String signature,
         Variable[] arguments
     ) throws NoSuchMethodException, InvalidExpressionException {
-        if (this.getInnerValue() == null) return null;
-        Method method = ((ClassType) this.getInnerValue().type()).
-            concreteMethodByName (methodName, signature);
-        if (method == null) {
-            List l = ((ClassType) this.getInnerValue().type()).
-                methodsByName (methodName);
-            int j, jj = l.size ();
-            for (j = 0; j < jj; j++)
-                System.out.println( ((Method) l.get (j)).signature ());
-            throw new NoSuchMethodException (
-                this.getInnerValue().type().name () + "." + methodName + " : " + signature
+        try {
+            if (this.getInnerValue() == null) return null;
+            Method method = ((ClassType) this.getInnerValue().type()).
+                concreteMethodByName (methodName, signature);
+            if (method == null) {
+                List l = ((ClassType) this.getInnerValue().type()).
+                    methodsByName (methodName);
+                int j, jj = l.size ();
+                for (j = 0; j < jj; j++)
+                    System.out.println( ((Method) l.get (j)).signature ());
+                throw new NoSuchMethodException (
+                    this.getInnerValue().type().name () + "." + methodName + " : " + signature
+                );
+            }
+            Value[] vs = new Value [arguments.length];
+            int i, k = arguments.length;
+            for (i = 0; i < k; i++)
+                vs [i] = ((AbstractVariable) arguments [i]).getInnerValue ();
+            Value v = getModel().getDebugger ().invokeMethod (
+                (ObjectReference) this.getInnerValue(),
+                method,
+                vs
             );
+            if (v instanceof ObjectReference)
+                return new org.netbeans.modules.debugger.jpda.models.ObjectVariable (
+                    getModel(),
+                    (ObjectReference) v,
+                    id + method + "^"
+                );
+            return new AbstractVariable (getModel(), v, id + method);
+        } catch (VMDisconnectedException ex) {
+            return null;
         }
-        Value[] vs = new Value [arguments.length];
-        int i, k = arguments.length;
-        for (i = 0; i < k; i++)
-            vs [i] = ((AbstractVariable) arguments [i]).getInnerValue ();
-        Value v = getModel().getDebugger ().invokeMethod (
-            (ObjectReference) this.getInnerValue(),
-            method,
-            vs
-        );
-        if (v instanceof ObjectReference)
-            return new org.netbeans.modules.debugger.jpda.models.ObjectVariable (
-                getModel(),
-                (ObjectReference) v,
-                id + method + "^"
-            );
-        return new AbstractVariable (getModel(), v, id + method);
     }
     
     /**
