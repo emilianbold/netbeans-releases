@@ -67,12 +67,12 @@
 	   <tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
 	   <tocitem text="Upgrading to the J2EE 1.4 Specification" target="upgrade_to_j2ee14" />
        <tocitem text="JSP and HTML Files">
-          <tocitem text="About Creating and Editing JSP, XML, HTML, and Tag Files" target="about_jsp_edit" />
+          <tocitem text="About Creating and Editing JSP, HTML, and Tag Files" target="about_jsp_edit" />
           <tocitem text="About JavaServer Pages Technology" target="about_jsp_technology" />
 	  <tocitem text="About JSP Syntax" target="about_jsp_syntax" /> 
 	  <tocitem text="Creating a JSP File" target="jsp_create" />
 	  <tocitem text="Creating an HTML File" target="html_create" />
-	  <tocitem text="Editing a JSP, XML, HTML, or Tag File" target="jsp_edit" />
+	  <tocitem text="Editing a JSP, HTML, or Tag File" target="jsp_edit" />
           <tocitem text="Setting Character Encoding for a JSP File">
                   <tocitem text="About JSP Character Encoding" target="about_jsp_encoding" />
 		  <tocitem text="Setting Request Character Encoding for a JSP File" target="jsp_encoding_request" />
