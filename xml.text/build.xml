@@ -29,8 +29,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="dist.base" value="www.netbeans.org/download/nbms/40/xml"/>
     <property name="storepass" value="?"/>
     <property name="nbm_alias" value="nb_ide"/>
-    <property name="release" value="dev"/>
-    <property name="build.compiler.debug" value="on"/>
 
     <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
@@ -116,11 +114,11 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="nbm" depends="netbeans">
         <delete dir="Info"/>
-        <makenbm file="../xml-text-edit-${release}.nbm"
+        <makenbm file="../xml-text-edit.nbm"
                  topdir="."
                  module="netbeans/modules/xml-text-edit.jar"
                  homepage="http://xml.${homepage.base}/text-edit/"
-                 distribution="http://${dist.base}/xml-text-edit-${release}.nbm">
+                 distribution="http://${dist.base}/xml-text-edit.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
@@ -133,7 +131,7 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </delete>
         <delete file="manifest-subst.mf"/>
-        <delete file="../xml-text-edit-${release}.nbm"/>
+        <delete file="../xml-text-edit.nbm"/>
         <delete dir="netbeans"/>
         <delete dir="Info"/>
 

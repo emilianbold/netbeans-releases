@@ -49,9 +49,9 @@ public abstract class AbstractUtil {
      */
     public final void debug (String message, Throwable ex) {
         if ( isLoggable() ) {
-            System.out.println ("[" + getPackageName() + "] " + message);
+            System.err.println ("[" + getPackageName() + "] " + message);
             if ( ex != null ) {
-                ex.printStackTrace (System.out);
+                ex.printStackTrace (System.err);
             }
         }
     }
@@ -62,6 +62,14 @@ public abstract class AbstractUtil {
      */
     public final void debug (String message) {
         debug (message, null);
+    }
+
+
+    /**
+     * Just for debugging purposes.
+     */
+    public final void debug (Throwable ex) {
+        debug (ex.getMessage(), ex);
     }
 
 

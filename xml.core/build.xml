@@ -28,7 +28,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="dist.base" value="www.netbeans.org/download/nbms/40/xml"/>
     <property name="storepass" value="?"/>
     <property name="nbm_alias" value="nb_ide"/>
-    <property name="release" value="dev"/>
 
     <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
@@ -130,11 +129,11 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="nbm" depends="netbeans">
         <delete dir="Info"/>
-        <makenbm file="../xml-core-${release}.nbm"
+        <makenbm file="../xml-core.nbm"
                  topdir="."
                  module="netbeans/modules/xml-core.jar"
                  homepage="http://xml.${homepage.base}/core/"
-                 distribution="http://${dist.base}/xml-core-${release}.nbm">
+                 distribution="http://${dist.base}/xml-core.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
@@ -147,7 +146,7 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </delete>
         <delete file="manifest-subst.mf"/>
-        <delete file="../xml-core-${release}.nbm"/>
+        <delete file="../xml-core.nbm"/>
         <delete dir="netbeans"/>
         <delete dir="Info"/>
         <delete dir="javahelp/org/netbeans/modules/xml/core/docs/JavaHelpSearch"/>
