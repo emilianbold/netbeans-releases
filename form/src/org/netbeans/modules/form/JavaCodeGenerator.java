@@ -154,6 +154,10 @@ public class JavaCodeGenerator extends CodeGenerator {
           return component.getAuxValue (AUX_VARIABLE_MODIFIER);
         }
         
+        public boolean canWrite () {
+          return (component.getAuxValue (AUX_VARIABLE_MODIFIER) != null);
+        }
+
         public PropertyEditor getPropertyEditor () {
           return new ConstrainedModifiersEditor ();
         }
@@ -956,6 +960,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  31   Gandalf   1.30        6/30/99  Ian Formanek    modifiers property 
+ *       writable according to value of useDefaultModifiers
  *  30   Gandalf   1.29        6/30/99  Ian Formanek    Code generation of 
  *       variables modifiers improved
  *  29   Gandalf   1.28        6/29/99  Ian Formanek    Individual variable 
