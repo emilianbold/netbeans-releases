@@ -166,7 +166,7 @@ public class MetaComponentCreator {
               || (targetComp instanceof RADMenuComponent
                   && (JSeparator.class.isAssignableFrom(beanClass)
                       || Separator.class.isAssignableFrom(beanClass))))
-            newComp = addMenu(source, targetComp);
+            newComp = addMenuComponent(source, targetComp);
 
         else  if (Component.class.isAssignableFrom(beanClass))
             newComp = addVisualComponent(source, targetComp, constraints);
@@ -360,9 +360,10 @@ public class MetaComponentCreator {
         if (!initComponentInstance(newMetaComp, source))
             return null;
 
-        ComponentContainer targetCont =
-            targetComp instanceof ComponentContainer ?
-                (ComponentContainer) targetComp : null;
+        ComponentContainer targetCont = 
+            targetComp instanceof ComponentContainer
+                && !(targetComp instanceof RADVisualContainer) ?
+            (ComponentContainer) targetComp : null;
 
         formModel.addComponent(newMetaComp, targetCont);
 
@@ -486,8 +487,8 @@ public class MetaComponentCreator {
         return targetComp;
     }
 
-    private RADComponent addMenu(CreationFactory.InstanceSource source,
-                                 RADComponent targetComp) {
+    private RADComponent addMenuComponent(CreationFactory.InstanceSource source,
+                                          RADComponent targetComp) {
         Class beanClass = source.getInstanceClass();
         ComponentContainer menuContainer = null;
 
@@ -496,9 +497,14 @@ public class MetaComponentCreator {
             if (((RADMenuComponent)targetComp).canAddItem(beanClass))
                 menuContainer = (ComponentContainer) targetComp;
         }
-        else if (targetComp instanceof RADVisualContainer) {
-            RADVisualContainer targetCont = (RADVisualContainer) targetComp;
-            if (targetCont.getContainerMenu() == null
+        else if (targetComp instanceof RADVisualComponent) {
+            RADVisualContainer targetCont =
+                targetComp instanceof RADVisualContainer ?
+                    (RADVisualContainer) targetComp :
+                    (RADVisualContainer) targetComp.getParentComponent();
+
+            if (targetCont != null 
+                    && targetCont.getContainerMenu() == null
                     && targetCont.canHaveMenu(beanClass))
                 menuContainer = targetCont;
         }
