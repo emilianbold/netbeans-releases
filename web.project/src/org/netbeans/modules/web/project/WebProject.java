@@ -421,7 +421,11 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         if (needsAdding) {
             String file = "${"+WebProjectProperties.LIBRARIES_DIR+"}/"+lib.getNameExt ();
             String eval = helper.getStandardPropertyEvaluator ().evaluate (file);
-            VisualClassPathItem cpItem = new VisualClassPathItem( file, VisualClassPathItem.TYPE_JAR, file, eval, VisualClassPathItem.PATH_IN_WAR_LIB);
+            File f = null;
+            if (eval != null) {
+                f = helper.resolveFile(eval);
+            }
+            VisualClassPathItem cpItem = new VisualClassPathItem( f, VisualClassPathItem.TYPE_JAR, file, eval, VisualClassPathItem.PATH_IN_WAR_LIB);
             cpItems.add (cpItem);
         }
         return needsAdding;
