@@ -47,6 +47,7 @@
 		<mapID target="about_jsp_edit" url="web/create/jsp/about_jsp_edit.html" />
 		<mapID target="about_jsp_syntax" url="web/create/jsp/about_jsp_syntax.html" />
 		<mapID target="about_jsp_technology" url="web/create/jsp/about_jsp_technology.html" />
+		<mapID target="about_jsp_encoding" url="web/create/jsp/about_jsp_encoding.html" />
 		<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html" />
         	<mapID target="jsp_create" url="web/create/jsp/jsp_create.html" />
 		<mapID target="jsp_edit" url="web/create/jsp/jsp_edit.html" />
