@@ -1329,7 +1329,13 @@ final class Central implements ControllerHandler {
         }
         
         ModeImpl oldActiveMode = getActiveMode();
-        
+        //#45650 -some API users call the activation all over again all the time on one item.
+        // improve performance for such cases.
+        if (oldActiveMode != null && oldActiveMode.equals(mode)) {
+            if (tc != null && tc.equals(model.getModeSelectedTopComponent(mode))) {
+                return;
+            }
+        }
         model.setActiveMode(mode);
         model.setModeSelectedTopComponent(mode, tc);
         

@@ -218,34 +218,34 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     // API implementation <<
     ////////////////////////
 
-    /** Activates <code>TopComponent</code>, if it is opened. */
-    private boolean activateTopComponent(TopComponent tc) {
-        if(tc != null) {
-            // Find whether the component is in mode.
-            ModeImpl mode = (ModeImpl)findMode(tc);
-            if(mode != null) {
-                // Actually activates the TopComponent.
-                central.activateModeTopComponent(mode, tc);
-            } else {
-                // TopComponent not in mode yet.
-                return false;
-            }
-        }
-        
-        return true;
-    }
+//    /** Activates <code>TopComponent</code>, if it is opened. */
+//    private boolean activateTopComponent(TopComponent tc) {
+//        if(tc != null) {
+//            // Find whether the component is in mode.
+//            ModeImpl mode = (ModeImpl)findMode(tc);
+//            if(mode != null) {
+//                // Actually activates the TopComponent.
+//                central.activateModeTopComponent(mode, tc);
+//            } else {
+//                // TopComponent not in mode yet.
+//                return false;
+//            }
+//        }
+//        
+//        return true;
+//    }
     
-    /** Selects <code>TopComponent</code>, if it is opened. */
-    protected void selectTopComponentImpl(TopComponent tc) {
-        if(tc != null) {
-            // Find whether the component is in mode.
-            ModeImpl mode = (ModeImpl)findMode(tc);
-            if(mode != null) {
-                // Actually select the TopComponent.
-                central.setModeSelectedTopComponent(mode, tc);
-            }
-        }
-    }
+//    /** Selects <code>TopComponent</code>, if it is opened. */
+//    protected void selectTopComponentImpl(TopComponent tc) {
+//        if(tc != null) {
+//            // Find whether the component is in mode.
+//            ModeImpl mode = (ModeImpl)findMode(tc);
+//            if(mode != null) {
+//                // Actually select the TopComponent.
+//                central.setModeSelectedTopComponent(mode, tc);
+//            }
+//        }
+//    }
     
 
     // XXX For backward compatibility (Workspace class), this is the only (fake) workspace.
@@ -972,7 +972,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         
         ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
-            activateTopComponent(tc);
+            central.activateModeTopComponent(mode, tc);
         }
     }
     
@@ -981,7 +981,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         
         ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
-            selectTopComponentImpl(tc);
+            central.setModeSelectedTopComponent(mode, tc);
         }
     }
 
