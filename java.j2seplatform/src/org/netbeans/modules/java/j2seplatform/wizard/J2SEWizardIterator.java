@@ -295,7 +295,6 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
 
     private void getSDKProperties(String javaPath, String path) throws IOException {
         Runtime runtime = Runtime.getRuntime();
-        URL codeBase = getClass().getProtectionDomain().getCodeSource().getLocation();
         try {
             String[] command = new String[5];
             command[0] = javaPath;
