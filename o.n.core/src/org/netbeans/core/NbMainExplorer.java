@@ -534,17 +534,22 @@ public final class NbMainExplorer extends CloneableTopComponent
             ideSettings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
             setConfirmDelete(ideSettings.getConfirmDelete ());
             
-            //initializes gui of this component
-            view = initGui();
-            
             // attach listener to the changes of IDE settings
             weakIdeL = WeakListener.propertyChange(rcListener(), ideSettings);
             
-            view.getAccessibleContext().setAccessibleName(NbBundle.getBundle(NbMainExplorer.class).getString("ACSN_ExplorerBeanTree"));
-            view.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(NbMainExplorer.class).getString("ACSD_ExplorerBeanTree"));
-
             // enhancement 9940, add MiniStatusBarListener a status bar's state
             ideSettings.addPropertyChangeListener (new MiniStatusBarStateListener ());
+        }
+        
+        protected void componentShowing () {
+            super.componentShowing ();
+            
+            if (view == null) {
+                view = initGui ();
+                
+                view.getAccessibleContext().setAccessibleName(NbBundle.getBundle(NbMainExplorer.class).getString("ACSN_ExplorerBeanTree"));
+                view.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(NbMainExplorer.class).getString("ACSD_ExplorerBeanTree"));
+            }
         }
 
         /** Initializes gui of this component. Subclasses can override
@@ -602,7 +607,9 @@ public final class NbMainExplorer extends CloneableTopComponent
         }
         
         void focusView() {
-            view.requestFocus();
+            if (view != null) {
+                view.requestFocus();
+            }
         }
 
         /** Ensures that component is valid before opening */
