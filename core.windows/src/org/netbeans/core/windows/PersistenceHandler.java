@@ -81,8 +81,18 @@ final class PersistenceHandler implements PersistenceObserver {
                && !PersistenceManager.ONLY_OPENED_PERSISTENT.equals(prop));
     }
     
+
+    // PENDING It seem there will be better to separate the load sequences 
+    // for startup and project completely.
+    public void load() {
+        load(false);
+    }
     
-    public synchronized void load() {
+    private void loadProjectWinsysData() {
+        load(true); // PENDING
+    }
+    
+    private synchronized void load(boolean projectLoading) {
         debugLog("## PersistenceHandler.load"); // NOI18N
         
         WindowManagerConfig wmc = PersistenceManager.getDefault().loadWindowSystem();
@@ -126,7 +136,12 @@ final class PersistenceHandler implements PersistenceObserver {
         }
         
         wm.setEditorAreaConstraints(wmc.editorAreaConstraints);
-        wm.setEditorAreaState(wmc.editorAreaState);
+        
+        if(!projectLoading && Constants.SWITCH_START_IN_SEPARATE_MODE) {
+            wm.setEditorAreaState(Constants.EDITOR_AREA_SEPARATED);
+        } else {
+            wm.setEditorAreaState(wmc.editorAreaState);
+        }
 
         ModeImpl activeMode    = null;
         ModeImpl maximizedMode = null;
@@ -204,6 +219,7 @@ final class PersistenceHandler implements PersistenceObserver {
             wmc.relativeYSeparated,
             wmc.relativeWidthSeparated,
             wmc.relativeHeightSeparated);
+
         if(separatedBounds != null) {
             wm.setMainWindowBoundsSeparated(separatedBounds);
         }
@@ -215,6 +231,11 @@ final class PersistenceHandler implements PersistenceObserver {
         wm.setEditorAreaBounds(wmc.editorAreaBounds);
         wm.setEditorAreaFrameState(wmc.editorAreaFrameState);
         
+    }
+    
+    
+    private void saveProjectWinsysData() {
+        save(); // PENDING
     }
     
     /** Implements <code>NbTopManager.WindowSystem</code> interface method. */
@@ -793,12 +814,12 @@ final class PersistenceHandler implements PersistenceObserver {
         // Reset persistence manager.
         PersistenceManager.getDefault().reset();
         // Load window system.
-        load();
+        loadProjectWinsysData();
     }
     
     public void saveProjectData() {
         // Save window system.
-        save();
+        saveProjectWinsysData();
         // Remove all components from model.
         removeAll();
     }
