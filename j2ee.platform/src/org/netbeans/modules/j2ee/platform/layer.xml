@@ -14,6 +14,20 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
+
+    <folder name="Menu">
+        <folder name="Help">
+            <folder name="Tutorials">
+                <file name="j2ee-tutorial.url" url="nbresloc:/org/netbeans/modules/j2ee/platform/j2ee-tut.url">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.platform.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
+                </file>
+                <attr name="prj-import-guide.url/j2ee-tutorial.url" boolvalue="true"/>
+                <attr name="j2ee-tutorial.url/using-netbeans.url" boolvalue="true"/>
+            </folder>
+        </folder> <!-- Help -->
+    </folder> <!-- Menu -->
+
     <folder name="Services">
       <folder name="JavaHelp">
          <!-- Merge after Core IDE Help: -->
