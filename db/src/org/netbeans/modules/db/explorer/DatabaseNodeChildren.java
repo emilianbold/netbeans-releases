@@ -39,6 +39,16 @@ public class DatabaseNodeChildren extends Children.Array
 
         try {
             Vector chlist = nodeinfo.getChildren();
+            
+            //is there pointbase driver (is there pointbase installed)?
+            boolean isPointbaseDriver;
+            try {
+                Class.forName("com.pointbase.jdbc.jdbcUniversalDriver"); //NOI18N
+                isPointbaseDriver = true;
+            } catch (ClassNotFoundException e) {
+                isPointbaseDriver = false;
+            }
+            
             for (int i=0;i<chlist.size();i++) {
                 Node snode = null;
                 Object sinfo = chlist.elementAt(i);
@@ -52,10 +62,12 @@ public class DatabaseNodeChildren extends Children.Array
                     snode = createNode(dni);
                     
                     // if specific connection to pointbase is restored then this connection is opened
+                    // and embedded pointbase driver is installed
                     if ( dni.getName().startsWith("Connection") //NOI18N
                         && dni.getDriver().equals("com.pointbase.jdbc.jdbcUniversalDriver") //NOI18N
                         && dni.getDatabase().equals("jdbc:pointbase://embedded/sample") //NOI18N
-                        && dni.getUser().equals("public")) { //NOI18N
+                        && dni.getUser().equals("public") //NOI18N
+                        && isPointbaseDriver ) {
 
                             // node reference to ConnectionNodeInfo is set
                             ConnectionNodeInfo cinfo = (ConnectionNodeInfo)((DatabaseNode)snode).getInfo();
@@ -75,9 +87,9 @@ public class DatabaseNodeChildren extends Children.Array
                     children.add(snode);
             }
             
-            /* if this database module is newly installed then connection to pointbase is created (and opened)
-               (as a son of Database node) */
-            if (DatabaseModule.isNewlyInstalled && (nodeinfo.getName().startsWith("Databases"))) { //NOI18N
+            /* if this database module is newly installed and embedded pointbase driver is installed
+               then connection to pointbase is created (and opened) (as a son of Database node) */
+            if (DatabaseModule.isNewlyInstalled && (nodeinfo.getName().startsWith("Databases")) && isPointbaseDriver) { //NOI18N
 
                 ConnectionNodeInfo cni = (ConnectionNodeInfo)DatabaseNodeInfo.createNodeInfo(nodeinfo, DatabaseNode.CONNECTION);
                 cni.setName( "jdbc:pointbase://embedded/sample" ); //NOI18N
