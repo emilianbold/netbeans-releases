@@ -19,8 +19,6 @@ Microsystems, Inc. All Rights Reserved.
     <patternset id="ant/docs.files">
       <include name="${nb.modules.dir}/ant-docs.jar"/>
       <include name="${nb.modules/docs.dir}/ant-manual.zip"/>
-      <include name="system/ParserDB/ant-1.6.1.jcb"/>
-      <include name="system/ParserDB/ant-1.6.1.jcs"/>
     </patternset>
 
     <path id="cp">
@@ -39,13 +37,6 @@ Microsystems, Inc. All Rights Reserved.
                 excludesfile="../../nbbuild/standard-jar-excludes.txt"
                 compress="false">
         </jar>
-    </target>
-
-    <target name="release">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}"/>
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}">
-            <fileset dir="release" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
-        </copy>
     </target>
 
     <target name="javahelp" depends="init">
@@ -87,7 +78,7 @@ Microsystems, Inc. All Rights Reserved.
         </checkhelpsets>
     </target>
 
-    <target name="netbeans" depends="jars,release,javahelp" description="Build module.">
+    <target name="netbeans" depends="jars,javahelp" description="Build module.">
       <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/ant-docs.jar">
         <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
           <patternset refID="ant/docs.files"/>
