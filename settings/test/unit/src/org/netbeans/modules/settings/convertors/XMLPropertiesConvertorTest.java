@@ -57,6 +57,7 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
     protected void setUp() throws java.lang.Exception {
         super.setUp();
         
+        org.openide.TopManager.getDefault();
         java.net.URL layer = this.getClass().getResource("data/layer.xml");
         fs = new XMLFileSystem(layer);
         sfs = Repository.getDefault().getDefaultFileSystem();

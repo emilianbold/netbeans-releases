@@ -40,6 +40,7 @@ public class SerialDataNodeTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
+        org.openide.TopManager.getDefault();
         sfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
     }
     

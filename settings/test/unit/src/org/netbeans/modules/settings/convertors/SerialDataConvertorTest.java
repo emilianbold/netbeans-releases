@@ -47,6 +47,7 @@ public class SerialDataConvertorTest extends NbTestCase {
     /** Setups variables.
      */
     protected void setUp () throws Exception {
+        org.openide.TopManager.getDefault();
         lfs = Repository.getDefault().getDefaultFileSystem();
         org.openide.filesystems.FileUtil.createFolder(lfs.getRoot(), "BB/AAA");
         org.openide.filesystems.FileUtil.createFolder(lfs.getRoot(), "system/Services/lookupTest");
