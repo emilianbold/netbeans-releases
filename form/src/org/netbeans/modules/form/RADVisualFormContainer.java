@@ -89,13 +89,25 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public void setFormSize(Dimension value) {
+        setFormSizeImpl(value);
+
+        if (getFormSizePolicy() == GEN_BOUNDS) {
+            if (getBeanInstance() instanceof Dialog
+                || getBeanInstance() instanceof Frame)
+            {
+                Dimension diffDim = getWindowContentDimensionDiff();
+                value = new Dimension(value.width - diffDim.width,
+                                      value.height - diffDim.height);
+            }
+            setDesignerSizeImpl(value);
+        }
+    }
+
+    private void setFormSizeImpl(Dimension value) {
         Object old = formSize;
         formSize = value;
         getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE, old, value);
-        
-        if (getFormSizePolicy() == GEN_BOUNDS && !getDesignerSize().equals(value))
-            setDesignerSize(value);
-        
+
         if (getNodeReference() != null) // propagate the change to node
             getNodeReference().firePropertyChangeHelper(PROP_FORM_SIZE, old, value);
     }
@@ -108,13 +120,25 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public void setDesignerSize(Dimension value) {
-        Object old = getDesignerSize();//getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
+        setDesignerSizeImpl(value);
+
+        if (getFormSizePolicy() == GEN_BOUNDS) {
+            if (getBeanInstance() instanceof Dialog
+                || getBeanInstance() instanceof Frame)
+            {
+                Dimension diffDim = getWindowContentDimensionDiff();
+                value = new Dimension(value.width + diffDim.width,
+                                      value.height + diffDim.height);
+            }
+            setFormSizeImpl(value);
+        }
+    }
+
+    private void setDesignerSizeImpl(Dimension value) {
+        Object old = getDesignerSize();
         setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, value);
         getFormModel().fireSyntheticPropertyChanged(
             this, FormDesigner.PROP_DESIGNER_SIZE, old, value);
-
-        if (getFormSizePolicy() == GEN_BOUNDS && !getFormSize().equals(value))
-            setFormSize(value);
 
         if (getNodeReference() != null) // propagate the change to node
             getNodeReference().firePropertyChangeHelper(FormDesigner.PROP_DESIGNER_SIZE, old, value);
@@ -407,6 +431,24 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         Node.Property[] props = new Node.Property[propList.size()];
         propList.toArray(props);
         return props;
+    }
+
+    // ---------
+    // providing the difference of the whole frame/dialog size and the size
+    // of the content pane
+
+    private static Dimension windowContentDimensionDiff;
+
+    private static Dimension getWindowContentDimensionDiff() {
+        if (windowContentDimensionDiff == null) {
+            javax.swing.JFrame frame = new javax.swing.JFrame();
+            frame.pack();
+            Dimension d1 = frame.getSize();
+            Dimension d2 = frame.getRootPane().getSize();
+            windowContentDimensionDiff =
+                new Dimension(d1.width - d2.width, d1.height - d2.height);
+        }
+        return windowContentDimensionDiff;
     }
 
     // ------------------------------------------------------------------------------------------
