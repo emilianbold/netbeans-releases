@@ -24,7 +24,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.*;
 
 import java.beans.PropertyVetoException;
-
+import org.openide.NotifyDescriptor;
 /**
  * XmlMultiviewEditorSupport.java
  *
@@ -155,16 +155,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
         CloneableTopComponent mvtc = MultiViewFactory.createCloneableMultiView(descs, descs[0],
                 new CloseOperationHandler() {
                     public boolean resolveCloseOperation(CloseOperationState[] elements) {
-                        try {
-                            if(dObj.isChangedFromUI()) {
-                                dObj.updateDocument();
-                                dObj.updateModelFromSource();
-                            }
-                            dObj.setValid(false);
-                        } catch (PropertyVetoException e) {
-                            return false;
-                        }
-                        return true;
+                        return canClose();
                     }
                 });
         
@@ -178,6 +169,60 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
         mvtc.setIcon(org.openide.util.Utilities.loadImage(dObj.getIconBase()+".gif"));
         this.mvtc=mvtc;
         return mvtc;
+    }
+    
+    /** rewriting canClose() method in order to be able to rollback the changes on discard obtion
+    */
+    protected boolean canClose () {
+        if (dObj.isModified () || dObj.isChangedFromUI()) {
+            String msg = messageSave ();
+
+            java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(org.openide.text.CloneableEditorSupport.class);
+
+            javax.swing.JButton saveOption = new javax.swing.JButton (bundle.getString("CTL_Save")); // NOI18N
+            saveOption.getAccessibleContext ().setAccessibleDescription (bundle.getString("ACSD_CTL_Save")); // NOI18N
+            saveOption.getAccessibleContext ().setAccessibleName (bundle.getString("ACSN_CTL_Save")); // NOI18N
+            javax.swing.JButton discardOption = new javax.swing.JButton (bundle.getString("CTL_Discard")); // NOI18N
+            discardOption.getAccessibleContext ().setAccessibleDescription (bundle.getString("ACSD_CTL_Discard")); // NOI18N
+            discardOption.getAccessibleContext ().setAccessibleName (bundle.getString("ACSN_CTL_Discard")); // NOI18N
+            discardOption.setMnemonic (bundle.getString ("CTL_Discard_Mnemonic").charAt (0)); // NOI18N
+
+            NotifyDescriptor nd = new NotifyDescriptor(
+                msg,
+                bundle.getString("LBL_SaveFile_Title"),
+                NotifyDescriptor.YES_NO_CANCEL_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                new Object[] {saveOption, discardOption, NotifyDescriptor.CANCEL_OPTION},
+                saveOption
+            );
+                
+            Object ret = org.openide.DialogDisplayer.getDefault().notify(nd);
+
+            if (NotifyDescriptor.CANCEL_OPTION.equals(ret)
+                    || NotifyDescriptor.CLOSED_OPTION.equals(ret)
+               ) {
+                return false;
+            }
+
+            if (saveOption.equals(ret)) {
+                try {
+                    saveDocument ();
+                } catch (java.io.IOException e) {
+                    org.openide.ErrorManager.getDefault().notify(e);
+                    return false;
+                }
+            } else if (discardOption.equals(ret)) {
+                try {
+                    dObj.reloadModelFromFileObject();
+                    notifyClosed();
+                } catch (java.io.IOException e) {
+                    org.openide.ErrorManager.getDefault().notify(e);
+                    return false;
+                }
+            }
+        }
+         
+        return true;
     }
 
 

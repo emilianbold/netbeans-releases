@@ -43,11 +43,11 @@ public class XmlMultiViewElement implements MultiViewElement {
     }
 
     public CloseOperationState canCloseElement() {
-        if (this.support.getDataObject().isModified()) {
-            return MultiViewFactory.createUnsafeCloseState("Data object modified", null, null);
-        } else {
+        //if (this.support.getDataObject().isModified()) {
+        //    return MultiViewFactory.createUnsafeCloseState("XMLView:Data object modified", null, null);
+        //} else {
             return CloseOperationState.STATE_OK;
-        }
+        //}
     }
 
     public void componentActivated() {

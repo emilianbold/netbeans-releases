@@ -72,11 +72,18 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     */
     protected abstract boolean createModelFromFileObject(FileObject fo) throws java.io.IOException;
     
+    /** Called on close-discard option.
+    * The data model is updated from corresponding file object(s).
+    */
+    protected abstract void reloadModelFromFileObject() throws java.io.IOException;
+    
     /** Update data model from document text . Called when something is changed in xml editor. 
     * @return true if model was succesfully created, false otherwise
     */
-    protected abstract boolean updateModelFromDocument() throws java.io.IOException ;
+    protected abstract boolean updateModelFromDocument() throws java.io.IOException;
     
+    /** Similar to updateModelFromDocument() except but data model is not modified.
+     */
     protected void validateSource(){
     }
     /** Update text document from data model. Called when something is changed in visual editor.
@@ -130,29 +137,17 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     * @exception IOException if some problem occurs
     */
     protected InputStream createInputStream() throws java.io.IOException {
-        if ((editor != null) && (editor.isDocumentLoaded())) {
-            // loading from the memory (Document)
-            final javax.swing.text.Document doc = editor.getDocument();
-            final String[] str = new String[1];
-            // safely take the text from the document
-            Runnable run = new Runnable() {
-                public void run() {
-                    try {
-                        str[0] = doc.getText(0, doc.getLength());
-                    }
-                    catch (javax.swing.text.BadLocationException e) {
-                        // impossible
-                    }
-                }
-            };
-            
-            doc.render(run);
-            return new StringBufferInputStream(str[0]);
-        } 
-        else {
-            // loading from the file
-            return getPrimaryFile().getInputStream();
-        }
+        return editor.getInputStream();
+    }
+    
+    /** This method is used for obtaining the current source of xml document.
+    * First try if document is open in editor. If not, provide the input from
+    * underlayed file object.
+    * @return The InputSource from swing document or null
+    * @exception IOException if some problem occurs
+    */
+    protected InputSource getFileObjectInputSource() throws java.io.IOException {
+        return new InputSource(new FileReader(org.openide.filesystems.FileUtil.toFile(getPrimaryFile())));
     }
     
     /** This method is used for obtaining the current source of xml document.
@@ -184,7 +179,8 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         else {
             //return null;
             // loading from the file
-            return new InputSource(new FileReader(org.openide.filesystems.FileUtil.toFile(getPrimaryFile())));
+            //return new InputSource(new FileReader(org.openide.filesystems.FileUtil.toFile(getPrimaryFile())));
+            return new InputSource(getPrimaryFile().getInputStream());
         }
     }
     

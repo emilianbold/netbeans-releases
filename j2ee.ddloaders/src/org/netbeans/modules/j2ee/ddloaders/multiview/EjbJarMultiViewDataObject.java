@@ -699,6 +699,55 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         return false;
     }
 
+    /** Called on close-discard option.
+    * The data model is updated from corresponding file object(s).
+    */
+    protected void reloadModelFromFileObject() throws IOException {
+        InputSource is = new InputSource(getPrimaryFile().getInputStream());
+        if (is != null) { // merging model with the document
+            org.xml.sax.SAXParseException error = null;
+            org.xml.sax.SAXException oldError = getSaxError();
+            String version = null;
+            final EjbJarProxy oldEjbJar = (EjbJarProxy) ejbJar;
+            try {
+                // preparsing
+                // TODO: error = ... parse(is) ???
+                EjbJarProxy newEjbJar = (EjbJarProxy) EjbJarDDUtils.createEjbJar(is);
+                if (ejbJar != null && oldEjbJar.getOriginal() != null) {
+                    ejbJar.merge(newEjbJar, EjbJar.MERGE_UPDATE);
+                } else {
+                    ejbJar = newEjbJar;
+                }
+                if (error != null) {
+                    oldEjbJar.setStatus(EjbJar.STATE_INVALID_PARSABLE);
+                    oldEjbJar.setError(error);
+                    ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(
+                            oldError == null ? null : oldError.getMessage(), error.getMessage());
+                } else {
+                    oldEjbJar.setStatus(EjbJar.STATE_VALID);
+                    oldEjbJar.setError(null);
+                    ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(
+                            oldError == null ? null : oldError.getMessage(), null);
+                }
+                System.out.println("version:" + ejbJar.getVersion() + " Status:" + ejbJar.getStatus() + " Error:" +
+                        ejbJar.getError());
+                setSaxError(error);
+            } catch (org.xml.sax.SAXException ex) {
+                if (ejbJar == null || oldEjbJar.getOriginal() == null) {
+                    ejbJar = new EjbJarProxy(null, version);
+                    oldEjbJar.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
+                    if (ex instanceof org.xml.sax.SAXParseException) {
+                        oldEjbJar.setError((org.xml.sax.SAXParseException) ex);
+                    } else if (ex.getException() instanceof org.xml.sax.SAXParseException) {
+                        oldEjbJar.setError((org.xml.sax.SAXParseException) ex.getException());
+                    }
+                }
+                ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(
+                        oldError == null ? null : oldError.getMessage(), ex.getMessage());
+                setSaxError(ex);
+            }
+        }
+    }
     /**
      * Update text document from data model. Called when something is changed in visual editor.
      */
