@@ -98,7 +98,6 @@
     <tocitem text="Pair Completion, Smart Enter, and Smart Semicolons" target="editor.smart-brackets"/>
     <tocitem text="Displaying Line Numbers" target="editing.linenumbers"/>
     <tocitem text="Scanning for TODOs in Source Code" target="editing.tasks"/>
-    <tocitem text="Viewing and Zooming an Image" target="editing.imageview"/>
     <tocitem text="Using Code Completion" >
       <tocitem text="About" target="editing.codecompletion" />
       <tocitem text="Completing a Java Expression" target="editing.completing-exp"/>
@@ -142,7 +141,6 @@
       <tocitem text="BeanInfo Editor Dialog Box" target="beans.beaninfo.nodes" />
       <tocitem text="Generating Getter and Setter Methods" target="beans.getset" />
       <tocitem text="Configuring Generation of Getter and Setter Methods" target="beans.settings" />
-      <tocitem text="Customizing a Bean" target="beans.customizing" />
       <tocitem text="Making a Bean a Container" target="beans.container" />
       <tocitem text="Setting a Bean's Icon" target="beans.icon" />
       <tocitem text="Adding a Bean to the Palette Window" target="beans.adding" />
