@@ -158,7 +158,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
         try {
             fcmd = getCommand();
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             executionWithException = true;
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             return;
@@ -177,8 +177,8 @@ public class AbstractCommand implements Serializable, DDLCommand {
                     throw new Exception();
 
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-                ErrorManager.getDefault().log(ErrorManager.WARNING, fcmd);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, fcmd);
             }
         }
 
@@ -193,7 +193,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
             stat.execute(fcmd);
             stat.close();
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
 
             executionWithException = true;
             if (opened && fcon != null)

@@ -69,7 +69,7 @@ public class DriverSpecification {
                 list.add(rs.getString(1).trim());
             rs.close();
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             
 //            this.catalog = catalog;
             this.catalog = null;  //hack for IBM ODBC driver
@@ -100,7 +100,7 @@ public class DriverSpecification {
             tableNamePattern = quoteString(tableNamePattern);
             rs = dmd.getTables(catalog, schema, tableNamePattern, types);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
         }
     }
@@ -110,7 +110,7 @@ public class DriverSpecification {
             procedureNamePattern = quoteString(procedureNamePattern);
             rs = dmd.getProcedures(catalog, schema, procedureNamePattern);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
         }
     }
@@ -120,7 +120,7 @@ public class DriverSpecification {
             table = quoteString(table);
             rs = dmd.getPrimaryKeys(catalog, schema, table);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
         }
     }
@@ -130,7 +130,7 @@ public class DriverSpecification {
             table = quoteString(table);
             rs = dmd.getIndexInfo(catalog, schema, table, unique, approximate);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
         }
     }
@@ -141,7 +141,7 @@ public class DriverSpecification {
             columnNamePattern = quoteString(columnNamePattern);
             rs = dmd.getColumns(catalog, schema, tableNamePattern, columnNamePattern);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
         }
     }
@@ -152,7 +152,7 @@ public class DriverSpecification {
             columnNamePattern = quoteString(columnNamePattern);
             rs = dmd.getProcedureColumns(catalog, schema, procedureNamePattern, columnNamePattern);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
         }
     }
@@ -162,7 +162,7 @@ public class DriverSpecification {
             table = quoteString(table);
             rs = dmd.getExportedKeys(catalog, schema, table);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
         }
     }
@@ -172,7 +172,7 @@ public class DriverSpecification {
             table = quoteString(table);
             rs = dmd.getImportedKeys(catalog, schema, table);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
         }
     }
@@ -194,14 +194,14 @@ public class DriverSpecification {
                     value = rs.getString(i);
 //                    value = rs.getObject(i); //cannot use getObject() because of problems with MSSQL ODBC driver
                 }  catch (SQLException exc) {
-                    ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                     rset = null;
                     break;
                 }
                 rset.put(new Integer(i), value);
             }
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rset = null;
         }
 

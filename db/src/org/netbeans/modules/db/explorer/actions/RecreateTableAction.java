@@ -99,11 +99,11 @@ public class RecreateTableAction extends DatabaseAction {
                                 cmd.execute();
                                 nfo.addTable(newtab);
                             } catch (org.netbeans.lib.ddl.DDLException exc) {
-                                ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(exc.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                                 continue;
                             } catch (org.netbeans.modules.db.DatabaseException exc) {
-                                ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                                 continue;
                             }
                             noResult = false;
@@ -113,7 +113,7 @@ public class RecreateTableAction extends DatabaseAction {
                                 noResult = false;
                         }
                     } catch(Exception exc) {
-                        ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);                        
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);                        
                         String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                     }
@@ -122,7 +122,7 @@ public class RecreateTableAction extends DatabaseAction {
                 }
             }
         } catch(Exception exc) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }

@@ -92,7 +92,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
             else
                 ((ConnectionNodeInfo) cnode.getInfo()).connect(cinfo);
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             throw new DatabaseException(e.getMessage());
         }
     }
