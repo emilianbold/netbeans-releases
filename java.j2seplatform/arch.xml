@@ -738,6 +738,8 @@ Microsystems, Inc. All Rights Reserved.
   <p>
    Platform and library type definitions are registered, as are a number of
    queries relating to platforms and libraries.
+   A default classpath provider is registered for Java sources which otherwise
+   lack any specific classpath information.
   </p>
  </answer>
 
