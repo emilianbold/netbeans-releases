@@ -46,6 +46,7 @@ public class ServerInstance implements Node.Cookie {
     private J2eePlatformImpl j2eePlatformImpl;
     private StartServer startServer;
     private FindJSPServlet findJSPServlet;
+    private final Set targetsStartedByIde = new HashSet(); // valued by target name
     private Map targets; // keyed by target name, valued by ServerTarget
     private boolean managerStartedByIde = false;
     private ServerTarget coTarget = null;
@@ -126,7 +127,7 @@ public class ServerInstance implements Node.Cookie {
         }
         return manager;
     }
-
+    
     public J2eePlatform getJ2eePlatform() {
         return j2eePlatform;
     }
@@ -173,6 +174,14 @@ public class ServerInstance implements Node.Cookie {
         String displayName = getDisplayName();
         String title = NbBundle.getMessage(ServerInstance.class, "LBL_StopServerProgressMonitor", displayName);
         DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
+        
+        for (Iterator i=targetsStartedByIde.iterator(); i.hasNext(); ){
+            String targetName = (String) i.next();
+            ServerTarget serverTarget = getServerTarget(targetName);
+            if (serverTarget != null) {
+                _stop(serverTarget.getTarget(), ui);
+            }
+        }
         
         stop(ui);
         ServerRegistry.getInstance().removeServerInstance(getUrl());
@@ -302,6 +311,19 @@ public class ServerInstance implements Node.Cookie {
     
     public boolean startedByIde() {
         return managerStartedByIde;
+    }
+    
+    /**
+     * Return set of ServerTarget's that have been started from inside IDE.
+     * @return set of ServerTarget objects.
+     */
+    public Set getTargetsStartedByIde() {
+        Set ret = new HashSet();
+        for (Iterator i=targetsStartedByIde.iterator(); i.hasNext(); ) {
+            String targetName = (String) i.next();
+            ret.add(getServerTarget(targetName));
+        }
+        return ret;
     }
     
     //----------- State Transistion API's: ----------------------
@@ -442,13 +464,12 @@ public class ServerInstance implements Node.Cookie {
                 if (ss.isDebuggable(target)) {
                     return true;
                 }
-                //if (! _stop(target, ui)) {
-                //    return false;
-                //}
+                if (! _stop(target, ui)) {
+                    return false;
+                }
                 return _startDebug(target, ui);
             } else {
-                //return _start(target, ui);
-                return true;
+                return _start(target, ui);
             }
         }
     }
@@ -608,6 +629,118 @@ public class ServerInstance implements Node.Cookie {
             managerStartedByIde = false;
             refresh(ServerState.STOPPED);
             return true;
+            
+        } finally {
+            if (ui != null) {
+                ui.removeCancelHandler(ch);
+                ui.setProgressObject(null);
+            }
+            if (po != null) {
+                po.removeProgressListener(handler);
+            }
+        }
+    }
+    
+    private boolean _start(Target target, DeployProgressUI ui) {
+        ServerTarget serverTarget = getServerTarget(target.getName());
+        if (serverTarget.isRunning())
+            return true;
+        
+        String displayName = target.getName();
+        output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StartingServer", displayName));
+        DeployProgressUI.CancelHandler ch = getCancelHandler();
+        StartProgressHandler handler = new StartProgressHandler();
+        ProgressObject po = null;
+        if (ui != null) {
+            ui.addCancelHandler(ch);
+        }
+        
+        try {
+            setCommandSucceeded(false);
+            po = serverTarget.start();
+            if (ui != null) {
+                ui.setProgressObject(po);
+            }
+            po.addProgressListener(handler);
+            
+            String error = null;
+            if (isProgressing(po)) {
+                // wait until done or cancelled
+                boolean done = sleep();
+                if (! done) {
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", displayName);
+                } else if (ui != null && ui.checkCancelled()) {
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerCancelled", displayName);
+                } else if (! hasCommandSucceeded()) {
+                    return false;
+                }
+            } else if (hasFailed(po)) {
+                return false;
+            }
+            
+            if (error != null) {
+                outputError(ui, error);
+                return false;
+            } else {
+                targetsStartedByIde.add(serverTarget.getName());
+                return true;
+            }
+            
+        } finally {
+            if (ui != null) {
+                ui.removeCancelHandler(ch);
+                ui.setProgressObject(null);
+            }
+            if (po != null) {
+                po.removeProgressListener(handler);
+            }
+        }
+    }
+    
+    private boolean _stop(Target target, DeployProgressUI ui) {
+        ServerTarget serverTarget = getServerTarget(target.getName());
+        if (serverTarget.isRunning())
+            return true;
+        
+        String displayName = target.getName();
+        output(ui, NbBundle.getMessage(ServerInstance.class, "MSG_StoppingServer", displayName));
+        DeployProgressUI.CancelHandler ch = getCancelHandler();
+        StartProgressHandler handler = new StartProgressHandler();
+        ProgressObject po = null;
+        if (ui != null) {
+            ui.addCancelHandler(ch);
+        }
+        
+        try {
+            setCommandSucceeded(false);
+            po = serverTarget.stop();
+            if (ui != null) {
+                ui.setProgressObject(po);
+            }
+            po.addProgressListener(handler);
+            
+            String error = null;
+            if (isProgressing(po)) {
+                // wait until done or cancelled
+                boolean done = sleep();
+                if (! done) {
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", displayName);
+                } else if (ui != null && ui.checkCancelled()) {
+                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerCancelled", displayName);
+                } else if (! hasCommandSucceeded()) {
+                    return false;
+                }
+            } else if (hasFailed(po)) {
+                return false;
+            }
+            
+            if (error != null) {
+                outputError(ui, error);
+                return false;
+            } else {
+                targetsStartedByIde.remove(serverTarget.getName());
+                return true;
+            }
             
         } finally {
             if (ui != null) {

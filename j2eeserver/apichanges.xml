@@ -81,11 +81,30 @@ is the proper place.
 
     <changes>
     
+        <change id="StartServer-Services-for-Target">
+            <api name="plugins"/>
+            <summary>StartServer methods call to manage states for target server instances</summary>
+            <version major="1" minor="6"/>
+            <date day="10" month="1" year="2005"/>
+            <author login="nnguyen"/>
+            <compatibility binary="compatible" source="compatible" semantic="incompatible" addition="yes"/>
+            <description>
+                <p>
+                    J2eeserver should be able to start target managed server instances
+		    which are not identical with admin server instance.
+                    Methods supportsStartTarget, isRunning, startTarget, stopTarget
+                    are added as optional to StartServer abstract class plugin SPI.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="StartServer"/>
+            <issue number="53010"/>
+        </change>
+
 	<change id="J2eePlatform-Icon">
 	<api name="j2eeserver"/>
 	<summary>Added J2EE Platform icon</summary>
 	<version major="1" minor="6"/>
-	<date day="06" month="01" year="2004"/>
+	<date day="6" month="1" year="2005"/>
 	<author login="abadea"/>
 	<compatibility binary="incompatible" source="incompatible" semantic="compatible" addition="yes"/>
 	<description>

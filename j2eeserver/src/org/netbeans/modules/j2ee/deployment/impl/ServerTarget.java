@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
+import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.openide.nodes.Node;
 import javax.enterprise.deploy.spi.Target;
 //import javax.management.ObjectName;
@@ -68,6 +69,37 @@ public class ServerTarget implements Node.Cookie {
     public boolean isRunning() {
         if (isAlsoServerInstance())
             return instance.isRunning();
+        
+        StartServer ss = instance.getStartServer();
+        if (ss != null) {
+            return ss.isRunning(target);
+        }
         return false;
+    }
+    
+    public ProgressObject start() {
+        StartServer ss = instance.getStartServer();
+        if (ss != null && ss.supportsStartTarget(target)) {
+            ProgressObject po = ss.startTarget(target);
+            if (po != null) {
+                return po;
+            }
+        }
+        String name = target == null ? "null" : target.getName(); //NOI18N
+        String msg = NbBundle.getMessage(ServerTarget.class, "MSG_StartStopTargetNotSupported", name);
+        throw new UnsupportedOperationException(msg);
+    }
+    
+    public ProgressObject stop() {
+        StartServer ss = instance.getStartServer();
+        if (ss != null && ss.supportsStartTarget(target)) {
+            ProgressObject po = ss.stopTarget(target);
+            if (po != null) {
+                return po;
+            }
+        }
+        String name = target == null ? "null" : target.getName(); //NOI18N
+        String msg = NbBundle.getMessage(ServerTarget.class, "MSG_StartStopTargetNotSupported", name);
+        throw new UnsupportedOperationException(msg);
     }
 }
