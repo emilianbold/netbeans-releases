@@ -40,7 +40,9 @@ public abstract class EjbJarMultiviewElement extends ToolBarMultiViewElement {
     }
 
     public void componentShowing() {
-        view = createView();
+        if (view == null) {
+            view = createView();
+        }
         comp.setContentView(view);
         org.netbeans.modules.xml.multiview.Error error = view.validateView();
         if (error != null) {
