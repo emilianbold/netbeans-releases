@@ -14,6 +14,9 @@
 package org.netbeans.swing.tabcontrol;
 
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
+import org.netbeans.swing.tabcontrol.plaf.AquaEditorTabDisplayerUI;
+import org.netbeans.swing.tabcontrol.plaf.AquaViewTabDisplayerUI;
+import org.netbeans.swing.tabcontrol.plaf.BasicSlidingTabDisplayerUI;
 import org.netbeans.swing.tabcontrol.plaf.WinClassicEditorTabDisplayerUI;
 import org.netbeans.swing.tabcontrol.plaf.WinClassicViewTabDisplayerUI;
 
@@ -26,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.swing.tabcontrol.plaf.ToolbarTabDisplayerUI;
+import org.netbeans.swing.tabcontrol.plaf.WinXPEditorTabDisplayerUI;
+import org.netbeans.swing.tabcontrol.plaf.WinXPViewTabDisplayerUI;
 
 
 /**
@@ -230,6 +235,9 @@ public final class TabDisplayer extends JComponent {
         if (type == TYPE_TOOLBAR) {
             setUI (new ToolbarTabDisplayerUI(this));
             return;
+        } else if (type == TYPE_SLIDING) {
+            setUI (new BasicSlidingTabDisplayerUI(this));
+            return;
         }
         
         ComponentUI ui = null;
@@ -240,7 +248,10 @@ public final class TabDisplayer extends JComponent {
                 System.err.println("Could not load a UI for " + getUIClassID() + 
                     " - missing class?");
             }
+        } else {
+            ui = findUIStandalone();
         }
+        
         if (ui == null) {
             ui = getType() == TYPE_VIEW ?
                     WinClassicViewTabDisplayerUI.createUI(this) :
@@ -248,6 +259,45 @@ public final class TabDisplayer extends JComponent {
         }
         setUI((TabDisplayerUI) ui);
     }
+    
+    /**
+     * Allows the tabcontrol to find the correct UI if the plaf library is
+     * not present (no UI class defined in UIManager).
+     */
+    private ComponentUI findUIStandalone() {
+        ComponentUI result = null;
+        String lf = UIManager.getLookAndFeel().getID();
+        switch (type) {
+            case TYPE_VIEW :
+                if ("Aqua".equals(lf)) { //NOI18N
+                    result = AquaViewTabDisplayerUI.createUI(this);
+                } else if ("Windows".equals(lf)) { //NOI18N
+                    result = isXPLF() ? 
+                        WinXPViewTabDisplayerUI.createUI(this) :
+                        WinClassicViewTabDisplayerUI.createUI(this);
+                }
+                break;
+            case TYPE_EDITOR :
+                if ("Aqua".equals(lf)) { //NOI18N
+                    result = AquaEditorTabDisplayerUI.createUI(this);
+                } else if ("Windows".equals(lf)) { //NOI18N
+                    result = isXPLF() ? 
+                        WinXPEditorTabDisplayerUI.createUI(this) :
+                        WinClassicEditorTabDisplayerUI.createUI(this);
+                }
+                break;
+        }
+        return result;
+    }
+    
+    /** Finds if windows LF with XP theme is active.
+     * @return true if windows LF and XP theme is active, false otherwise */
+    private static boolean isXPLF () {
+        Boolean isXP = (Boolean)Toolkit.getDefaultToolkit().
+                        getDesktopProperty("win.xpstyle.themeActive"); //NOI18N
+        return isXP == null ? false : isXP.booleanValue();
+    }
+    
 
     /** Returns an different UIClassID depending on the value of the <code>type</code>
      * property. */

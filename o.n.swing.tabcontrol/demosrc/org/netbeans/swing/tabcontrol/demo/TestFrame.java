@@ -130,7 +130,7 @@ public class TestFrame extends javax.swing.JFrame {
         );
          */
         
-        final TabbedContainer tab = new TabbedContainer(mdl, TabbedContainer.TYPE_TOOLBAR);
+        final TabbedContainer tab = new TabbedContainer(mdl, TabbedContainer.TYPE_EDITOR);
         tab.setActive(true);    
         
         jb6.addActionListener(new ActionListener() {
@@ -309,8 +309,7 @@ public class TestFrame extends javax.swing.JFrame {
             System.err.println("Installing customs");
             m.invoke(null, new Object[] {null, new Integer(0), null});
         } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
+            System.err.println("Could not find plaf library");
         }
         
         new TestFrame().show();

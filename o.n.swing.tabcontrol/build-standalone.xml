@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="core/swing/tabcontrol" default="test-beanjar" basedir=".">
+
+    <!-- Stuff here is only used when compiling a standalone jar 
+    of the tab control for use outside netbeans.  What you need:
+        - A complete checkout of this module
+        - A checkout of at least the dir src/org/openide/awt from the cvs
+          module openide
+          
+    What it will do:
+        - Copy the current version of the NetBeans fast HTML renderer into
+          the beanstubs subdir
+        - Compile it, along with a stub version of org.openide.ErrorManager
+          which just prints to the console
+        - Create a jar consisting of the tab control, the ErrorManager stub
+          and the three classes that make up the HTML renderer
+    -->
+
+    <available type="file" file="../../../openide/src/org/openide/awt/HtmlRenderer.java" property="found-openide"/>
+    
+    <target name="check-openide" unless="found-openide">
+        <property name="dont-do-checkout" value="true"/>
+        <fail message="You need a checkout of openide to build this jar.  Only three needed classes from it will be compiled and included in the resulting jar from this build."/>
+    </target>
+    
+    <target name="set-openide-dir" if="found-openide">
+        <property value="../../../openide/src" name="openide-source-dir"/>
+        <echo message="Openide src dir set to ${openide-source-dir}"/>
+    </target>
+    
+    <target name="prepare-beanjar" depends="check-openide,set-openide-dir">
+        <mkdir dir="beanstubs/org/openide/awt"/>
+        <copy file="../../../openide/src/org/openide/awt/HtmlRenderer.java" todir="beanstubs/org/openide/awt" failonerror="true"/>
+        <copy file="../../../openide/src/org/openide/awt/HtmlLabelUI.java" todir="beanstubs/org/openide/awt" failonerror="true"/>
+        <copy file="../../../openide/src/org/openide/awt/HtmlRendererImpl.java" todir="beanstubs/org/openide/awt" failonerror="true"/>
+    </target>
+    
+    <target name="compile-bean" depends="prepare-beanjar">
+        <mkdir dir="beanclasses"/>
+        <javac debug="true" destdir="beanclasses" source="1.4">
+            <src path="beanstubs"/>
+            <src path="src"/>
+        </javac>
+    </target>
+    
+    <target name="beanjar" description="Compiles the tabbed control as a standalone library" depends="compile-bean">
+        <jar basedir="beanclasses" jarfile="tabbedcontainer.jar"/>
+    </target>
+    
+    <target name="rebuild-beanjar" depends="clean-bean,beanjar"/>
+    
+    <target name="clean-bean" description="Clean build products from creating the bean jar">
+        <delete dir="beanstubs/org/openide/awt"/>
+        <delete dir="beanclasses"/>
+        <delete file="tabbedcontainer.jar"/>
+    </target>
+    
+    <target name="test-beanjar" depends="rebuild-beanjar,compile-beanjar-demo" description="Runs the demo based on a build of the bean jar rather than class files">
+        <echo message="Demo args: ${application.args}"/>
+        <java fork="true" classname="org.netbeans.swing.tabcontrol.demo.TestFrame" args="${application.args}">
+            <classpath refid="beanjar-demo.cp"/>
+        </java>
+    </target>
+    
+   <target name="beanjar-demo-init">
+        <path id="beanjar-demo.cp">
+            <pathelement location="build/democlasses"/>
+            <fileset file="tabbedcontainer.jar"/>
+        </path>
+    </target>
+
+    <target name="compile-beanjar-demo" depends="beanjar-demo-init,beanjar">
+        <mkdir dir="build/democlasses"/>
+        <javac srcdir="demosrc" destdir="build/democlasses" debug="true" source="1.4" deprecation="false" includeantruntime="false">
+            <classpath refid="beanjar-demo.cp"/>
+        </javac>
+    </target>
+</project>

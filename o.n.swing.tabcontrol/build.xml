@@ -47,5 +47,4 @@ Microsystems, Inc. All Rights Reserved.
             <classpath refid="demo.run.cp"/>
         </java>
     </target>
-    
 </project>
