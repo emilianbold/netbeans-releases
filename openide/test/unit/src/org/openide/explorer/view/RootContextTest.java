@@ -102,42 +102,52 @@ public class RootContextTest extends NbTestCase {
         
     }
     
+    /** Run all tests in AWT thread */
+    public final void run (final junit.framework.TestResult result) {
+        try {
+            // XXX ExplorerManager when updating selected nodes
+            // replanes all firing into AWT thread, therefore the test
+            // has to run in AWT.
+            javax.swing.SwingUtilities.invokeAndWait (new Runnable () {
+                public void run () {
+                    RootContextTest.super.run (result);
+                }
+            });
+        } catch (Exception ex) {
+            ex.printStackTrace ();
+            throw new IllegalStateException ();
+        }
+    }
     
     // asure the node selections with given manager
     public void doViewTest (final ExplorerManager mgr) throws Exception {
-        
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-        
-                mgr.setRootContext (root1);
-                try {
-                    mgr.setSelectedNodes (new Node[] {arr1[0], arr1[2]});
-                } catch (PropertyVetoException pve) {
-                    fail (pve.getMessage ());
-                }
+        mgr.setRootContext (root1);
+        try {
+            mgr.setSelectedNodes (new Node[] {arr1[0], arr1[2]});
+        } catch (PropertyVetoException pve) {
+            fail (pve.getMessage ());
+        }
 
-                Node[] selNodes = mgr.getSelectedNodes ();
-                assertEquals ("Root context is ", "Root1", mgr.getRootContext ().getName ());
-                assertEquals ("Count of the selected node is ", 2, selNodes.length);
-                // pending: an order migth be different
-                //Arrays.sort (selNodes);
-                assertEquals ("Selected node is ", "One", selNodes[0].getName ());
-                assertEquals ("Selected node is ", "Three", selNodes[1].getName ());
+        Node[] selNodes = mgr.getSelectedNodes ();
+        assertEquals ("Root context is ", "Root1", mgr.getRootContext ().getName ());
+        assertEquals ("Count of the selected node is ", 2, selNodes.length);
+        // pending: an order migth be different
+        //Arrays.sort (selNodes);
+        assertEquals ("Selected node is ", "One", selNodes[0].getName ());
+        assertEquals ("Selected node is ", "Three", selNodes[1].getName ());
 
-                mgr.setRootContext (root2);
-                try {
-                    mgr.setSelectedNodes (new Node[] { arr2[1] });
-                } catch (PropertyVetoException pve) {
-                    fail (pve.getMessage ());
-                }
+        mgr.setRootContext (root2);
+        try {
+            mgr.setSelectedNodes (new Node[] { arr2[1] });
+        } catch (PropertyVetoException pve) {
+            fail (pve.getMessage ());
+        }
 
-                selNodes = mgr.getSelectedNodes ();
-                assertEquals ("Root context is ", "Root2", mgr.getRootContext ().getName ());
-                assertEquals ("Count of the selected node is ", 1, selNodes.length);
-                assertEquals ("Selected node is ", "Bbb", selNodes[0].getName ());
-        
-            }
-        });
+        selNodes = mgr.getSelectedNodes ();
+        assertEquals ("Root context is ", "Root2", mgr.getRootContext ().getName ());
+        assertEquals ("Count of the selected node is ", 1, selNodes.length);
+        assertEquals ("Selected node is ", "Bbb", selNodes[0].getName ());
+
     }
     
     // test for each type of view
