@@ -46,9 +46,9 @@ public abstract class Constants {
     public static final String LEFT   = JSplitPane.LEFT;
     public static final String RIGHT  = JSplitPane.RIGHT;
     
-    /** Sets size of divider */
-    public static final int DIVIDER_SIZE = 6;
-    
+    public static final int DIVIDER_SIZE_VERTICAL   = 4;
+    public static final int DIVIDER_SIZE_HORIZONTAL = 5;
+
     /** Sets size of drop area (when splitting mode and around area). */
     public static final int DROP_AREA_SIZE = 20;
     

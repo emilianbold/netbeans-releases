@@ -138,7 +138,10 @@ public class SplitView extends ViewElement {
             }
             splitPane.setResizeWeight(resize);
             
-            splitPane.setDividerSize(Constants.DIVIDER_SIZE);
+            splitPane.setDividerSize(orientation == JSplitPane.VERTICAL_SPLIT
+                ? Constants.DIVIDER_SIZE_VERTICAL
+                : Constants.DIVIDER_SIZE_HORIZONTAL);
+            
             splitPane.setBorder(BorderFactory.createEmptyBorder());
             
             splitPane.addPropertyChangeListener("topDividerLocation", // NOI18N
