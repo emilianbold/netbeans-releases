@@ -60,7 +60,7 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
     
     /** whether the value can be edited -- default to true */
     private boolean editable = true;
-    
+
     /**
      * This method is called by the IDE to pass
      * the environment to the property editor.
@@ -266,6 +266,19 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
     
     /** Property change listaner attached to the JFileChooser chooser. */
     public void propertyChange(PropertyChangeEvent e) {
+        if (e.getSource() instanceof JFileChooser) {
+            JFileChooser jfc = (JFileChooser) e.getSource();
+            if (mode == jfc.DIRECTORIES_ONLY && jfc.DIRECTORY_CHANGED_PROPERTY.equals(e.getPropertyName())) {
+                if (jfc.getSelectedFile() == null) {
+                    File dir = jfc.getCurrentDirectory();
+                    if (dir != null) {
+                        setValue (new File[] {new File(dir.getAbsolutePath())});
+                        return;
+                    }
+                }
+            }
+        }
+        
         if (( ! JFileChooser.SELECTED_FILES_CHANGED_PROPERTY.equals(e.getPropertyName())) && 
             ( ! JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(e.getPropertyName()))) {
                 return;
