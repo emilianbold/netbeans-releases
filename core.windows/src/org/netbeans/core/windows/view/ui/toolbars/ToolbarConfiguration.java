@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -789,22 +789,12 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             it = configList.iterator ();
             ButtonGroup bg = new ButtonGroup ();
             String current = ToolbarPool.getDefault ().getConfiguration ();
-            boolean showExt = DataNode.getShowFileExtensions();
             
             while (it.hasNext()) {
                 final String name = (String)it.next ();
-                //#40965 fix start
-                // how secure is to get display name.. maybe annotattions are appended??
-                String displName = findConfiguration(name).getName();
-                if (showExt) {
-                    int dotIndex = displName.lastIndexOf('.');
-                    if (dotIndex > -1) {
-                        displName = displName.substring(0, dotIndex);
-                    }
-                }
-                //#40965 fix end
+                String displayName = findConfiguration(name).getDisplayName();
                 JRadioButtonMenuItem mi = new JRadioButtonMenuItem (
-                    displName, (name != null && name.equals(current))
+                    displayName, (name != null && name.equals(current))
                 );
                 mi.addActionListener (new ActionListener () {
                                           public void actionPerformed (ActionEvent e) {
