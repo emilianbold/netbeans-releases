@@ -169,7 +169,7 @@ public class AllOptionsNode extends FilterNode {
                 if (!(sos[i] instanceof BaseOptions)) continue;
                 
                 BaseOptions bo = (BaseOptions) sos[i];
-                if (!list.contains(bo.getMimeNode())){
+                if (!list.contains(bo.getClass())){
                     if (BaseKit.getKit(bo.getKitClass()).getContentType() != null){
                         list.add(bo.getClass());
                         processInitializers(bo, false);
@@ -191,6 +191,8 @@ public class AllOptionsNode extends FilterNode {
                         }
                         );
                     }
+                }else{
+                    allOptions.removeOption(bo);
                 }
             }
 
