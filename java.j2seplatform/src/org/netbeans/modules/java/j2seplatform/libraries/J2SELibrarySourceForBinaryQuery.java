@@ -40,12 +40,11 @@ import org.openide.util.WeakListeners;
  */
 public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImplementation {
 
-    private Map/*<URL, SourceForBinaryQuery.Result>*/ cache = new HashMap ();
-    private Map/*<URL,URL>*/ normalizedURLCache = new HashMap ();
+    private final Map/*<URL,SourceForBinaryQuery.Result>*/ cache = new HashMap();
+    private final Map/*<URL,URL>*/ normalizedURLCache = new HashMap();
 
-    /** Creates a new instance of J2SELibrarySourceForBinaryQuery */
-    public J2SELibrarySourceForBinaryQuery() {
-    }
+    /** Default constructor for lookup. */
+    public J2SELibrarySourceForBinaryQuery() {}
 
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
         SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) this.cache.get (binaryRoot);
