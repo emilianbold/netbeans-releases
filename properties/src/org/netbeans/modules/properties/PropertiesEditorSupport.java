@@ -15,6 +15,8 @@
 package org.netbeans.modules.properties;
 
 
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.beans.*;
 import java.io.*;
 import java.lang.ref.Reference;
@@ -720,6 +722,9 @@ implements EditCookie, PrintCookie, Serializable {
         /** Listener for entry's save cookie changes. */
         private transient PropertyChangeListener saveCookieLNode;
         
+        /** Icon. */
+        private static Image icon = null;
+        
         /** Generated serial version UID. */
         static final long serialVersionUID =-2702087884943509637L;
         
@@ -775,6 +780,13 @@ implements EditCookie, PrintCookie, Serializable {
                 entry.getHandler().reparseNowBlocking();
             }
             return true;
+        }
+
+        /** Overrides superclass method. Gets <code>Icon</code>. */
+        public Image getIcon () {
+            if (icon == null)
+                icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/netbeans/modules/properties/propertiesLocale.gif")); // NOI18N
+            return icon;
         }
         
         /**
