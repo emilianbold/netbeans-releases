@@ -19,6 +19,8 @@ Microsystems, Inc. All Rights Reserved.
                 exclude-result-prefixes="xalan p nbm">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
+    
+    <!-- XXX use xsl:attribute for attr ordering as in j2seproject -->
 
 <xsl:comment> You may freely edit this file. </xsl:comment>
 <xsl:comment> The names of existing targets are significant to the IDE. </xsl:comment>
@@ -63,4 +65,4 @@ Microsystems, Inc. All Rights Reserved.
 
     </xsl:template>
     
-</xsl:stylesheet> 
+</xsl:stylesheet>
