@@ -167,7 +167,7 @@ class DataFolderPanel extends TopComponent implements
         packagesPanel.add(beanTreeView, gridBagConstraints);
 
         descriptionLabel.setLabelFor(beanTreeView);
-        descriptionLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle").getString("LAB_TargetLocationDescription"));
+        descriptionLabel.setText(org.openide.util.NbBundle.getBundle(DataFolderPanel.class).getString("LAB_TargetLocationDescription"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -177,7 +177,7 @@ class DataFolderPanel extends TopComponent implements
         packagesPanel.add(descriptionLabel, gridBagConstraints);
 
         packageLabel.setLabelFor(packageName);
-        packageLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle").getString("LAB_package"));
+        packageLabel.setText(org.openide.util.NbBundle.getBundle(DataFolderPanel.class).getString("LAB_package"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -194,7 +194,7 @@ class DataFolderPanel extends TopComponent implements
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
         packagesPanel.add(packageName, gridBagConstraints);
 
-        dirLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle").getString("LAB_directory"));
+        dirLabel.setText(org.openide.util.NbBundle.getBundle(DataFolderPanel.class).getString("LAB_directory"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -210,11 +210,11 @@ class DataFolderPanel extends TopComponent implements
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         packagesPanel.add(directoryName, gridBagConstraints);
 
-        createButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle").getString("CTL_Create"));
+        createButton.setText(org.openide.util.NbBundle.getBundle(DataFolderPanel.class).getString("CTL_Create"));
         createButton.setEnabled(false);
         createButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                DataFolderPanel.this.createButtonActionPerformed(evt);
+                createButtonActionPerformed(evt);
             }
         });
 
@@ -245,14 +245,14 @@ class DataFolderPanel extends TopComponent implements
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel packageLabel;
-    private org.openide.explorer.ExplorerPanel packagesPanel;
+    private org.openide.explorer.view.BeanTreeView beanTreeView;
     private javax.swing.JButton createButton;
-    private javax.swing.JTextField directoryName;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JLabel dirLabel;
+    private javax.swing.JTextField directoryName;
+    private javax.swing.JLabel packageLabel;
     private javax.swing.JTextField packageName;
-    private org.openide.explorer.view.BeanTreeView beanTreeView;
+    private org.openide.explorer.ExplorerPanel packagesPanel;
     // End of variables declaration//GEN-END:variables
 
     //
