@@ -101,6 +101,22 @@ public class PerformanceData extends XMLBean {
         this.xmlat_runOrder = xmlat_runOrder;
     }    
     
+    /** Getter for property xmlat_threshold.
+     * @return Value of property xmlat_threshold.
+     *
+     */
+    public long getThreshold() {
+        return xmlat_threshold;
+    }
+    
+    /** Setter for property xmlat_threshold.
+     * @param xmlat_threshold New value of property xmlat_threshold.
+     *
+     */
+    public void setThreshold(long xmlat_threshold) {
+        this.xmlat_threshold = xmlat_threshold;
+    }
+    
     /** Holds value of property unitTestSuite_id. */
     private long unitTestSuite_id;
     
@@ -109,4 +125,5 @@ public class PerformanceData extends XMLBean {
     public long     xmlat_value;
     public String   xmlat_unit;    
     public int      xmlat_runOrder;
+    public long     xmlat_threshold;
 }

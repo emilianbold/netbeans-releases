@@ -196,6 +196,7 @@ public class XMLReporter implements JUnitTestListener {
                 bean.xmlat_value = pdata[i].value;
                 bean.xmlat_unit = pdata[i].unit;
                 bean.xmlat_runOrder = pdata[i].runOrder;
+                bean.xmlat_threshold = pdata[i].threshold;
                 performanceData.add(bean);
             }
             currentTestSuite.xmlel_Data[0].xmlel_PerformanceData = (PerformanceData[])(performanceData.toArray(new PerformanceData[0]));
