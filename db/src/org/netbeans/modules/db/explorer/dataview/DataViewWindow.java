@@ -384,7 +384,6 @@ public class DataViewWindow extends TopComponent {
         boolean ret;
 
         try {
-            status.setText(bundle.getString("CommandRunning")); //NOI18N
             dbadaptor.execute(command);
 
             RecentCommand rcmd = new RecentCommand(command);
@@ -641,8 +640,12 @@ public class DataViewWindow extends TopComponent {
         * @param command SQL Expression
         */
         synchronized public void execute(String command) throws Exception {
-            if (command.length() == 0)
+            if (command.length() == 0) {
+                status.setText(" "); //NOI18N
                 return;
+            }
+
+            status.setText(bundle.getString("CommandRunning")); //NOI18N
 
             Connection con;
             Statement stat;
