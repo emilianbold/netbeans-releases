@@ -514,6 +514,9 @@ public class EditorModule extends ModuleInstall {
         }
         
         public void fileSystemAdded(RepositoryEvent ev){
+            if (Boolean.getBoolean("netbeans.full.hack") == true){ //NOI18N
+                return; 
+            }
             org.openide.windows.WindowManager wm=TopManager.getDefault().getWindowManager();
             if(wm!=null){
                 java.awt.Frame frm = wm.getMainWindow();
@@ -586,6 +589,9 @@ public class EditorModule extends ModuleInstall {
         }
         
         public void fileSystemRemoved(RepositoryEvent ev){
+            if (Boolean.getBoolean("netbeans.full.hack") == true) { //NOI18N
+                return; 
+            }
             FileSystem fs = ev.getFileSystem();            
             if (fs == null) return;
 
