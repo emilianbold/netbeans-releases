@@ -64,6 +64,8 @@ Microsystems, Inc. All Rights Reserved.
 
   <folder name="Mount">
     <folder name="Javadoc">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.Bundle"/>
+      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/showjavadoc.gif"/>
       <file name="org-netbeans-modules-javadoc-default.xml">
         <![CDATA[<?xml version="1.0"?>
             <!DOCTYPE Javadoc PUBLIC "-//NetBeans IDE//DTD JavadocLibrary//EN" "http://www.netbeans.org/dtds/JavadocLibrary-1_0.dtd">
@@ -71,6 +73,8 @@ Microsystems, Inc. All Rights Reserved.
                 <Folder name="javadoc/"/>
             </Javadoc>
             ]]>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/generatejavadoc.gif"/>
       </file>
     </folder>
   </folder>
