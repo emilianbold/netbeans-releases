@@ -160,7 +160,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
             }
             JspParserAPI.JspOpenInfo info = (JspParserAPI.JspOpenInfo)jspOpenInfoRef.get(timestamp);
             if (info == null) {
-                info = JspCompileUtil.getJspParser().getJspOpenInfo(jspFile, WebModule.getJspParserWM (wmRoot));
+                info = JspParserFactory.getJspParser().getJspOpenInfo(jspFile, WebModule.getJspParserWM (wmRoot));
                 jspOpenInfoRef.put(info, timestamp);
             }
             return info;
@@ -222,7 +222,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
         }
         
         public void run() {
-            JspParserAPI parser = JspCompileUtil.getJspParser();
+            JspParserAPI parser = JspParserFactory.getJspParser();
             // assert parser != null;
             if (parser == null) {
                 throw new InternalError();

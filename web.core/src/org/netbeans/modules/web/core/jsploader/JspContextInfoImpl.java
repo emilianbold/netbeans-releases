@@ -67,7 +67,7 @@ public class JspContextInfoImpl extends JspContextInfo {
     
     public URLClassLoader getModuleClassLoader(Document doc, FileObject fo){
         FileObject wmRoot = JspCompileUtil.getContextRoot(fo);
-        return JspCompileUtil.getJspParser().getModuleClassLoader(WebModule.getJspParserWM (wmRoot));
+        return JspParserFactory.getJspParser().getModuleClassLoader(WebModule.getJspParserWM (wmRoot));
     }
     
     /** Returns the root of the web module containing the given file object.
@@ -91,7 +91,7 @@ public class JspContextInfoImpl extends JspContextInfo {
     public Map getTaglibMap(Document doc, FileObject fo) {
         FileObject wmRoot = guessWebModuleRoot(doc, fo);
         try {
-            JspParserAPI parser = JspCompileUtil.getJspParser();
+            JspParserAPI parser = JspParserFactory.getJspParser();
             if (parser == null) {
                 ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, 
                 new NullPointerException());

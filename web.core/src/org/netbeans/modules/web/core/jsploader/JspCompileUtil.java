@@ -54,7 +54,6 @@ import org.netbeans.modules.web.core.WebExecUtil;
 import org.netbeans.modules.web.webdata.WebDataFactory;
 import org.netbeans.modules.web.webdata.WebResourceImpl;
 
-import org.netbeans.modules.web.jsps.parserapi.*;
 import org.openide.filesystems.FileUtil;
 
 /** JSP compilation utilities
@@ -425,30 +424,6 @@ public class JspCompileUtil {
         return result;
     }
 
-    /** Returns a JSP parser registered for this module. 
-     * May return null in case of a serious error.
-     */
-    public static synchronized JspParserAPI getJspParser() {
-        /*if (parserFactory == null) {
-            FileObject f = Repository.getDefault().findResource("/J2EE/JSPParser"); // NOI18N
-            if (f != null) {
-                try {
-                    DataFolder folder = (DataFolder)DataObject.find(f).getCookie(DataFolder.class);
-                    parserFactory = new JspParserFactory(folder);
-                } 
-                catch (DataObjectNotFoundException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-                }
-            } else {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, 
-                    new Exception(NbBundle.getBundle(JspCompileUtil.class).getString("EXC_JspParserNotInstalled")));
-            }
-           
-        }
-        return (parserFactory == null) ? null : parserFactory.getJspParser();*/
-        return JspParserFactory.getJspParser();
-    }
-    
     /** Returns a FileObject whose resource path is relativePath relatively to folder rootFolder. 
      *  Null if does not exist.
      */
