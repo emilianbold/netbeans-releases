@@ -173,7 +173,8 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
      * @param text String text
      */
     public void setItemText( String text ) {
-        txtItemText().setText(text);
+        txtItemText().clearText();
+        txtItemText().typeText(text);
     }
 
     
