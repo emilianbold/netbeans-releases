@@ -91,7 +91,17 @@ public abstract class AntArtifact {
      *         may be either relative, or an absolute <code>file</code>-protocol URI
      */
     public abstract URI getArtifactLocation();
-    
+
+    /**
+     * Returns identifier of the AntArtifact which must be <strong>unique within
+     * one project</strong>. By default it is target name which produces the
+     * artifact, but if your target produces more that one artifact then
+     * you must override this method and uniquely identify each artifact.
+     */
+    public String getID() {
+        return getTargetName();
+    }
+
     /**
      * Convenience method to find the actual artifact, if it currently exists.
      * Uses {@link #getScriptFile} or {@link #getScriptLocation} and resolves {@link #getArtifactLocation} from it.

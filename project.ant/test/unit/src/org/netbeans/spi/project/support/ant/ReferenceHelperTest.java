@@ -175,19 +175,20 @@ public class ReferenceHelperTest extends NbTestCase {
     public void testRawReferenceManipulation() throws Exception {
         assertEquals("starting with no raw references", Collections.EMPTY_LIST, Arrays.asList(r.getRawReferences()));
         // Test simple adding of a reference.
-        ReferenceHelper.RawReference ref = new ReferenceHelper.RawReference("otherproj", "jar", URI.create("build.xml"), "dojar", "clean");
+        ReferenceHelper.RawReference ref = new ReferenceHelper.RawReference("otherproj", "jar", URI.create("build.xml"), "dojar", "clean", "dojarID");
         assertTrue("successfully added a raw ref to otherproj.dojar", r.addRawReference(ref));
         assertNull("project.properties not changed", pev.getProperty("project.otherproj"));
         assertTrue("project is modified", pm.isModified(p));
-        ref = r.getRawReference("otherproj", "dojar");
+        ref = r.getRawReference("otherproj", "dojarID");
         assertNotNull("found otherproj.dojar", ref);
         assertEquals("correct foreign project name", "otherproj", ref.getForeignProjectName());
         assertEquals("correct artifact type", "jar", ref.getArtifactType());
         assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
+        assertEquals("correct ID name", "dojarID", ref.getID());
         // Nonexistent references are not returned.
-        ref = r.getRawReference("otherproj2", "dojar");
+        ref = r.getRawReference("otherproj2", "dojarID");
         assertNull("no such ref otherproj2.dojar", ref);
         ref = r.getRawReference("otherproj", "dojar2");
         assertNull("no such ref otherproj.dojar2", ref);
@@ -202,24 +203,25 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
+        assertEquals("correct ID name", "dojarID", ref.getID());
         // Test removing it.
-        assertTrue("successfully removed otherproj.dojar", r.removeRawReference("otherproj", "dojar"));
+        assertTrue("successfully removed otherproj.dojar", r.removeRawReference("otherproj", "dojarID"));
         refs = r.getRawReferences();
         assertEquals("no references here", 0, refs.length);
         ref = r.getRawReference("otherproj", "dojar");
         assertNull("otherproj.dojar is gone", ref);
         // Test adding several references.
-        ref = new ReferenceHelper.RawReference("otherproj", "jar", URI.create("build.xml"), "dojar", "clean");
+        ref = new ReferenceHelper.RawReference("otherproj", "jar", URI.create("build.xml"), "dojar", "clean", "dojarID");
         assertTrue("added ref to otherproj.dojar", r.addRawReference(ref));
-        ref = new ReferenceHelper.RawReference("otherproj", "jar", URI.create("build.xml"), "dojar2", "clean");
+        ref = new ReferenceHelper.RawReference("otherproj", "jar", URI.create("build.xml"), "dojar2", "clean", "dojar2ID");
         assertTrue("added ref to otherproj.dojar2", r.addRawReference(ref));
-        ref = new ReferenceHelper.RawReference("otherproj2", "ear", URI.create("build.xml"), "dojar", "clean");
+        ref = new ReferenceHelper.RawReference("otherproj2", "ear", URI.create("build.xml"), "dojar", "clean", "dojarID");
         assertTrue("added ref to otherproj2.dojar", r.addRawReference(ref));
         assertEquals("have three refs", 3, r.getRawReferences().length);
         // Test no-op adds and removes.
         pm.saveProject(p);
         assertFalse("project is saved", pm.isModified(p));
-        ref = new ReferenceHelper.RawReference("otherproj", "jar", URI.create("build.xml"), "dojar", "clean");
+        ref = new ReferenceHelper.RawReference("otherproj", "jar", URI.create("build.xml"), "dojar", "clean", "dojarID");
         assertFalse("already had ref to otherproj.dojar", r.addRawReference(ref));
         assertFalse("project is not modified by no-op add", pm.isModified(p));
         assertEquals("still have three refs", 3, r.getRawReferences().length);
@@ -227,34 +229,36 @@ public class ReferenceHelperTest extends NbTestCase {
         assertFalse("project is not modified by no-op remove", pm.isModified(p));
         assertEquals("still have three refs", 3, r.getRawReferences().length);
         // Test modifications.
-        ref = new ReferenceHelper.RawReference("otherproj", "war", URI.create("build.xml"), "dojar", "clean");
+        ref = new ReferenceHelper.RawReference("otherproj", "war", URI.create("build.xml"), "dojar", "clean", "dojarID");
         assertTrue("modified ref to otherproj.dojar", r.addRawReference(ref));
         assertTrue("project is modified by changed ref", pm.isModified(p));
         assertEquals("still have three refs", 3, r.getRawReferences().length);
-        ref = r.getRawReference("otherproj", "dojar");
+        ref = r.getRawReference("otherproj", "dojarID");
         assertEquals("correct foreign project name", "otherproj", ref.getForeignProjectName());
         assertEquals("correct modified artifact type", "war", ref.getArtifactType());
         assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
-        ref = new ReferenceHelper.RawReference("otherproj", "war", URI.create("build2.xml"), "dojar", "clean");
+        assertEquals("correct ID name", "dojarID", ref.getID());
+        ref = new ReferenceHelper.RawReference("otherproj", "war", URI.create("build2.xml"), "dojar", "clean", "dojarID");
         assertTrue("modified ref to otherproj.dojar", r.addRawReference(ref));
-        ref = new ReferenceHelper.RawReference("otherproj", "war", URI.create("build2.xml"), "dojar", "clean2");
+        ref = new ReferenceHelper.RawReference("otherproj", "war", URI.create("build2.xml"), "dojar", "clean2", "dojarID");
         assertTrue("modified ref to otherproj.dojar", r.addRawReference(ref));
-        ref = r.getRawReference("otherproj", "dojar");
+        ref = r.getRawReference("otherproj", "dojarID");
         assertEquals("correct foreign project name", "otherproj", ref.getForeignProjectName());
         assertEquals("correct modified artifact type", "war", ref.getArtifactType());
         assertEquals("correct script location", URI.create("build2.xml"), ref.getScriptLocation());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean2", ref.getCleanTargetName());
+        assertEquals("correct ID name", "dojarID", ref.getID());
         assertEquals("still have three refs", 3, r.getRawReferences().length);
         // More removals and adds.
-        assertTrue("now removing otherproj.dojar2", r.removeRawReference("otherproj", "dojar2"));
-        assertNull("otherproj.dojar2 is gone", r.getRawReference("otherproj", "dojar2"));
-        assertNotNull("otherproj.jar is still there", r.getRawReference("otherproj", "dojar"));
-        assertNotNull("otherproj2.dojar is still there", r.getRawReference("otherproj2", "dojar"));
+        assertTrue("now removing otherproj.dojar2", r.removeRawReference("otherproj", "dojar2ID"));
+        assertNull("otherproj.dojar2 is gone", r.getRawReference("otherproj", "dojar2ID"));
+        assertNotNull("otherproj.jar is still there", r.getRawReference("otherproj", "dojarID"));
+        assertNotNull("otherproj2.dojar is still there", r.getRawReference("otherproj2", "dojarID"));
         assertEquals("down to two refs", 2, r.getRawReferences().length);
-        ref = new ReferenceHelper.RawReference("aardvark", "jar", URI.create("build.xml"), "jar", "clean");
+        ref = new ReferenceHelper.RawReference("aardvark", "jar", URI.create("build.xml"), "jar", "clean", "jarID");
         assertTrue("added ref to aardvark.jar", r.addRawReference(ref));
         // Check list of refs.
         refs = r.getRawReferences();
@@ -266,18 +270,21 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
         assertEquals("correct target name", "jar", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
+        assertEquals("correct ID name", "jarID", ref.getID());
         ref = refs[1];
         assertEquals("correct foreign project name", "otherproj", ref.getForeignProjectName());
         assertEquals("correct modified artifact type", "war", ref.getArtifactType());
         assertEquals("correct script location", URI.create("build2.xml"), ref.getScriptLocation());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean2", ref.getCleanTargetName());
+        assertEquals("correct ID name", "dojarID", ref.getID());
         ref = refs[2];
         assertEquals("correct foreign project name", "otherproj2", ref.getForeignProjectName());
         assertEquals("correct modified artifact type", "ear", ref.getArtifactType());
         assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
         assertEquals("correct target name", "dojar", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
+        assertEquals("correct ID name", "dojarID", ref.getID());
         // Try saving and checking that project.xml is correct.
         assertTrue("Project is still modified", pm.isModified(p));
         pm.saveProject(p);
@@ -294,6 +301,7 @@ public class ReferenceHelperTest extends NbTestCase {
             "script",
             "target",
             "clean-target",
+            "id",
         };
         String[][] values = {
             {
@@ -302,6 +310,7 @@ public class ReferenceHelperTest extends NbTestCase {
                 "build.xml",
                 "jar",
                 "clean",
+                "jarID",
             },
             {
                 "otherproj",
@@ -309,6 +318,7 @@ public class ReferenceHelperTest extends NbTestCase {
                 "build2.xml",
                 "dojar",
                 "clean2",
+                "dojarID",
             },
             {
                 "otherproj2",
@@ -316,11 +326,12 @@ public class ReferenceHelperTest extends NbTestCase {
                 "build.xml",
                 "dojar",
                 "clean",
+                "dojarID",
             },
         };
         for (int i = 0; i < 3; i++) {
             Element reference = (Element)nl.item(i);
-            for (int j = 0; j < 5; j++) {
+            for (int j = 0; j < 6; j++) {
                 String elementName = elementNames[j];
                 Element element = Util.findElement(reference, elementName, ReferenceHelper.REFS_NS);
                 assertNotNull("had element " + elementName + " in ref #" + i, element);
@@ -549,7 +560,7 @@ public class ReferenceHelperTest extends NbTestCase {
         // test non-collocated foreign project reference
         FileObject nonCollocatedProjectLib = scratch.getFileObject("separate/proj3").createFolder("dist").createData("proj3.jar");
         f = FileUtil.toFile(nonCollocatedProjectLib);
-        art = AntArtifactQuery.findArtifactByTarget(pm.findProject(sepprojdir), "dojar");
+        art = AntArtifactQuery.findArtifactByID(pm.findProject(sepprojdir), "dojar");
         assertNotNull("have an artifact proj3.dojar", art);
         assertEquals("can add a reference to a direct artifact", "${reference.proj3.dojar}", r.createForeignFileReference(art));
         assertEquals("creating reference second time must return already existing ID", "${reference.proj3.dojar}", r.createForeignFileReference(art));
@@ -634,7 +645,7 @@ public class ReferenceHelperTest extends NbTestCase {
     
     public void testToAntArtifact() throws Exception {
         ReferenceHelper.RawReference ref = new ReferenceHelper.RawReference(
-            "proj2", "irrelevant", new URI("also-irrelevant"), "dojar", "totally-irrelevant");
+            "proj2", "irrelevant", new URI("also-irrelevant"), "dojar", "totally-irrelevant", "dojar");
         AntArtifact art = ref.toAntArtifact(r);
         assertNull("${project.proj2} not set, will not be found", art);
         EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -648,7 +659,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("correct target name", "dojar", art.getTargetName());
         assertEquals("correct clean target name", "clean", art.getCleanTargetName());
         ref = new ReferenceHelper.RawReference(
-            "proj2", "irrelevant", new URI("also-irrelevant"), "doojar", "totally-irrelevant");
+            "proj2", "irrelevant", new URI("also-irrelevant"), "doojar", "totally-irrelevant", "doojar");
         art = ref.toAntArtifact(r);
         assertNull("wrong target name, will not be found", art);
     }

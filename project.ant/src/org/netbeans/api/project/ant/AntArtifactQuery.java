@@ -60,18 +60,18 @@ public class AntArtifactQuery {
      * Try to find a particular build artifact according to the Ant target producing it.
      * @param p a project (should have {@link AntArtifactProvider} in lookup
      *          in order for this query to work)
-     * @param targetName a desired {@link AntArtifact#getTargetName target name}
+     * @param id a desired {@link AntArtifact#getID ID}
      * @return an artifact produced by that project with the specified target,
      *         or null if none such can be found
      */
-    public static AntArtifact findArtifactByTarget(Project p, String targetName) {
+    public static AntArtifact findArtifactByID(Project p, String id) {
         AntArtifactProvider prov = (AntArtifactProvider)p.getLookup().lookup(AntArtifactProvider.class);
         if (prov == null) {
             return null;
         }
         AntArtifact[] artifacts = prov.getBuildArtifacts();
         for (int i = 0; i < artifacts.length; i++) {
-            if (artifacts[i].getTargetName().equals(targetName)) {
+            if (artifacts[i].getID().equals(id)) {
                 return artifacts[i];
             }
         }

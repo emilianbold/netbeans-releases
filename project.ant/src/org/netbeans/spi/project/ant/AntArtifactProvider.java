@@ -30,7 +30,8 @@ public interface AntArtifactProvider {
      * @return a list of build artifacts produced by this project;
      *         the target names must be distinct, and if this provider is in a
      *         project's lookup, {@link AntArtifact#getProject} must return the
-     *         same project
+     *         same project; list of artifacts for one project cannot contain
+     *         two artifacts with the same {@link AntArtifact#getID ID}
      */
     AntArtifact[] getBuildArtifacts();
     
