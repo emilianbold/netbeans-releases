@@ -51,6 +51,9 @@ public class MainWithProjects implements Main.MainWithProjectsInterface {
              */         
             // open project
             FileObject[] fos = FileUtil.fromFile(projectDir);
+            if(fos.length == 0) {
+                throw new IllegalArgumentException("Invalid value of xtest.ide.open.project property: "+projectDir.getAbsolutePath());
+            }
             Project project = ProjectManager.getDefault().findProject(fos[0]);
             OpenProjectList.getDefault().open(project);
             // Set main? Probably user should do this if he wants.
