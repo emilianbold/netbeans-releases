@@ -23,44 +23,31 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 <p> You can add any one of the predefined drivers by choosing Databases 
 <img src="images/arrow.gif" width="5" height="11" alt="and choose">Drivers 
-  in the Runtime tab of the Explorer). After you add a driver, you can test the 
-  driver to ensure that it is compatible with the Database Explorer. 
+  in the Runtime tab of the Explorer). 
 <p> <b>To add your own driver:</b></p>
 
 <ol>
 
   <li>In the Runtime tab of the Explorer, expand the Databases node. </li>
 
-  <li>Right-click the Drivers node or a specific driver under the Drivers node, 
+  <li>Right-click the Drivers node and choose Add Driver. </li>
 
-    choose Add Driver. </li>
-
-  <li>In the Add Driver dialog box, specify a driver name for the new driver. 
-
-    <p> The IDE uses this name only for display purposes. </p>
+  <li>In the Add JDBC Driver dialog box, click the Add button to open a file
+chooser. Then navigate to and select the archive files of the driver that you
+want to add.  
 
   </li>
 
-  <li>In the Driver field, provide the fully qualified driver class name. For 
-
-    example:
-
-    <p> <tt>COM.pointbase.jdbc.jdbcUniversalDriver</tt>. </p>
-
-  </li>
-
-  <li> In the Database URL prefix field, type a template for the URLs of connections 
-
-    you want to make using this driver. 
-
-    <p> The template can represent a URL that is not the real URL; you can complete 
-
-      the URL later when you connect. For example, you can now add: <tt>jdbc:pointbase://&lt;HOST&gt;[:PORT]/[DB]/<db> 
-
-      </tt> </p>
+  <li>In the Driver Class field, provide the fully qualified driver class name.
+For example: <tt>COM.pointbase.jdbc.jdbcUniversalDriver</tt>. 
+If you click the Find button, the IDE will try to find the appropriate class for
+you. 
 
   </li>
 
+  <li>In the Name field, type a descriptive name for the new driver. 
+
+    <p> The IDE uses this name only for display purposes. </p></li>
   <li>Click OK to add the new driver to the list. 
 
     <p> Later, you can remove a driver by selecting it in the Explorer, right-clicking, 
@@ -111,15 +98,9 @@
 
     <td width="23"></td>
 
-    <td> <a href="testdriver.html">Testing a New Driver</a> <br>
-
-      <a href="dbadapt.html">Using a Database Adaptor to Replace Missing Metadata</a> 
-
-      <br>
+    <td>
 
       <a href="connectdb.html">Connecting to a Database</a> <br>
-
-      <a href="connusupp.html">Connecting to an Unsupported Database</a></td>
 
   </tr>
 

@@ -24,12 +24,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <tocitem text="Connecting to a Database" target="connectdb" />
 
-<tocitem text="Testing a  New Driver" target="testdriver" />
-
-<tocitem text="Using a Database Adaptor to Replace Missing Metadata" target="dbadapt" />
-
-<tocitem text="Connecting to Unsupported Databases" target="connunsupp" />
-
 <tocitem text="Adding Database Columns" target="addcopycols" />
 
 <tocitem text="Creating Tables" target="createtables" />
@@ -40,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <tocitem text="Enabling and Disabling Debug Mode to Monitor SQL Commands" target="manipsql" />
 
-<tocitem text="Limiting the Number of Database Rows Fetched" target="misc" />
+<tocitem text="Limiting the Number of Database Rows Fetched" target="db.explorer.misc" />
 
 <tocitem text="Configuring Database Explorer Properties" target="dbconfig" />
 

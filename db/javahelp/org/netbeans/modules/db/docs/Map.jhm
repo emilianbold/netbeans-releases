@@ -23,9 +23,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <mapID target="adddriver" url="adddriver.html" />
 <mapID target="connectdb" url="connectdb.html" />
-<mapID target="testdriver" url="testdriver.html" />
-<mapID target="dbadapt" url="dbadapt.html" />
-<mapID target="connunsupp" url="connusupp.html" />
 <mapID target="delobj" url="delobj.html" />
 
 <mapID target="addcopycols" url="addcopycols.html" />
@@ -33,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
 <mapID target="createviews" url="createviews.html" />
 <mapID target="manipsql" url="manipsql.html" />
 
-<mapID target="misc" url="misc.html" />
+<mapID target="db.explorer.misc" url="misc.html" />
 <mapID target="dbconfig" url="dbconfig.html" />
 
 <mapID target="browstruct" url="browstruct.html" />
