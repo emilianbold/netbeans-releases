@@ -8,9 +8,20 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="apisupport/project">
+
     <import file="../../nbbuild/templates/projectized.xml"/>
+    
+    <target name="test" depends="ant/project-test,projectized.test"/>
+    <target name="test-single" depends="ant/project-test,projectized.test-single"/>
+    <target name="ant/project-test" depends="check-ant/project-test" unless="ant/project.test.built">
+        <ant dir="../../ant/project" target="test-build"/>
+    </target>
+    <target name="check-ant/project-test">
+        <available property="ant/project.test.built" file="../../ant/project/build/test/unit/classes"/>
+    </target>
+
 </project>
