@@ -13,14 +13,15 @@
 
 package org.netbeans.modules.xml.multiview.ui;
 
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.nodes.Children;
-import org.openide.nodes.AbstractNode;
 import org.netbeans.modules.xml.multiview.SectionNode;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
 
 /**
  * @author pfiala
@@ -28,7 +29,7 @@ import java.awt.*;
 public class SectionNodeView extends SectionView {
     private final DataObject dataObject;
     private SectionNode rootNode = null;
-
+    private HashMap nodes = new HashMap();
 
     public SectionNodeView(DataObject dataObject) {
         super();
@@ -51,40 +52,31 @@ public class SectionNodeView extends SectionView {
         return dataObject;
     }
 
-    protected void openSection(Node node) {
-        if(node instanceof SectionNode) {
-            SectionNode sectionNode = (SectionNode) node;
-            SectionNodePanel sectionPanel = sectionNode.getSectionNodePanel();
-            Node parent = sectionNode.getParentNode();
-            while (parent instanceof SectionNode) {
-                SectionNodePanel parentSectionPanel = ((SectionNode) parent).getSectionNodePanel();
-                if (parentSectionPanel.getInnerPanel() == null) {
-                    parentSectionPanel.open();
-                }
-                parent = parent.getParentNode();
-            }
-            if(sectionPanel.getInnerPanel() == null) {
-                sectionPanel.open();
-            }
-            JComponent comp = sectionPanel;
-            comp.scrollRectToVisible(new Rectangle(comp.getWidth(), comp.getHeight()));
-            setActivePanel(sectionPanel);
-            sectionPanel.setActive(true);
-        } else {
-            super.openSection(node);
-        }
+    public void openSection(Node node) {
+        openPanel(node);
     }
 
     public void openPanel(Object key) {
-        if (key instanceof SectionNode) {
-            SectionNodePanel panel = ((SectionNode) key).getSectionNodePanel();
-            if (panel.getInnerPanel() == null) {
-                panel.open();
-            }
-            panel.scroll();
-            panel.setActive(true);
-        } else {
-            rootNode.getSectionNodePanel().setActive(true);
-        }
+        SectionNode sectionNode = retrieveSectionNode((SectionNode) key);
+        SectionNodePanel sectionNodePanel = sectionNode.getSectionNodePanel();
+        sectionNodePanel.open();
+        JComponent comp = sectionNodePanel;
+        comp.scrollRectToVisible(new Rectangle(comp.getWidth(), comp.getHeight()));
+        setActivePanel(sectionNodePanel);
+        sectionNodePanel.setActive(true);
+        selectNode(sectionNodePanel.getNode());
+    }
+
+    public SectionNode getRootNode() {
+        return rootNode;
+    }
+
+    public void registerNode(SectionNode node) {
+        nodes.put(node, node);
+    }
+
+    public SectionNode retrieveSectionNode(SectionNode node) {
+        SectionNode sectionNode = (SectionNode) nodes.get(node);
+        return sectionNode == null ? rootNode : sectionNode;
     }
 }
