@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -213,12 +213,6 @@ Microsystems, Inc. All Rights Reserved.
     </folder> <!-- xml -->
     
     <folder name="Services">
-        <!-- Open File Server Settings -->
-        <file name="org-netbeans-modules-openfile-Settings.settings" url="../openfile/Openfile.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.openfile.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/openfile/openFile.gif"/>
-        </file>
-
         <!-- PDF Settings -->
         <file name="org-netbeans-modules-pdf-PDFSettings.settings" url="../pdf/PDF.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.pdf.Bundle"/>
@@ -274,9 +268,6 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="ServerAndExternalToolSettings">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.openfile.Bundle"/>
 
-                    <file name="org-netbeans-modules-openfile-Settings.shadow">
-                        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-openfile-Settings.settings"/>
-                    </file>
                     <file name="org-netbeans-modules-pdf-PDFSettings.shadow">
                         <attr name="originalFile" stringvalue="Services/org-netbeans-modules-pdf-PDFSettings.settings"/>
                     </file>

@@ -48,17 +48,14 @@ public class OpenFileAction extends CallableSystemAction {
     private static File currDir;
 
     
-    /** */
     public String getName() {
-        return SettingsBeanInfo.getString("LBL_openFile");              //NOI18N
+        return NbBundle.getMessage(OpenFileAction.class, "LBL_openFile");
     }
 
-    /** */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(OpenFileAction.class);
     }
 
-    /** */
     protected String iconResource() {
         return "org/netbeans/modules/openfile/openFile.gif"; // NOI18N
     }
@@ -146,7 +143,7 @@ public class OpenFileAction extends CallableSystemAction {
                 } else {
                     // Selected file doesn't exist.
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                            SettingsBeanInfo.getString("MSG_noFileSelected"),   //NOI18N
+                            NbBundle.getMessage(OpenFileAction.class, "MSG_noFileSelected"),
                             NotifyDescriptor.WARNING_MESSAGE));
                 }
             }
@@ -171,7 +168,7 @@ public class OpenFileAction extends CallableSystemAction {
                 return;
             }
             for (int i = 0; i < files.length; i++) {
-                OpenFile.getDefault().openFile(files[i].getPath());
+                OpenFile.openFile(files[i], -1, null);
             }
             currDir = chooser.getCurrentDirectory();
         } finally {

@@ -34,10 +34,21 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
       <pathelement location="../openidex/netbeans/modules/autoload/openidex.jar"/>
       <pathelement location="../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
+      <pathelement location="clisrc"/>
     </path>
   </target>
+  
+  <target name="compile-cli">
+    <javac srcdir="clisrc" destdir="clisrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <classpath>
+        <!-- Compiles against org.netbeans.CLIHandler: -->
+        <pathelement location="../core/netbeans/lib/ext/boot.jar"/>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+      </classpath>
+    </javac>
+  </target>
 
-  <target name="compile" depends="init">
+  <target name="compile" depends="init,compile-cli">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath refid="utilities-cp"/>
     </javac>
@@ -54,13 +65,17 @@ Microsystems, Inc. All Rights Reserved.
             compress="false">
       <locale name="ja"/>
     </locjar>
+    <mkdir dir="netbeans/lib"/>
+    <jar jarfile="netbeans/lib/openfile-cli.jar">
+      <fileset dir="clisrc" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+    </jar>
   </target>
 
-  <target name="netbeans" depends="jars">
+  <target name="netbeans" depends="jars" description="Build everything.">
     <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
-  <target name="nbm" depends="netbeans">
+  <target name="nbm" depends="netbeans" description="Build an NBM.">
     <makenbm file="utilities.nbm"
              topdir="."
              module="netbeans/modules/utilities.jar"
@@ -71,9 +86,12 @@ Microsystems, Inc. All Rights Reserved.
     </makenbm>
   </target>
 
-  <target name="clean">
+  <target name="clean" description="Clean everything.">
     <delete>
       <fileset dir="src">
+        <include name="**/*.class"/>
+      </fileset>
+      <fileset dir="clisrc">
         <include name="**/*.class"/>
       </fileset>
     </delete>
@@ -162,5 +180,3 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
 </project>
-
-

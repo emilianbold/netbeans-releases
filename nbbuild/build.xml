@@ -600,7 +600,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module usersguide..."/>
     <ant dir="../usersguide" target="netbeans"/>
   </target>
-  <target name="all-utilities" depends="all-openide,all-openide/io,all-openidex,all-core/javahelp">
+  <target name="all-utilities" depends="all-openide,all-openide/io,all-openidex,all-core/javahelp,all-core">
     <echo message="Building module utilities..."/>
     <ant dir="../utilities" target="netbeans"/>
   </target>

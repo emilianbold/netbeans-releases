@@ -14,34 +14,27 @@
 package org.netbeans.modules.openfile;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import org.openide.DialogDisplayer;
+import org.netbeans.modules.openfile.cli.Callback;
 
-import org.openide.ErrorManager;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListener;
-
 
 /**
  * Opens files when requested. Main functionality.
- *
  * @author Jaroslav Tulach, Jesse Glick
  * @author Marian Petras
  */
 public final class OpenFile {
 
-    /** holds an instance of this class */
-    private static final OpenFile instance = new OpenFile();
+    /** do not instantiate */
+    private OpenFile() {}
     
-    /** holds (the only) instance of the implementation manager */
-    private final ImplManager implManager;
+    private static OpenFileImpl getImpl() {
+        return (OpenFileImpl)Lookup.getDefault().lookup(OpenFileImpl.class);
+    }
     
     /**
      * Opens the specified file.
@@ -49,122 +42,40 @@ public final class OpenFile {
      * @param  fileName  name of file to open
      * @usecase  API
      */
-    public static void open(final String fileName) {
-        RequestProcessor.getDefault().post(
-                new Runnable() {
-                    public void run() {
-                        getDefault().openFile(fileName);
-                    }
-                },
-                10000); //XXX  Waiting for IDE initialization - see issue #23341
+    public static void open(String fileName) {
+        openFile(new File(fileName), -1, null);
     }
     
     /**
+     * Open a file (object) at the beginning.
+     * @param fileObject the file to open
      * @usecase  API
      */
     public static void open(FileObject fileObject) {
-        getDefault().openFile(fileObject);
-    }
-    
-    /**
-     * Returns an instance of this class.
-     *
-     * @return  instance of this class
-     */
-    static OpenFile getDefault() {
-        return instance;
-    }
-    
-    /**
-     * Creates a new instance and initializes the
-     * {@linkplain ImplManager implementation manager}.
-     */
-    private OpenFile() {
-        implManager = new ImplManager();
-    }
-    
-    /**
-     * Opens the specified file.
-     *
-     * @param  fileName  name of file to open
-     * @usecase  API
-     */
-    public void openFile(String fileName) {
-        openFile(fileName, -1);
-    }
-    
-    /**
-     * Opens the specified file at the specified line
-     *
-     * @param  fileName  name of file to open
-     * @param  line  line number to move a cursor to within the file
-     * @usecase  API
-     */
-    public void openFile(final String fileName, final int line) {
-        openFile(new File(fileName),
-                 false,                 //wait?
-                 (InetAddress) null,    //host
-                 -1,                    //port
-                 -1);                   //line
-    }
-    
-    /**
-     *
-     * @usecase  API
-     */
-    public void openFile(FileObject fileObject) {
-        openFile(fileObject, -1);
-    }
-    
-    /**
-     *
-     * @usecase  API
-     */
-    public void openFile(FileObject fileObject, int line) {
-        implManager.getImpl().open(fileObject,
-                                   (String) null,
-                                   false,
-                                   (InetAddress) null,
-                                   -1,
-                                   line);
+        getImpl().open(fileObject, -1, null);
     }
     
     /**
      * Opens a file.
      *
      * @param  file  file to open (must exist)
-     * @param  wait  whether to wait until requested to return a status
-     * @param  address address to send reply to, valid only if wait set
-     * @param  port  port to send reply to, valid only if wait set
      * @param  line  line number to try to open to (starting at zero),
      *               or <code>-1</code> to ignore
-     * @usecase  API
-     * @usecase  OpenFileServer
+     * @param waiter double-callback or null
+     * @return true on success, false on failure
+     * @usecase CallbackImpl, OpenFileAction
      */
-    void openFile(File file,
-                  boolean wait,
-                  InetAddress address,
-                  int port,
-                  int line) {
-        try {
-            file = file.getCanonicalFile();
-        } catch (IOException ex) {
-            /* failed - never mind, continue... */
-        }
-        
+    static boolean openFile(File file, int line, Callback.Waiter waiter) {
         if (!checkFileExists(file)) {
-            return;
+            return false;
         }
                               
         FileObject fileObject;
-        OpenFileImpl impl = implManager.getImpl();
+        OpenFileImpl impl = getImpl();
         if ((fileObject = impl.findFileObject(file)) != null) {
-            impl.open(fileObject,
-                      (String) null,
-                      wait,
-                      address,
-                      port,
-                      line);
+            return impl.open(fileObject, line, waiter);
+        } else {
+            return false;
         }
     }
     
@@ -179,7 +90,7 @@ public final class OpenFile {
      * @return  <code>true</code> if the file exists and is a plain file,
      *          <code>false</code> otherwise
      */
-    private boolean checkFileExists(File file) {
+    private static boolean checkFileExists(File file) {
         if (file.exists() && file.isFile()) {
             return true;
         }
@@ -195,64 +106,6 @@ public final class OpenFile {
                 }
             }).start();
         return false;
-    }
-    
-    /**
-     * Manages changes of Open file implementations.
-     * It listens for changes of Open file implementations (listens on a lookup
-     * result) and ensures that its method {@link #getImpl()} always returns
-     * the current implementation.
-     */
-    static final class ImplManager implements LookupListener {
-        
-        /**
-         * holds the current implementation of Open File functionality;
-         * or <code>null</code> if it needs to be updated
-         *
-         * @see  #getImpl()
-         */
-        private OpenFileImpl impl;
-        /** holds result of query about the current Open File implementation */
-        private final Lookup.Result lookupResult;
-        
-        /** Creates an instance of this class. */
-        ImplManager() {
-            Lookup.Template template = new Lookup.Template(OpenFileImpl.class);
-            lookupResult = Lookup.getDefault().lookup(template);
-            lookupResult.addLookupListener(
-                (LookupListener) WeakListener.create(LookupListener.class,
-                                                     this,
-                                                     lookupResult));
-        }
-        
-        /**
-         * Called when a set of registered Open File implementation changes.
-         * <p>
-         * This method is public only as an implementation side-effect.
-         */
-        public synchronized void resultChanged(LookupEvent e) {
-            impl = null;
-        }
-        
-        /**
-         * Returns the current implementation of Open File functionality.
-         * If neccessary, asks lookup for the current implementation.
-         *
-         * @return  up-to-date implementation of Open File functionality
-         * @exception  java.lang.IllegalStateException
-         *             if no implementation is available
-         */
-        synchronized OpenFileImpl getImpl() {
-            if (impl == null) {
-                impl = (OpenFileImpl)
-                       Lookup.getDefault().lookup(OpenFileImpl.class);
-                if (impl == null) {
-                    throw new IllegalStateException();
-                }
-            }
-            return impl;
-        }
-        
     }
     
 }

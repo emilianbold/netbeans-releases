@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,10 +17,8 @@ package org.netbeans.modules.openfile;
 
 import java.io.File;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.util.List;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -36,6 +34,7 @@ import javax.swing.JTextArea;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import java.awt.event.*;
+import org.openide.util.NbBundle;
 
 
 // XXX This entire class should be refactored using form.
@@ -80,8 +79,8 @@ public class PackagePanel extends JPanel {
 
     /** */
     private void initComponents2() {
-        okButton = new JButton (SettingsBeanInfo.getString ("LBL_okButton"));
-        cancelButton = new JButton (SettingsBeanInfo.getString ("LBL_cancelButton"));
+        okButton = new JButton (NbBundle.getMessage(PackagePanel.class, "LBL_okButton"));
+        cancelButton = new JButton (NbBundle.getMessage(PackagePanel.class, "LBL_cancelButton"));
         list = new JList(pkgs.toArray());
         
         setLayout (new BorderLayout (0, 5));
@@ -92,7 +91,7 @@ public class PackagePanel extends JPanel {
         textArea.setDisabledTextColor (javax.swing.UIManager.getColor ("Label.foreground"));
         //textArea.setFont (new Font ("SansSerif", Font.PLAIN, 11)); // NOI18N
         textArea.setFont (javax.swing.UIManager.getFont ("Label.font"));
-        textArea.setText (SettingsBeanInfo.getString (pkgLevel == -1 ? "TXT_whereMountNoSuggest" : "TXT_whereMountSuggest", f.getName ()));        
+        textArea.setText (NbBundle.getMessage(PackagePanel.class, pkgLevel == -1 ? "TXT_whereMountNoSuggest" : "TXT_whereMountSuggest", f.getName ()));        
         textArea.setEditable (false);
         textArea.setEnabled (false);
         textArea.setOpaque (false);
@@ -111,10 +110,10 @@ public class PackagePanel extends JPanel {
             public Component getListCellRendererComponent (JList lst, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 String pkg2 = (String) value;
                 if (pkg2.equals ("")) { // NOI18N
-                    lab.setText (SettingsBeanInfo.getString ("LBL_packageWillBeDefault"));
+                    lab.setText (NbBundle.getMessage(PackagePanel.class, "LBL_packageWillBeDefault"));
                     lab.setIcon (rootFolderIcon);
                 } else {
-                    lab.setText (SettingsBeanInfo.getString ("LBL_packageWillBe", pkg2));
+                    lab.setText (NbBundle.getMessage(PackagePanel.class, "LBL_packageWillBe", pkg2));
                     lab.setIcon (folderIcon);
                 }
                 if (isSelected) {
@@ -140,7 +139,7 @@ public class PackagePanel extends JPanel {
         field.setEditable(false);
         field.setEnabled(true);
 	//Accessibility
-        field.getAccessibleContext ().setAccessibleDescription (SettingsBeanInfo.getString ("ACS_Field"));
+        field.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PackagePanel.class, "ACS_Field"));
         field.selectAll();
         field.addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent e) {
@@ -164,10 +163,10 @@ public class PackagePanel extends JPanel {
 
     private void initAccessibility() {        
         this.getAccessibleContext ().setAccessibleDescription (textArea.getText ());
-        okButton.getAccessibleContext ().setAccessibleDescription (SettingsBeanInfo.getString ("ACS_LBL_okButton"));
-        cancelButton.getAccessibleContext ().setAccessibleDescription (SettingsBeanInfo.getString ("ACS_LBL_cancelButton"));
-        list.getAccessibleContext().setAccessibleName(SettingsBeanInfo.getString ("ACSN_List"));
-        list.getAccessibleContext ().setAccessibleDescription (SettingsBeanInfo.getString ("ACSD_List"));       
+        okButton.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PackagePanel.class, "ACS_LBL_okButton"));
+        cancelButton.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PackagePanel.class, "ACS_LBL_cancelButton"));
+        list.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PackagePanel.class, "ACSN_List"));
+        list.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PackagePanel.class, "ACSD_List"));       
     }
         
     /** Updates label and enables/disables ok button. */
@@ -179,8 +178,8 @@ public class PackagePanel extends JPanel {
             okButton.setEnabled (false);
         } else {
             File dir = (File) dirs.get(idx);
-            field.setText (SettingsBeanInfo.getString ("LBL_dirWillBe", dir.getAbsolutePath ()));
-            field.getAccessibleContext().setAccessibleName(SettingsBeanInfo.getString ("LBL_dirWillBe", dir.getAbsolutePath ()));
+            field.setText (NbBundle.getMessage(PackagePanel.class, "LBL_dirWillBe", dir.getAbsolutePath ()));
+            field.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PackagePanel.class, "LBL_dirWillBe", dir.getAbsolutePath ()));
             okButton.setEnabled (true);
         }
     }

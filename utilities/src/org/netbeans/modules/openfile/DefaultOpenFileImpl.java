@@ -14,6 +14,7 @@
 package org.netbeans.modules.openfile;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
@@ -24,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -34,11 +34,11 @@ import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JList;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.openfile.cli.Callback;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Message;
 import org.openide.actions.FileSystemAction;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -61,7 +61,6 @@ import org.openide.loaders.RepositoryNodeFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOperation;
-import org.openide.nodes.Node.Cookie;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -86,11 +85,6 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
     private static final String JAR_EXT = ".JAR";                       //NOI18N
     /** Name of package keyword. */
     private static final String PACKAGE = "package";                    //NOI18N
-
-    /** For debug purposes. */
-    private static final ErrorManager em
-            = ErrorManager.getDefault().getInstance(
-                    "org.netbeans.modules.openfile");                   //NOI18N
 
     /** Creates a new instance of OpenFileImpl */
     public DefaultOpenFileImpl() {
@@ -137,7 +131,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
      * @param  fileName  name of file that could not be opened
      */
     protected void notifyCannotOpen(String fileName) {
-        DialogDisplayer.getDefault().notify(new Message(
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                 NbBundle.getMessage(OpenFileImpl.class,
                                     "MSG_cannotOpenWillClose",          //NOI18N
                                     fileName)));
@@ -225,7 +219,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
             }
             JEditorPane[] panes = editorCookie.getOpenedPanes();
 
-            if (panes.length > 0) {
+            if (panes != null) {
+                //assert panes.length > 0;
                 panes[0].setCaretPosition(NbDocument.findLineOffset(doc, line));
             } else {
                 setStatusLine(NbBundle.getMessage(
@@ -248,15 +243,13 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
      * If the client of the open file server wants, waits until the file is
      * closed and notifies the client.
      *
-     * @param  fileName  name of the file being open (used only in messages)
      * @param  dataObject  <code>DataObject</code> representing the file
      * @param  line  if <code>EditorCookie</code> is used,
      *               specifies initial line to open the file at
      * @return  <code>true</code> if the file was successfully open,
      *          <code>false</code> otherwise
      */
-    private final boolean openByCookie(String fileName,
-                                       DataObject dataObject,
+    private final boolean openByCookie(DataObject dataObject,
                                        int line) {
         Node.Cookie cookie;
         Class cookieClass;
@@ -345,60 +338,46 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
      * Opens the <codeFileObject</code> either by calling {@link EditorCookie}
      * (or {@link OpenCookie} or {@link ViewCookie}),
      * or by showing it in the Explorer.
-     *
-     * @param  fileObject  file to open
-     * @param  fileName  name of the file (used only in messages)
-     * @param  wait    whether to wait until requested to return a status
-     * @param  address address to send reply to, valid only if wait set
-     * @param  port    port to send reply to, valid only if wait set
-     * @param  line    line number to try to open to (starting at zero),
-     *                 or <code>-1</code> to ignore
      */
-    public void open(FileObject fileObject,
-                     String fileName,
-                     final boolean wait,
-                     InetAddress address,
-                     int port,
-                     int line) {
-                         
-        if (fileName == null) {
-            fileName = fileObject.getNameExt();
-        }
+    public boolean open(final FileObject fileObject, int line, Callback.Waiter waiter) {
+
+        String fileName = fileObject.getNameExt();
                   
         /* Find a DataObject for the FileObject: */
-        DataObject dataObject;
+        final DataObject dataObject;
         try {
             dataObject = DataObject.find(fileObject);
         } catch (DataObjectNotFoundException ex) {
             ErrorManager.getDefault().notify(ex);
-            return;
+            return false;
         }
         
         /* Try to grab an editor/open/view cookie and open the object: */
-        setStatusLineOpening(fileName, wait);
-        boolean wasOpen = openByCookie(fileName, dataObject, line);
+        setStatusLineOpening(fileName, waiter != null);
+        boolean success = openByCookie(dataObject, line);
         clearStatusLine();
-        if (wasOpen) {
-            if (wait) {
-                Server.waitFor(dataObject, address, port);
-            }
-            return;
+        if (success) {
+            return true;
         }
 
         /* Quit if the FileObject is within a JarFileSystem: */
         try {
             if (fileObject.getFileSystem() instanceof JarFileSystem) {
-                return;
+                return false;
             }
         } catch (FileStateInvalidException fse) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, fse);
-            return;
+            return false;
         }
 
-        openByNode(fileObject, dataObject);
-        if (wait) {
-            notifyCannotOpen(fileName);
-        }
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                // This needs to run in EQ generally.
+                openByNode(fileObject, dataObject);
+            }
+        });
+        // XXX if waiter != null, call waiter.done() when the document is closed
+        return true;
     }
     
     /**
@@ -785,7 +764,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
         Repository repo = Repository.getDefault();
         if (repo.findFileSystem(fs.getSystemName()) != null) {
             DialogDisplayer.getDefault().notify(
-                    new Message(
+                    new NotifyDescriptor.Message(
                             NbBundle.getMessage(OpenFileImpl.class,
                                                 "MSG_wasAlreadyMounted",//NOI18N
                                                 fs.getSystemName())));
@@ -868,7 +847,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
         dialog[0] = DialogDisplayer.getDefault().createDialog(
             new DialogDescriptor(
               panel,                   // object
-              SettingsBeanInfo.getString("LBL_wizTitle"), // title
+              NbBundle.getMessage(DefaultOpenFileImpl.class, "LBL_wizTitle"), // title
               true,                    // modal
               new Object[] {okButton, cancelButton}, // options
               okButton,                // initial

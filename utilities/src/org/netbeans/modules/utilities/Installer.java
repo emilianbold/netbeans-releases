@@ -13,81 +13,34 @@
 package org.netbeans.modules.utilities;
 
 import org.openide.modules.ModuleInstall;
-import org.openide.util.RequestProcessor;
-
-import org.netbeans.modules.openfile.Server;
-import org.netbeans.modules.openfile.Settings;
-import org.netbeans.modules.openfile.OpenFile;
-import org.openide.ErrorManager;
-
 
 /** Module install class for Utilities module.
  *
  * @author Jesse Glick, Petr Kuzel, Martin Ryzl
  */
 public class Installer extends ModuleInstall {
-    /** System property name to indicate file to open on NetBeans start-up. */
-    private static final String NETBEANS_OPENFILE = "netbeans.openfile"; // NOI18N
-
-
-    /** Serial version UID. */
-    private final static long serialVersionUID = 1;
 
     /** Installation instance for &quot;sub-module&quot; Search.  */
     private final org.netbeans.modules.search.Installer searchInstaller;
 
-    
     /** Constructs modules installer. */
     public Installer() {
         searchInstaller = new org.netbeans.modules.search.Installer();
     }
-
     
     /**
-     * Restores module. Restores &quot;sub-module&quot; Search,
-     * schedules to start the OpenFile server and inits PDF link processor.
+     * Restores module. Restores &quot;sub-module&quot; Search.
      */
     public void restored() {
         searchInstaller.restored();
-
-        // Don't ask.
-        RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    Settings.getDefault().isRunning();
-                }
-            }, 60000);
-
-        // test netbeans.openfile property
-        String fileName = System.getProperty(NETBEANS_OPENFILE);
-
-        ErrorManager em = ErrorManager.getDefault()
-                          .getInstance("org.netbeans.modules.openfile");//NOI18N
-        String msg = "../utilities/Installer.restored: " + NETBEANS_OPENFILE + "='" + fileName + "'"; // NOI18N
-        em.log (msg);
-
-        if (fileName != null) {
-            OpenFile.open(fileName);
-        }
     }
-
     
     /**
-     * Uninstalls module. Shuts down the OpenFile server and uninstalls
+     * Uninstalls module. Uninstalls
      * the Search &quot;sub-module&quot;.
      */
     public void uninstalled() {
-        // OpenFile:
-        Server.shutdown();
-
         searchInstaller.uninstalled();
-    }
-
-    /** Closes module. Shuts down the OpenFile server. */
-    public boolean closing() {
-        // OpenFile:
-        Server.shutdown();
-
-        return super.closing();
     }
 
 }

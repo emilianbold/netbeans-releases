@@ -14,8 +14,10 @@
 package org.netbeans.modules.openfile;
 
 import java.io.File;
-import java.net.InetAddress;
+
 import org.openide.filesystems.FileObject;
+
+import org.netbeans.modules.openfile.cli.Callback;
 
 /**
  * Interface for Open File implementations.
@@ -39,18 +41,11 @@ public interface OpenFileImpl {
      * Opens the specified <code>FileObject</code>.
      *
      * @param  fileObject  file to open
-     * @param  fileName  name of the file (used only in messages)
-     * @param  wait    whether to wait until requested to return a status
-     * @param  address address to send reply to, valid only if wait set
-     * @param  port    port to send reply to, valid only if wait set
      * @param  line    line number to try to open to (starting at zero),
      *                 or <code>-1</code> to ignore
+     * @param waiter if not null, tell the waiter when the file is closed
+     * @return true on success, false on failure
      */
-    void open(FileObject fileObject,
-              String fileName,
-              final boolean wait,
-              InetAddress address,
-              int port,
-              int line);
+    boolean open(FileObject fileObject, int line, Callback.Waiter waiter);
 
 }
