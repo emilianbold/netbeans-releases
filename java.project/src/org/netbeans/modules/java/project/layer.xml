@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Templates">
         
     <file name="Package" url="nbres:/org/netbeans/modules/java/resources/templates/Package.template">
-        <!-- attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" /> -->
+        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.packageWizard"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/spi/java/project/support/ui/package.gif"/>
         <attr name="templateType_Java" boolvalue="true"/>
     </file>

@@ -29,6 +29,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -39,14 +40,19 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
     
+    private boolean isPackage = false;
+    
     /** Create a new wizard iterator. */
     public NewJavaFileWizardIterator() {}
     
-    /*
-    public static NewJavaFileWizardIterator singleton() {
-        return new NewJavaFileWizardIterator();
+    
+    private NewJavaFileWizardIterator( boolean isPackage ) {
+        this.isPackage = isPackage;
+    }    
+    
+    public static NewJavaFileWizardIterator packageWizard() {
+        return new NewJavaFileWizardIterator( true );
     }
-     */
             
     private WizardDescriptor.Panel[] createPanels (WizardDescriptor wizardDescriptor) {
         
@@ -61,9 +67,17 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
             };
         }
         else {
-            return new WizardDescriptor.Panel[] {
-                JavaTemplates.createPackageChooser( project, groups ),
-            };
+            
+            if ( isPackage ) {
+                return new WizardDescriptor.Panel[] {
+                    new JavaTargetChooserPanel( project, groups, null, true ),
+                };
+            }
+            else {
+                return new WizardDescriptor.Panel[] {
+                    JavaTemplates.createPackageChooser( project, groups ),
+                };
+            }
         }
                
     }
@@ -90,14 +104,23 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
     
     public Set/*<FileObject>*/ instantiate () throws IOException {
         FileObject dir = Templates.getTargetFolder( wiz );
+        String targetName = Templates.getTargetName( wiz );
         
         DataFolder df = DataFolder.findFolder( dir );
         FileObject template = Templates.getTemplate( wiz );
         
-        DataObject dTemplate = DataObject.find( template );                
-        DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wiz )  );
+        FileObject createdFile = null;
+        if ( isPackage ) {
+            targetName = targetName.replace( '.', '/' ); // NOI18N
+            createdFile = FileUtil.createFolder( dir, targetName );
+        }
+        else {
+            DataObject dTemplate = DataObject.find( template );                
+            DataObject dobj = dTemplate.createFromTemplate( df, targetName );
+            createdFile = dobj.getPrimaryFile();
+        }
         
-        return Collections.singleton (dobj.getPrimaryFile ());
+        return Collections.singleton( createdFile );
     }
     
         

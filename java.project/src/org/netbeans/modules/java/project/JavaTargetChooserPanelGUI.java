@@ -48,6 +48,9 @@ import org.openide.util.NbBundle;
  */
 public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
   
+    private static final String DEFAULT_NEW_PACKAGE_NAME = 
+        NbBundle.getMessage( JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_DefaultNewPackageName" ); // NOI18N
+    
     /** prefered dimmension of the panel */
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (560, 350);
     
@@ -57,29 +60,50 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     private ModelItem[] groupItems;
     private String expectedExtension;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private boolean isPackage;
     
     /** Creates new form SimpleTargetChooserGUI */
-    public JavaTargetChooserPanelGUI( Component bottomPanel ) {
-        initComponents();
+    public JavaTargetChooserPanelGUI( Component bottomPanel, boolean isPackage ) {
+        this.isPackage = isPackage;
+        initComponents();        
+        if ( isPackage ) {
+            packageComboBox.setVisible( false );
+            packageLabel.setVisible( false );
+            documentNameLabel.setText( NbBundle.getMessage( JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_PackageName_Label" ) ); // NOI18N
+            fileLabel.setText( NbBundle.getMessage( JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_CreatedFolder_Label" ) ); // NOI18N
+        }        
+        else {
+            packageComboBox.getEditor().addActionListener( this );
+        }
+        
+                
         if ( bottomPanel != null ) {
             bottomPanelContainer.add( bottomPanel, java.awt.BorderLayout.CENTER );
         }
-        
-        
+                
         //initValues( project, null, null );
         documentNameTextField.getDocument().addDocumentListener( this );
+
+        // Not very nice
+        Component packageEditor = packageComboBox.getEditor().getEditorComponent();
+        if ( packageEditor instanceof javax.swing.JTextField ) {
+            ((javax.swing.JTextField)packageEditor).getDocument().addDocumentListener( this );
+        }
+        else {
+            packageComboBox.addActionListener( this );
+        }
         
         rootComboBox.setRenderer( CELL_RENDERER );
-        packageComboBox.setRenderer( CELL_RENDERER );
-                
+        packageComboBox.setRenderer( CELL_RENDERER );                
         rootComboBox.addActionListener( this );
-        packageComboBox.addActionListener( this );
+        
         setName( NbBundle.getBundle (JavaTargetChooserPanelGUI.class).getString ("LBL_JavaTargetChooserPanelGUI_Name") ); // NOI18N
     }
     
-    public void initValues( Project p, SourceGroup[] groups, FileObject template, String preselectedFolder ) {
+    public void initValues( Project p, SourceGroup[] groups, FileObject template, FileObject preselectedFolder ) {
         this.project = p;
         
+        // Create list of groups
         this.groupItems = new ModelItem[ groups.length ]; 
         for( int i = 0; i < groups.length; i++ ) {
             this.groupItems[i] = new ModelItem( groups[i] ); 
@@ -88,6 +112,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         // Show name of the project
         projectTextField.setText( ProjectUtils.getInformation(p).getDisplayName() );
         assert template != null;
+        
         String displayName = null;
         try {
             DataObject templateDo = DataObject.find (template);
@@ -95,11 +120,34 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         } catch (DataObjectNotFoundException ex) {
             displayName = template.getName ();
         }
-        putClientProperty ("NewFileWizard_Title", displayName);// NOI18N
         
+        putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
         // Setup comboboxes 
         rootComboBox.setModel( new DefaultComboBoxModel( this.groupItems ) );
-        updatePackages();        
+        ModelItem preselectedGroup = getPreselectedGroup( preselectedFolder );
+        rootComboBox.setSelectedItem( preselectedGroup );
+        updatePackages();                
+        ModelItem preselectedPackage = getPreselectedPackage( preselectedGroup, preselectedFolder );
+        if ( preselectedPackage != null ) {            
+            if ( isPackage ) {
+                
+                String docName = preselectedPackage.toString().length() == 0 ? 
+                    DEFAULT_NEW_PACKAGE_NAME : 
+                    preselectedPackage.toString() + "." + DEFAULT_NEW_PACKAGE_NAME;
+                
+                documentNameTextField.setText( docName );                    
+                int docNameLen = docName.length();
+                int defPackageNameLen = DEFAULT_NEW_PACKAGE_NAME.length();
+                
+                documentNameTextField.setSelectionEnd( docNameLen - 1 );
+                documentNameTextField.setSelectionStart( docNameLen - defPackageNameLen );                
+            }
+            else {
+                packageComboBox.setSelectedItem( preselectedPackage );
+            }
+        }
+        updateText();
+        
         // Determine the extension
         String ext = template == null ? "" : template.getExt(); // NOI18N
         expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
@@ -110,8 +158,22 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     }
     
     public String getPackageFileName() {
+        
+        if ( isPackage ) {
+            return ""; // NOI18N
+        }
+        
         String packageName = packageComboBox.getEditor().getItem().toString();        
         return  packageName.replace( '.', '/' ); // NOI18N        
+    }
+    
+    public String getPackageName() {
+        
+        if ( isPackage ) {
+            return ""; // NOI18N
+        }
+        
+        return packageComboBox.getEditor().getItem().toString();
     }
     
     public java.awt.Dimension getPreferredSize() {
@@ -169,15 +231,15 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
+        documentNameLabel = new javax.swing.JLabel();
         documentNameTextField = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         projectTextField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         rootComboBox = new javax.swing.JComboBox();
-        jLabel2 = new javax.swing.JLabel();
+        packageLabel = new javax.swing.JLabel();
         packageComboBox = new javax.swing.JComboBox();
-        jLabel4 = new javax.swing.JLabel();
+        fileLabel = new javax.swing.JLabel();
         fileTextField = new javax.swing.JTextField();
         targetSeparator = new javax.swing.JSeparator();
         bottomPanelContainer = new javax.swing.JPanel();
@@ -186,10 +248,10 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel3"));
+        documentNameLabel.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(jLabel3, gridBagConstraints);
+        jPanel1.add(documentNameLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -231,32 +293,32 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(rootComboBox, gridBagConstraints);
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel2"));
+        packageLabel.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel2"));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        add(jLabel2, gridBagConstraints);
+        add(packageLabel, gridBagConstraints);
 
         packageComboBox.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(packageComboBox, gridBagConstraints);
 
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel4"));
+        fileLabel.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        add(jLabel4, gridBagConstraints);
+        add(fileLabel, gridBagConstraints);
 
         fileTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 0);
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(fileTextField, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -280,15 +342,15 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomPanelContainer;
+    private javax.swing.JLabel documentNameLabel;
     private javax.swing.JTextField documentNameTextField;
+    private javax.swing.JLabel fileLabel;
     private javax.swing.JTextField fileTextField;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JComboBox packageComboBox;
+    private javax.swing.JLabel packageLabel;
     private javax.swing.JTextField projectTextField;
     private javax.swing.JComboBox rootComboBox;
     private javax.swing.JSeparator targetSeparator;
@@ -303,6 +365,11 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         }
         else if ( packageComboBox == e.getSource() ) {
             updateText();
+            fireChange();
+        }
+        else if ( packageComboBox.getEditor()  == e.getSource() ) {
+            updateText();
+            fireChange();
         }
     }    
     
@@ -339,24 +406,60 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     }
     
     private void updateText() {
-        File projdirFile = FileUtil.toFile(project.getProjectDirectory());
-        if (projdirFile != null) {
-            String documentName = documentNameTextField.getText().trim();
-            if (documentName.length() == 0) {
-                fileTextField.setText(""); // NOI18N
-            } else {
-                File newFile = new File( getFolder(), documentName + expectedExtension);
-                fileTextField.setText(newFile.getAbsolutePath());
-            }
-        } else {
-            // Not on disk.
-            fileTextField.setText(""); // NOI18N
+        
+        ModelItem modelItem = (ModelItem)rootComboBox.getSelectedItem();
+        FileObject rootFolder = modelItem.group.getRootFolder();
+        String packageName = getPackageFileName();
+        String documentName = documentNameTextField.getText().trim();
+        if ( isPackage ) {
+            documentName = documentName.replace( '.', '/' ); // NOI18N
         }
+        else if ( documentName.length() > 0 ) {
+            documentName = documentName + expectedExtension;
+        }
+        String createdFileName = rootFolder.getPath() + 
+            ( packageName.startsWith("/") || packageName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
+            packageName + 
+            ( packageName.endsWith("/") || packageName.endsWith( File.separator ) || packageName.length() == 0 ? "" : "/" ) + // NOI18N
+            documentName;
+        
+        fileTextField.setText( createdFileName.replace( '/', File.separatorChar ) ); // NOI18N        
+    }
+    
+    private ModelItem getPreselectedGroup( FileObject folder ) {        
+        for( int i = 0; folder != null && i < groupItems.length; i++ ) {
+            if ( groupItems[i].group.getRootFolder().equals( folder ) || 
+                FileUtil.isParentOf( groupItems[i].group.getRootFolder(), folder ) ) {
+                return groupItems[i];
+            }
+        }
+        return groupItems[0];
+    }
+    
+    private ModelItem getPreselectedPackage( ModelItem groupItem, FileObject folder ) {
+        if ( folder == null ) {
+            return null;
+        }
+        ModelItem ch[] = groupItem.getChildren();
+        FileObject root = groupItem.group.getRootFolder();
+        
+        String relPath = FileUtil.getRelativePath( root, folder ).replace( '/', '.' ); //NOI18N
+                
+        for( int i = 0; i < ch.length; i++ ) {
+            if ( ch[i].toString().equals( relPath ) ) {
+                return ch[i];
+            }
+        }
+        
+        return null;
     }
     
     // Private innerclasses ----------------------------------------------------
     
     private static class ModelItem {
+        
+        private static final String DEFAULT_PACKAGE_DISPLAY_NAME =
+            NbBundle.getMessage( JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_DefaultPackage" ); // NOI18N
         
         private Node node;        
         private SourceGroup group;
@@ -366,7 +469,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         // For source groups
         public ModelItem( SourceGroup group ) {            
             this.group = group;
-            this.icon = null; // XXX Should be group getIcon() 
+            this.icon = group.getIcon( false );
         }
         
         // For packages
@@ -380,17 +483,23 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                 return group.getDisplayName();
             }
             else {
-                return node.getDisplayName();
+                String nodeName = node.getName();
+                return nodeName.length() == 0 ? DEFAULT_PACKAGE_DISPLAY_NAME : nodeName;
             }
         }
 	
         public Icon getIcon() {
             return icon;
         }
-        
+                
         public String toString() {
-            return getDisplayName();
-        }
+            if ( group != null ) {
+                return getDisplayName();
+            }
+            else {
+                return node.getName();
+            }
+        }        
         
         public ModelItem[] getChildren() {
             if ( group == null ) {

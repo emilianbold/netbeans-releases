@@ -53,7 +53,7 @@ public class JavaTemplates {
      * @return a wizard panel(s) prompting the user to choose a name and package
      */
     public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel ) {
-        return new JavaTargetChooserPanel(project, folders, bottomPanel );
+        return new JavaTargetChooserPanel(project, folders, bottomPanel, false );
     }
     
     /** Creates new WizardIterator containing standard Package chooser
