@@ -58,7 +58,7 @@ public abstract class DebuggerApiTestBase extends NbTestCase {
         }
     }
 
-    class TestDebuggerManagerListener implements DebuggerManagerListener {
+    class TestDebuggerManagerListener extends DebuggerManagerAdapter {
 
         private List events = new ArrayList();
 
@@ -94,6 +94,14 @@ public abstract class DebuggerApiTestBase extends NbTestCase {
 
         public void propertyChange(PropertyChangeEvent evt) {
             events.add(new Event("propertyChange", evt));
+        }
+
+        public Breakpoint[] initBreakpoints() {
+            return new Breakpoint[0];
+        }
+
+        public Watch[] initWatches() {
+            return new Watch[0];
         }
     }
 
