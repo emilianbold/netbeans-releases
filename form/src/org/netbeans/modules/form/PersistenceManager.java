@@ -39,6 +39,14 @@ public abstract class PersistenceManager {
 // -----------------------------------------------------------------------------
 // abstract interface
   
+  /** A method which allows the persistence manager to provide infotrmation on whether
+  * is is capable to store info about advanced features provided from Developer 3.0 
+  * - all persistence managers except the one providing backward compatibility with 
+  * Developer 2.X should return true from this method.
+  * @return true if this PersistenceManager is capable to store advanced form features, false otherwise
+  */
+  public abstract boolean supportsAdvancedFeatures ();
+
   /** A method which allows the persistence manager to check whether it can read
   * given form format.
   * @return true if this PersistenceManager can load form stored in the specified form, false otherwise
@@ -63,6 +71,8 @@ public abstract class PersistenceManager {
 
 /*
  * Log
+ *  5    Gandalf   1.4         7/11/99  Ian Formanek    supportsAdvancedFeatures
+ *       added
  *  4    Gandalf   1.3         5/30/99  Ian Formanek    Removed obsoleted field
  *  3    Gandalf   1.2         5/15/99  Ian Formanek    
  *  2    Gandalf   1.1         5/4/99   Ian Formanek    Package change
