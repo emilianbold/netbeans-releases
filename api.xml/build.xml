@@ -121,7 +121,16 @@ Microsystems, Inc. All Rights Reserved.
     <target name="javadoc">
         <delete dir="javadoc"/>
         <mkdir dir="javadoc"/>
-        <javadoc destdir="javadoc" sourcepath="src" packagenames="org.netbeans.api.xml.*,org.netbeans.spi.xml.*">
+        <javadoc    destdir="javadoc" 
+                    packagenames="org.netbeans.api.xml.*,org.netbeans.spi.xml.*"
+                    doctitle="NetBeans XML Tools  APIs"
+                    windowtitle="NetBeans XML Tools APIs"
+                    overview="doc/doc-files/overview.html"
+        >
+              <sourcepath>
+                <pathelement location="doc/doc-files"/>
+                <pathelement location="src"/>
+              </sourcepath>        
              <classpath>        
                 <fileset dir="${nbroot}/openide/netbeans/lib">
                     <include name="openide*.jar"/>
@@ -129,7 +138,21 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${parserimpl}"/> <!-- JAXP and SAX dependency -->
                 <pathelement location="${jaxp-transform}"/>
             </classpath>                       
-        </javadoc>
+        </javadoc>                
+    </target>
+    
+    <target name="apichanges">
+        <echo message="basedir = ${basedir}"/>
+        <!-- Ant 1.3 and 1.4 disagree on style attribute. -->
+        <!-- 1.3: treated as a name relative to XML file. -->
+        <!-- 1.4: treated as a filename consistent with normal Ant usage. -->
+        <!-- Be safe and give the absolute path here. -->
+        <style  in="doc/changes/apichanges.xml" 
+                out="doc/doc-files/apichanges.html" 
+                destdir="doc/doc-files/" 
+                style="${basedir}/../../openide/api/doc/changes/apichanges.xsl"
+        />    
+        <echo message="done"/>
     </target>
 
 </project>
