@@ -72,7 +72,8 @@ implements Executor, PropertyChangeListener {
             lookupFirst (null, SourcePath.class);
         ec.addPropertyChangeListener (this);
         Map properties = (Map) contextProvider.lookupFirst (null, Map.class);
-        smartSteppingStepOut = properties.containsKey (SS_STEP_OUT);
+        if (properties != null)
+            smartSteppingStepOut = properties.containsKey (SS_STEP_OUT);
     }
 
 
