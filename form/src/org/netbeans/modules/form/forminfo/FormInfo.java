@@ -40,6 +40,7 @@ public interface FormInfo {
 
 /*
  * Log
+ *  3    Gandalf   1.2         5/10/99  Ian Formanek    
  *  2    Gandalf   1.1         5/10/99  Ian Formanek    
  *  1    Gandalf   1.0         5/3/99   Ian Formanek    
  * $
