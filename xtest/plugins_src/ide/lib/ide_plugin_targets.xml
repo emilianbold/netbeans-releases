@@ -151,7 +151,7 @@ Microsystems, Inc. All Rights Reserved.
                 </fileset>
             </classpath>        
         </property>
-        <property name="xtest.netbeans.classpath" value="${_helper_xtest.netbeans.classpath};${tbag.classpath}"/>
+        <property name="xtest.netbeans.classpath" value="${_helper_xtest.netbeans.classpath}${path.separator}${tbag.classpath}"/>
     </target>
     
     <target name="ide_test_bootstrap_cont" unless="xtest.reuse.and.invalid" 
