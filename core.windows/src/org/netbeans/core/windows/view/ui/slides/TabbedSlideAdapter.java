@@ -16,6 +16,7 @@ package org.netbeans.core.windows.view.ui.slides;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -281,6 +282,9 @@ public final class TabbedSlideAdapter implements Tabbed {
         return result;
     }
     
+    public Rectangle getTabBounds(int tabIndex) {
+        return slideBar.getTabBounds(tabIndex);
+    }    
     
 }
 

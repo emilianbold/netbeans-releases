@@ -637,6 +637,14 @@ final class ViewHierarchy {
         desktop.performSlideOut(operation, getPureEditorAreaBounds());
     }
     
+    public void performSlideIntoDesktop(SlideOperation operation) {
+        desktop.performSlideIntoDesktop(operation, getPureEditorAreaBounds());
+    }
+    
+    public void performSlideIntoEdge(SlideOperation operation) {
+        desktop.performSlideIntoEdge(operation, getPureEditorAreaBounds());
+    }
+    
     private void setMainWindowDesktop(Component component) {
         setDesktop(component, true);
     }

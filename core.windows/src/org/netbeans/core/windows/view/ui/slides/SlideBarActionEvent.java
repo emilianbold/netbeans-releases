@@ -29,18 +29,21 @@ public final class SlideBarActionEvent extends ActionEvent {
     private final SlideOperation slideOperation;
 
     public SlideBarActionEvent(Object source, String command, MouseEvent mouseEvent, int tabIndex) {
-        super(source, ActionEvent.ACTION_PERFORMED, command);
-        this.tabIndex = tabIndex;
-        this.mouseEvent = mouseEvent;
-        this.slideOperation = null;
+        this(source, command, null, mouseEvent, tabIndex);
     }
     
     public SlideBarActionEvent(Object source, String command, SlideOperation slideOperation) {
-        super(source, ActionEvent.ACTION_PERFORMED, command);
-        this.slideOperation = slideOperation;
-        this.tabIndex = -1;
-        this.mouseEvent = null;
+        this(source, command, slideOperation, null, -1);
     }
+    
+    public SlideBarActionEvent(Object source, String command, SlideOperation operation,
+                                MouseEvent mouseEvent, int tabIndex) {
+        super(source, ActionEvent.ACTION_PERFORMED, command);
+        this.tabIndex = tabIndex;
+        this.mouseEvent = mouseEvent;
+        this.slideOperation = operation;
+    }
+    
     
     public MouseEvent getMouseEvent() {
         return mouseEvent;

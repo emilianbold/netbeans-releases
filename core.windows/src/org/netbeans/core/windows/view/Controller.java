@@ -80,6 +80,10 @@ public interface Controller {
     public void userTriggeredSlideIn(ModeView modeView, SlideOperation operation);
 
     public void userTriggeredSlideOut(ModeView modeView, SlideOperation operation);
+    
+    public void userTriggeredSlideIntoEdge(ModeView modeView, SlideOperation operation);
+    
+    public void userTriggeredSlideIntoDesktop(ModeView modeView, SlideOperation operation);
 
 }
 

@@ -15,6 +15,7 @@ package org.netbeans.core.windows.view.ui.slides;
 
 import java.awt.Rectangle;
 import javax.swing.JLayeredPane;
+import javax.swing.event.ChangeListener;
 
 /*
  * Interface for slide in and slide out operations. Acts as command interface
@@ -24,6 +25,12 @@ import javax.swing.JLayeredPane;
  */
 public interface SlidingFx {
     
-    void showEffect(JLayeredPane pane, int layer, SlideOperation operation);
+    public void prepareEffect (SlideOperation operation);
+    
+    public void showEffect(JLayeredPane pane, Integer layer, SlideOperation operation);
+    
+    public boolean shouldOperationWait();
+    
+    public void setFinishListener(ChangeListener finishL);
     
 }

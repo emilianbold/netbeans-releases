@@ -18,6 +18,7 @@ import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import javax.swing.JLayeredPane;
+import javax.swing.event.ChangeListener;
 
 /** 
  * default impl of SlidingFX.
@@ -28,7 +29,8 @@ import javax.swing.JLayeredPane;
  */
 public class DefaultSlidingFx  implements SlidingFx {
     
-    public void showEffect(JLayeredPane pane, int layer, SlideOperation operation) {
+    
+    public void showEffect(JLayeredPane pane, Integer layer, SlideOperation operation) {
 //        Component comp = operation.getComponent();
 //        Graphics2D gr2d = (Graphics2D)pane.getGraphics();
 //        Color original = gr2d.getColor();
@@ -56,6 +58,19 @@ public class DefaultSlidingFx  implements SlidingFx {
 ////        } catch (Throwable th) {
 ////            
 ////        }
+        
+    }
+     
+    public void prepareEffect(SlideOperation operation) {
+        // no preparation needed
+    }    
+    
+    public void setFinishListener(ChangeListener finishL) {
+        // no noperation, operation don't need to wait
+    }
+    
+    public boolean shouldOperationWait() {
+        return false;
     }
     
 }

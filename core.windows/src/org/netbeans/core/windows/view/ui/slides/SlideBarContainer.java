@@ -16,6 +16,7 @@ package org.netbeans.core.windows.view.ui.slides;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import javax.swing.JPanel;
 import org.netbeans.core.windows.Constants;
@@ -50,6 +51,10 @@ public final class SlideBarContainer extends AbstractModeContainer {
     public void setTopComponents(TopComponent[] tcs, TopComponent selected) {
         super.setTopComponents(tcs, selected);
     }
+    
+    public Rectangle getTabBounds(int tabIndex) {
+        return tabbedHandler.getTabBounds(tabIndex);
+    }
 
     protected Component getModeComponent() {
         return panel;
@@ -70,7 +75,6 @@ public final class SlideBarContainer extends AbstractModeContainer {
     protected void updateTitle(String title) {
         // XXX - we have no title?
     }
-    
     
     /** Component enclosing slide boxes, implements needed interfaces to talk
      * to rest of winsys

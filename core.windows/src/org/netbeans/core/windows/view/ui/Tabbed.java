@@ -86,6 +86,9 @@ public interface Tabbed {
      */
     public Action[] getPopupActions(Action[] defaultActions, int tabIndex);
     
+    /** Returns bounds of tab with given index */
+    public Rectangle getTabBounds(int tabIndex);
+    
     /** Interface for simple accessing of Tabbed instance */
     public interface Accessor {
 

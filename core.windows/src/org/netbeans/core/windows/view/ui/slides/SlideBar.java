@@ -14,6 +14,9 @@
 package org.netbeans.core.windows.view.ui.slides;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -248,7 +251,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
             if (selIndex != -1) {
                 commandMgr.slideIn(selIndex);
             } else {
-                commandMgr.slideOut(false);
+                commandMgr.slideOut(false, true);
             }
         }
     }
@@ -257,7 +260,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     /********** implementation of SlideBarController *****************/
     
     public void userToggledAutoHide(int tabIndex, boolean enabled) {
-        commandMgr.slideIntoDesktop(tabIndex);
+        commandMgr.slideIntoDesktop(tabIndex, true);
     }
     
     public void userTriggeredPopup(MouseEvent mouseEvent, Component clickedButton) {
@@ -278,6 +281,33 @@ public final class SlideBar extends Box implements ComplexListDataListener,
             selModel.setSelectedIndex(-1);
         }
     }
+    
+    public Rectangle getTabBounds(int tabIndex) {
+        Component button = getButton(tabIndex);
+        if (button == null) {
+            return null;
+        }
+        Insets insets = getInsets();
+        Point leftTop = new Point(insets.left, insets.top);
+        
+        Dimension strutPrefSize = createStrut().getPreferredSize();
+        if (dataModel.getOrientation() == SlideBarDataModel.SOUTH) {
+            // horizontal layout
+            for (int i = 0; i < tabIndex; i++) {
+                leftTop.x += getButton(i).getPreferredSize().width;
+                leftTop.x += strutPrefSize.width;
+            }
+        } else {
+            // vertical layout
+            for (int i = 0; i < tabIndex; i++) {
+                leftTop.y += getButton(i).getPreferredSize().height;
+                leftTop.y += strutPrefSize.height;
+            }
+        }
+        return new Rectangle(leftTop, button.getPreferredSize());
+    }
+    
+    /*************** non public stuff **************************/
     
     void setActive(boolean active) {
         commandMgr.setActive(active);

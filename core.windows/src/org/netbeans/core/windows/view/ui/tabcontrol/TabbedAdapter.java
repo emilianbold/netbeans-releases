@@ -394,6 +394,10 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         return this;
     }
     
+    public Rectangle getTabBounds(int tabIndex) {
+        return getTabRect(tabIndex, new Rectangle());
+    }
+    
     /********* implementation of LocationInformer ********/
     
     static class LocInfo implements LocationInformer {
@@ -413,5 +417,6 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
             return result;   
         }    
     } // end of LocInfo
+
     
 }

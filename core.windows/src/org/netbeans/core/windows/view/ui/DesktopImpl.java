@@ -208,28 +208,56 @@ public final class DesktopImpl {
     }
     
     public void performSlideIn(SlideOperation operation, Rectangle editorBounds) {
-        operation.setStartBounds(computeButtonBounds(operation, editorBounds));
-        operation.setFinishBounds(computeSlideInBounds(operation, editorBounds));
+        Rectangle slideInBounds = computeSlideInBounds(operation, editorBounds);
+        operation.setFinishBounds(slideInBounds);
+        operation.setStartBounds(computeThinBounds(operation, slideInBounds));
         performSlide(operation);
         curSlideIn = operation;
     }
     
     public void performSlideOut(SlideOperation operation, Rectangle editorBounds) {
-        SlidingView view = findView(operation.getSide());
-        operation.setStartBounds(computeSlideInBounds(operation, editorBounds));
-        operation.setFinishBounds(computeButtonBounds(operation, editorBounds));
+        Rectangle slideOutBounds = operation.getComponent().getBounds();
+        operation.setStartBounds(slideOutBounds);
+        operation.setFinishBounds(computeThinBounds(operation, slideOutBounds));
 
         curSlideIn = null;
         performSlide(operation);
-//        layeredPane.moveToFront(desktop);
         desktop.revalidate();
         desktop.repaint();
+    }
+    
+    public void performSlideIntoEdge(SlideOperation operation, Rectangle editorBounds) {
+        operation.setFinishBounds(computeLastButtonBounds(operation));
+        Rectangle screenStart = operation.getStartBounds();
+        operation.setStartBounds(convertRectFromScreen(layeredPane, screenStart));
+        
+        performSlide(operation);
+    }
+    
+    public void performSlideIntoDesktop(SlideOperation operation, Rectangle editorBounds) {
+        Rectangle screenStart = operation.getStartBounds();
+        operation.setStartBounds(convertRectFromScreen(layeredPane, screenStart));
+        Rectangle screenFinish = operation.getStartBounds();
+        operation.setStartBounds(convertRectFromScreen(layeredPane, screenFinish));
+        
+        performSlide(operation);
     }
     
     /************** private stuff ***********/
     
     private void performSlide(SlideOperation operation) {
         operation.run(layeredPane, new Integer(102));
+    }
+    
+    private Rectangle convertRectFromScreen (Component comp, Rectangle screenRect) {
+        // safety call to not crash on null bounds
+        if (screenRect == null) {
+            screenRect = new Rectangle(0, 0, 0, 0);
+        }
+        Point leftTop = screenRect.getLocation();
+        SwingUtilities.convertPointFromScreen(leftTop, comp);
+        
+        return new Rectangle(leftTop, screenRect.getSize());
     }
     
     private String convertSide(String origSide) {
@@ -284,40 +312,46 @@ public final class DesktopImpl {
         return result;
     }
     
-    
-    /** Updates slide operation by setting correct finish bounds of component 
-     * which will component have after slide in. It should cover whole one side
-     * of desktop, but overlap editor area only if necessary.
-     */
-    private Rectangle computeButtonBounds(SlideOperation operation, Rectangle editorBounds) {
-        Point editorLeftTop = editorBounds.getLocation();
-        SwingUtilities.convertPointFromScreen(editorLeftTop, layeredPane);
-        editorBounds = new Rectangle(editorLeftTop, editorBounds.getSize());
+    private Rectangle computeThinBounds (SlideOperation operation, Rectangle slideInFinish) {
         String side = operation.getSide();
-        SlidingView view = findView(side);
-//        Rectangle splitRootRect = splitRoot.getComponent().getBounds();
         Rectangle result = new Rectangle();
-        Rectangle buttonRect = operation.getButtonComponent().getBounds();
         
         if (Constants.LEFT.equals(side)) {
-            result.x = buttonRect.x;
-            result.y = buttonRect.y;
-            result.height = buttonRect.height;
-            result.width = buttonRect.width;
+            result.x = slideInFinish.x;
+            result.y = slideInFinish.y;
+            result.height = slideInFinish.height;
+            result.width = 0;
         } else if (Constants.RIGHT.equals(side)) {
-            result.x = (buttonRect.x + (editorBounds.x + editorBounds.width));
-            result.y = buttonRect.y;
-            result.height = buttonRect.height;
-            result.width = buttonRect.width;
-            
+            result.x = slideInFinish.x + slideInFinish.width;
+            result.y = slideInFinish.y;
+            result.height = slideInFinish.height;
+            result.width = 0;
         } else if (Constants.BOTTOM.equals(side)) {
-            result.x = buttonRect.x;
-            result.y = (buttonRect.y + (editorBounds.y + editorBounds.height));
-            result.height = buttonRect.height;
-            result.width = buttonRect.width;
+            result.x = slideInFinish.x;
+            result.y = slideInFinish.y + slideInFinish.height;
+            result.height = 0;
+            result.width = slideInFinish.width;
         }
         
         return result;
+    }
+    
+    /** Returns bounds of last button in sliding view to which given
+     * operation belongs. Bounds are relative to desktop layered pane.
+     */
+    private Rectangle computeLastButtonBounds(SlideOperation operation) {
+        String side = operation.getSide();
+        SlidingView view = findView(side);
+        Rectangle screenRect = view.getTabBounds(view.getTopComponents().size() - 1);
+        Point leftTop = screenRect.getLocation();
+        
+        if (Constants.BOTTOM.equals(side)) {
+            leftTop.y += desktop.getHeight() - view.getComponent().getPreferredSize().height;
+        } else if (Constants.RIGHT.equals(side)) {
+            leftTop.x += desktop.getWidth() - view.getComponent().getPreferredSize().width;
+        }
+        
+        return new Rectangle(leftTop, screenRect.getSize());
     }
     
     private SlidingView findView (String side) {
@@ -349,7 +383,7 @@ public final class DesktopImpl {
             Dimension size = parent.getSize();
             desktop.setBounds(0, 0, size.width, size.height);
             // keep right bounds of slide in progress 
-            if (curSlideIn != null) {
+            if ((curSlideIn != null) && curSlideIn.getComponent().isVisible()) {
                 String side = curSlideIn.getSide();
                 SlidingView curView = findView(side);
                 // #43865 - sliding wiew could be removed by closing

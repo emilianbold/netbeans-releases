@@ -14,6 +14,7 @@
 
 package org.netbeans.core.windows.view;
 
+import java.awt.Rectangle;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.slides.SlideBarContainer;
 import org.openide.windows.TopComponent;
@@ -40,6 +41,10 @@ public class SlidingView extends ModeView {
     
     public String getSide() {
         return side;
+    }
+    
+    public Rectangle getTabBounds(int tabIndex) {
+        return ((SlideBarContainer)this.container).getTabBounds(tabIndex);
     }
 
 }

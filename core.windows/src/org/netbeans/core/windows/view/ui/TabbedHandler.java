@@ -41,6 +41,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.AWTEventListener;
 import org.netbeans.core.windows.view.ui.slides.SlideBar;
 import org.netbeans.core.windows.view.ui.slides.SlideBarActionEvent;
+import org.netbeans.core.windows.view.ui.slides.SlideOperationFactory;
 
 
 /** Helper class which handles <code>Tabbed</code> component inside
@@ -261,6 +262,11 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
     public Object getConstraintForLocation(Point location, boolean attachingPossible) {
         return tabbed.getConstraintForLocation(location, attachingPossible);
     }
+    
+    // Sliding
+    public Rectangle getTabBounds(int tabIndex) {
+        return tabbed.getTabBounds(tabIndex);
+    }
 
     public void actionPerformed(ActionEvent e) {
         if (e instanceof TabActionEvent) {
@@ -286,10 +292,19 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             //Pin button handling here
             } else if (TabbedContainer.COMMAND_ENABLE_AUTO_HIDE.equals(cmd)) {
                 TopComponent tc = (TopComponent) tabbed.getTopComponentAt(tae.getTabIndex());
+                // prepare slide operation
+                Component tabbedComp = tabbed.getComponent();
+                
+                String side = ((WindowManagerImpl)WindowManagerImpl.getDefault()).
+                                guessSlideSide(tc);
+                SlideOperation operation = SlideOperationFactory.createSlideIntoEdge(
+                    tabbedComp, side, true);
+                operation.setStartBounds(
+                       new Rectangle(tabbedComp.getLocationOnScreen(), tabbedComp.getSize()));
+                operation.prepareEffect();
+                
                 modeView.getController().userEnabledAutoHide(modeView, tc);
-            } else if (TabbedContainer.COMMAND_DISABLE_AUTO_HIDE.equals(cmd)) {
-                TopComponent tc = (TopComponent) tabbed.getTopComponentAt(tae.getTabIndex());
-                modeView.getController().userDisabledAutoHide(modeView, tc);
+                modeView.getController().userTriggeredSlideIntoEdge(modeView, operation);
             }
         } else if (e instanceof SlideBarActionEvent) {
             // slide bar commands

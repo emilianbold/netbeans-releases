@@ -84,12 +84,12 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         return hierarchy.getMainWindow();
     }
     
-    public String guessSlideSide (TopComponent tc) {
+    public String guessSlideSide (TopComponent comp) {
         String toReturn = Constants.LEFT;
-        Rectangle tcb = tc.getBounds();
+        Rectangle compb = comp.getBounds();
         Rectangle editorb = hierarchy.getPureEditorAreaBounds();
         Point leftTop = new Point(0, 0);
-        SwingUtilities.convertPointToScreen(leftTop, tc);
+        SwingUtilities.convertPointToScreen(leftTop, comp);
         if (editorb.x > leftTop.x) {
             toReturn = Constants.LEFT;
         }
@@ -886,6 +886,13 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         }
     }    
     
+    public void userTriggeredSlideIntoDesktop(ModeView modeView, SlideOperation operation) {
+        hierarchy.performSlideIntoDesktop(operation);
+    }    
+    
+    public void userTriggeredSlideIntoEdge(ModeView modeView, SlideOperation operation) {
+        hierarchy.performSlideIntoEdge(operation);
+    }
     
     private static ModeImpl getModeForModeAccessor(ModeAccessor accessor) {
         return accessor == null ? null : accessor.getMode();

@@ -14,13 +14,14 @@
 package org.netbeans.core.windows.view.ui.slides;
 
 import java.awt.Component;
+import java.awt.Rectangle;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.util.Map;
 import javax.swing.*;
 import org.netbeans.swing.tabcontrol.*;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
@@ -41,6 +42,8 @@ final class CommandManager implements ActionListener {
     private final SlideBar slideBar;
     /** Local tabbed container used to display slided component */
     private TabbedContainer slidedTabContainer;
+    /** slide in effect */
+    private ScaleFx slideInFx, slideOutFx, slideIntoEdgeFx, slideIntoDesktopFx;
 
     /** Data of slide operation in progress */
     private Component curSlidedComp;
@@ -57,11 +60,11 @@ final class CommandManager implements ActionListener {
         if (isCompSlided()) {
             if (curSlidedComp == model.getTab(tabIndex).getComponent()) {
                 // same button clicked again, treat as slide out only
-                slideOut(true);
+                slideOut(true, true);
                 return;
             } else {
                 // another component requests slide in, so slide out current first
-                slideOut(false);
+                slideOut(false, false);
             }
         }
         
@@ -70,27 +73,26 @@ final class CommandManager implements ActionListener {
         curSlideOrientation = model.getOrientation();
         curSlideButton = slideBar.getButton(tabIndex);
         
-        SlideOperation operation = new SlideInOperation(
-            updateSlidedTabContainer(tabIndex), curSlideButton, new DefaultSlidingFx(), curSlideOrientation, true);
+        SlideOperation operation = SlideOperationFactory.createSlideIn(
+            updateSlidedTabContainer(tabIndex), curSlideOrientation, true, true);
         
         curSlideButton.setSelected(true);
 
         postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_SLIDE_IN, operation));
         
     }
-
+    
     /** Fires slide out operation. 
      * @param requestsActivation true means restore focus to some other view after
      * slide out, false means no additional reactivation
      */
-    public void slideOut(boolean requestsActivation) {
+    public void slideOut(boolean requestsActivation, boolean useEffect) {
         if (!isCompSlided()) {
             return;
         }
         
-        SlideOperation operation = new SlideOutOperation(
-            getSlidedTabContainer(), curSlideButton, new DefaultSlidingFx(),
-            requestsActivation, curSlideOrientation);
+        SlideOperation operation = SlideOperationFactory.createSlideOut(
+            getSlidedTabContainer(), curSlideOrientation, useEffect, requestsActivation);
         
         curSlideButton.setSelected(false);
         
@@ -103,18 +105,13 @@ final class CommandManager implements ActionListener {
     }
     
     
-    public void slideIntoBar(int tabIndex) {
-        // XXX - TBD
-        throw new UnsupportedOperationException();
-    }
-    
-    public void slideIntoDesktop(int tabIndex) {
+    public void slideIntoDesktop(int tabIndex, boolean useEffect) {
+        SlideOperation operation = null;
         if (isCompSlided()) {
-            // XXX - we should use special SLIDE_INTO_DESKTOP event and effect,
-            // not just slide out
-            slideOut(false);
+            operation = SlideOperationFactory.createSlideIntoDesktop(
+                getSlidedTabContainer(), curSlideOrientation, useEffect);
         }
-        postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_DISABLE_AUTO_HIDE, null, tabIndex));
+        postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_DISABLE_AUTO_HIDE, operation, null, tabIndex));
     }
     
     public void showPopup(MouseEvent mouseEvent, int tabIndex) {
@@ -150,7 +147,7 @@ final class CommandManager implements ActionListener {
             }
         }
         if (TabbedContainer.COMMAND_DISABLE_AUTO_HIDE.equals(e.getActionCommand())) {
-            slideIntoDesktop(curSlidedIndex);
+            slideIntoDesktop(curSlidedIndex, true);
         } else {
             // convert event - fix index, local tabbed container index isn't right in slide bar context
             TabActionEvent tae = (TabActionEvent)e;
@@ -162,6 +159,12 @@ final class CommandManager implements ActionListener {
     }
     
     /************************** non-public stuff **********************/
+
+    private Rectangle getScreenCompRect(Component comp) { 
+        Rectangle result = new Rectangle(comp.getLocationOnScreen(), comp.getSize());
+        
+        return result;
+    }
     
      private static final boolean NO_POPUP_PLACEMENT_HACK = Boolean.getBoolean("netbeans.popup.no_hack"); // NOI18N
 // ##########################     
@@ -219,6 +222,7 @@ final class CommandManager implements ActionListener {
         comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "slideOut");
         comp.getActionMap().put("slideOut", escapeAction);
     }
+    
 
 /***** dumping info about all registered Esc handlers, could be usable for
  * debugging
@@ -273,7 +277,7 @@ final class CommandManager implements ActionListener {
         if ((curSlidedComp != null) && !slideBar.containsComp(curSlidedComp)) {
             // TBD - here should be closeSlide operation, which means
             // just remove from desktop
-            slideOut(false);
+            slideOut(false, false);
         }
     }
 
@@ -288,7 +292,7 @@ final class CommandManager implements ActionListener {
     
     private final class EscapeAction extends javax.swing.AbstractAction {
         public void actionPerformed(ActionEvent e) {
-            slideOut(true);
+            slideOut(true, true);
         }
     } // end of EscapeAction
    
