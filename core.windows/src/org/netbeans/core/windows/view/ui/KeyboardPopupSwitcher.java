@@ -62,7 +62,7 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
      */
     private static Timer invokerTimer;
     
-    /** 
+    /**
      * Safely indicating whether a <code>invokerTimer</code> is running or not.
      * isRunning() method doesn't work for us in all cases.
      */
@@ -75,12 +75,23 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
     private static int reverseKey = KeyEvent.VK_SHIFT;
     private static int releaseKey;
     
+    /** Indicates whether the next item is previous or next one. */
     private boolean fwd = true;
     
     private static AWTEventListener interruper = new Interrupter();
-
+    
     /**
-     * Selects and activates an item selected by user.
+     * Creates and shows the popup with given <code>items</code>. When user
+     * selects an item <code>SwitcherTableItem.Activable.activate()</code> is
+     * called. So what exactly happens depends on the concrete
+     * <code>SwitcherTableItem.Activable</code> implementation.
+     * Selection is made when user releases a <code>releaseKey</code> passed on
+     * as a parameter. If user releases the <code>releaseKey</code> before a
+     * specified time (<code>TIME_TO_SHOW</code>) expires the popup won't show
+     * at all and switch to the last used document will be performed
+     * immediately.
+     * 
+     * A popup appears on <code>x</code>, <code>y</code> coordinates.
      */
     public static void selectItem(SwitcherTableItem items[], int releaseKey,
             int triggerKey) {

@@ -1,13 +1,27 @@
 /*
- * SwitcherTableItem.java
+ *                 Sun Public License Notice
  *
- * Created on November 12, 2004, 12:41 PM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.swing.popupswitcher;
 
 import javax.swing.Icon;
 
+/**
+ * Represents one item in <code>SwitcherTable</class>.
+ *
+ * @see SwitcherTable
+ *
+ * @author mkrauskopf
+ */
 public class SwitcherTableItem {
     
     /** Item's description */
@@ -44,22 +58,30 @@ public class SwitcherTableItem {
         this.active = active;
     }
     
+    /**
+     * Calls <code>activate()</code> method of <code>Activable</code> interface
+     * which has to be passed in a constructor.
+     */
     public void activate() {
         activable.activate();
     }
     
+    /** Returns item's name */
     public String getName() {
         return name;
     }
     
+    /** Returns item's icon */
     public Icon getIcon() {
         return icon;
     }
     
+    /** Returns whether this item is active or not. */
     public boolean isActive() {
         return active;
     }
     
+    /** Returns human readable description of this item */
     public String toString() {
         return super.toString() + "[name=" + name + ", icon=" + icon + "]"; // NOI18N
     }

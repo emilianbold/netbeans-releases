@@ -58,7 +58,7 @@ final class ButtonPopupSwitcher
      * assuming the user wants move-and-click behavior instead of
      * drag-and-click behavior
      */
-    long invocationTime = -1;
+    private long invocationTime = -1;
     
     /** Indicating whether a popup is shown? */
     private static boolean shown;
@@ -68,6 +68,13 @@ final class ButtonPopupSwitcher
     private int x;
     private int y;
     
+    /**
+     * Creates and shows the popup with given <code>items</code>. When user
+     * choose an item <code>SwitcherTableItem.Activable.activate()</code> is
+     * called. So what exactly happens depends on the concrete 
+     * <code>SwitcherTableItem.Activable</code> implementation. A popup appears
+     * on <code>x</code>, <code>y</code> coordinates.
+     */
     public static void selectItem(SwitcherTableItem[] items, int x, int y) {
         ButtonPopupSwitcher switcher
                 = new ButtonPopupSwitcher(items, x, y);

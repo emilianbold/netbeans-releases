@@ -18,7 +18,11 @@ import javax.swing.table.AbstractTableModel;
 import org.openide.util.Utilities;
 
 /**
- * Used by "Document Quick List" and "Recent Window Switch" popups.
+ * <code>TableModel</code> for <code>SwitcherTable</class>.
+ *
+ * @see SwitcherTable
+ *
+ * @author mkrauskopf
  */
 class SwitcherTableModel extends AbstractTableModel {
     

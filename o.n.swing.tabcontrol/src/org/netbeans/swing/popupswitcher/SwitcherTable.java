@@ -35,6 +35,14 @@ import org.openide.util.Utilities;
 
 
 /**
+ * This class is used as a content for PopupSwitcher classes (see below). It
+ * appropriately displays its contents (<code>SwitcherTableItem</code>s)
+ * according to screen size, given position, used font, number of items, etc.
+ * and inteligently consider number of rows and columns to be used.
+ *
+ * @see SwitcherTableItem
+ * @see SwitcherTableModel
+ *
  * @author mkrauskopf
  */
 public class SwitcherTable extends JTable {
