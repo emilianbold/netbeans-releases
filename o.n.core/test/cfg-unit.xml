@@ -32,6 +32,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/BundleKeysTest.class"/> <!-- see JellyTools_compatibility -->
                 <!-- this includes all tests testing layers -->
                 <include name="**/ValidateLayer*Test.class"/> 
+                <!-- Can throw OutOfMemoryError: <include name="org/netbeans/core/ValidateClassLinkageTest.class"/> -->
             </patternset>
         </testset>
     </testbag>
@@ -43,6 +44,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/beaninfo/editors/*.class"/>
                 <!-- this includes all tests testing layers -->
                 <include name="**/ValidateLayer*Test.class"/> 
+                <!-- Can throw OutOfMemoryError: <include name="org/netbeans/core/ValidateClassLinkageTest.class"/> -->
                 <exclude name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
             </patternset>
         </testset>
@@ -60,6 +62,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="org/netbeans/core/*Test.class"/>
                 <exclude name="org/netbeans/core/AutomountSupportTest.class"/>
+                <exclude name="org/netbeans/core/ValidateClassLinkageTest.class"/>
                 <exclude name="org/netbeans/core/PlainTest.class/testPlainShowsNoGUI"/>
                 <exclude name="org/netbeans/core/BundleKeysTest.class"/> <!-- see JellyTools_compatibility -->
                 <include name="org/netbeans/core/modules/*Test.class"/>
