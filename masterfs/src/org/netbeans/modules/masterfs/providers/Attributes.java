@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 
 /**
- * Implementation of DefaultAttributes that should shared by all
+ * Implementation of DefaultAttributes that should be shared by all
  * filesystems that are mounted into MasterFileSystem.
  * 
  * Ensures that .nbattrs file is stored in netbeans.user/var/cache/attribs/.nbattrs.
@@ -172,14 +172,7 @@ public class Attributes extends DefaultAttributes {
 
     /** adds prefix: systemName of FileSystem */
     private String translateName(String name) {
-        String prefix;
-        if ((attributePrefix.endsWith("/"))) { //NOI18N
-            prefix = attributePrefix;            
-        } else {
-            prefix = attributePrefix+"/"; //NOI18N
-        }
-        
-        return (prefix + name);        
+        return (attributePrefix.endsWith("/"))? attributePrefix+"/"+name: attributePrefix+name; // NOI18N
     }
     
     private DefaultAttributes getPreferedAttributes() {
