@@ -256,7 +256,7 @@ public class DiffPresenter extends javax.swing.JPanel {
     }
      */
     
-    private synchronized void showDiff(DiffProvider p, DiffVisualizer v) throws IOException {
+    private synchronized void showDiff(final DiffProvider p, final DiffVisualizer v) throws IOException {
         if (v == null) return ;
         Difference[] diffs;
         if (p != null) {
@@ -269,6 +269,23 @@ public class DiffPresenter extends javax.swing.JPanel {
             diffs = diffInfo.getDifferences();
         }
         if (diffs == null) return ;
+        if (!java.awt.EventQueue.isDispatchThread()) {
+            final Difference[] fdiffs = diffs;
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        viewVisualizer(v, fdiffs);
+                    } catch (IOException ioex) {
+                        org.openide.ErrorManager.getDefault().notify(ioex);
+                    }
+                }
+            });
+        } else {
+            viewVisualizer(v, diffs);
+        }
+    }
+    
+    private void viewVisualizer(DiffVisualizer v, Difference[] diffs) throws IOException {
         Component c = v.createView(diffs, diffInfo.getName1(), diffInfo.getTitle1(),
             diffInfo.createFirstReader(), diffInfo.getName2(), diffInfo.getTitle2(),
             diffInfo.createSecondReader(), diffInfo.getMimeType());
