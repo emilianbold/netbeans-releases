@@ -22,7 +22,7 @@ import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
-import org.openide.src.Type;
+import org.openide.src.*;
 
 /** Customizer for new Unicast Event Set Pattern
  *
@@ -304,8 +304,10 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
                     return;
                 }
 
+                Type type;
+                
                 try {
-                    Type type = Type.parse( typeComboBox.getEditor().getItem().toString() );
+                    type = Type.parse( typeComboBox.getEditor().getItem().toString() );
                     // Test wheter property with this name already exists
                     if ( groupNode.eventSetExists( type ) ) {
                         String msg = MessageFormat.format( PatternNode.getString("MSG_EventSet_Exists"),
@@ -323,6 +325,16 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
                             PatternNode.getString("MSG_Not_Valid_Type"),
                             NotifyDescriptor.ERROR_MESSAGE) );
                     typeComboBox.requestFocus();
+                    return;
+                }
+                
+                // Check whether the property points to a valid listener
+                if ( !PatternAnalyser.isSubclass(
+                    ClassElement.forName( type.getClassName().getFullName() ),
+                    ClassElement.forName( "java.util.EventListener" ) ) ) { // NOI18N
+                    TopManager.getDefault().notify(
+                        new NotifyDescriptor.Message(PatternNode.getString("MSG_InvalidListenerInterface"),
+                                                     NotifyDescriptor.ERROR_MESSAGE) );
                     return;
                 }
             }
