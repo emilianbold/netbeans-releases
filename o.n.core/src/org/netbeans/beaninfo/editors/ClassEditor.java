@@ -30,7 +30,9 @@ public class ClassEditor extends java.beans.PropertyEditorSupport {
    *    current value.
    */
   public String getJavaInitializationString() {
-    return "Class.forName (\"java.lang.Object\")";
+    Class clazz = (Class)getValue();
+    if (clazz == null) return "null";
+    return "Class.forName (\"" + clazz.getName () + "\")";
   }
 
   //----------------------------------------------------------------------
@@ -43,7 +45,7 @@ public class ClassEditor extends java.beans.PropertyEditorSupport {
   */
   public String getAsText() {
     Class clazz = (Class)getValue();
-    if (clazz == null) return null;
+    if (clazz == null) return "null";
     return clazz.getName ();
   }
 
@@ -64,6 +66,7 @@ public class ClassEditor extends java.beans.PropertyEditorSupport {
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/10/00  Jan Jancura     Bug 1592
  *  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  2    Gandalf   1.1         6/22/99  Ian Formanek    Changed loading class 
