@@ -21,13 +21,14 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 
 /**
  * Panel just asking for basic info.
  * @author Jesse Glick
  */
-final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
     
     private WizardDescriptor wizardDescriptor;
     private int type;
@@ -105,6 +106,11 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
 
     public boolean isFinishPanel() {
         return true;
+    }
+    
+    public void validate () throws WizardValidationException {
+        getComponent ();
+        component.validate (wizardDescriptor);
     }
 
 }

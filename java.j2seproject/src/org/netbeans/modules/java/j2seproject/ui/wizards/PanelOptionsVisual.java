@@ -25,6 +25,7 @@ import javax.swing.event.DocumentEvent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
 
 /**
@@ -175,6 +176,10 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     
     void read (WizardDescriptor d) {
         //TODO:
+    }
+    
+    void validate (WizardDescriptor d) throws WizardValidationException {
+        // nothing to validate
     }
 
     void store( WizardDescriptor d ) {

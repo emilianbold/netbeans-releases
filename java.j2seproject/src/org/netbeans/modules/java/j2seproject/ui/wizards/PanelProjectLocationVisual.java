@@ -24,6 +24,7 @@ import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -261,6 +262,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         this.projectNameTextField.selectAll();
     }
         
+    void validate (WizardDescriptor d) throws WizardValidationException {
+        // nothing to validate
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;

@@ -19,6 +19,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
 
 /** First panel in the NewProject wizard. Used for filling in
@@ -87,6 +88,10 @@ public class PanelConfigureProjectVisual extends JPanel {
         
         projectLocationPanel.store( d );
         optionsPanel.store( d );        
+    }
+    
+    void validate (WizardDescriptor d) throws WizardValidationException {
+        projectLocationPanel.validate (d);
     }
     
     

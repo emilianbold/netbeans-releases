@@ -15,6 +15,7 @@ package org.netbeans.modules.java.j2seproject.ui.wizards;
 
 import javax.swing.JPanel;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 
 
 abstract class SettingsPanel extends JPanel {
@@ -24,4 +25,6 @@ abstract class SettingsPanel extends JPanel {
     abstract void read (WizardDescriptor settings);
 
     abstract boolean valid (WizardDescriptor settings);
+    
+    abstract void validate (WizardDescriptor settings) throws WizardValidationException;
 }
