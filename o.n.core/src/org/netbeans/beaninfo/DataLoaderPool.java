@@ -103,6 +103,9 @@ public class DataLoaderPool {
     }
 
     public static class ShadowLoaderBeanInfo extends SimpleBeanInfo {
+        static {
+            System.err.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%A");
+        }
 
         public BeanInfo[] getAdditionalBeanInfo () {
             try {
@@ -117,9 +120,14 @@ public class DataLoaderPool {
         public PropertyDescriptor[] getPropertyDescriptors () {
             try {
                 // Hide the actions property from users, since shadows inherit actions anyway:
-                PropertyDescriptor actions = new PropertyDescriptor ("actions", org.openide.loaders.DataLoaderPool.ShadowLoader.class); // NOI18N
+                Class c = Class.forName ("org.openide.loaders.DataLoaderPool$ShadowLoader");
+                PropertyDescriptor actions = new PropertyDescriptor ("actions", c); // NOI18N
                 actions.setHidden (true);
                 return new PropertyDescriptor[] { actions };
+            } catch (ClassNotFoundException ie) {
+                if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+                    ie.printStackTrace ();
+                return null;
             } catch (IntrospectionException ie) {
                 if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
                     ie.printStackTrace ();
