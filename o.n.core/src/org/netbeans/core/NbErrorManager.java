@@ -137,11 +137,13 @@ final class NbErrorManager extends ErrorManager {
         lastException.remove (Thread.currentThread ());
 
         Exc ex = new Exc (t, severity, ann);
+
+        PrintStream log = TopLogging.getLogOutputStream();
         
         if (prefix != null)
-            System.err.print ("[" + prefix + "] "); // NOI18N
-        System.err.println ("*********** Exception occurred ************"); // NOI18N
-        ex.printStackTrace(System.err);
+            log.print ("[" + prefix + "] "); // NOI18N
+        log.println ("*********** Exception occurred ************"); // NOI18N
+        ex.printStackTrace(log);
 
         if (ex.getSeverity () > INFORMATIONAL) {
             NotifyException.notify (ex);
@@ -150,6 +152,8 @@ final class NbErrorManager extends ErrorManager {
 
     public void log(int severity, String s) {
         if (isLoggable (severity)) {
+            PrintStream log = TopLogging.getLogOutputStream();
+            
             if (prefix != null) {
                 boolean showUniquifier;
                 // Print a unique EM sequence # if there is more than one
@@ -165,12 +169,12 @@ final class NbErrorManager extends ErrorManager {
                     throw new IllegalStateException("prefix != null yet uniquifier == 0");
                 }
                 if (showUniquifier) {
-                    System.err.print ("[" + prefix + " #" + uniquifier + "] "); // NOI18N
+                    log.print ("[" + prefix + " #" + uniquifier + "] "); // NOI18N
                 } else {
-                    System.err.print ("[" + prefix + "] "); // NOI18N
+                    log.print ("[" + prefix + "] "); // NOI18N
                 }
             }
-            System.err.println(s);
+            log.println(s);
         }
     }
     
