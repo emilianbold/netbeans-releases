@@ -35,11 +35,12 @@ implements ConnectionOperations, DeleteOperations
 		Properties dbprops = getConnectionProperties();
 		try {
 			Class xxx = Class.forName(drvurl);
-			Driver xxxdrv = (Driver)xxx.newInstance();
-			DriverManager.registerDriver(xxxdrv);
-			xxxdrv.connect(dburl, dbprops);
+//			Driver xxxdrv = (Driver)xxx.newInstance();
+//			DriverManager.registerDriver(xxxdrv);
+//			xxxdrv.connect(dburl, dbprops);
 	    	Connection connection = DriverManager.getConnection(dburl, dbprops);
 			SpecificationFactory factory = (SpecificationFactory)getSpecificationFactory();
+			System.out.println("factory: "+factory);
 			Specification spec;
 			
 			if (dbsys != null) {
