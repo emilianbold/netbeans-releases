@@ -32,6 +32,15 @@ Microsystems, Inc. All Rights Reserved.
          </testset>
      </testbag>
 
+    <!-- Search and Replace -->
+    <testbag testattribs="search_replace" name="Search and Replace">
+         <testset dir="qa-functional/src">
+             <patternset>
+               <include name="search_replace/SearchAndReplaceTestSuite.class"/>
+             </patternset>
+         </testset>
+     </testbag>
+     
     <testbag testattribs="all,full,apps" name="TestApplication">
         <testset dir="qa-functional/src">
             <patternset>
