@@ -15,7 +15,7 @@ package org.netbeans.modules.form.actions;
 
 import org.openide.nodes.Node;
 import org.openide.util.actions.*;
-import org.openide.util.HelpCtx;
+import org.openide.util.*;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.form.*;
@@ -25,6 +25,8 @@ import org.netbeans.modules.form.*;
  */
 public class EditContainerAction extends NodeAction {
 
+    private static EditFormAction editFormAction = (EditFormAction)
+                       SharedClassObject.findObject(EditFormAction.class, true);
     /**
     * Perform the action based on the currently activated nodes.
     * Note that if the source of the event triggering this action was itself
@@ -44,6 +46,9 @@ public class EditContainerAction extends NodeAction {
                 designer.setTopDesignComponent((RADVisualComponent)metacomp, true);
                 designer.open();
                 designer.requestFocus();
+
+                editFormAction.setEnabled(
+                    metacomp.getFormModel().getTopRADComponent() != metacomp);
             }
         }
     }
