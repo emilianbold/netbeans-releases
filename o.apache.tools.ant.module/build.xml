@@ -89,6 +89,19 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     </makenbm>
   </target>
 
+  <target name="test" depends="compile,javahelp">
+    <mkdir dir="test"/>
+    <filter token="BUILD_NUMBER_SUBST" value="testing"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <jar jarfile="test/ant.jar" manifest="manifest-subst.mf" compress="false">
+      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="javahelp" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset src="release/modules/ext/ant.jar" excludes="META-INF/MANIFEST.MF"/>
+      <fileset src="release/modules/ext/optional.jar" excludes="META-INF/MANIFEST.MF"/>
+    </jar>
+    <nbinstall module="test/ant.jar" action="reinstall"/>
+  </target>
+
   <target name="clean">
     <delete>
       <fileset dir="src">
@@ -102,6 +115,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <delete dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch2"/>
     <delete file="javahelp/org/apache/tools/ant/module/docs/LICENSE"/>
     <delete dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
+    <delete dir="test"/>
   </target>
 
 </project>

@@ -117,7 +117,7 @@ workspaceswitcher
     <echo message="Building module ant..."/>
     <ant dir="../ant" target="netbeans"/>
   </target>
-  <target name="all-apisupport" depends="all-openide,all-core,all-jarpackager">
+  <target name="all-apisupport" depends="all-openide,all-core,all-jarpackager,all-ant">
     <echo message="Building module apisupport..."/>
     <ant dir="../apisupport" target="netbeans"/>
   </target>
