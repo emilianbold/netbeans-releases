@@ -212,7 +212,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         unlockScroll();
         caret.setVisible(true);
         caret.setSelectionVisible(true);
-        Element el = textView.getDocument().getDefaultRootElement().getElement(idx);
+        Element el = textView.getDocument().getDefaultRootElement().getElement(Math.min(idx, getLineCount()));
         int position = el.getStartOffset();
         if (Controller.log) Controller.log ("Send caret to line " + idx + " select: " + select + " position " + position);
         if (select) {
