@@ -205,11 +205,8 @@ public final class LoaderPoolNode extends AbstractNode {
                 err.log("After sort: " + loaders);
             }
         } catch (TopologicalSortException ex) {
+            err.notify(ErrorManager.INFORMATIONAL, ex);
             err.log(ErrorManager.WARNING, "Contradictory loader ordering: " + deps); // NOI18N
-            Set[] bad = ex.unsortableSets();
-            for (int i = 0; i < bad.length; i++) {
-                err.log (ErrorManager.WARNING, " Conflict #" + i + ": " + bad[i]); // NOI18N
-            }
         }
         update ();
     }
