@@ -263,6 +263,7 @@ public class BeanProp implements BaseProperty {
     
     public BeanProp(BaseBean bean, String dtdName, String beanName,
 		    int type, Class propClass, int initialCapacity) {
+        //System.out.println("intitialCapacity="+initialCapacity);
 	this.dtdName = dtdName;
 	this.beanName = beanName;
 	this.type = type;
@@ -288,7 +289,7 @@ public class BeanProp implements BaseProperty {
 
     public BeanProp(BaseBean bean, String dtdName, String beanName,
 		    int type, Class propClass, boolean isRoot, int initialCapacity) {
-	this(bean, dtdName, beanName, type, propClass);
+	this(bean, dtdName, beanName, type, propClass, initialCapacity);
 	this.isRoot = isRoot;
     }
 
