@@ -418,9 +418,7 @@ final public class FormEditor extends Object {
 
     /** The Inspector's icon */
     private final static java.awt.Image inspectorIcon = java.awt.Toolkit.getDefaultToolkit ().getImage (
-      ComponentInspector.class.getResource (com.netbeans.ide.util.Utilities.isLargeFrameIcons() ?
-                                            "/com.netbeans.developer.modules/resources/frames/inspector32.gif" :
-                                            "/com.netbeans.developer.modules/resources/frames/inspector.gif"));
+      ComponentInspector.class.getResource ("/com/netbeans/developer/modules/loaders/form/resources/inspector.gif"));
 
     ComponentInspector () {
       final ExplorerManager manager = getExplorerManager ();
@@ -608,6 +606,8 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  19   Gandalf   1.18        6/4/99   Ian Formanek    Fixed component 
+ *       inspector icon
  *  18   Gandalf   1.17        6/4/99   Ian Formanek    
  *  17   Gandalf   1.16        6/2/99   Ian Formanek    ToolsAction, Reorder
  *  16   Gandalf   1.15        5/31/99  Ian Formanek    Design/Test Mode
