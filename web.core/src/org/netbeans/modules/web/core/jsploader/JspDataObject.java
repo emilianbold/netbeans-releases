@@ -732,6 +732,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     
     private static final String CORRECT_WINDOWS_31J = "windows-31j";
     private static final String CORRECT_EUC_JP = "EUC-JP";
+    private static final String CORRECT_GB2312 = "GB2312";
+    private static final String CORRECT_BIG5 = "BIG5";
     
     private static String canonizeEncoding(String encodingAlias) {
         // this does not work correctly on JDK 1.4.1
@@ -742,6 +744,20 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         if (encodingAlias.equalsIgnoreCase("EUC-JP-LINUX")) {
             return CORRECT_EUC_JP;
         }
+        // chinese encodings that must be adjusted
+        if (encodingAlias.equalsIgnoreCase("EUC-CN")) {
+            return CORRECT_GB2312;
+        }
+        if (encodingAlias.equalsIgnoreCase("GBK")) {
+            return CORRECT_GB2312;
+        }
+        if (encodingAlias.equalsIgnoreCase("GB18030")) {
+            return CORRECT_GB2312;
+        }
+        if (encodingAlias.equalsIgnoreCase("EUC-TW")) {
+            return CORRECT_BIG5;
+        }
+        
         
         if (Charset.isSupported(encodingAlias)) {
             Charset cs = Charset.forName(encodingAlias);
