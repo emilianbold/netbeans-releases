@@ -24,9 +24,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.src.ClassElement;
 
 import javax.swing.*;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -258,44 +255,6 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         }
         if (classElement != null) {
             Utils.openEditorFor(helper.ejbJarFile, classElement);
-        }
-
-
-
-    }
-
-    private abstract class NonEditableDocument extends PlainDocument {
-
-        String text = null;
-
-        protected abstract String retrieveText();
-
-        protected NonEditableDocument() {
-            init();
-        }
-
-        public void init() {
-            String s = retrieveText();
-            if (s == null) {
-                s = "";
-            }
-            if (!s.equals(text)) {
-                text = s;
-                try {
-                    super.remove(0, super.getLength());
-                    super.insertString(0, s, null);
-                } catch (BadLocationException e) {
-
-                }
-            }
-        }
-
-        public void insertString(int offset, String str, AttributeSet a) throws BadLocationException {
-
-        }
-
-        public void remove(int offs, int len) throws BadLocationException {
-
         }
     }
 
