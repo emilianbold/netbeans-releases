@@ -1,9 +1,10 @@
+usersguide/j2seexamples/src/org/netbeans/modules/java/examples/Bundle.properties
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.html
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.hs
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.xml
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.jhm
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.css
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.gif
+usersguide/javahelp/org/netbeans/modules/usersguide/**/*.png
 usersguide/src/org/netbeans/modules/usersguide/Bundle.properties
-usersguide/src/org/netbeans/modules/usersguide/tips/*.html
 usersguide/www/shortcuts.sxw
