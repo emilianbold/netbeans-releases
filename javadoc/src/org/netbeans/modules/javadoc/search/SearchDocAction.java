@@ -58,7 +58,6 @@ public class SearchDocAction extends CallableSystemAction {
   * is not null otherwise the action is ignored.
   */
   public void performAction () {
-
     if (indexSearch == null) 
       indexSearch = new IndexSearch ();
 
@@ -68,18 +67,14 @@ public class SearchDocAction extends CallableSystemAction {
       indexSearch.setTextToFind( toFind );
       
     indexSearch.open ();
-    
+    indexSearch.requestFocus();
   }
-
-  public static void main  ( String args[] ) {
-    if (indexSearch == null) 
-      indexSearch = new IndexSearch ();
-    indexSearch.open ();  
- }
 }
 
 /*
  * Log
+ *  10   Gandalf   1.9         7/30/99  Petr Hrebejk    Search uses 
+ *       FileSystemCapabilities
  *  9    Gandalf   1.8         6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  8    Gandalf   1.7         6/23/99  Petr Hrebejk    HTML doc view & sort 
  *       modes added

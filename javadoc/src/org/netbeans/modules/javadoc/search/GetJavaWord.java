@@ -58,7 +58,7 @@ class GetJavaWord extends Object {
               return null;
             int pos = panes[0].getCaretPosition();
 
-            if ( pos < 0 )
+            if ( pos < 0 || pos >= text.length() )
               return null;
 
             int bix, eix;
@@ -80,6 +80,8 @@ class GetJavaWord extends Object {
 
 /* 
  * Log
+ *  6    Gandalf   1.5         7/30/99  Petr Hrebejk    Search uses 
+ *       FileSystemCapabilities
  *  5    Gandalf   1.4         7/26/99  Petr Hrebejk    AutoComment tool 
  *       implemented
  *  4    Gandalf   1.3         7/12/99  Petr Hrebejk    New window system
