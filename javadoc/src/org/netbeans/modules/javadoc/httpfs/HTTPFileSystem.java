@@ -483,7 +483,7 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
 
         }
 
-        return ResourceUtils.getFormattedBundledString( messageKey, replacementValues );;
+        return ResourceUtils.getFormattedBundledString( messageKey, replacementValues );
 
     }
     
