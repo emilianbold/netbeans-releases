@@ -21,6 +21,8 @@ import java.awt.Dialog;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.beans.Customizer;
 import java.beans.IntrospectionException;
@@ -52,9 +54,12 @@ import org.openidex.search.SearchType;
  * Panel which shows to user one search type allowing it to customize.
  *
  * @author  Peter Zavadsky
+ * @author  Marian Petras
  * @see SearchPanel
  */
-public class SearchTypePanel extends JPanel implements PropertyChangeListener {
+public final class SearchTypePanel extends JPanel
+                                   implements PropertyChangeListener,
+                                              ActionListener {
 
     /** Name of customized property. */
     public static final String PROP_CUSTOMIZED = "customized"; // NOI18N
@@ -93,7 +98,7 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
                 
         this.searchType = searchType;
 
-        customizer = createCustomizer(this.searchType.getClass());
+        customizer = createCustomizer(this.searchType);
         if (customizer != null) {
             customizerComponent = (Component) customizer;
         } else {
@@ -157,9 +162,6 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         java.awt.GridBagConstraints gridBagConstraints;
 
         customizerPanel = new javax.swing.JPanel();
-        applyCheckBox = new javax.swing.JCheckBox();
-        saveButton = new javax.swing.JButton();
-        restoreButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -173,13 +175,7 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         add(customizerPanel, gridBagConstraints);
 
-        applyCheckBox.setText("jCheckBox2");
-        applyCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                applyCheckBoxActionPerformed(evt);
-            }
-        });
-
+        applyCheckBox.addActionListener(this);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -188,13 +184,7 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         gridBagConstraints.insets = new java.awt.Insets(17, 11, 0, 11);
         add(applyCheckBox, gridBagConstraints);
 
-        saveButton.setText("jButton3");
-        saveButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveButtonActionPerformed(evt);
-            }
-        });
-
+        saveButton.addActionListener(this);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -203,13 +193,7 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 0);
         add(saveButton, gridBagConstraints);
 
-        restoreButton.setText("jButton4");
-        restoreButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                restoreButtonActionPerformed(evt);
-            }
-        });
-
+        restoreButton.addActionListener(this);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -219,29 +203,42 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
 
     }//GEN-END:initComponents
 
-    private void restoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreButtonActionPerformed
-        restoreCriterion();
-    }//GEN-LAST:event_restoreButtonActionPerformed
-
-    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        saveCriterion();
-    }//GEN-LAST:event_saveButtonActionPerformed
-
-    private void applyCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyCheckBoxActionPerformed
-        // PENDING Some better solution of valid / customized needed.
-        boolean selected = applyCheckBox.isSelected();
-        setCustomized(selected);
-        searchType.setValid(selected);
-    }//GEN-LAST:event_applyCheckBoxActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private final javax.swing.JCheckBox applyCheckBox = new javax.swing.JCheckBox();
     private javax.swing.JPanel customizerPanel;
-    private javax.swing.JButton restoreButton;
-    private javax.swing.JButton saveButton;
-    private javax.swing.JCheckBox applyCheckBox;
+    private final javax.swing.JButton restoreButton = new javax.swing.JButton();
+    private final javax.swing.JButton saveButton = new javax.swing.JButton();
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * Called when the <em>Save Settings as...</em> or <em>Restore Saved...</em>
+     * button is pressed or when the <em>Use This Criterion for Search</em>
+     * checkbox is (de)selected.
+     */
+    public void actionPerformed(ActionEvent e) {
+        final Object source = e.getSource();
+        
+        if (source == applyCheckBox) {
+            
+            /* PENDING: Some better solution of valid / customized needed. */
+            boolean selected = applyCheckBox.isSelected();
+            setCustomized(selected);
+            searchType.setValid(selected);
+            
+        } else if (source == saveButton) {
+            saveCriterion();
+            
+        } else if (source == restoreButton) {
+            restoreCriterion();
+            
+        } else {
+            
+            /* this should never happen */
+            assert false;
+        }
+    }
+    
     // PENDING Better solution for these properties are needed.
     /** Listens on search type PROP_VALID property change and sets
      * customized property accordingly. */
@@ -282,16 +279,39 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
      * @return  customizer object for the search type,
      *          or <code>null</code> if the customizer could not be created
      */
-    private static Customizer createCustomizer(final Class searchTypeClass) {
-        final BeanInfo beanInfo;
-        try {
-            beanInfo = Utilities.getBeanInfo(searchTypeClass);
-        } catch (IntrospectionException ie) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ie);
-            return null;
+    private static Customizer createCustomizer(final SearchType searchType) {
+        final Class searchTypeClass = searchType.getClass();
+        Class clazz = null;
+        
+        if (isDefaultSearchType(searchTypeClass)) {
+            String typeClassName = searchType.getClass().getName();
+            assert typeClassName.endsWith("Type");                      //NOI18N
+            
+            int typeNameLen = typeClassName.length();
+            String customizerClassName
+                    = new StringBuffer(typeNameLen + 6)
+                      .append(typeClassName.substring(0, typeNameLen - 4))
+                      .append("Customizer")                             //NOI18N
+                      .toString();
+            try {
+                clazz = Class.forName(customizerClassName);
+            } catch (Exception ex) {
+                assert false;
+                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            }
         }
+        
+        if (clazz == null) {
+            final BeanInfo beanInfo;
+            try {
+                beanInfo = Utilities.getBeanInfo(searchTypeClass);
+            } catch (IntrospectionException ie) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ie);
+                return null;
+            }
 
-        Class clazz = beanInfo.getBeanDescriptor ().getCustomizerClass ();
+            clazz = beanInfo.getBeanDescriptor ().getCustomizerClass ();
+        }
         if (clazz == null) return null;
 
         Object o;
@@ -307,6 +327,26 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
                 !(o instanceof Customizer)) return null;
 
         return (Customizer) o;
+    }
+    
+    /**
+     * Checks whether the given <code>SearchType</code> class represents
+     * a default search type.
+     * (Default search type is such a search type that is defined
+     * in the Utilities module.)
+     *
+     * @param  searchTypeClass  <code>SearchType</code> class to check
+     * @return  <code>true</code> if the given <code>Class</code> object
+     *          represents a default search type; <code>false</code> if not
+     */
+    private static boolean isDefaultSearchType(Class searchTypeClass) {
+        assert SearchType.class.isAssignableFrom(searchTypeClass);
+
+        String mandatoryPackage = "org.netbeans.modules.search.types";  //NOI18N
+        
+        String className = searchTypeClass.getName();
+        return className.startsWith(mandatoryPackage)
+               && (className.lastIndexOf('.') == mandatoryPackage.length());
     }
     
     /**

@@ -21,6 +21,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -48,9 +49,14 @@ import org.openidex.search.SearchType;
  * select appropriate criteria for a new search.
  *
  * @author  Peter Zavadsky
+ * @author  Marian Petras
  * @see SearchTypePanel
  */
-public class SearchPanel extends JPanel implements PropertyChangeListener {
+public final class SearchPanel extends JPanel
+                               implements PropertyChangeListener,
+                                          FocusListener,
+                                          ChangeListener,
+                                          ActionListener {
     
     /** */
     public static final String PROP_DIALOG_TITLE
@@ -66,10 +72,10 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
     private DialogDescriptor dialogDescriptor;
 
     /** OK button. */
-    private JButton okButton;
+    private final JButton okButton;
     
     /** Cancel button. */
-    private JButton cancelButton;
+    private final JButton cancelButton;
 
     /** Java equivalent. */
     private Dialog dialog;
@@ -153,12 +159,6 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
         //prevents bug #43843 ("AIOOBE after push button Modify Search")
         tabbedPane.setSelectedIndex(0);
 
-        tabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                tabbedPaneStateChanged(evt);
-            }
-        });
-        
         setName(NbBundle.getBundle(SearchPanel.class)
                 .getString("TEXT_TITLE_CUSTOMIZE"));                    //NOI18N
 
@@ -183,15 +183,18 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
             options[0],
             DialogDescriptor.BOTTOM_ALIGN, 
             null,                                   //<null> HelpCtx - no help
-            new ActionListener() {
-                public void actionPerformed(final ActionEvent evt) {
-                    if(evt.getSource() == okButton) {
-                        doClose(RET_OK);
-                    } else {
-                        doClose(RET_CANCEL);
-                    }
-                }
-        });
+            this);
+    }
+    
+    /**
+     * This method is called when the Search or Close button is pressed.
+     * It closes the Find dialog, cleans up the individual panels
+     * and sets the return status.
+     *
+     * @see  #getReturnStatus
+     */
+    public void actionPerformed(final ActionEvent evt) {
+        doClose(evt.getSource() == okButton ? RET_OK : RET_CANCEL);
     }
     
     void setTitle(String title) {
@@ -225,14 +228,6 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
         add(tabbedPane, gridBagConstraints);
 
     }//GEN-END:initComponents
-
-    private void tabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {
-        /* Only exec. code disabled, because of issue #17737
-        Component component = getTypeCustomizer(tabbedPane.getSelectedIndex());
-        if(component != null)
-            component.requestFocus();
-         */
-    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -310,48 +305,58 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
     public void showDialog()  {
         dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setModal(true);
-        tabbedPane.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                tabbedPane.removeFocusListener(this);
-                
-                int selectedIndex = tabbedPane.getSelectedIndex();
-                if (selectedIndex >= 0) {
-                    SearchTypePanel panel = getSearchTypePanel(selectedIndex);
-                    if (panel != null) {
-                        panel.initializeWithObject();
-                        
-                        if (panel.customizerComponent != null) {
-                            panel.customizerComponent.requestFocus();
-                        }
-                    }
-                }
-                
-                initializeTabSelectionListener();
-            }
-        });
+        tabbedPane.addFocusListener(this);
         
         dialog.pack();
         dialog.setVisible(true);
     }
     
     /**
-     * Sets up a listener which gets notified whenever another tab
-     * is selected.
-     * When notified about tab selection change, the panel below the tab
-     * is prepared.
+     * This method is called when the tabbed pane gets focus after the Find
+     * dialog is displayed.
+     * It lets the first tab to initialize focus.
      */
-    private void initializeTabSelectionListener() {
-        tabbedPane.getModel().addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                int selectedIndex = tabbedPane.getSelectedIndex();
-                if (selectedIndex >= 0) {
-                    SearchTypePanel panel = getSearchTypePanel(selectedIndex);
-                    if (panel != null) {
-                        panel.initializeWithObject();
-                    }
+    public void focusGained(FocusEvent e) {
+        tabbedPane.removeFocusListener(this);
+
+        int selectedIndex = tabbedPane.getSelectedIndex();
+        if (selectedIndex >= 0) {
+            SearchTypePanel panel = getSearchTypePanel(selectedIndex);
+            if (panel != null) {
+                panel.initializeWithObject();
+
+                if (panel.customizerComponent != null) {
+                    panel.customizerComponent.requestFocus();
                 }
             }
-        });
+        }
+
+        tabbedPane.addChangeListener(this);
+    }
+    
+    /**
+     * This method is called when the tabbed pane looses focus.
+     * It does nothing and it is here just because this class declares that
+     * it implements the <code>FocusListener</code> interface.
+     *
+     * @see  #focusGained(FocusEvent)
+     */
+    public void focusLost(FocusEvent e) {
+        //does nothing
+    }
+            
+    /**
+     * This method is called when tab selection changes.
+     * It initializes the customizer below the selected tab.
+     */
+    public void stateChanged(ChangeEvent e) {
+        int selectedIndex = tabbedPane.getSelectedIndex();
+        if (selectedIndex >= 0) {
+            SearchTypePanel panel = getSearchTypePanel(selectedIndex);
+            if (panel != null) {
+                panel.initializeWithObject();
+            }
+        }
     }
 
     /** Implements <code>PropertyChangeListener</code> interface. */
