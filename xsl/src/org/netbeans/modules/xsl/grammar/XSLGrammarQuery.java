@@ -353,13 +353,12 @@ public class XSLGrammarQuery implements GrammarQuery{
     private static Set getXslFunctions() {
         if (xslFunctions == null) {
             xslFunctions = new TreeSet(Arrays.asList(new String[]{
-                "boolean(","ceiling(","concat(", "contains(","count(","current()","document(","false()", "floor(","format-number(",
-                "generate-id(",
-                "id(","local-name(","key(","lang(","last()","name(","namespace-uri(", "normalize-space(","not(","number(",
-                "position()","round(","blu",
-                "starts-with(","string(", 
-                "string-length(", "substring(","substring-after(","substring-before(", "sum(","system-property(",
-                "translate(",   "true()","unparsed-entity-uri("}));
+                "boolean(","ceiling(","concat(", "contains(","count(","current()","document(",
+                "false()", "floor(","format-number(","generate-id(",
+                "id(","local-name(","key(","lang(","last()","name(","namespace-uri(", "normalize-space(",
+                "not(","number(","position()","round(","starts-with(","string(", 
+                "string-length(", "substring(","substring-after(","substring-before(", "sum(",
+                "system-property(","translate(",   "true()","unparsed-entity-uri("}));
         }
         return xslFunctions;
     }
