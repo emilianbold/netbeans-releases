@@ -1,5 +1,5 @@
 Netbeans-Module: com.netbeans.developer.modules.httpserver/1
-Netbeans-Module-Name: Http Server Module
+Netbeans-Module-Name: Http Server
 NetBeans-Module-Install: com/netbeans/developer/modules/httpserver/HttpServerModule.class
 NetBeans-Module-Specification-Version: 1.0
 NetBeans-Module-Implementation-Version: 1.0

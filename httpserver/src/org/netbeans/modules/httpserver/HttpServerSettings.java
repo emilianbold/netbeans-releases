@@ -222,18 +222,28 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   }
                                        
   /* Implementation of HttpServer interface */
+  
+  /** Returns string for localhost */
+  private String getLocalHost() {                                  
+    try {
+      return InetAddress.getLocalHost().getHostName();
+    }
+    catch (UnknownHostException e) {
+      return "localhost";
+    }
+  }              
                                        
   /** Maps a file object to a URL. Should ensure that the file object is accessible on the given URL. */
   public URL getRepositoryURL(FileObject fo) throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
-    return new URL("http", InetAddress.getLocalHost().getHostName(), getPort(), 
+    return new URL("http", getLocalHost(), getPort(), 
       getRepositoryBaseURL() + fo.getPackageNameExt('/','.'));
   }
                              
   /** Maps the repository root to a URL. This URL should serve a page from which repository objects are accessible. */
   public URL getRepositoryRoot() throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
-    return new URL("http", InetAddress.getLocalHost().getHostName(), getPort(), getRepositoryBaseURL());
+    return new URL("http", getLocalHost(), getPort(), getRepositoryBaseURL());
   }
                                                                                                                      
   /** Maps a resource path to a URL. Should ensure that the resource is accessible on the given URL.
@@ -243,8 +253,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   */
   public URL getResourceURL(String resourcePath) throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
-    return new URL("http", InetAddress.getLocalHost().getHostName(), getPort(), 
-      getClasspathBaseURL() + resourcePath);
+    return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + resourcePath);
   }
     
                                        
@@ -252,6 +261,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  3    Gandalf   1.2         5/11/99  Petr Jiricka    
  *  2    Gandalf   1.1         5/10/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/7/99   Petr Jiricka    
  * $

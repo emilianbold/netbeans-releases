@@ -57,12 +57,12 @@ public class HostPropertyEditor extends PropertyEditorSupport {
   /** @param text A text for the current value. */
   public void setAsText (String text) {
     if (text.equals(LOCALHOST)) {
-//      new HttpServerSettings().setHost(HttpServerSettings.LOCALHOST);
+//      HttpServerSettings.OPTIONS.setHost(HttpServerSettings.LOCALHOST);
       setValue(HttpServerSettings.LOCALHOST);
       return;
     }
     if (text.equals(ANYHOST)) {
-//      new HttpServerSettings().setHost(HttpServerSettings.ANYHOST);
+//      HttpServerSettings().OPTIONS.setHost(HttpServerSettings.ANYHOST);
       setValue(HttpServerSettings.ANYHOST);
       return;
     }
@@ -73,6 +73,7 @@ public class HostPropertyEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/11/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/7/99   Petr Jiricka    
  * $
  */

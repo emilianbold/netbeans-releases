@@ -44,16 +44,7 @@ public class HttpServerModule implements ModuleInstall {
   * Add applet executor
   */
   public void restored() {            
-/*    System.setProperty("DEBUG","true");
-    initHTTPServer();           
-    // PENDING 
-    System.out.println("HttpServer is " + (server == null ? "dead" : "alive"));
-    try {
-    Thread.currentThread().sleep(10000);
-    } catch (Exception e) {
-    System.out.println("Exc:" + e.getMessage());}
-    stopHTTPServer();*/ 
-    com.netbeans.ide.util.HttpServer.registerDefaultServer(new HttpServerSettings());
+    com.netbeans.ide.util.HttpServer.registerServer(HttpServerSettings.OPTIONS);
   }
 
   /** Module was uninstalled. */
@@ -63,6 +54,7 @@ public class HttpServerModule implements ModuleInstall {
   /** Module is being closed. */
   public boolean closing () {
     // stop the server, don't set the running status
+    com.netbeans.ide.util.HttpServer.deregisterServer(HttpServerSettings.OPTIONS);
     stopHTTPServer();
     return true; // agree to close
   }
@@ -72,14 +64,13 @@ public class HttpServerModule implements ModuleInstall {
     if (serverThread == null) {
       serverThread = new Thread("HTTPServer") {
         public void run() {
-          HttpServerSettings set = new HttpServerSettings();
           try {                
-            config = new NbServer(set);
+            config = new NbServer(HttpServerSettings.OPTIONS);
             server = new HttpServer(config);
-            set.runSuccess();
+            HttpServerSettings.OPTIONS.runSuccess();
           } catch (Exception ex) {
             // couldn't start
-            set.runFailure();
+            HttpServerSettings.OPTIONS.runFailure();
             TopManager.getDefault().notify(new NotifyDescriptor.Message(
               NbBundle.getBundle(HttpServerModule.class).getString("MSG_HTTP_SERVER_START_FAIL"), 
               NotifyDescriptor.Message.WARNING_MESSAGE));
@@ -109,6 +100,7 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  3    Gandalf   1.2         5/11/99  Petr Jiricka    
  *  2    Gandalf   1.1         5/10/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/7/99   Petr Jiricka    
  * $
