@@ -67,6 +67,8 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
     
     public void uninitialize (org.openide.loaders.TemplateWizard templateWizard) {
         basicPanel = null;
+        this.wiz.putProperty(WizardProperties.PROJECT_DIR,null);
+        this.wiz.putProperty(WizardProperties.NAME,null);
         currentIndex = -1;
     }
     

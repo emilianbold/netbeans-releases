@@ -68,6 +68,8 @@ public class J2SESampleProjectIterator implements TemplateWizard.Iterator {
     public void uninitialize (org.openide.loaders.TemplateWizard templateWizard) {
         basicPanel = null;
         currentIndex = -1;
+        this.wiz.putProperty("projdir",null);           //NOI18N
+        this.wiz.putProperty("name",null);          //NOI18N
     }
     
     public java.util.Set instantiate (org.openide.loaders.TemplateWizard templateWizard) throws java.io.IOException {
