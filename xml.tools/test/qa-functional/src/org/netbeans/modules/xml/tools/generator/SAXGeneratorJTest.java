@@ -15,6 +15,7 @@ package org.netbeans.modules.xml.tools.generator;
 import java.util.Arrays;
 import java.util.Comparator;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.modules.xml.actions.SAXDocumentHandlerWizardAction;
 import org.netbeans.jellytools.modules.xml.saxwizard.*;
@@ -149,7 +150,15 @@ public class SAXGeneratorJTest extends JXTest {
         
         // save handler implementation dump generated classes
         try {
-            new EditorWindowOperator().getEditor("BHImpl").save();
+            // force editor to reload document
+            EditorWindowOperator ewo = new EditorWindowOperator();
+            EditorOperator eo = ewo.getEditor("BHImpl");
+            eo.setCaretPositionToLine(1);
+            eo.insert("\n");
+            eo.waitModified(true);
+            eo.deleteLine(1);
+            eo.save();
+            
             ref("\n=== Handler Interface:\n");
             ref(dumpFile(TestUtil.THIS.findData("sax/BHandler.java")));
             ref("=== Handler Implementation:\n");
