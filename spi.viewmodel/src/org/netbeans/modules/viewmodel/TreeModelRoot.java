@@ -81,8 +81,13 @@ public class TreeModelRoot implements TreeModelListener {
     }
     
     public void treeNodeChanged (Object parent) {
-        TreeModelNode tmn = findNode (parent);
-        if (tmn != null) tmn.refresh (); 
+        final TreeModelNode tmn = findNode (parent);
+        if (tmn == null) return;
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                tmn.refresh (); 
+            }
+        });
     }
 
     public void destroy () {
