@@ -70,25 +70,17 @@ public class DiffPanel extends org.openide.windows.TopComponent {
 
     static final long serialVersionUID =3683458237532937983L;
     private static final String PLAIN_TEXT_MIME = "text/plain";
-    private static ImageIcon prevButtonIcon;
-    private static ImageIcon nextButtonIcon;
 
     /** Creates new DiffComponent from AbstractDiff object*/
     public DiffPanel() {
 //        this.diff = diff;
         initComponents ();
-        if (prevButtonIcon == null) {
-            prevButtonIcon = new ImageIcon(org.openide.util.Utilities.loadImage("/org/netbeans/modules/diff/builtin/visualizer/prev.gif"));
-        }
-        if (nextButtonIcon == null) {
-            nextButtonIcon = new ImageIcon(org.openide.util.Utilities.loadImage("/org/netbeans/modules/diff/builtin/visualizer/next.gif"));
-        }
-        prevButton.setIcon(prevButtonIcon);
-        nextButton.setIcon(nextButtonIcon);
-        prevButton.setMnemonic (org.openide.util.NbBundle.getBundle(DiffPanel.class).getString("DiffComponent.prevButton.mnemonic").charAt (0));
-        nextButton.setMnemonic (org.openide.util.NbBundle.getBundle(DiffPanel.class).getString("DiffComponent.nextButton.mnemonic").charAt (0));
+        prevButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/prev.gif")));
+        nextButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/next.gif")));
+        prevButton.setMnemonic (org.openide.util.NbBundle.getMessage(DiffPanel.class, "DiffComponent.prevButton.mnemonic").charAt (0));
+        nextButton.setMnemonic (org.openide.util.NbBundle.getMessage(DiffPanel.class, "DiffComponent.nextButton.mnemonic").charAt (0));
         //setTitle(org.openide.util.NbBundle.getBundle(DiffComponent.class).getString("DiffComponent.title"));
-        setName(org.openide.util.NbBundle.getBundle(DiffPanel.class).getString("DiffComponent.title"));
+        setName(org.openide.util.NbBundle.getMessage(DiffPanel.class, "DiffComponent.title"));
         //HelpCtx.setHelpIDString (getRootPane (), DiffComponent.class.getName ());
         initActions();
         jSplitPane1.setResizeWeight(0.5);
