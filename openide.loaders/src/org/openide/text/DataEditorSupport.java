@@ -402,7 +402,16 @@ public class DataEditorSupport extends CloneableEditorSupport {
             if (fileLock == null || !fileLock.isValid()) {
                 fileLock = takeLock ();
             }
-            return getFileImpl ().getOutputStream (fileLock);
+            try {
+                return getFileImpl ().getOutputStream (fileLock);
+            } catch (IOException fse) {
+	        // [pnejedly] just retry once.
+		// Ugly workaround for #40552
+                if (fileLock == null || !fileLock.isValid()) {
+                    fileLock = takeLock ();
+                }
+                return getFileImpl ().getOutputStream (fileLock);
+            }	    
         }
         
         /** The time when the data has been modified
