@@ -4,7 +4,9 @@ OpenIDE-Module-Install: org/netbeans/modules/xml/core/CoreModuleInstall.class
 OpenIDE-Module-Layer: org/netbeans/modules/xml/core/resources/mf-layer.xml
 OpenIDE-Module-Specification-Version: @CORE_SPEC_VERS_SUBST@
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Public-Packages: org.netbeans.modules.xml.spi.**
+OpenIDE-Module-Public-Packages: 
+ org.netbeans.modules.xml.api.**,
+ org.netbeans.modules.xml.spi.**
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.19
 OpenIDE-Module-Module-Dependencies: 
  org.netbeans.api.xml/1 > @API_SPEC_VERS_SUBST@,
