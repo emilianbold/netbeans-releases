@@ -220,16 +220,17 @@
       <tocitem text="Sessions View" target="debug.window.sessions"></tocitem>
       <tocitem text="Threads View" target="debug.window.threads"></tocitem>
       <tocitem text="Call Stack View" target="debug.window.callstack"></tocitem>
-      <tocitem text="Variables View" target="debug.window.variables"></tocitem>
+      <tocitem text="Local Variables View" target="debug.window.variables"></tocitem>
       <tocitem text="Watches View" target="debug.window.watches"></tocitem>
       <tocitem text="Classes View" target="debug.window.classes"></tocitem>
       <tocitem text="Breakpoints View" target="debug.window.breakpoints"></tocitem>
       <tocitem text="Customizing the Display of a View" target="debug.view.customize"></tocitem>
     </tocitem>
+  <tocitem text="Debug Tabs in Output Window" target="debug.output.window"></tocitem>
   <tocitem text="Source Editor Debugging Features" target="debug.source.editor"></tocitem>
   </tocitem>
-  <tocitem text="Running a Program in the Debugger" target="debug.sessions.jump">
-    <tocitem text="Starting a Debugging Session" target="debug.running.debugger" />
+  <tocitem text="Starting a Debugging Session" target="debug.sessions.jump">
+    <tocitem text="Running a Program in the Debugger" target="debug.running.debugger" />
     <tocitem text="Attaching to a Java VM" target="debug.attach" />
     <tocitem text="Debugging on a 64-Bit Java VM" target="debug.sessions.64bit" />
       </tocitem>

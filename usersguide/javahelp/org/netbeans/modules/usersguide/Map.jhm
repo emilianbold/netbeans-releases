@@ -367,6 +367,7 @@
 <mapID target="debug.workspace" url="debug/environment/workspace.html" />
 <mapID target="debug.toolbar" url="debug/environment/toolbar.html" />
 <mapID target="debug.menu" url="debug/environment/debug_menu.html" />
+<mapID target="debug.output.window" url="debug/environment/debug_output.html" />
 <mapID target="debug.window.all" url="debug/environment/debug_window.html" />
 <mapID target="debug.window.sessions" url="debug/environment/sessions_view.html" />
 <mapID target="debug.window.breakpoints" url="debug/environment/breakpoints_view.html" />
