@@ -7,7 +7,7 @@
  *
  * The Original Code is the Ant module
  * The Initial Developer of the Original Code is Jayme C. Edwards.
- * Portions created by Jayme C. Edwards are Copyright (c) 2000.
+ * Portions created by Jayme C. Edwards are Copyright (c) 2002.
  * All Rights Reserved.
  *
  * Contributor(s): Jesse Glick.
@@ -25,8 +25,10 @@ import org.apache.tools.ant.*;
 
 import org.openide.*;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListener;
 
 import org.apache.tools.ant.module.AntModule;
+import org.apache.tools.ant.module.AntSettings;
 
 /** Represents Ant-style introspection info for a set of classes.
  * There should be one instance which is loaded automatically
@@ -183,7 +185,7 @@ public final class IntrospectedInfo implements Serializable {
                 listeners2 = (ChangeListener[])tonotify.toArray(new ChangeListener[tonotify.size()]);
                 tonotify.clear();
             }
-            ChangeEvent ev = new ChangeEvent(this);
+            ChangeEvent ev = new ChangeEvent(IntrospectedInfo.this);
             for (int i = 0; i < listeners2.length; i++) {
                 listeners2[i].stateChanged(ev);
             }
@@ -193,7 +195,7 @@ public final class IntrospectedInfo implements Serializable {
         synchronized (listeners) {
             if (listeners.isEmpty()) return;
             if (tonotify.isEmpty()) {
-                RequestProcessor.postRequest(new ChangeTask());
+                RequestProcessor.getDefault().post(new ChangeTask());
             }
             tonotify.addAll(listeners);
         }
@@ -523,6 +525,63 @@ public final class IntrospectedInfo implements Serializable {
             return "IntrospectedClass[text=" + supportsText + ",attrs=" + attrs + ",subs=" + subs + "]"; // NOI18N
         }
         
+    }
+    
+    // merging and including custom defs:
+    
+    /** only used to permit use of WeakListener */
+    private transient ChangeListener holder;
+    
+    /**
+     * Merge several IntrospectedInfo instances together.
+     * Responds live to updates.
+     */
+    private static IntrospectedInfo merge(IntrospectedInfo[] proxied) {
+        final IntrospectedInfo ii = new IntrospectedInfo();
+        ChangeListener l = new ChangeListener() {
+            public void stateChanged(ChangeEvent ev) {
+                IntrospectedInfo ii2 = (IntrospectedInfo)ev.getSource();
+                ii.clazzes.putAll(ii2.clazzes);
+                Iterator it = ii2.namedefs.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry e = (Map.Entry)it.next();
+                    String kind = (String)e.getKey();
+                    Map entries = (Map)e.getValue();
+                    if (ii.namedefs.containsKey(kind)) {
+                        ((Map)ii.namedefs.get(kind)).putAll(entries);
+                    } else {
+                        ii.namedefs.put(kind, new HashMap(entries));
+                    }
+                }
+                ii.fireStateChanged();
+            }
+        };
+        ii.holder = l;
+        for (int i = 0; i < proxied.length; i++) {
+            proxied[i].addChangeListener(WeakListener.change(l, proxied[i]));
+            l.stateChanged(new ChangeEvent(proxied[i]));
+        }
+        return ii;
+    }
+    
+    /** defaults + custom defs */
+    private static IntrospectedInfo merged;
+    
+    /**
+     * Get all known introspected definitions.
+     * Includes all those in {@link #getDefaults} plus custom definitions
+     * encountered in actual build scripts (details unspecified).
+     * @return a set of all known definitions, e.g. of tasks and types
+     * @since 2.14
+     */
+    public static synchronized IntrospectedInfo getKnownInfo() {
+        if (merged == null) {
+            merged = merge(new IntrospectedInfo[] {
+                getDefaults(),
+                AntSettings.getDefault().getCustomDefs(),
+            });
+        }
+        return merged;
     }
     
 }

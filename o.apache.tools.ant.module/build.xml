@@ -231,6 +231,10 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     - ../usersguide/javahelp/org/netbeans/modules/usersguide/ant/*.html
     - manifest.mf
     - build.xml
+7a. Make sure OpenIDE-Module-Public-Packages in manifest.mf lists all packages
+    actually present in ant.jar. Can use wildcard .** but not for org.apache.tools.ant
+    package itself since that would cause all module classes to be public, not just the
+    proper API packages.
 8.  Update ${ParserDB} with sources from ${useful-sources}
 9.  Update ${features.xml}
 10. Refresh these files with the prebuilt binaries from an Ant download:
