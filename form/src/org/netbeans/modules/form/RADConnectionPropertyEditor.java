@@ -346,6 +346,7 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
   */
   public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
     org.w3c.dom.Element el = doc.createElement (XML_CONNECTION);
+    if (currentValue == null) return null;
     String typeString;
     switch (currentValue.type) {
       case RADConnectionDesignValue.TYPE_VALUE: typeString = VALUE_VALUE; break;
