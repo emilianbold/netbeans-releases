@@ -61,12 +61,12 @@ final class NbModuleProject implements Project {
             helper.createExtensibleMetadataProvider(),
             new SavedHook(),
             new OpenedHook(),
-            new Actions(this, helper),
+            new Actions(this),
             new ClassPathProviderImpl(this),
             new SourceForBinaryImpl(this),
             new LogicalView(this),
+            new SubprojectProviderImpl(this),
             // XXX need, in rough descending order of importance:
-            // SubprojectProvider - special impl
             // AntArtifactProvider - should it run netbeans target, or all-foo/bar?
             // CustomizerProvider - ???
         });
