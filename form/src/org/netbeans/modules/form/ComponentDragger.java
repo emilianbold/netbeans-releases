@@ -239,56 +239,74 @@ class ComponentDragger
         if (targetMetaContainer == null)
             return false; // unknown meta-container
 
-        LayoutSupport layoutSupport = targetMetaContainer.getLayoutSupport();
-        if (layoutSupport == null)
-            return false; // no LayoutSupport (should not happen)
-
-        Component contComp = (Component) formDesigner.getComponent(targetMetaContainer);
-        if (contComp == null)
-            return false; // container not in designer (should not happen)
-
-        targetContainer = targetMetaContainer.getContainerDelegate(contComp);
-        if (targetContainer == null)
-            return false; // no container delegate (should not happen)
-
-        Point posInCont = SwingUtilities.convertPoint(handleLayer, p, targetContainer);
-
-        for (int i = 0; i < selectedComponents.length; i++) {
-            LayoutSupport.ConstraintsDesc constr = null;
-            int index = -1;
-
-            RADVisualComponent metacomp = selectedComponents[i];
-            Component comp = (Component) formDesigner.getComponent(metacomp);
-
-            if (comp != null && checkTarget(metacomp)) {
-                if (resizeType == 0) { // dragging
-                    Point posInComp = SwingUtilities.convertPoint(
-                                          handleLayer, hotspot, comp);
-                    index = layoutSupport.getNewIndex(
-                                targetContainer, posInCont, comp, posInComp);
-                    constr = layoutSupport.getNewConstraints(
-                                 targetContainer, posInCont, comp, posInComp);
-                }
-                else { // resizing
-                    int up = 0, down = 0, left = 0, right = 0;
-
-                    if ((resizeType & LayoutSupport.RESIZE_DOWN) != 0)
-                        down = p.y - hotspot.y;
-                    else if ((resizeType & LayoutSupport.RESIZE_UP) != 0)
-                        up = hotspot.y - p.y;
-                    if ((resizeType & LayoutSupport.RESIZE_RIGHT) != 0)
-                        right = p.x - hotspot.x;
-                    else if ((resizeType & LayoutSupport.RESIZE_LEFT) != 0)
-                        left = hotspot.x - p.x;
-
-                    Insets sizeChanges = new Insets(up, left, down, right);
-                    constr = layoutSupport.getResizedConstraints(comp, sizeChanges);
-                }
+        RADVisualContainer fixTargetContainer = null;
+        do {
+            if (fixTargetContainer != null) {
+                targetMetaContainer = fixTargetContainer;
+                fixTargetContainer = null;
             }
 
-            constraints.add(constr);
-            indices.add(new Integer(index));
+            LayoutSupport layoutSupport = targetMetaContainer.getLayoutSupport();
+            if (layoutSupport == null)
+                return false; // no LayoutSupport (should not happen)
+
+            Component contComp = (Component) formDesigner.getComponent(targetMetaContainer);
+            if (contComp == null)
+                return false; // container not in designer (should not happen)
+
+            targetContainer = targetMetaContainer.getContainerDelegate(contComp);
+            if (targetContainer == null)
+                return false; // no container delegate (should not happen)
+
+            Point posInCont = SwingUtilities.convertPoint(handleLayer, p, targetContainer);
+
+            for (int i = 0; i < selectedComponents.length; i++) {
+                LayoutSupport.ConstraintsDesc constr = null;
+                int index = -1;
+
+                RADVisualComponent metacomp = selectedComponents[i];
+                Component comp = (Component) formDesigner.getComponent(metacomp);
+
+                if (comp != null) {
+                    if (!checkTarget(metacomp)) {
+                        fixTargetContainer = metacomp.getParentContainer();
+                        constraints.clear();
+                        indices.clear();
+                        if (fixTargetContainer == null)
+                            return false; // should not happen
+                        break;
+                    }
+
+                    if (resizeType == 0) { // dragging
+                        Point posInComp = SwingUtilities.convertPoint(
+                                              handleLayer, hotspot, comp);
+                        index = layoutSupport.getNewIndex(
+                                    targetContainer, posInCont, comp, posInComp);
+                        constr = layoutSupport.getNewConstraints(
+                                     targetContainer, posInCont, comp, posInComp);
+                    }
+                    else { // resizing
+                        int up = 0, down = 0, left = 0, right = 0;
+
+                        if ((resizeType & LayoutSupport.RESIZE_DOWN) != 0)
+                            down = p.y - hotspot.y;
+                        else if ((resizeType & LayoutSupport.RESIZE_UP) != 0)
+                            up = hotspot.y - p.y;
+                        if ((resizeType & LayoutSupport.RESIZE_RIGHT) != 0)
+                            right = p.x - hotspot.x;
+                        else if ((resizeType & LayoutSupport.RESIZE_LEFT) != 0)
+                            left = hotspot.x - p.x;
+
+                        Insets sizeChanges = new Insets(up, left, down, right);
+                        constr = layoutSupport.getResizedConstraints(comp, sizeChanges);
+                    }
+                }
+
+                constraints.add(constr);
+                indices.add(new Integer(index));
+            }
         }
+        while (fixTargetContainer != null);
 
         return true;
     }
