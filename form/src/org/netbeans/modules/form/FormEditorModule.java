@@ -77,6 +77,10 @@ public class FormEditorModule extends ModuleInstall {
       FormPropertyEditorManager.registerEditor(
           Character.class,
           com.netbeans.developer.modules.loaders.form.editors.CharacterEditor.class);
+
+    FormPropertyEditorManager.registerEditor(
+          javax.swing.KeyStroke.class,
+          com.netbeans.developer.modules.loaders.form.editors.KeyStrokeEditor.class);
   }
 
   /** Module was uninstalled. */
@@ -515,6 +519,7 @@ public class FormEditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  46   Jaga      1.43.1.1    4/18/00  Tran Duc Trung  
  *  45   Jaga      1.43.1.0    4/3/00   Ales Novak      avoidance for BeanInfo 
  *       search
  *  44   Gandalf   1.43        2/29/00  Tran Duc Trung  JDK "forgets" to provide

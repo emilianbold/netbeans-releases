@@ -399,7 +399,7 @@ public class RADConnectionPropertyEditor
         String value = attributes.getNamedItem (ATTR_VALUE).getNodeValue ();
         String valueType = attributes.getNamedItem (ATTR_REQUIRED_TYPE).getNodeValue ();
         try {
-          Class reqType = TopManager.getDefault ().currentClassLoader ().loadClass (valueType);
+          Class reqType = TopManager.getDefault().currentClassLoader().loadClass(valueType);
           setValue (new RADConnectionDesignValue (reqType, value));
         } catch (Exception e) { 
           // ignore failures... and use no conn instead
