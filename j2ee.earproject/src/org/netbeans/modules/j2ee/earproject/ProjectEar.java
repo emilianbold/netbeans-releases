@@ -21,9 +21,12 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 //import org.netbeans.api.project.*;
 //import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
@@ -31,6 +34,8 @@ import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 //import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -60,6 +65,7 @@ public final class ProjectEar extends J2eeAppProvider
     ModuleChangeReporter,
     EjbChangeDescriptor, 
     PropertyChangeListener,
+    EarImplementation, 
     J2eeModuleContainer {
       
     public static final String FILE_DD        = "application.xml";//NOI18N
@@ -459,5 +465,15 @@ public final class ProjectEar extends J2eeAppProvider
     public FileObject findDeploymentConfigurationFile (String name) {
         FileObject moduleFolder = getMetaInf();
         return moduleFolder.getFileObject(name);
+    }
+    
+    public void addEjbJarModule(EjbJar module) {
+        Project p = FileOwnerQuery.getOwner(module.getDeploymentDescriptor());
+        ((EarProjectProperties)project.getProjectProperties()).addJ2eeSubprojects(new Project [] {p});
+    }
+    
+    public void addWebModule(WebModule module) {
+        Project p = FileOwnerQuery.getOwner(module.getDeploymentDescriptor());
+        ((EarProjectProperties)project.getProjectProperties()).addJ2eeSubprojects(new Project [] {p});
     }
 }

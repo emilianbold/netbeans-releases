@@ -16,34 +16,30 @@ package org.netbeans.modules.j2ee.earproject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
-//import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
-//import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-public class ProjectEarProvider 
-//    implements 
-//        EarProvider 
-{
+public class ProjectEarProvider implements  EarProvider {
     
     public ProjectEarProvider () {
     }
     
-    public Application findApplication (FileObject file) {
+    public Ear findEar (FileObject file) {
         Project project = FileOwnerQuery.getOwner (file);
         if (project != null && project instanceof EarProject) {
             EarProject ep = (EarProject) project;
             FileObject src = ep.getSourceDirectory ();
-//            //FileObject web = wp.getWebModule ().getDocumentBase ();
-//            if (src.equals (file) || /*web.equals (file) || */ FileUtil.isParentOf (src, file) /* || FileUtil.isParentOf (web, file) */) {
-//                return ApplicationFactory.createApplication (wp.getWebModule ());
-//            }
-//            FileObject build = wp.getWebModule().getBuildDirectory();
-//            if (build != null) {
-//                if (build.equals (file) || FileUtil.isParentOf (build, file)) {
-//                    return ApplicationFactory.createApplication (wp.getWebModule ());
-//                }
-//            }
+            if (src != null && src.equals (file) || FileUtil.isParentOf(src, file)) {
+                return ep.getEar();
+            }
+            FileObject prjdir = ep.getProjectDirectory();
+            if (prjdir != null && (prjdir.equals (file) || FileUtil.isParentOf(prjdir, file))) {
+                return ep.getEar();
+            }
         }
         return null;
     }

@@ -14,12 +14,14 @@
 package org.netbeans.modules.j2ee.spi.ejbjar;
 
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.ejbjar.EjbJarAccessor;
+import org.netbeans.modules.j2ee.ejbjar.EarAccessor;
 
 /**
- * Most general way to create {@link EjbJar} instances.
+ * Most general way to create {@link EjbJar} and {@link Ear} instances.
  * You are not permitted to create them directly; instead you implement
- * {@link EjbJarImplementation} and use this factory.
+ * {@link EjbJarImplementation} or {@link EarImplementation} and use this factory.
  *
  * @author  Pavel Buzek
  */
@@ -29,7 +31,7 @@ public final class EjbJarFactory {
     }
 
     /**
-     * Create API webmodule instance for the given SPI webmodule.
+     * Create API ejbmodule instance for the given SPI webmodule.
      * @param spiWebmodule instance of SPI webmodule
      * @return instance of API webmodule
      */
@@ -37,4 +39,12 @@ public final class EjbJarFactory {
         return EjbJarAccessor.DEFAULT.createEjbJar (spiWebmodule);
     }
 
+    /**
+     * Create API Ear instance for the given SPI webmodule.
+     * @param spiEar instance of SPI Ear
+     * @return instance of API Ear
+     */
+    public static Ear createEar(EarImplementation spiEar) {
+        return EarAccessor.DEFAULT.createEar (spiEar);
+    }
 }

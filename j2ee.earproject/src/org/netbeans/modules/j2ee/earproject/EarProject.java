@@ -31,6 +31,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 //import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 //import org.netbeans.api.project.ant.AntArtifact;
 //import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.common.classpath.ClassPathProviderImpl;
@@ -44,6 +45,7 @@ import org.netbeans.modules.j2ee.common.J2eeProject;
 
 import org.netbeans.modules.j2ee.common.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 //import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
@@ -107,6 +109,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private final ProjectEar appModule;
+    private final Ear ear;
 //    private FileObject libFolder = null;
     private AntBasedProjectType abpt;
     
@@ -118,6 +121,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
         refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator ());
         genFilesHelper = new GeneratedFilesHelper(helper);
         appModule = new ProjectEar (this); // , helper);
+        ear = EjbJarFactory.createEar(appModule);
         lookup = createLookup(aux);
 //        helper.addAntProjectListener(this);
     }
@@ -215,6 +219,10 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
     
     public ProjectEar getAppModule () {
         return appModule;
+    }
+    
+    public Ear getEar () {
+        return ear;
     }
     
     public FileObject getSourceDirectory() {
