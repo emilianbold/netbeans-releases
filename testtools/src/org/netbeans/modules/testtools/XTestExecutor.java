@@ -21,25 +21,24 @@ package org.netbeans.modules.testtools;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Properties;
-import java.util.StringTokenizer;
+import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.apache.tools.ant.module.api.AntTargetExecutor;
 
-import org.openide.ServiceType;
-import org.openide.ErrorManager;
-import org.openide.util.HelpCtx;
-import org.openide.loaders.DataObject;
-import org.openide.windows.InputOutput;
-import org.openide.execution.Executor;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.execution.ExecInfo;
+import org.openide.execution.Executor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.util.HelpCtx;
 
-import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.netbeans.modules.testtools.wizards.WizardIterator;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
+
 
 /** Executor for XTest Workspace Build Script Data Object
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
@@ -108,12 +107,16 @@ public class XTestExecutor extends Executor {
             else
                 throw new IOException(NbBundle.getMessage(XTestExecutor.class, "Err_HomeDirectoryNotSet")); // NOI18N
         }
-        TargetExecutor executor = new TargetExecutor(cookie, new String[]{"all"}); // NOI18N
-        executor.addProperties(getProperties());
-        if (showResults)
-            return showResults(executor.execute(), obj);
-        else
-            return executor.execute();
+        AntTargetExecutor.Env env = new AntTargetExecutor.Env();
+        Properties properties = getProperties();
+        properties.putAll(env.getProperties());
+        env.setProperties(properties);
+        AntTargetExecutor executor = AntTargetExecutor.createTargetExecutor(env);
+        if (showResults) {
+            return showResults(executor.execute(cookie, new String[]{"all"}), obj); // NOI18N
+        } else {
+            return executor.execute(cookie, new String[]{"all"}); // NOI18N
+        }
     }
     
     private ExecutorTask showResults(final ExecutorTask task, final DataObject obj) {
@@ -122,10 +125,12 @@ public class XTestExecutor extends Executor {
                 if (task.result()==0) {
                     try {
                         FileObject fo=obj.getFolder().getPrimaryFile();
+                        fo.refresh();
                         fo=fo.getFileObject("results"); // NOI18N
                         fo=fo.getFileObject("index", "html"); // NOI18N
-                        org.openide.awt.HtmlBrowser.URLDisplayer.getDefault().showURL(fo.getURL());
+                        URLDisplayer.getDefault().showURL(fo.getURL());
                     } catch (Exception e) {
+                        ErrorManager.getDefault().annotate(e, ErrorManager.WARNING, null, NbBundle.getMessage(XTestExecutor.class, "Err_ResultsNotFound"), null, null);
                         ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
                     }
                 }

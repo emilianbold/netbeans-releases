@@ -13,28 +13,18 @@
 
 package org.netbeans.modules.testtools;
 
-/*
- * XTestCompilerType.java
- *
- * Created on April 29, 2002, 10:47 PM
- */
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
-//import org.openide.util.Task;
-import org.openide.ServiceType;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.compiler.Compiler;
 import org.openide.compiler.CompilerType;
 import org.openide.compiler.CompilerJob;
-import org.openide.cookies.CompilerCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.ExecutionSupport;
 import org.openide.loaders.MultiDataObject;
@@ -42,7 +32,10 @@ import org.openide.compiler.CompilerGroup;
 import org.openide.compiler.ProgressEvent;
 
 import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.netbeans.modules.testtools.wizards.WizardIterator;
+import org.openide.ServiceType;
+import org.openide.cookies.CompilerCookie;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -331,9 +324,13 @@ public class XTestCompilerType extends CompilerType {
                 while(targetsit.hasNext()) {
                     Map.Entry target =(Map.Entry)targetsit.next();
                     try {
-                        TargetExecutor te=new TargetExecutor(script,(target == null)? null : new String[]{(String)target.getKey()});
-                        te.addProperties((Properties)target.getValue());
-                        if(te.execute().result()!=0) {
+                        AntTargetExecutor.Env env = new AntTargetExecutor.Env();
+                        Properties properties = env.getProperties();
+                        properties.putAll((Properties)target.getValue());
+                        env.setProperties(properties);
+                        AntTargetExecutor executor = AntTargetExecutor.createTargetExecutor(env);
+                        int result = executor.execute(script, (target == null)? null : new String[]{(String)target.getKey()}).result();
+                        if(result != 0) {
                             return false;
                         }
                     } catch(IOException ioe) {

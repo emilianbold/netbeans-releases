@@ -22,6 +22,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="${nbext}/standard-nbm-license.txt"/>
+  <property name="build.compiler.debug" value="true"/>
 
   <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext}/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
@@ -37,24 +38,16 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nbroot}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
         <pathelement location="${nbroot}/openide/compiler/netbeans/modules/autoload/openide-compiler.jar" />
         <pathelement location="${nbroot}/openide/execution/netbeans/modules/autoload/openide-execution.jar" />
-        <pathelement location="${nbroot}/openide/io/netbeans/modules/autoload/openide-io.jar" />
         <pathelement location="${nbroot}/core/netbeans/lib/core.jar" />
         <pathelement location="${nbroot}/core/windows/netbeans/modules/core-windows.jar" />
         <pathelement location="${nbroot}/java/netbeans/modules/java.jar" />
         <pathelement location="${nbroot}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar" />
         <pathelement location="${nbroot}/ant/netbeans/modules/ant.jar" />
-	<fileset dir="${nbroot}/ant/external">
-	   <include name="ant*.jar"/>
-	</fileset>
         <pathelement location="${nbroot}/jemmy/jemmy.jar" />
         <pathelement location="${nbroot}/jellytools/jelly2-nb.jar" />
         <pathelement location="${nbroot}/jemmysupport/netbeans/modules/jemmysupport.jar" />
         <!-- Hopefully set up by nbbuild/build.xml: -->
         <pathelement location="${jdkhome}/lib/tools.jar"/>
-        <fileset dir="${nbroot}/libs/external">
-          <include name="xerces*.jar"/>
-          <include name="xml-apis*.jar"/>
-        </fileset>
       </classpath>
     </javac>
   </target>
