@@ -136,4 +136,10 @@ public class I18nTestWizardAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(I18nUtil.HELP_ID_TESTING);
     }
+
+    protected boolean asynchronous() {
+      return false;
+    }
+    
+
 }
