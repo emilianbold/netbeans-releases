@@ -81,12 +81,16 @@ final public class FormEditor extends Object {
   /** The default percents of the splitting of the ComponentInspector */
   public static final int DEFAULT_INSPECTOR_PERCENTS = 30;
   
+  /** Default icon base for control panel. */
+  private static final String EMPTY_INSPECTOR_ICON_BASE =
+    "/com/netbeans/developer/modules/loaders/form/resources/emptyInspector";
 // ---------------------------------------------------
 // Private static variables
 
   private static Vector errorLog = new Vector ();
   private static ComponentInspector componentInspector;
   private static ExplorerManager explorerManager;
+  private static EmptyInspectorNode emptyInspectorNode;
   
 // -----------------------------------------------------------------------------
 // Static initializer
@@ -138,7 +142,7 @@ final public class FormEditor extends Object {
     }
     else {
 //    System.out.println ("FormManager null...");
-      getExplorerManager().setRootContext (new EmptyNode());
+      getExplorerManager().setRootContext (emptyInspectorNode);
       com.netbeans.ide.explorer.Explorer.getNodesTracker ().setSelectedNodes (getExplorerManager ());
     }
     designModeAction.setFormManager (formManager);
@@ -362,7 +366,8 @@ final public class FormEditor extends Object {
 
     ComponentInspector () {
       final ExplorerManager manager = getExplorerManager ();
-      manager.setRootContext (new com.netbeans.ide.nodes.AbstractNode (com.netbeans.ide.nodes.Children.LEAF));
+      emptyInspectorNode = new EmptyInspectorNode ();
+      manager.setRootContext (emptyInspectorNode);
       PropertySheetView sheet;
       SplittedPanel split = new SplittedPanel();
       split.add (new BeanTreeView(), SplittedPanel.ADD_FIRST);
@@ -373,8 +378,6 @@ final public class FormEditor extends Object {
 
       add ("Center", split);
       
-      setName (formBundle.getString ("CTL_NoSelection"));
-//      new InspectorTitleAdapter(this, manager);
 /*      manager.addPropertyChangeListener (new PropertyChangeListener () {
           public void propertyChange (PropertyChangeEvent evt) {
             if (ExplorerManager.PROP_ROOTCONTEXT.equals (evt.getPropertyName ()))
@@ -385,6 +388,28 @@ final public class FormEditor extends Object {
       setIcon (inspectorIcon);
     }
 
+    /** Called when the explored context changes.
+    * The default implementation updates the title of the window.
+    */
+    protected void updateTitle () {
+      Node[] nodes = getExplorerManager ().getSelectedNodes();
+      String title;
+      if (nodes.length == 0)
+        title = formBundle.getString ("CTL_NoSelection");
+      else if (nodes.length == 1) {
+/*        if (nodes[0] instanceof RADNode) {
+          RADNode radNode = (RADNode)nodes[0];
+          title = formatInspectorTitle.format (
+            new Object[] { radNode.getName() } );
+        }
+        else */
+          title = formBundle.getString ("CTL_NoSelection");
+      }
+      else
+        title = formBundle.getString ("CTL_MultipleSelection");
+      setName (title);
+    }
+    
     /** Fixed preferred size, so as the inherited preferred size is too big */
     public Dimension getPreferredSize () {
       return new Dimension (DEFAULT_INSPECTOR_WIDTH, DEFAULT_INSPECTOR_HEIGHT);
@@ -428,64 +453,12 @@ final public class FormEditor extends Object {
     }
   };
 
-  /** The class that connects the formExplorerManager and a title of
-  * the ComponentInspector.
-  * The displayName of currently selected component is shown
-  * as the caption of the frame, if multiple components are selected
-  * the text "multiple selection" is shown.
-  */
-/*  final public static class InspectorTitleAdapter {
-    /** The message formatter for Explorer title * /
-    private static java.text.MessageFormat formatInspectorTitle = new java.text.MessageFormat (
-        formBundle.getString ("FMT_InspectorTitle")
-      );
-
-    private java.awt.Frame frame;
-    private ExplorerManager manager;
-    private java.beans.PropertyChangeListener listener;
-
-    public InspectorTitleAdapter(java.awt.Frame aFrame, ExplorerManager aManager) {
-      frame = aFrame;
-      manager = aManager;
-      listener = new java.beans.PropertyChangeListener() {
-        public void propertyChange(java.beans.PropertyChangeEvent evt) {
-          if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-            Node[] nodes = manager.getSelectedNodes();
-            String title;
-            if (nodes.length == 0)
-              title = formBundle.getString ("CTL_NoSelection");
-            else if (nodes.length == 1) {
-              if (nodes[0] instanceof RADNode) {
-                RADNode radNode = (RADNode)nodes[0];
-                title = formatInspectorTitle.format (
-                  new Object[] { radNode.getName() } );
-              }
-              else
-                title = formBundle.getString ("CTL_NoSelection");
-            }
-            else
-              title = formBundle.getString ("CTL_MultipleSelection");
-            frame.setTitle(title);
-          }
-        }
-      };
-      manager.addPropertyChangeListener(listener);
-
-      frame.addWindowListener(new FWA());
-
+  static class EmptyInspectorNode extends com.netbeans.ide.nodes.AbstractNode {
+    public EmptyInspectorNode () {
+      super (com.netbeans.ide.nodes.Children.LEAF);
+      setIconBase (EMPTY_INSPECTOR_ICON_BASE);
     }
-
-    /** A FinalizeWindowAdapter - a class that cleans
-    * up the listeners when the window is closed to allow garbage collection.
-    * /
-    final class FWA extends java.awt.event.WindowAdapter {
-      public void windowClosed(java.awt.event.WindowEvent evt) {
-        manager.removePropertyChangeListener(listener);
-        frame.removeWindowListener(this);
-      }
-    }
-
-  } */
+  }
 
   final static class ErrorLogItem {
     public static final int WARNING = 0;
@@ -541,6 +514,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  2    Gandalf   1.1         3/24/99  Ian Formanek    
  *  1    Gandalf   1.0         3/24/99  Ian Formanek    
  * $
  */
