@@ -13,7 +13,9 @@
 
 package org.netbeans.core.projects;
 
+import org.openide.TopManager;
 import org.openide.filesystems.*;
+import java.beans.PropertyVetoException;
 
 /**
  *
@@ -29,10 +31,15 @@ public final class FilterFileSystem extends MultiFileSystem {
         super (new FileSystem [] { root.getFileSystem () });
         this.root = root;
         this.del = root.getFileSystem ();
-    }
+        
+        try {
+            setSystemName (del.getSystemName () + " : " + root.getPackageNameExt ('/', '.')); //NOI18N
+        } catch (PropertyVetoException e) {
+            // ther shouldn't be any listener vetoing setSystemName
+            TopManager.getDefault ().notifyException (e);
+        }
 
-    public String getDisplayName () {
-        return del.getSystemName () + " : " + root.getPackageNameExt ('/', '.'); //NOI18N
+        setPropagateMasks (true);
     }
 
     public final FileObject getRootFileObject () {
