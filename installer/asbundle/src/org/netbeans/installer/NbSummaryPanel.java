@@ -192,6 +192,9 @@ public class NbSummaryPanel extends TextDisplayPanel
             summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description53,uninstaller)";
         }
         
+        //Info about default AS administrator UN/PW
+        summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.adminInfo)";
+        
         return summaryMessage;
     }
     
