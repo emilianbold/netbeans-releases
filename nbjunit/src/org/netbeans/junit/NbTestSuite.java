@@ -96,4 +96,9 @@ public class NbTestSuite extends TestSuite implements NbTest {
         public boolean canRun() {
                 return true; // suite can always run
         }
+        
+        public String getExpectedFail() {
+            return null;
+        }
+        
 }

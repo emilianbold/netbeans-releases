@@ -78,9 +78,6 @@ Microsystems, Inc. All Rights Reserved.
 
 	<!-- XML, XSLT reporters -->
         <nbtaskdef classpath="${xtest.path};${xalan.path}">
-            <taskdef name="test-configurator" classname="org.netbeans.xtest.MTestConfigurator"/>
-            <taskdef name="test-compiler" classname="org.netbeans.xtest.MTestCompiler"/>            
-            <taskdef name="test-executor" classname="org.netbeans.xtest.MTestExecutor"/>            
             <taskdef name="testruninfo" classname="org.netbeans.xtest.pe.TestRunInfoTask"/>
             <taskdef name="testbaginfo" classname="org.netbeans.xtest.pe.TestBagInfoTask"/>
             <taskdef name="regenerateXML" classname="org.netbeans.xtest.pe.RegenerateXMLTask"/>
@@ -90,8 +87,12 @@ Microsystems, Inc. All Rights Reserved.
         </nbtaskdef>
 
         <!-- JUnit -->
-         <nbtaskdef name="junitTest" classname="org.netbeans.xtest.testrunner.JUnitTestRunnerTask"
-                   classpath="${junit.path};${xtest.path};${xerces.path}"/>
+         <nbtaskdef classpath="${junit.path};${xtest.path};${xerces.path}">
+            <taskdef name="junitTest" classname="org.netbeans.xtest.testrunner.JUnitTestRunnerTask"/>
+            <taskdef name="test-executor" classname="org.netbeans.xtest.harness.MTestExecutor"/>            
+            <taskdef name="test-configurator" classname="org.netbeans.xtest.harness.MTestConfigTask"/>
+            <taskdef name="test-compiler" classname="org.netbeans.xtest.harness.MTestCompiler"/>            
+         </nbtaskdef>    
 
         <!-- Needed for running code-mode tests with Clover (see build-clover.xml): -->
         <property name="clover.test.path" value=""/>
@@ -144,12 +145,20 @@ Microsystems, Inc. All Rights Reserved.
     <target name="config" depends="init, cleanworkdir">
         <property name="xtest.executors" value=""/>
         <property name="xtest.testbags" value=""/>
+        <property name="xtest.module.configfile" value=""/>
+        <property name="xtest.patternset.attribs" value=""/>
+        <property name="xtest.run.singletest" value=""/>
         <!-- This task reads config file cfg-${xtest.testtype}.xml and selects all -->
         <!-- testbags, which conforms to ${xtest.attribs} - is subset or equals -->
         <test-configurator testtype="${xtest.testtype}" 
                            testattributes="${xtest.attribs}"
                            testexecutors="${xtest.executors}"
-                           testbags="${xtest.testbags}"/>
+                           testbags="${xtest.testbags}"
+                           testconfig="${xtest.module.configfile}"
+                           patternsetattribs="${xtest.patternset.attribs}"
+                           singleTest="${xtest.run.singletest}">
+             <patternset refid="xtest.pattern"/>
+	</test-configurator>                           
     </target>
     
     <target name="runtests" depends="config">
@@ -166,14 +175,15 @@ Microsystems, Inc. All Rights Reserved.
 
         <mkdir dir="${xtest.workdir}/user/sketch-pad"/>
         <mkdir dir="${xtest.workdir}/tmpdir"/>
+        <mkdir dir="${xtest.workdir}/sys"/>
         
         <test-executor paramClasspathProp="tbag.classpath"
-                       paramPatternsetInProp="tbag.patternset.include"
-                       paramPatternsetExProp="tbag.patternset.exclude"
                        paramTestConfigProp="tbag.testtype"
-                       paramFormaterProp="tbag.formater"
                        paramNameProp="tbag.name"
-                       paramExecutorProp="tbag.executor"/>
+                       paramExecutorProp="tbag.executor"
+                       resultDir="${xtest.workdir}/xmlresults/suites"
+                       workDir="${xtest.workdir}/sys"/>
+
     </target>
     
     <target name="test">
@@ -252,9 +262,8 @@ Microsystems, Inc. All Rights Reserved.
 
         <!-- there should be some better userdir than this -->
         <property name="xtest.userdir" location="${xtest.workdir}/sys/ide"/>
-        <property name="test.class" value="org.netbeans.xtest.AntRunner"/>
+        <property name="test.class" value="org.netbeans.xtest.testrunner.JUnitTestRunnerExecutor"/>
         <property name="test.classpath" refid="test.classpath"/>
-        <property name="test.target" value="ide_test_helper"/>
         
         <property name="xtest.ide.commandline.suffix" value=""/>
         <property name="xtest.jvmargs" value=""/>
@@ -285,7 +294,7 @@ Microsystems, Inc. All Rights Reserved.
         <ide-jvmargs jvmargs="${xtest.jvmargs}" property="xtest.ide.commandline.jvmargs"/>
             
         <!--
-        <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -nosplash -cp:p &quot;${xtest.ide.path}&quot; -J-Dtest.class=${test.class} -J-Dtest.classpath=&quot;${test.classpath}&quot; -J-Dtest.basedir=&quot;${basedir}&quot; -J-Dtest.ant.file=&quot;${ant.file}&quot; -J-Dtest.target=${test.target} -J-Dtest.reuse.ide=${xtest.reuse.ide} -J-Dxtest.home=&quot;${xtest.home}&quot; -J-Dxtest.includes=&quot;${xtest.includes}&quot; -J-Dxtest.excludes=&quot;${xtest.excludes}&quot; -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dtbag.name=&quot;${tbag.name}&quot; -J-Dtbag.executor=${tbag.executor} -J-Dxtest.module=&quot;${xtest.module}&quot; -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; -J-Dxtest.distexec=true -J-Dtest.exit=${xtest.ide.exit} -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; -J-Dxtest.workdir=&quot;${xtest.workdir}&quot; -J-Dxtest.results=&quot;${xtest.results}&quot; -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Djunit.properties.file=${junit.properties.file} -J-Dnetbeans.windows=${xtest.ide.winsys} -J-Dxtest.error.manager=${xtest.error.manager} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
+        <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -nosplash -cp:p &quot;${xtest.ide.path}&quot; -J-Dtest.class=${test.class} -J-Dtest.classpath=&quot;${test.classpath}&quot; -J-Dtest.basedir=&quot;${basedir}&quot; -J-Dtest.ant.file=&quot;${ant.file}&quot; -J-Dtest.target=${test.target} -J-Dtest.reuse.ide=${xtest.reuse.ide} -J-Dxtest.home=&quot;${xtest.home}&quot; -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.name=&quot;${tbag.name}&quot; -J-Dtbag.executor=${tbag.executor} -J-Dxtest.module=&quot;${xtest.module}&quot; -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; -J-Dxtest.distexec=true -J-Dtest.exit=${xtest.ide.exit} -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; -J-Dxtest.workdir=&quot;${xtest.workdir}&quot; -J-Dxtest.results=&quot;${xtest.results}&quot; -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Djunit.properties.file=${junit.properties.file} -J-Dnetbeans.windows=${xtest.ide.winsys} -J-Dxtest.error.manager=${xtest.error.manager} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
         -->
         
         <condition property="xtest.ide.timeout" value="0">
@@ -309,10 +318,6 @@ Microsystems, Inc. All Rights Reserved.
                 
         <copy file="${xtest.home}/lib/xtest-junit-testrunner.jar" todir="${xtest.workdir.idejars}"/> 
 
-        <!-- check whether ant module is available in ID, if not use xtest's ant -->
-        <available file="${netbeans.home}/modules/ant.jar" property="xtest.use.ide.ant"/>                
-        <antcall target="prepare-xtest-ant"/>
-
         <antcall target="copy-user-jars"/>
         
         <!-- now create a system classloader path to be supplied to ide -->
@@ -328,13 +333,6 @@ Microsystems, Inc. All Rights Reserved.
         <!-- ide classpath - ant and junit -->
         <property name="xtest.ide.path" refid="xtest.ide.path">
             <classpath id="xtest.ide.path">         
-                <!-- search for ant if available in IDE,
-                     if not available in ide, it is copied
-                     so it is included in the following fileset
-                -->
-                <fileset dir="${netbeans.home}/modules/ext">
-                    <include name="ant*.jar"/>
-                </fileset>          
                 <fileset dir="${xtest.userdir}/xtest/lib/ext">
                     <include name="*.jar"/>
                 </fileset>                
@@ -356,7 +354,56 @@ Microsystems, Inc. All Rights Reserved.
         -->
         <property name="xtest.ide.security" value=""/>
         
-        <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -nosplash -cp:p &quot;${xtest.ide.path}&quot; -J-Dnetbeans.classpath=&quot;${xtest.netbeans.classpath}&quot; -J-Dnetbeans.mainclass=org.netbeans.xtest.ide.Main -J-Dtest.class=${test.class} -J-Dtest.classpath=&quot;${test.classpath}&quot; -J-Dtest.basedir=&quot;${basedir}&quot; -J-Dtest.ant.file=&quot;${ant.file}&quot; -J-Dtest.target=${test.target} -J-Dtest.reuse.ide=${xtest.reuse.ide} -J-Dxtest.home=&quot;${xtest.home}&quot; -J-Dxtest.includes=&quot;${xtest.includes}&quot; -J-Dxtest.excludes=&quot;${xtest.excludes}&quot; -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dtbag.name=&quot;${tbag.name}&quot; -J-Dtbag.executor=${tbag.executor} -J-Dxtest.module=&quot;${xtest.module}&quot; -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; -J-Dxtest.distexec=true -J-Dtest.exit=${xtest.ide.exit} -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; -J-Dxtest.workdir=&quot;${xtest.workdir}&quot; -J-Dxtest.results=&quot;${xtest.results}&quot; -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Djunit.properties.file=${junit.properties.file} -J-Dnetbeans.windows=${xtest.ide.winsys} -J-Dxtest.error.manager=${xtest.error.manager} -J-Dxtest.timeout=${xtest.timeout} -J-Dnetbeans.systemclassloader.patches=${xtest.netbeans.systemclassloader.patches} ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
+        <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -nosplash 
+-cp:p &quot;${xtest.ide.path}&quot; 
+-J-Dnetbeans.classpath=&quot;${xtest.netbeans.classpath}&quot; 
+-J-Dnetbeans.mainclass=org.netbeans.xtest.ide.Main 
+-J-Dnetbeans.full.hack=true 
+-J-Dnetbeans.windows=${xtest.ide.winsys} 
+-J-Dnetbeans.systemclassloader.patches=${xtest.netbeans.systemclassloader.patches} 
+
+-J-Dtest.class=${test.class} 
+-J-Dtest.classpath=&quot;${test.classpath}&quot; 
+-J-Dtest.exit=${xtest.ide.exit} 
+-J-Dtest.reuse.ide=${xtest.reuse.ide} 
+-J-Dtest.output.redirect=true 
+-J-Dtbag.classpath=&quot;${tbag.classpath}&quot; 
+
+-J-Dxtest.error.manager=${xtest.error.manager} 
+-J-Dxtest.home=&quot;${xtest.home}&quot;         
+	
+-J-Dtestrunner.workdir=&quot;${xtest.workdir}/sys&quot;
+-J-Dtestrunner.timeout=${xtest.timeout} 
+-J-Dtestrunner.propertyfiles=&quot;${test.propertyfile}&quot;
+
+-J-Dwork.dir=&quot;${xtest.workdir}/sys&quot;
+-J-Dxtest.workdir=&quot;${xtest.workdir}&quot;
+-J-Dxtest.tmpdir=&quot;${xtest.tmpdir}&quot;
+-J-Dxtest.sketchpad=&quot;${xtest.sketchpad}&quot;
+-J-Dnbjunit.workdir=&quot;${xtest.workdir}/user&quot;
+-J-Djunit.properties.file=&quot;${junit.properties.file}&quot;
+        
+${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
+        
+        <!--  Removed properties. No longer needed.
+        
+                -J-Dxtest.results=&quot;${xtest.results}&quot; 
+	        -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; 
+	        -J-Dxtest.includes=&quot;${xtest.includes}&quot; 
+	        -J-Dxtest.excludes=&quot;${xtest.excludes}&quot; 
+	        -J-Dtbag.patternset.include=${tbag.patternset.include} 
+	        -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} 
+	        -J-Dtbag.testtype=${tbag.testtype} 
+	        -J-Dtbag.formater=${tbag.formater} 
+	        -J-Dtbag.name=&quot;${tbag.name}&quot; 
+	        -J-Dtbag.executor=${tbag.executor} 
+	        -J-Dxtest.module=&quot;${xtest.module}&quot; 
+	        -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; 
+	        -J-Dxtest.distexec=true 
+	        -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; 
+	        -J-Dxtest.timeout=${xtest.timeout} 
+	-->   
+        
         <echo message="ARGUMENTS = ${args}"/>        
         
         <ideexec dir="${netbeans.home}/bin" executable="${netbeans.home}/bin/runide.exe" 
@@ -424,10 +471,6 @@ Microsystems, Inc. All Rights Reserved.
                    property="ide.extra.classpath"/>
     </target>
     
-    <target name="prepare-xtest-ant" unless="xtest.use.ide.ant">
-        <copy file="${xtest.home}/lib/ant-1.4.1.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
-    </target>    
-
     <!-- This target is executed from running IDE -->
     <target name="ide_test_helper" depends="init,ide_test_init,junit_test"/>
     
@@ -460,7 +503,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="junit.properties.file" value=""/>
         
         <!-- run the tests -->        
-        <junitTest resultDir = "${xtest.workdir}/xmlresults/suites" workDir="${xtest.workdir}/sys" 
+        <junitTest workDir="${xtest.workdir}/sys" 
             testMode="${xtest.testrunner.mode}" jvmArgs="${xtest.jvmargs}" timeout="${xtest.timeout}">
             <classpath  refid="test.classpath"/>
             
@@ -472,11 +515,6 @@ Microsystems, Inc. All Rights Reserved.
             <sysproperty key="junit.properties.file" value="${junit.properties.file}"/>
             <syspropertyfile file="${test.propertyfile}"/>
             
-             <testset path="${tbag.classpath}" >                
-                <patternset refid="xtest.pattern"/>
-                <patternset includes="${tbag.patternset.include}"
-                            excludes="${tbag.patternset.exclude}"/>
-            </testset>
         </junitTest>
     </target>
     
@@ -576,13 +614,10 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ======== -->
     
     <target name="compiler-launcher" depends="config,deleteworkdir" unless="xtest.distexec">
-       <test-compiler paramClasspathProp="tbag.classpath"
-                        paramPatternsetInProp="tbag.patternset.include"
-                        paramPatternsetExProp="tbag.patternset.exclude"
-                        paramTestConfigProp="tbag.testtype"
-                        paramFormaterProp="tbag.formater"
-                        paramNameProp="tbag.name"
-                        paramExecutorProp="tbag.executor"/>    
+       <test-compiler  paramClasspathProp="tbag.classpath"
+                       paramTestConfigProp="tbag.testtype"
+                       paramNameProp="tbag.name"
+                       paramExecutorProp="tbag.executor"/>    
     </target>
     
     <target name="compiletests" depends="init" unless="xtest.distexec">
@@ -666,6 +701,25 @@ Microsystems, Inc. All Rights Reserved.
     <target name="realclean"
             description="Deletes classes, ${xtest.file.location}/${xtest.file.name} and *all* results."
             depends="cleantests,cleanresults">
+    </target>
+
+    <!-- ================= -->
+    <!-- Config generation -->
+    <!-- ================= -->
+    <!-- Generate config with failed tests from the last test run. -->
+    <target name="generateFailedConfig" description="Generates config of failed tests from last results">
+        <taskdef name="generateFailedConfig" classpath="${xtest.home}/src;${xtest.home}/lib/xerces.jar;${xtest.home}/lib/xml-apis.jar" 
+                 classname="org.netbeans.xtest.pe.GenerateFailedTask"/>
+	<generateFailedConfig inputDir="${xtest.results}" outputDir="."/>
+    </target>
+
+    <!-- Generates config from tests excluded in given config or in all configs 
+    find in input directory -->
+    <target name="generateExcludedConfig">
+        <taskdef name="generateExcludedConfig" classpath="${xtest.home}/src;${xtest.home}/lib/xerces.jar;${xtest.home}/lib/xml-apis.jar" 
+                 classname="org.netbeans.xtest.pe.GenerateExcludedTask"/>
+        <property name="configFile" value="" />
+	<generateExcludedConfig inputDir="." outputDir="." configFile="${configFile}"/>
     </target>
     
 </project>

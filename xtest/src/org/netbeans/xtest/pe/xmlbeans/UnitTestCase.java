@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,6 +29,8 @@ public class UnitTestCase extends XMLBean {
     public static final String TEST_FAIL="fail";
     public static final String TEST_ERROR="error";
     public static final String TEST_UNKNOWN="unknown";
+    public static final String TEST_UNEXPECTED_PASS="unexpected pass";
+    public static final String TEST_EXPECTED_FAIL="expected fail";
     
     /** Creates new UnitTestCase */
     public UnitTestCase() {
@@ -173,7 +175,21 @@ public class UnitTestCase extends XMLBean {
     public void setStackTrace(String stackTrace) {
         xml_cdata = stackTrace;
     }
+
+    /** Getter for property failReason.
+     * @return Value of property failReason.
+     */
+    public String getFailReason() {
+        return xmlat_failReason;
+    }
     
+    /** Setter for property failReason.
+     * @param message New value of property failReason.
+     */
+    public void setFailReason(String failReason) {
+        xmlat_failReason = failReason;
+    }
+
     // attributes
     public String   xmlat_class;
     public String   xmlat_name;
@@ -181,6 +197,7 @@ public class UnitTestCase extends XMLBean {
     public String   xmlat_result;
     public String   xmlat_workdir;
     public String   xmlat_message;
+    public String   xmlat_failReason;
     public String   xmlat_type;
     public long     xmlat_time;
 

@@ -138,7 +138,6 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="external/xml-apis-1.0b2.jar" tofile="lib/xml-apis.jar"/>
     <copy file="external/xerces-2.0.1.jar" tofile="lib/xerces.jar"/>
     <copy file="external/xalan-2.3.1.jar" tofile="lib/xalan.jar"/>
-    <copy file="external/ant-1.4.1.jar" tofile="lib/ant-1.4.1.jar"/>
   </target>
   
   <target name="makedist" depends="compile-dependend-modules,jars">
@@ -174,7 +173,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="lib/xml-apis.jar"/>
     <delete file="lib/xalan.jar"/>
     <delete file="lib/xtest-junit-testrunner.jar"/>
-    <delete file="lib/ant-1.4.1.jar"/>
     <delete file="xtest-distribution.zip"/>
     <delete file="xtest-pes-distribution.zip"/>
     <delete dir="netbeans"/>

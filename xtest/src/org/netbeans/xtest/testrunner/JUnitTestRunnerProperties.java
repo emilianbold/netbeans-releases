@@ -17,6 +17,7 @@ package org.netbeans.xtest.testrunner;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.junit.Filter;
 
 
 /**
@@ -35,6 +36,7 @@ public class JUnitTestRunnerProperties {
     static final String TEST_TO_EXECUTE="xtest.junit-test-runner.test/";
     static final String TEST_FILTER_INCLUDE="xtest.junit-test-runner.test-filter.include/";
     static final String TEST_FILTER_EXCLUDE="xtest.junit-test-runner.test-filter.exclude/";
+    static final String TEST_FILTER_EXPECTED_FAIL="xtest.junit-test-runner.test-filter.expected-fail/";
     
     // testrun type stuff
     static final String TESTRUN_TYPE="xtest.junit-test-runner.testrun-type";
@@ -109,16 +111,19 @@ public class JUnitTestRunnerProperties {
         addTestNameWithFilter(testName,null,null);
     }
     
-    public void addTestNameWithFilter(String testName, String[] includes, String[] excludes) {
+    public void addTestNameWithFilter(String testName, Filter.IncludeExclude[] includes, Filter.IncludeExclude[] excludes) {
         runnerProperties.setProperty(getTestPropertyName(testIndex),testName);
         if (includes != null) {
             for (int i=0; i < includes.length; i++) {
-                runnerProperties.setProperty(getIncludeFilterPropertyName(testIndex, i),includes[i]);
+                if (includes[i].getName() != null)
+                    runnerProperties.setProperty(getIncludeFilterPropertyName(testIndex, i),includes[i].getName());
+                if (includes[i].getExpectedFail() != null)
+                    runnerProperties.setProperty(getExpectedFailFilterPropertyName(testIndex, i),includes[i].getExpectedFail());
             }
         }
         if (excludes != null) {
             for (int i=0; i < excludes.length; i++) {
-                runnerProperties.setProperty(getExcludeFilterPropertyName(testIndex, i),excludes[i]);
+                runnerProperties.setProperty(getExcludeFilterPropertyName(testIndex, i),excludes[i].getName());
             }
         }
         testIndex++;
@@ -130,7 +135,7 @@ public class JUnitTestRunnerProperties {
         return testNames;
     }
     
-    public String[] getTestFilterIncludes(int testIndex) {
+    public Filter.IncludeExclude[] getTestFilterIncludes(int testIndex) {
         parseRunnerProperties();
         if ((testIndex >= 0) & (testIndex < testFilterIncludes.length)) {            
             return testFilterIncludes[testIndex];
@@ -139,7 +144,7 @@ public class JUnitTestRunnerProperties {
         }
     }
         
-    public String[] getTestFilterExcludes(int testIndex) {
+    public Filter.IncludeExclude[] getTestFilterExcludes(int testIndex) {
         parseRunnerProperties();
         if ((testIndex >= 0) & (testIndex < testFilterExcludes.length)) {
             /*
@@ -170,6 +175,22 @@ public class JUnitTestRunnerProperties {
         runnerProperties.setProperty(RESULTS_DIRECTORY,value);
     }
     
+    public JUnitTestRunnerProperties[] divideByTests() {
+        Vector properties = new Vector();
+        parseRunnerProperties();
+        for (int i=0; i<testNames.length; i++) {
+            JUnitTestRunnerProperties prop = new JUnitTestRunnerProperties();
+            if (getResultsDirName() != null)
+                prop.setResultsDirName(getResultsDirName());
+            if (getTestRunType() != null)
+                prop.setTestRunType(getTestRunType());
+            prop.addTestNameWithFilter(testNames[i], testFilterIncludes[i], testFilterExcludes[i]);
+            prop.parseRunnerProperties();
+            properties.add(prop);
+        }
+        return (JUnitTestRunnerProperties[])properties.toArray(new JUnitTestRunnerProperties[0]);
+    }
+    
     
     
     //public String 
@@ -181,9 +202,9 @@ public class JUnitTestRunnerProperties {
     // test names
     private String[] testNames;
     // includes
-    private String[][] testFilterIncludes;
+    private Filter.IncludeExclude[][] testFilterIncludes;
     // excludes
-    private String[][] testFilterExcludes;
+    private Filter.IncludeExclude[][] testFilterExcludes;
     
     
     
@@ -203,6 +224,10 @@ public class JUnitTestRunnerProperties {
         } else if (propertyName.startsWith(TEST_FILTER_EXCLUDE)) {
             // filter is a bit more complicated
             String filterSuffix = propertyName.substring(TEST_FILTER_EXCLUDE.length());
+            testIDString = filterSuffix.substring(0,filterSuffix.lastIndexOf('/'));
+        } else if (propertyName.startsWith(TEST_FILTER_EXPECTED_FAIL)) {
+            // filter is a bit more complicated
+            String filterSuffix = propertyName.substring(TEST_FILTER_EXPECTED_FAIL.length());
             testIDString = filterSuffix.substring(0,filterSuffix.lastIndexOf('/'));
         }
         try {
@@ -224,6 +249,8 @@ public class JUnitTestRunnerProperties {
         if (propertyName.startsWith(JUnitTestRunnerProperties.TEST_FILTER_INCLUDE)) {            
             filterIDString = propertyName.substring(propertyName.lastIndexOf('/')+1);
         } else if (propertyName.startsWith(JUnitTestRunnerProperties.TEST_FILTER_EXCLUDE)) {
+            filterIDString = propertyName.substring(propertyName.lastIndexOf('/')+1);
+        } else if (propertyName.startsWith(JUnitTestRunnerProperties.TEST_FILTER_EXPECTED_FAIL)) {
             filterIDString = propertyName.substring(propertyName.lastIndexOf('/')+1);
         }
         try {
@@ -258,27 +285,47 @@ public class JUnitTestRunnerProperties {
                         // only for debugging purposes
                         System.err.println("Cannot find test class for key "+key);
                     }
-                } else if (key.startsWith(TEST_FILTER_INCLUDE) |
-                key.startsWith(TEST_FILTER_EXCLUDE)) {
+                } else if (key.startsWith(TEST_FILTER_INCLUDE) | key.startsWith(TEST_FILTER_EXCLUDE) | 
+                           key.startsWith(TEST_FILTER_EXPECTED_FAIL)) {
                     String value = runnerProperties.getProperty(key);
                     if (value != null) {
                         Integer testID = getTestID(key);
                         if (key.startsWith(TEST_FILTER_INCLUDE)) {
                             // install include filter if not yet installed
-                            ArrayList includeFilters = (ArrayList)filterIncludes.get(testID);
+                            TreeMap includeFilters = (TreeMap)filterIncludes.get(testID);
                             if (includeFilters == null) {
-                                includeFilters = new ArrayList();
+                                includeFilters = new TreeMap();
                                 filterIncludes.put(testID,includeFilters);
                             }
-                            includeFilters.add(value);
-                        } else {
+                            Integer filterID = getFilterID(key);
+                            Filter.IncludeExclude valueObject = (Filter.IncludeExclude)includeFilters.get(filterID);
+                            if (valueObject == null) {
+                                valueObject = new Filter.IncludeExclude();
+                                includeFilters.put(filterID, valueObject);
+                            }
+                            valueObject.setName(value);
+                        } else if (key.startsWith(TEST_FILTER_EXCLUDE)) {
                             // install exclude filter
-                            ArrayList excludeFilters = (ArrayList)filterExcludes.get(testID);
+                            TreeMap excludeFilters = (TreeMap)filterExcludes.get(testID);
                             if (excludeFilters == null) {
-                                excludeFilters = new ArrayList();
+                                excludeFilters = new TreeMap();
                                 filterExcludes.put(testID,excludeFilters);
                             }
-                            excludeFilters.add(value);
+                            excludeFilters.put(getFilterID(key), new Filter.IncludeExclude(value, null));
+                        } else if (key.startsWith(TEST_FILTER_EXPECTED_FAIL)) {
+                            // install expected fails
+                            TreeMap includeFilters = (TreeMap)filterIncludes.get(testID);
+                            if (includeFilters == null) {
+                                includeFilters = new TreeMap();
+                                filterIncludes.put(testID,includeFilters);
+                            }
+                            Integer filterID = getFilterID(key);
+                            Filter.IncludeExclude valueObject = (Filter.IncludeExclude)includeFilters.get(filterID);
+                            if (valueObject == null) {
+                                valueObject = new Filter.IncludeExclude();
+                                includeFilters.put(filterID, valueObject);
+                            }
+                            valueObject.setExpectedFail(value);
                         }
                     }
                 }
@@ -287,8 +334,8 @@ public class JUnitTestRunnerProperties {
             // now create arrays from test names and filter includes/excludes
             this.testNames = new String[testNames.size()];
             // incldues/excludes arrays
-            this.testFilterIncludes = new String[testNames.size()][];
-            this.testFilterExcludes = new String[testNames.size()][];
+            this.testFilterIncludes = new Filter.IncludeExclude[testNames.size()][];
+            this.testFilterExcludes = new Filter.IncludeExclude[testNames.size()][];
             int i=0;
             // sort the keys in ascending order
             List keyList = new ArrayList();
@@ -301,14 +348,14 @@ public class JUnitTestRunnerProperties {
                 this.testNames[i] = testName;
                 // now includes/excludes
                 if (filterIncludes.containsKey(key)) {
-                    ArrayList includes = (ArrayList)filterIncludes.get(key);
+                    TreeMap includes = (TreeMap)filterIncludes.get(key);
                     // convert the includes into String array which then assign to testFilterIncludes;
-                    this.testFilterIncludes[i] = (String[])(includes.toArray(new String[0]));
+                    this.testFilterIncludes[i] = (Filter.IncludeExclude[])(includes.values().toArray(new Filter.IncludeExclude[0]));
                 }
                 if (filterExcludes.containsKey(key)) {
-                    ArrayList excludes = (ArrayList)filterExcludes.get(key);
+                    TreeMap excludes = (TreeMap)filterExcludes.get(key);
                     // convert the excludes into String array which then assign to testFilterExcludes;
-                    this.testFilterExcludes[i] = (String[])(excludes.toArray(new String[0]));
+                    this.testFilterExcludes[i] = (Filter.IncludeExclude[])(excludes.values().toArray(new Filter.IncludeExclude[0]));
                 }
                 i++;
             }
@@ -329,6 +376,10 @@ public class JUnitTestRunnerProperties {
     private static String getExcludeFilterPropertyName(int testIndex, int filterIndex) {
         return TEST_FILTER_EXCLUDE+testIndex+'/'+filterIndex;
     }    
+    
+    private static String getExpectedFailFilterPropertyName(int testIndex, int filterIndex) {
+        return TEST_FILTER_EXPECTED_FAIL+testIndex+'/'+filterIndex;
+    }
     
     
 }

@@ -26,9 +26,10 @@ import org.netbeans.junit.Filter;
  * @author <a href="mailto:vitezslav.stejskal@czech.sun.com">Vitezslav Stejskal</a>
  * @version 1.0
  */
-public class TestFilter {
+public class TestFilter implements Comparable {
     protected String file;
     protected Filter filter;
+    protected int position;
     
     /** Creates new TestFilter */
     public TestFilter(String file, Filter filter) {
@@ -43,4 +44,17 @@ public class TestFilter {
     public Filter getFilter() {
         return filter;
     }
+    
+    public void setPosition (int position) {
+        this.position = position;
+    }
+    
+    public int compareTo(Object o) {
+        if (position == ((TestFilter)o).position)
+            return 0;
+        if (position > ((TestFilter)o).position)
+            return 1;
+        return -1;
+    }
+    
 }

@@ -26,6 +26,7 @@ import java.io.*;
 import junit.framework.*;
 
 import java.text.*;
+import org.netbeans.junit.NbTest;
 
 /**
  *
@@ -44,6 +45,8 @@ public class ConsoleSummaryReporter implements JUnitTestListener {
     // suiteStartTime
     private long suiteStartTime;
     
+    private int expectedFailCount = 0;
+    
     public ConsoleSummaryReporter() {
         this.pw = new PrintWriter(System.out);
     }
@@ -60,6 +63,7 @@ public class ConsoleSummaryReporter implements JUnitTestListener {
 
     public void startTestSuite(TestSuite suite) {
         suiteStartTime = System.currentTimeMillis();
+        expectedFailCount = 0;
         pw.println("- test suite "+suite.getName()+" started");
         pw.flush();
     }
@@ -74,6 +78,8 @@ public class ConsoleSummaryReporter implements JUnitTestListener {
             pw.println("- test suite "+suite.getName()+" FAILED");
             pw.println("- time elapsed: "+timeFormatter.format(suiteDelta/1000.0)+" seconds");            
             pw.print("- passed: "+passCount+"  failed: "+suiteResult.failureCount());
+            if (expectedFailCount > 0)
+                pw.print(" (incl. "+expectedFailCount+" expected)");
             pw.println("  errors: "+suiteResult.errorCount()+"  total: "+suiteResult.runCount());
             double successRate = 0;
             if (suiteResult.runCount() != 0) {
@@ -97,7 +103,12 @@ public class ConsoleSummaryReporter implements JUnitTestListener {
     public void endTest(Test test) {}
 
 	// empty
-    public void addFailure(Test test, AssertionFailedError t) {}
+    public void addFailure(Test test, AssertionFailedError t) {
+        if (test instanceof NbTest) {
+           if (((NbTest)test).getExpectedFail() != null)
+               expectedFailCount++;
+        }
+    }
 
 	// empty
     public void addError(Test test, Throwable t) {}

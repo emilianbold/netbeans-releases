@@ -52,7 +52,8 @@ public class XMLReporter implements JUnitTestListener {
     private long testsPassed = 0;
     private long testsFailed = 0;
     private long testsErrors = 0;
-    
+    private long testsUnexpectedPassed = 0;
+    private long testsExpectedFailed = 0;
     
     private File resultsDirectory;
     private OutputStream outStream;
@@ -100,6 +101,15 @@ public class XMLReporter implements JUnitTestListener {
         currentTestCase.xmlat_message = assertionFailedError.getMessage();
         currentTestCase.xmlat_result = UnitTestCase.TEST_FAIL;
         testsFailed ++;
+
+        if (test instanceof NbTest) {
+           String exp_mesg = ((NbTest)test).getExpectedFail();
+           if (exp_mesg != null) {
+               currentTestCase.xmlat_result = UnitTestCase.TEST_EXPECTED_FAIL;
+               currentTestCase.xmlat_failReason = exp_mesg;
+               testsExpectedFailed++;
+           }
+        }
     }
     
     public void endTest(junit.framework.Test test) {       
@@ -120,11 +130,20 @@ public class XMLReporter implements JUnitTestListener {
                 // no workdir is available ... 
             }
         }
+        
         currentTestCase.xmlat_time = System.currentTimeMillis() - caseTime;
         if (currentTestCase.xmlat_result.equals(UnitTestCase.TEST_UNKNOWN)) {
             // test didn't fail or finished with error -> it passed :-)
             currentTestCase.xmlat_result=UnitTestCase.TEST_PASS;
             testsPassed++;
+            if (test instanceof NbTest) {
+               String exp_mesg = ((NbTest)test).getExpectedFail();
+               if (exp_mesg != null) {
+                   currentTestCase.xmlat_result = UnitTestCase.TEST_UNEXPECTED_PASS;
+                   currentTestCase.xmlat_failReason = exp_mesg;
+                   testsUnexpectedPassed++;
+               }
+            }
         }
         
         if (JUnitTestRunner.usingXTestErrorManager()) {
@@ -146,10 +165,13 @@ public class XMLReporter implements JUnitTestListener {
                         currentTestCase.xmlat_message = "ErrorManager received logs/notifications";
                     }
                     
-                    if (currentTestCase.xmlat_result.equals(UnitTestCase.TEST_PASS)&(notificationsPresent)) {
+                    if ((currentTestCase.xmlat_result.equals(UnitTestCase.TEST_PASS)|
+                        currentTestCase.xmlat_result.equals(UnitTestCase.TEST_UNEXPECTED_PASS))&(notificationsPresent)) {
                         currentTestCase.xmlat_result = UnitTestCase.TEST_ERROR;
                         testsErrors++;
                         testsPassed--;
+                        if (currentTestCase.xmlat_result.equals(UnitTestCase.TEST_UNEXPECTED_PASS))
+                            testsUnexpectedPassed--;
                     }
                 }
             }
@@ -200,6 +222,8 @@ public class XMLReporter implements JUnitTestListener {
         currentTestSuite.xmlat_testsPass = testsPassed;
         currentTestSuite.xmlat_testsFail = testsFailed;
         currentTestSuite.xmlat_testsError = testsErrors;
+        currentTestSuite.xmlat_testsUnexpectedPass = testsUnexpectedPassed;
+        currentTestSuite.xmlat_testsExpectedFail = testsExpectedFailed;
 
         // now get the suite out -- suite is still not completed
         saveCurrentSuite();
@@ -246,6 +270,8 @@ public class XMLReporter implements JUnitTestListener {
         currentTestSuite.xmlat_testsPass = testsPassed;
         currentTestSuite.xmlat_testsFail = testsFailed;
         currentTestSuite.xmlat_testsError = testsErrors;
+        currentTestSuite.xmlat_testsUnexpectedPass = testsUnexpectedPassed;
+        currentTestSuite.xmlat_testsExpectedFail = testsExpectedFailed;
         // suite is finished
         currentTestSuite.xmlat_unexpectedFailure = null;
         
@@ -277,6 +303,8 @@ public class XMLReporter implements JUnitTestListener {
         testsPassed = 0;
         testsFailed = 0;
         testsErrors = 0;
+        testsUnexpectedPassed = 0;
+        testsExpectedFailed = 0;
         logToIDE("XTest: suite "+currentSuiteName+" started at "+currentTestSuite.xmlat_timeStamp);        
         saveCurrentSuite();        
     }

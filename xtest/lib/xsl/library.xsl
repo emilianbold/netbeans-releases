@@ -8,7 +8,7 @@
  http://www.sun.com/
  
  The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  Microsystems, Inc. All Rights Reserved.
 
 -->
@@ -24,7 +24,7 @@
  http://www.sun.com/
  
  The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  Microsystems, Inc. All Rights Reserved.
 </xsl:comment>
 </xsl:template>
@@ -73,10 +73,15 @@
 	    	.fail {
 			    font-weight:bold; background:#EEEEE0; color:red;
     		}
+	    	.unexpected-pass {
+			    font-weight:bold; background:#EEEEE0; color:#FFB200;
+    		}
     		.unknown {
 			    font-weight:bold; background:#EEEEE0; color:red;
     		}
-    		
+	    	.expected-fail {
+			    font-weight:bold; background:#EEEEE0; color:brown;
+    		}
     		.pass {
 		    	background:#EEEEE0;
 	    	}
@@ -86,9 +91,15 @@
 	    	.fail-matrix {
 			    font-weight:bold; background:#ffa0a0; color:red;
     		}
+	    	.unexpected-pass-matrix {
+			    font-weight:bold; background:#FFF0B3; color:#FFB200;
+    		}
     		.unknown-matrix {
 			    font-weight:bold; background:#EEEEE0; color:red;
     		}    		
+	    	.expected-fail-matrix {
+			    font-weight:bold; background:#F0D48A; color:brown;
+    		}
     		.pass-matrix {
 		    	background:#EEEEE0;
 	    	}
@@ -143,25 +154,20 @@
 	</HTML>
 </xsl:template>
 
-
 <xsl:template name="summary-table">
     <xsl:param name="table-width">95%</xsl:param> 
-    <xsl:param name="testsTotal" select="@testsTotal"/>
-    <xsl:param name="testsPass" select="@testsPass"/>
-    <xsl:param name="testsFail" select="@testsFail"/>
-    <xsl:param name="testsError" select="@testsError"/>
-    <xsl:param name="timeStamp" select="@timeStamp"/>
-    <xsl:param name="time" select="@time"/>
     <TABLE width="{$table-width}" cellspacing="2" cellpadding="5" border="0">
 		<xsl:call-template name="summary-header"/>
 		<xsl:call-template name="summary-row">
-			<xsl:with-param name="testsTotal" select="$testsTotal"/>
-			<xsl:with-param name="testsPass" select="$testsPass"/>
-			<xsl:with-param name="testsFail" select="$testsFail"/>
-			<xsl:with-param name="testsError" select="$testsError"/>
-			<xsl:with-param name="timeStamp" select="$timeStamp"/>
-			<xsl:with-param name="time" select="$time"/>
-		</xsl:call-template>		
+			<xsl:with-param name="testsTotal" select="@testsTotal"/>
+			<xsl:with-param name="testsPass" select="@testsPass"/>
+			<xsl:with-param name="testsUnexpectedPass" select="@testsUnexpectedPass"/>
+			<xsl:with-param name="testsFail" select="@testsFail"/>
+			<xsl:with-param name="testsExpectedFail" select="@testsExpectedFail"/>
+			<xsl:with-param name="testsError" select="@testsError"/>
+			<xsl:with-param name="timeStamp" select="@timeStamp"/>
+			<xsl:with-param name="time" select="@time"/>
+		</xsl:call-template>
 	</TABLE>
 </xsl:template>
 
@@ -170,9 +176,11 @@
 <xsl:template name="summary-header">
 	<TR valign="top" bgcolor="#A6CAF0">
 		<TD><B>Total Tests</B></TD>
-		<TD><B>Passed</B></TD>
-		<TD><B>Failed</B></TD>
-		<TD><B>Error</B></TD>
+		<TD><B>Expected Passes</B></TD>
+		<TD><B>Unexpected Passes</B></TD>
+		<TD><B>Expected Fails</B></TD>
+		<TD><B>Unexpected Fails</B></TD>
+		<TD><B>Errors</B></TD>
 		<TD><B>Success Rate</B></TD>
 		<TD><B>Run (when)</B></TD>
 		<TD><B>Time (m:ss)</B></TD>
@@ -180,20 +188,16 @@
 </xsl:template>
 
 <xsl:template name="summary-row">
-    <xsl:param name="testsTotal" select="@testsTotal"/>
-    <xsl:param name="testsPass" select="@testsPass"/>
-    <xsl:param name="testsFail" select="@testsFail"/>
-    <xsl:param name="testsError" select="@testsError"/>
-    <xsl:param name="timeStamp" select="@timeStamp"/>
-    <xsl:param name="time" select="@time"/>
     <TR class="pass">			
-			<TD><xsl:value-of select="$testsTotal"/></TD>
-			<TD><xsl:value-of select="$testsPass"/></TD>
-			<TD><xsl:value-of select="$testsFail"/></TD>
-			<TD><xsl:value-of select="$testsError"/></TD>				
-			<TD><xsl:value-of select="format-number($testsPass div $testsTotal,'0.00%')"/></TD>
-			<TD><xsl:value-of select="$timeStamp"/></TD>
-			<!--
+			<TD><xsl:value-of select="@testsTotal"/></TD>
+			<TD><xsl:value-of select="@testsPass - @testsUnexpectedPass"/></TD>
+                        <TD><xsl:value-of select="@testsUnexpectedPass"/></TD>
+			<TD><xsl:value-of select="@testsExpectedFail"/></TD>
+			<TD><xsl:value-of select="@testsFail - @testsExpectedFail"/></TD>
+			<TD><xsl:value-of select="@testsError"/></TD>				
+			<TD><xsl:value-of select="format-number(@testsPass div @testsTotal,'0.00%')"/></TD>
+			<TD><xsl:value-of select="@timeStamp"/></TD>
+         		<!--
 			<TD><xsl:value-of select="($time div 1000)"/></TD>
 			-->
 			<TD>
@@ -211,9 +215,11 @@
         <TD><B>Attributes</B></TD>
         <TD><B>Test Type</B></TD>
 		<TD><B>Total Tests</B></TD>
-		<TD><B>Passed</B></TD>
-		<TD><B>Failed</B></TD>
-		<TD><B>Error</B></TD>
+		<TD><B>Expected Passes</B></TD>
+		<TD><B>Unexpected Passes</B></TD>
+		<TD><B>Expected Fails</B></TD>
+		<TD><B>Unexpected Fails</B></TD>
+		<TD><B>Errors</B></TD>
 		<TD><B>Success Rate</B></TD>
 		<TD><B>Run (when)</B></TD>
 		<TD><B>Time (m:ss)</B></TD>
@@ -240,14 +246,16 @@
 	    <TD><xsl:value-of select="@testAttribs"/> </TD>	
 	    <TD><xsl:value-of select="@testType"/></TD>
    		<TD><xsl:value-of select="@testsTotal"/></TD>
-   		<TD><xsl:value-of select="@testsPass"/></TD>
-   		<TD><xsl:value-of select="@testsFail"/></TD>
+   		<TD><xsl:value-of select="@testsPass - @testsUnexpectedPass"/></TD>
+                <TD><xsl:value-of select="@testsUnexpectedPass"/></TD>
+                <TD><xsl:value-of select="@testsExpectedFail"/></TD>
+                <TD><xsl:value-of select="@testsFail - @testsExpectedFail"/></TD>
    		<TD><xsl:value-of select="@testsError"/></TD>				
    		<TD><xsl:value-of select="format-number(@testsPass div @testsTotal,'0.00%')"/></TD>
    		<!--
-	    <TD><xsl:value-of select="@timeStamp"/></TD>
+                <TD><xsl:value-of select="@timeStamp"/></TD>
 	    	-->
-	    <!--
+	       <!--
    		<TD><xsl:value-of select="(@time div 1000)"/></TD>
    		-->
    		<TD>
@@ -258,14 +266,15 @@
    	</TR>
 </xsl:template>
 
-
 <xsl:template name="testsuite-summary-header"> 
     <TR valign="top" bgcolor="#A6CAF0">
         <TD><B>TestSuite Name</B></TD>
 		<TD><B>Total Tests</B></TD>
-		<TD><B>Passed</B></TD>
-		<TD><B>Failed</B></TD>
-		<TD><B>Error</B></TD>
+		<TD><B>Expected Passes</B></TD>
+		<TD><B>Unexpected Passes</B></TD>
+		<TD><B>Expected Fails</B></TD>
+		<TD><B>Unexpected Fails</B></TD>
+		<TD><B>Errors</B></TD>
 		<TD><B>Success Rate</B></TD>
 		<TD><B>Time (s)</B></TD>
 	</TR>
@@ -289,14 +298,15 @@
    		</xsl:if>
    		</TD>	
    		<TD><xsl:value-of select="@testsTotal"/></TD>
-   		<TD><xsl:value-of select="@testsPass"/></TD>
-   		<TD><xsl:value-of select="@testsFail"/></TD>
+   		<TD><xsl:value-of select="@testsPass - @testsUnexpectedPass"/></TD>
+                <TD><xsl:value-of select="@testsUnexpectedPass"/></TD>
+                <TD><xsl:value-of select="@testsExpectedFail"/></TD>
+                <TD><xsl:value-of select="@testsFail - @testsExpectedFail"/></TD>
    		<TD><xsl:value-of select="@testsError"/></TD>				
    		<TD><xsl:value-of select="format-number(@testsPass div @testsTotal,'0.00%')"/></TD>
    		<TD><xsl:value-of select="(@time div 1000)"/></TD>
    	</TR>
 </xsl:template>
-
 
 
 </xsl:stylesheet>

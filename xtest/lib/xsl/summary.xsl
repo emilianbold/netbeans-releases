@@ -8,7 +8,7 @@
  http://www.sun.com/
  
  The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  Microsystems, Inc. All Rights Reserved.
 
 -->
@@ -62,13 +62,15 @@
 
 	<TABLE width="98%" cellspacing="2" cellpadding="5" border="0">
 		<TR bgcolor="#A6CAF0" align="center" >
-			<TD colspan="8"><B>Summary</B></TD>
+			<TD colspan="10"><B>Summary</B></TD>
 		</TR>
 		<TR valign="top" bgcolor="#A6CAF0">
 			<TD><B>Test Run</B></TD>
 			<TD><B>Total Tests</B></TD>
-			<TD><B>Passed</B></TD>
-			<TD><B>Failures</B></TD>
+			<TD><B>Expected Passes</B></TD>
+			<TD><B>Unexpected Passes</B></TD>
+			<TD><B>Expected Fails</B></TD>
+			<TD><B>Unexpected Fails</B></TD>
 			<TD><B>Errors</B></TD>
 			<TD><B>Success Rate</B></TD>
 			<TD><B>Run (when)</B></TD>
@@ -78,8 +80,10 @@
 		<TR class="pass">
 			<TD><B>Summary:</B></TD>		
 			<TD><B><xsl:value-of select="@testsTotal"/></B></TD>
-			<TD><B><xsl:value-of select="@testsPass"/></B></TD>
-			<TD><B><xsl:value-of select="@testsFail"/></B></TD>
+			<TD><B><xsl:value-of select="@testsPass - @testsUnexpectedPass"/></B></TD>
+			<TD><B><xsl:value-of select="@testsUnexpectedPass"/></B></TD>
+			<TD><B><xsl:value-of select="@testsExpectedFail"/></B></TD>
+			<TD><B><xsl:value-of select="@testsFail - @testsExpectedFail"/></B></TD>
 			<TD><B><xsl:value-of select="@testsError"/></B></TD>				
 			<TD><B><xsl:value-of select="format-number(@testsPass div @testsTotal,'0.00%')"/></B></TD>
 			<TD><B><xsl:value-of select="@timeStamp"/></B></TD>
@@ -107,8 +111,10 @@
 					</A>
 				</TD>		
 				<TD><xsl:value-of select="@testsTotal"/></TD>
-				<TD><xsl:value-of select="@testsPass"/></TD>
-				<TD><xsl:value-of select="@testsFail"/></TD>
+				<TD><xsl:value-of select="@testsPass - @testsUnexpectedPass"/></TD>
+				<TD><xsl:value-of select="@testsUnexpectedPass"/></TD>
+				<TD><xsl:value-of select="@testsExpectedFail"/></TD>
+				<TD><xsl:value-of select="@testsFail - @testsExpectedFail"/></TD>
 				<TD><xsl:value-of select="@testsError"/></TD>				
 				<TD><xsl:value-of select="format-number(@testsPass div @testsTotal,'0.00%')"/></TD>
 				<TD><xsl:value-of select="@timeStamp"/></TD>
@@ -158,9 +164,11 @@
 		<TR valign="top" bgcolor="#A6CAF0">
 			<TD><B>Module</B></TD>
 			<TD><B>Total Tests</B></TD>
-			<TD><B>Passed</B></TD>
-			<TD><B>Failed</B></TD>
-			<TD><B>Error</B></TD>
+			<TD><B>Expected Passes</B></TD>
+			<TD><B>Unexpected Passes</B></TD>
+			<TD><B>Expected Fails</B></TD>
+			<TD><B>Unexpected Fails</B></TD>
+			<TD><B>Errors</B></TD>
 			<TD><B>Success Rate</B></TD>
 			<!--
 			<TD><B>Run (when)</B></TD>
@@ -171,8 +179,10 @@
 		<TR class="pass">
 			<TD><B>Summary:</B></TD>
 			<TD><B><xsl:value-of select="@testsTotal"/></B></TD>
-			<TD><B><xsl:value-of select="@testsPass"/></B></TD>
-			<TD><B><xsl:value-of select="@testsFail"/></B></TD>
+			<TD><B><xsl:value-of select="@testsPass - @testsUnexpectedPass"/></B></TD>
+			<TD><B><xsl:value-of select="@testsUnexpectedPass"/></B></TD>
+			<TD><B><xsl:value-of select="@testsExpectedFail"/></B></TD>
+			<TD><B><xsl:value-of select="@testsFail - @testsExpectedFail"/></B></TD>
 			<TD><B><xsl:value-of select="@testsError"/></B></TD>				
 			<TD><B><xsl:value-of select="format-number(@testsPass div @testsTotal,'0.00%')"/></B></TD>
 			<!--
@@ -190,10 +200,15 @@
 			<TR class="pass">
 				<TD><A HREF="#{parent::*/@runID}-{@module}"><xsl:value-of select="@module"/></A></TD>
 				<xsl:variable name="testsPass" select="sum(parent::*/TestBag[@module=$currentModule]/@testsPass)"/>
+				<xsl:variable name="testsUnexpectedPass" select="sum(parent::*/TestBag[@module=$currentModule]/@testsUnexpectedPass)"/>
+				<xsl:variable name="testsFail" select="sum(parent::*/TestBag[@module=$currentModule]/@testsFail)"/>
+				<xsl:variable name="testsExpectedFail" select="sum(parent::*/TestBag[@module=$currentModule]/@testsExpectedFail)"/>
 				<xsl:variable name="testsTotal" select="sum(parent::*/TestBag[@module=$currentModule]/@testsTotal)"/>
 				<TD><xsl:value-of select="$testsTotal"/></TD>
-				<TD><xsl:value-of select="$testsPass"/></TD>
-				<TD><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsFail)"/></TD>
+				<TD><xsl:value-of select="$testsPass - $testsUnexpectedPass"/></TD>
+				<TD><xsl:value-of select="$testsUnexpectedPass"/></TD>
+                                <TD><xsl:value-of select="$testsExpectedFail"/></TD>
+                                <TD><xsl:value-of select="$testsFail - $testsExpectedFail"/></TD>
 				<TD><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsError)"/></TD>
 				<TD><xsl:value-of select="format-number($testsPass div $testsTotal,'0.00%')"/></TD>
 				<TD><xsl:call-template name="timeFormatterHMS">
@@ -231,8 +246,10 @@
         	<TD><B>Attributes</B></TD>
         	<TD><B>Test Type</B></TD>
 			<TD><B>Total Tests</B></TD>
-			<TD><B>Passed</B></TD>
-			<TD><B>Failures</B></TD>
+			<TD><B>Expected Passes</B></TD>
+			<TD><B>Unexpected Passes</B></TD>
+			<TD><B>Expected Fails</B></TD>
+			<TD><B>Unexpected Fails</B></TD>
 			<TD><B>Errors</B></TD>
 			<TD><B>Success Rate</B></TD>
 			<TD><B>Time (m:s)</B></TD>
@@ -242,11 +259,16 @@
 			<TD align="center">-</TD>
 			<TD align="center">-</TD>
 			<xsl:variable name="testsPass" select="sum(parent::*/TestBag[@module=$currentModule]/@testsPass)"/>
+			<xsl:variable name="testsUnexpectedPass" select="sum(parent::*/TestBag[@module=$currentModule]/@testsUnexpectedPass)"/>
+			<xsl:variable name="testsFail" select="sum(parent::*/TestBag[@module=$currentModule]/@testsFail)"/>
+			<xsl:variable name="testsExpectedFail" select="sum(parent::*/TestBag[@module=$currentModule]/@testsExpectedFail)"/>
 			<xsl:variable name="testsTotal" select="sum(parent::*/TestBag[@module=$currentModule]/@testsTotal)"/>
 			<TD><B><xsl:value-of select="$testsTotal"/></B></TD>
-			<TD><B><xsl:value-of select="$testsPass"/></B></TD>
-			<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsFail)"/></B></TD>
-			<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsError)"/></B></TD>
+			<TD><B><xsl:value-of select="$testsPass - $testsUnexpectedPass"/></B></TD>
+			<TD><B><xsl:value-of select="$testsUnexpectedPass"/></B></TD>
+			<TD><B><xsl:value-of select="$testsExpectedFail"/></B></TD>
+			<TD><B><xsl:value-of select="$testsFail - $testsExpectedFail"/></B></TD>
+        		<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsError)"/></B></TD>
 			<TD><B><xsl:value-of select="format-number($testsPass div $testsTotal,'0.00%')"/></B></TD>
 			<TD><B>
 					<xsl:call-template name="timeFormatterMS">

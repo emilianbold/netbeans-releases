@@ -8,7 +8,7 @@
  http://www.sun.com/
  
  The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  Microsystems, Inc. All Rights Reserved.
 
 -->
@@ -69,7 +69,7 @@
 							<xsl:for-each select = "HMTestedBuild">				
 								<xsl:choose>
 									<xsl:when test="@result">										
-										<TD class="{@result}-matrix">
+										<TD class="{translate(@result,' ','-')}-matrix">
                                                                                     <xsl:if test="boolean($includeExceptions)">
 											<A HREF="../{@path}"><xsl:value-of select="@result"/></A>
                                                                                     </xsl:if>

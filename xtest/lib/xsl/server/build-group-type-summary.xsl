@@ -8,7 +8,7 @@
  http://www.sun.com/
  
  The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  Microsystems, Inc. All Rights Reserved.
 
 -->
@@ -66,7 +66,7 @@
 	<TABLE width="98%" cellspacing="2" cellpadding="5" border="0" >		
 		<TR align="center">				
 			<TD bgcolor="#A6CAF0" rowspan="1" colspan="2"><B>Build Totals</B></TD>				
-			<TD colspan="6" bgcolor="#A6CAF0">
+			<TD colspan="8" bgcolor="#A6CAF0">
 				<B>Tested Platforms</B>
 			</TD>
 		</TR>
@@ -88,7 +88,13 @@
 			 	<B>Total</B>
 			</TD>
 			<TD bgcolor="#A6CAF0">
-			 	<B>Failed</B>
+			 	<B>Unexpected Passes</B>
+			</TD>
+			<TD bgcolor="#A6CAF0">
+			 	<B>Expected Fails</B>
+			</TD>
+			<TD bgcolor="#A6CAF0">
+			 	<B>Unexpected Fails</B>
 			</TD>
 			<TD bgcolor="#A6CAF0">
 			 	<B>Errors</B>
@@ -128,6 +134,8 @@
 						<B><xsl:value-of select="@osName"/>-<xsl:value-of select="@osVersion"/>-<xsl:value-of select="@osArch"/></B>
 					</TD>
 					<xsl:variable name="passed" select="sum(key('platform',concat(./@osName,./@osVersion,./@osArch))/@testsPass)"/>
+					<xsl:variable name="unexpectedPasses" select="sum(key('platform',concat(./@osName,./@osVersion,./@osArch))/@testsUnexpectedPass)"/>
+					<xsl:variable name="expectedFails" select="sum(key('platform',concat(./@osName,./@osVersion,./@osArch))/@testsExpectedFail)"/>
 					<xsl:variable name="failed" select="sum(key('platform',concat(./@osName,./@osVersion,./@osArch))/@testsFail)"/>
 					<xsl:variable name="errors" select="sum(key('platform',concat(./@osName,./@osVersion,./@osArch))/@testsError)"/>
 					<xsl:variable name="total" select="sum(key('platform',concat(./@osName,./@osVersion,./@osArch))/@testsTotal)"/>
@@ -138,7 +146,13 @@
 						<xsl:value-of select="$total"/>
 					</TD>
 					<TD class="pass">
-						<xsl:value-of select="$failed"/>
+						<xsl:value-of select="$unexpectedPasses"/>
+					</TD>
+					<TD class="pass">
+						<xsl:value-of select="$expectedFails"/>
+					</TD>
+					<TD class="pass">
+						<xsl:value-of select="$failed - $expectedFails"/>
 					</TD>
 					<TD class="pass">
 						<xsl:value-of select="$errors"/>

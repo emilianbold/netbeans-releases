@@ -8,7 +8,7 @@
  http://www.sun.com/
  
  The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  Microsystems, Inc. All Rights Reserved.
 
 -->
@@ -26,7 +26,7 @@
 
 
 <xsl:template match="TestBag">
-	<H2>Test Bag: <xsl:value-of select="@name"/></H2>	
+	<H2>Test Bag: <xsl:value-of select="@name"/></H2>
 	<xsl:call-template name="summary-table">
 			<xsl:with-param name="table-width">95%</xsl:with-param>
 	</xsl:call-template>
@@ -44,7 +44,6 @@
 	  </xsl:if>
         </xsl:if>  
 	<!-- end of hack -->
-	
 	<xsl:if test="@unexpectedFailure">
                 <FONT color="#FF0000">
                 <LI><B>Following suites did not finish correctly:</B></LI>
@@ -74,6 +73,5 @@
 <xsl:template match="UnitTestSuite">
 	<xsl:call-template name="testsuite-summary-row"/>
 </xsl:template>
-
 
 </xsl:stylesheet>

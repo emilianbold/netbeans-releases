@@ -19,11 +19,9 @@
 
 package org.netbeans.xtest.testrunner;
 
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.FileScanner;
-import org.apache.tools.ant.types.FileSet;
-
 import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Vector;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
@@ -37,7 +35,8 @@ import org.netbeans.junit.Filter;
 public class TestScanner {
     private final static int FILE_PATTERN = 0;
     private final static int TEST_PATTERN = 1;
-    private final static int PATTERNS_COUNT = 2;
+    private final static int EXPFAIL_PATTERN = 2;
+    private final static int PATTERNS_COUNT = 3;
     
     protected File basedir;
     protected String basePath;
@@ -117,35 +116,35 @@ public class TestScanner {
         return getFilesAndFilters(dirsIncluded);
     }
     
-    public TestFilter[] getExcludedFiles() {
+    public TestFilter[] getExcludedFiles() throws IOException {
         slowScan();
         return getFilesAndFilters(filesExcluded);
     }
 
-    public TestFilter[] getExcludedDirectories() {
+    public TestFilter[] getExcludedDirectories() throws IOException  {
         slowScan();
         return getFilesAndFilters(dirsExcluded);
     }
 
-    public TestFilter[] getNotIncludedFiles() {
+    public TestFilter[] getNotIncludedFiles() throws IOException  {
         slowScan();
         return getFilesAndFilters(filesNotIncluded);
     }
     
-    public TestFilter[] getNotIncludedDirectories() {
+    public TestFilter[] getNotIncludedDirectories() throws IOException  {
         slowScan();
         return getFilesAndFilters(dirsNotIncluded);
     }
 
-    public void setIncludes(java.lang.String[] includes) {
+    public void setIncludes(java.lang.String[][] includes) {
         this.includes = readPatterns(includes);
     }
 
-    public void setExcludes(java.lang.String[] excludes) {
+    public void setExcludes(java.lang.String[][] excludes) {
         this.excludes = readPatterns(excludes);
     }
 
-    public void scan() {
+    public void scan() throws IOException {
         if (basedir == null && basePath == null) {
             throw new IllegalStateException("Neither basedir nor basepath are set.");
         }
@@ -162,6 +161,7 @@ public class TestScanner {
             includes = new String[1][PATTERNS_COUNT];
             includes[0][FILE_PATTERN] = "**";
             includes[0][TEST_PATTERN] = null;
+            includes[0][EXPFAIL_PATTERN] = null;
         }
         if (excludes == null) {
             excludes = new String[0][0];
@@ -192,7 +192,7 @@ public class TestScanner {
         }
     }
     
-    protected void scandir(File dir, String vpath, boolean fast) {
+    protected void scandir(File dir, String vpath, boolean fast) throws IOException {
         String[] newfiles = dir.list();
 
         if (newfiles == null) {
@@ -203,7 +203,7 @@ public class TestScanner {
              * (2) an IO error occurred (why doesn't it throw an exception 
              *     then???)
              */
-            throw new BuildException("IO error scanning directory "
+            throw new IOException("Error scanning directory "
                                      + dir.getAbsolutePath());
         }
 
@@ -213,8 +213,8 @@ public class TestScanner {
             if (file.isDirectory()) {
                 TestFilter tf = new TestFilter(name, null);
                 
-                if (isIncluded(name, null)) {
-                    if (!isExcluded(name, null)) {
+                if (isIncluded(name, tf)) {
+                    if (!isExcluded(name, tf)) {
                         dirsIncluded.addElement(tf);
                         if (fast) {
                             scandir(file, name + File.separator, fast);
@@ -235,8 +235,8 @@ public class TestScanner {
                 Filter f = new Filter();
                 TestFilter tf = new TestFilter(name, f);
 
-                if (isIncluded(name, f)) {
-                    if (!isExcluded(name, f)) {
+                if (isIncluded(name, tf)) {
+                    if (!isExcluded(name, tf)) {
                         filesIncluded.addElement(tf);
                     } else {
                         filesExcluded.addElement(tf);
@@ -252,7 +252,7 @@ public class TestScanner {
      *
      * <p>Returns immediately if a slow scan has already been requested.
      */
-    protected void slowScan() {
+    protected void slowScan() throws IOException {
         if (haveSlowResults) {
             return;
         }
@@ -279,19 +279,24 @@ public class TestScanner {
     /**
      * @param name file/directory name being scanned
      * @param filter the filter for test cases, can be null in case of directory
+     * @return -1 means file is not included, >0 means position in include list
      */
-    protected boolean isIncluded(String name, Filter filter) {
+    protected boolean isIncluded(String name, TestFilter filter) {
         LinkedList testPatterns = new LinkedList();
+        int position = -1;
         
         for (int i = 0; i < includes.length; i++) {
             if (PatternUtilities.matchPath(includes[i][FILE_PATTERN], name)) {
-                testPatterns.add(includes[i][TEST_PATTERN]);
+                testPatterns.add(new Filter.IncludeExclude(includes[i][TEST_PATTERN],includes[i][EXPFAIL_PATTERN]));
+                if (position == -1)
+                    position = i;
             }
         }
         
-        if (0 < testPatterns.size() && null != filter) {
-            String [] s = (String[])testPatterns.toArray(new String[] {});
-            filter.setIncludes(s);
+        if (0 < testPatterns.size() && null != filter.getFilter()) {
+            Filter.IncludeExclude [] s = (Filter.IncludeExclude[])testPatterns.toArray(new Filter.IncludeExclude[] {});
+            filter.getFilter().setIncludes(s);
+            filter.setPosition(position);
         }
         
         return 0 < testPatterns.size();
@@ -300,25 +305,25 @@ public class TestScanner {
      * @param name file/directory name being scanned
      * @param filter the filter for test cases, can be null in case of directory
      */
-    protected boolean isExcluded(String name, Filter filter) {
+    protected boolean isExcluded(String name, TestFilter filter) {
         LinkedList testPatterns = new LinkedList();
         boolean excluded = false;
         
         for (int i = 0; i < excludes.length; i++) {
             if (PatternUtilities.matchPath(excludes[i][FILE_PATTERN], name)) {
                 if (null == excludes[i][TEST_PATTERN] ||
-                    0 == excludes[i][TEST_PATTERN].length()) {
+                    0 == excludes[i][TEST_PATTERN].length()
+                    || excludes[i][TEST_PATTERN].equals("*")) {
                     excluded = true;
                 }
-                testPatterns.add(excludes[i][TEST_PATTERN]);
+                testPatterns.add(new Filter.IncludeExclude(excludes[i][TEST_PATTERN], excludes[i][EXPFAIL_PATTERN]));
             }
         }
         
-        if (0 < testPatterns.size() && null != filter) {
-            String [] s = (String[])testPatterns.toArray(new String[] {});
-            filter.setExcludes(s);
+        if (0 < testPatterns.size() && null != filter.getFilter()) {
+            Filter.IncludeExclude [] s = (Filter.IncludeExclude[])testPatterns.toArray(new Filter.IncludeExclude[] {});
+            filter.getFilter().setExcludes(s);
         }
-        
         return excluded;
     }
     /**
@@ -337,7 +342,7 @@ public class TestScanner {
         return false;
     }
     
-    private String[][] readPatterns(String [] patterns) {
+    private String[][] readPatterns(String [][] patterns) {
         String[][] pttrn;
         if (patterns == null) {
             pttrn = null;
@@ -347,7 +352,7 @@ public class TestScanner {
                 String pattern;
                 String filter;
                 int pos;
-                pattern = patterns[i].replace('/', File.separatorChar).replace('\\', File.separatorChar);
+                pattern = patterns[i][0].replace('/', File.separatorChar).replace('\\', File.separatorChar);
                 if (pattern.endsWith(File.separator)) {
                     pattern += "**";
                 }
@@ -359,11 +364,12 @@ public class TestScanner {
                     pattern = pattern.substring(0, pos);
                 }
                 else {
-                    filter = null;
+                    filter = "*";
                 }
                 
                 pttrn[i][FILE_PATTERN] = pattern;
                 pttrn[i][TEST_PATTERN] = filter;
+                pttrn[i][EXPFAIL_PATTERN] = patterns[i][1];
             }
         }
         
@@ -371,11 +377,8 @@ public class TestScanner {
     }
 
     private TestFilter[] getFilesAndFilters(Vector v) {
-        int count = v.size();
-        TestFilter[] entries = new TestFilter[count];
-        for (int i = 0; i < count; i++) {
-            entries[i] = (TestFilter)v.elementAt(i);
-        }
+        TestFilter[] entries = (TestFilter[])v.toArray(new TestFilter[v.size()]);
+        Arrays.sort(entries);
         return entries;
     }
 }

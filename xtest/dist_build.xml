@@ -31,7 +31,6 @@ Microsystems, Inc. All Rights Reserved.
     	   <available file="lib/xerces.jar"/>
     	   <available file="lib/xalan.jar"/>
     	   <available file="lib/xtest-junit-testrunner.jar"/>
-           <available file="lib/ant-1.4.1.jar"/>
     	</and>
      </condition>
   </target>

@@ -24,34 +24,33 @@ import java.util.LinkedList;
  * A helper class, which holds informatino about filtered tests
  */
 public class Filter {
-    private String inc[] = new String[] {};
-    private String exc[] = new String[] {};
+    private IncludeExclude inc[] = new IncludeExclude[] {};
+    private IncludeExclude exc[] = new IncludeExclude[] {};
     
     /** Creates new Filter */
     public Filter() {
     }
 
-    public void setIncludes(String includes[]) {
+    public void setIncludes(IncludeExclude includes[]) {
         inc = arrayCopy(includes);
     }
     
-    public void setExcludes(String excludes[]) {
+    public void setExcludes(IncludeExclude excludes[]) {
         exc = arrayCopy(excludes);
     }
 
-    public String [] getIncludes() {
+    public IncludeExclude [] getIncludes() {
         return arrayCopy(inc);
     }
     
-    public String [] getExcludes() {
+    public IncludeExclude [] getExcludes() {
         return arrayCopy(exc);
     }
     
     public boolean isIncluded(String name) {
         int i;
-
         for(i = 0; i < inc.length; i++)
-            if (match(inc[i], name))
+            if (inc[i].getName() == null || match(inc[i].getName(), name))
                 break;
 
         if (0 < inc.length && i == inc.length) {
@@ -59,10 +58,27 @@ public class Filter {
         }
         
         for(i = 0; i < exc.length; i++)
-            if (match(exc[i], name))
+            if (match(exc[i].getName(), name))
                 break;
         
         return i == exc.length;
+    }
+    
+    public String getExpectedFail(String name) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < inc.length; i++) {
+            if (inc[i].getName() == null || match(inc[i].getName(), name)) {
+                if (inc[i].getExpectedFail() != null) {
+                    if (sb.length() != 0) 
+                        sb.append("; ");
+                    sb.append(inc[i].getExpectedFail());
+                }
+            }
+        }
+        if (sb.length() == 0)
+            return null;
+        else 
+            return sb.toString();
     }
     
     /**
@@ -233,12 +249,47 @@ strLoop:
         return b.toString();
     }
     
-    private String [] arrayCopy(String [] orig) {
+    private IncludeExclude [] arrayCopy(IncludeExclude [] orig) {
         LinkedList lst = new LinkedList();
         for(int i = 0; i < orig.length; i++)
-            if (null != orig[i])
+            if (null != orig[i] && !(orig[i].getName() == null && orig[i].getExpectedFail() == null)) {
                 lst.add(orig[i]);
+            }
         
-        return (String [])lst.toArray(new String[0]);
+        return (IncludeExclude [])lst.toArray(new IncludeExclude[0]);
+    }
+    
+    
+    public static class IncludeExclude {
+        private String name;
+        private String expectedFail;
+        
+        public IncludeExclude() {
+        }
+        
+        public IncludeExclude(String name, String expectedFail) {
+            this.name = name;
+            this.expectedFail = expectedFail;
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public String getExpectedFail() {
+            return expectedFail;
+        }
+        
+        public void setName(String name) {
+            this.name = name;
+        }
+        
+        public void setExpectedFail(String expectedFail) {
+            this.expectedFail = expectedFail;
+        }
+        
+        public String toString() {
+            return name+":"+expectedFail;
+        }
     }
 }

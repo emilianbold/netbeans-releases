@@ -8,7 +8,7 @@
  http://www.sun.com/
  
  The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  Microsystems, Inc. All Rights Reserved.
 
 -->
@@ -34,17 +34,21 @@
 		<TABLE width="95%" cellspacing="2" cellpadding="5" border="0">
 			<TR valign="top" bgcolor="#A6CAF0">
 				<TD><B>Total tests</B></TD>
-				<TD><B>Passed</B></TD>
-				<TD><B>Failed</B></TD>
-				<TD><B>Error</B></TD>
+				<TD><B>Expected Passes</B></TD>
+				<TD><B>Unexpected Passes</B></TD>
+				<TD><B>Expected Fails</B></TD>
+				<TD><B>Unexpected Fails</B></TD>
+				<TD><B>Errors</B></TD>
 				<TD><B>Success Rate</B></TD>
 				<TD><B>Run(when)</B></TD>
 				<TD><B>Time(ms)</B></TD>
 			</TR>
 			<TR class="pass">			
 				<TD><xsl:value-of select="@testsTotal"/></TD>
-				<TD><xsl:value-of select="@testsPass"/></TD>
-				<TD><xsl:value-of select="@testsFail"/></TD>
+				<TD><xsl:value-of select="@testsPass - @testsUnexpectedPass"/></TD>
+				<TD><xsl:value-of select="@testsUnexpectedPass"/></TD>
+				<TD><xsl:value-of select="@testsExpectedFail"/></TD>
+				<TD><xsl:value-of select="@testsFail - @testsExpectedFail"/></TD>
 				<TD><xsl:value-of select="@testsError"/></TD>				
 				<TD><xsl:value-of select="format-number(@testsPass div @testsTotal,'0.00%')"/></TD>
 				<TD><xsl:value-of select="@timeStamp"/></TD>
@@ -101,7 +105,7 @@
 	<A NAME="@name"/>
 	<TR valign="top">
 		<xsl:attribute name="class">
-		 	<xsl:value-of select="@result"/>
+		 	<xsl:value-of select="translate(@result,' ','-')"/>
 		</xsl:attribute>
 		<TD><xsl:value-of select="@name"/></TD>
 		<TD>
@@ -117,7 +121,12 @@
 				<xsl:value-of select="@result"/>
 			</xsl:if>
 		</TD>
-		<TD><xsl:value-of select="@message"/></TD>
+		<TD>
+                    <xsl:if test="@failReason">
+                        <xsl:value-of select="@failReason"/>: 
+                    </xsl:if>
+                    <xsl:value-of select="@message"/>
+                </TD>
                 <xsl:if test="not(boolean($truncated))">
                    <TD>
 			<xsl:if test="@workdir">

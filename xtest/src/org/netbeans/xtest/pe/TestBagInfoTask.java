@@ -92,6 +92,9 @@ public class TestBagInfoTask extends Task{
                 if (!tb.xmlat_name.equals(UNKNOWN)) {
                     loadedTestBag.xmlat_name=tb.xmlat_name;
                 }
+                if (!tb.xmlat_executor.equals(UNKNOWN)) {
+                    loadedTestBag.xmlat_executor=tb.xmlat_executor;
+                }
                 if (tb.xmlat_testAttribs!=null) {
                      loadedTestBag.xmlat_testAttribs=tb.xmlat_testAttribs;
                 }

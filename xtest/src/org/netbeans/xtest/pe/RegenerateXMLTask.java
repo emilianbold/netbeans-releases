@@ -206,7 +206,8 @@ public class RegenerateXMLTask extends Task{
         testBag.xmlat_testsPass = 0;
         testBag.xmlat_testsFail = 0;
         testBag.xmlat_testsError = 0;
-        testBag.xmlat_testsTotal = 0;
+        testBag.xmlat_testsUnexpectedPass = 0;
+        testBag.xmlat_testsExpectedFail = 0;
         testBag.xmlat_testsTotal = 0;
         testBag.xmlat_time = 0;
         // remove testcases from suites - we don't need them in testbag.xml and
@@ -215,6 +216,8 @@ public class RegenerateXMLTask extends Task{
             // compute new values            
             testBag.xmlat_testsPass+=testSuites[i].xmlat_testsPass;
             testBag.xmlat_testsFail+=testSuites[i].xmlat_testsFail;
+            testBag.xmlat_testsUnexpectedPass+=testSuites[i].xmlat_testsUnexpectedPass;
+            testBag.xmlat_testsExpectedFail+=testSuites[i].xmlat_testsExpectedFail;
             testBag.xmlat_testsError+=testSuites[i].xmlat_testsError;
             testBag.xmlat_testsTotal+=testSuites[i].xmlat_testsTotal;
             testBag.xmlat_time+=testSuites[i].xmlat_time;
@@ -345,6 +348,8 @@ public class RegenerateXMLTask extends Task{
      
         testRun.xmlat_testsPass = 0;
         testRun.xmlat_testsFail = 0;
+        testRun.xmlat_testsUnexpectedPass = 0;
+        testRun.xmlat_testsExpectedFail = 0;
         testRun.xmlat_testsError = 0;
         testRun.xmlat_testsTotal = 0;
         testRun.xmlat_time = 0;
@@ -353,6 +358,8 @@ public class RegenerateXMLTask extends Task{
             // compute new values
             testRun.xmlat_testsPass+=testBags[i].xmlat_testsPass;
             testRun.xmlat_testsFail+=testBags[i].xmlat_testsFail;
+            testRun.xmlat_testsUnexpectedPass+=testBags[i].xmlat_testsUnexpectedPass;
+            testRun.xmlat_testsExpectedFail+=testBags[i].xmlat_testsExpectedFail;
             testRun.xmlat_testsError+=testBags[i].xmlat_testsError;
             testRun.xmlat_testsTotal+=testBags[i].xmlat_testsTotal;
             testRun.xmlat_time+=testBags[i].xmlat_time;
@@ -430,6 +437,8 @@ public class RegenerateXMLTask extends Task{
      
         testReport.xmlat_testsPass = 0;
         testReport.xmlat_testsFail = 0;
+        testReport.xmlat_testsUnexpectedPass = 0;
+        testReport.xmlat_testsExpectedFail = 0;
         testReport.xmlat_testsError = 0;
         testReport.xmlat_testsTotal = 0;
         testReport.xmlat_time = 0;
@@ -439,6 +448,8 @@ public class RegenerateXMLTask extends Task{
             // compute new values
             testReport.xmlat_testsPass+=testRuns[i].xmlat_testsPass;
             testReport.xmlat_testsFail+=testRuns[i].xmlat_testsFail;
+            testReport.xmlat_testsUnexpectedPass+=testRuns[i].xmlat_testsUnexpectedPass;
+            testReport.xmlat_testsExpectedFail+=testRuns[i].xmlat_testsExpectedFail;
             testReport.xmlat_testsError+=testRuns[i].xmlat_testsError;
             testReport.xmlat_testsTotal+=testRuns[i].xmlat_testsTotal;
             testReport.xmlat_time+=testRuns[i].xmlat_time;

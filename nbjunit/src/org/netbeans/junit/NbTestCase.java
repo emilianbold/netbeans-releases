@@ -51,6 +51,15 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         this.filter = filter;
     }
     
+    /**
+     * Returns expected fail message.
+     * @return expected fail message if it's expected this test fail, null otherwise.
+     */
+    public String getExpectedFail() {
+        if (filter == null) 
+            return null;
+        return filter.getExpectedFail(this.getName());
+    }
     
     /**
  * Checks if a test isn't filtered out by the active filter.

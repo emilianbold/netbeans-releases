@@ -50,6 +50,19 @@ public class NbTestDecorator extends TestDecorator implements NbTest {
                 ((NbTest)fTest).setFilter(filter);
             }
         }
+        
+        /**
+         * Returns expected fail message.
+         * @return expected fail message if it's expected this test fail, null otherwise.
+         */
+        public String getExpectedFail() {
+            if (fTest instanceof NbTest) {
+                return ((NbTest)fTest).getExpectedFail();
+            } else {
+                return null;
+            }
+        }
+        
         /**
          * Checks if a test isn't filtered out by the active filter.
          */
@@ -134,4 +147,6 @@ public class NbTestDecorator extends TestDecorator implements NbTest {
         static public void assertFile(File test, File pass) {
             NbTestCase.assertFile(test, pass);
         }
+        
+        
 }

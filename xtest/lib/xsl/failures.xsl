@@ -8,7 +8,7 @@
  http://www.sun.com/
  
  The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  Microsystems, Inc. All Rights Reserved.
 
 -->
@@ -117,14 +117,19 @@
 	<xsl:variable name="ParentTestRun" select="parent::*/parent::*/parent::*"/>
 	<xsl:variable name="SuiteName"><xsl:value-of select="parent::*/@name"/></xsl:variable>
 	<TR valing="top">
-		<xsl:attribute name="class"><xsl:value-of select="@result"/></xsl:attribute>
+		<xsl:attribute name="class"><xsl:value-of select="translate(@result,' ','-')"/></xsl:attribute>
 		<TD>
 			<A HREF="../{$ParentTestRun/@runID}/{$ParentTestBag/@bagID}/htmlresults/suites/TEST-{$SuiteName}.html#{@name}">
 				<xsl:value-of select="parent::*/@name"/>.<xsl:value-of select="@name"/>
 			</A>
 		</TD>
 		<TD><xsl:value-of select="@result"/></TD>
-		<TD><xsl:value-of select="@message"/></TD>
+		<TD>
+                    <xsl:if test="@failReason">
+                        <xsl:value-of select="@failReason"/>: 
+                    </xsl:if>
+                    <xsl:value-of select="@message"/>
+                </TD>
 		<TD><A HREF="../{$ParentTestRun/@runID}/{$ParentTestBag/@bagID}/htmlresults/testbag.html"><xsl:value-of select="$ParentTestBag/@name"/></A></TD>
 		<TD><xsl:value-of select="$ParentTestBag/@testType"/></TD>
 	</TR>	

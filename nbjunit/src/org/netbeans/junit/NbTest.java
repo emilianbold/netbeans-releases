@@ -20,9 +20,9 @@ import junit.framework.Test;
 public interface NbTest extends Test {
 
     /**
- * Checks if a test isn't filtered out by the active filter.
- * @return true if the test can run
- */
+     * Checks if a test isn't filtered out by the active filter.
+     * @return true if the test can run
+     */
     public abstract boolean canRun();
     
     /**
@@ -30,5 +30,11 @@ public interface NbTest extends Test {
      * @param filter Filter to be set as active for current test, null will reset filtering.
      */
     public abstract void setFilter(Filter filter);
+    
+    /**
+     * Returns expected fail message.
+     * @return expected fail message if it's expected this test fail, null otherwise.
+     */
+    public abstract String getExpectedFail(); 
 
 }

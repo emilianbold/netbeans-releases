@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -135,14 +135,42 @@ public class TestRun extends XMLBean {
     public long getTestsPass() {
         return xmlat_testsPass;
     }
-    
+
     /** Setter for property testsPass.
      * @param testsPass New value of property testsPass.
      */
     public void setTestsPass(long testsPass) {
         xmlat_testsPass = testsPass;
     }
+
+    /** Getter for property testsUnexpectedPass.
+     * @return Value of property testsUnexpectedPass.
+     */
+    public long getTestsUnexpectedPass() {
+        return xmlat_testsUnexpectedPass;
+    }
     
+    /** Setter for property testsUnexpectedPass.
+     * @param testsPass New value of property testsUnexpectedPass.
+     */
+    public void setTestsUnexpectedPass(long testsUnexpectedPass) {
+        xmlat_testsUnexpectedPass = testsUnexpectedPass;
+    }
+
+    /** Getter for property testsExpectedFail.
+     * @return Value of property testsExpectedFail.
+     */
+    public long getTestsExpectedFail() {
+        return xmlat_testsExpectedFail;
+    }
+    
+    /** Setter for property testsExpectedFail.
+     * @param testsExpectedFail New value of property testsExpectedFail.
+     */
+    public void setTestsExpectedFail(long testsExpectedFail) {
+        xmlat_testsExpectedFail = testsExpectedFail;
+    }
+
     /** Getter for property testsTotal.
      * @return Value of property testsTotal.
      */
@@ -194,6 +222,8 @@ public class TestRun extends XMLBean {
     public long     xmlat_testsTotal;
     public long     xmlat_testsPass;
     public long     xmlat_testsFail;
+    public long     xmlat_testsUnexpectedPass;
+    public long     xmlat_testsExpectedFail;
     public long     xmlat_testsError;
     public String   xmlat_runID;
     

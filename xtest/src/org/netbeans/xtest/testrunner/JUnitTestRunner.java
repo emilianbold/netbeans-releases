@@ -54,13 +54,16 @@ public class JUnitTestRunner {
         }
     }
     
-
-    
     // test suite method name - taken from junit.runner.BaseTestRunner (should 
     // we take it directly from this place ?
     public static final String SUITE_METHODNAME= "suite";
         
     public static final String RUNNER_PROPERTIES_KEY = "runnerProperties";
+    
+    // test runner property file name
+    public static final String TESTRUNNER_PROPERTY_FILENAME = "testrunner.properties";
+    
+    
     // exit states
     public static final int OK = 0;
     public static final int ERROR = -1;
@@ -246,8 +249,8 @@ public class JUnitTestRunner {
                 //out.println("XXX got test suite:"+testName+"/"+i);
                 if (testSuite instanceof NbTestSuite) {
                     //out.println("is NbTestSuite");
-                    String[] includes = runnerProperties.getTestFilterIncludes(i);
-                    String[] excludes = runnerProperties.getTestFilterExcludes(i);
+                    Filter.IncludeExclude[] includes = runnerProperties.getTestFilterIncludes(i);
+                    Filter.IncludeExclude[] excludes = runnerProperties.getTestFilterExcludes(i);
                     Filter filter = getFilter(includes, excludes);
                     ((NbTestSuite)testSuite).setFilter(filter);
                 }
@@ -406,7 +409,7 @@ public class JUnitTestRunner {
 
     
     // get Filter from include and exclude ArrayLists ...
-    private Filter getFilter(String[] includes, String[] excludes) {        
+    private Filter getFilter(Filter.IncludeExclude[] includes, Filter.IncludeExclude[] excludes) {        
         Filter filter = new Filter();
         boolean includesSet = false;
         if (includes != null) {

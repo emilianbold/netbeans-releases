@@ -76,9 +76,13 @@ public class PrintSummary extends Task {
                 log("");
                 log(" Test Results Summary (from the current test run):");
                 log("");
-                log(" Passed: "+testRun.getTestsPass()+"  Failed: "+testRun.getTestsFail()
-                +"  Errors: "+testRun.getTestsError()+"  Total: "+testRun.getTestsTotal());
-                log(" Success Rate: "+formattedRate);
+                log(" Expected Passes: "+(testRun.getTestsPass()-testRun.getTestsUnexpectedPass())+
+                    "  Unexpected Passes: "+testRun.getTestsUnexpectedPass());
+                log(" Expected Fails: "+testRun.getTestsExpectedFail()+
+                    "  Unexpected Fails: "+(testRun.getTestsFail()-testRun.getTestsExpectedFail())+
+                    "  Errors: "+testRun.getTestsError());
+                log(" Total: "+testRun.getTestsTotal()+
+                    "  Success Rate: "+formattedRate);
                 // this is JDK 1.4 only :-(
                 //File reportIndex = new File(resultsDir, PEConstants.INDEX_HTML_FILE);
                 //log("\n Report URL: "+reportIndex.toURI().toString());
