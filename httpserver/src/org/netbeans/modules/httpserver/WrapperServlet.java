@@ -44,84 +44,6 @@ public class WrapperServlet extends NbBaseServlet {
     /** Creates new WrapperServlet */
     public WrapperServlet () {
     }
-
-    /**
-     * Transforms URL to another URL that uses HTTP or FTP protocol 
-     * and can be used from outside of IDE
-     *
-     * @param url original URL
-     * @return translated URL or null if processing failed
-     */ 
-/*    public static URL createHttpURL (URL url) {
-        if (url == null)
-            return null;
-        
-        if ("http".equals (url.getProtocol ())   // NOI18N
-        ||  "ftp".equals (url.getProtocol ()))   // NOI18N
-            return url;
-        
-        try {
-            URL newURL;
-            String anchor = url.getRef();
-            
-            if (NbfsURLConnection.PROTOCOL.equals (url.getProtocol ())) {
-                FileObject fo = NbfsURLConnection.decodeURL (url);
-                if (fo != null) {
-                    URL fsurl = URLMapper.findURL (fo, URLMapper.NETWORK);
-                    if (fsurl != null && "jar".equals (fsurl.getProtocol ()))   // NOI18N
-                        fsurl = null;
-
-                    if (fsurl == null) 
-                        fsurl = URLMapper.findURL (fo, URLMapper.EXTERNAL);
-                    if (fsurl != null && "jar".equals (fsurl.getProtocol ()))   // NOI18N
-                        fsurl = null;
-
-                    if (fsurl != null) {
-                        if (anchor != null) {
-                            try {
-                                fsurl = new URL (fsurl, "#"+anchor);    // NOI18N
-                            }
-                            catch (MalformedURLException ex) {
-                                // should not happen, but never mind - use normal wrapping
-                            }
-                        }
-                        return fsurl;
-                    }
-                }
-            }
-
-            String orig = url.toString ();
-            int ind = orig.indexOf('#');
-            orig = ind < 0 ? orig: orig.substring(0, ind);
-            StringTokenizer slashTok = new StringTokenizer(orig, "/", true); // NOI18N
-            StringBuffer path = new StringBuffer();
-            for ( ; slashTok.hasMoreTokens(); ) {
-                String tok = slashTok.nextToken();
-                if (tok.startsWith("/")) { // NOI18N
-                    path.append(tok);
-                }
-                else {
-                    path.append(URLEncoder.encode(tok));
-                }
-            }
-            
-            if (ind >=0) {
-                path.append("#"); // NOI18N
-                path.append(anchor);
-            }
-
-            HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject(HttpServerSettings.class, true);
-            settings.setRunning (true);
-            newURL = new URL ("http",   // NOI18N
-                              InetAddress.getLocalHost ().getHostName (), 
-                              settings.getPort (),
-                              settings.getWrapperBaseURL () + path.toString());
-            return newURL;
-        }
-        catch (Exception ex) {
-            return null;
-        }
-    }*/
     
     /** Processes the request for both HTTP GET and POST methods
      * @param request servlet request
@@ -131,33 +53,13 @@ public class WrapperServlet extends NbBaseServlet {
     throws ServletException, java.io.IOException {
         if (!checkAccess(request)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                               NbBundle.getBundle(NbBaseServlet.class).getString("MSG_HTTP_FORBIDDEN"));
+                               NbBundle.getMessage(WrapperServlet.class, "MSG_HTTP_FORBIDDEN"));
             return;
         }
         // output your page here
         //String path = request.getPathInfo ();
         ServletOutputStream out = response.getOutputStream ();
         try {
-            // resource name
-            /*if (path.startsWith ("/")) path = path.substring (1); // NOI18N
-            
-            StringTokenizer slashTok = new StringTokenizer(path, "/", true); // NOI18N
-            StringBuffer newPath = new StringBuffer();
-            for ( ; slashTok.hasMoreTokens(); ) {
-                String tok = slashTok.nextToken();
-                if (tok.startsWith("/")) { // NOI18N
-                    newPath.append(tok);
-                }
-                else {
-                    newPath.append(URLDecoder.decode(tok));
-                }
-            }
-            
-            String internalUrl = newPath.toString();
-            URL innerURL = new URL (internalUrl);
-            URLConnection conn = innerURL.openConnection ();*/
-            
-            
             String requestURL = getRequestURL(request);
             //String requestURL = request.getRequestURL().toString(); this method is only in Servlet API 2.3
             URLMapper serverMapper = new HttpServerURLMapper();
@@ -185,7 +87,7 @@ public class WrapperServlet extends NbBaseServlet {
         catch (MalformedURLException ex) {
             try {
                 response.sendError (HttpServletResponse.SC_NOT_FOUND,
-                                   NbBundle.getBundle(NbBaseServlet.class).getString("MSG_HTTP_NOT_FOUND"));
+                                   NbBundle.getMessage(WrapperServlet.class, "MSG_HTTP_NOT_FOUND"));
             }
             catch (IOException ex2) {}
         }
@@ -218,7 +120,7 @@ public class WrapperServlet extends NbBaseServlet {
     * Returns a short description of the servlet.
     */
     public String getServletInfo() {
-        return NbBundle.getBundle(ClasspathServlet.class).getString("MSG_WrapperServletDescr");
+        return NbBundle.getMessage(WrapperServlet.class, "MSG_WrapperServletDescr");
     }
 
 }
