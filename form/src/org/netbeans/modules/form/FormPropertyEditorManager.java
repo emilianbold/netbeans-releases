@@ -144,10 +144,13 @@ final public class FormPropertyEditorManager extends Object {
     for (int i = 0; i < searchPath.length; i++) {
       String name = searchPath[i] + "." + editorName + "Editor";
       try {
-        editorsList.add (Class.forName (name, true, TopManager.getDefault ().systemClassLoader ()).newInstance ());
-        if (!allFromSearchPath) {
-          break; // stop on first found editor if allFromSearchPath is false
-        }
+        Class editorClass = Class.forName (name, true, TopManager.getDefault ().systemClassLoader ());
+        if (java.beans.PropertyEditor.class.isAssignableFrom (editorClass)) { // ignore classes which do not implement java.beans.PropertyEditor
+          editorsList.add (editorClass.newInstance ());
+          if (!allFromSearchPath) {
+            break; // stop on first found editor if allFromSearchPath is false
+          }
+        } 
       } catch (Exception e) {
         // Silently ignore any errors.
       } catch (Throwable t) {
@@ -179,6 +182,9 @@ final public class FormPropertyEditorManager extends Object {
 
 /*
  * Log
+ *  6    Gandalf   1.5         7/20/99  Ian Formanek    Fixed bug which 
+ *       prevented some forms from opening when there was a bad property editor 
+ *       in the search path
  *  5    Gandalf   1.4         6/27/99  Ian Formanek    Employed 
  *       RADConnectionPropertyEditor
  *  4    Gandalf   1.3         6/22/99  Ian Formanek    registering transient 
