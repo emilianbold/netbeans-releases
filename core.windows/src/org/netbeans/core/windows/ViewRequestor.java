@@ -149,7 +149,6 @@ class ViewRequestor {
         if(SwingUtilities.isEventDispatchThread()) {
             processRequest();
         } else {
-            Thread.dumpStack();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     processRequest();
