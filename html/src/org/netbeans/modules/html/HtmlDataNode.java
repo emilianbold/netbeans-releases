@@ -59,7 +59,6 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
     
     public Node.PropertySet[] getPropertySets() {
           if(sheet == null) {
-              System.out.println("vytvarim ppppp");
             sheet = new Sheet();
 
             Node.PropertySet[] tmp = super.getPropertySets();
