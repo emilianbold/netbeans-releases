@@ -66,7 +66,7 @@ public class CreateProject extends testUtilities.PerformanceTestCase {
     }
     
     public void testCreateWebApplicationProject(){
-        category = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.projects.Bundle",""); //"Web"
+        category = "Web"; // org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.projects.Bundle",""); //"Web"
         project = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle","Templates/Project/Web/emptyWeb.xml"); //"Web Application"
         doMeasurement();
     }
