@@ -60,7 +60,16 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     
     public BaseJspEditorSupport(JspDataObject obj) {
         super(obj, new BaseJspEnv(obj));
-        setMIMEType (JspLoader.JSP_MIME_TYPE);
+
+        String ext = getDataObject().getPrimaryFile().getExt();
+        
+        if (ext.equals(JspLoader.TAG_FILE_EXTENSION) 
+            || ext.equals(JspLoader.TAGF_FILE_EXTENSION)
+            || ext.equals(JspLoader.TAGX_FILE_EXTENSION))
+            setMIMEType (JspLoader.TAG_MIME_TYPE);
+        else
+            setMIMEType (JspLoader.JSP_MIME_TYPE);
+        
         initialize();
     }
     

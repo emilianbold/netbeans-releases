@@ -71,9 +71,13 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     * (tag name, array of attributes). */
     private static TagInfo[] standardTagDatas;
     
-    /** Data for completion, when the pege is in XML syntax
+    /** Data for completion, when the jsp page is in XML syntax
      **/
-    private static TagInfo[] xmlTagDatas;
+    private static TagInfo[] xmlJspTagDatas;
+    
+    /** Data for completion, when the tag file is in XML syntax
+     **/
+    private static TagInfo[] xmlTagFileTagDatas;
     
     /** Data for completion: TreeMap for JSP directives
     * (directive name, array of attributes). */
@@ -381,7 +385,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         // standard JSP tags (jsp:)
         initCompletionData();
         if (STANDARD_JSP_PREFIX.equals(prefix)) {
-            TagInfo[] stanTagDatas = isXmlSyntax ? xmlTagDatas : standardTagDatas;
+            TagInfo[] stanTagDatas = getTagInfos();
             for (int i=0; i<stanTagDatas.length; i++) {
                 items.add (stanTagDatas[i]);
             }
@@ -427,7 +431,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         // attributes for standard JSP tags (jsp:)
         initCompletionData();
         if (STANDARD_JSP_PREFIX.equals(prefix)) {
-            TagInfo[] stanTagDatas = isXmlSyntax ? xmlTagDatas : standardTagDatas;
+            TagInfo[] stanTagDatas = getTagInfos();
             for (int i=0; i<stanTagDatas.length; i++) {
                 if (stanTagDatas[i].getTagName ().equals (tag)) {
                     TagAttributeInfo[] attrs = stanTagDatas[i].getAttributes ();
@@ -625,53 +629,105 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                       }); 
         }
         
-        if (xmlTagDatas == null) {
-            String [] attr = (String[])directiveJspData.get("page");
-            TagAttributeInfo[] tagAttrInfos = new TagAttributeInfo [attr.length];
-            for (int i = 0; i < attr.length; i++)
-                tagAttrInfos[i] = new TagAttributeInfo (attr[i], false, "",  false);
-            
-            xmlTagDatas = new TagInfo[] {
-                new TagInfo ("directive.page", null, TagInfo.BODY_CONTENT_EMPTY, "",
-                    null, null, tagAttrInfos),
-                    /*new TagAttributeInfo[] { new TagAttributeInfo ("autoFlush", false, "", false),
-                                                    new TagAttributeInfo ("buffer", false, "", false),
-                                                    new TagAttributeInfo ("contentType", false, "", false),
-                                                    new TagAttributeInfo ("errorPage", false, "", false),
-                                                    new TagAttributeInfo ("extends", false, "", false),
-                                                    new TagAttributeInfo ("import", false, "", false),
-                                                    new TagAttributeInfo ("info", false, "", false),
-                                                    new TagAttributeInfo ("isErrorPage", false, "", false),
-                                                    new TagAttributeInfo ("isThreadSafe", false, "", false),
-                                                    new TagAttributeInfo ("language", false, "", false),
-                                                    new TagAttributeInfo ("pageEncoding", false, "", false),
-                                                    new TagAttributeInfo ("session", false, "", false)}),*/
-               new TagInfo ("declaration", null, TagInfo.BODY_CONTENT_JSP, "",                 // NOI18N
+        
+        
+        if (xmlJspTagDatas == null) {
+            TagInfo[] commonXMLTagDatas;
+            commonXMLTagDatas = new TagInfo[]{
+                new TagInfo ("declaration", null, TagInfo.BODY_CONTENT_JSP, "",                 // NOI18N
                   null, null, new TagAttributeInfo[] {}),
                new TagInfo ("expression", null, TagInfo.BODY_CONTENT_JSP, "",                 // NOI18N
                   null, null, new TagAttributeInfo[] {}),
                new TagInfo ("scriptlet", null, TagInfo.BODY_CONTENT_JSP, "",                 // NOI18N
-                  null, null, new TagAttributeInfo[] {}),
+                  null, null, new TagAttributeInfo[] {}), 
+               new TagInfo ("root", null, TagInfo.BODY_CONTENT_JSP, "",                         // NOI18N
+                  null, null, new TagAttributeInfo[] {})
             };
+                  
+            String [] attr = (String[])directiveJspData.get("page");                // NOI18N
+            TagAttributeInfo[] tagAttrInfos = new TagAttributeInfo [attr.length];
+            for (int i = 0; i < attr.length; i++)
+                tagAttrInfos[i] = new TagAttributeInfo (attr[i], false, "",  false);
+            
+            xmlJspTagDatas = new TagInfo[] {
+                new TagInfo ("directive.page", null, TagInfo.BODY_CONTENT_EMPTY, "",   // NOI18N
+                    null, null, tagAttrInfos),               
+            };
+            
             ArrayList list = new ArrayList();
-            for (int i = 0; i < xmlTagDatas.length; i++)
-                list.add(xmlTagDatas[i]);
+            for (int i = 0; i < xmlJspTagDatas.length; i++)
+                list.add(xmlJspTagDatas[i]);
             for (int i = 0; i < standardTagDatas.length; i++)
                 list.add(standardTagDatas[i]);
+            for (int i = 0; i < commonXMLTagDatas.length; i++)
+                list.add(commonXMLTagDatas[i]);
          
             Collections.sort(list,  new Comparator() {
                 public int compare(Object o1, Object o2) {
                     return ((TagInfo)o1).getTagName().compareTo(((TagInfo)o2).getTagName());
                 }
             });
-            xmlTagDatas = new TagInfo[list.size()];
+            xmlJspTagDatas = new TagInfo[list.size()];
             for (int i = 0; i < list.size(); i++)
-                xmlTagDatas[i] = (TagInfo)list.get(i);
+                xmlJspTagDatas[i] = (TagInfo)list.get(i);
+        
+            attr = (String[])directiveTagFileData.get("tag"); // NOI18N
+            tagAttrInfos = new TagAttributeInfo [attr.length];
+            for (int i = 0; i < attr.length; i++)
+                tagAttrInfos[i] = new TagAttributeInfo (attr[i], false, "",  false);
+            
+            attr = (String[])directiveTagFileData.get("attribute"); // NOI18N
+            TagAttributeInfo[] attributeAttrInfos = new TagAttributeInfo [attr.length];
+            for (int i = 0; i < attr.length; i++)
+                attributeAttrInfos[i] = new TagAttributeInfo (attr[i], false, "",  false);
+            
+            attr = (String[])directiveTagFileData.get("variable");  // NOI18N
+            TagAttributeInfo[] variableAttrInfos = new TagAttributeInfo [attr.length];
+            for (int i = 0; i < attr.length; i++)
+                variableAttrInfos[i] = new TagAttributeInfo (attr[i], false, "",  false);
+            
+            xmlTagFileTagDatas = new TagInfo[] {
+                new TagInfo ("directive.tag", null, TagInfo.BODY_CONTENT_EMPTY, "", // NOI18N
+                    null, null, tagAttrInfos),
+                new TagInfo ("directive.attribute", null, TagInfo.BODY_CONTENT_EMPTY, "", // NOI18N
+                    null, null, attributeAttrInfos),
+                new TagInfo ("directive.variable", null, TagInfo.BODY_CONTENT_EMPTY, "", // NOI18N
+                    null, null, variableAttrInfos),
+            };
+            
+            list = new ArrayList();
+            for (int i = 0; i < xmlTagFileTagDatas.length; i++)
+                list.add(xmlTagFileTagDatas[i]);
+            for (int i = 0; i < standardTagDatas.length; i++)
+                list.add(standardTagDatas[i]);
+            for (int i = 0; i < commonXMLTagDatas.length; i++)
+                list.add(commonXMLTagDatas[i]);
+         
+            Collections.sort(list,  new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    return ((TagInfo)o1).getTagName().compareTo(((TagInfo)o2).getTagName());
+                }
+            });
+            xmlTagFileTagDatas = new TagInfo[list.size()];
+            for (int i = 0; i < list.size(); i++)
+                xmlTagFileTagDatas[i] = (TagInfo)list.get(i);
+                    
         }
-        
-        
                   
         
+    }
+    
+    private TagInfo[] getTagInfos (){
+        TagInfo[] rValue;
+        if ( isXmlSyntax()){
+            if (NbEditorUtilities.getMimeType(getDocument()).equals(JspUtils.TAG_MIME_TYPE))
+                rValue = xmlTagFileTagDatas;
+            else
+                rValue = xmlJspTagDatas;
+        }
+        else
+            rValue = standardTagDatas;
+        return rValue;
     }
     
     public String toString() {
@@ -1173,7 +1229,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 }*/
                 if (STANDARD_JSP_PREFIX.equals (prefix)) { 
                     initCompletionData ();
-                    TagInfo[] stanTagDatas = isXmlSyntax ? xmlTagDatas : standardTagDatas;
+                    TagInfo[] stanTagDatas = getTagInfos();
                     for (int i=0; i<stanTagDatas.length; i++) {
                         if (stanTagDatas[i].getTagName ().equals (name)) {
                             ti = stanTagDatas[i];
