@@ -13,13 +13,13 @@
 
 package org.netbeans.modules.url;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.io.*;
-import javax.swing.ImageIcon;
-import javax.swing.JMenuItem;
+import javax.swing.*;
 
 import org.openide.*;
 import org.openide.awt.Actions;
@@ -261,36 +261,74 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
     }
 
     public Class instanceClass () throws IOException, ClassNotFoundException {
-        // [PENDING] should in fact return some class which is instanceof Presenter.Menu
-        // and Presenter.Toolbar and be able to construct menu items and toolbar buttons
-        // (useful in the future for WelcomePanel)
-        return JMenuItem.class;
+        return URLPresenter.class;
+    }
+
+    public Object instanceCreate () throws IOException, ClassNotFoundException {
+        return new URLPresenter (getNodeDelegate ());
+    }
+
+    /** Presenter which creates actual components on demand.
+     */
+    private static class URLPresenter extends Object implements Presenter.Menu, Presenter.Toolbar, Presenter.Popup {
+        private Node n;
+        public URLPresenter (Node n) {
+            this.n = n;
+        }
+        public JMenuItem getMenuPresenter () {
+            return new URLMenuItem (n);
+        }
+        public JMenuItem getPopupPresenter () {
+            return new URLMenuItem (n);
+        }
+        public Component getToolbarPresenter () {
+            return new URLToolbarButton (n);
+        }
     }
 
     /** Menu item representing the bookmark.
      * Takes display name and icon from associated node;
      * when invoked, opens the URL in the browser.
      */
-    private static class URLMenuItem extends JMenuItem implements ActionListener, NodeListener {
+    private static class URLMenuItem extends JMenuItem {
+        public URLMenuItem (Node n) {
+            new SimpleNodeButtonBridge (n, this);
+        }
+    }
+
+    /** Toolbar button variation on the theme. */
+    private static class URLToolbarButton extends JButton {
+        public URLToolbarButton (Node n) {
+            new SimpleNodeButtonBridge (n, this);
+        }
+    }
+
+    /** Bridge which binds a URLNode to a menu item or toolbar button.
+     */
+    private static class SimpleNodeButtonBridge extends Object implements ActionListener, NodeListener {
         private final Node n;
-        URLMenuItem (Node n) {
+        private final AbstractButton button;
+        public SimpleNodeButtonBridge (Node n, AbstractButton button) {
             this.n = n;
+            this.button = button;
             updateText ();
             updateIcon ();
-            HelpCtx.setHelpIDString (this, n.getHelpCtx ().getHelpID ());
-            addActionListener (this);
+            HelpCtx.setHelpIDString (button, n.getHelpCtx ().getHelpID ());
+            button.addActionListener (this);
             n.addNodeListener (WeakListener.node (this, n));
         }
         private void updateText () {
             String text = n.getDisplayName ();
-            Actions.setMenuText (this, text, true);
-            setToolTipText (Actions.cutAmpersand (text));
+            Actions.setMenuText (button, text, true);
+            button.setToolTipText (Actions.cutAmpersand (text));
+
         }
         private void updateIcon () {
-            setIcon (new ImageIcon (n.getIcon (BeanInfo.ICON_COLOR_16x16)));
+            button.setIcon (new ImageIcon (n.getIcon (BeanInfo.ICON_COLOR_16x16)));
         }
         public void actionPerformed (ActionEvent ev) {
-            ((OpenCookie) n.getCookie (OpenCookie.class)).open ();
+            OpenCookie open = (OpenCookie) n.getCookie (OpenCookie.class);
+            if (open != null) open.open ();
         }
         public void childrenAdded (NodeMemberEvent ev) {}
         public void childrenRemoved (NodeMemberEvent ev) {}
@@ -306,9 +344,6 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
                 updateIcon ();
             }
         }
-    }
-    public Object instanceCreate () throws IOException, ClassNotFoundException {
-        return new URLMenuItem (getNodeDelegate ());
     }
 
 
