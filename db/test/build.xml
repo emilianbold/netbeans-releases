@@ -14,8 +14,6 @@
 
 
 <project name="Database Explorer tests" basedir="." default="all">
-	<property name="xtest.userdata.propertyfile" location="database.properties" />
-        
         <property name="ffj.cvs.workdir"    location="../.." />
         <property name="xtest.ide.winsys"   value="sdi" />
         <property name="build.sysclasspath" value="ignore" />
@@ -33,7 +31,7 @@
         <property name="xtest.excludes"        value="" />
         
         <property name="xtest.module_harness.antfile" location="${xtest.home}/lib/module_harness.xml" />
-        
+	<property name="xtest.userdata.propertyfile" location="${nbextra.home}/qa/db/data/database.properties" />
         
    	<target name="init" depends="prepare-compile-classpath,prepare-codetest-classpath">
                 <property name="xtest.extra.jars.path" location="${nbextra.home}/jemmy;${nbextra.home}/jellytools;${netbeans.home}/modules;${netbeans.home}/lib;${netbeans.home}/lib/ext"/>
@@ -107,8 +105,24 @@
                 </parallel>
         </target>
         <!-- -->
-        
-        
+	
+        <target name="test-pb">
+	   <parallel>
+	      <ant dir="${basedir}" antfile="pointbase-server.xml" inheritAll="true" target="info" />
+	      <ant dir="${basedir}" antfile="pointbase-server.xml" inheritAll="true" target="start" />
+	      <ant dir="${basedir}" antfile="pointbase-server.xml" inheritAll="true" target="stop" />
+	   </parallel>
+	</target>
+
+        <target name="run-pb">
+	      <ant dir="${basedir}" antfile="pointbase-server.xml" inheritAll="true" target="start" />
+	</target>
+	
+        <target name="stop-pb">
+	      <ant dir="${basedir}" antfile="pointbase-server.xml" inheritAll="true" target="stop" />
+	</target>
+
+
         <target name="runcodetest" depends="init">
         	<ant dir="." antfile="${xtest.module_harness.antfile}" target="test">
         		<property name="xtest.exectype" value="code" />
