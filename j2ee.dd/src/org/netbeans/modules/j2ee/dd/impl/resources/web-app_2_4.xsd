@@ -643,39 +643,6 @@
 
 <!-- **************************************************** -->
 
-  <xsd:complexType name="listenerType">
-    <xsd:annotation>
-      <xsd:documentation>
-
-	The listenerType indicates the deployment properties for a web
-	application listener bean.
-
-	Used in: web-app:listenerType
-
-      </xsd:documentation>
-    </xsd:annotation>
-
-    <xsd:sequence>
-      <xsd:group ref="j2ee:descriptionGroup"/>
-      <xsd:element name="listener-class"
-		   type="j2ee:fully-qualified-classType">
-	<xsd:annotation>
-	  <xsd:documentation>
-
-	    The listener-class element declares a class in the
-	    application must be registered as a web
-	    application listener bean. The value is the fully
-	    qualified classname of the listener class.
-
-	  </xsd:documentation>
-	</xsd:annotation>
-      </xsd:element>
-    </xsd:sequence>
-    <xsd:attribute name="id" type="xsd:ID"/>
-  </xsd:complexType>
-
-<!-- **************************************************** -->
-
   <xsd:complexType name="locale-encoding-mapping-listType">
     <xsd:annotation>
       <xsd:documentation>
