@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="license.file" value="../../nbbuild/standard-nbm-license.txt"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="nb_root" location="../.."/>
-  <property name="j2eeserver_root" location="../../../f4j_all/j2eeserver/dublin"/>
+  <property name="j2eeserver_root" location="../../../nb_all/j2eeserver"/>
   <property name="j2eeserver_jars" location="${j2eeserver_root}/netbeans/modules/autoload"/>
   <property name="nbext" location="${nb_root}/nbbuild"/>
   <property name="binroot" location="../../../nbextra"/>
@@ -65,6 +65,7 @@ Microsystems, Inc. All Rights Reserved.
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
 		<pathelement location="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar"/>
+		<pathelement location="${nb_root}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/>
 		<pathelement location="${nb_root}/web/core/netbeans/modules/jsp.jar"/>
 		<pathelement location="${j2eeserver_jars}/j2eetools.jar"/>
         <pathelement location="${j2eeserver_jars}/ext/jsr88javax.jar"/>
