@@ -30,21 +30,24 @@ public class RefTableListNodeInfo extends DatabaseNodeInfo {
     
     public void initChildren(Vector children) throws DatabaseException {
         try {
-            DatabaseMetaData dmd = getSpecification().getMetaData();
-            String catalog = (String)get(DatabaseNode.CATALOG);
             String table = (String)get(DatabaseNode.TABLE);
 
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getExportedKeys(catalog, dmd, table);
-            if (drvSpec.rs != null) {
-                while (drvSpec.rs.next()) {
-                    DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.EXPORTED_KEY, drvSpec.rs);
+            drvSpec.getExportedKeys(table);
+            ResultSet rs = drvSpec.getResultSet();
+            if (rs != null) {
+                HashMap rset = new HashMap();
+                DatabaseNodeInfo info;
+                while (rs.next()) {
+                    rset = drvSpec.getRow();
+                    info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.EXPORTED_KEY, rset);
+                    rset.clear();
                     if (info != null)
                         children.add(info);
                     else
                         throw new Exception(bundle.getString("EXC_UnableToCreateExportedKeyNodeInfo"));
                 }
-                drvSpec.rs.close();
+                rs.close();
             }
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());

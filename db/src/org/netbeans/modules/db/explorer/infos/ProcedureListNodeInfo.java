@@ -31,22 +31,23 @@ public class ProcedureListNodeInfo extends DatabaseNodeInfo {
 
     public void initChildren(Vector children) throws DatabaseException {
         try {
-            DatabaseMetaData dmd = getSpecification().getMetaData();
-            String catalog = (String) get(DatabaseNode.CATALOG);
-
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getProcedures(catalog, dmd, null);
-
-            if (drvSpec.rs != null) {
-                while (drvSpec.rs.next()) {
-                    DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE, drvSpec.rs);
+            drvSpec.getProcedures(null);
+            ResultSet rs = drvSpec.getResultSet();
+            if (rs != null) {
+                HashMap rset = new HashMap();
+                DatabaseNodeInfo info;
+                while (rs.next()) {
+                    rset = drvSpec.getRow();
+                    info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE, rset);
                     if (info != null) {
                         info.put(DatabaseNode.PROCEDURE, info.getName());
                         children.add(info);
                     } else
                         throw new Exception(bundle.getString("EXC_UnableToCreateProcedureNodeInfo")); //NOI18N
+                    rset.clear();
                 }
-                drvSpec.rs.close();
+                rs.close();
             }
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());

@@ -70,16 +70,13 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
         }
     }
 
-    public TableColumn getColumnSpecification()
-    throws DatabaseException
-    {
+    public TableColumn getColumnSpecification() throws DatabaseException {
         TableColumn col = null;
 
         try {
             Specification spec = (Specification)getSpecification();
             CreateTable cmd = (CreateTable)spec.createCommandCreateTable("DUMMY"); //NOI18N
             String code = getCode();
-            DatabaseMetaData dmd = getSpecification().getMetaData();
 
             if (code.equals(DatabaseNode.PRIMARY_KEY)) {
                 col = (TableColumn)cmd.createPrimaryKeyColumn(getName());
@@ -93,16 +90,19 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             }
 
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getColumns((String)get(DatabaseNode.CATALOG), dmd, (String)get(DatabaseNode.TABLE), (String)get(code));
-            if (drvSpec.rs != null) {
-                drvSpec.rs.next();
+            drvSpec.getColumns((String)get(DatabaseNode.TABLE), (String)get(code));
+            ResultSet rs = drvSpec.getResultSet();
+            if (rs != null) {
+                rs.next();
+                HashMap rset = new HashMap();
+                rset = drvSpec.getRow();
+                col.setColumnType(((Integer) rset.get(new Integer(5))).intValue());
+                col.setColumnSize(((Integer) rset.get(new Integer(7))).intValue());
+                col.setNullAllowed(((String) rset.get(new Integer(18))).toUpperCase().equals("YES")); //NOI18N
+                col.setDefaultValue((String) rset.get(new Integer(13)));
+                rset.clear();
 
-                col.setColumnType(drvSpec.rs.getInt(5));
-                col.setColumnSize(drvSpec.rs.getInt(7));
-                col.setNullAllowed(drvSpec.rs.getString(18).toUpperCase().equals("YES")); //NOI18N
-                col.setDefaultValue(drvSpec.rs.getString("COLUMN_DEF")); //NOI18N
-
-                drvSpec.rs.close();
+                rs.close();
             }
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());

@@ -31,29 +31,20 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
 
     public void initChildren(Vector children) throws DatabaseException {
         try {
-
-            DatabaseMetaData dmd = getSpecification().getMetaData();
-            String catalog = (String)get(DatabaseNode.CATALOG);
             String table = (String)get(DatabaseNode.TABLE);
 
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getIndexInfo(catalog, dmd, table, false, false);
-
-            //      boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
-            boolean jdbcOdbcBridge = (((((String)get(DatabaseNode.DRIVER)).trim().equals("sun.jdbc.odbc.JdbcOdbcDriver")) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false); //NOI18N
-
-            if (drvSpec.rs != null) {
+            drvSpec.getIndexInfo(table, false, false);
+            ResultSet rs = drvSpec.getResultSet();
+            if (rs != null) {
                 Set ixmap = new HashSet();
-                while (drvSpec.rs.next()) {
-                    if (jdbcOdbcBridge)
-                        drvSpec.rsTemp.next();
-                    if (drvSpec.rs.getString("INDEX_NAME") != null) { //NOI18N
-                        IndexNodeInfo info;
-                        if (jdbcOdbcBridge)
-                            info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rsTemp);
-                        else
-                            info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rs);
-
+                HashMap rset = new HashMap();
+                IndexNodeInfo info;
+                Object value;
+                while (rs.next()) {
+                    rset = drvSpec.getRow();
+                    if (rset.get(new Integer(6)) != null) {
+                        info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rset);
                         if (info != null) {
                             if (!ixmap.contains(info.getName())) {
                                 ixmap.add(info.getName());
@@ -63,42 +54,36 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
                         } else
                             throw new Exception(bundle.getString("EXC_UnableToCreateIndexNodeInfo")); //NOI18N
                     }
+                    rset.clear();
                 }
-                drvSpec.rs.close();
-                if (jdbcOdbcBridge)
-                    drvSpec.rsTemp.close();
+                rs.close();
             }
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
         }
     }
 
-    public void addIndex(String name)
-    throws DatabaseException
-    {
+    public void addIndex(String name) throws DatabaseException {
         try {
-            DatabaseMetaData dmd = getSpecification().getMetaData();
-            String catalog = (String)get(DatabaseNode.CATALOG);
             String table = (String)get(DatabaseNode.TABLE);
 
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getIndexInfo(catalog, dmd, table, false, false);
-            boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false); //NOI18N
-
-            if (drvSpec.rs != null) {
-                IndexNodeInfo info=null;
-                while (drvSpec.rs.next()) {
-                    if (jdbcOdbcBridge) drvSpec.rsTemp.next();
-                    String findex = drvSpec.rs.getString("INDEX_NAME"); //NOI18N
+            drvSpec.getIndexInfo(table, false, false);
+            ResultSet rs = drvSpec.getResultSet();
+            if (rs != null) {
+                HashMap rset = new HashMap();
+                IndexNodeInfo info = null;
+                String findex;
+                Object value;
+                while (rs.next()) {
+                    rset = drvSpec.getRow();
+                    findex = (String) rset.get(new Integer(6));
                     if (findex != null)
                         if(findex.equalsIgnoreCase(name))
-                            if (jdbcOdbcBridge)
-                                info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rsTemp);
-                            else
-                                info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rs);
+                            info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rset);
+                    rset.clear();
                 }
-                drvSpec.rs.close();
-                if (jdbcOdbcBridge) drvSpec.rsTemp.close();
+                rs.close();
 
                 if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
                 // refersh list of indexes

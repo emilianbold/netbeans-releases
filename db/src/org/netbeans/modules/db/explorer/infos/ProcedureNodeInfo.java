@@ -48,20 +48,32 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo {
 
     public void initChildren(Vector children) throws DatabaseException {
         try {
-            DatabaseMetaData dmd = getSpecification().getMetaData();
-            String catalog = (String)get(DatabaseNode.CATALOG);
             String name = (String)get(DatabaseNode.PROCEDURE);
 
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getProcedureColumns(catalog, dmd, name, null);
-
-            if (drvSpec.rs != null) {
-                while (drvSpec.rs.next()) {
-                    DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE_COLUMN, drvSpec.rs);
+            drvSpec.getProcedureColumns(name, "%");
+            ResultSet rs = drvSpec.getResultSet();
+            if (rs != null) {
+                HashMap rset = new HashMap();
+                DatabaseNodeInfo info;
+                while (rs.next()) {
+                    rset = drvSpec.getRow();
+                    info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE_COLUMN, rset);
                     if (info != null) {
                         Object ibase = null;
                         String itype = "unknown"; //NOI18N
-                        int type = ((Number)info.get("type")).intValue(); //NOI18N
+                        
+//                        int type = ((Number)info.get("type")).intValue(); //NOI18N
+                        
+//cannot use previous line because of MSSQL ODBC problems - see DriverSpecification.getRow() for more info
+                        int type;       
+                        try {
+                            type = (new Integer(info.get("type").toString())).intValue(); //NOI18N
+                        } catch (NumberFormatException exc) {
+                            throw new IllegalArgumentException(exc.getMessage());
+                        }
+//end of MSSQL hack
+                        
                         switch (type) {
                         case DatabaseMetaData.procedureColumnIn:
                             ibase = info.get("iconbase_in"); //NOI18N
@@ -90,8 +102,9 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo {
                         children.add(info);
                     } else
                         throw new Exception(bundle.getString("EXC_UnableToCreateProcedureColumnNodeInfo"));
+                    rset.clear();
                 }
-                drvSpec.rs.close();
+                rs.close();
             }
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());

@@ -30,24 +30,26 @@ public class ViewListNodeInfo extends DatabaseNodeInfo {
     
     public void initChildren(Vector children) throws DatabaseException {
         try {
-            DatabaseMetaData dmd = getSpecification().getMetaData();
-            String catalog = (String) get(DatabaseNode.CATALOG);
             String[] types = new String[] {"VIEW"}; // NOI18N
 
             DriverSpecification drvSpec = getDriverSpecification();
-            if (drvSpec.areViewsSupported(dmd)) {
-                drvSpec.getTables(catalog, dmd, null, types);
-
-                if (drvSpec.rs != null) {
-                    while (drvSpec.rs.next()) {
-                        DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, drvSpec.rs);
+            if (drvSpec.areViewsSupported()) {
+                drvSpec.getTables("%", types);
+                ResultSet rs = drvSpec.getResultSet();
+                if (rs != null) {
+                    HashMap rset = new HashMap();
+                    DatabaseNodeInfo info;
+                    while (rs.next()) {
+                        rset = drvSpec.getRow();
+                        info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, rset);
                         if (info != null) {
                             info.put(DatabaseNode.VIEW, info.getName());
                             children.add(info);
                         } else
                             throw new Exception(bundle.getString("EXC_UnableToCreateNodeInformationForView")); // NOI18N
+                        rset.clear();
                     }
-                    drvSpec.rs.close();
+                    rs.close();
                 }
             }
         } catch (Exception e) {
@@ -61,18 +63,19 @@ public class ViewListNodeInfo extends DatabaseNodeInfo {
     */
     public void addView(String name) throws DatabaseException {
         try {
-            DatabaseMetaData dmd = getSpecification().getMetaData();
-            String catalog = (String) get(DatabaseNode.CATALOG);
             String[] types = new String[] {"VIEW"}; // NOI18N
 
             DriverSpecification drvSpec = getDriverSpecification();
-            if (drvSpec.areViewsSupported(dmd)) {
-                drvSpec.getTables(catalog, dmd, name, types);
-
-                if (drvSpec.rs != null) {
-                    drvSpec.rs.next();
-                    DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, drvSpec.rs);
-                    drvSpec.rs.close();
+            if (drvSpec.areViewsSupported()) {
+                drvSpec.getTables(name, types);
+                ResultSet rs = drvSpec.getResultSet();
+                if (rs != null) {
+                    HashMap rset = new HashMap();
+                    rs.next();
+                    rset = drvSpec.getRow();
+                    DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, rset);
+                    rset.clear();
+                    rs.close();
                     if (info != null)
                         ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
                     else

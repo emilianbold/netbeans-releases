@@ -32,42 +32,32 @@ public class ForeignKeyListNodeInfo extends DatabaseNodeInfo {
 
     public void initChildren(Vector children) throws DatabaseException {
         try {
-
-            DatabaseMetaData dmd = getSpecification().getMetaData();
-            String catalog = (String)get(DatabaseNode.CATALOG);
             String table = (String)get(DatabaseNode.TABLE);
 
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getImportedKeys(catalog, dmd, table);
-
-            //      boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
-            boolean jdbcOdbcBridge = (((((String)get(DatabaseNode.DRIVER)).trim().equals("sun.jdbc.odbc.JdbcOdbcDriver")) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false); //NOI18N
-
-            if (drvSpec.rs != null) {
+            drvSpec.getImportedKeys(table);
+            ResultSet rs = drvSpec.getResultSet();
+            if (rs != null) {
                 Set fkmap = new HashSet();
-                while (drvSpec.rs.next()) {
-                    if (jdbcOdbcBridge)
-                        drvSpec.rsTemp.next();
-                    if (drvSpec.rs.getString("FK_NAME") != null) { //NOI18N
-                        ForeignKeyNodeInfo info;
-                        if (jdbcOdbcBridge)
-                            info = (ForeignKeyNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.IMPORTED_KEY, drvSpec.rsTemp);
-                        else
-                            info = (ForeignKeyNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.IMPORTED_KEY, drvSpec.rs);
-
+                HashMap rset = new HashMap();
+                ForeignKeyNodeInfo info;
+                Object value;
+                while (rs.next()) {
+                    rset = drvSpec.getRow();
+                    if (rset.get(new Integer(12)) != null) {
+                        info = (ForeignKeyNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.IMPORTED_KEY, rset);
                         if (info != null) {
                             if (!fkmap.contains(info.getName())) {
                                 fkmap.add(info.getName());
-                                info.put(DatabaseNode.IMPORTED_KEY, info.getName()); //NOI18N
+                                info.put(DatabaseNode.IMPORTED_KEY, info.getName());
                                 children.add(info);
                             }
                         } else
                             throw new Exception(bundle.getString("EXC_UnableToCreateForeignNodeInfo")); //NOI18N
                     }
+                    rset.clear();
                 }
-                drvSpec.rs.close();
-                if (jdbcOdbcBridge)
-                    drvSpec.rsTemp.close();
+                rs.close();
             }
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());

@@ -32,18 +32,20 @@ public class IndexNodeInfo extends TableNodeInfo {
     
     public void initChildren(Vector children) throws DatabaseException {
         try {
-            DatabaseMetaData dmd = getSpecification().getMetaData();
-            String catalog = (String)get(DatabaseNode.CATALOG);
             String table = (String)get(DatabaseNode.TABLE);
 
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getIndexInfo(catalog, dmd, table, false, false);
-
-            if (drvSpec.rs != null) {
+            drvSpec.getIndexInfo(table, false, false);
+            ResultSet rs = drvSpec.getResultSet();
+            if (rs != null) {
                 Hashtable ixmap = new Hashtable();
-                while (drvSpec.rs.next()) {
+                HashMap rset = new HashMap();
+                DatabaseNodeInfo info;
+                Object value;
+                while (rs.next()) {
+                    rset = drvSpec.getRow();
                     String ixname = (String)get("index"); //NOI18N
-                    DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXCOLUMN, drvSpec.rs);
+                    info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXCOLUMN, rset);
                     String newixname = (String)info.get("ixname"); //NOI18N
                     if (ixname != null && newixname != null && newixname.equals(ixname)) {
                         String way;
@@ -56,20 +58,20 @@ public class IndexNodeInfo extends TableNodeInfo {
                         if (info != null)
                             children.add(info);
                         else {
-                            drvSpec.rs.close();
+                            rs.close();
                             throw new Exception(bundle.getString("EXC_UnableToCreateIndexNodeInfo")); //NOI18N
                         }
                     }
+                    rset.clear();
                 }
-                drvSpec.rs.close();
+                rs.close();
             }
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
         }
     }
 
-    public void refreshChildren() throws DatabaseException
-    {
+    public void refreshChildren() throws DatabaseException {
         Vector charr = new Vector();
         DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
 
@@ -84,9 +86,7 @@ public class IndexNodeInfo extends TableNodeInfo {
         }
     }
 
-    public void delete()
-    throws IOException
-    {
+    public void delete() throws IOException {
         try {
             String code = getCode();
             String table = (String)get(DatabaseNode.TABLE);

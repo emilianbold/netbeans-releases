@@ -37,46 +37,44 @@ public class TableNodeInfo extends DatabaseNodeInfo {
 
     private void initChildren(Vector children, String columnname) throws DatabaseException {
         try {
-            DatabaseMetaData dmd = getSpecification().getMetaData();
-            String catalog = (String)get(DatabaseNode.CATALOG);
             String table = (String)get(DatabaseNode.TABLE);
             DriverSpecification drvSpec = getDriverSpecification();
 
-            //      boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) /*&& (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))*/) ? true : false);
-            boolean jdbcOdbcBridge = (((((String)get(DatabaseNode.DRIVER)).trim().equals("sun.jdbc.odbc.JdbcOdbcDriver")) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false); //NOI18N
-
             // Primary keys
             Hashtable ihash = new Hashtable();
-            drvSpec.getPrimaryKeys(catalog, dmd, table);
-            if (drvSpec.rs != null) {
-                while (drvSpec.rs.next()) {
-                    DatabaseNodeInfo iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PRIMARY_KEY, drvSpec.rs);
+            drvSpec.getPrimaryKeys(table);
+            ResultSet rs = drvSpec.getResultSet();
+            if (rs != null) {
+                HashMap rset = new HashMap();
+                DatabaseNodeInfo iinfo;
+                while (rs.next()) {
+                    rset = drvSpec.getRow();
+                    iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PRIMARY_KEY, rset);
                     String iname = (String)iinfo.get("name"); //NOI18N
                     ihash.put(iname,iinfo);
+                    rset.clear();
                 }
-                drvSpec.rs.close();
+                rs.close();
             }
 
             // Indexes
             Hashtable ixhash = new Hashtable();
-            drvSpec.getIndexInfo(catalog, dmd, table, true, false);
-
-            if (drvSpec.rs != null) {
-                while (drvSpec.rs.next()) {
-                    if (jdbcOdbcBridge) drvSpec.rsTemp.next();
-                    if (drvSpec.rs.getString("COLUMN_NAME") == null) //NOI18N
+            drvSpec.getIndexInfo(table, true, false);
+            rs = drvSpec.getResultSet();
+            if (rs != null) {
+                HashMap rset = new HashMap();
+                DatabaseNodeInfo iinfo;
+                Object value;
+                while (rs.next()) {
+                    rset = drvSpec.getRow();
+                    if (rset.get(new Integer(9)) == null)
                         continue;
-                    DatabaseNodeInfo iinfo;
-                    if (jdbcOdbcBridge)
-                        iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXED_COLUMN, drvSpec.rsTemp);
-                    else
-                        iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXED_COLUMN, drvSpec.rs);
-
+                    iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXED_COLUMN, rset);
                     String iname = (String)iinfo.get("name"); //NOI18N
                     ixhash.put(iname,iinfo);
+                    rset.clear();
                 }
-                drvSpec.rs.close();
-                if (jdbcOdbcBridge) drvSpec.rsTemp.close();
+                rs.close();
             }
 
             /*
@@ -92,13 +90,14 @@ public class TableNodeInfo extends DatabaseNodeInfo {
             */        
 
             // Columns
-            drvSpec.getColumns(catalog, dmd, table, columnname);
-            if (drvSpec.rs != null) {
-                while (drvSpec.rs.next()) {
-                    if (jdbcOdbcBridge) drvSpec.rsTemp.next();
-
-                    DatabaseNodeInfo nfo;
-                    String cname = drvSpec.rs.getString("COLUMN_NAME"); //NOI18N
+            drvSpec.getColumns(table, columnname);
+            rs = drvSpec.getResultSet();
+            if (rs != null) {
+                HashMap rset = new HashMap();
+                DatabaseNodeInfo nfo;
+                while (rs.next()) {
+                    rset = drvSpec.getRow();
+                    String cname = (String) rset.get(new Integer(4));
 
                     if (ihash.containsKey(cname))
                         nfo = (DatabaseNodeInfo)ihash.get(cname);
@@ -109,15 +108,13 @@ public class TableNodeInfo extends DatabaseNodeInfo {
                     //              if (fhash.containsKey(cname)) {
                     //                nfo = (DatabaseNodeInfo)fhash.get(cname);
                         else
-                            if (jdbcOdbcBridge)
-                                nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, drvSpec.rsTemp);
-                            else
-                                nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, drvSpec.rs);
+//                                nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, drvSpec.rsTemp);
+                            nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, rset);
 
                     children.add(nfo);
+                    rset.clear();
                 }
-                drvSpec.rs.close();
-                if (jdbcOdbcBridge) drvSpec.rsTemp.close();
+                rs.close();
             }
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());

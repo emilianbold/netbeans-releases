@@ -34,23 +34,25 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
     
     protected void initChildren(Vector children) throws DatabaseException {
         try {
-            DatabaseMetaData dmd = getSpecification().getMetaData();
-            String catalog = (String) get(DatabaseNode.CATALOG);
             String[] types = new String[] {"TABLE"}; // NOI18N
 
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getTables(catalog, dmd, null, types);
-
-            if (drvSpec.rs != null) {
-                while (drvSpec.rs.next()) {
-                    DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, drvSpec.rs);
+            drvSpec.getTables("%", types);
+            ResultSet rs = drvSpec.getResultSet();
+            if (rs != null) {
+                HashMap rset = new HashMap();
+                DatabaseNodeInfo info;
+                while (rs.next()) {
+                    rset = drvSpec.getRow();
+                    info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rset);
                     if (info != null) {
                         info.put(DatabaseNode.TABLE, info.getName());
                         children.add(info);
                     } else
                         throw new Exception(bundle.getString("EXC_UnableToCreateNodeInformationForTable")); // NOI18N
+                    rset.clear();
                 }
-                drvSpec.rs.close();
+                rs.close();
             }
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
@@ -62,17 +64,18 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
     */
     public void addTable(String tname) throws DatabaseException {
         try {
-            DatabaseMetaData dmd = getSpecification().getMetaData();
-            String catalog = (String) get(DatabaseNode.CATALOG);
             String[] types = new String[] {"TABLE", "BASE"}; // NOI18N
 
             DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getTables(catalog, dmd, tname, types);
-
-            if (drvSpec.rs != null) {
-                drvSpec.rs.next();
-                DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, drvSpec.rs);
-                drvSpec.rs.close();
+            drvSpec.getTables(tname, types);
+            ResultSet rs = drvSpec.getResultSet();
+            if (rs != null) {
+                HashMap rset = new HashMap();
+                rs.next();
+                rset = drvSpec.getRow();
+                DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rset);
+                rset.clear();
+                rs.close();
 
                 if (info != null)
                     info.put(DatabaseNode.TABLE, info.getName());
