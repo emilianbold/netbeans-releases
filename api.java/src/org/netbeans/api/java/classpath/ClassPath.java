@@ -200,25 +200,32 @@ public final class ClassPath {
      * instance. Clients must assume that the returned value is immutable.
      * @return list of definition entries (Entry instances)
      */
-    public synchronized List entries() {
-        if (this.entriesCache == null) {
-            List resources = impl.getResources();
-            //The ClassPathImplementation.getResources () should never return
-            // null but it was not explicitly stated in the javadoc
-            if (resources == null) {
-                this.entriesCache = Collections.EMPTY_LIST;
+    public  List entries() {
+        synchronized (this) {
+            if (this.entriesCache != null) {
+                return this.entriesCache;
             }
-            else {
-                List cache = new ArrayList ();
-                for (Iterator it = resources.iterator(); it.hasNext();) {
-                    PathResourceImplementation pr = (PathResourceImplementation)it.next();
-                    URL[] roots = pr.getRoots();
-                    for (int i=0; i <roots.length; i++) {
-                        Entry e = new Entry (roots[i]);
-                        cache.add (e);
-                    }
+        }
+        List resources = impl.getResources();
+        synchronized (this) {
+            if (this.entriesCache == null) {
+                //The ClassPathImplementation.getResources () should never return
+                // null but it was not explicitly stated in the javadoc
+                if (resources == null) {
+                    this.entriesCache = Collections.EMPTY_LIST;
                 }
-                this.entriesCache = Collections.unmodifiableList (cache);
+                else {
+                    List cache = new ArrayList ();
+                    for (Iterator it = resources.iterator(); it.hasNext();) {
+                        PathResourceImplementation pr = (PathResourceImplementation)it.next();
+                        URL[] roots = pr.getRoots();
+                        for (int i=0; i <roots.length; i++) {
+                            Entry e = new Entry (roots[i]);
+                            cache.add (e);
+                        }
+                    }
+                    this.entriesCache = Collections.unmodifiableList (cache);
+                }
             }
         }
         return this.entriesCache;
