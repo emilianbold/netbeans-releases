@@ -200,28 +200,19 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     public void reorderSubComponents(int[] perm) {
         layoutSupport.removeAll();
 
-        for (int i = 0; i < perm.length; i++) {
-            int from = i;
-            int to = perm[i];
-            if (from == to) continue;
-            Object value = subComponents.remove(from);
-            if (from < to) {
-                subComponents.add(to - 1, value);
-            } else {
-                subComponents.add(to, value);
-            }
-        }
-
         RADVisualComponent[] components =
             new RADVisualComponent[subComponents.size()];
         LayoutConstraints[] constraints =
             new LayoutConstraints[subComponents.size()];
 
-        for (int i=0; i < components.length; i++) {
+        for (int i=0; i < perm.length; i++) {
             RADVisualComponent comp = (RADVisualComponent) subComponents.get(i);
-            components[i] = comp;
+            components[perm[i]] = comp;
             constraints[i] = layoutSupport.getStoredConstraints(comp);
         }
+
+        subComponents.clear();
+        subComponents.addAll(java.util.Arrays.asList(components));
 
         layoutSupport.addComponents(components, constraints);
     }

@@ -574,17 +574,12 @@ public class FormModel
         }
 
         public void reorderSubComponents(int[] perm) {
-            for (int i = 0; i < perm.length; i++) {
-                int from = i;
-                int to = perm[i];
-                if (from == to)
-                    continue;
-                Object value = otherComponents.remove(from);
-                if (from < to)
-                    otherComponents.add(to - 1, value);
-                else
-                    otherComponents.add(to, value);
-            }
+            RADComponent[] components = new RADComponent[otherComponents.size()];
+            for (int i=0; i < perm.length; i++)
+                components[perm[i]] = (RADComponent) otherComponents.get(i);
+
+            otherComponents.clear();
+            otherComponents.addAll(Arrays.asList(components));
         }
 
         public void add(RADComponent comp) {

@@ -38,18 +38,12 @@ public class RADContainer extends RADComponent implements ComponentContainer {
     }
 
     public void reorderSubComponents(int[] perm) {
-        for (int i = 0; i < perm.length; i++) {
-            int from = i;
-            int to = perm[i];
-            if (from == to) continue;
-            Object value = subComponents.remove(from);
-            if (from < to) {
-                subComponents.add(to - 1, value);
-            } else {
-                subComponents.add(to, value);
-            }
-        }
-//        getFormModel().fireComponentsReordered(this);
+        RADComponent[] components = new RADComponent[subComponents.size()];
+        for (int i=0; i < perm.length; i++)
+            components[perm[i]] = (RADComponent) subComponents.get(i);
+
+        subComponents.clear();
+        subComponents.addAll(java.util.Arrays.asList(components));
     }
 
     public void add(RADComponent comp) {

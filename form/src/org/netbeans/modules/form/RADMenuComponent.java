@@ -123,32 +123,12 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     }
 
     public void reorderSubComponents(int[] perm) {
-        // XXX(-tdt) must make a copy of the component list, otherwise removing
-        // menu separator will break
+        RADComponent[] components = new RADComponent[subComponents.size()];
+        for (int i=0; i < perm.length; i++)
+            components[perm[i]] = (RADComponent) subComponents.get(i);
 
-        // make a copy of item list
-        ArrayList list = new ArrayList(subComponents.size());
-        list.addAll(subComponents);
-
-        // shuffle the copy
-        for (int i = 0; i < perm.length; i++) {
-            int from = i;
-            int to = perm[i];
-            if (from == to) continue;
-            Object value = list.remove(from);
-            if (from < to) {
-                list.add(to - 1, value);
-            } else {
-                list.add(to, value);
-            }
-        }
-
-        // remove and re-add in new order
-        for (int i = 0, n = list.size(); i < n; i++)
-            remove((RADMenuItemComponent) list.get(i));
-        for (int i = 0, n = list.size(); i < n; i++)
-            add((RADMenuItemComponent) list.get(i));
-//        getFormModel().fireComponentsReordered(this);
+        subComponents.clear();
+        subComponents.addAll(Arrays.asList(components));
     }
 
     public void add(RADComponent comp) {
