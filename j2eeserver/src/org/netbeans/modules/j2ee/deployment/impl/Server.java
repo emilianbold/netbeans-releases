@@ -240,6 +240,12 @@ public class Server implements Node.Cookie {
         return o;
     }
     
+    /** returns J2eePlatformFactory or null if it is not provided by the plugin */
+    public J2eePlatformFactory getJ2eePlatformFactory () {
+        J2eePlatformFactory o = (J2eePlatformFactory) lkp.lookup (J2eePlatformFactory.class);
+        return o;
+    }
+    
     /** returns DConfigBeanUIFactory or null it is not provided by the plugin */
     public DConfigBeanUIFactory getDConfigBeanUIFactory () {
         DConfigBeanUIFactory o = (DConfigBeanUIFactory) lkp.lookup (DConfigBeanUIFactory.class);

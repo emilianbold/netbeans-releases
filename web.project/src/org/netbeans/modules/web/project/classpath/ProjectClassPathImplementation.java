@@ -55,9 +55,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         this.evaluator = evaluator;
         this.expression = expression;
         this.isProperty = isProperty;
-        if (isProperty) {
-            evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
-        } else {
+        evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+        if (!isProperty) {
             resolved = evaluator.evaluate (expression);
         }
     }

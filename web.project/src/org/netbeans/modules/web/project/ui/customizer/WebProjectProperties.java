@@ -43,6 +43,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -53,6 +54,8 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.Utils;
+import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -92,6 +95,7 @@ public class WebProjectProperties {
     public static final String CONTEXT_PATH = "context.path"; //NOI18N
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
+    public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
     public static final String JAVAC_SOURCE = "javac.source"; //NOI18N
     public static final String JAVAC_DEBUG = "javac.debug"; //NOI18N
     public static final String JAVAC_DEPRECATION = "javac.deprecation"; //NOI18N
@@ -467,6 +471,30 @@ public class WebProjectProperties {
                                         assert defaultPlatform != null;
                                         updateSourceLevel(defaultPlatform.booleanValue(), newValueEncoded, ep);
                                     }
+                                    if (J2EE_SERVER_INSTANCE.equals(pd.name)) {
+                                        // update j2ee.platform.classpath
+                                        String oldServInstID = ep.getProperty(J2EE_SERVER_INSTANCE);
+                                        if (oldServInstID != null) {
+                                            J2eePlatform oldJ2eePlatform = Deployment.getDefault().getJ2eePlatform(oldServInstID);
+                                            if (oldJ2eePlatform != null) {
+                                                ((WebProject)project).unregisterJ2eePlatformListener(oldJ2eePlatform);
+                                            }
+                                        }
+                                        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newValueEncoded);
+                                        ((WebProject)project).registerJ2eePlatformListener(j2eePlatform);
+                                        String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
+                                        ep.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
+                                        
+                                        // update j2ee.platform.wscompile.classpath
+                                        if (j2eePlatform.isToolSupported(WebServicesConstants.WSCOMPILE)) { 
+                                            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(WebServicesConstants.WSCOMPILE);
+                                            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH, 
+                                                    Utils.toClasspathString(wsClasspath));
+                                        } else {
+                                            ep.remove(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
+                                        }
+                                    }
+                                    ep.setProperty(pd.name, newValueEncoded);
                                     
                                     if (NO_DEPENDENCIES.equals(pd.name) && newValueEncoded.equals("false")) { // NOI18N
                                         ep.remove(pd.name);

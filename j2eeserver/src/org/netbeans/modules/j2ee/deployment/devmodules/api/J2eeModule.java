@@ -41,6 +41,17 @@ public interface J2eeModule {
     public static final Object CONN = ModuleType.RAR;
     /** The module is an Client Application archive. */
     public static final Object CLIENT = ModuleType.CAR;
+    
+    /** 
+     * J2EE specification version 1.3 
+     * @since 1.5
+     */
+    public static final String J2EE_13 = "1.3"; //NOI18N
+    /** 
+     * J2EE specification version 1.4 
+     * @since 1.5
+     */
+    public static final String J2EE_14 = "1.4"; //NOI18N
 
     public static final String APP_XML = "META-INF/application.xml";
     public static final String WEB_XML = "WEB-INF/web.xml";

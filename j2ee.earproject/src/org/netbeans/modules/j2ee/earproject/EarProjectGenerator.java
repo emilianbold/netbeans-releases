@@ -71,7 +71,7 @@ public class EarProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, String name, String j2eeLevel, String contextPath) throws IOException {
+    public static AntProjectHelper createProject(File dir, String name, String j2eeLevel, String serverInstanceId, String contextPath) throws IOException {
         dir.mkdirs();
         // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
         File rootF = dir;
@@ -85,7 +85,7 @@ public class EarProjectGenerator {
         assert fo != null : "No such dir on disk: " + dir;
         assert fo.isFolder() : "Not really a dir: " + dir;
         assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
-        AntProjectHelper h = setupProject (fo, name, j2eeLevel);
+        AntProjectHelper h = setupProject (fo, name, j2eeLevel, serverInstanceId);
         fo = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
         FileObject webInfFO = fo.createFolder(DEFAULT_DOC_BASE_FOLDER); // NOI18N
         //FileObject webInfFO = webFO.createFolder(META_INF); // NOI18N
@@ -127,7 +127,7 @@ public class EarProjectGenerator {
         return h;
     }
     
-    public static AntProjectHelper importProject (File pDir, File sDir, String name, String j2eeLevel) throws IOException {
+    public static AntProjectHelper importProject (File pDir, File sDir, String name, String j2eeLevel, String serverInstanceID) throws IOException {
 //        wmFO = dir;
 //        File docRoot = 
         File top = sDir;
@@ -147,7 +147,7 @@ public class EarProjectGenerator {
         FileObject appRootFO = FileUtil.toFileObject (top);
         assert fo != null : "No such dir on disk: " + pDir;
         assert fo.isFolder() : "Not really a dir: " + pDir;
-        AntProjectHelper h = setupProject (fo, name, j2eeLevel);
+        AntProjectHelper h = setupProject (fo, name, j2eeLevel, serverInstanceID);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ReferenceHelper referenceHelper = new ReferenceHelper(h,
                 h.createAuxiliaryConfiguration(), h.getStandardPropertyEvaluator());
@@ -216,13 +216,13 @@ public class EarProjectGenerator {
                 if (null != webDotXml) {
                     subProjHelper = WebProjectGenerator.importProject(subProjDir,
                         subprojectRoot.getName(), subprojectRoot, javaRoot, 
-                        subprojectRoot.getFileObject("web"), null, "1.4", "build.xml");
+                        subprojectRoot.getFileObject("web"), null, j2eeLevel, serverInstanceID, "build.xml");
                 }
 
                 // ---- test to see if it is an ejb jar project and trigger the import
                 if (null != ejbJarDotXml) {
                     subProjHelper = EjbJarProjectGenerator.importProject(subProjDir, 
-                        subprojectRoot.getName(), subprojectRoot, javaRoot, ejbJarDotXml.getParent(), "1.4", "build.xml");
+                        subprojectRoot.getName(), subprojectRoot, javaRoot, ejbJarDotXml.getParent(), j2eeLevel, serverInstanceID, "build.xml");
                 }
                     
                 // XXX ---- test to see if it is an app client and figure out how to import it.
@@ -254,7 +254,7 @@ public class EarProjectGenerator {
         return child.getPath ().substring (parent.getPath ().length () + 1);
     }
     
-    private static AntProjectHelper setupProject (FileObject dirFO, String name, String j2eeLevel) throws IOException {
+    private static AntProjectHelper setupProject (FileObject dirFO, String name, String j2eeLevel, String serverInstanceID) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, EarProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -315,19 +315,7 @@ public class EarProjectGenerator {
         //ep.setProperty(EarProjectProperties.LAUNCH_URL_FULL, "");
         ep.setProperty(EarProjectProperties.DISPLAY_BROWSER, "true");
         Deployment deployment = Deployment.getDefault ();
-        String serverInstanceID = null;
-        try {
-            serverInstanceID = deployment.getDefaultServerInstanceID ();
-            ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
-            ep.setProperty(EarProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
-        } catch (NullPointerException npe) {
-            // cover for j2ee server.  It seems to be pretty hard-coded for existing
-            // only in a running IDE.
-            if (null != serverInstanceID) {
-                // I did not expect this, though
-                throw npe;
-            }
-        }
+        ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
         ep.setProperty(EarProjectProperties.JAVAC_SOURCE, "1.4");
         ep.setProperty(EarProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(EarProjectProperties.JAVAC_DEPRECATION, "false");
@@ -367,24 +355,7 @@ public class EarProjectGenerator {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        
-        // JSPC classpath
-        StringBuffer sb = new StringBuffer();
-        // Ant is needed in classpath if we are forking JspC into another process
-        sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false));
-        sb.append(":"); // NOI18N
-        sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/servlet-api-2.4.jar", null, false));
-        sb.append(":"); // NOI18N
-        sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jsp-api-2.0.jar", null, false));
-        sb.append(":"); // NOI18N
-        sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.25.jar", null, false));
-        sb.append(":"); // NOI18N
-        sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.0.25.jar", null, false));
-        sb.append(":"); // NOI18N
-        sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false));
-        sb.append(":"); // NOI18N
-        sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-logging-api.jar", null, false));
-//        ep.setProperty(EarProjectProperties.JSPC_CLASSPATH, sb.toString());
+        ep.setProperty(EarProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
         
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         Project p = ProjectManager.getDefault().findProject(dirFO);

@@ -20,15 +20,17 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -54,11 +56,14 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     private Document nameDocument;
     private boolean contextModified = false;
     private String buildfileName = GeneratedFilesHelper.BUILD_XML_PATH;
-    
+    private java.util.List serverInstanceIDs;
+    private static final String J2EE_SPEC_14_LABEL = NbBundle.getMessage(ImportLocationVisual.class, "J2EESpecLevel_14"); //NOI18N
+        
     /** Creates new form TestPanel */
     public ImportLocationVisual (/*ImportEjbJarProjectWizardIterator.ThePanel*/ImportLocation panel) {
         this.panel = panel;
         initComponents ();
+        initServerInstances();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
 
         setName(NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_ImportTitle")); //NOI18N
@@ -111,6 +116,12 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         jLabel2 = new javax.swing.JLabel();
         jTextFieldLibraries = new javax.swing.JTextField();
         jButtonLibraries = new javax.swing.JButton();
+        serverInstanceLabel = new javax.swing.JLabel();
+        serverInstanceComboBox = new javax.swing.JComboBox();
+        jLabel7 = new javax.swing.JLabel();
+        j2eeSpecComboBox = new javax.swing.JComboBox();
+        jLabel6 = new javax.swing.JLabel();
+        jTextAreaDescription = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -269,7 +280,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         add(jButtonConfigFilesLocation, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -280,7 +291,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         jCheckBox1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_SetAsMainProject_CheckBox"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
@@ -316,7 +327,101 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonLibraries, gridBagConstraints);
 
+        serverInstanceLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_Server_LabelMnemonic").charAt(0));
+        serverInstanceLabel.setText(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_Server"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(serverInstanceLabel, gridBagConstraints);
+
+        serverInstanceComboBox.setMinimumSize(new java.awt.Dimension(150, 24));
+        serverInstanceComboBox.setPreferredSize(new java.awt.Dimension(150, 24));
+        serverInstanceComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                serverInstanceComboBoxActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(serverInstanceComboBox, gridBagConstraints);
+
+        jLabel7.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_J2EESpecLevel_LabelMnemonic").charAt(0));
+        jLabel7.setText(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_J2EESpecLevel_Label"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(jLabel7, gridBagConstraints);
+
+        j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
+        j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
+        j2eeSpecComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                j2eeSpecComboBoxActionPerformed(evt);
+            }
+        });
+        j2eeSpecComboBox.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                j2eeSpecComboBoxFocusGained(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(j2eeSpecComboBox, gridBagConstraints);
+
+        jLabel6.setText(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_J2EESpecLevelDesc_Label"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 0);
+        add(jLabel6, gridBagConstraints);
+
+        jTextAreaDescription.setEditable(false);
+        jTextAreaDescription.setBorder(new javax.swing.border.BevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
+        add(jTextAreaDescription, gridBagConstraints);
+
     }//GEN-END:initComponents
+
+    private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
+        String prevSelectedItem = (String)j2eeSpecComboBox.getSelectedItem();
+        String servInsID = (String)serverInstanceIDs.get(serverInstanceComboBox.getSelectedIndex());
+        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(servInsID);
+        Set supportedVersions = j2eePlatform.getSupportedSpecVersions();
+        j2eeSpecComboBox.removeAllItems();
+        if (supportedVersions.contains(J2eeModule.J2EE_14)) j2eeSpecComboBox.addItem(J2EE_SPEC_14_LABEL);
+        if (prevSelectedItem != null) {
+            j2eeSpecComboBox.setSelectedItem(prevSelectedItem);
+        }
+    }//GEN-LAST:event_serverInstanceComboBoxActionPerformed
+
+    private void j2eeSpecComboBoxFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxFocusGained
+        setJ2eeSpecVerDesc();
+    }//GEN-LAST:event_j2eeSpecComboBoxFocusGained
+
+    private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed
+        setJ2eeSpecVerDesc();
+    }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
 
     private void jButtonLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLibrariesActionPerformed
         JFileChooser chooser = createChooser(jTextFieldLibraries.getText());    
@@ -353,6 +458,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel createdFolderLabel;
     public javax.swing.JTextField createdFolderTextField;
+    private javax.swing.JComboBox j2eeSpecComboBox;
     private javax.swing.JButton jButtonConfigFilesLocation;
     private javax.swing.JButton jButtonLibraries;
     private javax.swing.JButton jButtonPrjLocation;
@@ -360,17 +466,22 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabelPrjLocation;
     private javax.swing.JLabel jLabelPrjLocationDesc;
     private javax.swing.JLabel jLabelPrjName;
     private javax.swing.JLabel jLabelSrcLocation;
     private javax.swing.JLabel jLabelSrcLocationDesc;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JTextArea jTextAreaDescription;
     private javax.swing.JTextField jTextFieldConfigFiles;
     private javax.swing.JTextField jTextFieldLibraries;
     public javax.swing.JTextField moduleLocationTextField;
     public javax.swing.JTextField projectLocationTextField;
     public javax.swing.JTextField projectNameTextField;
+    private javax.swing.JComboBox serverInstanceComboBox;
+    private javax.swing.JLabel serverInstanceLabel;
     // End of variables declaration//GEN-END:variables
     
     private static JFileChooser createChooser() {
@@ -452,6 +563,11 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         File prjFolder = new File(projectLocationTextField.getText().trim());
         String prjName = projectNameTextField.getText().trim();
         
+        if (getSelectedServerInstanceID() == null) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"MSG_NoServer")); //NOI18N
+            return false;
+        }
+            
         if (!f.isDirectory()) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"MSG_ProvideExistingSourcesLocation")); //NOI18N
             return false; //Existing sources location not specified
@@ -497,6 +613,8 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         d.putProperty(WizardProperties.CONFIG_FILES_FOLDER, new File(jTextFieldConfigFiles.getText()));
         d.putProperty(WizardProperties.LIB_FOLDER, new File(jTextFieldLibraries.getText()));
         d.putProperty(WizardProperties.JAVA_ROOT, guessJavaRootsAsFiles(FileUtil.toFileObject(moduleLocFile)));
+        d.putProperty(WizardProperties.SERVER_INSTANCE_ID, getSelectedServerInstanceID());
+        d.putProperty(WizardProperties.J2EE_LEVEL, getSelectedJ2eeSpec());
         // TODO: ma154696: add also search for test roots
     }
     
@@ -677,5 +795,41 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         }
         return null;
     }
-
+    
+    private void setJ2eeSpecVerDesc() {
+        Object specVer = j2eeSpecComboBox.getSelectedItem();
+        if (specVer != null && specVer.equals(J2EE_SPEC_14_LABEL)) {
+            jTextAreaDescription.setText(NbBundle.getMessage(ImportLocationVisual.class, "J2EESpecLevel_Desc_14")); //NOI18N
+        }
+    }
+    
+    private void initServerInstances() {
+        String[] servInstIDs = Deployment.getDefault().getServerInstanceIDs();
+        serverInstanceIDs = new ArrayList();
+        for (int i = 0; i < servInstIDs.length; i++) {
+            J2eePlatform j2eePlat = Deployment.getDefault().getJ2eePlatform(servInstIDs[i]);
+            if (j2eePlat != null && j2eePlat.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                serverInstanceIDs.add(servInstIDs[i]);
+                serverInstanceComboBox.addItem(Deployment.getDefault().getServerInstanceDisplayName(servInstIDs[i]));
+            }
+        }
+        if (serverInstanceIDs.size() > 0) {
+            serverInstanceComboBox.setSelectedIndex(0);
+        } else {
+            serverInstanceComboBox.setEnabled(false);
+            j2eeSpecComboBox.setEnabled(false);
+        }
+    }
+    
+    public String getSelectedServerInstanceID() {
+        int idx = serverInstanceComboBox.getSelectedIndex();
+        return idx == -1 ? null 
+                         : (String)serverInstanceIDs.get(idx);
+    }
+    
+    public String getSelectedJ2eeSpec() {
+        Object item = j2eeSpecComboBox.getSelectedItem();
+        return item == null ? null
+                            : item.equals(J2EE_SPEC_14_LABEL) ? J2eeModule.J2EE_14 : J2eeModule.J2EE_13;
+    }
 }

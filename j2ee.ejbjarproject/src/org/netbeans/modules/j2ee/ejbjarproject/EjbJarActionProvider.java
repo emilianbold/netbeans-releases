@@ -14,6 +14,8 @@
 package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,13 +28,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
-import org.netbeans.modules.j2ee.deployment.impl.projects.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.modules.j2ee.deployment.execution.*;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -304,36 +303,66 @@ class EjbJarActionProvider implements ActionProvider {
     private boolean isSelectedServer () {
         String instance = antProjectHelper.getStandardPropertyEvaluator ().getProperty (EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
         boolean selected;
+        
         if (instance != null) {
-            selected = true;
-        } else {
-            // no selected server => warning
-            String server = antProjectHelper.getStandardPropertyEvaluator ().getProperty (EjbJarProjectProperties.J2EE_SERVER_TYPE);
-            NoSelectedServerWarning panel = new NoSelectedServerWarning (server);
+            String id = Deployment.getDefault().getServerID(instance);
+            if (id != null) {
+                return true;
+            }
+        }
+        
+        // if there is some server instance of the type which was used
+        // previously do not ask and use it
+        String serverType = antProjectHelper.getStandardPropertyEvaluator ().getProperty (EjbJarProjectProperties.J2EE_SERVER_TYPE);
+        if (serverType != null) {
+            String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
+            if (servInstIDs.length > 0) {
+                setServerInstance(servInstIDs[0]);
+                return true;
+            }
+        }
 
-            Object[] options = new Object[] {
-                DialogDescriptor.OK_OPTION,
-                DialogDescriptor.CANCEL_OPTION
-            };
-            DialogDescriptor desc = new DialogDescriptor (panel,
-                    NbBundle.getMessage (NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
-                true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
-            Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
-            dlg.setVisible (true);
-            if (desc.getValue() != options[0]) {
-                selected = false;
-            } else {
-                instance = panel.getSelectedInstance ();
-                selected = instance != null;
-                if (selected) {
-                    EjbJarProjectProperties wpp = new EjbJarProjectProperties (project, antProjectHelper, refHelper);
-                    wpp.put (EjbJarProjectProperties.J2EE_SERVER_INSTANCE, instance);
-                    wpp.store ();
+        // no selected server => warning
+        NoSelectedServerWarning panel = new NoSelectedServerWarning (serverType);
+
+        Object[] options = new Object[] {
+            DialogDescriptor.OK_OPTION,
+            DialogDescriptor.CANCEL_OPTION
+        };
+        final DialogDescriptor desc = new DialogDescriptor (panel,
+                NbBundle.getMessage (NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
+            true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
+        desc.setMessageType(DialogDescriptor.WARNING_MESSAGE);
+        Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
+        panel.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(NoSelectedServerWarning.OK_ENABLED)) {
+                        Object newvalue = evt.getNewValue();
+                        if ((newvalue != null) && (newvalue instanceof Boolean)) {
+                            desc.setValid(((Boolean)newvalue).booleanValue());
+                        }
+                    }
                 }
             }
-            dlg.dispose();            
+        );
+        desc.setValid(panel.getSelectedInstance() != null);
+        dlg.setVisible (true);
+        if (desc.getValue() != options[0]) {
+            selected = false;
+        } else {
+            instance = panel.getSelectedInstance ();
+            selected = instance != null;
+            if (selected) {
+                setServerInstance(instance);
+            }
         }
+        dlg.dispose();
         return selected;
     }
     
+    private void setServerInstance(String serverInstanceId) {
+        EjbJarProjectProperties wpp = new EjbJarProjectProperties(project, antProjectHelper, refHelper);
+        wpp.put(EjbJarProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceId);
+        wpp.store ();
+    }
 }

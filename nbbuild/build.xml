@@ -2437,7 +2437,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../websvc/websvcapi" target="netbeans"/>
   </target>
 
-  <target name="all-websvc/registry" depends="init, all-web/ddapi">
+  <target name="all-websvc/registry" depends="init, all-web/ddapi, all-j2eeserver">
     <echo message="Building module websvc/registry.."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">

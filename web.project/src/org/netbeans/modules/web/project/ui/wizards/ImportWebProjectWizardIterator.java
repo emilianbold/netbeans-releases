@@ -92,6 +92,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         String docBaseName = (String) wiz.getProperty(WizardProperties.DOC_BASE);
         String javaRootName = (String) wiz.getProperty(WizardProperties.JAVA_ROOT);
         String libName = (String) wiz.getProperty(WizardProperties.LIB_FOLDER);
+        String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
 
         FileObject wmFO = FileUtil.toFileObject (dirSrcF);
@@ -126,7 +127,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
 
         String buildfile = getBuildfile();
         
-        WebProjectGenerator.importProject (dirF, name, wmFO, new File[] {FileUtil.toFile(javaRoot)}, null, docBase, libFolder, j2eeLevel, buildfile);
+        WebProjectGenerator.importProject (dirF, name, wmFO, new File[] {FileUtil.toFile(javaRoot)}, null, docBase, libFolder, j2eeLevel, serverInstanceID, buildfile);
         FileObject dir = FileUtil.toFileObject (dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
         
@@ -461,6 +462,10 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
         
         public boolean isValid() {
+            if (panel.getSelectedServerInstanceID() == null) {
+                setErrorMessage("MSG_NoServer"); //NOI18N
+                return false;
+            }
             final String webPages = panel.jTextFieldWebPages.getText().trim();
             if (webPages.length() == 0) {
                 setErrorMessage("MSG_WebPagesMandatory"); //NOI18N
@@ -542,7 +547,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             d.putProperty(WizardProperties.DOC_BASE, panel.jTextFieldWebPages.getText().trim());
             d.putProperty(WizardProperties.JAVA_ROOT, panel.jTextFieldJavaSources.getText().trim());
             d.putProperty(WizardProperties.LIB_FOLDER, panel.jTextFieldLibraries.getText().trim());
-            d.putProperty(WizardProperties.J2EE_LEVEL, panel.j2eeLevel);
+            d.putProperty(WizardProperties.SERVER_INSTANCE_ID, panel.getSelectedServerInstanceID());
+            d.putProperty(WizardProperties.J2EE_LEVEL, panel.getSelectedJ2eeSpec());
 
             d.putProperty("NewProjectWizard_Title", null); //NOI18N
         }

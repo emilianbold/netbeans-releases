@@ -9,7 +9,8 @@ package org.netbeans.modules.websvc.registry.netbeans;
 import java.io.File;
 
 import org.openide.ErrorManager;
-import org.netbeans.modules.j2ee.platform.api.PlatformProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 
 
 /** This class represents the Sun Java System Application Version installed
@@ -121,7 +122,16 @@ public final class SJSASVersion {
 	 */
 	public static SJSASVersion getSJSAppServerVersion() {
 		SJSASVersion version = APPSERVER_VERSION_UNKNOWN;	// NOI18N
-		File asInstallRoot = PlatformProvider.getDefault().getLocation();
+                String serverInstanceIDs[] = Deployment.getDefault().getServerInstanceIDs ();
+                J2eePlatform platform = null;
+                for (int i = 0; i < serverInstanceIDs.length; i++) {
+                    J2eePlatform p = Deployment.getDefault().getJ2eePlatform (serverInstanceIDs [i]);
+                    if (p != null && p.isToolSupported ("wscompile")) {
+                        platform = p;
+                        break;
+                    }
+                }
+		File asInstallRoot = platform == null ? null : platform.getPlatformRoots () [0];
 		if(asInstallRoot != null && asInstallRoot.exists()) {
 			File sunDomain11Dtd = new File(asInstallRoot, "lib/dtds/sun-domain_1_1.dtd"); // NOI18N
 			if(sunDomain11Dtd.exists()) {

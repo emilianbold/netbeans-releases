@@ -86,7 +86,23 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                         <specification-version>4.20</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.api.java</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.project.libraries</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.j2ee.deployment.devmodules.api</package>

@@ -23,6 +23,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressMonitor;
 import org.openide.filesystems.*;
 import java.util.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.nodes.Node;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -41,6 +42,8 @@ public class ServerInstance implements Node.Cookie {
     private DeploymentManager manager;
     private IncrementalDeployment incrementalDeployment;
     private TargetModuleIDResolver tmidResolver;
+    private J2eePlatform j2eePlatform;
+    private J2eePlatformImpl j2eePlatformImpl;
     private StartServer startServer;
     private FindJSPServlet findJSPServlet;
     private Map targets; // keyed by target name, valued by ServerTarget
@@ -122,6 +125,25 @@ public class ServerInstance implements Node.Cookie {
             throw new RuntimeException(e);
         }
         return manager;
+    }
+
+    public J2eePlatform getJ2eePlatform() {
+        return j2eePlatform;
+    }
+    
+    public void setJ2eePlatform(J2eePlatform aJ2eePlatform ) {
+        j2eePlatform = aJ2eePlatform;
+    }
+    
+    public J2eePlatformImpl getJ2eePlatformImpl() {
+        if (j2eePlatformImpl == null) {
+            J2eePlatformFactory fact = server.getJ2eePlatformFactory();
+            // TODO this will be removed, implementation of J2EEPlatformFactory will be mandatory
+            if (fact != null) {
+                j2eePlatformImpl = fact.getJ2eePlatformImpl(getDeploymentManager());
+            }
+        }
+        return j2eePlatformImpl;
     }
     
     public void refresh(ServerState serverState) {

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -128,11 +129,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if ( cp == null) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "javac.classpath")); // NOI18N
+                new ProjectClassPathImplementation(helper, "${javac.classpath}:${" //NOI18N
+                        + EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH 
+                        + "}", evaluator, false));  //NOI18N
             }
             else {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "javac.test.classpath")); // NOI18N
+                new ProjectClassPathImplementation(helper, "javac.test.classpath", evaluator)); // NOI18N
             }
             cache[3+type] = cp;
         }
@@ -160,7 +163,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
                 // will be different from the run classpath, then the run classpath should
                 // be returned back. 
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "debug.classpath")); // NOI18N
+                new ProjectClassPathImplementation(helper, "debug.classpath", evaluator)); // NOI18N
             }
             cache[6+type] = cp;
         }
@@ -187,7 +190,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
                     break;
                 case 2:
                     cp = ClassPathFactory.createClassPath(
-                    new ProjectClassPathImplementation(helper, "web.docbase.dir")); // NOI18N
+                    new ProjectClassPathImplementation(helper, "web.docbase.dir", evaluator)); // NOI18N
                     break;
             }
         }

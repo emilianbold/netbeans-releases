@@ -69,11 +69,12 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
         Set resultSet = new HashSet();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
+        String servInstID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String sourceStructure = (String)wiz.getProperty(WizardProperties.SOURCE_STRUCTURE);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
         
-        AntProjectHelper h = WebProjectGenerator.createProject(dirF, name, sourceStructure, j2eeLevel, contextPath);
+        AntProjectHelper h = WebProjectGenerator.createProject(dirF, name, servInstID, sourceStructure, j2eeLevel, contextPath);
         try {
             FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
             FileObject indexJSPFo = getIndexJSPFO(webRoot, "index"); //NOI18N

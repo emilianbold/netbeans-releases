@@ -68,6 +68,8 @@ import org.netbeans.modules.web.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -85,6 +87,8 @@ import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.modules.web.project.queries.SourceLevelQueryImpl;
+import org.netbeans.modules.web.project.ui.NoSelectedServerWarning;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
@@ -115,6 +119,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private FileWatch webPagesFileWatch;
 //    private FileWatch javaSourceFileWatch;
 //    private FileWatch testSourceFileWatch;
+    private PropertyChangeListener j2eePlatformListener;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
     private final UpdateHelper updateHelper;
@@ -511,7 +516,37 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         });
     }
      */
+        
+    public void registerJ2eePlatformListener(final J2eePlatform platform) {
+        // listen to classpath changes
+        j2eePlatformListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(J2eePlatform.PROP_CLASSPATH)) {
+                    ProjectManager.mutex().writeAccess(new Mutex.Action() {
+                        public Object run() {
+                            EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                            String classpath = Utils.toClasspathString(platform.getClasspathEntries());
+                            ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                            try {
+                                ProjectManager.getDefault().saveProject(WebProject.this);
+                            } catch (IOException e) {
+                                ErrorManager.getDefault().notify(e);
+                            }
+                            return null;
+                        }
+                    });
+                }
+            }
+        };
+        platform.addPropertyChangeListener(j2eePlatformListener);
+    }
     
+    public void unregisterJ2eePlatformListener(J2eePlatform platform) {
+        if (j2eePlatformListener != null) {
+            platform.removePropertyChangeListener(j2eePlatformListener);
+        }
+    }
     // Private innerclasses ----------------------------------------------------
     
     private final class Info implements ProjectInformation {
@@ -656,7 +691,30 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                         GeneratedFilesHelper.BUILD_XML_PATH,
                         WebProject.class.getResource("resources/build.xsl"),
                         true);
+                    String servInstID = (String)wpp.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
+                    J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
+                    if (platform != null) {
+                        // updates j2ee.platform.cp & wscompile.cp & reg. j2ee platform listener
+                        wpp.put(WebProjectProperties.J2EE_SERVER_INSTANCE, servInstID);
+                        wpp.store();
+                    } else {
+                        // if there is some server instance of the type which was used
+                        // previously do not ask and use it
+                        String serverType = (String)wpp.get(WebProjectProperties.J2EE_SERVER_TYPE);
+                        if (serverType != null) {
+                            String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
+                            if (servInstIDs.length > 0) {
+                                wpp.put(WebProjectProperties.J2EE_SERVER_INSTANCE, servInstIDs[0]);
+                                wpp.store();
+                                platform = Deployment.getDefault().getJ2eePlatform(servInstIDs[0]);
+                            }
+                        }
+                        if (platform == null) {
+                            // TODO inform the user that no server is set
+                        }
+                    }
                 }
+                
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -699,6 +757,14 @@ public final class WebProject implements Project, AntProjectListener, FileChange
 
             webPagesFileWatch.reset();
 //            javaSourceFileWatch.reset();
+
+            // listen to j2ee platform classpath changes
+            WebProjectProperties wpp = getWebProjectProperties();
+            String servInstID = (String)wpp.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
+            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
+            if (platform != null) {
+                unregisterJ2eePlatformListener(platform);
+            }
 
             // Probably unnecessary, but just in case:
             try {

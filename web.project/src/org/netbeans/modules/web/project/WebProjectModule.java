@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import javax.swing.Action;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
@@ -35,7 +36,6 @@ import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.loaders.DataLoader;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.NotifyDescriptor;
@@ -119,10 +119,7 @@ public class WebProjectModule extends ModuleInstall {
                             StringBuffer sb = new StringBuffer();
                             // Ant is needed in classpath if we are forking JspC into another process
                             sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false));
-                            sb.append(":"); // NOI18N
-                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/servlet-api-2.4.jar", null, false));
-                            sb.append(":"); // NOI18N
-                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jsp-api-2.0.jar", null, false));
+                            sb.append(":${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}"); // NOI18N
                             sb.append(":"); // NOI18N
                             sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.28.jar", null, false));
                             sb.append(":"); // NOI18N

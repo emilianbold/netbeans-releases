@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
 			<pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
 			<pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
 			<pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/>
-			<pathelement location="${j2ee/platform.dir}/${nb.modules.dir}/org-netbeans-modules-j2ee-platform.jar"/>
+			<pathelement location="${j2eeserver.dir}/${nb.modules.dir}/org-netbeans-modules-j2eeserver.jar"/>
 			<pathelement location="${j2ee/external}/jaxrpc-impl.jar"/>
 			<pathelement location="${j2ee/external}/jaxrpc-spi.jar"/>
 			<pathelement location="${j2ee/external}/jax-qname.jar"/>

@@ -13,7 +13,11 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.wizards;
 
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
+import java.util.ArrayList;
+import java.util.Set;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -22,13 +26,17 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 //    private static boolean lastMainClassCheck = false; // XXX Store somewhere
     
     private PanelConfigureProject panel;
-    private String j2eeLevel;
+    
+    private java.util.List serverInstanceIDs;
+    
+    private static final String J2EE_SPEC_14_LABEL = NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_14"); //NOI18N
+//    private String j2eeLevel;
     
     /** Creates new form PanelOptionsVisual */
     public PanelOptionsVisual(PanelConfigureProject panel) {
         initComponents();
         this.panel = panel;
-        initJ2EESpecLevels();
+        initServerInstances();
     }
     
     /** This method is called from within the constructor to
@@ -45,6 +53,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         j2eeSpecDescLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         j2eeSpecDescTextPane = new javax.swing.JTextPane();
+        serverInstanceLabel = new javax.swing.JLabel();
+        serverInstanceComboBox = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -62,15 +72,17 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc"));
 
         j2eeSpecLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevel_CheckBoxMnemonic").charAt(0));
-        j2eeSpecLabel.setText(NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_J2EESpecLevel_Label"));
         j2eeSpecLabel.setLabelFor(j2eeSpecComboBox);
+        j2eeSpecLabel.setText(NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_J2EESpecLevel_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(j2eeSpecLabel, gridBagConstraints);
 
+        j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
+        j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
         j2eeSpecComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 j2eeSpecComboBoxActionPerformed(evt);
@@ -79,26 +91,26 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(j2eeSpecComboBox, gridBagConstraints);
         j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NPW1_J2EESpecLevel_A11YDesc"));
 
-        j2eeSpecDescLabel.setText(NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_J2EESpecLevelDesc_Label"));
         j2eeSpecDescLabel.setLabelFor(j2eeSpecDescTextPane);
+        j2eeSpecDescLabel.setText(NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_J2EESpecLevelDesc_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
         add(j2eeSpecDescLabel, gridBagConstraints);
 
         j2eeSpecDescTextPane.setEditable(false);
-        j2eeSpecDescTextPane.setFocusable(false);
         j2eeSpecDescTextPane.setEnabled(false);
+        j2eeSpecDescTextPane.setFocusable(false);
         jScrollPane1.setViewportView(j2eeSpecDescTextPane);
         j2eeSpecDescTextPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_J2EESpecLevelDesc_A11YDesc"));
 
@@ -111,24 +123,65 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
+        serverInstanceLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_Server_LabelMnemonic").charAt(0));
+        serverInstanceLabel.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_Server_Label"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(serverInstanceLabel, gridBagConstraints);
+
+        serverInstanceComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                serverInstanceComboBoxActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        add(serverInstanceComboBox, gridBagConstraints);
+        serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_NEJB_Server_ComboBox_A11YDesc"));
+
     }//GEN-END:initComponents
 
+    private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
+        String prevSelectedItem = (String)j2eeSpecComboBox.getSelectedItem();
+        String servInsID = (String)serverInstanceIDs.get(serverInstanceComboBox.getSelectedIndex());
+        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(servInsID);
+        Set supportedVersions = j2eePlatform.getSupportedSpecVersions();
+        j2eeSpecComboBox.removeAllItems();
+        if (supportedVersions.contains(J2eeModule.J2EE_14)) j2eeSpecComboBox.addItem(J2EE_SPEC_14_LABEL);
+        if (prevSelectedItem != null) {
+            j2eeSpecComboBox.setSelectedItem(prevSelectedItem);
+        }
+    }//GEN-LAST:event_serverInstanceComboBoxActionPerformed
+
     private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed
-        StringBuffer str = new StringBuffer("J2EESpecLevel_Desc_"); //NOI18N
-        str.append(j2eeSpecComboBox.getSelectedIndex());
-        j2eeSpecDescTextPane.setText(NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString(str.toString())); //NOI18N
-        switch (j2eeSpecComboBox.getSelectedIndex()) {
-            case 0: j2eeLevel = EjbJarProjectProperties.J2EE_1_4;
-        }            
+        Object specVer = j2eeSpecComboBox.getSelectedItem();
+        if (specVer != null && specVer.equals(J2EE_SPEC_14_LABEL)) {
+            j2eeSpecDescTextPane.setText(NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_Desc_14")); //NOI18N
+        }
     }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
     
     boolean valid(WizardDescriptor wizardDescriptor) {
+        if (getSelectedServer() == null) {
+            String errMsg = NbBundle.getMessage(PanelOptionsVisual.class, "MSG_NoServer");
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
+            return false;
+        }
         return true;
     }
 
     void store(WizardDescriptor d) {
         d.putProperty(WizardProperties.SET_AS_MAIN, setAsMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE );
-        d.putProperty(WizardProperties.J2EE_LEVEL, j2eeLevel);
+        d.putProperty(WizardProperties.SERVER_INSTANCE_ID, getSelectedServer());
+        d.putProperty(WizardProperties.J2EE_LEVEL, getSelectedJ2eeSpec());
     }
     
     void read(WizardDescriptor d) {
@@ -140,12 +193,39 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     private javax.swing.JTextPane j2eeSpecDescTextPane;
     private javax.swing.JLabel j2eeSpecLabel;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JComboBox serverInstanceComboBox;
+    private javax.swing.JLabel serverInstanceLabel;
     private javax.swing.JCheckBox setAsMainCheckBox;
     // End of variables declaration//GEN-END:variables
 
-    private void initJ2EESpecLevels() {
-       j2eeSpecComboBox.addItem(NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("J2EESpecLevel_0")); //NOI18N
-       j2eeSpecComboBox.setSelectedIndex(0);
+    private void initServerInstances() {
+        String[] servInstIDs = Deployment.getDefault().getServerInstanceIDs();
+        serverInstanceIDs = new ArrayList();
+        for (int i = 0; i < servInstIDs.length; i++) {
+            J2eePlatform j2eePlat = Deployment.getDefault().getJ2eePlatform(servInstIDs[i]);
+            if (j2eePlat != null && j2eePlat.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                serverInstanceIDs.add(servInstIDs[i]);
+                serverInstanceComboBox.addItem(Deployment.getDefault().getServerInstanceDisplayName(servInstIDs[i]));
+            }
+        }
+        if (serverInstanceIDs.size() > 0) {
+            serverInstanceComboBox.setSelectedIndex(0);
+        } else {
+            serverInstanceComboBox.setEnabled(false);
+            j2eeSpecComboBox.setEnabled(false);
+        }
+    }
+    
+    private String getSelectedJ2eeSpec() {
+        Object item = j2eeSpecComboBox.getSelectedItem();
+        return item == null ? null
+                            : item.equals(J2EE_SPEC_14_LABEL) ? J2eeModule.J2EE_14 : J2eeModule.J2EE_13;
+    }
+    
+    private String getSelectedServer() {
+        int idx = serverInstanceComboBox.getSelectedIndex();
+        return idx == -1 ? null 
+                         : (String)serverInstanceIDs.get(idx);
     }
 }
 

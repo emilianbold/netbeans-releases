@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.earproject.ui.customizer;
 
+import java.util.ArrayList;
 import org.netbeans.modules.j2ee.earproject.ProjectEar;
 
 import javax.swing.JPanel;
@@ -24,8 +25,10 @@ import org.openide.util.HelpCtx;
 
 import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveCustomizerPanel;
 import org.netbeans.modules.j2ee.common.ui.customizer.VisualPropertySupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 //import org.netbeans.modules.j2ee.common.ui.customizer.VisualArchiveIncludesSupport;
 import org.netbeans.modules.j2ee.common.ui.customizer.VisualClasspathSupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 //import org.netbeans.modules.j2ee.common.ui.customizer.CustomizerGeneral;
 
 public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, HelpCtx.Provider {
@@ -36,9 +39,8 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
     private VisualClasspathSupport vws;
     private ProjectEar wm;
 
-    String[] serverInstanceIDs;
-    String[] serverNames;
-    String[] serverURLs;
+    private String[] serverInstanceIDs;
+    private String[] serverNames;
     boolean initialized = false;
 
     private EarProjectProperties webProperties;
@@ -66,20 +68,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
     
     public void initValues() {
         initialized = false;
-        Deployment deployment = Deployment.getDefault ();
-        serverInstanceIDs = deployment.getServerInstanceIDs ();
-        serverNames = new String[serverInstanceIDs.length];
-        serverURLs = new String[serverInstanceIDs.length];
-        for (int i = 0; i < serverInstanceIDs.length; i++) {
-            String serverInstanceDisplayName = 
-                    deployment.getServerInstanceDisplayName(serverInstanceIDs [i]);
-            // if displayName not set use instanceID instead
-            if (serverInstanceDisplayName == null) {                
-                serverInstanceDisplayName = serverInstanceIDs [i];
-            }
-            serverNames[i] = deployment.getServerDisplayName (deployment.getServerID (serverInstanceIDs [i])) 
-             + " (" + serverInstanceDisplayName + ")"; //NOI18N
-        }
+        initServerInstances();
 
         vps.register(jCheckBoxDisplayBrowser, EarProjectProperties.DISPLAY_BROWSER);
         vps.register(jTextFieldRelativeURL, EarProjectProperties.LAUNCH_URL_RELATIVE);
@@ -346,5 +335,24 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
      */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerRun.class);
+    }
+    
+    private void initServerInstances() {
+        String j2eeSpec = (String)webProperties.get(EarProjectProperties.J2EE_PLATFORM);
+        String[] servInstIDs = Deployment.getDefault().getServerInstanceIDs();
+        java.util.List servInstIDsList = new ArrayList();
+        java.util.List servNamesList = new ArrayList();
+        Deployment deployment = Deployment.getDefault();
+        for (int i = 0; i < servInstIDs.length; i++) {
+            String instanceID = servInstIDs[i];
+            J2eePlatform j2eePlat = deployment.getJ2eePlatform(instanceID);
+            if (j2eePlat != null && j2eePlat.getSupportedModuleTypes().contains(J2eeModule.EAR)
+                && j2eePlat.getSupportedSpecVersions().contains(j2eeSpec)) {
+                servInstIDsList.add(instanceID);
+                servNamesList.add(deployment.getServerInstanceDisplayName(instanceID));
+            }
+        }
+        serverInstanceIDs = (String[]) servInstIDsList.toArray(new String[servInstIDsList.size()]);
+        serverNames = (String[]) servNamesList.toArray(new String[servNamesList.size()]);
     }
 }

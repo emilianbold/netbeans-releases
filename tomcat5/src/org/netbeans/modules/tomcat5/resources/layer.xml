@@ -35,6 +35,11 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
                 </file>
+                <file name="TomcatPlatformFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.TomcatPlatformFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.TomcatPlatformFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory"/>
+                </file>
                 <file name="TomcatPlanSplitter.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.TomcatPlanSplitter"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.TomcatPlanSplitter"/>

@@ -50,11 +50,15 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
+import org.netbeans.modules.j2ee.ejbjarproject.Utils;
+import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -90,6 +94,7 @@ public class EjbJarProjectProperties {
 
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type";
+    public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
     public static final String JAVAC_SOURCE = "javac.source";
     public static final String JAVAC_DEBUG = "javac.debug";
     public static final String JAVAC_DEPRECATION = "javac.deprecation";
@@ -388,6 +393,33 @@ public class EjbJarProjectProperties {
                             if ( pd.dest != null ) {
                                 // Standard properties
                                 ((EditableProperties)eProps.get( pd.dest )).setProperty( pd.name, newValueEncoded );
+                                
+                                // Standard properties
+                                EditableProperties ep = (EditableProperties) eProps.get(pd.dest);
+                                if (J2EE_SERVER_INSTANCE.equals(pd.name)) {
+                                        // update j2ee.platform.classpath
+                                        String oldServInstID = ep.getProperty(J2EE_SERVER_INSTANCE);
+                                        if (oldServInstID != null) {
+                                            J2eePlatform oldJ2eePlatform = Deployment.getDefault().getJ2eePlatform(oldServInstID);
+                                            if (oldJ2eePlatform != null) {
+                                                ((EjbJarProject)project).unregisterJ2eePlatformListener(oldJ2eePlatform);
+                                            }
+                                        }
+                                        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newValueEncoded);
+                                        ((EjbJarProject)project).registerJ2eePlatformListener(j2eePlatform);
+                                        String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
+                                        ep.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
+                                        
+                                        // update j2ee.platform.wscompile.classpath
+                                        if (j2eePlatform.isToolSupported(WebServicesConstants.WSCOMPILE)) {
+                                            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(WebServicesConstants.WSCOMPILE);
+                                            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH, 
+                                                    Utils.toClasspathString(wsClasspath));
+                                        } else {
+                                            ep.remove(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
+                                        }
+                                }
+                                ep.setProperty(pd.name, newValueEncoded);
                             }
                         }
                     }

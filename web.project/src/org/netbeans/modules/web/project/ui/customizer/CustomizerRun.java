@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
+import java.util.ArrayList;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.Utils;
 
@@ -22,6 +23,8 @@ import org.openide.util.NbBundle;
 import org.openide.WizardValidationException;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.util.HelpCtx;
 
 public class CustomizerRun extends JPanel implements WebCustomizer.ValidatingPanel, HelpCtx.Provider {
@@ -32,7 +35,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.ValidatingPan
 
     String[] serverInstanceIDs;
     String[] serverNames;
-    String[] serverURLs;
+//    String[] serverURLs;
     boolean initialized = false;
 
     private WebProjectProperties webProperties;
@@ -57,20 +60,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.ValidatingPan
 
     public void initValues() {
         initialized = false;
-        Deployment deployment = Deployment.getDefault ();
-        serverInstanceIDs = deployment.getServerInstanceIDs ();
-        serverNames = new String[serverInstanceIDs.length];
-        serverURLs = new String[serverInstanceIDs.length];
-        for (int i = 0; i < serverInstanceIDs.length; i++) {
-            String serverInstanceDisplayName = 
-                    deployment.getServerInstanceDisplayName(serverInstanceIDs [i]);
-            // if displayName not set use instanceID instead
-            if (serverInstanceDisplayName == null) {                
-                serverInstanceDisplayName = serverInstanceIDs [i];
-            }
-            serverNames[i] = deployment.getServerDisplayName (deployment.getServerID (serverInstanceIDs [i])) 
-             + " (" + serverInstanceDisplayName + ")"; //NOI18N
-        }
+        initServerInstances();
 
         vps.register(jCheckBoxDisplayBrowser, WebProjectProperties.DISPLAY_BROWSER);
         vps.register(jTextFieldRelativeURL, WebProjectProperties.LAUNCH_URL_RELATIVE);
@@ -124,8 +114,6 @@ public class CustomizerRun extends JPanel implements WebCustomizer.ValidatingPan
         errorLabel = new javax.swing.JLabel();
         jLabelURLExample = new javax.swing.JLabel();
 
-        FormListener formListener = new FormListener();
-
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EtchedBorder());
@@ -137,7 +125,11 @@ public class CustomizerRun extends JPanel implements WebCustomizer.ValidatingPan
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 0);
         add(jLabelContextPath, gridBagConstraints);
 
-        jTextFieldContextPath.addKeyListener(formListener);
+        jTextFieldContextPath.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTextFieldContextPathKeyReleased(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -157,7 +149,11 @@ public class CustomizerRun extends JPanel implements WebCustomizer.ValidatingPan
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
         add(jLabelServer, gridBagConstraints);
 
-        jComboBoxServer.addActionListener(formListener);
+        jComboBoxServer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBoxServerActionPerformed(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -171,7 +167,11 @@ public class CustomizerRun extends JPanel implements WebCustomizer.ValidatingPan
         jCheckBoxDisplayBrowser.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeRun_DisplayBrowser_LabelMnemonic").charAt(0));
         jCheckBoxDisplayBrowser.setSelected(true);
         jCheckBoxDisplayBrowser.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_DisplayBrowser_JCheckBox"));
-        jCheckBoxDisplayBrowser.addActionListener(formListener);
+        jCheckBoxDisplayBrowser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBoxDisplayBrowserActionPerformed(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -234,31 +234,6 @@ public class CustomizerRun extends JPanel implements WebCustomizer.ValidatingPan
         add(jLabelURLExample, gridBagConstraints);
         jLabelURLExample.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "ACS_CustomizeRun_RelativeURLExample_A11YDesc"));
 
-    }
-
-    // Code for dispatching events from components to event handlers.
-
-    private class FormListener implements java.awt.event.ActionListener, java.awt.event.KeyListener {
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == jComboBoxServer) {
-                CustomizerRun.this.jComboBoxServerActionPerformed(evt);
-            }
-            else if (evt.getSource() == jCheckBoxDisplayBrowser) {
-                CustomizerRun.this.jCheckBoxDisplayBrowserActionPerformed(evt);
-            }
-        }
-
-        public void keyPressed(java.awt.event.KeyEvent evt) {
-        }
-
-        public void keyReleased(java.awt.event.KeyEvent evt) {
-            if (evt.getSource() == jTextFieldContextPath) {
-                CustomizerRun.this.jTextFieldContextPathKeyReleased(evt);
-            }
-        }
-
-        public void keyTyped(java.awt.event.KeyEvent evt) {
-        }
     }//GEN-END:initComponents
 
     private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased
@@ -325,4 +300,22 @@ public class CustomizerRun extends JPanel implements WebCustomizer.ValidatingPan
         return message;
     }
 
+    private void initServerInstances() {
+        String j2eeSpec = (String)webProperties.get(WebProjectProperties.J2EE_PLATFORM);
+        String[] servInstIDs = Deployment.getDefault().getServerInstanceIDs();
+        java.util.List servInstIDsList = new ArrayList();
+        java.util.List servNamesList = new ArrayList();
+        Deployment deployment = Deployment.getDefault();
+        for (int i = 0; i < servInstIDs.length; i++) {
+            String instanceID = servInstIDs[i];
+            J2eePlatform j2eePlat = deployment.getJ2eePlatform(instanceID);
+            if (j2eePlat != null && j2eePlat.getSupportedModuleTypes().contains(J2eeModule.WAR)
+                && j2eePlat.getSupportedSpecVersions().contains(j2eeSpec)) {
+                servInstIDsList.add(instanceID);
+                servNamesList.add(deployment.getServerInstanceDisplayName(instanceID));
+            }
+        }
+        serverInstanceIDs = (String[]) servInstIDsList.toArray(new String[servInstIDsList.size()]);
+        serverNames = (String[]) servNamesList.toArray(new String[servNamesList.size()]);
+    }
 }

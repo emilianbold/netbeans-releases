@@ -76,7 +76,7 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Instan
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
         // remove the hard-coded level
-        AntProjectHelper h = EarProjectGenerator.importProject(dirF, srcF, name, "1.4");
+        AntProjectHelper h = EarProjectGenerator.importProject(dirF, srcF, name, "1.4", "PENDING");
         try {
             FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
             FileObject indexJSPFo = getIndexJSPFO(webRoot, "index"); //NOI18N

@@ -25,13 +25,13 @@ public interface WebServicesConstants {
     public static final String WEB_SERVICE_CLIENT = "web-service-client"; //NOI18N
     public static final String WEB_SERVICE_CLIENT_NAME = "web-service-client-name"; //NOI18N
     public static final String WEB_SERVICE_STUB_TYPE = "web-service-stub-type"; //NOI18N
+    public static final String WSCOMPILE="wscompile"; //NOI18N
     public static final String WSCOMPILE_CLASSPATH = "wscompile.classpath"; //NOI18N
     public static final String WSCOMPILE_TOOLS_CLASSPATH = "wscompile.tools.classpath"; //NOI18N
     public static final String WEBSVC_GENERATED_DIR = "websvc.generated.dir"; // NOI18N
+    public static final String J2EE_PLATFORM_WSCOMPILE_CLASSPATH="j2ee.platform.wscompile.classpath"; //NOI18N
     public static final String [] WSCOMPILE_JARS = {
-        "${libs.j2ee14.classpath}",
-        "${libs.jaxrpc11.classpath}",
-        "${libs.saaj12.classpath}",
-        "${wscompile.tools.classpath}"
+        "${" + J2EE_PLATFORM_WSCOMPILE_CLASSPATH + "}", //NOI18N
+        "${wscompile.tools.classpath}" //NOI18N
     };
 }

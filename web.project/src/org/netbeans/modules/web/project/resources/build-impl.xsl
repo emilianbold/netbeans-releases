@@ -209,7 +209,7 @@ is divided into following sections:
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>
-                        <xsl:attribute name="default">${javac.classpath}</xsl:attribute>
+                        <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">debug</xsl:attribute>
@@ -304,7 +304,7 @@ is divided into following sections:
                             </xsl:if>
                             <jvmarg line="${{runmain.jvmargs}}"/>
                             <classpath>
-                                <path path="${{build.classes.dir}}:${{javac.classpath}}"/>
+                                <path path="${{build.classes.dir}}:${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
                             </classpath>
                             <syspropertyset>
                                 <propertyref prefix="run-sys-prop."/>
@@ -620,7 +620,7 @@ is divided into following sections:
                 <webproject2:javac
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
-                    classpath="${{javac.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}"/>
+                    classpath="${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}"/>
 
             </target>
 
@@ -647,7 +647,7 @@ is divided into following sections:
                 <webproject2:javac
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
-                    classpath="${{javac.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}">
+                    classpath="${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}">
                     <customize>
                         <patternset includes="${{javac.jsp.includes}}"/>
                     </customize>
@@ -656,8 +656,8 @@ is divided into following sections:
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1">
                     <xsl:with-param name="srcdir" select="'${{build.generated.dir}}/src'"/>
                     <xsl:with-param name="destdir" select="'${{build.generated.dir}}/classes'"/>
-                    <xsl:with-param name="classpath" select="'${{javac.classpath}}:${{build.classes.dir}}'"/>
-                    <xsl:with-param name="classpath" select="'${{javac.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}'"/>
+                    <xsl:with-param name="classpath" select="'${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir}}'"/>
+                    <xsl:with-param name="classpath" select="'${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}'"/>
                </webproject:javac>
                -->
             </target>
@@ -850,10 +850,10 @@ is divided into following sections:
                             <istrue value="${{javadoc.private}}"/>
                         </condition>
                         <property name="javadoc.private.opt" value=""/>
-                        <condition property="javadoc.classpath.opt" value="-classpath ${{javac.classpath}}">
+                        <condition property="javadoc.classpath.opt" value="-classpath ${{javac.classpath}}:${{j2ee.platform.classpath}}">
                             <!-- -classpath '' cannot be passed safely on Windows; cf. #46901. -->
                             <not>
-                                <equals arg1="${{javac.classpath}}" arg2=""/>
+                                <equals arg1="${{javac.classpath}}:${{j2ee.platform.classpath}}" arg2=""/>
                             </not>
                         </condition>
                         <property name="javadoc.classpath.opt" value=""/>
@@ -896,7 +896,7 @@ is divided into following sections:
                             <xsl:attribute name="private">${javadoc.private}</xsl:attribute>
                             <xsl:attribute name="failonerror">true</xsl:attribute> <!-- #47325 -->
                             <classpath>
-                                <path path="${{javac.classpath}}"/>
+                                <path path="${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
                             </classpath>
                             <sourcepath>
                                 <xsl:call-template name="createPathElements">

@@ -23,8 +23,18 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
+
 
 public class Utils {
 
@@ -279,5 +289,19 @@ public class Utils {
         // inspired by org.openide.WizardDescriptor
         Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
         return c == null ? new Color(89,79,191) : c;
+    }
+    
+    public static String toClasspathString(File[] classpathEntries) {
+        if (classpathEntries == null) {
+            return "";
+        }
+        StringBuffer classpath = new StringBuffer();
+        for (int i = 0; i < classpathEntries.length; i++) {
+            classpath.append(classpathEntries[i].getAbsolutePath());
+            if (i + 1 < classpathEntries.length) {
+                classpath.append(":"); // NOI18N
+            }
+        }
+        return classpath.toString();
     }
 }

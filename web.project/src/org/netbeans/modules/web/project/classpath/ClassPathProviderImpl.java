@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -154,10 +155,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         ClassPath cp = cache[3+type];
         if ( cp == null) {
             if (type == 0) {
-                cp = ClassPathFactory.createClassPath(new ProjectClassPathImplementation(helper, "javac.classpath", evaluator)); //NOI18N
+                cp = ClassPathFactory.createClassPath(
+                new ProjectClassPathImplementation(helper, "${javac.classpath}:${" 
+                        + WebProjectProperties.J2EE_PLATFORM_CLASSPATH 
+                        + "}", evaluator, false));      //NOI18N
             }
             else {
-                cp = ClassPathFactory.createClassPath(new ProjectClassPathImplementation(helper, "javac.test.classpath", evaluator)); //NOI18N
+                cp = ClassPathFactory.createClassPath(
+                new ProjectClassPathImplementation(helper, "${javac.test.classpath}:${" 
+                        + WebProjectProperties.J2EE_PLATFORM_CLASSPATH 
+                        + "}", evaluator, false));      //NOI18N
             }
             cache[3+type] = cp;
         }
@@ -276,6 +283,5 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     public void propertyChange(PropertyChangeEvent evt) {
         dirCache.remove(evt.getPropertyName());
     }
-
 }
 

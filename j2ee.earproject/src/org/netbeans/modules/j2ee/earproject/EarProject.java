@@ -14,7 +14,6 @@
 package org.netbeans.modules.j2ee.earproject;
 
 //import java.awt.Dialog;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -45,8 +44,6 @@ import org.netbeans.modules.j2ee.common.J2eeProject;
 
 import org.netbeans.modules.j2ee.common.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-//import org.netbeans.spi.java.classpath.ClassPathFactory;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 //import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
@@ -89,6 +86,8 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 import org.netbeans.modules.j2ee.common.ui.IconBaseProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 
 /**
  * Represents an Enterprise Application project.
@@ -460,6 +459,25 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
                     getBuildXmlName (),
                     EarProject.class.getResource("resources/build.xsl"),
                     true);
+                
+                String servInstID = (String)wpp.get(EarProjectProperties.J2EE_SERVER_INSTANCE);
+                J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
+                if (platform == null) {
+                    // if there is some server instance of the type which was used
+                    // previously do not ask and use it
+                    String serverType = (String)wpp.get(EarProjectProperties.J2EE_SERVER_TYPE);
+                    if (serverType != null) {
+                        String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
+                        if (servInstIDs.length > 0) {
+                            wpp.put(EarProjectProperties.J2EE_SERVER_INSTANCE, servInstIDs[0]);
+                            wpp.store();
+                            platform = Deployment.getDefault().getJ2eePlatform(servInstIDs[0]);
+                        }
+                    }
+                    if (platform == null) {
+                        // TODO inform the user that no server is set
+                    }
+                }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }

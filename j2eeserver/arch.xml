@@ -36,8 +36,7 @@ Microsystems, Inc. All Rights Reserved.
         
 <answer id="arch-what">
 <p>
-J2EE Server Module provides framework for J2EE server management and for J2EE 
-deployment in IDE.
+J2EE Server Module provides support for development of J2EE modules and framework for J2EE server management and for J2EE deployment in IDE.
 </p>
 </answer>
 
@@ -75,6 +74,9 @@ and deployment is called via custom Ant task (works only in IDE).
 J2EE Server module provides basic UI for server managment and server plugins
 can provide customized UI.
 </p>
+<p>
+J2EE Server module furthermore supports devmodules by managing server libraries i.e. it provides compilation classpath and registers sources and javadocs in lookup.
+</p>
 
 </answer>
 <!--        
@@ -92,15 +94,14 @@ A server that supports Deployment API can be integrated in IDE so that J2EE
 modules could be deployed to it from IDE. It will not support incremental
 deployment, start/stop server or JSP compilation.
 <p><i>
-In order to do this the plugin needs needs add the server classes that 
+In order to do this the plugin needs to add the server classes that 
 implement Deployment API to classpath and to provide a 
 <a href="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
 layer file</a> that will 
 register the server in IDE (specifying URL, user name and password) and 
 register a 
 <a href="http://java.sun.com/j2ee/1.4/docs/api/javax/enterprise/deploy/spi/factories/DeploymentFactory.html">
-factory class</a> from Deployment API. No additional implementation 
-should be needed.
+factory class</a> from Deployment API. Beside that server plugin must also implement some other mandatory APIs.
 </i></p>
 </usecase>
 
@@ -121,6 +122,17 @@ some optional interfaces defined by J2EE Server Module in addition to the Deploy
 </i></p>
 </usecase>
 
+<usecase id="j2ee-platform" name="Server Plugin mandatory APIs">
+
+Each server plugin is required to provide J2EE platform which devmodules may use beside else for obtaining compilation classpath.
+
+<p><i>Plugins must implement
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/J2eePlatformImpl.html">
+J2eePlatformImpl</a> interface and register it via <a href="org/netbeans/modules/j2ee/deployment/plugins/api/J2eePlatformFactory.html">J2eePlatformFactory</a> whose instance must be registered in the module <a href="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">
+layer file</a>. Devmodules then may access the <a href="org/netbeans/modules/j2ee/deployment/devmodules/api/J2eePlatform.html">J2eePlatform</a> interface via the <a href="org/netbeans/modules/j2ee/deployment/devmodules/api/Deployment.html">Deployment</a> utility class.
+</i></p>
+</usecase>
+
 <usecase id="plugin-with-optional-apis" name="Server Plugin that implements optional APIs">
 In practice plugins will likely want to provide tighter integration with IDE 
 that is specified in Deployment API.
@@ -138,7 +150,7 @@ file (an additional config file with specified DTD).
 </i>
 </p>
 
-Registration of various optional finctionality is done via 
+Registration of various optional functionality is done via 
 <a href="org/netbeans/modules/j2ee/deployment/plugins/api/OptionalDeploymentManagerFactory.html">
 OptionalDeploymentManagerFactory</a>.
 
@@ -244,9 +256,9 @@ registry UI.
         </question>
 -->
 <answer id="arch-time">
-The work for promoD includes support for J2EE Application (not part of 3.6), 
-projectization of devmodules part, small fixes in API and general stabilization.
-The work is planned to be done before promoD feature freeze.
+J2EEPlatform is planned to be added before promoE feature freeze. The work for promoD includes 
+support for J2EE Application (not part of 3.6), projectization of devmodules part, small fixes 
+in API and general stabilization. The work is planned to be done before promoD feature freeze.
 </answer>
 <!--    
         <question id="arch-quality" when="init">
@@ -354,6 +366,29 @@ XML editing and validation of server specific deployment descriptors.
 Used for communication between j2eeserver and devmodules (devmodules are 
 expected to be implemented as projects).
 </li>
+<li>
+    <api 
+        name="JavaSupportAPIs"
+        type="import"
+        group="java" 
+        category="devel"
+        url="http://www.netbeans.org/download/dev/javadoc/JavaSupportAPIs/">
+    Java Support APIs
+    </api>
+Used for registration of server libraries' sources and javadocs.
+</li>
+<li>
+    <api 
+        name="ProjectLibrariesAPI"
+        type="import"
+        group="java" 
+        category="devel"
+        url="http://www.netbeans.org/download/dev/javadoc/ProjectLibrariesAPI/">
+    Project Libraries API
+    </api>
+Used for definition of server libraries.
+</li>
+
 </ul>
 </answer>
 <!--
@@ -665,7 +700,25 @@ functionality registered by the plugin).
         </question>
 -->
 <answer id="lookup-register">
-No.
+Implementations of<br/>
+
+<api group="lookup"
+type="import"
+category="devel"
+name="org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation"
+url="http://www.netbeans.org/download/dev/javadoc/JavaSupportAPIs/org/netbeans/spi/java/queries/SourceForBinaryQueryImplementation.html"
+>Information about where Java sources corresponding to binaries
+can be found.</api><br/>
+
+<api group="lookup"
+type="import"
+category="devel"
+name="org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation"
+url="http://www.netbeans.org/download/dev/javadoc/JavaSupportAPIs/org/netbeans/spi/java/queries/JavadocForBinaryQueryImplementation.html"
+>Information about where Javadocs corresponding to binaries
+can be found.</api><br/>
+
+Both implementations are registered using <code>META-INF/services</code>.
 </answer>
 <!--
         <question id="lookup-remove" when="final" >
@@ -881,7 +934,7 @@ Yes. The module will stop any server instances that were started from IDE.
 -->
 <answer id="perf-scale">
 Size of devmodules (number of files) - the code does time stamp checking for devmodule files. 
-Size of deployment descriptors and their in-memory representation.
+Size of deployment descriptors and their in-memory representation. Size of platform libraries' sources and javadocs.
 </answer>
 <!--
         <question id="perf-limit" when="init">
@@ -903,7 +956,7 @@ Not aware of any.
 <p>
 The amount of memory consumed by server registry corresponds with the number of 
 plugins and number of registered server instances. This is a small number, typically
-2 or 3, certainly less then 10.
+2 or 3, certainly less then 10. The amount of memory consumed by server libraries depends on Java Support module implementation details.
 </p>
 <p>
 Memory consumption of configuration UI crresponds with number of open 

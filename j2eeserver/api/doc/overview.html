@@ -16,8 +16,8 @@ at
   -->
 </head>
 <body>
-J2EE Server Module provides framework for J2EE server management and for J2EE 
-deployment in IDE.
+J2EE Server Module provides support for development of J2EE modules and 
+framework for J2EE server management and for J2EE deployment in IDE.
 
 There are two separate api/spi sets in j2eeserver. The devmodules
 api/spi is for j2ee development modules (web, j2ee app, etc). The
@@ -29,14 +29,22 @@ as cookies on the development nodes. The api classes are to be used to
 add actions/properties/additional cookies to those nodes.
 <h2> plugins
 </h2>
-A jsr88 plugin can be installed without using the additional api/spi
-classes. It needs to be wrapped as a module with an entry in the
+
+A jsr88 plugin needs to be wrapped in a module with an entry in the
 /J2EE/DeploymentPlugins folder in the default filesystem, so the server
-registry can pick up the plugin. Additional functionality outside the
-deployment spec can be provided by the plugin through use of the
+registry can pick it up. In addition to that plugin is also
+required to provide a J2EE Platform. In order to do it, plugin must implement the 
+{@link org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl} 
+interface and register it via the
+{@link org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory} 
+whose instance must be registered in the module 
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">layer file</a>.
+
+Plugin may also provide some additional functionality outside the
+deployment spec through use of the
 api/spi classes.&nbsp; These additional functionality neeed to be
-declared through the plugin module <a
- href="http://j2eeserver.netbeans.org/plugin-layer-file.html">layer.xml</a>.
+declared through the plugin module 
+<a href="org/netbeans/modules/j2ee/deployment/plugins/api/doc-files/plugin-layer-file.html">layer file</a>.
 <h2> test plugin
 </h2>
 The j2eeserver/test directory contains the source to a sample plugin

@@ -73,10 +73,11 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
         Set resultSet = new HashSet();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
+        String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
         
-        AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeLevel, contextPath);
+        AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID, contextPath);
         try {
             FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
             FileObject indexJSPFo = getIndexJSPFO(webRoot, "index"); //NOI18N

@@ -46,7 +46,7 @@ public class LibrariesChooser extends javax.swing.JPanel {
         jList1.setModel(new LibrariesListModel());
         this.j2eePlatform = j2eePlatform;
         incompatibleLibs =
-                VisualClasspathSupport.getLibrarySet(WebProjectGenerator.getIncompatibleLibraries(j2eePlatform));
+                VisualClasspathSupport.getLibrarySet(Collections.EMPTY_LIST/*WebProjectGenerator.getIncompatibleLibraries(j2eePlatform)*/);
         jList1.setCellRenderer(new LibraryRenderer(incompatibleLibs));
         this.alreadySelectedLibs = alreadySelectedLibs;
     }

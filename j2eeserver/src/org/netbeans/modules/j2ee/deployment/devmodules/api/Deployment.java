@@ -16,7 +16,6 @@ package org.netbeans.modules.j2ee.deployment.devmodules.api;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -25,6 +24,7 @@ import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.impl.projects.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -214,6 +214,28 @@ public final class Deployment {
             ids [i] = s.getShortName ();
         }
         return ids;
+    }
+    
+    /**
+     * Return server instance's <code>J2eePlatform</code>.
+     *
+     * @param  serverInstanceID server instance ID.
+     * @return <code>J2eePlatform</code> for the given server instance, <code>null</code> if
+     *         server instance of the specified ID does not exist.
+     * @since 1.5
+     */
+    public J2eePlatform getJ2eePlatform(String serverInstanceID) {
+        ServerInstance serInst = ServerRegistry.getInstance().getServerInstance(serverInstanceID);
+        if (serInst == null) return null;
+        J2eePlatform result = serInst.getJ2eePlatform();
+        if (result == null) {
+            J2eePlatformImpl platformImpl = serInst.getJ2eePlatformImpl();
+            if (platformImpl != null) {
+                result = new J2eePlatform(platformImpl);
+                serInst.setJ2eePlatform(result);
+            }
+        }
+        return result;
     }
     
     public String getServerDisplayName (String id) {

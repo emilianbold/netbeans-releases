@@ -379,32 +379,8 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             helper.putPrimaryConfigurationData(data, true);
             needsSave = true;
         }
-
-        /* Add JAXRPC libraries to javac.classpath property (needed for client compilation.)
-         */
-        // !PW WebProjectProperties offers a higher level interface for complex properties
-        // like classpaths, but I'm not sure how to get access to one at this point, other than
-        // to create it and it's a pretty heavy weight object to just throw together like that.
-        EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        String javacClasspath = projectProperties.getProperty(WebProjectProperties.JAVAC_CLASSPATH);
-        boolean needsJaxRpc = true;
-        if(javacClasspath != null) { // Should not be null, but just in case.
-            String [] libs = PropertyUtils.tokenizePath(javacClasspath);
-            for(int i = 0; i < libs.length; i++) {
-                if("${libs.jaxrpc11.classpath}".equals(libs[i])) { // NOI18N
-                    needsJaxRpc = false;
-                    break;
-                }
-            }
-        }
         
-        if(needsJaxRpc) {
-            // !PW FIXME confirm that ':' is an acceptable delimiter.  (Both ':' and ';' have been encountered.)
-            javacClasspath += ":${libs.jaxrpc11.classpath}"; // NOI18N
-            projectProperties.put(WebProjectProperties.JAVAC_CLASSPATH, javacClasspath);
-            modifiedProjectProperties = true;
-        }
-
+        EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         // Add property for wscompile features
         {
             String featurePropertyName = "wscompile.client." + serviceName + ".features";

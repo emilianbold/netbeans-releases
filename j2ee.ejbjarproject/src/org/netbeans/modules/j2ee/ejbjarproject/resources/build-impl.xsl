@@ -161,7 +161,7 @@ is divided into following sections:
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>
-                        <xsl:attribute name="default">${javac.classpath}</xsl:attribute>
+                        <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">debug</xsl:attribute>
@@ -662,10 +662,10 @@ is divided into following sections:
                             <istrue value="${{javadoc.private}}"/>
                         </condition>
                         <property name="javadoc.private.opt" value=""/>
-                        <condition property="javadoc.classpath.opt" value="${{javac.classpath}}">
+                        <condition property="javadoc.classpath.opt" value="${{javac.classpath}}:${{j2ee.platform.classpath}}">
                             <!-- -classpath '' cannot be passed safely on Windows; cf. #46901. -->
                             <not>
-                                <equals arg1="${{javac.classpath}}" arg2=""/>
+                                <equals arg1="${{javac.classpath}}:${{j2ee.platform.classpath}}" arg2=""/>
                             </not>
                         </condition>
                         <property name="javadoc.classpath.opt" value='""'/>
@@ -710,7 +710,7 @@ is divided into following sections:
                             <xsl:attribute name="private">${javadoc.private}</xsl:attribute>
                             <xsl:attribute name="failonerror">true</xsl:attribute> <!-- #47325 -->
                             <classpath>
-                                <path path="${{javac.classpath}}"/>
+                                <path path="${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
                             </classpath>
                             <sourcepath>
                                 <xsl:call-template name="createPathElements">

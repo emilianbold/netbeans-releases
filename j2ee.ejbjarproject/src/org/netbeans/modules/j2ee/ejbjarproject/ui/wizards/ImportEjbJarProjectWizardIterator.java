@@ -99,8 +99,10 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
         File[] testFolders = (File[]) wiz.getProperty(WizardProperties.TEST_ROOT);
         File configFilesFolder = (File) wiz.getProperty(WizardProperties.CONFIG_FILES_FOLDER);
         File libName = (File) wiz.getProperty(WizardProperties.LIB_FOLDER);
-
-        EjbJarProjectGenerator.importProject(dirF, name, sourceFolders, testFolders, configFilesFolder, libName, EjbJarProjectProperties.J2EE_1_4); //PENDING detect spec level
+        String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
+        String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
+        
+        EjbJarProjectGenerator.importProject(dirF, name, sourceFolders, testFolders, configFilesFolder, libName, j2eeLevel, serverInstanceID);
         for (int i=0; i<sourceFolders.length; i++) {
             FileObject srcFo = FileUtil.toFileObject(sourceFolders[i]);
             if (srcFo != null) {
@@ -157,6 +159,8 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
         this.wiz.putProperty(WizardProperties.TEST_ROOT, null);
         this.wiz.putProperty(WizardProperties.CONFIG_FILES_FOLDER, null);
         this.wiz.putProperty(WizardProperties.LIB_FOLDER, null);
+        this.wiz.putProperty(WizardProperties.SERVER_INSTANCE_ID, null);
+        this.wiz.putProperty(WizardProperties.J2EE_LEVEL, null);
         this.wiz = null;
         panels = null;
     }
@@ -187,5 +191,4 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
     // If nothing unusual changes in the middle of the wizard, simply:
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
-    
 }

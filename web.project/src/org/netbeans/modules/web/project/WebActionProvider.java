@@ -835,11 +835,22 @@ class WebActionProvider implements ActionProvider {
             }
         }
         
-        // try to use the default server instance
-        instance = Deployment.getDefault().getDefaultServerInstanceID();
-        if (instance != null) {
-            setServerInstance(instance);
-            return true;
+//        // try to use the default server instance
+//        instance = Deployment.getDefault().getDefaultServerInstanceID();
+//        if (instance != null) {
+//            setServerInstance(instance);
+//            return true;
+//        }
+        
+        // if there is some server instance of the type which was used
+        // previously do not ask and use it
+        String serverType = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
+        if (serverType != null) {
+            String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
+            if (servInstIDs.length > 0) {
+                setServerInstance(servInstIDs[0]);
+                return true;
+            }
         }
         
         // no selected server => warning
@@ -853,6 +864,7 @@ class WebActionProvider implements ActionProvider {
         final DialogDescriptor desc = new DialogDescriptor (panel,
                 NbBundle.getMessage (NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
             true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
+        desc.setMessageType(DialogDescriptor.WARNING_MESSAGE);
         Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
         panel.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {

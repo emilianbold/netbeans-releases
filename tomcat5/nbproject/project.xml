@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
+                        <specification-version>1.5</specification-version>
                     </run-dependency>
                </dependency>
                <dependency>
@@ -111,7 +112,14 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-
+                <dependency>
+                    <code-name-base>org.netbeans.modules.project.libraries</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages/>
         </data>

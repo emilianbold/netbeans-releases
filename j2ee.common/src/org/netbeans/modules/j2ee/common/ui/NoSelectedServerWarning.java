@@ -15,6 +15,8 @@ package org.netbeans.modules.j2ee.common.ui;
 
 import java.awt.Component;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 
 /** Show a warning that no server is set and allows choose it.
@@ -23,11 +25,30 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
  */
 public class NoSelectedServerWarning extends JPanel {
     
+    public static final String OK_ENABLED = "ok_enabled"; //NOI18N
+    private boolean okEnabled = false;
+    
     public NoSelectedServerWarning (String serverID) {
         initComponents();
         // add MainClassChooser
         jList1.setModel(new ServerListModel (serverID));
         jList1.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
+        jList1.addListSelectionListener(new ListSelectionListener() {
+                public void valueChanged(ListSelectionEvent e) {
+                    if (!jList1.isSelectionEmpty()) { // something has been selected
+                        if (!okEnabled) {
+                            firePropertyChange(OK_ENABLED, false, true);
+                            okEnabled = true;
+                        }
+                    } else {
+                        if (okEnabled) {
+                            firePropertyChange(OK_ENABLED, true, false);
+                            okEnabled = false;
+                        }
+                    }
+                }
+            }
+        );
         jList1.setCellRenderer(new ServersRenderer ());
     }
     

@@ -23,7 +23,8 @@ import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.InstalledFileLocator;
 
-import org.netbeans.modules.j2ee.platform.api.PlatformProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 
 
 /** class WebServiceModuleInstaller
@@ -86,8 +87,16 @@ public class WebServiceModuleInstaller extends ModuleInstall {
 
 	public static void updatesSecialLoader(ExtensionClassLoader loader) throws Exception {
 		try {
-			PlatformProvider pm = PlatformProvider.getDefault();
-			File f1 = pm.getLocation();
+                        String serverInstanceIDs[] = Deployment.getDefault().getServerInstanceIDs ();
+                        J2eePlatform platform = null;
+                        for (int i = 0; i < serverInstanceIDs.length; i++) {
+                            J2eePlatform p = Deployment.getDefault().getJ2eePlatform (serverInstanceIDs [i]);
+                            if (p!= null && p.isToolSupported ("wscompile")) {
+                                platform = p;
+                                break;
+                            }
+                        }
+			File f1 = platform == null ? null : platform.getPlatformRoots () [0];
 			if(f1 != null && f1.exists()) {
 				String installRoot = f1.getAbsolutePath();
 //				if(installRoot == null) {

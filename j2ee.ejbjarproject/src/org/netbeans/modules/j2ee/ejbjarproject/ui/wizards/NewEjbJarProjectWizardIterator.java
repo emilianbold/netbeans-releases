@@ -62,9 +62,10 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Instanti
         Set resultSet = new HashSet();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
+        String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         
-        EjbJarProjectGenerator.createProject(dirF, name, j2eeLevel);
+        EjbJarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID);
         FileObject dir = FileUtil.toFileObject(dirF);
         
         resultSet.add(dir);

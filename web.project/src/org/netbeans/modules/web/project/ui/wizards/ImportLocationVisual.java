@@ -237,8 +237,6 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         jLabelContextPath = new javax.swing.JLabel();
         jTextFieldContextPath = new javax.swing.JTextField();
 
-        FormListener formListener = new FormListener();
-
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(322, 191));
@@ -270,7 +268,11 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         moduleLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocation_A11YDesc"));
 
         jButtonSrcLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
-        jButtonSrcLocation.addActionListener(formListener);
+        jButtonSrcLocation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonSrcLocationActionPerformed(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -300,6 +302,12 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabelPrjName, gridBagConstraints);
 
+        projectNameTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                projectNameTextFieldActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -320,7 +328,11 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabelPrjLocation, gridBagConstraints);
 
-        projectLocationTextField.addKeyListener(formListener);
+        projectLocationTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                projectLocationTextFieldKeyReleased(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -331,7 +343,11 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc"));
 
         jButtonPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
-        jButtonPrjLocation.addActionListener(formListener);
+        jButtonPrjLocation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonPrjLocationActionPerformed(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -352,7 +368,11 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
         add(jLabelContextPath, gridBagConstraints);
 
-        jTextFieldContextPath.addKeyListener(formListener);
+        jTextFieldContextPath.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTextFieldContextPathKeyReleased(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -365,35 +385,11 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         add(jTextFieldContextPath, gridBagConstraints);
         jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_ContextPath_A11YDesc"));
 
-    }
-
-    // Code for dispatching events from components to event handlers.
-
-    private class FormListener implements java.awt.event.ActionListener, java.awt.event.KeyListener {
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == jButtonSrcLocation) {
-                ImportLocationVisual.this.jButtonSrcLocationActionPerformed(evt);
-            }
-            else if (evt.getSource() == jButtonPrjLocation) {
-                ImportLocationVisual.this.jButtonPrjLocationActionPerformed(evt);
-            }
-        }
-
-        public void keyPressed(java.awt.event.KeyEvent evt) {
-        }
-
-        public void keyReleased(java.awt.event.KeyEvent evt) {
-            if (evt.getSource() == projectLocationTextField) {
-                ImportLocationVisual.this.projectLocationTextFieldKeyReleased(evt);
-            }
-            else if (evt.getSource() == jTextFieldContextPath) {
-                ImportLocationVisual.this.jTextFieldContextPathKeyReleased(evt);
-            }
-        }
-
-        public void keyTyped(java.awt.event.KeyEvent evt) {
-        }
     }//GEN-END:initComponents
+
+    private void projectNameTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectNameTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_projectNameTextFieldActionPerformed
 
     private void projectLocationTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_projectLocationTextFieldKeyReleased
         locationModified = true;

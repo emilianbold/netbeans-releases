@@ -11,4 +11,4 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.schema2beans/1,
     org.netbeans.modules.editor/2,
     org.openide.loaders > 4.11,
     org.openide.io > 1.0,
-    org.netbeans.modules.j2ee.platform/1
+    org.netbeans.modules.j2eeserver/3 > 1.5

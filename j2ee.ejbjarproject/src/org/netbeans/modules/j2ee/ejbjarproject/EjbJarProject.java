@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -62,6 +63,8 @@ import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.modules.j2ee.ejbjarproject.queries.SourceLevelQueryImpl;
@@ -103,6 +106,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     //private WebServicesClientSupport apiWebServicesClientSupport;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
+    
+    private PropertyChangeListener j2eePlatformListener;
     
     EjbJarProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -257,6 +262,10 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     }
      */
     
+    public EjbJarProjectProperties getEjbJarProjectProperties() {
+        return new EjbJarProjectProperties (this, helper, refHelper);
+    }
+    
     public EjbJarProvider getEjbModule() {
         return ejbModule;
     }
@@ -388,16 +397,43 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     public void fileDeleted (org.openide.filesystems.FileEvent fe) {
     }
     
+    public void registerJ2eePlatformListener(final J2eePlatform platform) {
+        // listen to classpath changes
+        j2eePlatformListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(J2eePlatform.PROP_CLASSPATH)) {
+                    ProjectManager.mutex().writeAccess(new Mutex.Action() {
+                        public Object run() {
+                            EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                            String classpath = Utils.toClasspathString(platform.getClasspathEntries());
+                            ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                            try {
+                                ProjectManager.getDefault().saveProject(EjbJarProject.this);
+                            } catch (IOException e) {
+                                ErrorManager.getDefault().notify(e);
+                            }
+                            return null;
+                        }
+                    });
+                }
+            }
+        };
+        platform.addPropertyChangeListener(j2eePlatformListener);
+    }
+
+    public void unregisterJ2eePlatformListener(J2eePlatform platform) {
+        if (j2eePlatformListener != null) {
+            platform.removePropertyChangeListener(j2eePlatformListener);
+        }
+    }
+    
     public void fileFolderCreated (org.openide.filesystems.FileEvent fe) {
     }
     
     public void fileRenamed (org.openide.filesystems.FileRenameEvent fe) {
         FileObject fo = fe.getFile ();
         checkLibraryFolder (fo);
-    }
-
-    public EjbJarProjectProperties getEjbJarProjectProperties() {
-        return new EjbJarProjectProperties (this, helper, refHelper);
     }
 
     private void checkLibraryFolder (FileObject fo) {
@@ -415,6 +451,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             }
         }
     }
+
     // Private innerclasses ----------------------------------------------------
     
     private final class Info implements ProjectInformation {
@@ -543,6 +580,29 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 getBuildXmlName(),
                 EjbJarProject.class.getResource("resources/build.xsl"),
                 true);
+
+                String servInstID = (String)ejbpp.get(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
+                J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
+                if (platform != null) {
+                    // updates j2ee.platform.cp & wscompile.cp & reg. j2ee platform listener
+                    ejbpp.put(EjbJarProjectProperties.J2EE_SERVER_INSTANCE, servInstID);
+                    ejbpp.store();
+                } else {
+                    // if there is some server instance of the type which was used
+                    // previously do not ask and use it
+                    String serverType = (String)ejbpp.get(EjbJarProjectProperties.J2EE_SERVER_TYPE);
+                    if (serverType != null) {
+                        String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
+                        if (servInstIDs.length > 0) {
+                            ejbpp.put(EjbJarProjectProperties.J2EE_SERVER_INSTANCE, servInstIDs[0]);
+                            ejbpp.store();
+                            platform = Deployment.getDefault().getJ2eePlatform(servInstIDs[0]);
+                        }
+                    }
+                    if (platform == null) {
+                        // TODO inform the user that no server is set
+                    }
+                }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -574,6 +634,15 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         }
         
         protected void projectClosed() {
+            
+            // unregister j2ee platform classpath change listener
+            EjbJarProjectProperties wpp = getEjbJarProjectProperties();
+            String servInstID = (String)wpp.get(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
+            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
+            if (platform != null) {
+                unregisterJ2eePlatformListener(platform);
+            }
+            
             // Probably unnecessary, but just in case:
             try {
                 ProjectManager.getDefault().saveProject(EjbJarProject.this);

@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Locale;
 import org.openide.filesystems.*;
-import java.util.Enumeration;
 
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
@@ -46,18 +45,14 @@ import org.netbeans.modules.tomcat5.config.*;
 import org.netbeans.modules.tomcat5.ide.StartTomcat;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.netbeans.modules.tomcat5.nodes.DebuggingTypeEditor;
-import org.netbeans.modules.tomcat5.nodes.TomcatWebModule;
 
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 
-import org.openide.util.Lookup;
-
 import org.netbeans.modules.tomcat5.util.*;
-import org.openide.NotifyDescriptor;
-import org.openide.DialogDisplayer;
+
 
 /** DeploymentManager that can deploy to 
  * Tomcat 5 using manager application.
@@ -182,6 +177,8 @@ public class TomcatManager implements DeploymentManager {
     /** LogManager manages all context and shared context logs for this TomcatManager. */
     private LogManager logManager = new LogManager(this);
     
+    private TomcatPlatformImpl tomcatPlatform;
+    
     /** Is it bundled Tomcat? */
     private Boolean isItBundledTomcat = null;
 
@@ -250,6 +247,7 @@ public class TomcatManager implements DeploymentManager {
         username = uname;
         password = passwd;
         tomcatManagerConfig = new TomcatManagerConfig(getCatalinaDir() + SERVERXML_PATH);
+        tomcatPlatform = new TomcatPlatformImpl(getCatalinaHomeDir(), getCatalinaBaseDir(), getDisplayName());
     }
 
     public InstanceProperties getInstanceProperties() {
@@ -1474,5 +1472,9 @@ public class TomcatManager implements DeploymentManager {
      */
     public synchronized Process getTomcatProcess() {
         return process;
+    }
+    
+    public TomcatPlatformImpl getTomcatPlatform() {
+        return tomcatPlatform;
     }
 }
