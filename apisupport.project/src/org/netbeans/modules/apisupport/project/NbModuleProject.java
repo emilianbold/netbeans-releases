@@ -217,7 +217,7 @@ final class NbModuleProject implements Project {
             stock.put((e.getPath() + ".dir").intern(), e.getClusterDirectory().getAbsolutePath().intern()); // NOI18N
         }
         stock.putAll(ml.getDirectoriesProperties());
-        stock.put("netbeans.dest.dir", "${nb_all}/nbbuild/netbeans"); // NOI18N
+        stock.put("netbeans.dest.dir", ml.getDestDirPath()); // NOI18N
         ModuleList.Entry thisEntry = ml.getEntry(getCodeNameBase());
         if (thisEntry != null) {
             stock.put("cluster.dir", thisEntry.getCluster()); // NOI18N
