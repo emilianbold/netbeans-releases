@@ -44,7 +44,10 @@ public class JavadocForBinaryQuery {
      * @return a result object encapsulating the answer (never null)
      */
     public static Result findJavadoc(URL binary) {
-        assert !FileUtil.isArchiveFile(binary) : binary;
+        if (FileUtil.isArchiveFile(binary)) {
+            throw new IllegalArgumentException("File URL pointing to " + // NOI18N
+                "JAR is not valid classpath entry. Use jar: URL. Was: "+binary); // NOI18N
+        }
         List/*<Result>*/ results = new ArrayList();
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {

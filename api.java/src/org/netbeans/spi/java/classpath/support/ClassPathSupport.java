@@ -23,6 +23,7 @@ import org.openide.filesystems.URLMapper;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Convenience factory for creating classpaths of common sorts.
@@ -41,6 +42,10 @@ public class ClassPathSupport {
      * @return PathResourceImplementation
      */
     public static PathResourceImplementation createResource (URL url) {
+        if (FileUtil.isArchiveFile(url)) {
+            throw new IllegalArgumentException("File URL pointing to " + // NOI18N
+                "JAR is not valid classpath entry. Use jar: URL. Was: "+url); // NOI18N
+        }
         return new SimplePathResourceImplementation (url);
     }
 

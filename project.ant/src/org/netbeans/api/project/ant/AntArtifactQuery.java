@@ -40,7 +40,10 @@ public class AntArtifactQuery {
      * @return an Ant artifact object describing it, or null if it is not recognized
      */
     public static AntArtifact findArtifactFromFile(File file) {
-        assert file.equals(FileUtil.normalizeFile(file)) : file;
+        if (!file.equals(FileUtil.normalizeFile(file))) {
+            throw new IllegalArgumentException("Parameter file was not "+  // NOI18N
+                "normalized. Was "+file+" instead of "+FileUtil.normalizeFile(file));  // NOI18N
+        }
         Iterator it = Lookup.getDefault().lookup(new Lookup.Template(AntArtifactQueryImplementation.class)).
             allInstances().iterator();
         while (it.hasNext()) {

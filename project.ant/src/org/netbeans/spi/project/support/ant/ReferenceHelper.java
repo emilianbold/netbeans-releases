@@ -541,7 +541,10 @@ public final class ReferenceHelper {
      * @return a string which can refer to that file somehow
      */
     public String createForeignFileReference(final File file, final String expectedArtifactType) {
-        assert file.equals(FileUtil.normalizeFile(file)) : file;
+        if (!file.equals(FileUtil.normalizeFile(file))) {
+            throw new IllegalArgumentException("Parameter file was not "+  // NOI18N
+                "normalized. Was "+file+" instead of "+FileUtil.normalizeFile(file));  // NOI18N
+        }
         return (String)ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
                 AntArtifact art = AntArtifactQuery.findArtifactFromFile(file);

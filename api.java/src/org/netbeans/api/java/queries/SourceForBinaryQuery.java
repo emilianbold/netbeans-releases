@@ -45,7 +45,10 @@ public class SourceForBinaryQuery {
      * @return FileObject[] never returns null
      */
     public static FileObject[] findSourceRoot (URL binaryRoot) {
-        assert !FileUtil.isArchiveFile(binaryRoot) : binaryRoot;
+        if (FileUtil.isArchiveFile(binaryRoot)) {
+            throw new IllegalArgumentException("File URL pointing to " + // NOI18N
+                "JAR is not valid classpath entry. Use jar: URL. Was: "+binaryRoot); // NOI18N
+        }
         List result = new ArrayList ();
         for (Iterator it = implementations.allInstances().iterator(); it.hasNext();) {
             result.addAll(Arrays.asList(

@@ -42,8 +42,14 @@ public final class CollocationQuery {
      * @return true if they are probably part of one logical tree
      */
     public static boolean areCollocated(File file1, File file2) {
-        assert file1.equals(FileUtil.normalizeFile(file1)) : file1;
-        assert file2.equals(FileUtil.normalizeFile(file2)) : file2;
+        if (!file1.equals(FileUtil.normalizeFile(file1))) {
+            throw new IllegalArgumentException("Parameter file1 was not "+  // NOI18N
+                "normalized. Was "+file1+" instead of "+FileUtil.normalizeFile(file1));  // NOI18N
+        }
+        if (!file2.equals(FileUtil.normalizeFile(file2))) {
+            throw new IllegalArgumentException("Parameter file2 was not "+  // NOI18N
+                "normalized. Was "+file2+" instead of "+FileUtil.normalizeFile(file2));  // NOI18N
+        }
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {
             CollocationQueryImplementation cqi = (CollocationQueryImplementation)it.next();
@@ -61,7 +67,10 @@ public final class CollocationQuery {
      *         if any (else null)
      */
     public static File findRoot(File file) {
-        assert file.equals(FileUtil.normalizeFile(file)) : file;
+        if (!file.equals(FileUtil.normalizeFile(file))) {
+            throw new IllegalArgumentException("Parameter file was not "+  // NOI18N
+                "normalized. Was "+file+" instead of "+FileUtil.normalizeFile(file));  // NOI18N
+        }
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {
             CollocationQueryImplementation cqi = (CollocationQueryImplementation)it.next();
