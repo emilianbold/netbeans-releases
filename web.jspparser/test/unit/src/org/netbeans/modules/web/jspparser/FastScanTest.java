@@ -52,11 +52,11 @@ public class FastScanTest extends NbTestCase {
     }
     
     public void testXMLFromExamples1() throws Exception {
-        doFastScanTest("jspparser-data3/jsp-examples", "xml/xml.jsp", new JspParserAPI.JspOpenInfo(true, "UTF8"));
+        doFastScanTest("project3/web", "xml/xml.jsp", new JspParserAPI.JspOpenInfo(true, "UTF8"));
     }
     
     public void testXMLFromExamples2() throws Exception {
-        doFastScanTest("jspparser-data3/jsp-examples", "jsp2/jspx/basic.jspx", new JspParserAPI.JspOpenInfo(true, "UTF8"));
+        doFastScanTest("project3/web", "jsp2/jspx/basic.jspx", new JspParserAPI.JspOpenInfo(true, "UTF8"));
     }
     
     public void doFastScanTest(String wmRootPath, String path, JspParserAPI.JspOpenInfo correctInfo) throws Exception {
@@ -64,6 +64,7 @@ public class FastScanTest extends NbTestCase {
             FileObject wmRoot = TestUtil.getFileInWorkDir(wmRootPath, this);
             StringTokenizer st = new StringTokenizer(path, "/");
             FileObject tempFile = wmRoot;
+            String ss;
             while (st.hasMoreTokens()) {
                 tempFile = tempFile.getFileObject(st.nextToken());
             }

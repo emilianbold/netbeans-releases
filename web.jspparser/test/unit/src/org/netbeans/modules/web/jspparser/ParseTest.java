@@ -58,25 +58,25 @@ public class ParseTest extends NbTestCase {
     }
     
     public void testAnalysisMain() throws Exception {
-        midnightAppTest("jspparser-data2/midnight-jsp2.0/main.jsp");
+        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/main.jsp");
     }
     
     public void testAnalysisBean() throws Exception {
-        midnightAppTest("jspparser-data2/midnight-jsp2.0/more_for_test/bean.jsp");
+        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/more_for_test/bean.jsp");
     }
     
     public void testAnalysisTagLinkList() throws Exception {
-        midnightAppTest("jspparser-data2/midnight-jsp2.0/WEB-INF/tags/linklist.tag");
+        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/WEB-INF/tags/linklist.tag");
     }
     
     public void testAnalysisFaulty() throws Exception {
-        midnightAppTest("jspparser-data2/midnight-jsp2.0/faulty.jsp");
+        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/faulty.jsp");
     }
     
     public void testAnalysisOutsideWM() throws Exception {
-        midnightAppTest("jspparser-data2/outsidewm.jsp");
+        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/outside/outsidewm.jsp");
     }
-    
+        
     public void testAnalysisFunction() throws Exception {
         parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/el/functions.jsp");
     }
@@ -86,7 +86,7 @@ public class ParseTest extends NbTestCase {
     }
     
     public void testAnalysisTagLibFromTagFiles() throws Exception {
-        midnightAppTest("jspparser-data2/midnight-jsp2.0/testTagLibs.jsp");
+        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/testTagLibs.jsp");
     }
 
     public void testProjectAnalysisFunction() throws Exception {
@@ -106,10 +106,9 @@ public class ParseTest extends NbTestCase {
         FileObject jspFo = FileUtil.fromFile(f)[0];
         if (jspFo == null) 
             log (pagePath + " not found.");
-        org.netbeans.modules.web.api.webmodule.WebModule wm = WebModule.getWebModule(jspFo);
         log("Parsing page " + pagePath);
         JspParserAPI.ParseResult result = JspParserFactory.getJspParser()
-                .analyzePage(jspFo, JspParserAccess.getJspParserWM(wm), JspParserAPI.ERROR_IGNORE);
+                .analyzePage(jspFo, JspParserAccess.getJspParserWM(getWebModule(jspFo)), JspParserAPI.ERROR_IGNORE);
         
         if (ProjectSupport.closeProject(ProjectUtils.getInformation(project).getName()))
             log ("Project closed.");
@@ -128,29 +127,15 @@ public class ParseTest extends NbTestCase {
         assertFile(outFile, goldenF, getWorkDir());
     }
     
-    /** Runs the test for a file from the midnight test application (data2.zip).
-     *  @param path resource path of the file within the web module, separated by /
+    /** Returns the WebModule for a FileObject.
      */
-    public void midnightAppTest(String path) throws Exception {
-        try{
-            log(Manager.getWorkDirPath());
-            FileObject wmRoot = TestUtil.getFileInWorkDir("jspparser-data2/midnight-jsp2.0", this);
-            FileObject res = TestUtil.getFileInWorkDir(path, this);
-            if (!FileUtil.isParentOf (wmRoot, res)) {
-                wmRoot = null;
-            }
-            analyzeIt(wmRoot, res);
-        }catch(RuntimeException e){
-            e.printStackTrace();
-            e.printStackTrace(getRef());
-            fail("Initialization of test failed! ->" + e);
+    private WebModule getWebModule(FileObject fo){
+        FileObject wmRoot = WebModule.getWebModule(fo).getDocumentBase();
+        if (fo == wmRoot || FileUtil.isParentOf(wmRoot, fo)) {
+            return WebModule.getWebModule(fo);
         }
-        
-        log("FileParse called");
+        return null;
     }
-    
-    
-   
     
     private static int fileNr = 1;
     

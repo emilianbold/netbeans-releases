@@ -26,12 +26,13 @@ Microsystems, Inc. All Rights Reserved.
     <target name="setupdata">
         <!--<mkdir dir="work/sys/tests/unit/data"/>-->
         <mkdir dir="work/user/jspparser-data"/>
-        <mkdir dir="work/user/jspparser-data2"/>
+        <!--<mkdir dir="work/user/jspparser-data2"/>
         <mkdir dir="work/user/jspparser-data3"/>
-        <mkdir dir="work/user/project3"/>
+        <mkdir dir="work/user/project3"/>-->
         <unzip src="unit/data/data.zip" dest="${xtest.workdir}/user/jspparser-data" />
-        <unzip src="unit/data/data2.zip" dest="${xtest.workdir}/user/jspparser-data2" />
-        <unzip src="unit/data/data3.zip" dest="${xtest.workdir}/user/jspparser-data3" />
+        <!--<unzip src="unit/data/data2.zip" dest="${xtest.workdir}/user/jspparser-data2" />
+        <unzip src="unit/data/data3.zip" dest="${xtest.workdir}/user/jspparser-data3" />-->
+        <unzip src="unit/data/project2.zip" dest="${xtest.workdir}/user/" />
         <unzip src="unit/data/project3.zip" dest="${xtest.workdir}/user/" />
     </target>
     
