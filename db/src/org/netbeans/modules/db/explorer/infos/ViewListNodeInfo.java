@@ -15,7 +15,7 @@ package com.netbeans.enterprise.modules.db.explorer.infos;
 
 import java.sql.*;
 import java.util.*;
-import com.netbeans.ddl.*;
+import com.netbeans.ddl.impl.*;
 import org.openide.nodes.Node;
 import com.netbeans.enterprise.modules.db.DatabaseException;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
@@ -33,17 +33,19 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String) get(DatabaseNode.CATALOG);
 			String[] types = new String[] {"VIEW"};
-      ResultSet rs = getDriverSpecification().getTables(catalog, dmd, null, types);
+      
+      DriverSpecification drvSpec = getDriverSpecification();
+      drvSpec.getTables(catalog, dmd, null, types);
 
-      if (rs != null) {
-        while (rs.next()) {
-          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, rs);
+      if (drvSpec.rs != null) {
+        while (drvSpec.rs.next()) {
+          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, drvSpec.rs);
           if (info != null) {
             info.put(DatabaseNode.TABLE, info.getName());
             children.add(info);
           } else throw new Exception("unable to create node information for table");
         }
-        rs.close();
+        drvSpec.rs.close();
       }
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
@@ -61,12 +63,14 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
       DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String) get(DatabaseNode.CATALOG);
 			String[] types = new String[] {"VIEW"};
-      ResultSet rs = getDriverSpecification().getTables(catalog, dmd, name, types);
+      
+      DriverSpecification drvSpec = getDriverSpecification();
+      drvSpec.getTables(catalog, dmd, name, types);
 			
-      if (rs != null) {
-        rs.next();
-  			DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, rs);
-        rs.close();
+      if (drvSpec.rs != null) {
+        drvSpec.rs.next();
+  			DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, drvSpec.rs);
+        drvSpec.rs.close();
         if (info != null)
           ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
         else
@@ -80,6 +84,8 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  14   Gandalf   1.13        1/25/00  Radko Najman    new driver adaptor 
+ *       version
  *  13   Gandalf   1.12        12/22/99 Radko Najman    Case Identifiers removed
  *  12   Gandalf   1.11        12/15/99 Radko Najman    driver adaptor
  *  11   Gandalf   1.10        11/27/99 Patrik Knakal   

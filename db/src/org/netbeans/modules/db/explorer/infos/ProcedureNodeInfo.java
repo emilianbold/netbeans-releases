@@ -16,7 +16,7 @@ package com.netbeans.enterprise.modules.db.explorer.infos;
 import java.io.InputStream;
 import java.util.*;
 import java.sql.*;
-import com.netbeans.ddl.*;
+import com.netbeans.ddl.impl.*;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 import org.openide.nodes.Node;
@@ -51,10 +51,11 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String name = (String)get(DatabaseNode.PROCEDURE);
       
-      ResultSet rs = getDriverSpecification().getProcedureColumns(catalog, dmd, name, null);
-			if (rs != null) {
-        while (rs.next()) {
-          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE_COLUMN, rs);
+      DriverSpecification drvSpec = getDriverSpecification();
+      drvSpec.getProcedureColumns(catalog, dmd, name, null);
+			if (drvSpec.rs != null) {
+        while (drvSpec.rs.next()) {
+          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE_COLUMN, drvSpec.rs);
           if (info != null) {
             Object ibase = null;
             String itype = "unknown";
@@ -86,7 +87,7 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
             children.add(info);
           } else throw new Exception("unable to create node information for procedure column");
         }
-        rs.close();
+        drvSpec.rs.close();
       }
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
@@ -96,6 +97,8 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  13   Gandalf   1.12        1/25/00  Radko Najman    new driver adaptor 
+ *       version
  *  12   Gandalf   1.11        12/22/99 Radko Najman    Integer type -> Number 
  *       type
  *  11   Gandalf   1.10        12/15/99 Radko Najman    driver adaptor

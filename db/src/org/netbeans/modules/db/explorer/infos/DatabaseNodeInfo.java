@@ -17,15 +17,17 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.beans.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.*;
 import java.sql.*;
+
 import com.netbeans.ddl.*;
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
+import com.netbeans.ddl.adaptors.*;
+import com.netbeans.ddl.impl.*;
 import com.netbeans.ddl.util.PListReader;
 import com.netbeans.enterprise.modules.db.DatabaseException;
 import com.netbeans.enterprise.modules.db.explorer.*;
-import com.netbeans.ddl.adaptors.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 import org.openide.*;
@@ -142,7 +144,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		nfo.put(nodecode, nfo.getName());
 		if (parent != null && parent.isReadOnly()) nfo.setReadOnly(true);
 		return nfo;
-	}		
+	}
 
 	/* Parent of info in node hierarchy */
 	private DatabaseNodeInfo parent = null;
@@ -675,6 +677,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 }
 /*
  * <<Log>>
+ *  23   Gandalf   1.22        1/25/00  Radko Najman    new driver adaptor 
+ *       version
  *  22   Gandalf   1.21        12/22/99 Radko Najman    debug message
  *  21   Gandalf   1.20        12/15/99 Radko Najman    driver adaptor
  *  20   Gandalf   1.19        11/27/99 Patrik Knakal   

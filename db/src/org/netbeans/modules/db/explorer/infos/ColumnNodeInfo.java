@@ -82,16 +82,17 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
 				col = (TableColumn)cmd.createColumn(getName());
 			} else throw new DatabaseException("unknown code "+code);
 
-      ResultSet rs = getDriverSpecification().getColumns((String)get(DatabaseNode.CATALOG), dmd, (String)get(DatabaseNode.TABLE), (String)get(code));
-			if (rs != null) {
-        rs.next();
+      DriverSpecification drvSpec = getDriverSpecification();
+      drvSpec.getColumns((String)get(DatabaseNode.CATALOG), dmd, (String)get(DatabaseNode.TABLE), (String)get(code));
+			if (drvSpec.rs != null) {
+        drvSpec.rs.next();
 
-        col.setColumnType(rs.getInt(5));
-        col.setColumnSize(rs.getInt(7));
-        col.setNullAllowed(rs.getString(18).toUpperCase().equals("YES"));
-        col.setDefaultValue(rs.getString("COLUMN_DEF"));
+        col.setColumnType(drvSpec.rs.getInt(5));
+        col.setColumnSize(drvSpec.rs.getInt(7));
+        col.setNullAllowed(drvSpec.rs.getString(18).toUpperCase().equals("YES"));
+        col.setDefaultValue(drvSpec.rs.getString("COLUMN_DEF"));
         
-        rs.close();
+        drvSpec.rs.close();
       }
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());
@@ -212,6 +213,8 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  14   Gandalf   1.13        1/25/00  Radko Najman    new driver adaptor 
+ *       version
  *  13   Gandalf   1.12        12/15/99 Radko Najman    driver adaptor
  *  12   Gandalf   1.11        11/27/99 Patrik Knakal   
  *  11   Gandalf   1.10        11/15/99 Radko Najman    MS ACCESS

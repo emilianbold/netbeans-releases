@@ -15,17 +15,17 @@ package com.netbeans.enterprise.modules.db.explorer.infos;
 
 import java.sql.*;
 import java.util.*;
+
 import com.netbeans.ddl.*;
-
 import com.netbeans.ddl.adaptors.*;
-
 import com.netbeans.ddl.impl.*;
-import org.openide.nodes.Node;
 import com.netbeans.enterprise.modules.db.DatabaseException;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
+
+import org.openide.nodes.Node;
 
 public class TableListNodeInfo extends DatabaseNodeInfo
 implements TableOwnerOperations
@@ -38,17 +38,19 @@ implements TableOwnerOperations
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String) get(DatabaseNode.CATALOG);
 			String[] types = new String[] {"TABLE"};
-      ResultSet rs = getDriverSpecification().getTables(catalog, dmd, null, types);
+      
+      DriverSpecification drvSpec = getDriverSpecification();
+      drvSpec.getTables(catalog, dmd, null, types);
 
-      if (rs != null) {
-        while (rs.next()) {
-          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rs);
+      if (drvSpec.rs != null) {
+        while (drvSpec.rs.next()) {
+          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, drvSpec.rs);
           if (info != null) {
             info.put(DatabaseNode.TABLE, info.getName());
             children.add(info);
           } else throw new Exception("unable to create node information for table");
         }
-        rs.close();
+        drvSpec.rs.close();
       }
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
@@ -65,12 +67,14 @@ implements TableOwnerOperations
       DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String) get(DatabaseNode.CATALOG);
 			String[] types = new String[] {"TABLE","BASE"};
-      ResultSet rs = getDriverSpecification().getTables(catalog, dmd, tname, types);
+      
+      DriverSpecification drvSpec = getDriverSpecification();
+      drvSpec.getTables(catalog, dmd, tname, types);
 
-      if (rs != null) {
-        rs.next();
-        DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rs);
-        rs.close();
+      if (drvSpec.rs != null) {
+        drvSpec.rs.next();
+        DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, drvSpec.rs);
+        drvSpec.rs.close();
         
         if (info != null)
           info.put(DatabaseNode.TABLE, info.getName());
@@ -139,6 +143,8 @@ implements TableOwnerOperations
 }
 /*
  * <<Log>>
+ *  15   Gandalf   1.14        1/25/00  Radko Najman    new driver adaptor 
+ *       version
  *  14   Gandalf   1.13        12/22/99 Radko Najman    Case Identifiers removed
  *  13   Gandalf   1.12        12/15/99 Radko Najman    driver adaptor
  *  12   Gandalf   1.11        11/27/99 Patrik Knakal   

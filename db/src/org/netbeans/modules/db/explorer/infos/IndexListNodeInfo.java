@@ -15,7 +15,7 @@ package com.netbeans.enterprise.modules.db.explorer.infos;
 
 import java.sql.*;
 import java.util.*;
-import com.netbeans.ddl.*;
+import com.netbeans.ddl.impl.*;
 import org.openide.nodes.Node;
 import com.netbeans.ddl.adaptors.*;
 import com.netbeans.enterprise.modules.db.DatabaseException;
@@ -35,13 +35,15 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
 
-      ResultSet rs = getDriverSpecification().getIndexInfo(catalog, dmd, table, true, false);
+      DriverSpecification drvSpec = getDriverSpecification();
+      drvSpec.getIndexInfo(catalog, dmd, table, true, false);
 			
-      if (rs != null) {
+      if (drvSpec.rs != null) {
   			Set ixmap = new HashSet();
-        while (rs.next()) {
-          if (rs.getString("INDEX_NAME") != null) {
-            IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rs);
+        while (drvSpec.rs.next()) {
+//          drvSpec.rsTemp.next();
+          if (drvSpec.rs.getString("INDEX_NAME") != null) {
+            IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rs);
             if (info != null) {
               if (!ixmap.contains(info.getName())) {
                 ixmap.add(info.getName());
@@ -51,7 +53,8 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
             } else throw new Exception("unable to create node information for index");
           }
         }
-        rs.close();
+        drvSpec.rs.close();
+//        drvSpec.rsTemp.close();
       }
  		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
@@ -66,18 +69,22 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
 
-      ResultSet rs = getDriverSpecification().getIndexInfo(catalog, dmd, table, true, false);
-			if (rs != null) {
-        while (rs.next()) {
-          String findex = rs.getString("INDEX_NAME");
+      DriverSpecification drvSpec = getDriverSpecification();
+      drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+
+			if (drvSpec.rs != null) {
+        while (drvSpec.rs.next()) {
+          drvSpec.rsTemp.next();
+          String findex = drvSpec.rs.getString("INDEX_NAME");
           if (findex != null) {
             if (findex.equals(name)) {
-              IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rs);
+              IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rsTemp);
               if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
             } 
           }
         }
-        rs.close();
+        drvSpec.rs.close();
+        drvSpec.rsTemp.close();
       }
  		} catch (Exception e) {
  			e.printStackTrace();
@@ -88,6 +95,8 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  13   Gandalf   1.12        1/25/00  Radko Najman    new driver adaptor 
+ *       version
  *  12   Gandalf   1.11        12/15/99 Radko Najman    driver adaptor
  *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
  *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS

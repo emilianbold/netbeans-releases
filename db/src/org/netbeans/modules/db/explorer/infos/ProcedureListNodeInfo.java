@@ -34,16 +34,18 @@ implements ProcedureOwnerOperations
  		try {
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String) get(DatabaseNode.CATALOG);
-      ResultSet rs = getDriverSpecification().getProcedures(catalog, dmd, null);
+      
+      DriverSpecification drvSpec = getDriverSpecification();
+      drvSpec.getProcedures(catalog, dmd, null);
 			
-      if (rs != null) {
-        while (rs.next()) {
-          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE, rs);
+      if (drvSpec.rs != null) {
+        while (drvSpec.rs.next()) {
+          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE, drvSpec.rs);
           info.put(DatabaseNode.PROCEDURE, info.getName());
           if (info != null) children.add(info);
           else throw new Exception("unable to create node information for procedure");
         }
-        rs.close();
+        drvSpec.rs.close();
       }
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
@@ -67,6 +69,8 @@ implements ProcedureOwnerOperations
 }
 /*
  * <<Log>>
+ *  13   Gandalf   1.12        1/25/00  Radko Najman    new driver adaptor 
+ *       version
  *  12   Gandalf   1.11        12/15/99 Radko Najman    driver adaptor
  *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
  *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS

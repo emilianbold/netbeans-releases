@@ -129,18 +129,23 @@ public class IndexNode extends DatabaseNode
             icmd.execute();
 
             rs = info.getDriverSpecification().getIndexInfo(catalog, dmd, destinfo.getTable(), true, false);
+            //Hack - ODBC bug
+            ResultSet rsTemp = info.getDriverSpecification().getIndexInfo(catalog, dmd, destinfo.getTable(), true, false);
+            
             if (rs != null) {
               while (rs.next()) {
+                rsTemp.next();
                 String ixname = rs.getString("INDEX_NAME");
                 String colname = rs.getString("COLUMN_NAME");
                 if (ixname.equals(index) && colname.equals(info.getName())) {
-                  IndexNodeInfo ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, rs);
+                  IndexNodeInfo ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, rsTemp);
                   if (ixinfo != null) {
                     ((DatabaseNodeChildren)destinfo.getNode().getChildren()).createSubnode(ixinfo,true);
                   } else throw new Exception("unable to create node information for index");
                 }
               }
               rs.close();
+              rsTemp.close();
             }
           }
 				} catch (Exception e) { 
@@ -154,6 +159,8 @@ public class IndexNode extends DatabaseNode
 }
 /*
  * <<Log>>
+ *  12   Gandalf   1.11        1/25/00  Radko Najman    new driver adaptor 
+ *       version
  *  11   Gandalf   1.10        12/15/99 Radko Najman    driver adaptor
  *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

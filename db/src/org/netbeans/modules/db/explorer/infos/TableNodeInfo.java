@@ -39,7 +39,7 @@ public class TableNodeInfo extends DatabaseNodeInfo
 	throws DatabaseException
 	{				
  		try {
-			ResultSet rs;
+			ResultSet rs, rsTemp; //rsTemp - ODBC bug hack
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
@@ -47,26 +47,30 @@ public class TableNodeInfo extends DatabaseNodeInfo
       
 			// Primary keys
 			Hashtable ihash = new Hashtable(); 		
-			rs = drvSpec.getPrimaryKeys(catalog, dmd, table);
-      if (rs != null) {
-        while (rs.next()) {
-          DatabaseNodeInfo iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PRIMARY_KEY, rs);
+			drvSpec.getPrimaryKeys(catalog, dmd, table);
+      if (drvSpec.rs != null) {
+        while (drvSpec.rs.next()) {
+          DatabaseNodeInfo iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PRIMARY_KEY, drvSpec.rs);
           String iname = (String)iinfo.get("name");
           ihash.put(iname,iinfo);
         }
-  			rs.close();
+  			drvSpec.rs.close();
       }
 
 			// Indexes
 			Hashtable ixhash = new Hashtable(); 		
-			rs = drvSpec.getIndexInfo(catalog, dmd, table, true, false);
-      if (rs != null) {
-        while (rs.next()) {
-          DatabaseNodeInfo iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXED_COLUMN, rs);
+			drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+      if (drvSpec.rs != null) {
+        while (drvSpec.rs.next()) {
+//          drvSpec.rsTemp.next();
+          if (drvSpec.rs.getString("COLUMN_NAME") == null)
+           continue;
+          DatabaseNodeInfo iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXED_COLUMN, drvSpec.rs);
           String iname = (String)iinfo.get("name");
           ixhash.put(iname,iinfo);
         }
-        rs.close();
+        drvSpec.rs.close();
+//        drvSpec.rsTemp.close();
       }
         
 /*        
@@ -82,35 +86,31 @@ public class TableNodeInfo extends DatabaseNodeInfo
 */        
       
 			// Columns
-			rs = drvSpec.getColumns(catalog, dmd, table, columnname);
-      if (rs != null) {
-        while (rs.next()) {
+			drvSpec.getColumns(catalog, dmd, table, columnname);
+      if (drvSpec.rs != null) {
+        while (drvSpec.rs.next()) {
+//          drvSpec.rsTemp.next();
+          
           DatabaseNodeInfo nfo;
-				
-          //MS ACCESS exception - when asked for the object from ResultSet, the object is removed
-          //from that and at next getXXX() method call is thrown "No data found" exception
-          if (!dmd.getDatabaseProductName().trim().equals("ACCESS")) {
-            String cname = rs.getString("COLUMN_NAME");
+          String cname = drvSpec.rs.getString("COLUMN_NAME");
 
-            if (ihash.containsKey(cname))
-              nfo = (DatabaseNodeInfo)ihash.get(cname);
-            else
-              if (ixhash.containsKey(cname))
-                nfo = (DatabaseNodeInfo)ixhash.get(cname);
-//              else
-//                if (fhash.containsKey(cname)) {
-//                  nfo = (DatabaseNodeInfo)fhash.get(cname);
-                else
-                  nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, rs);                
-          } else
-            nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, rs);
+          if (ihash.containsKey(cname))
+            nfo = (DatabaseNodeInfo)ihash.get(cname);
+          else
+            if (ixhash.containsKey(cname))
+              nfo = (DatabaseNodeInfo)ixhash.get(cname);
+//            else
+//              if (fhash.containsKey(cname)) {
+//                nfo = (DatabaseNodeInfo)fhash.get(cname);
+              else
+                nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, drvSpec.rs);
   			    
 			    children.add(nfo);
         }
-        rs.close();
+        drvSpec.rs.close();
+//        drvSpec.rsTemp.close();
       }
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new DatabaseException(e.getMessage());	
 		}
 	}
@@ -213,6 +213,8 @@ public class TableNodeInfo extends DatabaseNodeInfo
 }
 /*
  * <<Log>>
+ *  16   Gandalf   1.15        1/25/00  Radko Najman    new driver adaptor 
+ *       version
  *  15   Gandalf   1.14        12/15/99 Radko Najman    driver adaptor
  *  14   Gandalf   1.13        11/27/99 Patrik Knakal   
  *  13   Gandalf   1.12        11/15/99 Radko Najman    MS ACCESS

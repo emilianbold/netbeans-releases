@@ -37,13 +37,15 @@ public class ViewNodeInfo extends DatabaseNodeInfo
 			String view = (String)get(DatabaseNode.VIEW);
                 
 			// Columns
-			ResultSet rs = getDriverSpecification().getColumns(catalog, dmd, view, null);
-      if (rs != null) {
-        while (rs.next()) {
-          DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEWCOLUMN, rs);
+			DriverSpecification drvSpec = getDriverSpecification();
+      drvSpec.getColumns(catalog, dmd, view, null);
+      
+      if (drvSpec.rs != null) {
+        while (drvSpec.rs.next()) {
+          DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEWCOLUMN, drvSpec.rs);
           if (nfo != null) children.add(nfo);
         }
-        rs.close();
+        drvSpec.rs.close();
       }
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
@@ -89,6 +91,8 @@ public class ViewNodeInfo extends DatabaseNodeInfo
 }
 /*
  * <<Log>>
+ *  12   Gandalf   1.11        1/25/00  Radko Najman    new driver adaptor 
+ *       version
  *  11   Gandalf   1.10        12/15/99 Radko Najman    driver adaptor
  *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
  *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS

@@ -15,7 +15,7 @@ package com.netbeans.enterprise.modules.db.explorer.infos;
 
 import java.sql.*;
 import java.util.*;
-import com.netbeans.ddl.*;
+import com.netbeans.ddl.impl.*;
 import org.openide.nodes.Node;
 import com.netbeans.enterprise.modules.db.DatabaseException;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
@@ -34,14 +34,15 @@ public class RefTableListNodeInfo extends DatabaseNodeInfo
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
 
-			ResultSet rs = getDriverSpecification().getExportedKeys(catalog, dmd, table);
-      if (rs != null) {
-        while (rs.next()) {
-          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.EXPORTED_KEY, rs);
+      DriverSpecification drvSpec = getDriverSpecification();
+			drvSpec.getExportedKeys(catalog, dmd, table);
+      if (drvSpec.rs != null) {
+        while (drvSpec.rs.next()) {
+          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.EXPORTED_KEY, drvSpec.rs);
           if (info != null) children.add(info);
           else throw new Exception("unable to create node information for exported key");
         }
-        rs.close();
+        drvSpec.rs.close();
       }
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
@@ -51,6 +52,8 @@ public class RefTableListNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  13   Gandalf   1.12        1/25/00  Radko Najman    new driver adaptor 
+ *       version
  *  12   Gandalf   1.11        12/15/99 Radko Najman    driver adaptor
  *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
  *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS

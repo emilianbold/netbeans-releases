@@ -36,13 +36,14 @@ public class IndexNodeInfo extends TableNodeInfo
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
 
-      ResultSet rs = getDriverSpecification().getIndexInfo(catalog, dmd, table, true, false);
-      if (rs != null) {
+      DriverSpecification drvSpec = getDriverSpecification();
+      drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+      
+      if (drvSpec.rs != null) {
         Hashtable ixmap = new Hashtable();
-        while (rs.next()) {
-//  				System.out.println("index column "+rs.getString("INDEX_NAME"));
+        while (drvSpec.rs.next()) {
           String ixname = (String)get("index");
-          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXCOLUMN, rs);
+          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXCOLUMN, drvSpec.rs);
           String newixname = (String)info.get("ixname");
           if (ixname != null && newixname != null && newixname.equals(ixname)) {
             String way = (String)info.get("ord");
@@ -52,10 +53,9 @@ public class IndexNodeInfo extends TableNodeInfo
             else throw new Exception("unable to create node information for index");
           }
         }
-	  		rs.close();
+	  		drvSpec.rs.close();
       }
  		} catch (Exception e) {
- 			e.printStackTrace();
 			throw new DatabaseException(e.getMessage());	
 		}
 	}
@@ -92,6 +92,8 @@ public class IndexNodeInfo extends TableNodeInfo
 
 /*
  * <<Log>>
+ *  14   Gandalf   1.13        1/25/00  Radko Najman    new driver adaptor 
+ *       version
  *  13   Gandalf   1.12        12/15/99 Radko Najman    driver adaptor
  *  12   Gandalf   1.11        11/27/99 Patrik Knakal   
  *  11   Gandalf   1.10        11/15/99 Radko Najman    MS ACCESS
