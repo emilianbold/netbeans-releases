@@ -1013,6 +1013,25 @@ class Controller  {
 	}
 	savedTrans.add(tns);
     }
+    
+    private int parseStatusCode(String statusCode) {
+        if (statusCode == null) {
+            return -1;
+        }
+        // The statusCode is expected to look like e.g. "404: Not Found", if not 
+        // the status code was not resolved, which mostly means there was no error => 200
+        int statusCodeNum = 200;
+        try {
+            int idx = statusCode.indexOf(':');
+            if (idx != -1) {
+                statusCode = statusCode.substring(0, idx);
+                statusCodeNum = Integer.valueOf(statusCode).intValue();
+            }
+        } catch(NumberFormatException nfe) {
+            // ignore
+        }
+        return statusCodeNum;
+    }
 	    
     private TransactionNode createTransactionNode(MonitorData md, boolean current) {
 
@@ -1032,11 +1051,11 @@ class Controller  {
 	if(dis == null || dis.sizeDispatchData() == 0 ) {
 	    
 	    if(debug) log("No dispatched requests"); //NOI18N 
-	    
 	    node = new TransactionNode(md.getAttributeValue("id"), // NOI18N
 				       md.getAttributeValue("method"), // NOI18N
 				       md.getAttributeValue("resource"), //NOI18N
-				       current); // NOI18N
+				       current,
+                                       parseStatusCode(md.getRequestData().getAttributeValue("status"))); // NOI18N
 	}
 	else {
 
@@ -1065,7 +1084,9 @@ class Controller  {
 	    node = new TransactionNode(md.getAttributeValue("id"), // NOI18N
 				       md.getAttributeValue("method"), // NOI18N
 				       md.getAttributeValue("resource"), //NOI18N
-				       nested, current); // NOI18N
+				       nested, 
+                                       current,
+                                       parseStatusCode(md.getRequestData().getAttributeValue("status"))); // NOI18N
 
 	}
 	return node;
@@ -1099,7 +1120,9 @@ class Controller  {
 	// No dispatched requests, we add a regular transaction node
 	if(dis == null || dis.sizeDispatchData() == 0 ) {
 	    node = new NestedNode(dd.getAttributeValue("resource"),// NOI18N
-				  method, newloc); 
+                            method, 
+                            newloc, 
+                            parseStatusCode(dd.getRequestData().getAttributeValue("status"))); // NOI18N
 	}
 	else {
 	    int numChildren = dis.sizeDispatchData();
@@ -1112,7 +1135,10 @@ class Controller  {
 	    
 	    nested.add(nds);
 	    node = new NestedNode(dd.getAttributeValue("resource"), // NOI18N
-				  method, nested, newloc); 
+                              method, 
+                              nested, 
+                              newloc, 
+                              parseStatusCode(dd.getRequestData().getAttributeValue("status"))); // NOI18N
 	}
 	return node;
     }

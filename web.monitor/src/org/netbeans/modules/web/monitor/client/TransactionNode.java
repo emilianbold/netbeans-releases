@@ -19,15 +19,54 @@ import org.openide.util.actions.*;
 import org.openide.util.HelpCtx;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.Utilities;
+
 import java.util.StringTokenizer; 
 import java.text.DateFormat; 
 import java.util.Date; 
+import java.awt.Image;
 import org.netbeans.modules.web.monitor.server.Constants;
 
 public class TransactionNode extends AbstractNode {
+    
+    private static final Image IMAGE_GET =
+        Utilities.loadImage("org/netbeans/modules/web/monitor/client/icons/get.gif"); // NOI18N
+    private static final Image IMAGE_POST =
+        Utilities.loadImage("org/netbeans/modules/web/monitor/client/icons/post.gif"); // NOI18N
+    private static final Image IMAGE_OTHER =
+        Utilities.loadImage("org/netbeans/modules/web/monitor/client/icons/other.gif"); // NOI18N
 
+    private static final Image INFO_BADGE =
+        Utilities.loadImage("org/netbeans/modules/web/monitor/client/icons/infoBadge.gif"); // NOI18N
+    private static final Image WARNING_BADGE =
+        Utilities.loadImage("org/netbeans/modules/web/monitor/client/icons/warningBadge.gif"); // NOI18N
+    private static final Image ERROR_BADGE =
+        Utilities.loadImage("org/netbeans/modules/web/monitor/client/icons/errorBadge.gif"); // NOI18N
+
+    private static final Image IMAGE_GET_INFO =
+        Utilities.mergeImages(IMAGE_GET, INFO_BADGE, 0, 0);
+    private static final Image IMAGE_POST_INFO =
+        Utilities.mergeImages(IMAGE_POST, INFO_BADGE, 0, 0);
+    private static final Image IMAGE_OTHER_INFO=
+        Utilities.mergeImages(IMAGE_OTHER, INFO_BADGE, 0, 0);
+
+    private static final Image IMAGE_GET_WARNING =
+        Utilities.mergeImages(IMAGE_GET, WARNING_BADGE, 0, 0);
+    private static final Image IMAGE_POST_WARNING =
+        Utilities.mergeImages(IMAGE_POST, WARNING_BADGE, 0, 0);
+    private static final Image IMAGE_OTHER_WARNING=
+        Utilities.mergeImages(IMAGE_OTHER, WARNING_BADGE, 0, 0);
+    
+    private static final Image IMAGE_GET_ERROR =
+        Utilities.mergeImages(IMAGE_GET, ERROR_BADGE, 0, 0);
+    private static final Image IMAGE_POST_ERROR =
+        Utilities.mergeImages(IMAGE_POST, ERROR_BADGE, 0, 0);
+    private static final Image IMAGE_OTHER_ERROR =
+        Utilities.mergeImages(IMAGE_OTHER, ERROR_BADGE, 0, 0);
+    
     String id, method, uri, name = null, timestamp = null; 
     boolean current;
+    private int statusCode;
     static boolean showTimeStamp = true; 
 
     /*
@@ -68,7 +107,7 @@ public class TransactionNode extends AbstractNode {
 
     */
     public TransactionNode(String id, String method, String uri, 
-			   boolean current) {
+			   boolean current, int statusCode) {
 	
 	super(Children.LEAF);
 
@@ -76,12 +115,13 @@ public class TransactionNode extends AbstractNode {
 	this.method = method;
 	this.uri = uri;
 	this.current = current;
+        this.statusCode = statusCode;
 
 	setProperties();
     }
 
     public TransactionNode(String id, String method, String uri, 
-			   Children ch, boolean current) {
+			   Children ch, boolean current, int statusCode) {
 	
 	super(ch);
 
@@ -89,7 +129,8 @@ public class TransactionNode extends AbstractNode {
 	this.method = method;
 	this.uri = uri;
 	this.current = current;
-
+        this.statusCode = statusCode;
+        
 	setProperties();
     }
 
@@ -104,6 +145,47 @@ public class TransactionNode extends AbstractNode {
 	buf.append(timestamp);
 
 	return buf.toString();
+    }
+    
+    public Image getIcon(int type) {
+	// Get icon
+	if(method.equals(Constants.Http.GET)) {
+            if (statusCode >= 400 || statusCode < 0) {
+                return IMAGE_GET_ERROR;
+            } else if (statusCode >= 300) {
+                return IMAGE_GET_WARNING;
+            } else if (statusCode >= 200) {
+                return IMAGE_GET;
+            } else {
+                return IMAGE_GET_INFO;
+            }
+	// Post icon
+        } else if(method.equals(Constants.Http.POST)) {
+	    if (statusCode >= 400 || statusCode < 0) {
+                return IMAGE_POST_ERROR;
+            } else if (statusCode >= 300) {
+                return IMAGE_POST_WARNING;
+            } else if (statusCode >= 200) {
+                return IMAGE_POST;
+            } else {
+                return IMAGE_POST_INFO;
+            }
+	// Other 
+        } else {
+	    if (statusCode >= 400 || statusCode < 0) {
+                return IMAGE_OTHER_ERROR;
+            } else if (statusCode >= 300) {
+                return IMAGE_OTHER_WARNING;
+            } else if (statusCode >= 200) {
+                return IMAGE_OTHER;
+            } else {
+                return IMAGE_OTHER_INFO;
+            }
+        }
+    }
+    
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
     }
     
     public String getID() { 
@@ -207,17 +289,6 @@ public class TransactionNode extends AbstractNode {
     }
 
     private void setProperties() {
-	
-	// Get icon
-	if(method.equals(Constants.Http.GET))
-	    setIconBase("org/netbeans/modules/web/monitor/client/icons/get"); //NOI18N
-	// Post icon
-	else if(method.equals(Constants.Http.POST))
-	    setIconBase("org/netbeans/modules/web/monitor/client/icons/post"); //NOI18N
-	// Other 
-	else 
-	    setIconBase("org/netbeans/modules/web/monitor/client/icons/other"); //NOI18N
-	
 	setNameString();
 	setShortDescription(uri);
     }
