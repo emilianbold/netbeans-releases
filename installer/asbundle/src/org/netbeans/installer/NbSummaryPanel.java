@@ -23,6 +23,7 @@ import com.installshield.util.Log;
 import com.installshield.wizard.RunnableWizardBeanState;
 import com.installshield.wizard.service.WizardLog;
 import com.installshield.wizard.service.file.FileService;
+import java.io.File;
 
 import java.util.Properties;
 
@@ -79,9 +80,9 @@ public class NbSummaryPanel extends TextDisplayPanel
                         + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
                         + nbInstallDir;
                         summaryMessage += "<br><br>"
-                        + "$L(org.netbeans.installer.Bundle, SummaryPanel.errorJDK,"
-                        + "$L(org.netbeans.installer.Bundle, JDK.shortName),"
-                        + j2seInstallDir + ")";
+                        + "$L(org.netbeans.installer.Bundle, SummaryPanel.errorAS,"
+                        + "$L(org.netbeans.installer.Bundle, AS.shortName),"
+                        +  nbInstallDir + File.separator + InstallApplicationServerAction.IMAGE_DIRECTORY_NAME + ")";
                     } else {
                         InstallAction ia = (InstallAction) getWizardTree().getBean("install");
                         RunnableWizardBeanState state = ia.getState();
@@ -152,58 +153,26 @@ public class NbSummaryPanel extends TextDisplayPanel
     }
     
     private String getPostInstallSummaryMessage() {
-        String summaryMessage = "$L(org.netbeans.installer.Bundle,SummaryPanel.description1)";
-        if (!Util.isJDKAlreadyInstalled()) {
-            summaryMessage += " " + "$L(org.netbeans.installer.Bundle,JDK.shortName)"
-            + " " + "$L(org.netbeans.installer.Bundle,SummaryPanel.description2)";
-        }
-        summaryMessage += " " + "$L(org.netbeans.installer.Bundle,Product.displayName)";
-        summaryMessage += " " + "$L(org.netbeans.installer.Bundle,SummaryPanel.description3)";
-        
-        if (!Util.isJDKAlreadyInstalled()) {
-            summaryMessage += "<br><br>"
-            + "$L(org.netbeans.installer.Bundle,JDK.shortName)" + " "
-            + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
-            + j2seInstallDir;
-        }
-        
-        if (Util.isWindowsOS() && !Util.isJREAlreadyInstalled()) {
-            summaryMessage += "<br><br>"
-            + "$L(org.netbeans.installer.Bundle,JRE.shortName)" + " "
-            + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
-            + jreInstallDir;
-        }
+        String summaryMessage = "$L(org.netbeans.installer.Bundle, SummaryPanel.description1)";
+        summaryMessage += " " + "$L(org.netbeans.installer.Bundle, Product.displayName)"
+        + " " + "$L(org.netbeans.installer.Bundle, SummaryPanel.description2)";
+        summaryMessage += " " + "$L(org.netbeans.installer.Bundle, AS.shortName)";
+        summaryMessage += " " + "$L(org.netbeans.installer.Bundle, SummaryPanel.description3)";
         
         summaryMessage += "<br><br>"
         + "$L(org.netbeans.installer.Bundle,Product.displayName)" + " "
         + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
         + nbInstallDir;
         
+        summaryMessage += "<br><br>"
+        + "$L(org.netbeans.installer.Bundle,AS.shortName)" + " "
+        + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
+        + nbInstallDir + File.separator + InstallApplicationServerAction.IMAGE_DIRECTORY_NAME;
+        
         if (Util.isWindowsOS()) {
             summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description5,netbeans.exe,uninstaller.exe)";
         } else {
             summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description5,netbeans,uninstaller)";
-        }
-        
-        //How to uninstall JDK. We will show this message only when we installed
-        //JDK.
-        if (!Util.isJDKAlreadyInstalled()) {
-            if (Util.isWindowsOS()) {
-                summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description7,"
-                + "$L(org.netbeans.installer.Bundle,JDK.shortName))";
-            } else {
-                summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description6,"
-                + "$L(org.netbeans.installer.Bundle,JDK.shortName),"
-                + j2seInstallDir + ",uninstall.sh)";
-            }
-        }
-        
-        //How to uninstall public JRE. We will show this message only when we installed
-        //JRE. JRE is installer together with JDK only. If only JDK is already installed
-        //we do not install JRE.
-        if (Util.isWindowsOS() && !Util.isJREAlreadyInstalled() && !Util.isJDKAlreadyInstalled()) {
-            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description7,"
-            + "$L(org.netbeans.installer.Bundle,JRE.shortName))";
         }
         
         return summaryMessage;

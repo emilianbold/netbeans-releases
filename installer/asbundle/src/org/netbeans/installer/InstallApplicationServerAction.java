@@ -49,7 +49,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     private static final String AS_SETUP_DIR    = "as_setup";
     private static final String STATE_FILE_NAME = "statefile";
     public static final String UNINST_DIRECTORY_NAME = "_uninst";
-    protected static final String IMAGE_DIRECTORY_NAME = "SunAppServer8.1";
+    public static final String IMAGE_DIRECTORY_NAME = "SunAppServer8.1";
     protected static final String JDK_DIRECTORY_NAME = "java";
     protected static final String POINTBASE_DIRECTORY_NAME = "pointbase";
     
@@ -145,7 +145,10 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     
     public void install(ProductActionSupport support) {
         long currtime = System.currentTimeMillis();
-        statusDesc = resolveString("$L(com.sun.installer.InstallerResources,APP_SERVER_INSTALL_DESCRIPTION)") + "\n" + resolveString("$L(com.sun.installer.InstallerResources, FIREWALL_WARNING)");
+        statusDesc = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.installMessage,"
+        + "$L(org.netbeans.installer.Bundle, AS.shortName))")
+        + " " + resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.waitMessage)")
+        + "\n" + resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.firewallWarning)");
         support.getOperationState().setStatusDescription(statusDesc);
         
         try {
@@ -185,9 +188,9 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 		if (!executable) {
 		    // Install anyway but can't uninstall
 		    //InstallerExceptions.setWarnings(true);
-		    String msg = resolveString("$L(com.sun.installer.InstallerResources,AS_UNINSTALLER_NOT_EXECUTABLE)") + uninstallTemplate;
+                    logEvent(this, Log.ERROR, "Could not set execute permissions for Unix uninstall script: " + UNINSTALL_SH);
 		    //InstallerExceptions.addWarningMsg(msg);
-		    logEvent(this, Log.DBG, msg);
+		    //logEvent(this, Log.DBG, msg);
 		}
 	    }
 
@@ -222,10 +225,11 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             //for debugging purposes, allow not to remove instDirPath
             boolean cleanInstDir = !(Boolean.getBoolean("keep.as_inst"));
             logEvent(this, Log.DBG,"cleanInstDir -> " + cleanInstDir);
-            statusDesc = resolveString("$L(com.sun.installer.InstallerResources,AS_CLEAN_INST_DIR_DESCRIPTION)");
+            statusDesc = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.cleanInstDir,"
+            + "$L(org.netbeans.installer.Bundle, AS.shortName))");
             mutableOperationState.setStatusDescription(statusDesc);
 
-            /*if (cleanInstDir) {
+            if (cleanInstDir) {
 		if (Util.isWindowsOS()) {
 		    Util.deleteDirectory(new File(asSetupDirPath), this);
 		    mutableOperationState.setStatusDescription("");
@@ -258,7 +262,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 			}
 		    }
 		}
-	    }*/
+	    }
             removeAppserverFromAddRemovePrograms();
             cleanAppserverStartMenu();
 
@@ -279,7 +283,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     public void uninstall(ProductActionSupport support) {
         long currtime = System.currentTimeMillis();
         logEvent(this, Log.DBG,"Uninstalling -> ");
-        statusDesc = resolveString("$L(com.sun.installer.InstallerResources,UNINSTALL_WAIT_MSG)");
+        statusDesc = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.uninstallWait)");
         support.getOperationState().setStatusDescription(statusDesc);
         
         try {
@@ -382,16 +386,23 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
                 logEvent(this, Log.DBG, "prevLogFile = " + prevLogFile);
                 if (currentLogFile != null && !prevLogFile.equals(currentLogFile)) {
                      logEvent(this, Log.DBG, "there is a log file");
-                     logEvent(this, Log.ERROR, "Error occured while " + resolveString("$L(com.sun.installer.InstallerResources,APP_SERVER_INSTALL_DESCRIPTION)") + "View log file " + currentLogFile + " for more details.");
+                     logEvent(this, Log.ERROR, "Error occured while " 
+                     + resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.installMessage,"
+                     + "$L(org.netbeans.installer.Bundle, AS.shortName))")
+                     + "View log file " + currentLogFile + " for more details.");
                 } else {
                      currentLogFile = getPEDirLogPath();
                      String tmp = ".";
                      if (status == 50) {
-                          tmp = resolveString("$L(com.sun.installer.InstallerResources, PE_FATAL)");
+                          tmp = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.fatalError,"
+                          + "$L(org.netbeans.installer.Bundle, AS.shortName))");
                      }
 
                      logEvent(this, Log.DBG, "there is NO log file");
-                     logEvent(this, Log.ERROR, "Error occured while " + resolveString("$L(com.sun.installer.InstallerResources,APP_SERVER_INSTALL_DESCRIPTION)") + tmp);
+                     logEvent(this, Log.ERROR, "Error occured while "
+                     + resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.installMessage,"
+                     + "$L(org.netbeans.installer.Bundle, AS.shortName))") 
+                     + tmp);
                 }
             } else {
                 System.getProperties().put("appserverHome", imageDirPath);
@@ -486,7 +497,8 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         BufferedReader reader = new BufferedReader(new FileReader(setupFile));
         BufferedWriter writer = new BufferedWriter(new FileWriter(setupFileNew));
         
-        logEvent(this, Log.DBG,"InstallApplicationServerAction: in modifyStatefile(): setupFile=" + setupFile.getAbsolutePath() + "; setupFileNew=" + setupFileNew.getAbsolutePath());
+        logEvent(this, Log.DBG,"InstallApplicationServerAction: in modifyStatefile(): setupFile=" 
+        + setupFile.getAbsolutePath() + "; setupFileNew=" + setupFileNew.getAbsolutePath());
         
         String line;
         
@@ -633,9 +645,8 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
      *                         -1 indicates forever.
      */
     static public int RANDOM_PORT_NUMBER = 3566;
-    static public int getValidPortNumber(com.installshield.util.Log logger, 
-					 String portNumber, int numberOfTries)
-    throws Exception{
+    static public int getValidPortNumber(Log logger, String portNumber, int numberOfTries)
+    throws Exception {
 	String serverName = "localhost";
 	if(Util.isLinuxOS()) {
 	    try {
@@ -1179,7 +1190,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
                 unzipLog = new File(instDirPath, "unzip.log");
                 isUnzipping = true;
                 startTime = System.currentTimeMillis();
-                String statusDesc2 = resolveString("$L(com.sun.installer.InstallerResources,AS_UNZIPPING_MSG)");
+                String statusDesc2 = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.unzippingPackages)");
                 mos.setStatusDescription(statusDesc + "\n" + statusDesc2);
             }
         }
@@ -1240,7 +1251,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
                 }
             }
             else {
-                String statusDesc = resolveString("$L(com.sun.installer.InstallerResources,AS_OPERATION_CANCELED)");
+                String statusDesc = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.installationCancelled)");
                 mos.setStatusDescription(statusDesc);
                 mos.getProgress().setPercentComplete(0);
             }
