@@ -20,13 +20,11 @@ Microsystems, Inc. All Rights Reserved.
         <patternset id="main.module.files">
             <include name="${module.jar}"/>
             <include name="${nb.lib.dir}/ide.ks"/>
-            <include name="${nb.bin.dir}/nbexec*"/>
             <include name="${nb.system.dir}/ModuleAutoDeps/${code.name.base.dashes}.xml"/>
             <include name="CREDITS.html"/>
         </patternset>
         <patternset id="module.files">
             <patternset refid="main.module.files"/>
-            <include name="${nb.lib/ext.dir}/boot.jar"/> <!-- see core/bootstrap/build.xml -->
         </patternset>
     </target>
 
@@ -44,10 +42,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <copy file="launcher/unix/nbexec" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" />
-        <chmod file="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}/nbexec" perm="ugo+rx"/>
-        <copy file="launcher/windows/nbexec.exe" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}/" />
-        <copy file="launcher/os2/nbexec.cmd" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}/" />
         <!-- copy file="launcher/security.policy" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" / -->
         <!-- copy file="release/lib/ide.ks" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/keystore.ks" / -->
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" includeEmptyDirs="false">

@@ -15,12 +15,23 @@ Microsystems, Inc. All Rights Reserved.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
-            <code-name-base>org.netbeans</code-name-base>
+            <code-name-base>org.netbeans.bootstrap</code-name-base>
             <path>core/bootstrap</path>
-            <module-dependencies/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.openide</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>5.0</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
             <public-packages>
-                <!-- core, utilities -->
+                <!-- core, utilities 
                 <package>org.netbeans</package>
+                -->
             </public-packages>
         </data>
     </configuration>

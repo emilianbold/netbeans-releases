@@ -67,6 +67,7 @@ Microsystems, Inc. All Rights Reserved.
                     <isset property="is.autoload"/>
                     <isset property="is.eager"/>
                     <equals arg1="${module.jar.dir}" arg2="${nb.lib.dir}"/>
+                    <equals arg1="${module.jar.dir}" arg2="lib"/>
                 </or>
             </not>
         </condition>
