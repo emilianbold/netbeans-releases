@@ -13,14 +13,14 @@
 
 package com.netbeans.examples.modules.openfile;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.FileNotFoundException;
+import java.beans.PropertyVetoException;
+import java.io.*;
 import java.net.*;
-import java.util.Enumeration;
+import java.util.*;
 
-import com.netbeans.ide.TopManager;
+import com.netbeans.ide.*;
 import com.netbeans.ide.filesystems.*;
+import com.netbeans.ide.filesystems.FileSystem;
 import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.cookies.OpenCookie;
 
@@ -141,6 +141,120 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
       }
     }
     // not found
+    if (fileName.endsWith (".java")) {
+      // Try to find the package name and then infer a directory to mount.
+      BufferedReader rd = null;
+      String pkg = null;
+      try {
+        rd = new BufferedReader (new InputStreamReader (new FileInputStream (f)));
+      scan:
+        while (true) {
+          String line = rd.readLine ();
+          if (line == null) break;
+          // Will not handle package statements broken across lines, oh well.
+          if (line.indexOf ("package") == -1) continue;
+          StringTokenizer tok = new StringTokenizer (line, " \t;");
+          boolean gotPackage = false;
+          while (tok.hasMoreTokens ()) {
+            String theTok = tok.nextToken ();
+            if (gotPackage) {
+              // Hopefully the package name, but first a sanity check...
+              StringTokenizer ptok = new StringTokenizer (theTok, ".");
+              boolean ok = ptok.hasMoreTokens ();
+              while (ptok.hasMoreTokens ()) {
+                String component = ptok.nextToken ();
+                if (component.length () == 0) {
+                  ok = false;
+                  break;
+                }
+                if (! Character.isJavaIdentifierStart (component.charAt (0))) {
+                  ok = false;
+                  break;
+                }
+                for (int pos = 1; pos < component.length (); pos++) {
+                  if (! Character.isJavaIdentifierPart (component.charAt (pos))) {
+                    ok = false;
+                    break;
+                  }
+                }
+              }
+              if (ok) {
+                pkg = theTok;
+                break scan;
+              } else {
+                // Keep on looking for valid package statement.
+                gotPackage = false;
+                continue;
+              }
+            } else if (theTok.equals ("package")) {
+              gotPackage = true;
+            } else if (theTok.equals ("{")) {
+              // Most likely we can stop if hit opening brace of class def.
+              // Usually people leave spaces around it.
+              break scan;
+            }
+          }
+        }
+      } catch (IOException e1) {
+        TopManager.getDefault ().notifyException (e1);
+      } finally {
+        try {
+          if (rd != null) rd.close ();
+        } catch (IOException e2) {
+          TopManager.getDefault ().notifyException (e2);
+        }
+      }
+      if (pkg == null) pkg = ""; // assume default package
+      String prefix = pkg.replace ('.', File.separatorChar);
+      File dir = f.getParentFile ();
+      if (dir != null) {
+        // XXX get dir name, look for ending in prefix, clip that, mount it hidden, find this file in that fs...
+        String pkgtouse = "";
+        while (! pkg.equals ("")) {
+          int lastdot = pkg.lastIndexOf ('.');
+          String trypkg;
+          String trypart;
+          if (lastdot == -1) {
+            trypkg = "";
+            trypart = pkg;
+          } else {
+            trypkg = pkg.substring (0, lastdot);
+            trypart = pkg.substring (lastdot + 1);
+          }
+          if (dir.getName ().equals (trypart) && dir.getParentFile () != null) {
+            // Worked so far.
+            dir = dir.getParentFile ();
+            pkg = trypkg;
+            if (pkgtouse.equals (""))
+              pkgtouse = trypart;
+            else
+              pkgtouse = trypart + "." + pkgtouse;
+          } else {
+            // No dice.
+            break;
+          }
+        }
+        LocalFileSystem fs = new LocalFileSystem ();
+        try {
+          fs.setRootDirectory (dir);
+        } catch (PropertyVetoException e3) {
+          TopManager.getDefault ().notifyException (e3);
+          return null;
+        } catch (IOException e4) {
+          TopManager.getDefault ().notifyException (e4);
+          return null;
+        }
+        fs.setHidden (true);
+        Repository repo = TopManager.getDefault ().getRepository ();
+        if (repo.findFileSystem (fs.getSystemName ()) != null) {
+          TopManager.getDefault ().notify (new NotifyDescriptor.Message (fs.getSystemName () + " was already mounted??"));
+          return null;
+        }
+        repo.addFileSystem (fs);
+        String basename = f.getName ();
+        return fs.find (pkgtouse, basename.substring (0, basename.lastIndexOf (".java")), "java");
+      }
+    }
     return null;
   }
   
@@ -172,6 +286,8 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
 
 /*
 * Log
+*  2    Gandalf   1.1         5/22/99  Jesse Glick     If Java file does not 
+*       exist in mounted fs, tries to mount it in the correct package.
 *  1    Gandalf   1.0         5/19/99  Jesse Glick     
 * $
 */
