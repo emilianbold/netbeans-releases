@@ -67,7 +67,8 @@ public final class JSPServletFinder {
         J2eeModuleProvider dl = getProvider ();
         if (dl == null)
             return null;
-        return new ServerString (ServerRegistry.getInstance ().getServerInstance (dl.getServerInstanceID ()));
+        ServerInstance instance = ServerRegistry.getInstance ().getServerInstance (dl.getServerInstanceID ());
+        return instance == null ? null : new ServerString (instance);
     }
     
     /** Returns the module ID that corresponds to the deployed module on the current server, 
