@@ -487,8 +487,8 @@ public final class ClassPath {
 
         /**
          * Returns URL of the class path root.
-         * The getURL() method is generally more safe than getRoot().
-         * It can be called even if the root does not exist.
+         * This method is generally safer than {@link #getRoot} as
+         * it can be called even if the root does not currently exist.
          * @return URL
          * @since org.netbeans.api.java/1 1.4
          */
