@@ -110,6 +110,8 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
                               null );
 
         biDialog = TopManager.getDefault().createDialog( dd );
+        
+        initAccessibility();
 
         // Get pattern analyser & bean info and create BiAnalyser & BiNode
 
@@ -155,6 +157,10 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
         }
 
     }
+    
+    private void initAccessibility() {
+        biDialog.getAccessibleContext().setAccessibleDescription(getString("ACSD_BeanInfoEditorDialog"));
+    }    
     
     static String getString(String key) {
         if (bundle == null) {
