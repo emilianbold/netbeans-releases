@@ -7,14 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 /*
  * Find.java
  *
- * Created on 2/11/03 1:29 PM
+ * Created on 1/17/05 5:08 PM
  */
 package org.netbeans.jellytools.modules.editor;
 
@@ -23,22 +23,22 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import org.netbeans.jemmy.operators.*;
 
+
 /** Class implementing all necessary methods for handling "Find" NbDialog.
  *
- * @author eh103527
+ * @author rs155161
  * @version 1.0
  */
 public class Find extends JDialogOperator {
-    
+
     /** Creates new Find that can handle it.
      */
     public Find() {
         super(java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-title"));
     }
-    
+
     private JLabelOperator _lblFindWhat;
     private JComboBoxOperator _cboFindWhat;
-    public static final String ITEM_ = "";
     private JCheckBoxOperator _cbHighlightSearch;
     private JCheckBoxOperator _cbIncrementalSearch;
     private JCheckBoxOperator _cbMatchCase;
@@ -46,25 +46,27 @@ public class Find extends JDialogOperator {
     private JCheckBoxOperator _cbMatchWholeWordsOnly;
     private JCheckBoxOperator _cbBackwardSearch;
     private JCheckBoxOperator _cbWrapSearch;
+    private JCheckBoxOperator _cbRegularExpressions;
+    private JCheckBoxOperator _cbBlockSearch;
     private JButtonOperator _btFind;
     private JButtonOperator _btClose;
     private JButtonOperator _btHelp;
-    
-    
+
+
     //******************************
     // Subcomponents definition part
     //******************************
-    
+
     /** Tries to find "Find What:" JLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblFindWhat() {
         if (_lblFindWhat==null) {
-            _lblFindWhat = new JLabelOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-what"));
+            _lblFindWhat = new JLabelOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-what"));        
         }
         return _lblFindWhat;
     }
-    
+
     /** Tries to find null JComboBox in this dialog.
      * @return JComboBoxOperator
      */
@@ -74,7 +76,7 @@ public class Find extends JDialogOperator {
         }
         return _cboFindWhat;
     }
-    
+
     /** Tries to find " Highlight Search" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
@@ -84,7 +86,7 @@ public class Find extends JDialogOperator {
         }
         return _cbHighlightSearch;
     }
-    
+
     /** Tries to find " Incremental Search" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
@@ -94,7 +96,7 @@ public class Find extends JDialogOperator {
         }
         return _cbIncrementalSearch;
     }
-    
+
     /** Tries to find " Match Case" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
@@ -104,7 +106,7 @@ public class Find extends JDialogOperator {
         }
         return _cbMatchCase;
     }
-    
+
     /** Tries to find " Smart Case" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
@@ -114,7 +116,7 @@ public class Find extends JDialogOperator {
         }
         return _cbSmartCase;
     }
-    
+
     /** Tries to find " Match Whole Words Only" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
@@ -124,7 +126,7 @@ public class Find extends JDialogOperator {
         }
         return _cbMatchWholeWordsOnly;
     }
-    
+
     /** Tries to find " Backward Search" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
@@ -134,7 +136,7 @@ public class Find extends JDialogOperator {
         }
         return _cbBackwardSearch;
     }
-    
+
     /** Tries to find " Wrap Search" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
@@ -144,7 +146,27 @@ public class Find extends JDialogOperator {
         }
         return _cbWrapSearch;
     }
-    
+
+    /** Tries to find " Regular Expressions" JCheckBox in this dialog.
+     * @return JCheckBoxOperator
+     */
+    public JCheckBoxOperator cbRegularExpressions() {
+        if (_cbRegularExpressions==null) {
+            _cbRegularExpressions = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-reg-exp"));
+        }
+        return _cbRegularExpressions;
+    }
+
+    /** Tries to find " Block Search" JCheckBox in this dialog.
+     * @return JCheckBoxOperator
+     */
+    public JCheckBoxOperator cbBlockSearch() {
+        if (_cbBlockSearch==null) {
+            _cbBlockSearch = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-block-search"));
+        }
+        return _cbBlockSearch;
+    }
+
     /** Tries to find "Find" JButton in this dialog.
      * @return JButtonOperator
      */
@@ -154,7 +176,7 @@ public class Find extends JDialogOperator {
         }
         return _btFind;
     }
-    
+
     /** Tries to find "Close" JButton in this dialog.
      * @return JButtonOperator
      */
@@ -164,7 +186,7 @@ public class Find extends JDialogOperator {
         }
         return _btClose;
     }
-    
+
     /** Tries to find "Help" JButton in this dialog.
      * @return JButtonOperator
      */
@@ -174,33 +196,33 @@ public class Find extends JDialogOperator {
         }
         return _btHelp;
     }
-    
-    
+
+
     //****************************************
     // Low-level functionality definition part
     //****************************************
-    
+
     /** returns selected item for cboFindWhat
      * @return String item
      */
     public String getSelectedFindWhat() {
         return cboFindWhat().getSelectedItem().toString();
     }
-    
+
     /** selects item for cboFindWhat
      * @param item String item
      */
     public void selectFindWhat(String item) {
         cboFindWhat().selectItem(item);
     }
-    
+
     /** types text for cboFindWhat
      * @param text String text
      */
     public void typeFindWhat(String text) {
         cboFindWhat().typeText(text);
     }
-    
+
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -209,7 +231,7 @@ public class Find extends JDialogOperator {
             cbHighlightSearch().push();
         }
     }
-    
+
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -218,7 +240,7 @@ public class Find extends JDialogOperator {
             cbIncrementalSearch().push();
         }
     }
-    
+
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -227,7 +249,7 @@ public class Find extends JDialogOperator {
             cbMatchCase().push();
         }
     }
-    
+
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -236,7 +258,7 @@ public class Find extends JDialogOperator {
             cbSmartCase().push();
         }
     }
-    
+
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -245,7 +267,7 @@ public class Find extends JDialogOperator {
             cbMatchWholeWordsOnly().push();
         }
     }
-    
+
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -254,7 +276,7 @@ public class Find extends JDialogOperator {
             cbBackwardSearch().push();
         }
     }
-    
+
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -263,30 +285,48 @@ public class Find extends JDialogOperator {
             cbWrapSearch().push();
         }
     }
-    
+
+    /** checks or unchecks given JCheckBox
+     * @param state boolean requested state
+     */
+    public void checkRegularExpressions(boolean state) {
+        if (cbRegularExpressions().isSelected()!=state) {
+            cbRegularExpressions().push();
+        }
+    }
+
+    /** checks or unchecks given JCheckBox
+     * @param state boolean requested state
+     */
+    public void checkBlockSearch(boolean state) {
+        if (cbBlockSearch().isSelected()!=state) {
+            cbBlockSearch().push();
+        }
+    }
+
     /** clicks on "Find" JButton
      */
     public void find() {
-        btFind().pushNoBlock();
+        btFind().push();
     }
-    
+
     /** clicks on "Close" JButton
      */
     public void close() {
         btClose().push();
     }
-    
+
     /** clicks on "Help" JButton
      */
     public void help() {
         btHelp().push();
     }
-    
-    
+
+
     //*****************************************
     // High-level functionality definition part
     //*****************************************
-    
+
     /** Performs verification of Find by accessing all its components.
      */
     public void verify() {
@@ -299,11 +339,13 @@ public class Find extends JDialogOperator {
         cbMatchWholeWordsOnly();
         cbBackwardSearch();
         cbWrapSearch();
+        cbRegularExpressions();
+        cbBlockSearch();
         btFind();
         btClose();
         btHelp();
     }
-    
+
     public static void find(String text) {
         Find op=new Find();
         op.typeFindWhat(text);
