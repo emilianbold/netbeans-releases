@@ -632,7 +632,7 @@
 
     CheckConstraint = {
       Class = org.netbeans.lib.ddl.impl.TableColumn;
-      Format = "add constraint {object.name} check ({check.condition})";
+      Format = "constraint {object.name} check ({check.condition})";
     };      
 
 //
