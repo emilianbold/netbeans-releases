@@ -42,12 +42,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="buildDependentModules">
-        <ant dir="../jemmy" target="jar"/>
-        <ant dir="../openide" antfile="build.xml" target="netbeans"/>
-        <ant dir="../openide/loaders" antfile="build.xml" target="jars"/>
-        <ant dir="../core" antfile="build.xml" target="jars"/>
-        <ant dir="../core/term" antfile="build.xml" target="jars"/>
-        <ant dir="../core/windows" antfile="build.xml" target="jars"/>
         <ant dir="../xtest/nbjunit" target="jar-nbjunit"/>
     </target>
 

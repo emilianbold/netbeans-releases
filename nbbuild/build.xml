@@ -808,7 +808,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../utilities/loaderswitcher" target="netbeans"/>
   </target>
 
-  <target name="all-xtest" depends="all-openide,all-openide/io,all-openide/execution,all-core,all-core/execution,all-core/term,all-core/output">
+  <target name="all-xtest" depends="all-openide,all-openide/loaders,all-openide/io,all-openide/execution,all-core,all-core/execution,all-core/term,all-core/output">
       <echo message="Building module xtest..."/>
       <ant dir="../xtest" antfile="build.xml" target="netbeans"/>
   </target>

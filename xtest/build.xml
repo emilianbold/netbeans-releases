@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -41,17 +41,6 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="external" target="unscramble"/>
   </target>
   
-   <target name="compile-dependend-modules">
-        <ant dir="../openide" antfile="build.xml" target="netbeans"/>
-        <ant dir="../openide/loaders" antfile="build.xml" target="jars"/>
-        <ant dir="../openide/io" antfile="build.xml" target="jars"/>
-        <ant dir="../openide/execution" antfile="build.xml" target="jars"/>
-        <ant dir="../core" antfile="build.xml" target="jars"/>
-        <ant dir="../core/execution" antfile="build.xml" target="jars"/>
-        <ant dir="../core/term" antfile="build.xml" target="jars"/>
-        <ant dir="../core/output" antfile="build.xml" target="jars"/>
-  </target>
-
   <target name="compile" depends="init,prepare-nbjunit">
     <path id="basecp">	
 	<pathelement location="src"/>
@@ -111,7 +100,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-all" depends="build-xtest, build-plugins"/>
   
   
-  <target name="makedist" depends="compile-dependend-modules,build-all">
+  <target name="makedist" depends="build-all">
      <zip zipfile="xtest-distribution.zip">     
 	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl,**/*.exe,**/*.so,**/*.dll"/>
         <zipfileset dir="plugins" prefix="plugins" includes="**"/>
