@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog.spi;
@@ -28,7 +28,8 @@ public interface CatalogProvider {
 
     /**
      * @return A class with public no arg constructor loaded by a ClassLoader 
-     *         allowing to load the rest of catalog implementation.
+     *         allowing to load the rest of catalog implementation
+     *         (must implement {@link CatalogReader})
      */
     public Class provideClass() throws IOException, ClassNotFoundException;
 }

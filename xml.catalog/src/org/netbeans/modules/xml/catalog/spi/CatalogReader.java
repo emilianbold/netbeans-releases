@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog.spi;
@@ -19,6 +19,8 @@ import java.util.*;
  * An implementation is responsible for reading catalog content (mappings).
  * <p>
  * Implementation class should provide its BeanInfo describing it.
+ * <p>Should also implement {@link CatalogDescriptor} and may also implement
+ * {@link CatalogWriter} and/or {@link org.xml.sax.EntityResolver} as needed.</p>
  *
  * @author Petr Kuzel
  */
