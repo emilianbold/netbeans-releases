@@ -15,9 +15,9 @@ package org.netbeans.modules.db.explorer.infos;
 
 import java.io.IOException;
 
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriver;
@@ -44,16 +44,16 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
         String name = getName();
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Services/JDBCDrivers"); //NOI18N
         FileObject[] drivers = fo.getChildren();
-        FileLock fl;
         JDBCDriverConvertor conv;
+        JDBCDriver drv;
+        
         for (int i = 0; i < drivers.length; i++) {
             conv = JDBCDriverConvertor.createProvider(drivers[i]);
             try {
-                JDBCDriver drv = (JDBCDriver) conv.instanceCreate();
+                drv = (JDBCDriver) conv.instanceCreate();
                 if (drv.getName().equals(name)) {
-                    fl = drivers[i].lock();
-                    drivers[i].delete(fl);
-                    fl.releaseLock();
+                    DataObject d = DataObject.find(drivers[i]);
+                    d.delete();
                 }
             } catch (IOException exc) {
                 //PENDING
@@ -61,17 +61,6 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
                 //PENDING
             }
         }
-        
-        // refresh list of drivers after driver delete action
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    getParent().refreshChildren();
-                } catch (Exception exc) {
-//                    exc.printStackTrace();
-                }
-            }
-        });
     }
     
     public String getIconBase() {

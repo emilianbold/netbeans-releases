@@ -21,7 +21,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.openide.util.RequestProcessor;
+import org.netbeans.modules.db.explorer.infos.DriverListNodeInfo;
 
 public class DriverNode extends LeafNode implements PropertyChangeListener {
     
@@ -51,14 +51,21 @@ public class DriverNode extends LeafNode implements PropertyChangeListener {
     }
 
     public void destroy() throws IOException {
+        final DriverListNodeInfo parent = (DriverListNodeInfo) getInfo().getParent();
         getInfo().delete();
-        DatabaseNodeInfo parent = getInfo().getParent();
-        super.destroy();
-        try{
-            parent.refreshChildren();
-        } catch (Exception ex){
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-        }
+        
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    //wait a while, hopefully it should ensure that Lookup returns expected results
+                    //it seems it sometimes helps as a workaround for issue #40290
+                    Thread.sleep(200);
+                    parent.refreshChildren();
+                } catch (Exception exc) {
+                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, exc);
+                }
+            }
+        });
     }
 
 }

@@ -80,8 +80,12 @@ public class AddDriverAction extends DatabaseAction {
                         public void run() {
                             try {
                                 DriverListNodeInfo info = (DriverListNodeInfo) n[0].getCookie(DriverListNodeInfo.class);
-                                if (info != null)
+                                if (info != null) {
+                                    //wait a while, hopefully it should ensure that Lookup returns expected results
+                                    //it seems it sometimes helps as a workaround for issue #40290
+                                    Thread.sleep(200);
                                     info.refreshChildren();
+                                }
                             } catch (Exception exc) {
 //                                exc.printStackTrace();
                             }
