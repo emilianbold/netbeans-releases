@@ -99,6 +99,19 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
         return super.getCookieSet ();
     }
     
+    public Node.Cookie getCookie(Class cl) {
+        if (CompilerCookie.class.isAssignableFrom (cl)) {
+            JspCompilationProxy jcp = JspCompilationProxy.getCompilationProxy();
+            if (jcp != null) {
+                CompilerCookie cc = jcp.getCompilerCookie(this, cl);
+                if (cc != null) {
+                    return cc;
+                }
+            }
+        }
+        return super.getCookie(cl);
+    }
+    
     public DataObject getModule(){
         try {
                 FileObject root = JspCompileUtil.getContextRoot(getPrimaryFile());
