@@ -94,12 +94,12 @@ public class DBschemaDataObject extends MultiDataObject {
         addPropertyChangeListener(listener);
     }
 
-	public Node.Cookie getCookie (Class c) {
+    public Node.Cookie getCookie (Class c) {
+        // Looks like a bug - why is it done this way? This inevitable leads to a ClassCastException
         if (SchemaElement.class.isAssignableFrom(c))
             return getCookie(DBElementProvider.class);
-
-		return super.getCookie(c);
-	}
+        return super.getCookie(c);
+    }
 
     public SchemaElement getSchema() {
         if (schemaElement == null)
