@@ -60,8 +60,12 @@ public class FormEditorModule implements ModuleInstall {
 
   /** Module installed again. */
   public void restored () {
-    // [PENDING - ugly workaround so that borders editor works - ideally, a FormPropertyEditorManager would be used for finding border's properties editors]
-    java.beans.PropertyEditorManager.registerEditor (javax.swing.border.Border.class, com.netbeans.developer.explorer.propertysheet.editors.BorderEditor.class);
+    try {
+      Class borderEd = TopManager.getDefault ().systemClassLoader ().loadClass ("com.netbeans.developer.explorer.propertysheet.editors.BorderEditor");
+      FormPropertyEditorManager.registerEditor (javax.swing.border.Border.class, borderEd);
+    } catch (Exception e) {
+      // uses the border editor from impl, so we must survive when it is not present
+    }
     FormPropertyEditorManager.registerEditor (javax.swing.ListModel.class, com.netbeans.developer.modules.loaders.form.editors.ListModelFormAwareEditor.class);
     BeanInstaller.autoLoadBeans ();
 
@@ -518,6 +522,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  29   Gandalf   1.28        7/31/99  Ian Formanek    Fixed registration of 
+ *       BorderEditor
  *  28   Gandalf   1.27        7/15/99  Ian Formanek    Better cleanup when 
  *       uninstalling
  *  27   Gandalf   1.26        7/15/99  Ian Formanek    Installation of actions 
