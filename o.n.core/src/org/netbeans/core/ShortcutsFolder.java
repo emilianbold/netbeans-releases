@@ -447,18 +447,19 @@ final class ShortcutsFolder extends FolderInstance {
                         }
                     } else {
                         String instanceName = r.instanceName();
-                        if (!InstanceDataObject.remove(f, instanceName, r.instanceClass())) {
-                            //We may be deleting a wildcard keystroke, and/or the
-                            //order defined in the layer may not be the same as
-                            //what we were fed by the shortcuts editor, so search
-                            //all the possible variants
-                            String[] permutations = getPermutations(instanceName);
-                            for (int i=0; i < permutations.length; i++) {
-                                if (InstanceDataObject.remove(f, permutations[i], r.instanceClass())) {
+                        ArrayList arr = new ArrayList ();
+                        arr.add (instanceName);
+                        arr.addAll (Arrays.asList (getPermutations (instanceName)));
+                        for (Iterator iter = arr.iterator(); iter.hasNext(); ) {
+                            String name = (String)iter.next ();
+                            DataObject[] ch = f.getChildren();
+                            for (int j = 0; j < ch.length; j++) {
+                                if (ch[j].getName ().equals (name)) {
+                                    ch[j].delete ();
                                     break;
                                 }
                             }
-                        } 
+                        }
                     }
                 } else { // It is '.shadow' file
                     FileObject root = f.getPrimaryFile();

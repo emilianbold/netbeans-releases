@@ -49,11 +49,11 @@ import junit.textui.TestRunner;
  * Tests shortcuts folder to ensure it handles wildcard keystrokes correctly. 
  */
 public class ShortcutsFolderTest extends NbTestCase {
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(ShortcutsFolderTest.class));
+    static {
+        // register lookup
+        System.setProperty("org.openide.util.Lookup", "org.netbeans.core.ShortcutsFolderTest$LKP");
+        // we need to work with nbfs: protocol
+        java.net.URL.setURLStreamHandlerFactory(new NbURLStreamHandlerFactory.Standard ());
     }
     
     /** Constructor required by JUnit.
@@ -202,20 +202,16 @@ public class ShortcutsFolderTest extends NbTestCase {
         data2.setAttribute("instanceClass", "org.netbeans.core.ShortcutsFolderTest$TestAction");
         
         ShortcutsFolder sf = createShortcutsFolder(fs);
-        System.err.println("Created shortcuts folder " + sf);
         
         sf.waitShortcutsFinished();
         
         DataObject ob = DataObject.find (data1);
         assertNotNull("Data object not found: " + data1.getPath(), ob);
-        System.err.println("Found data object " + data1);
         
         InstanceCookie ck = (InstanceCookie) ob.getCookie(InstanceCookie.class);
         Object obj = ck.instanceCreate();
         
         assertTrue ("InstanceCookie was not an instanceof TestAction - " + obj, obj instanceof TestAction);
-        
-        System.err.println("Got an instance: " + obj);
         
         KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
         Action action = (Action) obj;
@@ -262,44 +258,76 @@ public class ShortcutsFolderTest extends NbTestCase {
         assertEquals ("It is test action", TestAction.class, a.getClass ());
     }
     
-    
-    public static TestAction factory () {
-        return new TestAction ();
+    public void testShortcutsForDifferentFilesThanInstanceOrShadows () throws Exception {
+        FileSystem fs = createTestingFilesystem();
+        FileObject shortcuts = getFolderForShortcuts (fs);
+        FileObject inst = org.openide.filesystems.FileUtil.createData (fs.getRoot (), "/Shortcuts/C-F11.xml");
+
+        java.io.PrintStream ps = new java.io.PrintStream (inst.getOutputStream (inst.lock ()));
+        ps.println ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        ps.println ("<project default=\"run\" name=\"Build everything.\">");
+        ps.println ("<target name=\"run\">");
+        ps.println ("<ant antfile=\"SampleProject.xml\" inheritall=\"false\" target=\"all\"/>");
+        ps.println ("</target>");
+        ps.println ("</project>");
+        ps.close();
+        DataObject obj = DataObject.find (inst);
+        assertEquals ("XML Data object", org.openide.loaders.XMLDataObject.class, obj.getClass());
+        org.openide.cookies.InstanceCookie ic = (org.openide.cookies.InstanceCookie)obj.getCookie(org.openide.cookies.InstanceCookie.class);
+        assertNotNull ("Has cookie", ic);
+
+        KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_F11, KeyEvent.CTRL_MASK);
+        
+        ShortcutsFolder sf = createShortcutsFolder(fs);
+        sf.waitShortcutsFinished();
+
+        javax.swing.text.Keymap map = (javax.swing.text.Keymap)Lookup.getDefault ().lookup (javax.swing.text.Keymap.class);
+        
+        Action action = map.getAction(stroke);
+        assertNotNull ("There is some action", action);
+        
+        ShortcutsFolder.applyChanges(Arrays.asList(new Object[] {new ShortcutsFolder.ChangeRequest (stroke, action, false)}));
+        sf.waitShortcutsFinished ();
+        
+        action = map.getAction(stroke);
+        assertNull ("Action removed", action);
+        
+
     }
     
     public static class TestAction extends AbstractAction {
         public void actionPerformed (ActionEvent ae) {}
     }
     
-    public static class LKP extends Lookup {
-        private javax.swing.text.Keymap keymap = new NbKeymap ();
-        
-        public Object lookup (Class clazz) {
-            if (ErrorManager.class == clazz) {
-                return new EM();
-            }
-            if (javax.swing.text.Keymap.class == clazz) {
-                return keymap;
-            }
-            return null;
+    public static class LKP extends org.openide.util.lookup.AbstractLookup implements org.openide.loaders.Environment.Provider {
+        public LKP () {
+            this (new org.openide.util.lookup.InstanceContent ());
         }
         
-        public Lookup.Result lookup (final Lookup.Template tpl) {
-            Lookup.Result r = new Lookup.Result() {
-                public Collection allInstances() {
-                    if (tpl.getType() == ErrorManager.class) {
-                        return Arrays.asList(new Object[] { new EM()});
-                    } else {
-                        return Collections.EMPTY_LIST;
+        private LKP (org.openide.util.lookup.InstanceContent ic) {
+            super (ic);
+            ic.add (new NbKeymap ());
+            //ic.add (new EM ());
+            ic.add (this);
+        }
+        
+        public Lookup getEnvironment(DataObject obj) {
+            if (obj instanceof org.openide.loaders.XMLDataObject) {
+                try {
+                    org.w3c.dom.Document doc = ((org.openide.loaders.XMLDataObject)obj).getDocument();
+                    if (doc.getDocumentElement().getNodeName().equals ("project")) {
+                        return org.openide.util.lookup.Lookups.singleton (
+                            new org.openide.loaders.InstanceSupport.Instance (
+                                new TestAction ()
+                            )
+                        );
                     }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    fail ("No exception: " + ex.getMessage());
                 }
-                
-                public  void addLookupListener (LookupListener l) {}
-
-                public  void removeLookupListener (LookupListener l){}                
-            };
-            
-            return r;
+            }
+            return org.openide.util.Lookup.EMPTY;
         }
     }
     
