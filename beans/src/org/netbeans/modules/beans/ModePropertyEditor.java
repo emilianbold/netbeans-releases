@@ -14,7 +14,6 @@
 package org.netbeans.modules.beans;
 
 import java.beans.*;
-import sun.tools.util.ModifierFilter;
 
 import org.openide.util.NbBundle;
 

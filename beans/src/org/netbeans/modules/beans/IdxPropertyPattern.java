@@ -27,6 +27,8 @@ import org.openide.src.SourceException;
 import org.openide.src.Identifier;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
 
 
 /** Class representing JavaBeans IndexedProperty.
@@ -344,20 +346,33 @@ public class IdxPropertyPattern extends PropertyPattern {
                 generateGetterMethod();
             if ( indexedGetterMethod == null )
                 generateIndexedGetterMethod();
-            if ( setterMethod != null )
-                deleteSetterMethod();
-            if ( indexedSetterMethod != null )
-                deleteIndexedSetterMethod();
+            
+            if (setterMethod != null || indexedSetterMethod != null) {
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( PatternNode.getString("MSG_Delete_Setters") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION );
+                TopManager.getDefault().notify( nd );
+                if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
+                    if ( setterMethod != null )
+                        deleteSetterMethod();
+                    if ( indexedSetterMethod != null )
+                        deleteIndexedSetterMethod();
+                }
+            }
             break;
         case WRITE_ONLY:
             if ( setterMethod == null )
                 generateSetterMethod();
             if ( indexedSetterMethod == null )
                 generateIndexedSetterMethod();
-            if ( getterMethod != null )
-                deleteGetterMethod();
-            if ( indexedGetterMethod != null )
-                deleteIndexedGetterMethod();
+            if (getterMethod != null || indexedGetterMethod != null) {
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( PatternNode.getString("MSG_Delete_Getters") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION );
+                TopManager.getDefault().notify( nd );
+                if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
+                    if ( getterMethod != null )
+                        deleteGetterMethod();
+                    if ( indexedGetterMethod != null )
+                        deleteIndexedGetterMethod();
+                }
+            }
             break;
         }
 

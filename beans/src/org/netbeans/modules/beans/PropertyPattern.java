@@ -250,14 +250,24 @@ public class PropertyPattern extends Pattern {
         case READ_ONLY:
             if ( getterMethod == null )
                 generateGetterMethod();
-            if ( setterMethod != null )
-                deleteSetterMethod();
+            if ( setterMethod != null ) {
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( PatternNode.getString("MSG_Delete_Setter") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION );
+                TopManager.getDefault().notify( nd );
+                if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
+                    deleteSetterMethod();
+                }
+            }
             break;
         case WRITE_ONLY:
             if ( setterMethod == null )
                 generateSetterMethod();
-            if ( getterMethod != null )
-                deleteGetterMethod();
+            if ( getterMethod != null ) {
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( PatternNode.getString("MSG_Delete_Getter") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION );
+                TopManager.getDefault().notify( nd );
+                if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
+                    deleteGetterMethod();
+                }
+            }
             break;
         }
     }
@@ -288,7 +298,6 @@ public class PropertyPattern extends Pattern {
      * @throws SourceException If the modification of source code is impossible
      */
     public void setType(Type type) throws SourceException {
-
         if ( this.type.compareTo( type, true ) )
             return;
 
