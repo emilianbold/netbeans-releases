@@ -30,5 +30,5 @@ Microsystems, Inc. All Rights Reserved.
         </patternset>
     </target>
 
-    <target name="netbeans" depends="projectized.netbeans, release"/>
+    <target name="netbeans-extra" depends="release"/>
 </project>
