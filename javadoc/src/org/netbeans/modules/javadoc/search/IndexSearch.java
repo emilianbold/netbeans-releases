@@ -69,7 +69,7 @@ public class IndexSearch
     private SearchEngine searchEngine = null;
 
     /** The state of the window is stored in hidden options of DocumentationSettings */
-    //DocumentationSettings ds = ((DocumentationSettings)SharedClassObject.findObject(DocumentationSettings.class, true));
+    DocumentationSettings ds = DocumentationSettings.getDefault();
 
     private String quickFind;
 
@@ -109,7 +109,7 @@ public class IndexSearch
     private DefaultListModel alphaModel = null;
 
     /* Holds split position if the quick view is disabled */
-    private int oldSplit = 50;
+    private int oldSplit = DocumentationSettings.getDefault().getIdxSearchSplit();
 
     private static final DefaultListModel waitModel = new DefaultListModel();
     private static final DefaultListModel notModel = new DefaultListModel();
@@ -143,21 +143,20 @@ public class IndexSearch
         //splitPanel.setLayout (new java.awt.FlowLayout ());
         splitPanel.setSplitType( org.openide.awt.SplittedPanel.VERTICAL );
         splitPanel.setSplitAbsolute( false );
-        oldSplit = DocumentationSettings.getDefault().getIdxSearchSplit();
         splitPanel.setSplitPosition( oldSplit );
         splitPanel.setSplitDragable( true );
         splitPanel.setSplitTypeChangeEnabled( true );
         splitPanel.addSplitChangeListener( new SplittedPanel.SplitChangeListener() {
                                                public void splitChanged (SplittedPanel.SplitChangeEvent evt) {
                                                    int value = evt.getNewValue();
-                                                   DocumentationSettings.getDefault().setIdxSearchSplit( value );
+                                                   ds.setIdxSearchSplit( value );
                                                    if ( value == 100 ) {
                                                        quickViewButton.setSelected( false );
-                                                       DocumentationSettings.getDefault().setIdxSearchNoHtml( true );
+                                                       ds.setIdxSearchNoHtml( true );
                                                    }
                                                    else {
                                                        quickViewButton.setSelected( true );
-                                                       DocumentationSettings.getDefault().setIdxSearchNoHtml( false );
+                                                       ds.setIdxSearchNoHtml( false );
                                                    }
                                                }
                                            } );
@@ -376,7 +375,7 @@ public class IndexSearch
     private void sortButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortButtonActionPerformed
 
         currentSort = evt.getActionCommand();
-        DocumentationSettings.getDefault().setIdxSearchSort( currentSort );
+        ds.setIdxSearchSort( currentSort );
         sortResults();
 
     }//GEN-LAST:event_sortButtonActionPerformed
@@ -384,15 +383,15 @@ public class IndexSearch
     private void quickViewButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quickViewButtonActionPerformed
         if ( quickViewButton.isSelected() ) {
             splitPanel.setSplitPosition( oldSplit == 100 ? 50 : oldSplit );
-            DocumentationSettings.getDefault().setIdxSearchSplit( oldSplit == 100 ? 50 : oldSplit );
-            DocumentationSettings.getDefault().setIdxSearchNoHtml( false );
+            ds.setIdxSearchSplit( oldSplit == 100 ? 50 : oldSplit );
+            ds.setIdxSearchNoHtml( false );
             showHelp( true );
         }
         else {
             oldSplit = splitPanel.getSplitPosition();
             splitPanel.setSplitPosition( 100 );
-            DocumentationSettings.getDefault().setIdxSearchSplit( 100 );
-            DocumentationSettings.getDefault().setIdxSearchNoHtml( true );
+            ds.setIdxSearchSplit( 100 );
+            ds.setIdxSearchNoHtml( true );
         }
     }//GEN-LAST:event_quickViewButtonActionPerformed
 
@@ -602,9 +601,10 @@ public class IndexSearch
     }
 
     public void resolveButtonState() {
-        final String sort = DocumentationSettings.getDefault().getIdxSearchSort();
-        final boolean noHtml = DocumentationSettings.getDefault().isIdxSearchNoHtml();
-        final int split = DocumentationSettings.getDefault().getIdxSearchSplit();
+
+        final String sort = ds.getIdxSearchSort();
+        final boolean noHtml = ds.isIdxSearchNoHtml();
+        final int split = ds.getIdxSearchSplit();
 
         currentSort = sort;
 
