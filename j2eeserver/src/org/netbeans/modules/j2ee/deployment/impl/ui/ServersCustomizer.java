@@ -282,11 +282,13 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
             // return set of InstanceProperties instances - this should be ensured
             Set result = wizard.getInstantiatedObjects();
             if (result != null) {
-                Object instObj = result.iterator().next();
-                if (instObj instanceof InstanceProperties) {
-                    InstanceProperties ip = (InstanceProperties)instObj;
-                    String url = ip.getProperty(InstanceProperties.URL_ATTR);
-                    servInst = ServerRegistry.getInstance().getServerInstance(url);
+                for (Iterator i = result.iterator(); i.hasNext();) {
+                    Object instObj = i.next();
+                    if (instObj instanceof InstanceProperties) {
+                        InstanceProperties ip = (InstanceProperties)instObj;
+                        String url = ip.getProperty(InstanceProperties.URL_ATTR);
+                        servInst = ServerRegistry.getInstance().getServerInstance(url);
+                    }
                 }
             }
             expandServers(servInst);
