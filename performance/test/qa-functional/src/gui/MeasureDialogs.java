@@ -42,6 +42,7 @@ public class MeasureDialogs  {
         suite.addTest(new OpenFileDialog("measureTime", "Open File dialog open"));
         suite.addTest(new UpdateCenter("measureTime", "Update Center wizard open"));
         suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
+        suite.addTest(new VersioningManager("measureTime", "Versioning Manager open"));
 //TODO wait until implemented Favourite Folders tab        suite.addTest(new AllFilesWindow("measureTime", "All Files window open"));
         suite.addTest(new RuntimeWindow("measureTime", "Runtime window open"));
         suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
