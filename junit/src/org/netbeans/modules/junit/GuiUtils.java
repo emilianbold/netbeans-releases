@@ -14,6 +14,7 @@
 package org.netbeans.modules.junit;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -225,12 +227,27 @@ public final class GuiUtils {
     public static JComponent createMultilineLabel(String text) {
         JTextArea textArea = new JTextArea(text);
         textArea.setEditable(false);
+        textArea.setFocusable(false);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
-        textArea.setDisabledTextColor(textArea.getForeground());
-        textArea.setEnabled(false);
-        textArea.setOpaque(false);
-        textArea.setPreferredSize(new java.awt.Dimension(16379,0));
+        
+        Color color;
+        
+        color = UIManager.getColor("Label.background");                 //NOI18N
+        if (color == null) {
+            color = UIManager.getColor("Panel.background");             //NOI18N
+        }
+        if (color != null) {
+            textArea.setBackground(color);
+        } else {
+            textArea.setOpaque(false);
+        }
+        
+        color = UIManager.getColor("Label.foreground");                 //NOI18N
+        if (color != null) {
+            textArea.setForeground(color);
+        }
+        
         return textArea;
     }
     
