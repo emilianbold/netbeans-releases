@@ -81,7 +81,7 @@ public class HttpServerModule implements ModuleInstall {
             config = new NbServer(HttpServerSettings.OPTIONS);
             server = new NbHttpServer(config);
             HttpServerSettings.OPTIONS.runSuccess();
-            System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
+            TopManager.getDefault ().getStdOut ().println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
               getString("CTL_ServerStarted"), new Object[] {new Integer(HttpServerSettings.OPTIONS.getPort())}));
 //            util.Util.printStackTrace();
           } catch (Exception ex) {
@@ -121,6 +121,7 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  13   Gandalf   1.12        6/11/99  Jaroslav Tulach System.out commented
  *  12   Gandalf   1.11        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  11   Gandalf   1.10        6/8/99   Petr Jiricka    

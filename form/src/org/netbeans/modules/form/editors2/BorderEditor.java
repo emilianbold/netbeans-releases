@@ -282,7 +282,6 @@ public final class BorderEditor extends PropertyEditorSupport {
       super(Children.LEAF);
       this.paletteItem = paletteItem;
       designBorder = paletteItem.createBorder ();
-      System.out.println("BorderEditor.java:288: "+designBorder);
       setName (designBorder.getInfo ().getDisplayName ());
     }
 
@@ -306,13 +305,11 @@ public final class BorderEditor extends PropertyEditorSupport {
 
     /** Creates property set for this node */
     protected Sheet createSheet () {
-      System.out.println("BorderEditor.java:311");
       Node.Property[] props = designBorder.getInfo().getProperties();
       Sheet.Set propsSet = Sheet.createPropertiesSet ();
       propsSet.put(props);
       Sheet sheet = new Sheet ();
       sheet.put (propsSet);
-      System.out.println("Properties: "+props.length);
       
       for (int i = 0; i < props.length; i++) {
         if (props[i] instanceof BorderInfoSupport.BorderProp) {
@@ -378,6 +375,7 @@ public final class BorderEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/11/99  Jaroslav Tulach System.out commented
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  3    Gandalf   1.2         5/30/99  Ian Formanek    Finalized
