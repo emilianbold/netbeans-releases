@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Points to directory with IDE to test-->
     <property name="netbeans.home" location="../../../../nbbuild/netbeans"/>
-    <property name="nb.repository" location="../../../../../nb_all"/>
+    <property name="nb.repository" location="../../../.."/>
     
     <!-- Name of tested module -->
     <property name="xtest.module" value="TAX_lib"/>
