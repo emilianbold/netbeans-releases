@@ -15,17 +15,21 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** DebugProjectAction class 
+/** Used to call "Debug Project" popup menu item on project's root node,
+ * "Project|Debug Project" main menu item,
+ * "org.netbeans.modules.projects.actions.DebugProjectAction" or Ctrl+Shift+F5 shortcut.
+ * @see Action
+ * @see org.netbeans.jellytools.nodes.ProjectRootNode
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class DebugProjectAction extends Action {
     
-    private static final String debugProjectPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "ProjectDebug");
+    private static final String debugProjectPopup = Bundle.getStringTrimmed("org.netbeans.modules.projects.actions.Bundle", "ProjectDebug");
     private static final String debugProjectMenu = Bundle.getStringTrimmed("org.netbeans.modules.projects.Bundle", "Menu/Project")
                                             + "|" + debugProjectPopup;
     private static final Shortcut debugProjectShortcut = new Shortcut(KeyEvent.VK_F5, KeyEvent.SHIFT_MASK | KeyEvent.CTRL_MASK);
 
     /** creates new DebugProjectAction instance */    
     public DebugProjectAction() {
-        super(debugProjectMenu, debugProjectPopup, "org.openide.actions.DebugProjectAction", debugProjectShortcut);
+        super(debugProjectMenu, debugProjectPopup, "org.netbeans.modules.projects.actions.DebugProjectAction", debugProjectShortcut);
     }
 }
