@@ -17,6 +17,10 @@ import java.io.File;
 
 import java.util.Enumeration;
 import javax.swing.event.*;
+import javax.swing.KeyStroke;
+import javax.swing.text.Keymap;
+
+import com.netbeans.ide.util.Utilities;
 
 // IDE imports ------------------
 
@@ -41,8 +45,7 @@ import com.netbeans.developer.modules.javadoc.settings.StdDocletSettings;
 */
 public class JavadocModule implements ModuleInstall {
   
-  static {
-  }
+  private static  Keymap map;
 
   /** By first install of module in the IDE, check whether standard documentation folder
   * exists. If not creates it.
@@ -147,6 +150,19 @@ public class JavadocModule implements ModuleInstall {
         }
       }
     });
+
+    //try {
+      map = TopManager.getDefault ().getGlobalKeymap ();
+    //} catch (Throwable t) {
+    //  System.err.println ("Must be executed inside the IDE by internal execution!");
+    //  return;
+    // }
+    try {
+      assign ("C-F1", "com.netbeans.developer.modules.javadoc.search.SearchDocAction");
+    } catch (ClassNotFoundException e) {
+      // print and go on
+      e.printStackTrace();
+    }
   }
 	
   /** Called before exiting IDE. 
@@ -201,10 +217,33 @@ public class JavadocModule implements ModuleInstall {
   }
 
 
+  /** Assigns a key to an action
+  * @param key key name
+  * @param action name of the action
+  */
+  private static void assign (String key, String action) throws ClassNotFoundException {
+    KeyStroke str = Utilities.stringToKey (key);
+    if (str == null) {
+      System.err.println ("Not a valid key: " + key);
+      // go on
+      return;
+    }
+
+    Class actionClass = Class.forName (action);
+
+    // create instance of the action
+    SystemAction a = SystemAction.get (actionClass);
+
+    map.addActionForKeyStroke (str, a);
+  }
+
+
+
 }
 
 /* 
  * Log
+ *  9    Gandalf   1.8         5/27/99  Petr Hrebejk    
  *  8    Gandalf   1.7         5/16/99  Petr Hrebejk    
  *  7    Gandalf   1.6         5/14/99  Petr Hrebejk    
  *  6    Gandalf   1.5         5/11/99  Petr Hrebejk    
