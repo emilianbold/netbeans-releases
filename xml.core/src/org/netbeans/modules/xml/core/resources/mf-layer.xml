@@ -203,4 +203,11 @@ SystemFileSystem
         </folder> <!-- Help -->
     </folder> <!-- Actions -->
   
+    <!-- Lines marked as erroneous: -->
+    <folder name="Editors">
+        <folder name="AnnotationTypes">
+            <file name="org-netbeans-modules-xml-core-error.xml" url="error-annotation.xml"/>
+        </folder>
+    </folder>
+    
 </filesystem>

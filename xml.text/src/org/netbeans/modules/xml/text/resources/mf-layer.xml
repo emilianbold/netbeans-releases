@@ -133,13 +133,7 @@ Microsystems, Inc. All Rights Reserved.
                 </folder> <!__ Toolbars -->
 
             </folder> <!-- xml -->
-        </folder> <!-- text -->
-        
-        <!-- Lines marked as erroneous: -->
-        <folder name="AnnotationTypes">
-            <file name="org-netbeans-modules-xml-text-error.xml" url="error-annotation.xml"/>
-        </folder>
-        
+        </folder> <!-- text -->                
     </folder> <!-- Editors -->
 
 </filesystem>
