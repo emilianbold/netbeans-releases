@@ -49,6 +49,9 @@ public class ClassPathSupport {
             throw new IllegalArgumentException("File URL pointing to " + // NOI18N
                 "JAR is not valid classpath entry. Use jar: URL. Was: "+url); // NOI18N
         }
+        if (!url.toExternalForm().endsWith("/")) { // NOI18N
+            throw new IllegalArgumentException("URL must be a folder URL (append '/' if necessary): " + url); // NOI18N
+        }
         return new SimplePathResourceImplementation (url);
     }
 
