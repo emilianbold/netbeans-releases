@@ -29,6 +29,7 @@ import javax.swing.text.View;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
+import org.netbeans.editor.Registry;
 import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.modules.editor.java.JCStorage;
@@ -137,6 +138,8 @@ public class EditorWarmUpTask implements Runnable{
             // Make sure extended component necessary classes get loaded
             editorUI.getExtComponent();
         }
+
+        Registry.removeComponent(pane);
 
         // Have two documents - one empty and another one filled with many lines
         Document emptyDoc = javaKit.createDefaultDocument();
