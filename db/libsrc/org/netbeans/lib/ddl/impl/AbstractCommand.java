@@ -220,7 +220,7 @@ public class AbstractCommand
     public void writeObject(java.io.ObjectOutputStream out)
     throws java.io.IOException
     {
-        System.out.println("Writing command "+name);
+        //System.out.println("Writing command "+name);
         out.writeObject(format);
         out.writeObject(owner);
         out.writeObject(name);
