@@ -13,16 +13,16 @@
 
 package org.netbeans.modules.pdf;
 
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.BeanInfo;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import org.openide.DialogDisplayer;
@@ -31,6 +31,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.XMLDataObject;
 import org.openide.modules.InstalledFileLocator;
@@ -109,11 +111,20 @@ public class LinkProcessor implements InstanceCookie,
 
     /* Implements interface <code>InstanceCookie</code>. */
     public Object instanceCreate() throws IOException, ClassNotFoundException {
-        Icon icon = new ImageIcon(Utilities.loadImage(
-                "org/netbeans/modules/pdf/PDFDataIcon.gif"));           //NOI18N
+        Image icon = Utilities.loadImage(
+                "org/netbeans/modules/pdf/PDFDataIcon.gif");           //NOI18N
+        try {
+            FileObject file = xmlDataObject.getPrimaryFile();
+            FileSystem.Status fsStatus = file.getFileSystem().getStatus();
+            icon = fsStatus.annotateIcon(icon,
+                                         BeanInfo.ICON_COLOR_16x16,
+                                         xmlDataObject.files());
+        } catch (FileStateInvalidException fsie) {
+            /* OK, so we use the default icon */
+        }
         String name = xmlDataObject.getNodeDelegate().getDisplayName();
         
-        JMenuItem menuItem = new JMenuItem(icon);
+        JMenuItem menuItem = new JMenuItem(new ImageIcon(icon));
         Mnemonics.setLocalizedText(menuItem, name);
         menuItem.addActionListener(this);
         

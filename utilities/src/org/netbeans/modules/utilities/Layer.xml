@@ -128,22 +128,22 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="Separator1.instance/relnotes.url" boolvalue="true"/>
             <file name="relnotes.url" url="nbresloc:/org/netbeans/modules/utilities/relnotes.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
             </file>
             <attr name="relnotes.url/quick-start.url" boolvalue="true"/>
             <file name="quick-start.url" url="nbresloc:/org/netbeans/modules/utilities/quick-start.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
             </file>
             <attr name="quick-start.url/using-netbeans.url" boolvalue="true"/>
             <file name="using-netbeans.url" url="nbresloc:/org/netbeans/modules/utilities/using-netbeans.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
             </file>
             <attr name="using-netbeans.url/shortcuts.xml" boolvalue="true"/>
             <file name="shortcuts.xml" url="nbresloc:/org/netbeans/modules/utilities/shortcuts.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/pdf/PDFDataIcon.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
             </file>
             <attr name="shortcuts.xml/utilities-sep-2.instance" boolvalue="true"/>
             <file name="utilities-sep-2.instance">
@@ -152,7 +152,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="utilities-sep-2.instance/netbeans-kb.url" boolvalue="true"/>
             <file name="netbeans-kb.url" url="nbresloc:/org/netbeans/modules/utilities/netbeans-kb.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
             </file>         
             <attr name="netbeans-kb.url/utilities-sep-3.instance" boolvalue="true"/>
             <file name="utilities-sep-3.instance">
@@ -161,12 +161,12 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="utilities-sep-3.instance/netbeans-web-link.url" boolvalue="true"/>
             <file name="netbeans-web-link.url" url="nbresloc:/org/netbeans/modules/utilities/netbeans-web-link.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
             </file> 
             <attr name="netbeans-web-link.url/submit-feedback-link.url" boolvalue="true"/>
             <file name="submit-feedback-link.url" url="nbresloc:/org/netbeans/modules/utilities/submit-feedback-link.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
             </file>
             <attr name="submit-feedback-link.url/utilities-sep-4.instance" boolvalue="true"/>
             <file name="utilities-sep-4.instance">
@@ -175,7 +175,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="utilities-sep-4.instance/module-catalogue.url" boolvalue="true"/>
             <file name="module-catalogue.url" url="nbresloc:/org/netbeans/modules/utilities/module-catalogue.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
 	    </file>
             <attr name="module-catalogue.url/utilities-sep-5.instance" boolvalue="true"/>
             <file name="utilities-sep-5.instance">
