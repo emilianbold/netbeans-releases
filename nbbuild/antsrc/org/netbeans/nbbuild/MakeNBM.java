@@ -477,8 +477,9 @@ public class MakeNBM extends MatchingTask {
 		throw new BuildException ("must define storepass attribute on <signature/>");
 	    if (signature.alias == null)
 		throw new BuildException ("must define alias attribute on <signature/>");
-            if (signature.storepass.equals ("?")) {
-                log ("Not signing NBM file " + file + "; no stored-key password provided", Project.MSG_WARN);
+            if (signature.storepass.equals ("?") || !signature.keystore.exists()) {
+                log ("Not signing NBM file " + file + "; no stored-key password provided or keystore (" 
+		     + signature.keystore.toString() + ") doesn't exists", Project.MSG_WARN);
             } else {
                 log ("Signing NBM file " + file);
                 SignJar signjar = (SignJar) project.createTask ("signjar");
