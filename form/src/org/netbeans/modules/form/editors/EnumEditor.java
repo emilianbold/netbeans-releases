@@ -23,6 +23,7 @@ import java.beans.*;
  */
 
 public class EnumEditor extends PropertyEditorSupport
+                        implements org.netbeans.modules.form.NamedPropertyEditor
 {
     /** array of object triplets describing the enumeration
      * 0 - displayed label
@@ -91,6 +92,14 @@ public class EnumEditor extends PropertyEditorSupport
             }
 
         return initString;
+    }
+
+    // -------
+    // NamedPropertyEditor
+
+    public String getDisplayName() {
+        return org.openide.util.NbBundle.getBundle(EnumEditor.class)
+                                            .getString("CTL_EnumEditorName"); // NOI18N
     }
 
     // -------
