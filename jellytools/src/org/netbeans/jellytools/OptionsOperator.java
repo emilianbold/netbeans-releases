@@ -82,11 +82,24 @@ public class OptionsOperator extends NbFrameOperator {
      * Waits for the Options window opened
      */
     public OptionsOperator() {
-        super(Bundle.getString("org.netbeans.core.Bundle", 
-                               "UI/Services")); 
-    } 
-    /** 
+        super(getTitleToFind());
+        setDefaultStringComparator(oldComparator);
+    }
+    
+    private static StringComparator oldComparator;
+
+    /** Method to set exactly matching comparator to be used in constructor.
+     * @return "Options" - title of window to be found
+     */
+    private static String getTitleToFind() {
+        oldComparator = Operator.getDefaultStringComparator();
+        DefaultStringComparator comparator = new DefaultStringComparator(true, true);
+        setDefaultStringComparator(comparator);
+        return Bundle.getString("org.netbeans.core.Bundle", "UI/Services"); 
+    }
+    /**
      * Invoces Options window by the menu operation.
+     * @return OptionsOperator instance
      */
     public static OptionsOperator invoke() {
         invokeAction.perform();
@@ -99,9 +112,9 @@ public class OptionsOperator extends NbFrameOperator {
 
     //subcomponents
 
-    /**
-     * Getter for table containing property list and
+    /** Getter for table containing property list and
      * property definition levels.
+     * @return TreeTableOperator instance
      */
     public TreeTableOperator treeTable() {
         if(_treeTable == null) {
@@ -110,8 +123,8 @@ public class OptionsOperator extends NbFrameOperator {
         return _treeTable;
     }
 
-    /**
-     * Getter for close button.
+    /** Getter for close button.
+     * @return JButtonOperator instance
      */
     public JButtonOperator btClose() {
         if(_btClose == null) {
@@ -124,8 +137,8 @@ public class OptionsOperator extends NbFrameOperator {
         return _btClose;
     }
 
-    /**
-     * Getter for help button.
+    /** Getter for help button.
+     * @return JButtonOperator instance
      */
     public JButtonOperator btHelp() {
         if(_btHelp == null) {
@@ -140,9 +153,9 @@ public class OptionsOperator extends NbFrameOperator {
 
 
     //shortcuts
-    /**
-     * Selects an option in the options tree.
+    /** Selects an option in the options tree.
      * @param optionPath Path to the option in left (tree-like) column.
+     * @return row index of selected node (starts at 0)
      */
     public int selectOption(String optionPath) {
         TreePath path = treeTable().tree().findPath(optionPath, "|");
@@ -234,22 +247,22 @@ public class OptionsOperator extends NbFrameOperator {
         return -1;
     }
 
-    /**
-     * Make an option to be difined on the project level.
+    /** Make an option to be difined on the project level.
+     * @param optionPath Path to the option in left (tree-like) column.
      */
     public void setProjectLevel(String optionPath) {
         setLevel(optionPath, PROJECT_LEVEL);
     }
 
-    /**
-     * Make an option to be difined on the user level.
+    /** Make an option to be difined on the user level.
+     * @param optionPath Path to the option in left (tree-like) column.
      */
     public void setUserLevel(String optionPath) {
         setLevel(optionPath, USER_LEVEL);
     }
 
-    /**
-     * Make an option to be difined on the default level.
+    /** Make an option to be difined on the default level.
+     * @param optionPath Path to the option in left (tree-like) column.
      */
     public void setDefaultLevel(String optionPath) {
         setLevel(optionPath, DEFAULT_LEVEL);
@@ -258,8 +271,9 @@ public class OptionsOperator extends NbFrameOperator {
 
     //protected
 
-    /**
-     * Sets a level for the row index.
+    /** Sets a level for the row index.
+     * @param row row index in the table
+     * @param level level value
      */
     protected void setLevel(int row, int level) {
         if       (level == PROJECT_LEVEL) {
@@ -271,8 +285,10 @@ public class OptionsOperator extends NbFrameOperator {
         }
     }
 
-    /**
-     * Gets a value of the level definition mark.
+    /** Gets a value of the level definition mark.
+     * @param row row index in the table
+     * @param column column index in the table
+     * @return value of the level definition mark
      */
     protected int getValue(int row, int column) {
         try { 
@@ -285,16 +301,18 @@ public class OptionsOperator extends NbFrameOperator {
         }
     }
 
-    /**
-     * Chooses "Revert Def" from the combobox.
+    /** Chooses "Revert Def" from the combobox.
+     * @param row row index in the table
+     * @param colIndex column index in the table
      */
     protected void revertLevel(final int row, final int colIndex) {
         editLevel(row, colIndex, Bundle.getString("org.netbeans.core.projects.Bundle", 
                                                   "LBL_action_revert"));
     }
 
-    /**
-     * Chooses "Define Here" from the combobox.
+    /** Chooses "Define Here" from the combobox.
+     * @param row row index in the table
+     * @param colIndex column index in the table
      */
     protected void defineHere(int row, int colIndex) {
         editLevel(row, colIndex, Bundle.getString("org.netbeans.core.projects.Bundle", 
@@ -302,7 +320,7 @@ public class OptionsOperator extends NbFrameOperator {
     }
 
     /**
-     * Causes table aditing and chooses a vlue in the combobox.
+     * Causes table editing and chooses a value in the combobox.
      * @param rowIndex Row index.
      * @param colIndex Column index. One of the columns containing 
      * level definition marks.

@@ -25,6 +25,7 @@ import org.netbeans.jemmy.drivers.input.KeyRobotDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.util.EmptyVisualizer;
 
 import org.openide.util.actions.SystemAction;
 
@@ -288,7 +289,20 @@ public class Action {
         } catch (Exception e) {
             throw new JemmyException("Sleeping interrupted", e);
         }
+        Operator.ComponentVisualizer treeVisualizer = nodes[0].tree().getVisualizer();
+        Operator.ComponentVisualizer oldVisualizer = null;
+        // If visualizer of JTreeOperator is EmptyVisualizer, we need
+        // to avoid making tree component visible in callPopup method.
+        // So far only known case is tree from TreeTableOperator.
+        if(treeVisualizer instanceof EmptyVisualizer) {
+            oldVisualizer = Operator.getDefaultComponentVisualizer();
+            Operator.setDefaultComponentVisualizer(treeVisualizer);
+        }
         JPopupMenuOperator popup=new JPopupMenuOperator(nodes[0].tree().callPopupOnPaths(paths));
+        // restore previously used default visualizer
+        if(oldVisualizer != null) {
+            Operator.setDefaultComponentVisualizer(oldVisualizer);
+        }
         popup.setComparator(new Operator.DefaultStringComparator(false, true));
         popup.pushMenu(popupPath, "|");
         try {

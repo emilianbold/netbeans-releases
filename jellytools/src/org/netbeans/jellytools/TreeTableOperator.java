@@ -35,29 +35,29 @@ import org.netbeans.jemmy.util.EmptyVisualizer;
 public class TreeTableOperator extends JTableOperator {
     
     private JTreeOperator _tree;
-
-    /**
-     * Creates new instance.
+    
+    /** Creates new instance.
+     * @param view JTable representing requested TreeTable
      */    
     public TreeTableOperator(JTable view) {
         super(view);
     }
     
-    /**
-     * Creates new instance for the first TreeTable in container.
+    /** Creates new instance for the first TreeTable in container.
+     * @param contOper container where to find TreeTable
      */
-    public TreeTableOperator(ContainerOperator cont) {
+    public TreeTableOperator(ContainerOperator contOper) {
 	this((JTable)
-	     waitComponent(cont, 
+	     waitComponent(contOper, 
 			   new TreeTableFinder(ComponentSearcher.
                                                getTrueChooser("Any TreeTable")),
 			   0));
-	copyEnvironment(cont);
+	copyEnvironment(contOper);
     }
 
-    /**
-     * Returns operator for a tree which is showed as a part of
+    /** Returns operator for a tree which is showed as a part of
      * the table.
+     * @return JTreeOperator instance
      */
     public JTreeOperator tree() {
         if(_tree == null) {
@@ -69,6 +69,9 @@ public class TreeTableOperator extends JTableOperator {
             _tree = new JTreeOperator(jTree);
             _tree.setVisualizer(new EmptyVisualizer());
         }
+        // Everytime make parent container visible because tree has EmptyVisualizer
+        // and it is need for example for popup menu operations on JTree
+        makeComponentVisible();
         return _tree;
     }
 
