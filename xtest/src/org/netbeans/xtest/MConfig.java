@@ -21,6 +21,13 @@ package org.netbeans.xtest;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.Iterator;
+import java.util.HashSet;
+import java.io.File;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Ant;
+
 //import org.apache.tools.ant.types.PatternSet;
 
 /**
@@ -31,12 +38,26 @@ import java.util.Hashtable;
 public class MConfig {
     
     private Hashtable mcfg;
+    private Hashtable prop;
+    private Setup setup;
+    private Hashtable setuptable;
     
     /** Creates new Config */
     public MConfig(Hashtable cfg) {        
         this.mcfg = cfg;
     }
 
+    public void setProperties(Hashtable t) {
+        prop = t;
+    }
+    
+    public Hashtable getProperties(String module) {
+        Hashtable properties = (Hashtable) prop.get(module);
+        if (null != properties)
+            return properties;
+        return null;
+    } 
+    
     public Enumeration getModules() {
         return mcfg.keys();
     }
@@ -48,6 +69,23 @@ public class MConfig {
             return types.elements();
         
         return null;
+    }
+    
+    public void setConfigSetup(Setup setup) {
+        this.setup = setup;
+    }
+    
+    public Setup getConfigSetup() {
+        return setup;
+    }
+    
+    public void setSetups(Hashtable setuptable) {
+        this.setuptable = setuptable;
+    }
+     
+    public Setup getSetup(String module) {
+        Setup msetup = (Setup) setuptable.get(module); 
+        return msetup;
     }
     
     public static class Test {
@@ -75,9 +113,44 @@ public class MConfig {
         public void setAttributes(String [] attr) {
             attribs = attr;
         }
-
+ 
         public String getType() {
             return type;
         }
     }
+    
+    public static class Setup {
+        private File startFile, stopFile;
+        private String startTarget, stopTarget;
+        
+        public void setStart(File startFile, String startTarget) {
+            this.startFile = startFile;
+            this.startTarget = startTarget;
+        }
+        
+        public void setStop(File stopFile, String stopTarget) {
+            this.stopFile = stopFile;
+            this.stopTarget = stopTarget;
+        }
+        
+        public File getStartAntfile() {
+            return startFile;
+        }
+        
+        public File getStopAntfile() {
+            return stopFile;
+        }
+        
+        public String getStartTarget() {
+            return startTarget;
+        }
+        
+        public String getStopTarget() {
+            return stopTarget;
+        }
+    }
+    
+    
+     
+        
 }
