@@ -67,7 +67,7 @@ public class RootNode extends DatabaseNode {
     }
 
     public boolean canRename() {
-        return true;
+        return false;
     }
     
     /**
