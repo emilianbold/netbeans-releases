@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.openide.util.actions.Presenter;
@@ -27,31 +28,24 @@ import java.awt.event.ActionEvent;
  * option for numeric variables.
  * Provides the popup action and filters displayed values.
  *
- * @author Maros Sandor
+ * @author Maros Sandor, Jan Jancura
  */
-class NumericDisplayFilter implements TableModelFilter, 
-NodeActionsProviderFilter {
+public class NumericDisplayFilter implements TableModelFilter, 
+NodeActionsProviderFilter, Constants {
 
-    private final Map   variableToDisplaySettings;
-    private String      columnID;
+    private final Map   variableToDisplaySettings = new HashMap ();
     private HashSet     listeners;
 
-    /**
-     *
-     * @param columnID The column ID to filter, 
-     * see {@link org.netbeans.spi.debugger.ui.Constants}
-     */
-    NumericDisplayFilter (String columnID) {
-        this.columnID = columnID;
-        variableToDisplaySettings = new HashMap (1);
-    }
+    
+    // TableModelFilter ........................................................
 
     public Object getValueAt (
         TableModel original, 
         Object node, 
         String columnID
     ) throws UnknownTypeException {
-        if (columnID == this.columnID && 
+        if ( (columnID == Constants.WATCH_VALUE_COLUMN_ID ||
+              columnID == Constants.LOCALS_VALUE_COLUMN_ID) && 
             node instanceof Variable && 
             isIntegralType ((Variable) node)
         ) {
@@ -64,6 +58,72 @@ NodeActionsProviderFilter {
         return original.getValueAt (node, columnID);
     }
 
+    public boolean isReadOnly (
+        TableModel original, 
+        Object node, 
+        String columnID
+    ) throws UnknownTypeException {
+        return original.isReadOnly(node, columnID);
+    }
+
+    public void setValueAt (
+        TableModel original, 
+        Object node, 
+        String columnID, 
+        Object value
+    ) throws UnknownTypeException {
+        original.setValueAt(node, columnID, value);
+    }
+
+    public void addTreeModelListener (TreeModelListener l) {
+        HashSet newListeners = (listeners == null) ? 
+            new HashSet () : (HashSet) listeners.clone ();
+        newListeners.add (l);
+        listeners = newListeners;
+    }
+
+    public void removeTreeModelListener (TreeModelListener l) {
+        if (listeners == null) return;
+        HashSet newListeners = (HashSet) listeners.clone();
+        newListeners.remove (l);
+        listeners = newListeners;
+    }
+
+    
+    // NodeActionsProviderFilter ...............................................
+
+    public void performDefaultAction (
+        NodeActionsProvider original, 
+        Object node
+    ) throws UnknownTypeException {
+        original.performDefaultAction (node);
+    }
+
+    public Action[] getActions (
+        NodeActionsProvider original, 
+        Object node
+    ) throws UnknownTypeException {
+        if (!(node instanceof Variable)) return original.getActions(node);
+        Action [] actions;
+        try {
+            actions = original.getActions(node);
+        } catch (UnknownTypeException e) {
+            actions = new Action[0];
+        }
+        List myActions = new ArrayList();
+        if (node instanceof Variable) {
+            Variable var = (Variable) node;
+            if (isIntegralType(var)) {
+                myActions.add(new DisplayAsAction((Variable) node));
+            }
+        }
+        myActions.addAll(Arrays.asList(actions));
+        return (Action[]) myActions.toArray(new Action[myActions.size()]);
+    }
+
+    
+    // other methods ...........................................................
+    
     private Object getValue (Variable var, NumericDisplaySettings settings) {
         if (settings == null) return var.getValue ();
         String type = var.getType ();
@@ -143,55 +203,6 @@ NodeActionsProviderFilter {
             type.equals ("short"));
     }
 
-    public boolean isReadOnly (
-        TableModel original, 
-        Object node, 
-        String columnID
-    ) throws UnknownTypeException {
-        return original.isReadOnly(node, columnID);
-    }
-
-    public void setValueAt (
-        TableModel original, 
-        Object node, 
-        String columnID, 
-        Object value
-    ) throws UnknownTypeException {
-        original.setValueAt(node, columnID, value);
-    }
-
-    public void perform(String action, Object node) {
-    }
-
-    public void performDefaultAction (
-        NodeActionsProvider original, 
-        Object node
-    ) throws UnknownTypeException {
-        original.performDefaultAction (node);
-    }
-
-    public Action[] getActions (
-        NodeActionsProvider original, 
-        Object node
-    ) throws UnknownTypeException {
-        if (!(node instanceof Variable)) return original.getActions(node);
-        Action [] actions;
-        try {
-            actions = original.getActions(node);
-        } catch (UnknownTypeException e) {
-            actions = new Action[0];
-        }
-        List myActions = new ArrayList();
-        if (node instanceof Variable) {
-            Variable var = (Variable) node;
-            if (isIntegralType(var)) {
-                myActions.add(new DisplayAsAction((Variable) node));
-            }
-        }
-        myActions.addAll(Arrays.asList(actions));
-        return (Action[]) myActions.toArray(new Action[myActions.size()]);
-    }
-
     private String localize(String s) {
         return NbBundle.getBundle(NumericDisplayFilter.class).getString(s);
     }
@@ -209,28 +220,45 @@ NodeActionsProviderFilter {
         }
 
         public JMenuItem getPopupPresenter() {
-            JMenu displayAsPopup = new JMenu(localize("CTL_Variable_DisplayAs_Popup"));
+            JMenu displayAsPopup = new JMenu 
+                (localize ("CTL_Variable_DisplayAs_Popup"));
 
-            JRadioButtonMenuItem decimalItem = new JRadioButtonMenuItem(new AbstractAction(localize("CTL_Variable_DisplayAs_Decimal")) {
-                public void actionPerformed(ActionEvent e) {
-                    onDisplayAs(NumericDisplaySettings.DECIMAL);
+            JRadioButtonMenuItem decimalItem = new JRadioButtonMenuItem (
+                new AbstractAction (
+                    localize ("CTL_Variable_DisplayAs_Decimal")
+                ) {
+                    public void actionPerformed (ActionEvent e) {
+                        onDisplayAs (NumericDisplaySettings.DECIMAL);
+                    }
                 }
-            });
-            JRadioButtonMenuItem hexadecimalItem = new JRadioButtonMenuItem(new AbstractAction(localize("CTL_Variable_DisplayAs_Hexadecimal")) {
-                public void actionPerformed(ActionEvent e) {
-                    onDisplayAs(NumericDisplaySettings.HEXADECIMAL);
+            );
+            JRadioButtonMenuItem hexadecimalItem = new JRadioButtonMenuItem (
+                new AbstractAction (
+                    localize ("CTL_Variable_DisplayAs_Hexadecimal")
+                ) {
+                    public void actionPerformed (ActionEvent e) {
+                        onDisplayAs (NumericDisplaySettings.HEXADECIMAL);
+                    }
                 }
-            });
-            JRadioButtonMenuItem octalItem = new JRadioButtonMenuItem(new AbstractAction(localize("CTL_Variable_DisplayAs_Octal")) {
-                public void actionPerformed(ActionEvent e) {
-                    onDisplayAs(NumericDisplaySettings.OCTAL);
+            );
+            JRadioButtonMenuItem octalItem = new JRadioButtonMenuItem (
+                new AbstractAction (
+                    localize ("CTL_Variable_DisplayAs_Octal")
+                ) {
+                    public void actionPerformed (ActionEvent e) {
+                        onDisplayAs (NumericDisplaySettings.OCTAL);
+                    }
                 }
-            });
-            JRadioButtonMenuItem binaryItem = new JRadioButtonMenuItem (new AbstractAction(localize("CTL_Variable_DisplayAs_Binary")) {
-                public void actionPerformed(ActionEvent e) {
-                    onDisplayAs(NumericDisplaySettings.BINARY);
+            );
+            JRadioButtonMenuItem binaryItem = new JRadioButtonMenuItem (
+                new AbstractAction (
+                    localize ("CTL_Variable_DisplayAs_Binary")
+                ) {
+                    public void actionPerformed (ActionEvent e) {
+                        onDisplayAs (NumericDisplaySettings.BINARY);
+                    }
                 }
-            });
+            );
             JRadioButtonMenuItem charItem = new JRadioButtonMenuItem (
                 new AbstractAction (
                     localize ("CTL_Variable_DisplayAs_Character")
@@ -242,7 +270,7 @@ NodeActionsProviderFilter {
             );
 
             NumericDisplaySettings lds = (NumericDisplaySettings) 
-                variableToDisplaySettings.get(variable);
+                variableToDisplaySettings.get (variable);
             if (lds != null) {
                 switch (lds.getDisplayAs ()) {
                 case NumericDisplaySettings.DECIMAL:
@@ -307,25 +335,11 @@ NodeActionsProviderFilter {
         }
     }
 
-    private void fireModelChanged() {
+    private void fireModelChanged () {
         if (listeners == null) return;
         for (Iterator i = listeners.iterator (); i.hasNext ();) {
-            TreeModelListener listener = (TreeModelListener) i.next();
+            TreeModelListener listener = (TreeModelListener) i.next ();
             listener.treeChanged ();
         }
-    }
-
-    public void addTreeModelListener (TreeModelListener l) {
-        HashSet newListeners = (listeners == null) ? 
-            new HashSet () : (HashSet) listeners.clone ();
-        newListeners.add (l);
-        listeners = newListeners;
-    }
-
-    public void removeTreeModelListener (TreeModelListener l) {
-        if (listeners == null) return;
-        HashSet newListeners = (HashSet) listeners.clone();
-        newListeners.remove (l);
-        listeners = newListeners;
     }
 }

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.util.WeakHashMap;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
@@ -34,6 +35,7 @@ import org.openide.NotifyDescriptor;
  * @author   Jan Jancura
  */
 public class VariablesTableModel implements TableModel, Constants {
+
     
     public Object getValueAt (Object row, String columnID) throws 
     UnknownTypeException {
@@ -47,13 +49,19 @@ public class VariablesTableModel implements TableModel, Constants {
 
             if (row instanceof ObjectVariable)
                 try {
-                    return ((ObjectVariable) row).getToStringValue ();
+                    return bold (
+                        row,
+                        ((ObjectVariable) row).getToStringValue ()
+                    );
                 } catch (InvalidExpressionException ex) {
                     return getMessage (ex);
                 }
             else
             if (row instanceof Variable)
-                return ((Variable) row).getValue ();
+                return bold (
+                    row, 
+                    ((Variable) row).getValue ()
+                );
         } else
         if ( columnID.equals (LOCALS_TYPE_COLUMN_ID) ||
              columnID.equals (WATCH_TYPE_COLUMN_ID)
@@ -69,10 +77,10 @@ public class VariablesTableModel implements TableModel, Constants {
                 String e = w.getExceptionDescription ();
                 if (e != null)
                     return ">" + e + "<";
-                return w.getValue ();
+                return bold (w, w.getValue ());
             } else 
             if (row instanceof Variable)
-                return ((Variable) row).getValue ();
+                return bold (row, ((Variable) row).getValue ());
         }
         throw new UnknownTypeException (row);
     }
@@ -179,5 +187,29 @@ public class VariablesTableModel implements TableModel, Constants {
         if (m == null)
             m = e.getMessage ();
         return ">" + m + "<";
+    }
+    
+    private WeakHashMap variableToValue = new WeakHashMap ();
+    
+    private String bold (Object variable, String value) {
+        return value;
+//        if (variableToValue.containsKey (variable)) {
+//            String oldValue = (String) variableToValue.get (variable);
+//            System.out.println("bold " + value + " : contains " + oldValue);
+//            Thread.dumpStack();
+//            System.out.println("");
+//            if (oldValue == value) return value;
+//            if ( (oldValue != null) && 
+//                 oldValue.equals (value)
+//            )   return value;
+//            variableToValue.put (variable, value);
+//            return "<html><b>" + value + "</b></html>";
+//        } else {
+//            System.out.println("bold " + value + " : new ");
+//            Thread.dumpStack();
+//            System.out.println("");
+//            variableToValue.put (variable, value);
+//            return "<html><b>" + value + "</b></html>";
+//        }
     }
 }

@@ -13,14 +13,20 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
+import java.beans.PropertyChangeListener;
+import java.util.List;
 import org.netbeans.api.debugger.*;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.*;
+import org.netbeans.modules.debugger.jpda.ui.models.BreakpointsNodeModel;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import org.netbeans.spi.viewmodel.NodeModel;
 
 /**
  * Listener on all breakpoints and prints text specified in the breakpoint when a it hits.
@@ -29,7 +35,8 @@ import java.util.regex.Matcher;
  * @author Maros Sandor
  */
 public class BreakpointOutput extends LazyActionsManagerListener
-        implements DebuggerManagerListener, JPDABreakpointListener {
+implements DebuggerManagerListener, JPDABreakpointListener,
+PropertyChangeListener {
 
     private static final Pattern dollarEscapePattern = Pattern.compile
         ("\\$");
@@ -55,20 +62,18 @@ public class BreakpointOutput extends LazyActionsManagerListener
         this.contextProvider = contextProvider;
         this.debugger = (JPDADebugger) contextProvider.lookupFirst 
             (null, JPDADebugger.class);
+        debugger.addPropertyChangeListener (
+            debugger.PROP_STATE,
+            this
+        );
         hookBreakpoints ();
         DebuggerManager.getDebuggerManager ().addDebuggerListener
             (DebuggerManager.PROP_BREAKPOINTS, this);
     }
-
-    private void hookBreakpoints () {
-        Breakpoint [] bpts = DebuggerManager.getDebuggerManager ().
-            getBreakpoints ();
-        for (int i = 0; i < bpts.length; i++) {
-            Breakpoint bpt = bpts [i];
-            hookBreakpoint (bpt);
-        }
-    }
-
+    
+    
+    // LazyActionsManagerListener ..............................................
+    
     protected void destroy () {
         DebuggerManager.getDebuggerManager ().removeDebuggerListener
             (DebuggerManager.PROP_BREAKPOINTS, this);
@@ -77,24 +82,23 @@ public class BreakpointOutput extends LazyActionsManagerListener
         debugger = null;
     }
 
-    private void unhookBreakpoints () {
-        Breakpoint [] bpts = DebuggerManager.getDebuggerManager ().
-            getBreakpoints ();
-        for (int i = 0; i < bpts.length; i++) {
-            Breakpoint bpt = bpts [i];
-            unhookBreakpoint (bpt);
-        }
+    public String[] getProperties () {
+        return new String[] { ActionsManagerListener.PROP_ACTION_PERFORMED };
     }
+    
+    
+    // JPDABreakpointListener ..................................................
 
     public void breakpointReached (JPDABreakpointEvent event) {
         if (event.getDebugger () != debugger) return;
         if (event.getConditionResult () == event.CONDITION_FAILED) return;
         if (event.getConditionResult () == event.CONDITION_FALSE) return;
+        JPDABreakpoint breakpoint = (JPDABreakpoint) event.getSource ();
+        getBreakpointsNodeModel ().setCurrentBreakpoint (breakpoint);
         if (ioManager == null) {
             lookupIOManager ();
             if (ioManager == null) return;
         }
-        JPDABreakpoint breakpoint = (JPDABreakpoint) event.getSource ();
         String printText = breakpoint.getPrintText ();
         if (printText == null || printText.length  () == 0) return;
         try {
@@ -105,6 +109,40 @@ public class BreakpointOutput extends LazyActionsManagerListener
         ioManager.println (printText, null);
     }
 
+    
+    // DebuggerManagerListener .................................................
+
+    public void breakpointAdded  (Breakpoint breakpoint) {
+        hookBreakpoint (breakpoint);
+    }
+
+    public void breakpointRemoved (Breakpoint breakpoint) {
+        unhookBreakpoint (breakpoint);
+    }
+    
+    public Breakpoint[] initBreakpoints () {return new Breakpoint[0];}
+    public void initWatches () {}
+    public void watchAdded (Watch watch) {}
+    public void watchRemoved (Watch watch) {}
+    public void sessionAdded (Session session) {}
+    public void sessionRemoved (Session session) {}
+    public void engineAdded (DebuggerEngine engine) {}
+    public void engineRemoved (DebuggerEngine engine) {}
+
+    
+    // PropertyChangeListener ..................................................
+    
+    public void propertyChange (PropertyChangeEvent evt) {
+        if ( evt.getPropertyName () == debugger.PROP_STATE &&
+             debugger.getState () == debugger.STATE_RUNNING
+        )
+            getBreakpointsNodeModel ().setCurrentBreakpoint (null);
+            
+    }
+
+    
+    // private methods .........................................................
+    
     /**
      *   threadName      name of thread where breakpoint ocurres
      *   className       name of class where breakpoint ocurres
@@ -192,40 +230,53 @@ public class BreakpointOutput extends LazyActionsManagerListener
             }
         }
     }
+    
+    private void hookBreakpoints () {
+        Breakpoint [] bpts = DebuggerManager.getDebuggerManager ().
+            getBreakpoints ();
+        for (int i = 0; i < bpts.length; i++) {
+            Breakpoint bpt = bpts [i];
+            hookBreakpoint (bpt);
+        }
+    }
+
+    private void unhookBreakpoints () {
+        Breakpoint [] bpts = DebuggerManager.getDebuggerManager ().
+            getBreakpoints ();
+        for (int i = 0; i < bpts.length; i++) {
+            Breakpoint bpt = bpts [i];
+            unhookBreakpoint (bpt);
+        }
+    }
 
     private void hookBreakpoint (Breakpoint breakpoint) {
         if (breakpoint instanceof JPDABreakpoint) {
             JPDABreakpoint jpdaBreakpoint = (JPDABreakpoint) breakpoint;
-            jpdaBreakpoint.addJPDABreakpointListener(this);
+            jpdaBreakpoint.addJPDABreakpointListener (this);
         }
     }
 
-    private void unhookBreakpoint(Breakpoint breakpoint) {
+    private void unhookBreakpoint (Breakpoint breakpoint) {
         if (breakpoint instanceof JPDABreakpoint) {
             JPDABreakpoint jpdaBreakpoint = (JPDABreakpoint) breakpoint;
             jpdaBreakpoint.removeJPDABreakpointListener (this);
         }
     }
-
-    public void breakpointAdded  (Breakpoint breakpoint) {
-        hookBreakpoint(breakpoint);
+    
+    private BreakpointsNodeModel breakpointsNodeModel;
+    private BreakpointsNodeModel getBreakpointsNodeModel () {
+        if (breakpointsNodeModel == null) {
+            List l = DebuggerManager.getDebuggerManager ().lookup
+                ("BreakpointsView", NodeModel.class);
+            Iterator it = l.iterator ();
+            while (it.hasNext ()) {
+                NodeModel nm = (NodeModel) it.next ();
+                if (nm instanceof BreakpointsNodeModel) {
+                    breakpointsNodeModel = (BreakpointsNodeModel) nm;
+                    break;
+                }
+            }
+        }
+        return breakpointsNodeModel;
     }
-
-    public void breakpointRemoved (Breakpoint breakpoint) {
-        unhookBreakpoint (breakpoint);
-    }
-
-    public String[] getProperties () {
-        return new String[] { ActionsManagerListener.PROP_ACTION_PERFORMED };
-    }
-
-    public void propertyChange (PropertyChangeEvent evt) {}
-    public Breakpoint[] initBreakpoints() {return new Breakpoint[0];}
-    public void initWatches () {}
-    public void watchAdded (Watch watch) {}
-    public void watchRemoved (Watch watch) {}
-    public void sessionAdded (Session session) {}
-    public void sessionRemoved (Session session) {}
-    public void engineAdded (DebuggerEngine engine) {}
-    public void engineRemoved (DebuggerEngine engine) {}
 }

@@ -67,20 +67,30 @@ public class ThreadsNodeModel implements NodeModel {
     
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
-            return NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_Column_Name_Name");
+            return NbBundle.getBundle (ThreadsNodeModel.class).getString
+                ("CTL_ThreadsModel_Column_Name_Name");
         } else
         if (o instanceof JPDAThread) {
-            return ((JPDAThread) o).getName ();
+            if (debugger.getCurrentThread () == o)
+                return "<html><b>" + ((JPDAThread) o).getName () + 
+                    "</b></html>";
+            else
+                return ((JPDAThread) o).getName ();
         } else
         if (o instanceof JPDAThreadGroup) {
-            return ((JPDAThreadGroup) o).getName ();
+            if (isCurrent ((JPDAThreadGroup) o))
+                return "<html><b>" + ((JPDAThreadGroup) o).getName () + 
+                    "</b></html>";
+            else
+                return ((JPDAThreadGroup) o).getName ();
         } else 
         throw new UnknownTypeException (o);
     }
     
     public String getShortDescription (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
-            return NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_Column_Name_Desc");
+            return NbBundle.getBundle (ThreadsNodeModel.class).getString
+                ("CTL_ThreadsModel_Column_Name_Desc");
         } else
         if (o instanceof JPDAThread) {
             JPDAThread t = (JPDAThread) o;
@@ -88,43 +98,56 @@ public class ThreadsNodeModel implements NodeModel {
             String s = "";
             switch (i) {
                 case JPDAThread.STATE_UNKNOWN:
-                    s = NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_State_Unknown");
+                    s = NbBundle.getBundle (ThreadsNodeModel.class).getString
+                        ("CTL_ThreadsModel_State_Unknown");
                     break;
                 case JPDAThread.STATE_MONITOR:
                     ObjectVariable ov = t.getContendedMonitor ();
                     if (ov == null)
-                        s = NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_State_Monitor");
+                        s = NbBundle.getBundle (ThreadsNodeModel.class).
+                            getString ("CTL_ThreadsModel_State_Monitor");
                     else
                         try {
-                            s = java.text.MessageFormat.format(NbBundle.getBundle(ThreadsNodeModel.class).getString(
-                                    "CTL_ThreadsModel_State_ConcreteMonitor"), new Object [] { ov.getToStringValue() });
+                            s = java.text.MessageFormat.
+                                format (
+                                    NbBundle.getBundle (ThreadsNodeModel.class).
+                                        getString (
+                                    "CTL_ThreadsModel_State_ConcreteMonitor"), 
+                                    new Object [] { ov.getToStringValue () });
                         } catch (InvalidExpressionException ex) {
                             s = ex.getLocalizedMessage ();
                         }
                     break;
                 case JPDAThread.STATE_NOT_STARTED:
-                    s = NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_State_NotStarted");
+                    s = NbBundle.getBundle (ThreadsNodeModel.class).getString
+                        ("CTL_ThreadsModel_State_NotStarted");
                     break;
                 case JPDAThread.STATE_RUNNING:
-                    s = NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_State_Running");
+                    s = NbBundle.getBundle (ThreadsNodeModel.class).getString
+                        ("CTL_ThreadsModel_State_Running");
                     break;
                 case JPDAThread.STATE_SLEEPING:
-                    s = NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_State_Sleeping");
+                    s = NbBundle.getBundle (ThreadsNodeModel.class).getString
+                        ("CTL_ThreadsModel_State_Sleeping");
                     break;
                 case JPDAThread.STATE_WAIT:
                     ov = t.getContendedMonitor ();
                     if (ov == null)
-                        s = NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_State_Waiting");
+                        s = NbBundle.getBundle (ThreadsNodeModel.class).
+                            getString ("CTL_ThreadsModel_State_Waiting");
                     else
                         try {
-                            s = java.text.MessageFormat.format(NbBundle.getBundle(ThreadsNodeModel.class).getString(
-                                    "CTL_ThreadsModel_State_WaitingOn"), new Object [] { ov.getToStringValue() });
+                            s = java.text.MessageFormat.format
+                                (NbBundle.getBundle (ThreadsNodeModel.class).
+                                getString ("CTL_ThreadsModel_State_WaitingOn"), 
+                                new Object [] { ov.getToStringValue () });
                         } catch (InvalidExpressionException ex) {
                             s = ex.getLocalizedMessage ();
                         }
                     break;
                 case JPDAThread.STATE_ZOMBIE:
-                    s = NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_State_Zombie");
+                    s = NbBundle.getBundle (ThreadsNodeModel.class).getString
+                        ("CTL_ThreadsModel_State_Zombie");
                     break;
             }
             if (t.isSuspended () && (t.getStackDepth () > 0)) {
@@ -154,15 +177,10 @@ public class ThreadsNodeModel implements NodeModel {
             
         } else
         if (o instanceof JPDAThreadGroup) {
-            JPDAThread t = debugger.getCurrentThread ();
-            if (t == null)
+            if (isCurrent ((JPDAThreadGroup) o))
+                return CURRENT_THREAD_GROUP;
+            else
                 return THREAD_GROUP;
-            JPDAThreadGroup tg = t.getParentThreadGroup ();
-            while (tg != null) {
-                if (tg == o) return CURRENT_THREAD_GROUP;
-                tg = tg.getParentThreadGroup ();
-            }
-            return THREAD_GROUP;
         } else 
         throw new UnknownTypeException (o);
     }
@@ -195,6 +213,18 @@ public class ThreadsNodeModel implements NodeModel {
         int i, k = v.size ();
         for (i = 0; i < k; i++)
             ((TreeModelListener) v.get (i)).treeNodeChanged (parent);
+    }
+    
+    private boolean isCurrent (JPDAThreadGroup tg) {
+        JPDAThread t = debugger.getCurrentThread ();
+        if (t == null)
+            return false;
+        JPDAThreadGroup ctg = t.getParentThreadGroup ();
+        while (ctg != null) {
+            if (ctg == tg) return true;
+            ctg = ctg.getParentThreadGroup ();
+        }
+        return false;
     }
 
     

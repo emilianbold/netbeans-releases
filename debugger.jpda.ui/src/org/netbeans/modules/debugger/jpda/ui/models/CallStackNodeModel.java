@@ -57,10 +57,16 @@ public class CallStackNodeModel implements NodeModel {
     
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
-            return NbBundle.getBundle(CallStackNodeModel.class).getString("CTL_CallstackModel_Column_Name_Name");
+            return NbBundle.getBundle (CallStackNodeModel.class).getString
+                ("CTL_CallstackModel_Column_Name_Name");
         } else
         if (o instanceof CallStackFrame) {
             CallStackFrame sf = (CallStackFrame) o;
+            CallStackFrame ccsf = debugger.getCurrentCallStackFrame ();
+            if ( (ccsf != null) && 
+                 (ccsf.equals (sf)) 
+            ) return "<html><b>" + getCSFName (session, sf, false) + 
+                "</b></html>";
             return getCSFName (session, sf, false);
         } else
         throw new UnknownTypeException (o);
@@ -68,7 +74,8 @@ public class CallStackNodeModel implements NodeModel {
     
     public String getShortDescription (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
-            return NbBundle.getBundle(CallStackNodeModel.class).getString("CTL_CallstackModel_Column_Name_Desc");
+            return NbBundle.getBundle (CallStackNodeModel.class).getString
+                ("CTL_CallstackModel_Column_Name_Desc");
         } else
         if (o instanceof CallStackFrame) {
             CallStackFrame sf = (CallStackFrame) o;
