@@ -225,9 +225,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 
 	private PropertyChangeSupport getConnectionPCS()
 	{
-		if (pcs == null) {
+		if (pcs == null)
 			pcs = new PropertyChangeSupport(this);
-		}
 		
 		return pcs;
 	}
@@ -235,9 +234,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	/** Returns PropertyChangeSupport used for driver change monitoring */
 	private PropertyChangeSupport getDriverPCS()
 	{
-		if (driverpcs == null) {
+		if (driverpcs == null)
 			driverpcs = new PropertyChangeSupport(this);
-		}
 		
 		return driverpcs;
 	}
@@ -259,10 +257,21 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	public Object put(Object key, Object obj)
 	{
 		Object old = get(key);
-		if (key == null) throw new NullPointerException();
-		if (obj != null) super.put(key, obj);
-		else remove(key);
-		if (getDriverPCSKeys().contains(key)) getDriverPCS().firePropertyChange((String)key, old, obj);		
+		
+		if (key == null)
+		  throw new NullPointerException();
+		  
+		if (obj != null)
+		  super.put(key, obj);
+		else
+		  remove(key);
+		  
+		if (getDriverPCSKeys().contains(key))
+		  getDriverPCS().firePropertyChange((String)key, old, obj);
+    else
+  		if (key.equals(DATABASE))
+  			getConnectionPCS().firePropertyChange(DATABASE, old, obj);
+
 		return old;
 	}
 
@@ -648,6 +657,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 }
 /*
  * <<Log>>
+ *  17   Gandalf   1.16        11/8/99  Radko Najman    ConnectionNode name 
+ *       refresh
  *  16   Gandalf   1.15        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  15   Gandalf   1.14        9/13/99  Slavek Psenicka 
