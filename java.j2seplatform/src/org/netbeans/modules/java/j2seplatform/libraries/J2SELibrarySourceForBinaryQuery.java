@@ -48,6 +48,10 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         if (res != null) {
             return res;
         }
+        FileObject binaryFo = URLMapper.findFileObject(binaryRoot);
+        if (binaryFo == null) {
+            return null;
+        }
         LibraryManager lm = LibraryManager.getDefault ();
         Library[] libs = lm.getLibraries();
         for (int i=0; i< libs.length; i++) {
@@ -56,7 +60,8 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                 List classes = libs[i].getContent("classpath");    //NOI18N
                 for (Iterator it = classes.iterator(); it.hasNext();) {
                     URL entry = (URL) it.next();
-                    if (entry.equals(binaryRoot)) {
+                    FileObject entryFo = URLMapper.findFileObject(entry);
+                    if (entryFo != null && entryFo.equals(binaryFo)) {
                         res =  new Result(entry, libs[i]);
                         cache.put (binaryRoot, res);
                         return res;
