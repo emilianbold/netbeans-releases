@@ -13,10 +13,9 @@
 
 package org.openide.windows;
 
-import java.io.Reader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-
+import java.io.Reader;
 import org.openide.util.io.NullOutputStream;
 import org.openide.util.io.NullInputStream;
 
@@ -106,7 +105,7 @@ public interface InputOutput {
     /** Set whether the error output should be mixed into the regular output or not.
     * Note that this method is optional and is not supported by either of the
     * current implementations of InputOutput (core/output and core/output2).
-    * @return <code>true</code> to separate, <code>false</code> to mix in
+    * @param value <code>true</code> to separate, <code>false</code> to mix in
     */
     public void setErrSeparated(boolean value);
 
@@ -120,7 +119,7 @@ public interface InputOutput {
     * <strong>Note that this really means the output window will steal keyboard
     * focus whenever a line of output is written.  This is generally an extremely
     * bad idea and strongly recommended against by most UI guidelines.</strong> 
-    * @return <code>true</code> to take focus
+    * @param value <code>true</code> to take focus
     */
     public void setFocusTaken(boolean value);
 
