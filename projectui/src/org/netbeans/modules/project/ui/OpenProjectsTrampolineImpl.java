@@ -22,7 +22,7 @@ import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 
 /**
  * List of projects open in the GUI.
- * @author Jesse Glick, Petr Hrebejk
+ * @author Petr Hrebejk
  */
 public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline, PropertyChangeListener  {
     

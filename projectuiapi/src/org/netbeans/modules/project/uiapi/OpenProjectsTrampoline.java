@@ -18,7 +18,7 @@ import org.netbeans.api.project.Project;
 
 /**
  * List of projects open in the GUI.
- * @author Jesse Glick, Petr Hrebejk
+ * @author Petr Hrebejk
  */
 public interface OpenProjectsTrampoline {
     

@@ -45,7 +45,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * List of projects open in the GUI.
- * @author Jesse Glick, Petr Hrebejk
+ * @author Petr Hrebejk
  */
 public final class OpenProjectList {
     
