@@ -731,17 +731,23 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     //
     // Repository listener changes
     //
+    
+    /** All filesystems removed from repository, until GCed */
+    private static WeakSet fsRemovedFromRepository = new WeakSet ();
+    
     /** Called when new file system is added to the pool.
      * @param ev event describing the action
      */
     public void fileSystemAdded(RepositoryEvent ev) {
         ev.getFileSystem().addPropertyChangeListener( getPOOL() );
+        fsRemovedFromRepository.remove (ev.getFileSystem ());
     }
     /** Called when a file system is removed from the pool.
      * @param ev event describing the action
      */
     public void fileSystemRemoved(RepositoryEvent ev) {
         ev.getFileSystem().removePropertyChangeListener( getPOOL() );
+        fsRemovedFromRepository.add (ev.getFileSystem ());
         removeInvalidObjects();
     }
 
@@ -1055,10 +1061,6 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
                 refusingObjects = new HashSet ();
                 createdFiles = new HashSet ();
 
-                HashSet allFS = new HashSet (java.util.Arrays.asList(
-                                                 Repository.getDefault().toArray()
-                                             ));
-
                 DataLoaderPool pool = (DataLoaderPool)Lookup.getDefault().lookup (DataLoaderPool.class);
                 Iterator it = s.iterator ();
                 while (it.hasNext () && goOn ()) {
@@ -1069,7 +1071,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
                             boolean invalidate;
                             try {
                                 FileSystem fs = fo.getFileSystem ();
-                                invalidate = !allFS.contains (fs);
+                                invalidate = fsRemovedFromRepository.contains (fs);
                             } catch (FileStateInvalidException ex) {
                                 invalidate = true;
                             }
@@ -1137,11 +1139,6 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         void removeInvalidObject(Set files) {
             try {
                 files = enter(files);
-                HashSet allFS = new HashSet();
-                FileSystem[] fss = Repository.getDefault().toArray();
-                for (int i = 0; i < fss.length; i++) {
-                    allFS.add(fss[i]);
-                }
                 
                 Iterator it = files.iterator();
                 while (it.hasNext() && goOn()) {
@@ -1151,7 +1148,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
                     if ( !invalidate ) {
                         try {
                             FileSystem fs = fo.getFileSystem ();
-                            invalidate = !allFS.contains (fs);
+                            invalidate = fsRemovedFromRepository.contains (fs);
                         } catch (FileStateInvalidException ex) {
                             invalidate = true;
                         }

@@ -29,7 +29,6 @@ import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.RequestProcessor;
 import org.openide.util.enum.ArrayEnumeration;
 import org.openide.util.enum.FilterEnumeration;
 import org.openide.util.enum.SingletonEnumeration;
@@ -122,14 +121,8 @@ implements java.io.Serializable {
         // could fire on given array, modifications will copy it out before
 	for (int i = list.length-2; i>=0; i-=2) {
 	    if (list[i] == ChangeListener.class) {
-                final ChangeListener l = (ChangeListener)list[i+1];
-                // separates the task to small pieces not to slow down the
-                // rest of the IDE
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run () {
-                        l.stateChanged(che);
-                    }
-                });
+                ChangeListener l = (ChangeListener)list[i+1];
+                l.stateChanged(che);
             }
         }
     }
