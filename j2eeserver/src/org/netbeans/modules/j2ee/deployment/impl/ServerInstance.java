@@ -24,7 +24,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressMonitor;
 import org.openide.filesystems.*;
-import org.openide.util.RequestProcessor;
 import org.openide.cookies.InstanceCookie;
 import java.util.*;
 import java.io.*;
@@ -119,7 +118,7 @@ public class ServerInstance implements Node.Cookie {
             
             targets = new HashMap();
             for (int i = 0; i < targs.length; i++) {
-                System.out.println("getTargetMap: targ["+i+"]="+targs[i]);
+                //System.out.println("getTargetMap: targ["+i+"]="+targs[i]);
                 targets.put(targs[i].getName(), new ServerTarget(this, targs[i]));
             }
         }
@@ -271,7 +270,7 @@ public class ServerInstance implements Node.Cookie {
     public void start() {
         if (isRunning())
             return;
-         
+        
         String title = NbBundle.getMessage(ServerInstance.class, "LBL_StartServerProgressMonitor", getUrl());
         DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
         ui.startProgressUI(10);
@@ -311,7 +310,7 @@ public class ServerInstance implements Node.Cookie {
                 return _startDebug(target, ui);
             }
             else if (isRunning()) {
-                System.out.println("INFO: Server "+getUrl()+" is already running!");
+                //System.out.println("INFO: Server "+getUrl()+" is already running!");
                 return true;
             } else {
                 return _start(ui);
@@ -338,6 +337,7 @@ public class ServerInstance implements Node.Cookie {
 //------------------------------------------------------------
     // startDeploymentManager
     private synchronized boolean _start(DeployProgressUI ui) {
+        
         DeployProgressUI.CancelHandler ch = getCancelHandler();
         ui.addCancelHandler(ch);
         
@@ -358,7 +358,7 @@ public class ServerInstance implements Node.Cookie {
             boolean done = sleep();
             if (! done) 
                 showStatusText(NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", url));
-            
+
             if (ui.checkCancelled() || ! done)
                 return false;
             

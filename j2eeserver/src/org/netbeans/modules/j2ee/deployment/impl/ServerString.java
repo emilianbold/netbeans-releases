@@ -23,6 +23,8 @@ public class ServerString implements java.io.Serializable {
     private final String instance;
     private final String[] targets;
     private final transient ServerInstance serverInstance;
+    private transient String[] theTargets;
+    private static final long serialVersionUID = 923457209372L;
     
     public ServerString(String plugin, String instance, String[] targets) {
         this.plugin = plugin; this.instance = instance; this.targets = targets; this.serverInstance = null;
@@ -39,6 +41,9 @@ public class ServerString implements java.io.Serializable {
         this.plugin = instance.getServer().getShortName();
         this.instance = instance.getUrl();
         this.serverInstance = instance;
+        if (! instance.isRunning())
+            return;
+        
         ServerTarget[] serverTargets;
         try {
             serverTargets = instance.getTargets();
@@ -69,9 +74,24 @@ public class ServerString implements java.io.Serializable {
     }
     
     public String[] getTargets() {
-        return targets;
+        return getTargets(false);
     }
-    
+
+    public String[] getTargets(boolean concrete) {
+        if (! concrete)
+            return targets;
+        if (targets.length > 0)
+            return targets;
+        if (theTargets != null)
+            return theTargets;
+        
+        ServerTarget[] serverTargets = getServerInstance().getTargets();
+        theTargets = new String[serverTargets.length];
+        for (int i=0; i<theTargets.length; i++)
+            theTargets[i] = serverTargets[i].getName();
+        return theTargets;
+    }
+
     public Server getServer() {
         return ServerRegistry.getInstance().getServer(plugin);
     }
@@ -96,9 +116,10 @@ public class ServerString implements java.io.Serializable {
     }
     
     public Target[] toTargets() {
-        Target[] ret = new Target[targets.length];
-        for (int i=0; i<targets.length; i++)
-            ret[i] = getServerInstance().getServerTarget(targets[i]).getTarget();
+        String[] targetNames = getTargets();
+        Target[] ret = new Target[targetNames.length];
+        for (int i=0; i<targetNames.length; i++)
+            ret[i] = getServerInstance().getServerTarget(targetNames[i]).getTarget();
         return ret;
     }
 }

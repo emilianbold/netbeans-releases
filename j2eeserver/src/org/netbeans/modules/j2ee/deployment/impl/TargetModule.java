@@ -28,6 +28,7 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
     private final String targetName;
     private long timestamp;
     private transient TargetModuleID delegate;
+    private static final long serialVersionUID = 69446832504L;
     
     private static final TargetModuleID[] EMPTY_TMID_ARRAY = new TargetModuleID[0];
     
@@ -45,9 +46,6 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
         this.instanceUrl = instanceUrl;
         this.targetName = targetName;
         this.timestamp = timestamp;
-    }
-    public TargetModule(String id, ServerString target, long timestamp) {
-        this(id, target.getUrl(), target.getTargets()[0], timestamp);
     }
 
     public String getId() { return id; }

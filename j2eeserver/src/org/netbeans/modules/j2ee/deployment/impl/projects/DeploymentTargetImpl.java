@@ -125,7 +125,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         if ( defaultTarget != null ) {
             for (int i=0; i<mods.length; i++) {
                 if (mods[i].getInstanceUrl().equals(defaultTarget.getUrl()) &&
-                    mods[i].getTargetName().equals(defaultTarget.getTargets()[0])) {
+                    mods[i].getTargetName().equals(defaultTarget.getTargets(true)[0])) {
                     execMod = mods[i];
                     break;
                 }
