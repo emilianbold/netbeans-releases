@@ -25,8 +25,9 @@ import javax.swing.UnsupportedLookAndFeelException;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.options.SystemOption;
-import org.openide.util.Utilities;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** Global IDE settings.
 *
@@ -211,6 +212,9 @@ public class IDESettings extends SystemOption {
     return NbBundle.getBundle(IDESettings.class).getString("CTL_IDESettings");
   }
 
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (IDESettings.class);
+  }
 
   /** Getter for Hashtable of loaded jars with beans in previous Netbeans session.
   * Names of Jars which are not in this table will be auto loaded in next Netbeans
@@ -233,6 +237,7 @@ public class IDESettings extends SystemOption {
 
 /*
  * Log
+ *  6    Gandalf   1.5         7/2/99   Jesse Glick     More help IDs.
  *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  4    Gandalf   1.3         4/8/99   Ian Formanek    Undone last change

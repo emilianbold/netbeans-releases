@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import org.openide.explorer.propertysheet.editors.ConstrainedModifiersEditor;
 import org.openide.src.nodes.ConstrainedModifiers;
 import org.openide.options.SystemOption;
+import org.openide.util.HelpCtx;
 
 /** Settings for form data loader.
 *
@@ -393,10 +394,15 @@ public class FormLoaderSettings extends SystemOption {
     return org.openide.util.NbBundle.getBundle (FormLoaderSettings.class).getString("CTL_FormSettings");
   }
 
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (FormLoaderSettings.class);
+  }
+
 }
 
 /*
  * Log
+ *  12   Gandalf   1.11        7/2/99   Jesse Glick     More help IDs.
  *  11   Gandalf   1.10        6/30/99  Ian Formanek    Variables modifier 
  *       property improved
  *  10   Gandalf   1.9         6/29/99  Ian Formanek    Individual variable 
