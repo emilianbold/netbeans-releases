@@ -39,7 +39,6 @@ import java.io.Serializable;
 import javax.swing.Icon;     
 import javax.swing.ImageIcon;     
 import javax.swing.JFrame;     
-import javax.swing.JLabel;     
 import javax.swing.JPanel;     
 import javax.swing.JScrollPane;      
 import javax.swing.JSplitPane;
@@ -83,7 +82,6 @@ class TransactionView extends ExplorerPanel implements
     private transient static Controller controller = null;
 
     // Misc
-    private transient JLabel transactionTitle = null;
     private transient ToolbarToggleButton timeAButton, 	timeDButton,
 	alphaButton, browserCookieButton, savedCookieButton; 
 
@@ -344,10 +342,6 @@ class TransactionView extends ExplorerPanel implements
      */
     private void createLogPanel() {
 
-	JLabel title =
-	    new JLabel(NbBundle.getBundle(TransactionView.class).getString("MON_Transactions_27"), SwingConstants.CENTER);
-	title.setBorder (new EtchedBorder (EtchedBorder.LOWERED));
-
 	JToolBar buttonPanel = new JToolBar();
 	buttonPanel.setBorder
 	    (new CompoundBorder(new EtchedBorder(EtchedBorder.LOWERED),
@@ -486,8 +480,6 @@ class TransactionView extends ExplorerPanel implements
 	logPanel = new JPanel();
 	logPanel.setLayout(new BorderLayout());
 
-	logPanel.add(title, "North"); // NOI18N
-
 	JPanel p = new JPanel (new BorderLayout ());
 	//p.setBorder (new EtchedBorder (EtchedBorder.LOWERED));
 	p.add(BorderLayout.NORTH, buttonPanel);
@@ -501,10 +493,6 @@ class TransactionView extends ExplorerPanel implements
      * Invoked at startup, creates the display GUI.
      */
     private void createDataPanel() {
-
-	transactionTitle =
-	    new JLabel(NbBundle.getBundle(TransactionView.class).getString("MON_Transaction_data_26"), SwingConstants.CENTER);
-	transactionTitle.setBorder (new EtchedBorder (EtchedBorder.LOWERED));
 
 	JTabbedPane jtp = new JTabbedPane();
         jtp.getAccessibleContext().setAccessibleName(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_Transaction_dataName"));
@@ -542,7 +530,6 @@ class TransactionView extends ExplorerPanel implements
 
 	dataPanel = new JPanel();
 	dataPanel.setLayout(new BorderLayout());
-	dataPanel.add(transactionTitle, "North"); //NOI18N
 	dataPanel.add(BorderLayout.CENTER, jtp);
 	dataPanel.setPreferredSize(dataD);
     }
