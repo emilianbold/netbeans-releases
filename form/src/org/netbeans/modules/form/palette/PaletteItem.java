@@ -297,7 +297,8 @@ public final class PaletteItem implements Node.Cookie {
             try {
                 return Introspector.getBeanInfo(compClass);
             }
-            catch (IntrospectionException ex) {} // ignore failure
+            catch (Exception ex) {} // ignore failure
+            catch (LinkageError ex) {}
         }
         return null;
     }
@@ -308,7 +309,8 @@ public final class PaletteItem implements Node.Cookie {
             try {
                 return Introspector.getBeanInfo(compClass).getBeanDescriptor();
             }
-            catch (IntrospectionException ex) {} // ignore failure
+            catch (Exception ex) {} // ignore failure
+            catch (LinkageError ex) {}
         }
         return null;
     }
