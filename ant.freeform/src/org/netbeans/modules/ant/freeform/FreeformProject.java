@@ -71,6 +71,7 @@ public final class FreeformProject implements Project {
             new PrivilegedTemplatesImpl(),           // List of templates in New action popup
             new Subprojects(this), // SubprojectProvider
             new ArtifactProvider(this), // AntArtifactProvider
+            new TestQuery(this), // UnitTestForSourceQueryImplementation
         });
     }
     
