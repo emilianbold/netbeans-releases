@@ -9,3 +9,4 @@ debuggercore/src/org/netbeans/modules/debugger/support/java/nodes/Bundle.propert
 debuggercore/src/org/netbeans/modules/debugger/multisession/Bundle.properties
 debuggercore/oldapi/src/org/openide/debugger/module/Bundle.properties
 debuggercore/oldapi/src/org/openide/debugger/Bundle.properties
+debuggercore/src/org/netbeans/modules/debugger/support/util/Bundle.properties

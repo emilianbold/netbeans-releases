@@ -46,3 +46,10 @@ core/src/org/netbeans/core/windows/util/Bundle.properties
 core/ui/src/org/netbeans/core/ui/resources/Bundle.properties
 core/ui/src/org/netbeans/core/ui/resources/layer.properties
 core/windows/src/org/netbeans/core/windows/resources/Bundle.properties
+core/windows/src/org/netbeans/core/windows/Bundle.properties
+core/windows/src/org/netbeans/core/windows/actions/Bundle.properties
+core/windows/src/org/netbeans/core/windows/persistence/Bundle.properties
+core/windows/src/org/netbeans/core/windows/persistence/convert/Bundle.properties
+core/windows/src/org/netbeans/core/windows/services/Bundle.properties
+core/windows/src/org/netbeans/core/windows/view/ui/Bundle.properties
+core/windows/src/org/netbeans/core/windows/view/ui/toolbars/Bundle.properties
