@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
     
@@ -50,6 +50,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.SharedClassObject;
 import org.openide.util.WeakListener;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.editor.ImplementationProvider;
@@ -78,6 +79,7 @@ import org.openide.filesystems.RepositoryEvent;
 import org.openide.filesystems.RepositoryReorderedEvent;
 import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
 
 
 /**
@@ -540,12 +542,16 @@ public class EditorModule extends ModuleInstall {
         /** Creates new RepositListener */
         public RepositListener() {
         }
+
+        private WindowManager getWindowManager() {
+            return (WindowManager) Lookup.getDefault().lookup(WindowManager.class);
+        }
         
         public void fileSystemAdded(RepositoryEvent ev){
             if (Boolean.getBoolean("netbeans.full.hack") == true){ //NOI18N
                 return; 
             }
-            org.openide.windows.WindowManager wm=TopManager.getDefault().getWindowManager();
+            WindowManager wm = getWindowManager();
             if(wm == null) return;
                 java.awt.Frame frm = wm.getMainWindow();
                 if(frm!=null && frm.isVisible()){
@@ -567,7 +573,7 @@ public class EditorModule extends ModuleInstall {
                 return;
             }
 
-            org.openide.windows.WindowManager wm=TopManager.getDefault().getWindowManager();
+            WindowManager wm = getWindowManager();
             if(wm == null) return;
             java.awt.Frame frm = wm.getMainWindow();
             if(frm!=null && frm.isVisible()){
