@@ -104,6 +104,18 @@ Microsystems, Inc. All Rights Reserved.
         <genlist targetname="nbm" outputfiledir="${nbext_root}/netbeans"/>
     </target>
 
+    <target name="reload" depends="compile" description="Test module inside running IDE (API Support with Aant required).">
+        <mkdir dir="test"/>
+        <filter token="BUILD_NUMBER_SUBST" value="testing"/>
+        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+        <jar jarfile="test/xml-tools-test.jar" manifest="manifest-subst.mf" compress="false">
+            <fileset dir="src" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="javahelp" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
+        </jar>
+        <nbinstaller module="test/xml-tools-test.jar" action="reinstall"/>
+    </target>
+    
+    
     <target name="nbm" depends="netbeans">
         <delete dir="Info"/>
         <makenbm file="../xml-tools-${release}.nbm"
