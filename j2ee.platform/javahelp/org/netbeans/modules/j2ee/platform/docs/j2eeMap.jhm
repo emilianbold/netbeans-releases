@@ -54,6 +54,7 @@
 		<mapID target="jsp_run" url="web/create/jsp/jsp_run.html" />
 		<mapID target="jsp_servletview" url="web/create/jsp/jsp_servletview.html" />
 		<mapID target="jsp_usetaglib" url="web/create/jsp/jsp_usetaglib.html" />
+		<mapID target="jsp_useapplet" url="web/create/jsp/jsp_useapplet.html" />
 		<mapID target="jsp_encoding" url="web/create/jsp/jsp_encoding.html" />
 <mapID target="jsp_connectionpool_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
 		<!-- End of "Create/JSP" subsection -->
