@@ -170,6 +170,26 @@
 				prefix = "jdbc:interbase://<HOST>/<DB>";
 			},
 			{
+				name = "HSQLDB (in-memory)";
+				driver = "org.hsqldb.jdbcDriver";
+				prefix = "jdbc:hsqldb:.";
+			},
+			{
+				name = "HSQLDB (server)";
+				driver = "org.hsqldb.jdbcDriver";
+				prefix = "jdbc:hsqldb:hsql://<HOST>[:<PORT>]";
+			},
+			{
+				name = "HSQLDB (standalone)";
+				driver = "org.hsqldb.jdbcDriver";
+				prefix = "jdbc:hsqldb:<DB>";
+			},
+			{
+				name = "HSQLDB (webserver)";
+				driver = "org.hsqldb.jdbcDriver";
+				prefix = "jdbc:hsqldb:http://<HOST>[:<PORT>]";
+			},
+			{
 				name = "Hypersonic SQL (v1.2 and earlier)";
 				driver = "hSql.hDriver";
 				prefix = "jdbc:HypersonicSQL:<DB>";
@@ -178,6 +198,16 @@
 				name = "Hypersonic SQL (v1.3 and later)";
 				driver = "org.hsql.jdbcDriver";
 				prefix = "jdbc:HypersonicSQL:<DB>";
+			},
+			{
+				name = "Mckoi SQL Database (server)";
+				driver = "com.mckoi.JDBCDriver";
+				prefix = "jdbc:mckoi://<HOST>[:<PORT>]";
+			},
+			{
+				name = "Mckoi SQL Database (standalone)";
+				driver = "com.mckoi.JDBCDriver";
+				prefix = "jdbc:mckoi:local://<DB>";
 			},
 			{
 				name = "Microsoft SQL Server (JTurbo driver)";

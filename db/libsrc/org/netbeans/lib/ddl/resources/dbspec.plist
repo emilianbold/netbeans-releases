@@ -2003,6 +2003,7 @@
   "FirstSQL/J" = {
     DatabaseProductName = "FirstSQL/J";
     TypeMap = {
+      java.sql.Types.BIGINT = BIGINT;
       java.sql.Types.CHAR = CHAR;
       java.sql.Types.DATE = DATE;
       java.sql.Types.DECIMAL = DECIMAL;
@@ -2010,14 +2011,85 @@
       java.sql.Types.FLOAT = FLOAT;
       java.sql.Types.INTEGER = INTEGER;
       java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.REAL = REAL;
       java.sql.Types.SMALLINT = SMALLINT;
       java.sql.Types.TIME = TIME;
       java.sql.Types.TIMESTAMP = TIMESTAMP;
+      java.sql.Types.TINYINT = TINYINT;
       java.sql.Types.VARCHAR = VARCHAR;
     };
-    SizelessTypes = (DATE,DOUBLE,INTEGER,SMALLINT);
+    SizelessTypes = (BIGINT,DATE,DOUBLE,INTEGER,REAL,SMALLINT,TINYINT);
     DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);
+  };
+
+//  ********************************************************************************
+//
+//  Mckoi SQL Database
+//
+//  ********************************************************************************/
+
+  "Mckoi SQL Database ( 1.0.2 )" = {
+    DatabaseProductName = "Mckoi SQL Database ( 1.0.2 )";
+    TypeMap = {
+      java.sql.Types.BIGINT = BIGINT;
+      java.sql.Types.BINARY = BINARY;
+      java.sql.Types.BIT = BIT;
+      java.sql.Types.CHAR = CHAR;
+      java.sql.Types.DATE = DATE;
+      java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.DOUBLE = DOUBLE;
+      java.sql.Types.FLOAT = FLOAT;
+      java.sql.Types.INTEGER = INTEGER;
+      java.sql.Types.LONGVARBINARY = LONGVARBINARY;
+      java.sql.Types.LONGVARCHAR = LONGVARCHAR;
+      java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.REAL = REAL;
+      java.sql.Types.SMALLINT = SMALLINT;
+      java.sql.Types.TIME = TIME;
+      java.sql.Types.TIMESTAMP = TIMESTAMP;
+      java.sql.Types.TINYINT = TINYINT;
+      java.sql.Types.VARBINARY = VARBINARY;
+      java.sql.Types.VARCHAR = VARCHAR;
+    };
+    SizelessTypes = (BIGINT,BINARY,BIT,DATE,DOUBLE,INTEGER,LONGVARBINARY,REAL,SMALLINT,TIME,TIMESTAMP,TINYINT,VARBINARY);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
+    CharacterTypes = (CHAR,LONGVARCHAR,VARCHAR);
+  };
+
+//  ********************************************************************************
+//
+//  HSQLDB
+//
+//  ********************************************************************************/
+
+  "HSQL Database Engine" = {
+    DatabaseProductName = "HSQL Database Engine";
+    TypeMap = {
+      java.sql.Types.BIGINT = BIGINT;
+      java.sql.Types.BINARY = BINARY;
+      java.sql.Types.BIT = BIT;
+      java.sql.Types.CHAR = CHAR;
+      java.sql.Types.DATE = DATE;
+      java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.DOUBLE = DOUBLE;
+      java.sql.Types.FLOAT = FLOAT;
+      java.sql.Types.INTEGER = INTEGER;
+      java.sql.Types.LONGVARBINARY = LONGVARBINARY;
+      java.sql.Types.LONGVARCHAR = LONGVARCHAR;
+      java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.OTHER = OTHER; //OTHER indicates that the SQL type is database-specific and gets mapped to a Java object that can be accessed via the methods getObject and setObject
+      java.sql.Types.REAL = REAL;
+      java.sql.Types.SMALLINT = SMALLINT;
+      java.sql.Types.TIME = TIME;
+      java.sql.Types.TIMESTAMP = TIMESTAMP;
+      java.sql.Types.TINYINT = TINYINT;
+      java.sql.Types.VARBINARY = VARBINARY;
+      java.sql.Types.VARCHAR = VARCHAR;
+    };
+    SizelessTypes = (BIGINT,BINARY,BIT,DATE,DOUBLE,INTEGER,LONGVARBINARY,OTHER,REAL,SMALLINT,TIME,TIMESTAMP,TINYINT,VARBINARY);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
+    CharacterTypes = (CHAR,LONGVARCHAR,VARCHAR);
   };
 
 }
