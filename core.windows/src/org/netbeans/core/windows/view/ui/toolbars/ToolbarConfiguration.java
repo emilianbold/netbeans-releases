@@ -20,6 +20,7 @@ import java.text.*;
 import java.awt.Component;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.MenuListener;
 import org.netbeans.core.NbPlaces;
 
 import org.openide.util.NbBundle;
@@ -472,9 +473,20 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 change = true;
             }
         }
+        if (change || toolbarPool().getConfigurations().length != lastConfigurationCount) {
+            rebuildMenu();
+        }
         return change;
     }
 
+    private int lastConfigurationCount = -1;
+    private void rebuildMenu() {
+        if (toolbarMenu != null) {
+            toolbarMenu.removeAll();
+            fillToolbarsMenu(toolbarMenu);
+        }
+    }
+    
     /** Removes toolbar from visible toolbars.
      * @param tc specified toolbar
      */
@@ -663,6 +675,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
 
     /** Fills given menu instance with list of toolbars and configurations */
     private void fillToolbarsMenu (JComponent menu) {
+        lastConfigurationCount = ToolbarPool.getDefault().getConfigurations().length;
         // generate list of available toolbars
         Iterator it = Arrays.asList (ToolbarPool.getDefault ().getToolbars ()).iterator ();
         while (it.hasNext()) {
@@ -678,22 +691,29 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 continue;
             }
 */
-            
-            JCheckBoxMenuItem mi = new JCheckBoxMenuItem (
-                tb.getDisplayName(), tc.isVisible()
-            );
-            mi.putClientProperty("ToolbarName", tbName); //NOI18N
-            mi.addActionListener (new ActionListener () {
-                                      public void actionPerformed (ActionEvent ae) {
-                                          // #39741 fix
-                                          // for some reason (unknown to me - mkleint) the menu gets recreated repeatedly, which 
-                                          // can cause the formerly final ToolbarConstraints instance to be obsolete.
-                                          // that's why we each time look up the current instance on the allToolbars map.
-                                          ToolbarConstraints tc = (ToolbarConstraints)allToolbars.get (tbName );
-                                          setToolbarVisible(tb, !tc.isVisible());
-                                      }
-                                  });
-            menu.add (mi);
+            if (tc == null || tb == null) {
+                //a toolbar configuration has been renamed (for whatever reason,
+                //we permit this - I'm sure it's a popular feature).
+                checkConfigurationOver();
+            }
+            if (tc != null && tb != null) {
+                //May be null if a toolbar has been renamed
+                JCheckBoxMenuItem mi = new JCheckBoxMenuItem (
+                    tb.getDisplayName(), tc.isVisible()
+                );
+                mi.putClientProperty("ToolbarName", tbName); //NOI18N
+                mi.addActionListener (new ActionListener () {
+                                          public void actionPerformed (ActionEvent ae) {
+                                              // #39741 fix
+                                              // for some reason (unknown to me - mkleint) the menu gets recreated repeatedly, which 
+                                              // can cause the formerly final ToolbarConstraints instance to be obsolete.
+                                              // that's why we each time look up the current instance on the allToolbars map.
+                                              ToolbarConstraints tc = (ToolbarConstraints)allToolbars.get (tbName );
+                                              setToolbarVisible(tb, !tc.isVisible());
+                                          }
+                                      });
+                menu.add (mi);
+            }
         }
         menu.add (new JPopupMenu.Separator());
         // generate list of available toolbar configurations
