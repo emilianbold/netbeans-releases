@@ -23,7 +23,12 @@
         <regenerate-files project="extapp" buildxsl="${build.xsl}" buildimplxsl="${build-impl.xsl}"/>
         <regenerate-files project="brokenproj" buildxsl="${build.xsl}" buildimplxsl="${build-impl.xsl}"/>
     </target>
-    <target name="validate">
+    <target name="validate-compile">
+        <javac srcdir="." destdir=".">
+            <include name="ValidateAllBySchema.java"/>
+        </javac>
+    </target>
+    <target name="validate" depends="validate-compile">
         <pathconvert property="xmls" pathsep=",">
             <path>
                 <fileset dir=".">
@@ -40,9 +45,6 @@
                 </fileset>
             </path>
         </pathconvert>
-        <javac srcdir="." destdir=".">
-            <include name="ValidateAllBySchema.java"/>
-        </javac>
         <java classname="ValidateAllBySchema" failonerror="true" fork="true">
             <classpath>
                 <pathelement location="."/>
