@@ -168,8 +168,8 @@ public class __NAME__ extends SimpleBeanInfo {
                     iconMono32 = loadImage( iconNameM32 );
                 return iconMono32;
             }
+	default: return null;
         }
-        return null;
     }
 
 }
