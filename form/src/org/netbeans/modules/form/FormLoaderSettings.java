@@ -64,6 +64,16 @@ public class FormLoaderSettings extends SystemOption {
   /** Property name of the registeredEditors property */
   public static final String PROP_REGISTERED_EDITORS = "registeredEditors";
 
+  /** outputLevel property name */
+  public static final String PROP_OUTPUT_LEVEL = "outputLevel";
+
+  /** Minimum output detail level */
+  public static final int OUTPUT_MINIMUM = 0;
+  /** Normal output detail level */
+  public static final int OUTPUT_NORMAL = 1;
+  /** Maximum output detail level */
+  public static final int OUTPUT_MAXIMUM = 2;
+
 // ------------------------------------------
 // properties
 
@@ -121,6 +131,9 @@ public class FormLoaderSettings extends SystemOption {
     { "double", "sun.beans.editors.DoubleEditor" },
     { String[].class.getName (), "com.netbeans.developer.editors.StringArrayEditor.class"},
   };
+
+  private static int outputLevel = OUTPUT_NORMAL;
+
 
   private static int emptyFormType = 0;
 
@@ -385,6 +398,24 @@ public class FormLoaderSettings extends SystemOption {
     firePropertyChange (PROP_REGISTERED_EDITORS, oldValue, registeredEditors);
   }
 
+  /** Getter for OutputLevel property.
+  * @return The level of output
+  */
+  public int getOutputLevel() {
+    return outputLevel;
+  }
+
+  /** Setter for OutputLevel property.
+  * @param value The new level of output
+  */
+  public void setOutputLevel(int value) {
+    if (outputLevel == value) return;
+    int oldValue = outputLevel;
+    outputLevel = value;
+    // fire the PropertyChange
+    firePropertyChange (PROP_OUTPUT_LEVEL, new Integer (oldValue), new Integer (outputLevel));
+  }
+
   /** This method must be overriden. It returns display name of this options.
   */
   public String displayName () {
@@ -399,6 +430,8 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  14   Gandalf   1.13        8/1/99   Ian Formanek    Output Details property 
+ *       added
  *  13   Gandalf   1.12        7/13/99  Petr Hamernik   ConstrainedModifiers 
  *       removed
  *  12   Gandalf   1.11        7/2/99   Jesse Glick     More help IDs.

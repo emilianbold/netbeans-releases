@@ -35,80 +35,43 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
   // initialization of the array of descriptors
   static {
     try {
-      if (System.getProperty ("netbeans.full.hack") == null) {
-        desc = new PropertyDescriptor[] {
-          new PropertyDescriptor (FormLoaderSettings.PROP_INDENT_AWT_HIERARCHY, FormLoaderSettings.class, 
-                                  "getIndentAWTHierarchy", "setIndentAWTHierarchy"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_SORT_EVENT_SETS, FormLoaderSettings.class, 
-                                  "getSortEventSets", "setSortEventSets"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_EVENT_VARIABLE_NAME, FormLoaderSettings.class, 
-                                  "getEventVariableName", "setEventVariableName"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_SHORT_BEAN_NAMES, FormLoaderSettings.class, 
-                                  "getShortBeanNames", "setShortBeanNames"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE, FormLoaderSettings.class, 
-                                  "getSelectionBorderSize", "setSelectionBorderSize"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_SELECTION_BORDER_COLOR, FormLoaderSettings.class, 
-                                  "getSelectionBorderColor", "setSelectionBorderColor"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR, FormLoaderSettings.class, 
-                                  "getConnectionBorderColor", "setConnectionBorderColor"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_DRAG_BORDER_COLOR, FormLoaderSettings.class, 
-                                  "getDragBorderColor", "setDragBorderColor"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_SHOW_GRID, FormLoaderSettings.class, 
-                                  "getShowGrid", "setShowGrid"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_GRID_X, FormLoaderSettings.class, 
-                                  "getGridX", "setGridX"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_GRID_Y, FormLoaderSettings.class, 
-                                  "getGridY", "setGridY"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_APPLY_GRID_TO_POSITION, FormLoaderSettings.class, 
-                                  "getApplyGridToPosition", "setApplyGridToPosition"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_APPLY_GRID_TO_SIZE, FormLoaderSettings.class, 
-                                  "getApplyGridToSize", "setApplyGridToSize"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_VARIABLES_MODIFIER, FormLoaderSettings.class, 
-                                  "getVariablesModifier", "setVariablesModifier"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_EDITOR_SEARCH_PATH, FormLoaderSettings.class, 
-                                  "getEditorSearchPath", "setEditorSearchPath"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_REGISTERED_EDITORS, FormLoaderSettings.class, 
-                                  "getRegisteredEditors", "setRegisteredEditors"),
-        };
-      } else {
-        desc = new PropertyDescriptor[] {
-          new PropertyDescriptor (FormLoaderSettings.PROP_INDENT_AWT_HIERARCHY, FormLoaderSettings.class, 
-                                  "getIndentAWTHierarchy", "setIndentAWTHierarchy"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_SORT_EVENT_SETS, FormLoaderSettings.class, 
-                                  "getSortEventSets", "setSortEventSets"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_EVENT_VARIABLE_NAME, FormLoaderSettings.class, 
-                                  "getEventVariableName", "setEventVariableName"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_SHORT_BEAN_NAMES, FormLoaderSettings.class, 
-                                  "getShortBeanNames", "setShortBeanNames"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE, FormLoaderSettings.class, 
-                                  "getSelectionBorderSize", "setSelectionBorderSize"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_SELECTION_BORDER_COLOR, FormLoaderSettings.class, 
-                                  "getSelectionBorderColor", "setSelectionBorderColor"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR, FormLoaderSettings.class, 
-                                  "getConnectionBorderColor", "setConnectionBorderColor"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_DRAG_BORDER_COLOR, FormLoaderSettings.class, 
-                                  "getDragBorderColor", "setDragBorderColor"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_SHOW_GRID, FormLoaderSettings.class, 
-                                  "getShowGrid", "setShowGrid"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_GRID_X, FormLoaderSettings.class, 
-                                  "getGridX", "setGridX"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_GRID_Y, FormLoaderSettings.class, 
-                                  "getGridY", "setGridY"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_APPLY_GRID_TO_POSITION, FormLoaderSettings.class, 
-                                  "getApplyGridToPosition", "setApplyGridToPosition"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_APPLY_GRID_TO_SIZE, FormLoaderSettings.class, 
-                                  "getApplyGridToSize", "setApplyGridToSize"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_VARIABLES_MODIFIER, FormLoaderSettings.class, 
-                                  "getVariablesModifier", "setVariablesModifier"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_EDITOR_SEARCH_PATH, FormLoaderSettings.class, 
-                                  "getEditorSearchPath", "setEditorSearchPath"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_REGISTERED_EDITORS, FormLoaderSettings.class, 
-                                  "getRegisteredEditors", "setRegisteredEditors"),
-          new PropertyDescriptor ("emptyFormType", FormLoaderSettings.class, 
-                                  "getEmptyFormType", "setEmptyFormType"),
-        };
+      desc = new PropertyDescriptor[] {
+        new PropertyDescriptor (FormLoaderSettings.PROP_INDENT_AWT_HIERARCHY, FormLoaderSettings.class, 
+                                "getIndentAWTHierarchy", "setIndentAWTHierarchy"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_SORT_EVENT_SETS, FormLoaderSettings.class, 
+                                "getSortEventSets", "setSortEventSets"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_EVENT_VARIABLE_NAME, FormLoaderSettings.class, 
+                                "getEventVariableName", "setEventVariableName"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_SHORT_BEAN_NAMES, FormLoaderSettings.class, 
+                                "getShortBeanNames", "setShortBeanNames"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE, FormLoaderSettings.class, 
+                                "getSelectionBorderSize", "setSelectionBorderSize"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_SELECTION_BORDER_COLOR, FormLoaderSettings.class, 
+                                "getSelectionBorderColor", "setSelectionBorderColor"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR, FormLoaderSettings.class, 
+                                "getConnectionBorderColor", "setConnectionBorderColor"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_DRAG_BORDER_COLOR, FormLoaderSettings.class, 
+                                "getDragBorderColor", "setDragBorderColor"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_SHOW_GRID, FormLoaderSettings.class, 
+                                "getShowGrid", "setShowGrid"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_GRID_X, FormLoaderSettings.class, 
+                                "getGridX", "setGridX"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_GRID_Y, FormLoaderSettings.class, 
+                                "getGridY", "setGridY"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_APPLY_GRID_TO_POSITION, FormLoaderSettings.class, 
+                                "getApplyGridToPosition", "setApplyGridToPosition"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_APPLY_GRID_TO_SIZE, FormLoaderSettings.class, 
+                                "getApplyGridToSize", "setApplyGridToSize"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_VARIABLES_MODIFIER, FormLoaderSettings.class, 
+                                "getVariablesModifier", "setVariablesModifier"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_EDITOR_SEARCH_PATH, FormLoaderSettings.class, 
+                                "getEditorSearchPath", "setEditorSearchPath"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_REGISTERED_EDITORS, FormLoaderSettings.class, 
+                                "getRegisteredEditors", "setRegisteredEditors"),
+        new PropertyDescriptor (FormLoaderSettings.PROP_OUTPUT_LEVEL, FormLoaderSettings.class,
+                                "getOutputLevel", "setOutputLevel"),
+      };
 
-      }
       desc[0].setDisplayName (formBundle.getString ("PROP_INDENT_AWT_HIERARCHY"));
       desc[0].setShortDescription (formBundle.getString ("HINT_INDENT_AWT_HIERARCHY"));
       desc[1].setDisplayName (formBundle.getString ("PROP_SORT_EVENT_SETS"));
@@ -152,6 +115,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
       desc[14].setShortDescription (formBundle.getString ("HINT_EDITOR_SEARCH_PATH"));
       desc[15].setDisplayName (formBundle.getString ("PROP_REGISTERED_EDITORS"));
       desc[15].setShortDescription (formBundle.getString ("HINT_REGISTERED_EDITORS"));
+      desc[16].setDisplayName (formBundle.getString ("PROP_OUTPUT_LEVEL"));
+      desc[16].setShortDescription (formBundle.getString ("HINT_OUTPUT_LEVEL"));
+      desc[16].setPropertyEditorClass (IDESettingsBeanInfo.OutputLevelEditor.class);
+
 
     } catch (IntrospectionException ex) {
       throw new InternalError ();
@@ -228,10 +195,45 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
   }
 
+  final public static class OutputLevelEditor extends java.beans.PropertyEditorSupport {
+    /** Display Names for alignment. */
+    private static final String[] names = {
+      formBundle.getString ("VALUE_OutputLevel_Minimum"),
+      formBundle.getString ("VALUE_OutputLevel_Normal"),
+      formBundle.getString ("VALUE_OutputLevel_Maximum"),
+    };
+
+    /** @return names of the possible directions */
+    public String[] getTags () {
+      return names;
+    }
+
+    /** @return text for the current value */
+    public String getAsText () {
+      int value = ((Integer)getValue ()).intValue ();
+      if ((value < 0) || (value > 2)) return null;
+      return names [value];
+    }
+
+    /** Setter.
+    * @param str string equal to one value from directions array
+    */
+    public void setAsText (String str) {
+      for (int i = 0; i <= 2; i++) {
+        if (names[i].equals (str)) {
+          setValue (new Integer (i));
+          return;
+        }
+      }
+    }
+
+  }
 }
 
 /*
  * Log
+ *  12   Gandalf   1.11        8/1/99   Ian Formanek    Output Details property 
+ *       added
  *  11   Gandalf   1.10        7/13/99  Petr Hamernik   ConstrainedModifiers 
  *       removed
  *  10   Gandalf   1.9         6/30/99  Ian Formanek    Variables modifier 
