@@ -660,10 +660,9 @@ public class AntProjectHelperTest extends NbTestCase {
         pp.addChangeListener(l);
         EditableProperties p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         p.setProperty("foo", "bar");
-        assertFalse("no events from uncommitted changes", l.changed);
+        assertFalse("no events from uncommitted changes", l.expect());
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
-        assertTrue("got a change from setting a property", l.changed);
-        l.changed = false;
+        assertTrue("got a change from setting a property", l.expect());
         defs = pp.getProperties();
         assertEquals("correct new size", 4, defs.size());
         assertEquals("correct new value", "bar", defs.get("foo"));
@@ -672,11 +671,10 @@ public class AntProjectHelperTest extends NbTestCase {
         p.setProperty("foo", "bar2");
         p.setProperty("foo", "bar");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
-        assertFalse("no events from no-op changes", l.changed);
+        assertFalse("no events from no-op changes", l.expect());
         // Deleting a property file.
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, null);
-        assertTrue("got a change from removing a property file", l.changed);
-        l.changed = false;
+        assertTrue("got a change from removing a property file", l.expect());
         assertEquals("now have no definitions", Collections.EMPTY_MAP, pp.getProperties());
         // Start off with no file, then create it.
         String path = "foo.properties";
@@ -688,18 +686,16 @@ public class AntProjectHelperTest extends NbTestCase {
         p.setProperty("one", "1");
         p.setProperty("two", "2");
         h.putProperties(path, p);
-        assertTrue("making the file fired a change", l.changed);
-        l.changed = false;
+        assertTrue("making the file fired a change", l.expect());
         defs = pp.getProperties();
         assertEquals("two defs", 2, defs.size());
         assertEquals("right value #1", "1", defs.get("one"));
         assertEquals("right value #2", "2", defs.get("two"));
         assertNull("no file yet saved to disk", h.getProjectDirectory().getFileObject(path));
         p.setProperty("three", "3");
-        assertFalse("no events from uncomm. change", l.changed);
+        assertFalse("no events from uncomm. change", l.expect());
         h.putProperties(path, p);
-        assertTrue("now have changed new file", l.changed);
-        l.changed = false;
+        assertTrue("now have changed new file", l.expect());
         defs = pp.getProperties();
         assertEquals("three defs", 3, defs.size());
         // XXX test that saving the project fires no additional changes

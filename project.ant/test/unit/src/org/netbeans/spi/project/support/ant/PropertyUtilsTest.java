@@ -249,13 +249,12 @@ public class PropertyUtilsTest extends NbTestCase {
         assertEquals("correct initial definitions", p, gpp.getProperties());
         p.setProperty("key3", "val3");
         assertEquals("still have 2 defs", 2, gpp.getProperties().size());
-        assertFalse("no changes yet", l.changed);
+        assertFalse("no changes yet", l.expect());
         PropertyUtils.putGlobalProperties(p);
-        assertTrue("got a change", l.changed);
-        l.changed = false;
+        assertTrue("got a change", l.expect());
         assertEquals("now have 3 defs", 3, gpp.getProperties().size());
         assertEquals("right val", "val3", gpp.getProperties().get("key3"));
-        assertFalse("no spurious changes", l.changed);
+        assertFalse("no spurious changes", l.expect());
         // Test changes made using Filesystems API.
         p.setProperty("key1", "val1a");
         FileObject fo = FileUtil.toFileObject(PropertyUtils.USER_BUILD_PROPERTIES);
@@ -265,8 +264,7 @@ public class PropertyUtilsTest extends NbTestCase {
         p.store(os);
         os.close();
         lock.releaseLock();
-        assertTrue("got a change from the Filesystems API", l.changed);
-        l.changed = false;
+        assertTrue("got a change from the Filesystems API", l.expect());
         assertEquals("still have 3 defs", 3, gpp.getProperties().size());
         assertEquals("right val for key1", "val1a", gpp.getProperties().get("key1"));
         // XXX changes made on disk are not picked up... bad test, or something else?
@@ -278,8 +276,7 @@ public class PropertyUtilsTest extends NbTestCase {
         os.close();
         FileUtil.toFileObject(PropertyUtils.USER_BUILD_PROPERTIES).getFileSystem().refresh(false);
         Thread.sleep(1000);
-        assertTrue("got a change from disk", l.changed);
-        l.changed = false;
+        assertTrue("got a change from disk", l.expect());
         assertEquals("still have 3 defs", 3, gpp.getProperties().size());
         assertEquals("right val for key2", "val2a", gpp.getProperties().get("key2"));
          */
@@ -313,7 +310,7 @@ public class PropertyUtilsTest extends NbTestCase {
         AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
         pp.addChangeListener(l);
         assertEquals("no defs yet (no file)", Collections.EMPTY_MAP, pp.getProperties());
-        assertFalse("no changes yet", l.changed);
+        assertFalse("no changes yet", l.expect());
         final FileObject[] testProperties = new FileObject[1];
         scratch.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
@@ -334,8 +331,7 @@ public class PropertyUtilsTest extends NbTestCase {
                 }
             }
         });
-        assertTrue("got a change when file was created", l.changed);
-        l.changed = false;
+        assertTrue("got a change when file was created", l.expect());
         assertEquals("one key", Collections.singletonMap("a", "aval"), pp.getProperties());
         FileLock lock = testProperties[0].lock();
         try {
@@ -354,12 +350,10 @@ public class PropertyUtilsTest extends NbTestCase {
         Map m = new HashMap();
         m.put("a", "aval");
         m.put("b", "bval");
-        assertTrue("got a change when file was changed", l.changed);
-        l.changed = false;
+        assertTrue("got a change when file was changed", l.expect());
         assertEquals("right properties", m, pp.getProperties());
         testProperties[0].delete();
-        assertTrue("got a change when file was deleted", l.changed);
-        l.changed = false;
+        assertTrue("got a change when file was deleted", l.expect());
         assertEquals("no defs again (file deleted)", Collections.EMPTY_MAP, pp.getProperties());
     }
     

@@ -493,14 +493,44 @@ public class AntBasedTestUtil {
         
     }
     
+    /**
+     * Change listener that can be polled.
+     * Handles asynchronous changes
+     * (since Filesystems threading obeys no known specification).
+     */
     public static final class TestCL implements ChangeListener {
         
-        public boolean changed = false;
+        private boolean fired;
         
         public TestCL() {}
         
-        public void stateChanged(ChangeEvent e) {
-            changed = true;
+        public synchronized void stateChanged(ChangeEvent e) {
+            fired = true;
+            notify();
+        }
+        
+        /**
+         * Check whether a change has occurred by now (do not block).
+         * Also resets the flag so the next call will expect a new change.
+         * @return true if a change has occurred
+         */
+        public synchronized boolean expect() {
+            boolean f = fired;
+            fired = false;
+            return f;
+        }
+        
+        /**
+         * Check whether a change has occurred by now or occurs within some time.
+         * Also resets the flag so the next call will expect a new change.
+         * @param timeout a maximum amount of time to wait, in milliseconds
+         * @return true if a change has occurred
+         */
+        public synchronized boolean expect(long timeout) throws InterruptedException {
+            if (!fired) {
+                wait(timeout);
+            }
+            return expect();
         }
         
     }
