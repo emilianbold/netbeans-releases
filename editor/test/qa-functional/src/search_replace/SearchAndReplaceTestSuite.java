@@ -25,8 +25,9 @@ public class SearchAndReplaceTestSuite extends NbTestSuite {
     public SearchAndReplaceTestSuite() {
         super("Search and Replace");
         
-        addTestSuite(SearchTest.class);
-        addTestSuite(ReplaceTest.class);
+        addTestSuite(SearchAndReplaceTest.class);
+        //addTestSuite(SearchTest.class);
+        //addTestSuite(ReplaceTest.class);
     }
     
     public static NbTestSuite suite() {

@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
                <include name="keyboard_shortcuts/KeyboardShortcutsTestSuite.class"/>
                <include name="general/GeneralTestSuite.class"/>
                <include name="popup_menus/PopupMenusTestSuite.class"/>
+               <include name="search_replace/SearchAndReplaceTestSuite.class"/>               
              </patternset>
          </testset>
      </testbag>
