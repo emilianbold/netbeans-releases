@@ -343,8 +343,11 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
             selectionModel.addChangeListener (this);
             HelpCtx.setHelpIDString (this, NbColorChooser.class.getName ());
         }
-
+        
         public void removeNotify () {
+            // bugfix 7797 - superclass version of the method was not called
+            // What a basic mistake...developers, developers :-(  
+            super.removeNotify();
             selectionModel.removeChangeListener (this);
         }
 
