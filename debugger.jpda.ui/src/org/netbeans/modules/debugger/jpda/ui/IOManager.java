@@ -100,6 +100,7 @@ public class IOManager {
                                         lines.put (t.text, t.line);
                                     } else
                                         debuggerOut.println (t.text);
+                                    debuggerOut.flush ();
                                 //}
                                // if ((t.where & STATUS_OUT) != 0) 
                                     StatusDisplayer.getDefault ().setStatusText (t.text);

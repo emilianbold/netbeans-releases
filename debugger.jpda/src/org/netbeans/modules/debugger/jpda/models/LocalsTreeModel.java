@@ -26,6 +26,7 @@ import com.sun.jdi.Value;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -70,7 +71,7 @@ public class LocalsTreeModel implements TreeModel {
     throws NoInformationException, UnknownTypeException {
         try {
             if (o.equals (ROOT)) {
-                Object[] os = getLocalVariables (true, from, to);
+                Object[] os = getLocalVariables (from, to);
                 return os;
             } else
 //            if (o instanceof SuperVariable) {
@@ -118,11 +119,16 @@ public class LocalsTreeModel implements TreeModel {
                 if (sf == null) 
                     throw new NoInformationException ("No current thread");
                 try {
-                    int i = sf.visibleVariables ().size ();
+                    int i = 0;
+                    try {
+                        i = sf.visibleVariables ().size ();
+                    } catch (AbsentInformationException ex) {
+                        i++;
+                    }
                     if (sf.thisObject () != null) i++;
                     return i;
-                } catch (AbsentInformationException ex) {
-                    throw new NoInformationException ("compiled without -g");
+//                } catch (AbsentInformationException ex) {
+//                    throw new NoInformationException ("compiled without -g");
                 } catch (NativeMethodException ex) {
                     throw new NoInformationException ("native method");
                 } catch (InvalidStackFrameException ex) {
@@ -158,6 +164,8 @@ public class LocalsTreeModel implements TreeModel {
             return !(((AbstractVariable) o).getInnerValue () instanceof ObjectReference);
         if (o.equals ("More")) // NOI18N
             return true;
+        if (o.equals ("NoInfo")) // NOI18N
+            return true;
         throw new UnknownTypeException (o);
     }
 
@@ -192,52 +200,68 @@ public class LocalsTreeModel implements TreeModel {
     
     // private methods .........................................................
     
-    AbstractVariable[] getLocalVariables (boolean includeThis, int from, int to)
-    throws NoInformationException {
+    Object[] getLocalVariables (
+        int from, 
+        int to
+    ) throws NoInformationException {
         synchronized (debugger.LOCK) {
-            CallStackFrameImpl frame = (CallStackFrameImpl) debugger.
+            CallStackFrameImpl callStackFrame = (CallStackFrameImpl) debugger.
                 getCurrentCallStackFrame ();
-            return getLocalVariables (
-                frame,
-                includeThis,
-                from,
-                to
-            );
-        }
+            if (callStackFrame == null) 
+                throw new NoInformationException ("No current thread");
+            StackFrame stackFrame = callStackFrame.getStackFrame ();
+            if (stackFrame == null) 
+                throw new NoInformationException ("No current thread");
+            ObjectReference thisR = stackFrame.thisObject ();
+            if (thisR == null) {
+                Object[] avs = null;
+                try {
+                    return getLocalVariables (
+                        callStackFrame,
+                        stackFrame,
+                        from,
+                        to
+                    );
+                } catch (AbsentInformationException ex) {
+                    throw new NoInformationException ("compiled without -g");
+                }
+            } else {
+                Object[] avs = null;
+                try {
+                    avs = getLocalVariables (
+                        callStackFrame,
+                        stackFrame,
+                        Math.max (from - 1, 0),
+                        Math.max (to - 1, 0)
+                    );
+                } catch (AbsentInformationException ex) {
+                    avs = new Object[] {"NoInfo"};
+                }
+                Object[] result = new Object [avs.length + 1];
+                if (from < 1)
+                    result [0] = getThis (thisR, "");
+                System.arraycopy (avs, 0, result, 1, avs.length);
+                return result;
+            }            
+        } // synchronized
     }
     
     AbstractVariable[] getLocalVariables (
-        CallStackFrameImpl frame, 
-        boolean includeThis, 
-        int from, int to
-    ) throws NoInformationException {
-        if (frame == null) 
-            throw new NoInformationException ("No current thread");
-        StackFrame sf = frame.getStackFrame ();
-        if (sf == null) 
-            throw new NoInformationException ("No current thread");
+        final CallStackFrameImpl    callStackFrame, 
+        final StackFrame            stackFrame,
+        final int                   from,
+        final int                   to
+    ) throws NoInformationException, AbsentInformationException {
         try {
-            ObjectReference thisR = sf.thisObject ();
-            String className = sf.location ().declaringType ().name ();
-            List l = sf.visibleVariables ();
-            int j = from,      // current position in l
-                i = 0;         // current position in result
-            if (to == 0) to = l.size () + 
-                (((thisR != null) && includeThis) ? 1 : 0);
-            int k = to - from; // length of result
+            String className = stackFrame.location ().declaringType ().name ();
+            List l = stackFrame.visibleVariables ();
+            int i, k = to - from, j = from;
             AbstractVariable[] locals = new AbstractVariable [k];
-            if ((thisR != null) && includeThis) {
-                if (from == 0)
-                    locals [i++] = getThis (thisR, "");
-                if (j > 0) j--;
-            }
-            for (; i < k; i++) {
+            for (i = 0; i < k; i++) {
                 LocalVariable lv = (LocalVariable) l.get (j++);
-                locals [i] = getLocal (lv, frame, className);
+                locals [i] = getLocal (lv, callStackFrame, className);
             }
             return locals;
-        } catch (AbsentInformationException ex) {
-            throw new NoInformationException ("compiled without -g");
         } catch (NativeMethodException ex) {
             throw new NoInformationException ("native method");
         } catch (InvalidStackFrameException ex) {
@@ -246,7 +270,6 @@ public class LocalsTreeModel implements TreeModel {
             return new AbstractVariable [0];
         }
     }
-    
     
     ThisVariable getThis (ObjectReference thisR, String parentID) {
         return new ThisVariable (this, thisR, parentID);

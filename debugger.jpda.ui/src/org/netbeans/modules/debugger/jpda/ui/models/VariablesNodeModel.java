@@ -59,9 +59,11 @@ public class VariablesNodeModel implements NodeModel {
     
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)
-            return NbBundle.getBundle(VariablesNodeModel.class).getString("CTL_LocalsModel_Column_Name_Name");
+            return NbBundle.getBundle (VariablesNodeModel.class).getString 
+                ("CTL_LocalsModel_Column_Name_Name");
         if (o.equals ("More")) // NOI18N
-            return NbBundle.getBundle(VariablesNodeModel.class).getString("CTL_LocalsModel_Column_Name_MoreItems");
+            return NbBundle.getBundle (VariablesNodeModel.class).getString 
+                ("CTL_LocalsModel_Column_Name_MoreItems");
         if (o instanceof Field)
             return ((Field) o).getName ();
         if (o instanceof LocalVariable)
@@ -70,6 +72,11 @@ public class VariablesNodeModel implements NodeModel {
             return "super";
         if (o instanceof This)
             return "this";
+        if (o instanceof This)
+            return "this";
+        if (o.equals ("NoInfo"))
+            return NbBundle.getBundle (VariablesNodeModel.class).getString 
+                ("CTL_No_Info");
         throw new UnknownTypeException (o);
     }
     
@@ -132,6 +139,8 @@ public class VariablesNodeModel implements NodeModel {
             }
         if (o.equals ("More")) // NOI18N
             return null;
+        if (o.equals ("NoInfo"))
+            return null;
         throw new UnknownTypeException (o);
     }
     
@@ -151,6 +160,8 @@ public class VariablesNodeModel implements NodeModel {
         if (o instanceof This)
             return FIELD;
         if (o.equals ("More")) // NOI18N
+            return null;
+        if (o.equals ("NoInfo")) // NOI18N
             return null;
         throw new UnknownTypeException (o);
     }

@@ -66,6 +66,9 @@ public class VariablesActionsProvider implements NodeActionsProvider {
         if (node.equals ("More")) // NOI18N
             return new Action [] {
             };
+        if (node.equals ("NoInfo")) // NOI18N
+            return new Action [] {
+            };
         throw new UnknownTypeException (node);
     }
     
@@ -77,6 +80,8 @@ public class VariablesActionsProvider implements NodeActionsProvider {
             return;
         }
         if (node.equals ("More")) // NOI18N
+            return;
+        if (node.equals ("NoInfo")) // NOI18N
             return;
         throw new UnknownTypeException (node);
     }
