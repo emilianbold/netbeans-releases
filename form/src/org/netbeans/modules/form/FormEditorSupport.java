@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import java.io.IOException;
+import java.io.*;
 
 import com.netbeans.ide.TopManager;
 import com.netbeans.ide.loaders.MultiDataObject;
@@ -119,10 +119,10 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   /** Loads the DesignForm from the .form file */
   protected boolean loadForm () {
     System.out.println("FormDataObject.java:74:loadForm");
-    java.io.InputStream is = null;
+    InputStream is = null;
     try {
       is = formObject.getFormEntry ().getFile().getInputStream();
-    } catch (java.io.FileNotFoundException e) {
+    } catch (FileNotFoundException e) {
 /*      String message = java.text.MessageFormat.format(formBundle.getString("FMT_ERR_LoadingForm"),
                                             new Object[] {getName(), e.getClass().getName()});
       TopManager.getDefault().notify(new NotifyDescriptor.Exception(e, message)); */
@@ -130,9 +130,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       return false;
     }
     
-    java.io.ObjectInputStream ois = null;
+    ObjectInputStream ois = null;
     try {
-      ois = new java.io.ObjectInputStream(is);
+      ois = new BCObjectInputStream(is); 
       designForm = (DesignForm) ois.readObject ();
 //      FormEditor.displayErrorLog ();
 
@@ -192,10 +192,34 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     return true;
   }
 
+// -----------------------------------------------------------------------------
+// Innerclasses
+
+  public class BCObjectInputStream extends ObjectInputStream {
+    public BCObjectInputStream (InputStream is) throws IOException, StreamCorruptedException {
+      super (is);
+    }
+
+    /** Provides backward compatibility with Developer 2.0/2.1/X2 2.1 */
+    protected Class resolveClass (ObjectStreamClass v) throws IOException, ClassNotFoundException {
+      String className = v.getName ();
+      System.out.println("Resolve Class: "+className);
+      if (className.startsWith ("com.netbeans.developerx.loaders.form")) {
+        className = "com.netbeans.developer.modules." + className.substring (24);
+        System.out.println("Resolve Class Translated to: "+className);
+      }
+      if (className.equals ("com.netbeans.developer.util.NbVersion")) {
+        className = "com.netbeans.ide.util.NbVersion";
+        System.out.println("Resolve Class Translated to: "+className);
+      }
+      return super.resolveClass (ObjectStreamClass.lookup (Class.forName (className)));
+    }
+  }
 }
 
 /*
  * Log
+ *  2    Gandalf   1.1         3/26/99  Ian Formanek    
  *  1    Gandalf   1.0         3/24/99  Ian Formanek    
  * $
  */

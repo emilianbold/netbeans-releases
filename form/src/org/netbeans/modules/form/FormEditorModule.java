@@ -13,6 +13,7 @@
 
 package com.netbeans.developer.modules.form;
 
+import com.netbeans.developer.impl.IDESettings;
 import com.netbeans.ide.modules.ModuleInstall;
 
 /**
@@ -26,11 +27,25 @@ public class FormEditorModule implements ModuleInstall {
 
   /** Module installed for the first time. */
   public void installed () {
+    System.out.println("FormEditorModule.java:32");
+    IDESettings is = new IDESettings ();
+    String[] bisp = is.getBeanInfoSearchPath ();
+    String[] bisp2 = new String[bisp.length+1];
+    System.arraycopy (bisp2, 0, bisp, 0, bisp.length);
+    bisp2 [bisp2.length-1] = "com.netbeans.developer.modules.beaninfo.awt";
+    is.setBeanInfoSearchPath (bisp2);
   }
 
   /** Module installed again. */
   public void restored () {
+    System.out.println("FormEditorModule.java:43");
 
+    IDESettings is = new IDESettings ();
+    String[] bisp = is.getBeanInfoSearchPath ();
+    String[] bisp2 = new String[bisp.length+1];
+    System.arraycopy (bisp2, 0, bisp, 0, bisp.length);
+    bisp2 [bisp2.length-1] = "com.netbeans.developer.modules.beaninfo.awt";
+    is.setBeanInfoSearchPath (bisp2);
 
     // 1. create palette
     // bla bla
@@ -49,6 +64,7 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  3    Gandalf   1.2         3/26/99  Ian Formanek    
  *  2    Gandalf   1.1         3/22/99  Ian Formanek    
  *  1    Gandalf   1.0         3/22/99  Ian Formanek    
  * $
