@@ -12,11 +12,8 @@
  */
 package org.netbeans.modules.xml.catalog.spi;
 
-import java.beans.*;
 import java.util.*;
 import java.io.IOException;
-
-import javax.swing.event.*;
 
 import org.openide.util.Lookup;
 
@@ -41,7 +38,7 @@ public final class ProvidersRegistry {
         Lookup.Template template = new Lookup.Template(CatalogProvider.class);
         Lookup.Result res = Lookup.getDefault().lookup(template);
         Iterator it = res.allInstances().iterator();
-        HashSet set = new HashSet();
+        Set set = new LinkedHashSet();
 
         while(it.hasNext()) {
             try {
@@ -70,7 +67,7 @@ try_next_provider_class:
             for (int i=0; i<filter.length; i++) {
                 
                 if (filter[i].isAssignableFrom(next) == false)
-                    break try_next_provider_class;
+                    continue try_next_provider_class;
             }
             
             // test passed

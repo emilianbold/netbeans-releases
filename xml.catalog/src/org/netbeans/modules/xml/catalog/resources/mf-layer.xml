@@ -42,13 +42,15 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-xml-catalog-CatalogEntityResolver.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.api.xml.services.UserCatalog"/>
             </file>
+            <file name="org-netbeans-modules-xml-catalog-impl-sun-SunCatalogProvider.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
+            </file>
+            <attr name="org-netbeans-modules-xml-catalog-impl-sun-SunCatalogProvider.instance/org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
             </file>
+            <attr name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance/org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
-            </file>
-            <file name="org-netbeans-modules-xml-catalog-impl-sun-SunCatalogProvider.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
             </file>
 
