@@ -14,9 +14,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
-import java.util.Hashtable;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.*;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -33,15 +31,14 @@ import org.apache.tools.ant.taskdefs.Copydir;
  */
 public class NbMerge extends Task {
     
-    private String dest = "virgin";
+    private File dest;
     private Vector modules = new Vector (); // Vector<String>
-    private String targetprefix = "all-";
-    private String topdir = "..";
-    private String [] topdirs = null;
+    private String targetprefix = "all-";    
+    private List topdirs = new ArrayList (); // List<File>
     
     /** Target directory to unpack to (top of IDE installation). */
-    public void setDest (String s) {
-        dest = s;
+    public void setDest (File f) {
+        dest = f;
     }
     
     /** Comma-separated list of modules to include. */
@@ -63,20 +60,32 @@ public class NbMerge extends Task {
     /** Set the top directory.
      * There should be subdirectories under this for each named module.
      */
-    public void setTopdir (String s) {
-        topdir = s;
+    public void setTopdir (File t) {
+        topdirs.add (t);
     }
-    
-    public void setTopdirs (String str) {
-        StringTokenizer st = new StringTokenizer(str, ",");
-        int count = st.countTokens();
-        topdirs = new String [count];
-        for (int i = 0; i < count; i++) {
-            topdirs[i] = new String (st.nextToken().trim());
+
+    /** Nested topdir addition. */
+    public class Topdir {
+        /** Path to an extra topdir. */
+        public void setPath (File t) {
+            topdirs.add (t);
         }
     }
-    
+    /** Add a nested topdir.
+     * If there is more than one topdir total, build products
+     * may be taken from any of them, including from multiple places
+     * for the same module. (Later topdirs may override build
+     * products in earlier topdirs.)
+     */
+    public Topdir createTopdir () {
+        return new Topdir ();
+    }
+
     public void execute () throws BuildException {
+        if (topdirs.isEmpty ()) {
+            throw new BuildException ("You must set at least one topdir attribute", location);
+        }
+        
         // Somewhat convoluted code because Project.executeTargets does not
         // eliminate duplicates when analyzing dependencies! Ecch.
         Target dummy = new Target ();
@@ -93,36 +102,49 @@ public class NbMerge extends Task {
         project.executeTarget (dummyName);
         
         Deltree deltree = (Deltree) project.createTask ("deltree");
-        deltree.setDir (dest);
+        deltree.setDir (dest.getAbsolutePath ());
         deltree.init ();
         deltree.setLocation (location);
         deltree.execute ();
-
-        if (topdirs == null && topdir != null) {
-            topdirs = new String[1];
-            topdirs[0] = topdir; 
-        }
         
-        if (topdir == null && topdirs == null) {
-            throw new BuildException ("You must set at least one topdir attribute", location);
-        }
-        
-        for (int j = 0; j < topdirs.length; j++) {
-            topdir = topdirs[j];
+        for (int j = 0; j < topdirs.size (); j++) {
+            File topdir = (File) topdirs.get (j);
             for (int i = 0; i < modules.size (); i++) {
                 String module = (String) modules.elementAt (i);
-                String netbeans = topdir + '/' + module + "/netbeans";
-                if (! new File (netbeans).exists ()) {
+                File netbeans = new File (new File (topdir, module), "netbeans");
+                if (! netbeans.exists ()) {
                     log ("Build product dir " + netbeans + " does not exist, skipping...", Project.MSG_WARN);
                     continue;
                 }
                 Copydir copydir = (Copydir) project.createTask ("copydir");
-                copydir.setSrc (netbeans);
-                copydir.setDest (dest);
+                try {
+                    try {
+                        Copydir.class.getMethod ("setSrc", new Class[] { File.class }).invoke
+                        (copydir, new Object[] { netbeans });
+                    } catch (NoSuchMethodException nsme) {
+                        Copydir.class.getMethod ("setSrc", new Class[] { String.class }).invoke
+                        (copydir, new Object[] { netbeans.getAbsolutePath () });
+                    }
+                } catch (Exception e) {
+                    throw new BuildException ("Could not set 'src' attribute on copydir task", e, location);
+                }
+                
+                try {
+                    try {
+                        Copydir.class.getMethod ("setDest", new Class[] { File.class }).invoke
+                        (copydir, new Object[] { dest });
+                    } catch (NoSuchMethodException nsme) {
+                        Copydir.class.getMethod ("setDest", new Class[] { String.class }).invoke
+                        (copydir, new Object[] { dest.getAbsolutePath () });
+                    }
+                } catch (Exception e) {
+                    throw new BuildException ("Could not set 'dest' attribute on copydir task", e, location);
+                }
+                
                 copydir.init ();
                 copydir.setLocation (location);
                 copydir.execute ();
             }
-        }        
-    }    
+        }
+    }
 }
