@@ -16,7 +16,7 @@ package org.netbeans.api.project.libraries;
 
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.modules.project.libraries.LibraryProvider;
+import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;

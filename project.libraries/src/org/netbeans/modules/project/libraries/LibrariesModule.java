@@ -14,6 +14,7 @@ package org.netbeans.modules.project.libraries;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
+import org.netbeans.spi.project.libraries.LibraryProvider;
 
 import java.util.Iterator;
 

@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
-import java.util.Collection;
 
 /**
  *
@@ -143,9 +142,11 @@ public final class LibrariesCustomizer extends javax.swing.JPanel {
             this.deleteButton.setEnabled(false);
             return;
         }
-        this.libraryName.setEnabled(true);
-        this.deleteButton.setEnabled(true);
-        LibraryImplementation impl = (LibraryImplementation) (this.libraries.getModel()).getElementAt(index);
+        LibrariesModel model = (LibrariesModel) this.libraries.getModel();
+        LibraryImplementation impl = (LibraryImplementation) model.getElementAt(index);
+        boolean editable = model.isLibraryEditable (impl);
+        this.libraryName.setEnabled(editable);
+        this.deleteButton.setEnabled(editable);
         this.libraryName.setText (getLocalizedString(impl.getLocalizingBundle(),impl.getName()));
         String libraryType = impl.getType();
         LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (libraryType);
@@ -157,6 +158,7 @@ public final class LibrariesCustomizer extends javax.swing.JPanel {
             if (c instanceof JComponent) {
                 c.setObject (impl);
                 JComponent component = (JComponent) c;
+                component.setEnabled (editable);
                 String tabName = component.getName();
                 if (tabName == null) {
                     tabName = volumeTypes[i];

@@ -12,15 +12,11 @@
  */
 package org.netbeans.api.project.libraries;
 
-import org.netbeans.modules.project.libraries.LibrariesStorage;
-import org.netbeans.modules.project.libraries.LibraryProvider;
+
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-import org.openide.util.Lookup;
-
 import java.awt.Dialog;
-import java.util.Collection;
 
 /** Provides method for opening Libraries customizer
  *

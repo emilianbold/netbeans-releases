@@ -20,7 +20,8 @@ import java.util.*;
 
 
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.modules.project.libraries.LibraryProvider;
+import org.netbeans.spi.project.libraries.LibraryProvider;
+import org.netbeans.modules.project.libraries.WriteableLibraryProvider;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
@@ -39,6 +40,7 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
     private Collection currentStorages;
     private Map storageByLib;
     private Lookup.Result lresult;
+    private WriteableLibraryProvider writeableProvider;
 
     /** Creates a new instance of LibrariesModel */
     public LibrariesModel () {
@@ -95,29 +97,44 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
         this.fireContentsChanged(this,index,index);
     }
 
+    public boolean isLibraryEditable (LibraryImplementation impl) {
+        LibraryProvider provider = (LibraryProvider) this.storageByLib.get
+                (((ProxyLibraryImplementation)impl).getOriginal());
+        //Todo: Currently just one WriteableLibraryProvider
+        //Todo: if changed, must be rewritten to handle it
+        return (provider == this.writeableProvider);
+    }
+
     public void apply () throws IOException {
+        //Todo: Currently just one WriteableLibraryProvider
+        //Todo: if changed, must be rewritten to handle it
         for (Iterator it = this.removedLibraries.iterator(); it.hasNext();) {
             LibraryImplementation impl = (LibraryImplementation)it.next();
             LibraryProvider storage = (LibraryProvider) this.storageByLib.get (impl);
-            if (storage != null) {
-                storage.removeLibrary (impl);
+            if (storage == this.writeableProvider) {
+                this.writeableProvider.removeLibrary (impl);
             }
             else {
-                ErrorManager.getDefault().log ("Can not find storage for library: "+impl.getName());
+                ErrorManager.getDefault().log ("Can not find storage for library: "+impl.getName());    //NOI18N
             }
         }
-        for (Iterator it = this.addedLibraries.iterator(); it.hasNext();) {
-            ((LibraryProvider)this.currentStorages.iterator().next()).addLibrary((LibraryImplementation)it.next());
+        if (this.writeableProvider != null) {
+            for (Iterator it = this.addedLibraries.iterator(); it.hasNext();) {
+                this.writeableProvider.addLibrary((LibraryImplementation)it.next());
+            }
+        }
+        else {
+            ErrorManager.getDefault().log ("Can not add libraries, no WriteableProvider."); //NOI18N
         }
         for (Iterator it = this.changedLibraries.iterator(); it.hasNext();) {
             ProxyLibraryImplementation proxy = (ProxyLibraryImplementation) it.next ();
             LibraryProvider storage = (LibraryProvider) this.storageByLib.get (proxy.getOriginal());
-            if (storage != null) {
-                storage.removeLibrary (proxy.getOriginal());
-                storage.addLibrary (proxy);
+            if (storage == this.writeableProvider) {
+                this.writeableProvider.removeLibrary (proxy.getOriginal());
+                this.writeableProvider.addLibrary (proxy);
             }
             else {
-                ErrorManager.getDefault().log ("Can not find storage for library: "+proxy.getOriginal().getName());
+                ErrorManager.getDefault().log ("Can not find storage for library: "+proxy.getOriginal().getName());  //NOI18N
             }
         }
         cleanUp ();
@@ -172,6 +189,10 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
         this.storageByLib.clear();
         for (Iterator it = instances.iterator(); it.hasNext();) {
             LibraryProvider storage = (LibraryProvider) it.next ();
+            //TODO: in case of more WriteableLibraryProvider must be changed
+            if (this.writeableProvider == null && storage instanceof WriteableLibraryProvider) {
+                this.writeableProvider = (WriteableLibraryProvider) storage;
+            }
             LibraryImplementation[] impls = storage.getLibraries();
             for (int i = 0; i < impls.length; i++) {
                 LibraryImplementation lib = impls[i];

@@ -32,7 +32,7 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 
 
-public class LibrariesStorage extends FileChangeAdapter implements LibraryProvider {
+public class LibrariesStorage extends FileChangeAdapter implements WriteableLibraryProvider {
 
     private static final String LIBRARIES_REPOSITORY = "org-netbeans-api-project-libraries/Libraries";
 
@@ -187,7 +187,7 @@ public class LibrariesStorage extends FileChangeAdapter implements LibraryProvid
 
 
     private void fireLibrariesChanged () {
-        this.support.firePropertyChange("libraries",null,null);
+        this.support.firePropertyChange(PROP_LIBRARIES,null,null);
     }
 
 
