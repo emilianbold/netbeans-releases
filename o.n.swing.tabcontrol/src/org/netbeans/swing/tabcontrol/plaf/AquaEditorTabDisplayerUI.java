@@ -74,6 +74,10 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         return true;
     }
     
+    protected Font createFont() {
+        return UIManager.getFont("Label.font"); //NOI18N
+    }    
+    
     protected int createRepaintPolicy () {
         return TabState.REPAINT_SELECTION_ON_ACTIVATION_CHANGE
                 | TabState.REPAINT_ON_SELECTION_CHANGE

@@ -86,6 +86,10 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         super.paint(g, c);
         paintBottomBorder(g, c);
     }
+    
+    protected Font getTxtFont() {
+        return getDisplayer().getFont();
+    }    
 
     /**
      * Paints bottom "activation" line
@@ -190,7 +194,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             textY = (-1 * ((textHeight - height) / 2)) + fm.getAscent()
                     - 1;
         } else {
-            textY = (height / 2) - (textHeight / 2) + fm.getAscent() - 1;
+            textY = (height / 2) - (textHeight / 2) + fm.getAscent();
         }
 
         HtmlRenderer.renderString(text, g, textX, textY, textW, height, getTxtFont(),

@@ -46,7 +46,7 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
     }
 
     protected int getCaptionYAdjustment() {
-        return 1;
+        return 0;
     }
 
     protected int getIconYAdjustment() {

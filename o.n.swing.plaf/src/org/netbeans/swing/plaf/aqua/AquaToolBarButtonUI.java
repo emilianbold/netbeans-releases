@@ -151,9 +151,6 @@ class AquaToolBarButtonUI extends ButtonUI implements ChangeListener {
             if (iconH <= r.height) {
                 iconY = (r.height / 2) - (iconH / 2);
             }
-            if (iconH > 20) {
-                iconY += 2;
-            }
             ic.paintIcon(b, g, iconX, iconY);
         }
     }
