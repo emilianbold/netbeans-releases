@@ -26,12 +26,8 @@ import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 
-import org.apache.regexp.CharacterIterator;
 import org.apache.regexp.RE;
-import org.apache.regexp.RECompiler;
-import org.apache.regexp.REProgram;
 import org.apache.regexp.RESyntaxException;
-import org.apache.regexp.StringCharacterIterator;
 
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.InfoPanel;
@@ -40,6 +36,7 @@ import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.PropertyPanel;
 import org.netbeans.modules.i18n.ResourceHolder;
+import org.netbeans.modules.properties.UtilConvert; // PENDING
 
 import org.openide.cookies.SourceCookie;
 import org.openide.loaders.DataObject;
@@ -243,11 +240,11 @@ public class JavaI18nSupport extends I18nSupport {
                 sourceClass.addField(newField);
         } catch(SourceException se) {
             // do nothing, means the field already exist
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+            if(I18nUtil.isDebug()) // NOI18N
                 se.printStackTrace();
         } catch(NullPointerException npe) {
             // something wrong happened, probably sourceDataObject was not initialized
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+            if(I18nUtil.isDebug()) // NOI18N
                 npe.printStackTrace();
         }
     }
@@ -340,9 +337,6 @@ public class JavaI18nSupport extends I18nSupport {
         /** Helper variable. End of actual found hard coded string or -1. */
         protected int currentStringEnd;
         
-        /** Helper variable for regular expression program. */
-        private final RECompiler rec = new RECompiler();
-
 
         /** Constructs finder. */
         public JavaI18nFinder(StyledDocument document) {
@@ -641,7 +635,7 @@ public class JavaI18nSupport extends I18nSupport {
                             return new HardCodedString(extractString(hardString), hardStringStart, hardStringEnd);
                         }
                     } catch(BadLocationException ble) {
-                        if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        if(I18nUtil.isDebug()) // NOI18N
                             ble.printStackTrace();
                     } finally {
                         currentStringStart = -1;
@@ -685,20 +679,21 @@ public class JavaI18nSupport extends I18nSupport {
          * @param partHardLine line of code which includes hard coded string and starts from beginning or
          * the end of previous hard coded string.
          * @param hardString found hard code string
-         * @return true if string is non-internationalized */
+         * @return <code>true<code> if string is internationalized and <code>i18nSearch</code> flag is <code>true</code>
+         *   or if if string is non-internationalized and <code>i18nSearch</code> flag is <code>false</code> */
         protected boolean isSearchedString(String partHardLine, String hardString) {
             String regExp = createRegularExpression(hardString);
             
-            REProgram rep;
-
             try {
-                rep = rec.compile(regExp);
-            } catch(RESyntaxException e) {
-                if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    e.printStackTrace();
+                if(new RE(regExp).match(UtilConvert.unicodesToChars(partHardLine))) {
+                    return i18nSearch;
+                }
+            } catch(RESyntaxException rse) {
+                if(I18nUtil.isDebug()) // NOI18N
+                    rse.printStackTrace();
 
                 // Indicate error, but allow user what to do with the found hard coded string to be able go thru
-                // this propblem.
+                // this problem.
                 // Note: All this shouldn't happen. The reason is 1) bad set reg exp format (in options) or 
                 // 2) it's error in this code.
                 String msg = MessageFormat.format(
@@ -715,13 +710,7 @@ public class JavaI18nSupport extends I18nSupport {
                     return false;
             }
 
-            RE re = new RE(rep, RE.MATCH_MULTILINE);
-            CharacterIterator chi = new StringCharacterIterator(partHardLine);
-
-            if(re.match(chi, 0))
-                return i18nSearch ? true : false;
-
-            return i18nSearch ? false : true;
+            return !i18nSearch;
         }
 
         /** Creates regular expression. Helper method.
@@ -765,7 +754,6 @@ public class JavaI18nSupport extends I18nSupport {
             return result.toString();
         }
     } // End of JavaI18nFinder nested class.
-    
     
     
     /** Replacer for java sources used by enclosing class. */
