@@ -68,8 +68,8 @@ Microsystems, Inc. All Rights Reserved.
          compress="false">
       <locale name="ja"/>
     </locjar>
-    <mkdir dir="netbeans/lib/ext"/>
-    <locjar jarfile="netbeans/lib/ext/ddl.jar"
+    <mkdir dir="netbeans/modules/ext"/>
+    <locjar jarfile="netbeans/modules/ext/ddl.jar"
          basedir="libsrc"
          excludesfile="../nbbuild/standard-jar-excludes.txt"
          compress="false">
