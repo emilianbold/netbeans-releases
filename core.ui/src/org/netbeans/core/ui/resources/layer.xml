@@ -532,6 +532,12 @@ SystemFileSystem
             <attr name="property" stringvalue="user.home" />
         </file>
     </folder>
+	
+	<folder name="Workplace">
+         <!-- Workplace of the IDE -->
+    </folder>    
+
+
     
     <folder name="Windows">
         <!--
