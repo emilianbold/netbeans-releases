@@ -33,7 +33,6 @@ public class ConnectionNode extends DatabaseNode
 		getInfo().addConnectionListener(new PropertyChangeListener() {
       		public void propertyChange(PropertyChangeEvent evt) {
       			if (evt.getPropertyName().equals(DatabaseNodeInfo.CONNECTION)) {
-      				System.out.println("connection changed...");
       				update((Connection)evt.getNewValue());
       			}
       		}

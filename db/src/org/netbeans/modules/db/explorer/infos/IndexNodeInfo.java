@@ -38,7 +38,6 @@ public class IndexNodeInfo extends TableNodeInfo
 			Hashtable ixmap = new Hashtable();
 			while (rs.next()) {
 				String ixname = (String)get("index");
-				System.out.println("Columns for index "+ixname);
 				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXCOLUMN, rs);
 				if (((String)info.get("ixname")).equals(ixname)) {
 					String way = (String)info.get("ord");

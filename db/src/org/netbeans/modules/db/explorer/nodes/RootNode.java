@@ -44,7 +44,6 @@ public class RootNode extends DatabaseNode
 	{
 		if (option == null) {
 			option = (DatabaseOption)SystemOption.findObject(DatabaseOption.class, false);
-			System.out.println("root option: "+option);
 		}
 		
 		return option;

@@ -45,7 +45,6 @@ public class DatabaseTypePropertySupport extends DatabasePropertySupport
     public PropertyEditor getPropertyEditor () 
     {
 		PropertyEditor pe = new DatabaseTypePropertyEditor(types, names);
-		System.out.println("PropertyEditor = "+pe);
 		return pe;
     }
 }

@@ -140,7 +140,6 @@ public class ColumnItem extends Hashtable
 			}
 		}
 
-		System.out.println(pname+" "+old+" -> "+value);
 		put(pname, value);
 		propertySupport.firePropertyChange(pname, old, value);
 	}

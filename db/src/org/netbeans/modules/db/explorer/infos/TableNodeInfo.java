@@ -46,26 +46,22 @@ public class TableNodeInfo extends DatabaseNodeInfo
         
 			// Primary keys
 				
-			System.out.println("Primary keys");
 			Hashtable ihash = new Hashtable(); 		
 			rs = dmd.getPrimaryKeys(catalog,user,table);
 			while (rs.next()) {
 				DatabaseNodeInfo iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PRIMARY_KEY, rs);
 				String iname = (String)iinfo.get("name");
-				System.out.println("\t"+iname);
 				ihash.put(iname,iinfo);
 			}
 			rs.close();
 
 			// Indexes
 				
-			System.out.println("Indexes");
 			Hashtable ixhash = new Hashtable(); 		
 			rs = dmd.getIndexInfo(catalog,user,table, true, false);
 			while (rs.next()) {
 				DatabaseNodeInfo iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXED_COLUMN, rs);
 				String iname = (String)iinfo.get("colname");
-				System.out.println("\t"+iname);
 				ixhash.put(iname,iinfo);
 			}
 			rs.close();

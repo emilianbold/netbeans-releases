@@ -50,7 +50,6 @@ public class DatabaseTypePropertyEditor implements PropertyEditor
 
 	public void setValue (Object object) 
 	{
-		System.out.println("Type for key "+object);
 		if (!(object instanceof Integer)) throw new IllegalArgumentException ();
 		int ii = ((Integer)object).intValue ();
 		int i, k = constants.length;
@@ -74,7 +73,6 @@ public class DatabaseTypePropertyEditor implements PropertyEditor
     if (i == k)  throw new IllegalArgumentException ();
     index = i;
     name = names [i];
-		System.out.println("Type for name "+string+": "+name);
     return;
   }
 
@@ -112,6 +110,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor
 
 /*
  * <<Log>>
+ *  3    Gandalf   1.2         6/15/99  Slavek Psenicka debug prints
  *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
  *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
  * $

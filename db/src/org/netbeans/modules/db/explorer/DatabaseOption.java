@@ -92,7 +92,7 @@ public class DatabaseOption extends SystemOption
 	/** Name of the option */
 	public String displayName() 
 	{
-    	return "DBNode connection options";
+    	return "Database explorer";
   	}
 
 	/** Description of object */

@@ -89,8 +89,6 @@ public class ColumnNodeInfo extends DatabaseNodeInfo
 			col.setNullAllowed(rs.getString(18).toUpperCase().equals("YES"));
 			col.setDefaultValue(rs.getString("COLUMN_DEF"));
 
-			System.out.println("Recognized column: "+col.getCommand(cmd));
-
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());
 		}

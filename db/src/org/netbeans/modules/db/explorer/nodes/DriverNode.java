@@ -37,7 +37,6 @@ public class DriverNode extends LeafNode implements PropertyChangeListener
 		DatabaseNodeInfo info = getInfo();
 		String pname = evt.getPropertyName();
 		Object newval = evt.getNewValue();
-		System.out.println("Property "+pname+" changed to "+newval);
 		DatabaseDriver drv = (DatabaseDriver)info.get(DatabaseNodeInfo.DBDRIVER);			
 		if (pname.equals(DatabaseNodeInfo.NAME)) drv.setName((String)newval);
 		if (pname.equals(DatabaseNodeInfo.URL)) drv.setURL((String)newval);

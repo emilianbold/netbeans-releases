@@ -166,7 +166,6 @@ public class AddIndexDialog
 		{
 			JCheckBox cbx = (JCheckBox)event.getSource();
 			String name = cbx.getName();
-			System.out.println(name+" -> "+cbx.isSelected());
 			if (cbx.isSelected()) set.add(name);
 			else set.remove(name);
 		}

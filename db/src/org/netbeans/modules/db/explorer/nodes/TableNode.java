@@ -63,7 +63,6 @@ public class TableNode extends DatabaseNode
 */
 			nfo = (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
 			if (nfo != null) {
-				System.out.println(nfo.getName()+": column cut/paste allowed");
 				s.add(new ColumnPasteType((ColumnNodeInfo)nfo, n));
 				return;
 			}
@@ -79,7 +78,6 @@ public class TableNode extends DatabaseNode
 */	
 			nfo = (DatabaseNodeInfo)NodeTransfer.copyCookie(t, ColumnNodeInfo.class);
 			if (nfo != null) {
-				System.out.println(nfo.getName()+": column copy/paste allowed");
 				s.add(new ColumnPasteType((ColumnNodeInfo)nfo, null));
 				return;
 			}
@@ -122,7 +120,6 @@ public class TableNode extends DatabaseNode
 			ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
 			TableListNodeInfo ownerinfo = (TableListNodeInfo)getInfo().getParent(DatabaseNode.TABLELIST);
 			if (info != null) {
-				System.out.println("Pasting "+info.getName());
 				TableNodeInfo exinfo = ownerinfo.getChildrenTableInfo(info);
 				DatabaseNodeChildren chi = (DatabaseNodeChildren)getChildren();
 				String name = info.getName();
