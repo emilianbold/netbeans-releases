@@ -26,6 +26,7 @@ import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
 import org.netbeans.spi.project.ActionProvider;
@@ -227,7 +228,28 @@ class J2SEActionProvider implements ActionProvider {
 
                 if (!J2SEProjectUtil.hasMainMethod (file)) {
                     if (AppletSupport.isApplet(file)) {
+                        
+                        EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        String jvmargs = ep.getProperty("run.jvmargs");
+                        
                         URL url = null;
+
+                        // do this only when security policy is not set manually
+                        if ((jvmargs == null) || !(jvmargs.indexOf("java.security.policy") > 0)) {  //NOI18N
+                            AppletSupport.generateSecurityPolicy(project.getProjectDirectory());
+                            if ((jvmargs == null) || (jvmargs.length() == 0)) {
+                                ep.setProperty("run.jvmargs", "-Djava.security.policy=applet.policy"); //NOI18N
+                            } else {
+                                ep.setProperty("run.jvmargs", jvmargs + " -Djava.security.policy=applet.policy"); //NOI18N
+                            }
+                            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                            try {
+                                ProjectManager.getDefault().saveProject(project);
+                            } catch (Exception e) {
+                                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + e);
+                            }
+                        }
+                        
                         if (file.existsExt("html") || file.existsExt("HTML")) { //NOI18N
                             url = copyAppletHTML(file, "html"); //NOI18N
                         } else {                    
