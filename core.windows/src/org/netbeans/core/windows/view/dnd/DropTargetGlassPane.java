@@ -18,10 +18,12 @@ import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
@@ -31,12 +33,14 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetListener;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.view.Controller;
+import org.netbeans.core.windows.view.ui.tabcontrol.EqualPolygon;
 
 
 /**
@@ -104,12 +108,58 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     /** Called when the drag operation performed over this drop target. */
     void dragOver(Point location, TopComponentDroppable droppable) {
         this.droppable = droppable;
-        repaintForLocation(location);
+        if (dragRepaintManager == null) {
+            setDragRepaintManager (new DragRepaintManager(this));
+        }
+        setDragLocation (location);
     }
+    
+    
+    private Point dragLocation = null;
+    private void setDragLocation (Point p) {
+        Point old = dragLocation;
+        dragLocation = p;
+        if (p != null && p.equals(old)) {
+            return;
+        } else if (p == null) {
+            //XXX clear?
+            return;
+        }
+        
+        if (droppable != null) {
+            Component c = droppable.getDropComponent();
+            
+            Shape s = droppable.getIndicationForLocation (
+                SwingUtilities.convertPoint(this, p, c));
+            
+            dragRepaintManager.setShapeAndTarget(s, c);
+        } else {
+            dragRepaintManager.eraseLastIndication(null);
+        }
+        
+    }
+    
+
     
     /** Called when the drag operation exited from this drop target. */
     private void dragExited() {
         clear();
+    }
+    
+    private boolean guidedPaint = false;
+    
+    /** DragRepaintManager will call paint directly to quickly produce
+     * visual feedback.  It will call this method when it is doing this,
+     * so the component knows it will not need to paint the drop indication;
+     * but it should paint it from a normal RepaintManager induced paint. */
+    private void setGuidedPaint (boolean val) {
+        guidedPaint = val;
+    }
+    
+    /** Determine if the current paint cycle is caused by standard repainting
+     * or the custom instant repaint logic in DragRepaintManager */
+    private boolean isGuidedPaint () {
+        return guidedPaint;
     }
     
     /** Hacks the problem when exiting of drop target, sometimes the framework
@@ -122,114 +172,45 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
 
     /** Called when changed drag action. */
     private void dragActionChanged(Point location) {
-        repaintForLocation(location);
+        setDragLocation(location);
     }
 
     /** Called when drag operation finished. */
     private void dragFinished() {
         clear();
-    }
-
-    /** Repaints indications. */
-    private void repaintForLocation(Point location) {
-        if(this.location == location) {
-            return;
-        }
-        this.location = location;
-        repaint();
+        setDragRepaintManager(null);
     }
     
+    private void setDragRepaintManager (DragRepaintManager drm) {
+        this.dragRepaintManager = drm;
+    }
+
+    private DragRepaintManager dragRepaintManager = null;
+
     /** Clears glass pane. */
     private void clear() {
-        this.location = null;
         this.droppable = null;
-        repaint();
+        
+        if (dragRepaintManager != null) {
+            dragRepaintManager.setShapeAndTarget(null, null);
+        }
+        setDragLocation(null);
     }
-    
 
+    
     /** Overrides superclass method, to indicate the 'drag under' gesture
      * in the case there is cursor drag operation in progress and cursor
      * is above this drop target. */
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-//        // Draws rectangle indicating glass pane presence, debug only.
-//        Color oo = g.getColor();
-//        g.setColor(Color.green);
-//        Rectangle bounds = getBounds();
-//        g.drawRect(0, 0 , bounds.width - 1, bounds.height - 1);
-//        g.setColor(oo);
-       
-        Point position = location;
-        if(position == null) {
-            return;
+        if (!isGuidedPaint() && dragRepaintManager != null) {
+            dragRepaintManager.paintCurrentIndication ((Graphics2D) g);
         }
-
-        TopComponentDroppable dr = this.droppable;
-        if(dr == null) {
-            return;
-        }
-
-        Point p = SwingUtilities.convertPoint(
-                this, position, dr.getDropComponent());
-        Shape s = dr.getIndicationForLocation(p);
-        drawIndication(g, s, dr.getDropComponent());
     }
     
     // PENDING Take the color from UI Defaults
     private static final Color FILL_COLOR = new Color( 200, 200, 200, 120 );
-    
-    private void drawIndication(Graphics gr, Shape s, Component source) {
-        if(s == null) {
-            return;
-        }
-
-        // Actually paint.
-        Graphics2D g = (Graphics2D)gr;
-
-        Stroke oldStroke = g.getStroke();
-        Color oldColor = g.getColor();
-
-	// PENDING Take the color from UI Defaults
-        g.setColor(Color.red);        	
-	
-        g.setStroke(createIndicationStroke());
-        
-	Color fillColor = Constants.SWITCH_DROP_INDICATION_FADE ? FILL_COLOR : null; 
-        if(s instanceof Rectangle) {
-            drawIndicationRectangle(g, (Rectangle)s, source, fillColor);
-        } else if(s instanceof GeneralPath) {
-            drawIndicationGeneralPath(g, (GeneralPath)s, source, fillColor);	    
-        }
-                
-        g.setColor(oldColor);
-        g.setStroke(oldStroke);
-    }
-    
-    private void drawIndicationRectangle(Graphics2D g, Rectangle r, Component source, Color fillColor ) {
-        r = SwingUtilities.convertRectangle(source, r, this);
-        // XXX Shrinks the rectangle to take into account the width of pen stroke.	
-        g.drawRect(r.x+1, r.y+1, r.width-2, r.height-2);
-	if ( fillColor != null ) {
-	    g.setColor(fillColor);
-	    g.fillRect(r.x+1, r.y+1, r.width-2, r.height-2);
-	}
-    }
-    
-    private void drawIndicationGeneralPath(Graphics2D g, GeneralPath path, Component source, Color fillColor ) {
-        // Convert path to this coordinates.
-        Point point = new Point(0, 0);
-        point =  SwingUtilities.convertPoint(source, point, this);
-        path.transform(new AffineTransform(1D, 0D, 0D, 1D, point.x, point.y));
-        
-        g.draw(path);
-	if ( fillColor != null ) {
-	    g.setColor( fillColor );
-	    g.fill(path);
-	}
-    }
-    
-    
     
     
     // >> DropTargetListener implementation >>
@@ -276,6 +257,10 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         if(DEBUG) {
             debugLog(""); // NOI18N
             debugLog("dragOver"); // NOI18N
+        }
+        
+        if (dragRepaintManager == null) {
+            setDragRepaintManager (new DragRepaintManager(this));
         }
         
         // XXX Eliminate bug, see dragExitedHack.
@@ -366,19 +351,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     }
     // >> DropTargetListener implementation >>
 
-    /** Creates indication pen stroke. Utility method. */
-    private static Stroke createIndicationStroke() {
-        return new BasicStroke(2); // width of stroke is bigger to default one
-//        float[] dashPattern = { 1, 1 };
-//        return new BasicStroke(
-//            3.0F, // width
-//            BasicStroke.CAP_BUTT, // decoration of the ends
-//            BasicStroke.JOIN_MITER, // decoration applied when segments meet
-//            1.0F, // mitter limit where to trim the join
-//            dashPattern, // dashing pattern
-//            0.0F // offset to start the dashing pattern
-//        ); // PENDING
-    }
+
 
     private static void debugLog(String message) {
         Debug.log(DropTargetGlassPane.class, message);
@@ -397,6 +370,262 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         public boolean isCopyOperationPossible();
         public Controller getController();
         public Set getFloatingFrames();
+    }
+    
+    /** A scratch rectangle to save allocating one for every pixel the mouse
+     * is dragged */
+    private static final Rectangle scratch = new Rectangle();
+    private static int ct = 0;
+    /** Encapsulates the painting logic associated with dragging, and provides
+     * optimized repainting services.  Will paint the tab indication onto the
+     * glass pane directly in real time.  The trigger method is setShapeAndTarget(),
+     * which will trigger painting the indication on the current target, and
+     * erasing the previous one if necessary.  Note it is important that the
+     * Shape objects passed honor the equals() method properly. 
+     */
+    private class DragRepaintManager {
+        private Shape shape = null;
+        private Component lastDropComponent;
+        DropTargetGlassPane pane;
+        private Graphics2D g = null;
+        
+        public DragRepaintManager (DropTargetGlassPane pane) {
+            this.pane = pane;
+        }
+        
+        public void finalize() {
+            if (g != null) g.dispose();
+        }
+        
+        private Graphics2D getGraphics() {
+            if (g == null) {
+                g = (Graphics2D) pane.getGraphics();
+            }
+            return g;
+        }
+        
+        public void clear() {
+            lastDropComponent = null;
+        }
+        
+        public void setShapeAndTarget (Shape s, Component c) {
+            Shape old = shape;
+            if (old != null && s != null) {
+                if (!shape.equals(s)) {
+                    shape = s;
+                    shapeChange (old, shape, c);
+                }
+            } else if ((old == null) != (s == null)) {
+                shape = s;
+                shapeChange (old, s, c);
+            }
+        }
+        
+        public void paintCurrentIndication (Graphics2D g) {
+            if (g == null) {
+                g = getGraphics();
+            }
+            if (shape != null) {
+                paintShapeOnGlassPane (shape, g, false);
+            }
+        }
+        
+        public void eraseLastIndication (Graphics2D g) {
+            if (g == null) {
+                g = getGraphics();
+            }
+            if (shape == null) {
+                return;
+            }
+            paintShapeOnGlassPane (shape, g, true);
+        }
+        
+        private void shapeChange (Shape old, Shape nue, Component c) {
+            if (old != null) {
+                paintShapeOnGlassPane (old, g, true);
+            }
+            lastDropComponent = c;
+            if (nue != null) {
+                paintShapeOnGlassPane (nue, g, false);
+            }
+        }
+        
+        private void paintShapeOnGlassPane (Shape s, Graphics2D g, boolean erasing) {
+            if (g == null) {
+                g = getGraphics();
+            }
+            if (g == null) {
+                return;
+            }
+            pane.setGuidedPaint(true);
+            try {
+//                Shape clip= getClipForIndication (s, !erasing);
+                JComponent toPaint;
+                //If we are erasing, we want to paint the root pane so any 
+                //pixels outside the bounds of the component are repainted
+                if (erasing) {
+                    toPaint = (JComponent) ((JComponent)lastDropComponent).getRootPane();
+                } else {
+                    toPaint = (JComponent) lastDropComponent;
+                }
+                Shape clip = getClipForIndication (s, true, lastDropComponent);
+                
+                g.setClip (clip);
+                if (erasing) {
+                    toPaint.paint (g);
+                } else {
+                    paintShape (s, g);
+                }
+
+                //Clear the clip - at least on OS-X not doing so can interfere
+                //with pending paint events, even though it shouldn't
+                g.setClip (null);
+            } finally {
+                pane.setGuidedPaint(false);
+            }
+        }
+        
+        private void paintShape (Shape s, Graphics2D g) {
+            if (g == null) {
+                g = getGraphics();
+            }
+            Color oldColor = g.getColor();
+            Stroke oldStroke = g.getStroke();
+            
+            g.setColor(Color.red);        	
+	
+            g.setStroke(createIndicationStroke());
+            Color fillColor = Constants.SWITCH_DROP_INDICATION_FADE ? FILL_COLOR : null; 
+            if(s instanceof Rectangle) {
+                drawIndicationRectangle(g, (Rectangle)s, lastDropComponent, fillColor);
+            } else if(s instanceof GeneralPath) {
+                drawIndicationGeneralPath(g, (GeneralPath)s, lastDropComponent, fillColor);	    
+            } else if (s instanceof Polygon) {
+                drawIndicationPolygon (g, (Polygon) s, lastDropComponent, fillColor);
+            }
+            g.setColor(oldColor);
+            g.setStroke(oldStroke);
+        }
+        
+        /** Creates indication pen stroke. Utility method. */
+        private Stroke createIndicationStroke() {
+            return new BasicStroke(2); // width of stroke is bigger to default one
+    //        float[] dashPattern = { 1, 1 };
+    //        return new BasicStroke(
+    //            3.0F, // width
+    //            BasicStroke.CAP_BUTT, // decoration of the ends
+    //            BasicStroke.JOIN_MITER, // decoration applied when segments meet
+    //            1.0F, // mitter limit where to trim the join
+    //            dashPattern, // dashing pattern
+    //            0.0F // offset to start the dashing pattern
+    //        ); // PENDING
+        }        
+        
+        
+        private Shape getClipForIndication (Shape indication, boolean translate, Component target) {
+            Shape clip;
+            if (indication instanceof Rectangle) {
+                scratch.setBounds((Rectangle) indication);
+                scratch.x -= 3;
+                scratch.y -= 3;
+                scratch.width +=6;
+                scratch.height +=6;
+                Area a = new Area(scratch);
+                scratch.setBounds ((Rectangle) indication);
+                scratch.x += 4;
+                scratch.y += 4;
+                scratch.width -=8;
+                scratch.height -= 8;
+                a.subtract(new Area(scratch));
+                if (translate) {
+                    Point p = new Point (0,0);
+                    
+                    p = SwingUtilities.convertPoint(lastDropComponent, p, 
+                        pane);
+//                    JComponent realTarget = (JComponent) lastDropComponent;
+                    AffineTransform at = AffineTransform.getTranslateInstance(p.x, p.y);
+                    a.transform(at);
+                }
+                clip = a;
+            } else {
+                if (indication instanceof Polygon) {
+                    if (translate) {
+                        indication = getTransformedPath ((Polygon) indication, target);
+                    }
+                } else if (indication instanceof GeneralPath) {
+                    if (translate) {
+                        indication = getTransformedPath ((GeneralPath)indication, target);
+                    }
+                } else {
+                    //who knows what it is...
+                    return null;
+                }
+                clip = new BasicStroke (5).createStrokedShape(indication);
+            }
+            return clip;
+        }
+        
+        private Polygon getTransformedPath (Polygon path, Component source) {
+            Polygon result = new EqualPolygon (path.xpoints, path.ypoints, path.npoints);
+            //XXX shrink the polgon here
+            Point point = new Point(0, 0);
+            point =  SwingUtilities.convertPoint(source, point, pane);
+            result.translate (point.x, point.y);
+            return result;
+        }
+
+        /** We do some munging of GeneralPaths before painting them.  That logic
+         * is encapsulated here so it can also be used by the code that generates
+         * a clip shape */
+        private GeneralPath getTransformedPath (GeneralPath path, Component source) {
+            Point point = new Point(0, 0);
+            point =  SwingUtilities.convertPoint(source, point, pane);
+            path = (GeneralPath) ((GeneralPath) path).clone();
+            path.transform(new AffineTransform(1D, 0D, 0D, 1D, point.x, point.y));
+            return path;
+        }
+
+        private void drawIndicationPolygon(Graphics2D g, Polygon p, Component source, Color fillColor ) {
+            if (g == null) {
+                g = getGraphics();
+            }
+            Point point = new Point (0,0);
+            point = SwingUtilities.convertPoint(source, point, pane);
+            p = new EqualPolygon (p.xpoints, p.ypoints, p.npoints);
+            p.translate (point.x, point.y);
+            g.drawPolygon (p);
+            if ( fillColor != null ) {
+                g.setColor( fillColor );
+                g.fillPolygon (p);
+            }
+        }   
+        
+        private void drawIndicationRectangle(Graphics2D g, Rectangle r, Component source, Color fillColor ) {
+            if (g == null) {
+                g = getGraphics();
+            }
+            r = SwingUtilities.convertRectangle(source, r, pane);
+            // XXX Shrinks the rectangle to take into account the width of pen stroke.	
+            g.drawRect(r.x+1, r.y+1, r.width-2, r.height-2);
+            if ( fillColor != null ) {
+                g.setColor(fillColor);
+                g.fillRect(r.x+1, r.y+1, r.width-2, r.height-2);
+            }
+        }
+
+        private void drawIndicationGeneralPath(Graphics2D g, GeneralPath path, Component source, Color fillColor ) {
+            if (g == null) {
+                g = getGraphics();
+            }
+            // Convert path to this coordinates.
+            path = getTransformedPath (path, source);
+
+            g.draw(path);
+            if ( fillColor != null ) {
+                g.setColor( fillColor );
+                g.fill(path);
+            }
+        }        
     }
 
 }

@@ -320,10 +320,6 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
     }
     
     private Shape getTabIndication(TopComponent startingTransfer, Point location) {
-        // TDB - performance - cache created indication and return new one
-        // only when needed, e.g. when size of tabbed container component
-        // has been changed
-        
         TabbedContainer.TabsDisplayer tabs = getTabsDisplayer();
         int newY = tabs.getComponent().getHeight() / 2;
         int index = tabs.getTabsUI().getLayoutModel().dropIndexOfPoint(location.x, newY);
@@ -332,27 +328,60 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
             r.setLocation(0, 0);
             return r;
         }
-
         int tabsHeight = tabs.getComponent().getHeight();
-        int width = getWidth();
-        int height = getHeight();
-        // prepare tabbed container part of feedback shape
-        GeneralPath indication = new GeneralPath();
-        indication.moveTo(0, tabsHeight);
-        indication.lineTo(0, height - 1);
-        indication.lineTo(width - 1, height - 1);
-        indication.lineTo(width - 1, tabsHeight);
-        
+        Polygon p;
         int startingIndex = indexOfTopComponent(startingTransfer);
         if(startingIndex >= 0 && (startingIndex == index || startingIndex + 1 == index)) {
             // merge with indication from tabs UI
-            indication.append(tabs.getTabsUI().getExactTabIndication(startingIndex), false);
+            p = (Polygon) tabs.getTabsUI().getExactTabIndication(startingIndex);
         } else {
             // merge with indication from tabs UI
-            indication.append(tabs.getTabsUI().getInsertTabIndication(index), false);
+            p = (Polygon) tabs.getTabsUI().getInsertTabIndication(index);
         }
         
-        return indication;
+        int width = getWidth();
+        int height = getHeight();
+        
+        int[] xpoints = new int[p.npoints + 4];
+        int[] ypoints = new int[xpoints.length];
+        
+        int pos = 0;
+        
+        xpoints[pos] = 0;
+        ypoints[pos] = tabsHeight;
+        
+        pos++;
+        
+        xpoints[pos] = p.xpoints[p.npoints-1];
+        ypoints[pos] = tabsHeight;
+        pos++;
+        
+        for (int i=0; i < p.npoints-2; i++) {
+            xpoints [pos] = p.xpoints[i];
+            ypoints [pos] = p.ypoints[i];
+            pos++;
+        }
+
+        xpoints[pos] = xpoints[pos-1];
+        ypoints[pos] = tabsHeight;
+        
+        pos++;
+        
+        xpoints[pos] = width - 1;
+        ypoints[pos] = tabsHeight;
+        
+        pos++;
+        
+        xpoints[pos] = width - 1;
+        ypoints[pos] = height -1;
+        
+        pos++;
+        
+        xpoints[pos] = 0;
+        ypoints[pos] = height - 1;
+        
+        Polygon result = new EqualPolygon (xpoints, ypoints, xpoints.length);
+        return result;
     }
      
     private Shape getStartingIndication(Point startingPoint, Point location) {
