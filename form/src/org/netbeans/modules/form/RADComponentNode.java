@@ -29,7 +29,7 @@ import org.netbeans.modules.form.actions.*;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.layoutsupport.*;
 
-import java.awt.Image;
+import java.awt.*;
 import java.awt.datatransfer.*;
 import java.text.MessageFormat;
 import java.util.*;
@@ -856,11 +856,13 @@ public class RADComponentNode extends AbstractNode
             try {
                 Class instanceClass = ic.instanceClass();
 
-                if (java.awt.Component.class.isAssignableFrom(instanceClass)) {
+                if (Component.class.isAssignableFrom(instanceClass)) {
                     // visual component
                     Object isContainer =
-                        BeanSupport.createBeanInfo(instanceClass)
-                            .getBeanDescriptor().getValue("isContainer"); // NOI18N
+                        Container.class.isAssignableFrom(instanceClass) ?
+                            BeanSupport.createBeanInfo(instanceClass)
+                                .getBeanDescriptor().getValue("isContainer") : // NOI18N
+                            Boolean.FALSE;
 
                     RADVisualComponent newComp = null;
                     RADVisualContainer newCont = null;
