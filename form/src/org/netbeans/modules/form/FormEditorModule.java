@@ -341,6 +341,7 @@ public class FormEditorModule implements ModuleInstall {
   }
 
   private void createInstances (FileObject folder, String[] classNames, String[] iconNames, java.util.Collection componentErrors) {
+    java.util.ArrayList orderList = new java.util.ArrayList (classNames.length);
     for (int i = 0; i < classNames.length; i++) {
       String fileName = formatName (classNames[i]);
       FileLock lock = null;
@@ -353,12 +354,26 @@ public class FormEditorModule implements ModuleInstall {
             String ic = "icon="+iconNames[i];
             os.write (ic.getBytes ());
           }
+          DataObject obj = DataObject.find (fo);
+          if (obj != null) {
+            orderList.add (obj);
+          }
         }
       } catch (java.io.IOException e) {
         componentErrors.add (fileName);
       } finally {
         if (lock != null) {
           lock.releaseLock ();
+        }
+      }
+    }
+    if (orderList.size () > 0) {
+      DataFolder dataFolder = DataFolder.findFolder (folder);
+      if (dataFolder != null) {
+        try {
+          dataFolder.setOrder ((DataObject[])orderList.toArray (new DataObject[orderList.size ()]));
+        } catch (java.io.IOException e) {
+          // ignore failure to set order
         }
       }
     }
@@ -487,6 +502,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  26   Gandalf   1.25        7/15/99  Ian Formanek    Items in 
+ *       ComponentPalette are ordered
  *  25   Gandalf   1.24        7/11/99  Ian Formanek    Persistence managers 
  *       registered
  *  24   Gandalf   1.23        7/6/99   Ian Formanek    Installs menu and 
