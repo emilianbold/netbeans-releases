@@ -69,6 +69,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
         leftField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Left"));
         bottomField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Bottom"));
         rightField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Right"));
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_InsetsCustomEditor"));
     }
 
     public java.awt.Dimension getPreferredSize () {

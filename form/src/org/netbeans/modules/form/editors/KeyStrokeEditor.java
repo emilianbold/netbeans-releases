@@ -23,6 +23,11 @@ import java.lang.reflect.*;
 import org.netbeans.modules.form.util.*;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
+import org.openide.util.NbBundle;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.awt.FlowLayout;
 
 public class KeyStrokeEditor extends PropertyEditorSupport
     implements XMLPropertyEditor
@@ -191,25 +196,95 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         private JComboBox _virtualKey;
 
         CustomEditor() {
-            setLayout(new FormLayout(5, 3));
-            add(new JLabel("Virtual key:"), FormLayout.RIGHT);
+            setLayout(new GridBagLayout());
+            
+            ResourceBundle bundle = NbBundle.getBundle(KeyStrokeEditor.class);
 
-            JPanel panel;
+            JLabel virtualKeyLabel = new JLabel();
+            virtualKeyLabel.setText(bundle.getString("CTL_VirtualKey"));
+            virtualKeyLabel.setDisplayedMnemonic(bundle.getString("CTL_VirtualKey_Mnemonic").charAt(0));
 
-            add(panel = new JPanel(new RowLayout(3)));
-            panel.add(_virtualKey = new JComboBox());
-            panel.add(_ctrl = new JCheckBox("ctrl"));
-            panel.add(_alt = new JCheckBox("alt"));
-            panel.add(_shift = new JCheckBox("shift"));
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 1;
+            gbc.anchor = gbc.WEST;
+            gbc.fill = gbc.NONE;
+            gbc.weightx = 0;
+            gbc.weighty = 0;
+            gbc.insets = new Insets(12, 12, 5, 12);
+            add(virtualKeyLabel, gbc);
 
-            add(new JLabel("Key stroke:"), FormLayout.RIGHT);
-            add(_keyGrabber = new KeyGrabberField());
+            gbc = new GridBagConstraints();
+            gbc.gridx = 1;
+            gbc.gridy = 0;
+            gbc.gridwidth = 1;
+            gbc.fill = gbc.HORIZONTAL;
+            gbc.weightx = 1.0;
+            gbc.weighty = 0;
+            gbc.insets = new Insets(12, 0, 5, 11);
+            add(_virtualKey = new JComboBox(), gbc);
+            _virtualKey.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_VirtualKey"));
+
+            JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+            _ctrl = new JCheckBox("Ctrl");
+            _ctrl.setMnemonic('C');
+            _ctrl.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CtrlKey"));
+            panel.add(_ctrl);
+            _alt = new JCheckBox("Alt");
+            _alt.setMnemonic('A');
+            _alt.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AltKey"));
+            panel.add(_alt);
+            _shift = new JCheckBox("Shift");
+            _shift.setMnemonic('S');
+            _shift.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ShiftKey"));
+            panel.add(_shift);
+            virtualKeyLabel.setLabelFor(_virtualKey);
+            
+            gbc = new GridBagConstraints();
+            gbc.gridx = 2;
+            gbc.gridy = 0;
+            gbc.gridwidth = 1;
+            gbc.fill = gbc.NONE;
+            gbc.weightx = 0;
+            gbc.weighty = 0;
+            gbc.insets = new Insets(12, 0, 5, 12);
+            add(panel, gbc);
+            
+            JLabel keyStrokeLabel = new JLabel();
+            keyStrokeLabel.setText(bundle.getString("CTL_KeyStroke"));
+            keyStrokeLabel.setDisplayedMnemonic(bundle.getString("CTL_KeyStroke_Mnemonic").charAt(0));
+
+            gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            gbc.gridwidth = 1;
+            gbc.anchor = gbc.WEST;
+            gbc.fill = gbc.NONE;
+            gbc.weightx = 0;
+            gbc.weighty = 0;
+            gbc.insets = new Insets(0, 12, 0, 12);
+            add(keyStrokeLabel, gbc);
+
+            gbc = new GridBagConstraints();
+            gbc.gridx = 1;
+            gbc.gridy = 1;
+            gbc.gridwidth = 2;
+            gbc.fill = gbc.HORIZONTAL;
+            gbc.weightx = 1.0;
+            gbc.weighty = 0;
+            gbc.insets = new Insets(0, 0, 0, 11);
+            add(_keyGrabber = new KeyGrabberField(), gbc);
+            _keyGrabber.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_KeyStroke"));
+            keyStrokeLabel.setLabelFor(_keyGrabber);
 
             _keyGrabber.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ev) {
                     setAsText(_keyGrabber.getText());
                 }
             });
+            
+            getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_KeyStrokeCustomEditor"));
 
             // fill in virtual key list
 

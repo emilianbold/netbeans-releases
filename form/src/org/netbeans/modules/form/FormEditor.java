@@ -201,8 +201,8 @@ final public class FormEditor extends Object
             eld,
             FormEditor.getFormBundle().getString("CTL_ErrorsNotificationTitle"),
             true,
-            new Object[] { FormEditor.getFormBundle().getString("CTL_CLOSE") },
-            FormEditor.getFormBundle().getString("CTL_CLOSE"),
+            new Object[] { DialogDescriptor.CLOSED_OPTION },
+            DialogDescriptor.CLOSED_OPTION,
             DialogDescriptor.BOTTOM_ALIGN,
             null,
             new ActionListener() {

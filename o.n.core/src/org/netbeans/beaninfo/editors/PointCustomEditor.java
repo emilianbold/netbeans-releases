@@ -49,6 +49,7 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
 
         xField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_X"));
         yField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Y"));
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_PointCustomEditor"));
         
         setBorder (new javax.swing.border.EmptyBorder(12, 12, 0, 11));
         insidePanel.setBorder (new javax.swing.border.CompoundBorder (

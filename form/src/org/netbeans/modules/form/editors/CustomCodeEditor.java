@@ -46,6 +46,7 @@ public class CustomCodeEditor extends javax.swing.JPanel implements EnhancedCust
         codeEditorPane.getCaret().setVisible(codeEditorPane.hasFocus());
         
         codeEditorPane.getAccessibleContext().setAccessibleDescription(getString("ACSD_CustomCodeEditor.label1"));
+        getAccessibleContext().setAccessibleDescription(getString("ACSD_CustomCodeEditor"));
     }
 
     /** This method is called from within the constructor to

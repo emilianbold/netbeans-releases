@@ -651,6 +651,7 @@ public final class BeanInstaller
             categoryLabel.setDisplayedMnemonic(CPManager.getBundle().getString("CTL_PaletteCategories_Mnemonic").charAt(0));
             categoryLabel.setLabelFor(list);
             list.getAccessibleContext().setAccessibleDescription(CPManager.getBundle().getString("ACSD_CTL_PaletteCategories"));
+            getAccessibleContext().setAccessibleDescription(CPManager.getBundle().getString("ACSD_PaletteCategoriesSelector"));
             add(categoryLabel, BorderLayout.NORTH);
             add(new JScrollPane(list), BorderLayout.CENTER);
             setBorder(new EmptyBorder(12, 12, 0, 11));
@@ -679,10 +680,14 @@ public final class BeanInstaller
             list = new JList(beans.toArray());
             list.setCellRenderer(new FileObjectRenderer());
 
-            setBorder(new EmptyBorder(5, 5, 5, 5));
-            setLayout(new BorderLayout(5, 5));
-            add(new JLabel(CPManager.getBundle().getString("CTL_SelectBeans")), // NOI18N
-                BorderLayout.NORTH);
+            setBorder(new EmptyBorder(12, 12, 0, 11));
+            setLayout(new BorderLayout(0, 2));
+            JLabel label = new JLabel(CPManager.getBundle().getString("CTL_SelectBeans")); // NOI18N
+            label.setLabelFor(list);
+            label.setDisplayedMnemonic(CPManager.getBundle().getString("CTL_SelectBeans_Mnemonic").charAt(0));
+            list.getAccessibleContext().setAccessibleDescription(CPManager.getBundle().getString("ACSD_CTL_SelectBeans"));
+            getAccessibleContext().setAccessibleDescription(CPManager.getBundle().getString("ACSD_SelectBeansDialog"));
+            add(label, BorderLayout.NORTH);
             add(new JScrollPane(list), BorderLayout.CENTER); // NOI18N
         }
 

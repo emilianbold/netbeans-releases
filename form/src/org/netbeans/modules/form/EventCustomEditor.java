@@ -47,6 +47,7 @@ public class EventCustomEditor extends javax.swing.JPanel {
         addButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_EE_ADD"));
         removeButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_EE_REMOVE"));
         editButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_EE_RENAME"));
+        getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_EventCustomEditor"));
     }
 
     /** This method is called from within the constructor to

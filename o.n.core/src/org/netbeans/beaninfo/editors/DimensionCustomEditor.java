@@ -62,6 +62,7 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
 
         widthField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Width"));
         heightField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Height"));
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_DimensionCustomEditor"));
     }
 
     public java.awt.Dimension getPreferredSize () {

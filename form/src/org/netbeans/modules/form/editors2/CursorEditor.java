@@ -170,6 +170,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
 
             cursorListLabel.setDisplayedMnemonic(bundle.getString("CTL_SelectCursorName_Mnemonic").charAt(0));
             list.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_SelectCursorName"));
+            getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CursorCustomEditor"));
         }
 
         public Object getPropertyValue() throws IllegalStateException {

@@ -167,6 +167,16 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
         FontPanel () {
             setLayout (new BorderLayout ());
 
+            lFont = new JList (fonts);
+            lFont.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Font"));
+            lStyle = new JList (styles);
+            lStyle.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_FontStyle"));
+            lSize = new JList (sizes);
+            lSize.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Size"));
+            tfSize = new JTextField ("" + FontEditor.this.font.getSize ()); // NOI18N
+            tfSize.getAccessibleContext().setAccessibleDescription(lSize.getAccessibleContext().getAccessibleDescription());
+            getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_FontCustomEditor"));
+
             GridBagLayout la = new GridBagLayout ();
             GridBagConstraints c = new GridBagConstraints ();
             setLayout (la);
@@ -212,7 +222,6 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
             c.insets = new Insets (5, 5, 0, 0);
             c.gridwidth = GridBagConstraints.REMAINDER;
-            tfSize = new JTextField ("" + FontEditor.this.font.getSize ()); // NOI18N
             /* Enter should invoke default button
             tfSize.addActionListener (new ActionListener () {
                                           public void actionPerformed (ActionEvent e) {
@@ -233,8 +242,8 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             c.fill = GridBagConstraints.BOTH;
             c.weightx = 1.0;
             c.weighty = 1.0;
-            lFont = new JList (fonts);
             lFont.setVisibleRowCount (5);
+            lFont.setSelectedValue(FontEditor.this.font.getName (), true);
             lFont.addListSelectionListener (new ListSelectionListener () {
                                                 public void valueChanged (ListSelectionEvent e) {
                                                     if (!lFont.isSelectionEmpty ()) {
@@ -250,8 +259,8 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             la.setConstraints (sp, c);
             add (sp);
 
-            lStyle = new JList (styles);
             lStyle.setVisibleRowCount (5);
+            lStyle.setSelectedValue(getStyleName (FontEditor.this.font.getStyle ()), true);
             lStyle.addListSelectionListener (new ListSelectionListener () {
                                                  public void valueChanged (ListSelectionEvent e) {
                                                      if (!lStyle.isSelectionEmpty ()) {
@@ -269,8 +278,9 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             add (sp);
 
             c.gridwidth = GridBagConstraints.REMAINDER;
-            lSize = new JList (sizes);
+            lSize.getAccessibleContext().setAccessibleName(tfSize.getAccessibleContext().getAccessibleName());
             lSize.setVisibleRowCount (5);
+            updateSizeList(FontEditor.this.font.getSize ());
             lSize.addListSelectionListener (new ListSelectionListener () {
                                                 public void valueChanged (ListSelectionEvent e) {
                                                     if (!lSize.isSelectionEmpty ()) {
@@ -314,10 +324,18 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             return new Dimension (400, 250);
         }
 
+        private void updateSizeList(int size) {
+            if (java.util.Arrays.asList(sizes).contains(new Integer(size)))
+                lSize.setSelectedValue(new Integer(size), true);
+            else
+                lSize.clearSelection();
+        }
+
         void setValue () {
             int size = 12;
             try {
                 size = Integer.parseInt (tfSize.getText ());
+                updateSizeList(size);
             } catch (NumberFormatException e) {
                 return;
             }

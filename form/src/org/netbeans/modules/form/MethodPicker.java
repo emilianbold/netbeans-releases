@@ -62,6 +62,7 @@ public class MethodPicker extends javax.swing.JPanel {
 
         componentsCombo.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_Component"));
         methodList.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_MethodList"));
+        getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_MethodPicker"));
         HelpCtx.setHelpIDString(this, "gui.connecting.code"); // NOI18N
     }
 
@@ -167,15 +168,15 @@ public class MethodPicker extends javax.swing.JPanel {
         methodList = new javax.swing.JList();
         
         setLayout(new java.awt.GridBagLayout());
-        java.awt.GridBagConstraints gridBagConstraints2;
+        java.awt.GridBagConstraints gridBagConstraints1;
         
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 0, 11)));
         componentLabel.setText(FormEditor.getFormBundle().getString("CTL_Component"));
         componentLabel.setLabelFor(componentsCombo);
-        gridBagConstraints2 = new java.awt.GridBagConstraints();
-        gridBagConstraints2.insets = new java.awt.Insets(0, 0, 5, 6);
-        gridBagConstraints2.anchor = java.awt.GridBagConstraints.WEST;
-        add(componentLabel, gridBagConstraints2);
+        gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 6);
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+        add(componentLabel, gridBagConstraints1);
         
         componentsCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -183,19 +184,19 @@ public class MethodPicker extends javax.swing.JPanel {
             }
         });
         
-        gridBagConstraints2 = new java.awt.GridBagConstraints();
-        gridBagConstraints2.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints2.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(componentsCombo, gridBagConstraints2);
+        gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 0);
+        add(componentsCombo, gridBagConstraints1);
         
         listLabel.setText(FormEditor.getFormBundle().getString("CTL_Component"));
         listLabel.setLabelFor(methodList);
-        gridBagConstraints2 = new java.awt.GridBagConstraints();
-        gridBagConstraints2.gridx = 0;
-        gridBagConstraints2.gridy = 1;
-        gridBagConstraints2.insets = new java.awt.Insets(0, 0, 2, 0);
-        gridBagConstraints2.anchor = java.awt.GridBagConstraints.WEST;
-        add(listLabel, gridBagConstraints2);
+        gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 1;
+        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+        add(listLabel, gridBagConstraints1);
         
         methodList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         methodList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -206,14 +207,14 @@ public class MethodPicker extends javax.swing.JPanel {
         
         propertiesScrollPane.setViewportView(methodList);
         
-        gridBagConstraints2 = new java.awt.GridBagConstraints();
-        gridBagConstraints2.gridx = 0;
-        gridBagConstraints2.gridy = 2;
-        gridBagConstraints2.gridwidth = 2;
-        gridBagConstraints2.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints2.weightx = 1.0;
-        gridBagConstraints2.weighty = 1.0;
-        add(propertiesScrollPane, gridBagConstraints2);
+        gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 2;
+        gridBagConstraints1.gridwidth = 2;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints1.weightx = 1.0;
+        gridBagConstraints1.weighty = 1.0;
+        add(propertiesScrollPane, gridBagConstraints1);
         
     }//GEN-END:initComponents
 

@@ -126,18 +126,6 @@ public final class BorderEditor extends PropertyEditorSupport
     }
 
     public String getAsText() {
-        return null;
-        // should not return any text, because border is not editable as a text
-    }
-
-    public void setAsText(String string) {
-    }
-
-    public boolean isPaintable() {
-        return true;
-    }
-
-    public void paintValue(Graphics g, Rectangle rectangle) {
         String valueText;
         Object value = getValue();
 
@@ -148,9 +136,32 @@ public final class BorderEditor extends PropertyEditorSupport
         else
             valueText = "[" + org.openide.util.Utilities.getShortClassName(
                             value.getClass()) + "]"; // NOI18N
+        return valueText;
+    }
+
+    public void setAsText(String string) {
+    }
+
+    public boolean isPaintable() {
+        return true;
+    }
+
+    public void paintValue(Graphics g, Rectangle rectangle) {
+/*
+        String valueText;
+        Object value = getValue();
+
+        if (value == null)
+            valueText = NO_BORDER;
+        else if (borderSupport != null)
+            valueText = "[" + borderSupport.getDisplayName() + "]"; // NOI18N
+        else
+            valueText = "[" + org.openide.util.Utilities.getShortClassName(
+                            value.getClass()) + "]"; // NOI18N
+ */
 
         FontMetrics fm = g.getFontMetrics();
-        g.drawString(valueText, rectangle.x,
+        g.drawString(getAsText(), rectangle.x,
                        rectangle.y + (rectangle.height - fm.getHeight()) / 2 + fm.getAscent());
     }
 
@@ -231,10 +242,15 @@ public final class BorderEditor extends PropertyEditorSupport
             split.setSplitPosition(45);
 
             ListView listView = new ListView();
+            listView.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AvailableBorders"));
+            
+            JLabel label = new JLabel(bundle.getString("LAB_AvailableBorders"));
+            label.setDisplayedMnemonic(bundle.getString("LAB_AvailableBorders_Mnemonic").charAt(0));
+            label.setLabelFor(listView);
+
             JPanel panel = new JPanel();
-            panel.setBorder(new TitledBorder(new EtchedBorder(),
-                                             bundle.getString("LAB_AvailableBorders"))); // NOI18N
-            panel.setLayout(new BorderLayout());
+            panel.setLayout(new BorderLayout(0, 2));
+            panel.add(label, BorderLayout.NORTH);
             panel.add(BorderLayout.CENTER, listView);
             split.add(panel, SplittedPanel.ADD_TOP);
 
@@ -242,6 +258,8 @@ public final class BorderEditor extends PropertyEditorSupport
             split.add(sheetView, SplittedPanel.ADD_BOTTOM);
 
             add(BorderLayout.CENTER, split);
+            
+            getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_BorderCustomEditor"));
         }
 
         void setValue(Object border) {

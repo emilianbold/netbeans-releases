@@ -58,10 +58,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         }
 
         // localize components
-        setBorder(new javax.swing.border.CompoundBorder(
-            new javax.swing.border.TitledBorder(
-                new javax.swing.border.EtchedBorder(), " " + FormEditor.getFormBundle().getString("CTL_CW_GetParametersFrom") + " "), // "Get Parameter From:"
-            new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5))));
+        paramLabel.setText(FormEditor.getFormBundle().getString("CTL_CW_GetParametersFrom")); // "Get Parameter From:"
+        paramLabel.setLabelFor(this);
         valueButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Value")); // "Value:"
         beanButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Bean")); // "Bean:"
         propertyButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Property")); // "Property:"
@@ -134,6 +132,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
         propertyDetailsButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_PropertyButton"));
         methodDetailsButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_CW_MethodButton"));
+        getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_ParametersPicker"));
     }
 
     public void setPropertyValue(RADConnectionPropertyEditor.RADConnectionDesignValue value) {
@@ -341,6 +340,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         codeButton = new javax.swing.JRadioButton();
         codeScrollPane = new javax.swing.JScrollPane();
         codeArea = new javax.swing.JEditorPane();
+        paramLabel = new javax.swing.JLabel();
         
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
@@ -354,6 +354,9 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 1;
+        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 5, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(valueButton, gridBagConstraints1);
         
@@ -364,6 +367,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 1;
+        gridBagConstraints1.gridy = 1;
         gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 0);
@@ -377,10 +382,15 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 2;
+        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 5, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(beanButton, gridBagConstraints1);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 1;
+        gridBagConstraints1.gridy = 2;
         gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 0);
@@ -394,6 +404,9 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 3;
+        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 5, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(propertyButton, gridBagConstraints1);
         
@@ -401,7 +414,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         propertyLabel.setText(FormEditor.getFormBundle().getString("CTL_CW_NoProperty"));
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 2;
+        gridBagConstraints1.gridy = 3;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 5);
         gridBagConstraints1.weightx = 1.0;
@@ -416,7 +429,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 2;
+        gridBagConstraints1.gridy = 3;
         gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 0);
         add(propertyDetailsButton, gridBagConstraints1);
@@ -429,6 +442,9 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 4;
+        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 5, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(methodButton, gridBagConstraints1);
         
@@ -436,7 +452,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         methodLabel.setText(FormEditor.getFormBundle().getString("CTL_CW_NoMethod"));
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 3;
+        gridBagConstraints1.gridy = 4;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 5);
         add(methodLabel, gridBagConstraints1);
@@ -450,7 +466,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 3;
+        gridBagConstraints1.gridy = 4;
         gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 0);
         add(methodDetailsButton, gridBagConstraints1);
@@ -463,6 +479,9 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 5;
+        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(codeButton, gridBagConstraints1);
         
@@ -475,11 +494,21 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         codeScrollPane.setViewportView(codeArea);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 1;
+        gridBagConstraints1.gridy = 5;
         gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
         add(codeScrollPane, gridBagConstraints1);
+        
+        paramLabel.setText("label1");
+        gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 0;
+        gridBagConstraints1.insets = new java.awt.Insets(0, 0, 6, 0);
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+        add(paramLabel, gridBagConstraints1);
         
     }//GEN-END:initComponents
 
@@ -609,6 +638,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     private javax.swing.JRadioButton codeButton;
     private javax.swing.JScrollPane codeScrollPane;
     private javax.swing.JEditorPane codeArea;
+    private javax.swing.JLabel paramLabel;
     // End of variables declaration//GEN-END:variables
 
     private FormModel formModel;

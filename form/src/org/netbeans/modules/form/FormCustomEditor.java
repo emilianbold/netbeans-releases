@@ -151,8 +151,9 @@ public class FormCustomEditor extends JPanel
             if (!prEd.supportsCustomEditor()
                     || (custEd = prEd.getCustomEditor()) instanceof Window) {
                 JPanel p = new JPanel(new GridBagLayout());
-                p.add(new JLabel(FormEditor.getFormBundle().getString(
-                                            "CTL_PropertyEditorDoesNot"))); // NOI18N
+                JLabel label = new JLabel(FormEditor.getFormBundle().getString("CTL_PropertyEditorDoesNot")); // NOI18N
+                p.add(label); 
+                p.getAccessibleContext().setAccessibleDescription(label.getText());
                 custEd = p;
             }
 
@@ -176,11 +177,31 @@ public class FormCustomEditor extends JPanel
                                   HelpCtx.findHelp(cardPanel.getComponent(i));
                 String helpID = helpCtx != null ? helpCtx.getHelpID() : ""; // NOI18N
                 HelpCtx.setHelpIDString(FormCustomEditor.this, helpID);
+                
+                updateAccessibleDescription(i < 0 ? null : cardPanel.getComponent(i));
             }
         });
         
+        updateAccessibleDescription(cardPanel.getComponent(currentIndex));
         advancedButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_Advanced"));
         editorsCombo.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_BTN_SelectMode"));
+    }
+    
+    private void updateAccessibleDescription(Component comp) {
+        if (comp instanceof javax.accessibility.Accessible
+            && comp.getAccessibleContext().getAccessibleDescription() != null) {
+
+            getAccessibleContext().setAccessibleDescription(
+                java.text.MessageFormat.format(
+                    FormEditor.getFormBundle().getString("ACSD_FormCustomEditor"),
+                    new Object[] {
+                        comp.getAccessibleContext().getAccessibleDescription()
+                    }
+                )
+            );
+        } else {
+            getAccessibleContext().setAccessibleDescription(null);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -353,4 +374,5 @@ public class FormCustomEditor extends JPanel
         int index = editorsCombo.getSelectedIndex();
         return (index == -1) ? null : allCustomEditors[index];
     }
+    
 }

@@ -102,7 +102,8 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
 
     private void createSplit() {
         split = new SplittedPanel();
-        split.add(new BeanTreeView(), SplittedPanel.ADD_FIRST);
+        BeanTreeView treeView = new BeanTreeView();
+        split.add(treeView, SplittedPanel.ADD_FIRST);
         split.add(sheet = new PropertySheetView(), SplittedPanel.ADD_SECOND);
         split.setSplitType(SplittedPanel.VERTICAL);
         split.setSplitPosition(DEFAULT_INSPECTOR_PERCENTS);
@@ -112,6 +113,9 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         sheet.addPropertyChangeListener(new PropertiesDisplayListener());
 
         add(BorderLayout.CENTER, split);
+
+        treeView.getAccessibleContext().setAccessibleName(formBundle.getString("ACS_ComponentTree"));
+        treeView.getAccessibleContext().setAccessibleDescription(formBundle.getString("ACSD_ComponentTree"));
     }
 
     class NodeSelectedListener implements PropertyChangeListener {
