@@ -142,7 +142,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         // PENDING - must also take xmlPrefixMapper into account
         JspParserAPI.ParseResult result = getParseResult();
         Map prefixMapper = null;
-        if (result != null) {
+        if (result != null && result.getPageInfo() != null) {
             //if (result.isParsingSuccess()) {
                 // PENDING - can we somehow get incomplete parsed information ?
             if (result.getPageInfo().getXMLPrefixMapper().size() > 0) {
