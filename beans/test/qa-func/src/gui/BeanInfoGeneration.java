@@ -69,13 +69,13 @@ public class BeanInfoGeneration extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-//        suite.addTest(new BeanInfoGeneration("testCheckNodes"));
-//        suite.addTest(new BeanInfoGeneration("testIncludeExclude"));
-//        suite.addTest(new BeanInfoGeneration("testBeanInfoNode"));
+        suite.addTest(new BeanInfoGeneration("testCheckNodes"));
+        suite.addTest(new BeanInfoGeneration("testIncludeExclude"));
+        suite.addTest(new BeanInfoGeneration("testBeanInfoNode"));
         suite.addTest(new BeanInfoGeneration("testPropertiesNode"));
-//        suite.addTest(new BeanInfoGeneration("testNodesDescription"));
-//        suite.addTest(new BeanInfoGeneration("testGenerateNewBeanInfo"));
-//        suite.addTest(new BeanInfoGeneration("testRegenerateBeanInfo"));
+        suite.addTest(new BeanInfoGeneration("testNodesDescription"));
+        suite.addTest(new BeanInfoGeneration("testGenerateNewBeanInfo"));
+        suite.addTest(new BeanInfoGeneration("testRegenerateBeanInfo"));
 ////        suite.addTest(new BeanInfoGeneration("testCheckBeanInfoCompilability"));
         
         return suite;
