@@ -245,7 +245,7 @@ final class PersistenceHandler implements PersistenceObserver {
             relBounds.height / 100.0F);
         wm.setEditorAreaBounds(bounds);
         wm.setEditorAreaFrameState(wmc.editorAreaFrameState);
-        
+        wm.setToolbarConfigName(wmc.toolbarConfiguration);
     }
     
     
@@ -424,6 +424,10 @@ final class PersistenceHandler implements PersistenceObserver {
         wmc.editorAreaConstraints = wmi.getEditorAreaConstraints();
         if(DEBUG) {
             debugLog("editorAreaConstraints=" + wmc.editorAreaConstraints); // NOI18N
+        }
+        wmc.editorAreaFrameState = wmi.getEditorAreaFrameState();
+        if(DEBUG) {
+            debugLog("editorAreaFrameState=" + wmc.editorAreaFrameState); // NOI18N
         }
         wmc.screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         

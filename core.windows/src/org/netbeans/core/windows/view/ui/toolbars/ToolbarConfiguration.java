@@ -725,10 +725,11 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         while (it.hasNext()) {
             final String name = (String)it.next ();
             JRadioButtonMenuItem mi = new JRadioButtonMenuItem (
-                findConfiguration(name).getDisplayName(), (name.compareTo (current) == 0)
+                findConfiguration(name).getDisplayName(), (name != null && name.equals(current))
             );
             mi.addActionListener (new ActionListener () {
                                       public void actionPerformed (ActionEvent e) {
+                                          ErrorManager.getDefault().getInstance(getClass().getName()).log("triggered a change in toolbar config.");
                                           WindowManagerImpl.getInstance().setToolbarConfigName (name);
                                       }
                                   });

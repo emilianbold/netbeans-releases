@@ -216,7 +216,8 @@ public final class MainWindow extends JFrame {
     private static JComponent getToolbarComponent() {
         ToolbarPool tp = ToolbarPool.getDefault();
         tp.waitFinished();
-        tp.setConfiguration("Standard"); // NOI18N
+//        ErrorManager.getDefault().getInstance(MainWindow.class.getName()).log("toolbar config name=" + WindowManagerImpl.getInstance().getToolbarConfigName());
+//        tp.setConfiguration(WindowManagerImpl.getInstance().getToolbarConfigName()); // NOI18N
         
         return tp;
     }
