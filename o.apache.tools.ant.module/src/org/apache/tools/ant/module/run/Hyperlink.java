@@ -170,7 +170,7 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
         } catch (DataObjectNotFoundException donfe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, donfe);
         } catch (IndexOutOfBoundsException iobe) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, iobe);
+            // Probably harmless. Bogus line number.
         }
     }
     
