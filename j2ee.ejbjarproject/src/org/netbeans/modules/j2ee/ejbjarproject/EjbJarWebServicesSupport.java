@@ -1112,7 +1112,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     private static final JAXRPCStubDescriptor seiServiceStub = new JAXRPCStubDescriptor(
         StubDescriptor.SEI_SERVICE_STUB,
         NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_SEIServiceStub"), // NOI18N
-        new String [0]);
+        new String [] {"documentliteral"});
     
     private static final JAXRPCStubDescriptor wsdlServiceStub = new JAXRPCStubDescriptor(
         StubDescriptor.WSDL_SERVICE_STUB,
