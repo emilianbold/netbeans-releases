@@ -23,7 +23,6 @@ import org.openide.ErrorManager;
 import org.openide.nodes.*;
 import org.openide.filesystems.*;
 import org.openide.text.*;
-import org.openide.loaders.DataObject;
 import org.openide.cookies.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.Lookup;
@@ -31,7 +30,7 @@ import org.openide.windows.TopComponent;
 
 import org.openide.filesystems.Repository;
 
-import org.netbeans.modules.web.core.jsploader.*;
+//import org.netbeans.modules.web.core.jsploader.*;
 import org.netbeans.modules.web.debug.Context;
 
 import org.netbeans.modules.web.api.webmodule.*;
@@ -107,7 +106,7 @@ public class Utils {
                        return "text/x-jsp".equals(fo.getMIMEType());   //NOI18N
                     }    
                 } catch (IllegalArgumentException ex) {
-//                    System.err.println("url: " + url);
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, url);
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.toString());
                     return false;
                 }
