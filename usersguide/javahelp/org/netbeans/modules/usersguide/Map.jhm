@@ -512,6 +512,7 @@
 <mapID target="cvs.customizer" url="vcs-nb/cvs-nb/cvs_customizer.html" />
 <mapID target="cvs.commands" url="vcs-nb/cvs-nb/cvs_commands.html" />
 <mapID target="cvs.commandopts-save" url="vcs-nb/cvs-nb/cvs_commandopts-save.html" />
+<mapID target="cvs.merge-resolve" url="vcs-nb/cvs-nb/cvs_merge-resolve.html" />
 <mapID target="cvs.merge" url="vcs-nb/cvs-nb/cvs_merge.html" />
 <mapID target="cvs.password" url="vcs-nb/cvs-nb/cvs_password.html" />
 <mapID target="cvs.local" url="vcs-nb/cvs-nb/cvs_local.html" />

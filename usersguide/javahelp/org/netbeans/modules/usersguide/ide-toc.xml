@@ -486,6 +486,7 @@
     <tocitem text="Saving CVS Command Options" target="cvs.commandopts-save" />
     <tocitem text="CVS Commands" target="cvs.commands" />
     <tocitem text="Merging File Revisions" target="cvs.merge" />
+    <tocitem text="Resolving Merge Conflicts" target="cvs.merge-resolve" />
     <tocitem text="Setting Up a Local CVS Repository" target="cvs.local" />
     <tocitem text="Reconfiguring a CVS Filesystem" target="cvs.settings" />
     <tocitem text="Built-in Client Filesystem Properties" target="cvs.filesystemproperties" />
