@@ -192,7 +192,10 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
         if (defaultLM == null)
             return !nullLayout;
-        if (layoutSupport.getLayoutClass().isAssignableFrom(defaultLM.getClass()))
+
+        if (nullLayout
+                || !layoutSupport.getLayoutClass().isAssignableFrom(
+                    defaultLM.getClass()))
             return true;
 
         Node.Property[] props =
