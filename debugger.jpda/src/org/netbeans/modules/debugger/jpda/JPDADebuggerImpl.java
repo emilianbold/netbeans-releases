@@ -52,6 +52,7 @@ import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.Properties;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadGroupImpl;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
@@ -616,15 +617,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
     */
     public void setStoppedState (ThreadReference thread) {
         synchronized (LOCK) {
-            if (getState () == STATE_STOPPED) return;
-            // this can happen if two breakpoints are reached at one time?!?!?
-
-            //S ystem.err.println("setStoppedState");
+            // this method can be called in stopped state to switch 
+            // the current thread only
             JPDAThread t = getThread (thread);
             checkJSR45Languages (t);
             setCurrentThread (t);
             setState (STATE_STOPPED);
-            //S ystem.err.println("setStoppedState end");
         }
     }
 
@@ -689,12 +687,18 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public void suspend () {
         synchronized (LOCK) {
-            //S ystem.err.println("suspend");
             if (getState () == STATE_STOPPED) return;
-            if (virtualMachine != null)
-                virtualMachine.suspend ();
+            if (virtualMachine != null) {
+                // virtualMachine.suspend () does not work correctly
+                List l = virtualMachine.allThreads ();
+                int i, k = l.size ();
+                for (i = 0; i < k; i++) {
+                    ThreadReference tr = (ThreadReference) l.get (i);
+                    if (!tr.isSuspended ())
+                        tr.suspend ();
+                }
+            }
             setState (STATE_STOPPED);
-            //S ystem.err.println("suspend end");
         }
     }
 
@@ -703,12 +707,20 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public void resume () {
         synchronized (LOCK) {
-            //S ystem.err.println("resume");
             if (getState () == STATE_RUNNING) return;
-            if (virtualMachine != null)
-                virtualMachine.resume ();
+            if (virtualMachine != null) {
+                // virtualMachine.resume () does not work correctly
+                List l = virtualMachine.allThreads ();
+                int i, k = l.size ();
+                for (i = 0; i < k; i++) {
+                    ThreadReference tr = (ThreadReference) l.get (i);
+                    int count = tr.suspendCount ();
+                    while (count > 0) {
+                        tr.resume (); count--;
+                    }
+                }
+            }
             setState (STATE_RUNNING);
-            //S ystem.err.println("resume end");
         }
     }
 

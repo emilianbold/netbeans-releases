@@ -37,7 +37,8 @@ public class WatchesNodeModel extends VariablesNodeModel {
     
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)
-            return NbBundle.getBundle(WatchesNodeModel.class).getString("CTL_WatchesModel_Column_Name_Name");
+            return NbBundle.getBundle (WatchesNodeModel.class).
+                getString ("CTL_WatchesModel_Column_Name_Name");
         if (o instanceof JPDAWatch)
             return ((JPDAWatch) o).getExpression ();
         return super.getDisplayName (o);

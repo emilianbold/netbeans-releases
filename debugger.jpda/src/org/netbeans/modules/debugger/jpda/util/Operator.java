@@ -110,7 +110,8 @@ public class Operator {
                          }
                          Executor exec = null;
                          if (e.request () == null) {
-                             //S ystem.out.println ("EVENT: " + e + " REQUEST: null"); // NOI18N
+                             if (verbose)
+                                 System.out.println ("EVENT: " + e + " REQUEST: null"); // NOI18N
                          } else
                              exec = (Executor) e.request ().getProperty ("executor");
 
@@ -131,7 +132,7 @@ public class Operator {
                              } catch (Exception ex) {
                                  ex.printStackTrace ();
                              }
-                     }
+                     } // while
                      //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
                      if (verbose)
                          System.out.println("JDI resume " + (resume && (!startEventOnly)));

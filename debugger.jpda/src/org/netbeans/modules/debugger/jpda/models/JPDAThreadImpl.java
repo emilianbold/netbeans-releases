@@ -213,8 +213,13 @@ public class JPDAThreadImpl implements JPDAThread {
     public CallStackFrame[] getCallStack (int from, int to) 
     throws AbsentInformationException {
         try {
-            return (CallStackFrame[]) ttm.getCallStackTreeModel ().getChildren (
+            Object[] result = ttm.getCallStackTreeModel ().getChildren (
                 threadReference, from, to
+            );
+            if (result instanceof CallStackFrame[])
+                return (CallStackFrame[]) result;
+            throw new AbsentInformationException (
+                ((String[]) result) [0]
             );
         } catch (UnknownTypeException e) {
             e.printStackTrace ();

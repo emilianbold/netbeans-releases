@@ -116,7 +116,6 @@ implements Executor {
                     getCurrentThread ()).getThreadReference ();
                 StackFrame sf = tr.frame (0);
                 Location l = sf.location ();
-                
                 // 3) create new step request
                 stepRequest = getDebuggerImpl ().getVirtualMachine ().
                     eventRequestManager ().createStepRequest (

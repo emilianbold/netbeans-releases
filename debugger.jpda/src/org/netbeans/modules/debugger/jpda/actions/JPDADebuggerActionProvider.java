@@ -66,13 +66,7 @@ implements PropertyChangeListener {
             VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
             if (vm == null) return;
             EventRequestManager erm = vm.eventRequestManager ();
-            Iterator i = new ArrayList (erm.stepRequests ()).
-                iterator ();
-            while (i.hasNext ()) {
-                EventRequest er = (EventRequest) i.next ();
-                erm.deleteEventRequest (er);
-                getDebuggerImpl ().getOperator ().unregister (er);
-            }
+            erm.deleteEventRequests (new ArrayList (erm.stepRequests ()));
         } catch (VMDisconnectedException e) {
         } catch (IllegalThreadStateException e) {
             e.printStackTrace();
