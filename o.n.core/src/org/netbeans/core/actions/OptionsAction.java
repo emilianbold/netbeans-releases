@@ -84,6 +84,9 @@ public class OptionsAction extends CallableSystemAction {
             public void run() {
                 //Center only TOP_FRAME
                 if (centerLoc ) {
+                    //Bugfix #33888: Initialize GUI of optionPanel here to get correct
+                    //preferred size of Options window.
+                    optionPanel.componentShowing();
                     mo.setBounds(Utilities.findCenterBounds(optionPanel.getPreferredSize()));
                 }
                 mo.dockInto(optionPanel);
