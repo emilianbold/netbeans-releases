@@ -19,7 +19,6 @@ import org.openide.loaders.DataFilter;
 import org.netbeans.api.project.Project;
 import java.util.*;
 import org.openide.nodes.Node;
-import org.netbeans.spi.project.ui.support.LogicalViews;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.nodes.FilterNode;
 import org.openide.filesystems.FileObject;
