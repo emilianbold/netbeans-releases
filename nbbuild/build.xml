@@ -41,6 +41,7 @@ ToDo:
         <pathelement location="${binroot}/nbbuild/lib/ant.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
         <pathelement location="${binroot}/nbbuild/lib/jhall.jar"/>
+        <pathelement location="${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
       </classpath>
     </javac>
     <jar jarfile="nbantext.jar" basedir="antsrc">
@@ -75,6 +76,7 @@ ToDo:
     <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
     <taskdef name="check" classname="org.netbeans.nbbuild.CheckValue" classpath="nbantext.jar"/>
+    <taskdef name="xmlvalidate" classname="org.netbeans.nbbuild.XMLValidate" classpath="nbantext.jar;${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
 
     <!-- Read the user property file at first -->
     <property file="user.build.properties"/>
@@ -592,6 +594,13 @@ the ${netbeans.dest}/bin/ directory.
 </echo>
   </target>
 
+  <target name="checkXMLs" depends="init">
+    <xmlvalidate basedir="../" catalog="../www/www/dtds/catalog">
+        <include name="*/build.xml"/>
+	<include name="*/src/**/*.xml/"/>
+    </xmlvalidate>
+  </target>
+  
   <target name="delete-and-merge" depends="merge-delete,merge" />   
 
   <target name="merge-delete" depends="init">
