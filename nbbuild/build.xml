@@ -51,7 +51,6 @@ ToDo:
           depends="assure-jdk-1.4">
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
     <ant dir="external" target="unscramble"/>
-    <ant dir="../core/external" target="unscramble"/>
     <ant dir="../xml/external" target="unscramble"/>
     <property name="ant.jar" value="${ant.home}/lib/ant.jar"/>
     <path id="bootstrap-cp">
