@@ -13,10 +13,14 @@
 
 package org.netbeans.spi.viewmodel;
 
+import com.sun.corba.se.internal.util.IdentityHashtable;
 import java.awt.event.ActionEvent;
 import java.lang.StringBuffer;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.AbstractAction;
@@ -24,6 +28,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 
 import org.netbeans.modules.viewmodel.CompoundModel;
+import org.netbeans.modules.viewmodel.TreeModelNode;
 import org.netbeans.modules.viewmodel.TreeTable;
 
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -52,6 +57,10 @@ import org.openide.windows.TopComponent;
 public final class Models {
 
     public static final TreeModel EMPTY_TREE_MODEL = new EmptyTreeModel ();
+    
+    public static int MULTISELECTION_TYPE_EXACTLY_ONE = 1;
+    public static int MULTISELECTION_TYPE_ALL = 2;
+    public static int MULTISELECTION_TYPE_ANY = 3;
     
     private static boolean verbose = 
         System.getProperty ("netbeans.debugger.models") != null;
@@ -344,43 +353,22 @@ public final class Models {
     /**
      * Returns {@link javax.swing.Action} for given parameters.
      *
-     * @param name a display name for action
+     * @param displayName a display name for action
      * @param node a node the action should by applied to
      * @param performer a performer for action
      *
      * @return a new instance of {@link javax.swing.Action} for given parameters
      */
     public static Action createAction (
-        String name, 
-        Object node, 
-        ActionPerformer performer
-    ) {
-        return createAction (name, node, performer, true);
-    }
-    
-    /**
-     * Returns {@link javax.swing.Action} for given parameters.
-     *
-     * @param name a display name for action
-     * @param node a node the action should by applied to
-     * @param performer a performer for action
-     *
-     * @return a new instance of {@link javax.swing.Action} for given parameters
-     */
-    public static Action createAction (
-        String name, 
-        Object node, 
+        String displayName, 
         ActionPerformer performer,
-        boolean isEnabled
+        int multiselectionType
     ) {
-        if (isEnabled)
-            return new ActionSupport (name, node, performer);
-        AbstractAction a = new AbstractAction (name) {
-            public void actionPerformed (ActionEvent e) {
-            }
-        };
-        a.setEnabled (false);
-        return a;
+        return new ActionSupport (
+            displayName, 
+            performer, 
+            multiselectionType
+        );
     }
     
     
@@ -391,43 +379,74 @@ public final class Models {
      */
     private static class ActionSupport extends AbstractAction {
 
-        private Object              node;
         private ActionPerformer     performer;
+        private int                 multiselectionType;
+        private String              displayName;
 
  
-        ActionSupport (String name, Object node, ActionPerformer performer) {
-            super (name);
-            this.node = node;
+        ActionSupport (
+            String displayName, 
+            ActionPerformer performer,
+            int multiselectionType
+        ) {
+            super (displayName);
             this.performer = performer;
+            this.displayName = displayName;
+            this.multiselectionType = multiselectionType;
+        }
+        
+        public boolean isEnabled () {
+            if (multiselectionType == MULTISELECTION_TYPE_ANY)
+                return true;
+            Node[] ns = TopComponent.getRegistry ().getActivatedNodes ();
+            if (multiselectionType == MULTISELECTION_TYPE_EXACTLY_ONE) {
+                if (ns.length != 1) return false;
+                return performer.isEnabled (
+                    ((TreeModelNode) ns [0]).getObject ()
+                );
+            }
+            int i, k = ns.length;
+            for (i = 0; i < k; i++)
+                if (!performer.isEnabled (
+                    ((TreeModelNode) ns [i]).getObject ()
+                 )) return false;
+            return true;
         }
 
         public void actionPerformed (ActionEvent e) {
             Node[] ns = TopComponent.getRegistry ().getActivatedNodes ();
-            if (ns.length == 0) {
-                performer.perform ((String) getValue (NAME), node);
-                return;
-            }
             int i, k = ns.length;
-            for (i = 0; i < k; i++) { 
+            IdentityHashMap h = new IdentityHashMap ();
+            for (i = 0; i < k; i++) {
+                Object node = ((TreeModelNode) ns [i]).getObject ();
                 Action[] as = ns [i].getActions (false);
                 int j, jj = as.length;
                 for (j = 0; j < jj; j++)
-                    if ( (as [j] != null) && 
-                         as [j].equals (this)
-                    ) {
-                        ActionSupport a = (ActionSupport) as [j];
-                        a.performer.perform ((String) getValue (NAME), a.node);
+                    if (equals (as [j])) {
+                        ArrayList l = (ArrayList) h.get (as [j]);
+                        if (l == null) {
+                            l = new ArrayList ();
+                            h.put (as [j], l);
+                        }
+                        l.add (node);
                     }
+            }
+            Iterator it = h.keySet ().iterator ();
+            while (it.hasNext ()) {
+                ActionSupport a = (ActionSupport) it.next ();
+                a.performer.perform (
+                    ((ArrayList) h.get (a)).toArray ()
+                );
             }
         }
         
-        public boolean equals (Object o) {
-            return (o instanceof ActionSupport) &&
-                   getValue (NAME).equals (((ActionSupport) o).getValue (NAME));
+        public int hashCode () {
+            return displayName.hashCode ();
         }
         
-        public int hashCode () {
-            return getValue (NAME).hashCode ();
+        public boolean equals (Object o) {
+            return (o instanceof ActionSupport) && 
+                displayName.equals (((ActionSupport) o).displayName);
         }
     }
 
@@ -438,15 +457,24 @@ public final class Models {
     public static interface ActionPerformer {
 
         /**
-         * Called when action <code>action</code> is performed for 
-         * node <code>node</code>.
+         * Returns enabled property state for given set of nodes.
          *
-         * @param action an action to be performed
-         * @param node a node the action shouuld be applied to
+         * @param nodes nodes the action shouuld be applied to
+         * @return enabled property state for given set of nodes
          *
-         * @see #createAction(String,Object,Models.ActionPerformer)
+         * @see #createAction(String,Models.ActionPerformer,int)
          */
-        public void perform (String action, Object node);
+        public boolean isEnabled (Object node);
+
+        /**
+         * Called when action <code>action</code> is performed for 
+         * nodes.
+         *
+         * @param nodes nodes the action shouuld be applied to
+         *
+         * @see #createAction(String,Models.ActionPerformer,int)
+         */
+        public void perform (Object[] nodes);
     }
 
     /**

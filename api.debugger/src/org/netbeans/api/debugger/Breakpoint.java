@@ -28,9 +28,13 @@ public abstract class Breakpoint {
     public static final String          PROP_ENABLED = "enabled"; // NOI18N
     /** Property name for disposed state of the breakpoint. */
     public static final String          PROP_DISPOSED = "disposed"; // NOI18N
-
+    /** Property name for name of group of the breakpoint. */
+    public static final String          PROP_GROUP_NAME = "groupName"; // NOI18N
+    
     /** Support for property listeners. */
     private PropertyChangeSupport       pcs;
+    private String                      groupName = "";
+    
     { pcs = new PropertyChangeSupport (this); }
 
     /**
@@ -54,6 +58,17 @@ public abstract class Breakpoint {
      * Enables the breakpoint.
      */
     public abstract void enable ();
+    
+    public String getGroupName () {
+        return groupName;
+    }
+    
+    public void setGroupName (String newGroupName) {
+        if (groupName.equals (newGroupName)) return;
+        String old = groupName;
+        groupName = newGroupName;
+        firePropertyChange (PROP_GROUP_NAME, old, newGroupName);
+    }
     
     /** 
      * Add a listener to property changes.

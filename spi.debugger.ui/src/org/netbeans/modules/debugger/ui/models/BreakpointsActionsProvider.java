@@ -14,7 +14,11 @@
 package org.netbeans.modules.debugger.ui.models;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeSupport;
+import java.util.Vector;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JButton;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -24,48 +28,213 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 
 /**
  * @author   Jan Jancura
  */
-public class BreakpointsActionsProvider implements NodeActionsProvider, 
-Models.ActionPerformer {
+public class BreakpointsActionsProvider implements NodeActionsProvider {
+    
+    
+    private static final Action NEW_BREEAKPOINT_ACTION = new AbstractAction 
+        ("New Breakpoint ...") {
+            public void actionPerformed (ActionEvent e) {
+                new AddBreakpointAction ().actionPerformed (null);
+            }
+    };
+    private static final Action ENABLE_ALL_ACTION = new AbstractAction 
+        ("Enable All") {
+            public void actionPerformed (ActionEvent e) {
+                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+                Breakpoint[] bs = dm.getBreakpoints ();
+                int i, k = bs.length;
+                for (i = 0; i < k; i++)
+                    bs [i].enable ();
+            }
+    };
+    private static final Action DISABLE_ALL_ACTION = new AbstractAction 
+        ("Disable All") {
+            public void actionPerformed (ActionEvent e) {
+                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+                Breakpoint[] bs = dm.getBreakpoints ();
+                int i, k = bs.length;
+                for (i = 0; i < k; i++)
+                    bs [i].disable ();
+            }
+    };
+    private static final Action DELETE_ALL_ACTION = new AbstractAction 
+        ("Delete All") {
+            public void actionPerformed (ActionEvent e) {
+                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+                Breakpoint[] bs = dm.getBreakpoints ();
+                int i, k = bs.length;
+                for (i = 0; i < k; i++)
+                    dm.removeBreakpoint (bs [i]);
+            }
+    };
+    private static final Action ENABLE_ACTION = Models.createAction (
+        "Enable", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                int i, k = nodes.length;
+                for (i = 0; i < k; i++)
+                    ((Breakpoint) nodes [i]).enable ();
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
+    private static final Action DISABLE_ACTION = Models.createAction (
+        "Disable", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                int i, k = nodes.length;
+                for (i = 0; i < k; i++)
+                    ((Breakpoint) nodes [i]).disable ();
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
+    private static final Action DELETE_ACTION = Models.createAction (
+        "Delete", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+                int i, k = nodes.length;
+                for (i = 0; i < k; i++)
+                    dm.removeBreakpoint ((Breakpoint) nodes [i]);
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
+    private static final Action SET_GROUP_NAME_ACTION = Models.createAction (
+        "Set Group Name", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                setGroupName (nodes);
+            }
+        },
+        Models.MULTISELECTION_TYPE_ALL
+    );
+    private static final Action DELETE_ALL_ACTION_S = Models.createAction (
+        "Delete All", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                String groupName = (String) nodes [0];
+                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+                Breakpoint[] bs = dm.getBreakpoints ();
+                int i, k = bs.length;
+                for (i = 0; i < k; i++)
+                    if (bs [i].getGroupName ().equals (groupName))
+                        dm.removeBreakpoint (bs [i]);
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
+    private static final Action ENABLE_ALL_ACTION_S = Models.createAction (
+        "Enable All", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                String groupName = (String) nodes [0];
+                Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
+                    getBreakpoints ();
+                int i, k = bs.length;
+                for (i = 0; i < k; i++)
+                    if (bs [i].getGroupName ().equals (groupName))
+                        bs [i].enable ();
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
+    private static final Action DISABLE_ALL_ACTION_S = Models.createAction (
+        "Disable All", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                String groupName = (String) nodes [0];
+                Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
+                    getBreakpoints ();
+                int i, k = bs.length;
+                for (i = 0; i < k; i++)
+                    if (bs [i].getGroupName ().equals (groupName))
+                        bs [i].disable ();
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
+    
+    
+    //private Vector listeners = new Vector ();
     
     
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) 
             return new Action [] {
-                Models.createAction ("New Breakpoint ...", null, this),
+                NEW_BREEAKPOINT_ACTION,
                 null,
-                Models.createAction ("Enable All", null, this),
-                Models.createAction ("Disable All", null, this),
-                Models.createAction ("Delete All", null, this),
+                ENABLE_ALL_ACTION,
+                DISABLE_ALL_ACTION,
+                DELETE_ALL_ACTION,
+                null
+            };
+        if (node instanceof String)
+            return new Action [] {
+                SET_GROUP_NAME_ACTION,
+                null,
+                ENABLE_ALL_ACTION_S,
+                DISABLE_ALL_ACTION_S,
+                DELETE_ALL_ACTION_S,
                 null
             };
         if (node instanceof Breakpoint)
             if (((Breakpoint) node).isEnabled ())
                 return new Action [] {
-                    Models.createAction ("Disable", (Breakpoint) node, this),
-                    Models.createAction ("Delete", (Breakpoint) node, this),
+                    DISABLE_ACTION,
+                    DELETE_ACTION,
+                    SET_GROUP_NAME_ACTION,
                     null,
-                    Models.createAction ("New Breakpoint ...", null, this),
+                    NEW_BREEAKPOINT_ACTION,
                     null,
-                    Models.createAction ("Enable All", null, this),
-                    Models.createAction ("Disable All", null, this),
-                    Models.createAction ("Delete All", null, this),
+                    ENABLE_ALL_ACTION,
+                    DISABLE_ALL_ACTION,
+                    DELETE_ALL_ACTION,
                     null
                 };
             else
                 return new Action [] {
-                    Models.createAction ("Enable", (Breakpoint) node, this),
-                    Models.createAction ("Delete", (Breakpoint) node, this),
+                    ENABLE_ACTION,
+                    DELETE_ACTION,
+                    SET_GROUP_NAME_ACTION,
                     null,
-                    Models.createAction ("New Breakpoint ...", null, this),
+                    NEW_BREEAKPOINT_ACTION,
                     null,
-                    Models.createAction ("Enable All", null, this),
-                    Models.createAction ("Disable All", null, this),
-                    Models.createAction ("Delete All", null, this),
+                    ENABLE_ALL_ACTION,
+                    DISABLE_ALL_ACTION,
+                    DELETE_ALL_ACTION,
                     null
                 };
         throw new UnknownTypeException (node);
@@ -74,52 +243,52 @@ Models.ActionPerformer {
     public void performDefaultAction (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) 
             return;
-        if (node instanceof Breakpoint) {
+        if (node instanceof String) 
             return;
-        }
+        if (node instanceof Breakpoint) 
+            return;
         throw new UnknownTypeException (node);
     }
 
     public void addTreeModelListener (TreeModelListener l) {
+        //listeners.add (l);
     }
 
     public void removeTreeModelListener (TreeModelListener l) {
+        //listeners.remove (l);
     }
     
-    public void perform (String action, Object node) {
-        if (action.equals ("New Breakpoint ...")) {
-            new AddBreakpointAction ().actionPerformed (null);
-        } else
-        if (action.equals ("Enable All")) {
-            DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-            Breakpoint[] bs = dm.getBreakpoints ();
-            int i, k = bs.length;
+//    public void fireTreeChanged () {
+//        Vector v = (Vector) listeners.clone ();
+//        int i, k = v.size ();
+//        for (i = 0; i < k; i++)
+//            ((TreeModelListener) v.get (i)).treeChanged ();
+//    }
+
+    private static void setGroupName (Object[] nodes) {
+        NotifyDescriptor.InputLine descriptor = new NotifyDescriptor.InputLine (
+            "Name of Group: ",
+            "Set the Name of Breakpoints Group"
+        );
+        if (DialogDisplayer.getDefault ().notify (descriptor) == 
+            NotifyDescriptor.OK_OPTION
+        ) {
+            if (nodes [0] instanceof String) {
+                String oldName = (String) nodes [0];
+                Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
+                    getBreakpoints ();
+                int j, jj = bs.length;
+                for (j = 0; j < jj; j++)
+                    if ( ((Breakpoint) bs [j]).getGroupName ().
+                         equals (oldName)
+                    )
+                        ((Breakpoint) bs [j]).setGroupName (descriptor.getInputText ());
+                return;
+            }
+            int i, k = nodes.length;
             for (i = 0; i < k; i++)
-                bs [i].enable ();
-        } else
-        if (action.equals ("Disable All")) {
-            DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-            Breakpoint[] bs = dm.getBreakpoints ();
-            int i, k = bs.length;
-            for (i = 0; i < k; i++)
-                bs [i].disable ();
-        } else
-        if (action.equals ("Delete All")) {
-            DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-            Breakpoint[] bs = dm.getBreakpoints ();
-            int i, k = bs.length;
-            for (i = 0; i < k; i++)
-                dm.removeBreakpoint (bs [i]);
-        } else
-        if (action.equals ("Enable")) {
-            ((Breakpoint) node).enable ();
-        } else
-        if (action.equals ("Disable")) {
-            ((Breakpoint) node).disable ();
-        } else
-        if (action.equals ("Delete")) {
-            DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-            dm.removeBreakpoint ((Breakpoint) node);
+                ((Breakpoint) nodes [i]).setGroupName (descriptor.getInputText ());
+           // fireTreeChanged ();
         }
     }
 }

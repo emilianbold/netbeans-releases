@@ -14,6 +14,7 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
 import java.util.*;
 import javax.swing.*;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -33,24 +34,63 @@ import org.openide.DialogDisplayer;
 /**
  * @author   Jan Jancura
  */
-public class WatchesActionsProvider implements NodeActionsProvider,
-Models.ActionPerformer {
+public class WatchesActionsProvider implements NodeActionsProvider {    
+    
+    
+    private static final Action NEW_WATCH_ACTION = new AbstractAction
+        ("New Watch ...") {
+            public void actionPerformed (ActionEvent e) {
+                newWatch ();
+            }
+    };
+    private static final Action DELETE_ALL_ACTION = new AbstractAction 
+        ("Delete All") {
+            public void actionPerformed (ActionEvent e) {
+                DebuggerManager.getDebuggerManager ().removeAllWatches ();
+            }
+    };
+    private static final Action DELETE_ACTION = Models.createAction (
+        "Delete", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                int i, k = nodes.length;
+                for (i = 0; i < k; i++)
+                    ((JPDAWatch) nodes [i]).remove ();
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
+    private static final Action CUSTOMIZE_ACTION = Models.createAction (
+        "Customize", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                customize ((JPDAWatch) nodes [0]);
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
     
     
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) 
             return new Action [] {
-                Models.createAction ("New Watch ...", null, this),
-                Models.createAction ("Delete All", null, this)
+                NEW_WATCH_ACTION,
+                DELETE_ALL_ACTION
             };
         if (node instanceof JPDAWatch)
             return new Action [] {
-                Models.createAction ("Delete", (JPDAWatch) node, this),
+                DELETE_ACTION,
                 null,
-                Models.createAction ("New Watch ...", null, this),
-                Models.createAction ("Delete All", null, this),
+                NEW_WATCH_ACTION,
+                DELETE_ALL_ACTION,
                 null,
-                Models.createAction ("Customize", (JPDAWatch) node, this)
+                CUSTOMIZE_ACTION
             };
         throw new UnknownTypeException (node);
     }
@@ -69,21 +109,6 @@ Models.ActionPerformer {
 
     public void removeTreeModelListener (TreeModelListener l) {
     }
-    
-    public void perform (String action, Object node) {
-        if ("Delete".equals (action)) {
-            ((JPDAWatch) node).remove ();
-        } else
-        if ("Customize".equals (action)) {
-            customize ((JPDAWatch) node);
-        } else
-        if (action.equals ("Delete All")) {
-            DebuggerManager.getDebuggerManager ().removeAllWatches ();
-        } else
-        if (action.equals ("New Watch ...")) {
-            newWatch ();
-        }
-    }    
 
     private static void customize (JPDAWatch w) {
         WatchPanel wp = new WatchPanel (w.getExpression ());

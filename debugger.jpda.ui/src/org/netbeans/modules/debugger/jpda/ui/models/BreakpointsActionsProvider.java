@@ -7,11 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.web.debug.breakpoints;
+package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -20,21 +20,37 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 
-import org.netbeans.api.debugger.*;
-import org.netbeans.api.debugger.jpda.*;
-import org.netbeans.spi.debugger.ui.*;
-import org.netbeans.spi.viewmodel.*;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
+import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
+import org.netbeans.api.debugger.jpda.FieldBreakpoint;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
+import org.netbeans.spi.debugger.ui.BreakpointType;
+import org.netbeans.spi.viewmodel.NodeActionsProvider;
+import org.netbeans.spi.viewmodel.TreeModelListener;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.netbeans.spi.viewmodel.Models;
+import org.netbeans.spi.viewmodel.TreeModel;
 
-import org.netbeans.modules.web.debug.*;
+import org.netbeans.modules.debugger.jpda.ui.Context;
+import org.netbeans.modules.debugger.jpda.ui.breakpoints.*;
+import org.netbeans.spi.debugger.ui.Controller;
+import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 
-import org.openide.*;
-import org.openide.util.*;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 
 /**
- * @author Martin Grebac
+ * @author   Jan Jancura
  */
-public class JspBreakpointActionsProvider implements NodeActionsProviderFilter {
+public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     
     private static final Action GO_TO_SOURCE_ACTION = Models.createAction (
         "Go to Source", 
@@ -43,7 +59,7 @@ public class JspBreakpointActionsProvider implements NodeActionsProviderFilter {
                 return true;
             }
             public void perform (Object[] nodes) {
-                goToSource ((JspLineBreakpoint) nodes [0]);
+                goToSource ((LineBreakpoint) nodes [0]);
             }
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
@@ -60,14 +76,15 @@ public class JspBreakpointActionsProvider implements NodeActionsProviderFilter {
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
-    
-    
-    public Action[] getActions (NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (!(node instanceof JspLineBreakpoint)) 
+        
+        
+    public Action[] getActions (NodeActionsProvider original, Object node) 
+    throws UnknownTypeException {
+        if (!(node instanceof JPDABreakpoint)) 
             return original.getActions (node);
         
         Action[] oas = original.getActions (node);
-        if (node instanceof JspLineBreakpoint) {
+        if (node instanceof LineBreakpoint) {
             Action[] as = new Action [oas.length + 3];
             as [0] = GO_TO_SOURCE_ACTION;
             as [1] = null;
@@ -82,8 +99,11 @@ public class JspBreakpointActionsProvider implements NodeActionsProviderFilter {
     }
     
     public void performDefaultAction (NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (node instanceof JspLineBreakpoint) 
-            goToSource ((JspLineBreakpoint) node);
+        if (node instanceof LineBreakpoint) 
+            goToSource ((LineBreakpoint) node);
+        else
+        if (node instanceof JPDABreakpoint) 
+            customize ((Breakpoint) node);
         else
             original.performDefaultAction (node);
     }
@@ -96,14 +116,28 @@ public class JspBreakpointActionsProvider implements NodeActionsProviderFilter {
 
     private static void customize (Breakpoint b) {
         JComponent c = null;
-        if (b instanceof JspLineBreakpoint) {
-            c = new JspBreakpointPanel((JspLineBreakpoint) b);
-        }
+        if (b instanceof LineBreakpoint)
+            c = new LineBreakpointPanel ((LineBreakpoint) b);
+        else
+        if (b instanceof FieldBreakpoint)
+            c = new FieldBreakpointPanel ((FieldBreakpoint) b);
+        else
+        if (b instanceof ClassLoadUnloadBreakpoint)
+            c = new ClassBreakpointPanel ((ClassLoadUnloadBreakpoint) b);
+        else
+        if (b instanceof MethodBreakpoint)
+            c = new MethodBreakpointPanel ((MethodBreakpoint) b);
+        else
+        if (b instanceof ThreadBreakpoint)
+            c = new ThreadBreakpointPanel ((ThreadBreakpoint) b);
+        else
+        if (b instanceof ExceptionBreakpoint)
+            c = new ExceptionBreakpointPanel ((ExceptionBreakpoint) b);
 
         DialogDescriptor descriptor = new DialogDescriptor (
             c,
             NbBundle.getMessage (
-                JspBreakpointActionsProvider.class,
+                BreakpointActionsProvider.class,
                 "CTL_Breakpoint_Customizer_Title" // NOI18N
             )
         );
@@ -112,11 +146,11 @@ public class JspBreakpointActionsProvider implements NodeActionsProviderFilter {
         JButton bClose = null;
         descriptor.setOptions (new JButton[] {
             bOk = new JButton (NbBundle.getMessage (
-                JspBreakpointActionsProvider.class,
+                BreakpointActionsProvider.class,
                 "CTL_Ok" // NOI18N
             )),
             bClose = new JButton (NbBundle.getMessage (
-                JspBreakpointActionsProvider.class,
+                BreakpointActionsProvider.class,
                 "CTL_Close" // NOI18N
             ))
         });
@@ -126,13 +160,13 @@ public class JspBreakpointActionsProvider implements NodeActionsProviderFilter {
         descriptor.setHelpCtx (helpCtx);
         bOk.getAccessibleContext ().setAccessibleDescription (
             NbBundle.getMessage (
-                JspBreakpointActionsProvider.class,
+                BreakpointActionsProvider.class,
                 "ACSD_CTL_Ok" // NOI18N
             )
         );
         bClose.getAccessibleContext ().setAccessibleDescription (
             NbBundle.getMessage (
-                JspBreakpointActionsProvider.class,
+                BreakpointActionsProvider.class,
                 "ACSD_CTL_Close" // NOI18N
             )
         );
@@ -145,7 +179,7 @@ public class JspBreakpointActionsProvider implements NodeActionsProviderFilter {
         }
     }
     
-    private static void goToSource (JspLineBreakpoint b) {
+    private static void goToSource (LineBreakpoint b) {
         Context.showSource (b);
     }
 }

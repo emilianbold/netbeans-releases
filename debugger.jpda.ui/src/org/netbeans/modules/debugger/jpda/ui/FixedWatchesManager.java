@@ -26,106 +26,108 @@ import java.util.*;
  *
  * @author Maros Sandor
  */
-public class FixedWatchesManager implements TreeModelFilter, NodeActionsProvider,
-        NodeActionsProviderFilter, Models.ActionPerformer {
-
+public class FixedWatchesManager implements TreeModelFilter, 
+NodeActionsProvider, NodeActionsProviderFilter {
+            
+    private final Action DELETE_ACTION = Models.createAction (
+        "Delete", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                int i, k = nodes.length;
+                for (i = 0; i < k; i++)
+                    fixedWatches.remove (nodes [i]);
+                fireModelChanged ();
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
+    private final Action CREATE_FIXED_WATCH_ACTION = Models.createAction (
+        "Create Fixed Watch", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                int i, k = nodes.length;
+                for (i = 0; i < k; i++)
+                    createFixedWatch (nodes [i]);
+            }
+        },
+        Models.MULTISELECTION_TYPE_ALL
+    );
+        
+        
     private List            fixedWatches;
     private HashSet         listeners;
     private LookupProvider  lookupProvider; // not used at the moment
 
-    private CreateFixedWatchActionPerformer    createFixedWatchActionPerformer;
-    private DeleteFixedWatchActionPerformer    deleteFixedWatchActionPerformer;
-
+    
     public FixedWatchesManager (LookupProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
     }
 
-    public void performDefaultAction(Object node) throws UnknownTypeException {
-        if (!(node instanceof FixedWatch)) throw new UnknownTypeException(node);
+    public void performDefaultAction (Object node) throws UnknownTypeException {
+        if (!(node instanceof FixedWatch)) 
+            throw new UnknownTypeException (node);
     }
 
-    public Action[] getActions(Object node) throws UnknownTypeException {
+    public Action[] getActions (Object node) throws UnknownTypeException {
         if (node instanceof FixedWatch) {
             return new Action[] {
-                Models.createAction("Delete", node, getDeleteFixedWatchActionPerformer(), true)
+                DELETE_ACTION
             };
         }
         throw new UnknownTypeException(node);
     }
 
-    public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
-        original.performDefaultAction(node);
+    public void performDefaultAction (NodeActionsProvider original, Object node) 
+    throws UnknownTypeException {
+        original.performDefaultAction (node);
     }
 
-    public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
+    public Action[] getActions (NodeActionsProvider original, Object node) 
+    throws UnknownTypeException {
         Action [] actions = original.getActions(node);
         List myActions = new ArrayList();
         if (node instanceof Variable) {
-            myActions.add(Models.createAction("Create Fixed Watch", node, getCreateFixedWatchActionPerformer(), true));
+            myActions.add (CREATE_FIXED_WATCH_ACTION);
         } else if (node instanceof JPDAWatch) {
-            myActions.add(Models.createAction("Create Fixed Watch", node, getCreateFixedWatchActionPerformer(), true));
+            myActions.add (CREATE_FIXED_WATCH_ACTION);
         } else if (node instanceof FixedWatch) {
-            myActions.add(Models.createAction("Delete", node, getDeleteFixedWatchActionPerformer(), true));
+            myActions.add (DELETE_ACTION);
         } else {
             throw new UnknownTypeException(node);
         }
         myActions.addAll(Arrays.asList(actions));
         return (Action[]) myActions.toArray(new Action[myActions.size()]);
     }
-
-    private DeleteFixedWatchActionPerformer getDeleteFixedWatchActionPerformer() {
-        if (deleteFixedWatchActionPerformer == null) deleteFixedWatchActionPerformer = new DeleteFixedWatchActionPerformer();
-        return deleteFixedWatchActionPerformer;
-    }
-
-    private class DeleteFixedWatchActionPerformer implements Models.ActionPerformer {
-        public void perform(String action, Object node) {
-            FixedWatch fw = (FixedWatch) node;
-            removeFixedWatch(fw);
-        }
-    }
-
-    private CreateFixedWatchActionPerformer getCreateFixedWatchActionPerformer() {
-        if (createFixedWatchActionPerformer == null) createFixedWatchActionPerformer = new CreateFixedWatchActionPerformer();
-        return createFixedWatchActionPerformer;
-    }
-
-    private class CreateFixedWatchActionPerformer implements Models.ActionPerformer {
-        public void perform(String action, Object node) {
-            if (node instanceof JPDAWatch) {
-                JPDAWatch jw = (JPDAWatch) node;
-                createFixedWatch(jw.getExpression(), jw.getType(), jw.getValue());
+    
+    private void createFixedWatch (Object node) {
+        if (node instanceof JPDAWatch) {
+            JPDAWatch jw = (JPDAWatch) node;
+            createFixedWatch (jw.getExpression (), jw.getType (), jw.getValue ());
+        } else {
+            Variable variable = (Variable) node;
+            String name = null;
+            if (variable instanceof LocalVariable) {
+                name = ((LocalVariable) variable).getName ();
+            } else if (variable instanceof Field) {
+                name = ((Field) variable).getName();
+            } else if (variable instanceof This) {
+                name = "this";
+            } else if (variable instanceof ObjectVariable) {
+                name = "object";
             } else {
-                Variable variable = (Variable) node;
-                String name = null;
-                if (variable instanceof LocalVariable) {
-                    name = ((LocalVariable) variable).getName();
-                } else if (variable instanceof Field) {
-                    name = ((Field) variable).getName();
-                } else if (variable instanceof This) {
-                    name = "this";
-                } else if (variable instanceof ObjectVariable) {
-                    name = "object";
-                } else {
-                    name = "unnamed";
-                }
-                createFixedWatch(name, variable);
+                name = "unnamed";
             }
+            createFixedWatch(name, variable);
         }
     }
 
-    public void perform(String action, Object node) {
-        removeFixedWatch((FixedWatch)node);
-    }
-
-    private void removeFixedWatch(FixedWatch fw) {
-        if (fixedWatches != null) {
-            fixedWatches.remove(fw);
-            fireModelChanged();
-        }
-    }
-
-    private void createFixedWatch(String name, Variable variable) {
+    private void createFixedWatch (String name, Variable variable) {
         if (fixedWatches == null) fixedWatches = new ArrayList();
         FixedWatch fw = new FixedWatch(name, variable);
         fixedWatches.add(fw);

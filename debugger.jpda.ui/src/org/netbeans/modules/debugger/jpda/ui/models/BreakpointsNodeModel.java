@@ -46,9 +46,6 @@ public class BreakpointsNodeModel implements NodeModel {
     
     
     public String getDisplayName (Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT) {
-            return "Name";
-        } else
         if (o instanceof LineBreakpoint) {
             LineBreakpoint b = (LineBreakpoint) o;
             return new MessageFormat (
@@ -191,9 +188,6 @@ public class BreakpointsNodeModel implements NodeModel {
     }
     
     public String getShortDescription (Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT) {
-            return TreeModel.ROOT;
-        } else
         if (o instanceof LineBreakpoint) {
             return new MessageFormat (
                 NbBundle.getMessage (
@@ -335,9 +329,6 @@ public class BreakpointsNodeModel implements NodeModel {
     }
     
     public String getIconBase (Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT) {
-            return BREAKPOINT;
-        } else
         if (o instanceof LineBreakpoint) {
             return LINE_BREAKPOINT;
         } else

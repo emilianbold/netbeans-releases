@@ -29,9 +29,23 @@ import org.netbeans.modules.debugger.jpda.ui.EngineContext;
 /**
  * @author   Jan Jancura
  */
-public class VariablesActionsProvider implements NodeActionsProvider,
-Models.ActionPerformer {
+public class VariablesActionsProvider implements NodeActionsProvider {
     
+    
+    private final Action GO_TO_SOURCE_ACTION = Models.createAction (
+        "Go to Source", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                goToSource ((Variable) nodes [0]);
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
+        
+        
     private LookupProvider lookupProvider;
 
     
@@ -44,12 +58,7 @@ Models.ActionPerformer {
             return new Action [0];
         if (node instanceof Variable)
             return new Action [] {
-                Models.createAction (
-                    "Go to Source", 
-                    node, 
-                    this,
-                    isSourceAvailable ((Variable) node)
-                )
+                GO_TO_SOURCE_ACTION
             };
         throw new UnknownTypeException (node);
     }
@@ -58,7 +67,7 @@ Models.ActionPerformer {
         if (node == TreeModel.ROOT) 
             return;
         if (node instanceof Variable) {
-            perform ("Go to Source", node);
+            goToSource ((Variable) node);
             return;
         }
         throw new UnknownTypeException (node);
@@ -78,12 +87,10 @@ Models.ActionPerformer {
     public void removeTreeModelListener (TreeModelListener l) {
     }
     
-    public void perform (String action, Object node) {
-        if ("Go to Source".equals (action)) {
-            EngineContext ectx = (EngineContext) lookupProvider.lookupFirst
-                (EngineContext.class);
-            ectx.showSource ((Variable) node);
-        }
+    public void goToSource (Variable variable) {
+        EngineContext ectx = (EngineContext) lookupProvider.lookupFirst
+            (EngineContext.class);
+        ectx.showSource (variable);
     }
 
     private boolean isSourceAvailable (Variable v) {

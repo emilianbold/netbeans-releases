@@ -35,9 +35,82 @@ import org.netbeans.spi.viewmodel.TreeModel;
 /**
  * @author   Jan Jancura
  */
-public class ThreadsActionsProvider implements NodeActionsProvider,
-Models.ActionPerformer {
+public class ThreadsActionsProvider implements NodeActionsProvider {
 
+    private Action MAKE_CURRENT_ACTION = Models.createAction (
+        "Make Current", new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return debugger.getCurrentThread () != node;
+            }
+            
+            public void perform (Object[] nodes) {
+                ((JPDAThread) nodes [0]).makeCurrent ();
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
+
+    private static Action GO_TO_SOURCE_ACTION = Models.createAction (
+        "Go To Source", new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return isGoToSourceSupported ((JPDAThread) node);
+            }
+            
+            public void perform (Object[] nodes) {
+                String language = DebuggerManager.getDebuggerManager ().
+                    getCurrentSession ().getCurrentLanguage ();
+                String className = ((JPDAThread) nodes [0]).getClassName ();
+                EngineContext ectx = (EngineContext) DebuggerManager.
+                    getDebuggerManager ().getCurrentSession ().lookupFirst 
+                    (EngineContext.class);
+                ectx.showSource ((JPDAThread) nodes [0], language);
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
+
+    private Action SUSPEND_ACTION = Models.createAction (
+        "Suspend", new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                if (node instanceof JPDAThread)
+                    return !((JPDAThread) node).isSuspended ();
+                else
+                    return true;
+            }
+            
+            public void perform (Object[] nodes) {
+                int i, k = nodes.length;
+                for (i = 0; i < k; i++)
+                    if (nodes [i] instanceof JPDAThread)
+                        ((JPDAThread) nodes [i]).suspend ();
+                    else
+                        ((JPDAThreadGroup) nodes [i]).suspend ();
+            }
+        },
+        Models.MULTISELECTION_TYPE_ALL
+    );
+
+    private Action RESUME_ACTION = Models.createAction (
+        "Resume", new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                if (node instanceof JPDAThread)
+                    return ((JPDAThread) node).isSuspended ();
+                else
+                    return true;
+            }
+            
+            public void perform (Object[] nodes) {
+                int i, k = nodes.length;
+                for (i = 0; i < k; i++)
+                    if (nodes [i] instanceof JPDAThread)
+                        ((JPDAThread) nodes [i]).resume ();
+                    else
+                        ((JPDAThreadGroup) nodes [i]).resume ();
+            }
+        },
+        Models.MULTISELECTION_TYPE_ALL
+    );
+        
     private JPDADebugger debugger;
     
     
@@ -51,8 +124,8 @@ Models.ActionPerformer {
             return new Action [0];
         if (node instanceof JPDAThreadGroup) {
             return new Action [] {
-                Models.createAction ("Resume", node, this),
-                Models.createAction ("Suspend", node, this)
+                RESUME_ACTION,
+                SUSPEND_ACTION,
             };
         } else
         if (node instanceof JPDAThread) {
@@ -60,23 +133,13 @@ Models.ActionPerformer {
             boolean suspended = t.isSuspended ();
             Action a = null;
             if (suspended)
-                a = Models.createAction ("Resume", node, this);
+                a = RESUME_ACTION;
             else
-                a = Models.createAction ("Suspend", node, this);
+                a = SUSPEND_ACTION;
             return new Action [] {
-                Models.createAction (
-                    "Make Current", 
-                    node, 
-                    this, 
-                    debugger.getCurrentThread () != t
-                ),
+                MAKE_CURRENT_ACTION,
                 a,
-                Models.createAction (
-                    "Go to Source", 
-                    node, 
-                    this,
-                    isGoToSourceSupported (t)
-                )
+                GO_TO_SOURCE_ACTION,
             };
         } else
         throw new UnknownTypeException (node);
@@ -107,35 +170,8 @@ Models.ActionPerformer {
      */
     public void removeTreeModelListener (TreeModelListener l) {
     }
-    
-    public void perform (String action, Object node) {
-        String language = DebuggerManager.getDebuggerManager ().
-            getCurrentSession ().getCurrentLanguage ();
-        if ("Make Current".equals (action)) {
-            ((JPDAThread) node).makeCurrent ();
-        } else
-        if ("Resume".equals (action)) {
-            if (node instanceof JPDAThread)
-                ((JPDAThread) node).resume ();
-            else
-                ((JPDAThreadGroup) node).resume ();
-        } else
-        if ("Suspend".equals (action)) {
-            if (node instanceof JPDAThread)
-                ((JPDAThread) node).suspend ();
-            else
-                ((JPDAThreadGroup) node).suspend ();
-        } else
-        if ("Go to Source".equals (action)) {
-            String className = ((JPDAThread) node).getClassName ();
-            EngineContext ectx = (EngineContext) DebuggerManager.
-                getDebuggerManager ().getCurrentSession ().lookupFirst 
-                (EngineContext.class);
-            ectx.showSource ((JPDAThread) node, language);
-        }
-    }    
 
-    private boolean isGoToSourceSupported (JPDAThread t) {
+    private static boolean isGoToSourceSupported (JPDAThread t) {
         String language = DebuggerManager.getDebuggerManager ().
             getCurrentSession ().getCurrentLanguage ();
         if (!t.isSuspended ())
@@ -146,5 +182,4 @@ Models.ActionPerformer {
             (EngineContext.class);
         return ectx.sourceAvailable (t, language);
     }
-
 }

@@ -188,6 +188,10 @@ public class TreeModelNode extends AbstractNode {
         refresh ();
     }
     
+    public Object getObject () {
+        return object;
+    }
+    
     
     // innerclasses ............................................................
     

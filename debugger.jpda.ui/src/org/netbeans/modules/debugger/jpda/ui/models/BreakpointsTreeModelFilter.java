@@ -73,9 +73,9 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
                  (ch [i] instanceof JPDABreakpoint) &&
                  ((JPDABreakpoint) ch [i]).isHidden ()
             ) continue;
-            l.add (ch [i]);
+            l.add (ch [i]); 
         }
-        Breakpoint[] bs = new Breakpoint [l.size ()];
+        Object[] bs = new Object [l.size ()];
         return l.toArray (bs);
     }
     

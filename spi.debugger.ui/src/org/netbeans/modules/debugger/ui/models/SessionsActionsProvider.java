@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.debugger.ui.models;
 
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 import org.netbeans.api.debugger.DebuggerManager;
@@ -27,39 +29,59 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 /**
  * @author   Jan Jancura
  */
-public class SessionsActionsProvider implements NodeActionsProvider,
-Models.ActionPerformer {
+public class SessionsActionsProvider implements NodeActionsProvider {
     
+    private static final Action FINISH_ALL_ACTION = new AbstractAction 
+        ("Finish All") {
+            public void actionPerformed (ActionEvent e) {
+                Session[] ss = DebuggerManager.getDebuggerManager ().
+                    getSessions ();
+                int i, k = ss.length;
+                for (i = 0; i < k; i++)
+                    ss [i].kill ();
+            }
+    };
+    private Action MAKE_CURRENT_ACTION = Models.createAction (
+        "Make Current", new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return DebuggerManager.getDebuggerManager ().
+                    getCurrentSession () != node;
+            }
+            
+            public void perform (Object[] nodes) {
+                DebuggerManager.getDebuggerManager ().setCurrentSession (
+                    (Session) nodes [0]
+                );
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
+    private static final Action FINISH_ACTION = Models.createAction (
+        "Finish", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                int i, k = nodes.length;
+                for (i = 0; i < k; i++)
+                    ((Session) nodes [i]).kill ();
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
     
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) 
             return new Action [] {
-                Models.createAction (
-                    "Finish All", 
-                    node, 
-                    this,
-                    DebuggerManager.getDebuggerManager ().getCurrentSession ()
-                        != node
-                )
+                FINISH_ALL_ACTION
             };
         if (node instanceof Session)
             return new Action [] {
-                Models.createAction (
-                    "Make Current", 
-                    node, 
-                    this,
-                    DebuggerManager.getDebuggerManager ().getCurrentSession ()
-                        != node
-                ),
-                Models.createAction ("Finish", node, this),
+                MAKE_CURRENT_ACTION,
+                FINISH_ACTION,
                 null,
-                Models.createAction (
-                    "Finish All", 
-                    node, 
-                    this,
-                    DebuggerManager.getDebuggerManager ().getCurrentSession ()
-                        != node
-                )
+                FINISH_ALL_ACTION
             };
         throw new UnknownTypeException (node);
     }
@@ -81,73 +103,4 @@ Models.ActionPerformer {
 
     public void removeTreeModelListener (TreeModelListener l) {
     }
-    
-    public void perform (String action, Object node) {
-        if ("Make Current".equals (action)) {
-            DebuggerManager.getDebuggerManager ().setCurrentSession (
-                (Session) node
-            );
-        } else
-        if ("Finish".equals (action)) {
-            ((Session) node).kill ();
-        } else
-        if ("Finish All".equals (action)) {
-            Session[] ss = DebuggerManager.getDebuggerManager ().getSessions ();
-            int i, k = ss.length;
-            for (i = 0; i < k; i++)
-                ss [i].kill ();
-        }
-    }    
-
-    
-    // innerclasses ............................................................
-    
-//    private static class CustomizeAction extends AbstractAction {
-//        
-//        private Session s;
-//        
-//        
-//        CustomizeAction (Session s) {
-//            super ("Customize");
-//            this.s = s;
-//            setEnabled (false);
-//        }
-//        
-//        public void actionPerformed (ActionEvent e) {
-//        }
-//    }
-//    
-//    private static class MakeCurrentAction extends AbstractAction {
-//        
-//        private Session s;
-//        
-//        
-//        MakeCurrentAction (Session s) {
-//            super ("Make Current");
-//            this.s = s;
-//            setEnabled (
-//                DebuggerManager.getDebuggerManager ().getCurrentSession ()
-//                != s
-//            );
-//        }
-//        
-//        public void actionPerformed (ActionEvent e) {
-//            DebuggerManager.getDebuggerManager ().setCurrentSession (s);
-//        }
-//    }
-//    
-//    private static class KillAction extends AbstractAction {
-//        
-//        private Session s;
-//        
-//        
-//        KillAction (Session s) {
-//            super ("Kill");
-//            this.s = s;
-//        }
-//        
-//        public void actionPerformed (ActionEvent e) {
-//            s.kill ();
-//        }
-//    }
 }

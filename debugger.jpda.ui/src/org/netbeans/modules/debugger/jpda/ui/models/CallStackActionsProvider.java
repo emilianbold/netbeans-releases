@@ -39,9 +39,33 @@ import org.netbeans.modules.debugger.jpda.ui.EngineContext;
 /**
  * @author   Jan Jancura
  */
-public class CallStackActionsProvider implements NodeActionsProvider,
-Models.ActionPerformer {
+public class CallStackActionsProvider implements NodeActionsProvider {
     
+    private final Action MAKE_CURRENT_ACTION = Models.createAction (
+        "Make Current", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                makeCurrent ((CallStackFrame) nodes [0]);
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
+    private static final Action POP_TO_HERE_ACTION = Models.createAction (
+        "Pop To Here", 
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                popToHere ((CallStackFrame) nodes [0]);
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
+        
     private JPDADebugger    debugger;
     private LookupProvider  lookupProvider;
 
@@ -71,18 +95,8 @@ Models.ActionPerformer {
             }
 
         return new Action [] {
-            Models.createAction (
-                "Make Current",
-                (CallStackFrame) node,
-                this,
-                !debugger.getCurrentCallStackFrame ().equals (node)
-            ),
-            Models.createAction (
-                "Pop To Here",
-                (CallStackFrame) node,
-                this,
-                popToHere
-            )
+            MAKE_CURRENT_ACTION,
+            POP_TO_HERE_ACTION
         };
     }
     
@@ -96,30 +110,13 @@ Models.ActionPerformer {
         throw new UnknownTypeException (node);
     }
 
-    /** 
-     *
-     * @param l the listener to add
-     */
     public void addTreeModelListener (TreeModelListener l) {
     }
 
-    /** 
-     *
-     * @param l the listener to remove
-     */
     public void removeTreeModelListener (TreeModelListener l) {
     }
-    
-    public void perform (String action, Object node) {
-        if ("Make Current".equals (action)) {
-            makeCurrent ((CallStackFrame) node);
-        } else
-        if ("Pop To Here".equals (action)) {
-            popToHere ((CallStackFrame) node);
-        }
-    }    
 
-    private void popToHere (final CallStackFrame frame) {
+    private static void popToHere (final CallStackFrame frame) {
         try {
         JPDAThread t = frame.getThread ();
         CallStackFrame[] stack = t.getCallStack ();
