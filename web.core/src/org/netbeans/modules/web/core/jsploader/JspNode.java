@@ -207,20 +207,6 @@ public class JspNode extends DataNode {
         // remove the debugger type property
         //ps.remove(ExecSupport.PROP_DEBUGGER_TYPE);
 
-        // add compilation properties
-        JspDataObject mdo = (JspDataObject)getDataObject ().getCookie (JspDataObject.class);
-        if (mdo != null) {
-            CompilerSupport comp = (CompilerSupport)mdo.getCookieSet0 ().getCookie (CompilerSupport.class);
-            if (comp != null) comp.addProperties(ps);
-        }
-
-        // change the display name and hint
-        Node.Property compProp = ps.get(JspCompilerSupport.PROP_COMPILER_TYPE);
-        if (compProp != null) {
-            compProp.setDisplayName(NbBundle.getBundle(JspNode.class).getString("CTL_ServletCompilerPropertyName"));
-            compProp.setShortDescription(NbBundle.getBundle(JspNode.class).getString("CTL_ServletCompilerPropertyHint"));
-        }
-
         sheet.put(ps);
 
         // text sheet

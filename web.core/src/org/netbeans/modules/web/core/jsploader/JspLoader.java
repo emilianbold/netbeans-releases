@@ -75,8 +75,6 @@ public class JspLoader extends UniFileLoader {
                         SystemAction.get (org.openide.actions.ExecuteAction.class),
                         SystemAction.get (org.netbeans.modules.web.execution.ExecuteForceReloadAction.class),
                         null,
-                        SystemAction.get (CompileAction.class),
-                        null,
                         SystemAction.get (CutAction.class),
                         SystemAction.get (CopyAction.class),
                         SystemAction.get (PasteAction.class),
@@ -124,17 +122,6 @@ public class JspLoader extends UniFileLoader {
             Node.Cookie execSupport = obj.createExecSupport();
             if (execSupport != null) {
                 obj.getCookieSet0 ().add (execSupport);
-            }
-
-            try {
-                // check that we can conver this JSP to file
-                JspCompileUtil.getFileObjectFileName(obj.getPrimaryFile());
-                obj.getCookieSet0 ().add(new JspCompilerSupport.Compile(obj));
-                obj.getCookieSet0 ().add(new JspCompilerSupport.Build(obj));
-                obj.getCookieSet0 ().add(new JspCompilerSupport.Clean(obj));
-            }
-            catch (FileStateInvalidException e) {
-                // compile cookies not added
             }
         }
         return obj;

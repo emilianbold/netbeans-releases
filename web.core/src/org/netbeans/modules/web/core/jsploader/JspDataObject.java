@@ -84,8 +84,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
 //    public static final String PROP_ENCODING = "encoding"; // NOI18N
     public static final String PROP_SERVER_CHANGE = "PROP_SERVER_CHANGE";// NOI18N
 
-    public static final String CLEAN_COMPILE = "CLEAN_COMPILE"; //NOI18N
-    
     transient private EditorCookie servletEdit;
     transient protected JspServletDataObject servletDataObject;
     // it is guaranteed that if servletDataObject != null, then this is its 
@@ -95,10 +93,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     transient private boolean firstStart;
     transient private Listener listener;
     
-    // this hashtable is necessery for clonning compilerTypes
-    // and for setting parameter -encoding to UTF8 to these cloned compilerTypes
-    transient private static HashMap clonedCompilers;
-
     transient final private static boolean debug = false;
     
     public JspDataObject (FileObject pf, final UniFileLoader l) throws DataObjectExistsException {
@@ -158,28 +152,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return ret;
     }
 
-    /** Gets a cookie - special handling of CompilerCookie. */
-    public Node.Cookie getCookie(Class c) {
-        if (CompilerCookie.class.isAssignableFrom(c)) {
-            // disable compilation if servlet compiler is set to "do not compile"
-            if (!(getServletCompilerType() instanceof JavaCompilerType))
-                return null;
-            // disable compilation if the JSP is not based on a local file
-            if (NbClassPath.toFile(getPrimaryFile()) == null)
-                return null;
-            // disable compilation if the currently selected server does not support it
-            FfjJspCompileContext compContext = JspCompileUtil.getCurrentCompileContext(this);
-            if (compContext == null)
-                return null;
-            WebStandardData.WebResource wr = JspCompileUtil.getResourceData(getPrimaryFile());
-            if (!(wr instanceof WebStandardData.WebJsp))
-                return null;
-            if (compContext.getDevelopmentCompilation((WebStandardData.WebJsp)wr) == null)
-                return null;
-        }
-        return super.getCookie(c);
-    }
-
     /** Creates a EditorSupport for this page. May return null. */
     protected BaseJspEditorSupport createJspEditorSupport() {
         return new BaseJspEditorSupport(this);
@@ -194,249 +166,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return new ServerExecSupport(getPrimaryEntry());
     }
     
-    /** Creates a compiler which will be called after the JSP to servlet translation has finished, but
-    * before the servlet to class compilation. May return null. 
-    * @param type type of compiler cookie which is creating the compiler.
-    */
-    protected Compiler createPostTranslateCompiler(Class type, JspCompilationInfo compInfo) {
-        return null;
-    }
-
-    /** Creates a compiler which will be called before the JSP to servlet translation is called. 
-     * If CleanCompiler is created, will be called before the CleanCompiler.
-     * May return null. 
-     * @param type type of compiler cookie which is creating the compiler.
-     */
-    protected Compiler createPreTranslateCompiler(Class type) {
-        return null;
-    }
-
-    /** Creates a compiler and adds it into the job: for beans on which this JSP depends,
-    *  generating servlet for this JSP, for compiling this JSP
-    *  into a servlet, for other JSPs used by this JSP by &lt;jsp:include&gt; and &lt;jsp:forward&gt;.
-    */
-    protected synchronized void createCompiler(CompilerJob job, java.lang.Class type, /*Compiler.Depth depth,*/
-                                  boolean individual) {
-
-//System.out.println("creating JSP compiler for " + getPrimaryFile().getPackageNameExt('/','.'));
-        // clean compiler, if any
-        Compiler cleanCompiler = null;
-        // check if we should clean first
-        if (type == JspCompiler.CLEAN || type == JspCompiler.BUILD) {
-            // construct clean compiler
-            cleanCompiler = new CleanCompiler(this);
-            if (type == JspCompiler.CLEAN) {
-                job.add(cleanCompiler);
-            }
-        }
-
-        // the real type
-        //Class jspType = individual ? JspCompiler.BUILD : type;
-        // do not compile if up to date
-        Class jspType = type;
-        if (jspType == JspCompiler.CLEAN)
-            jspType = JspCompiler.BUILD;
-
-        try {
-            // save first
-            SaveCookie sc = (SaveCookie)getCookie(SaveCookie.class);
-            if (sc != null)
-                sc.save();
-            
-            // save WEB-INF/web.xml
-            FileObject webXml = getPrimaryFile().getFileSystem().findResource("WEB-INF/web.xml"); // NOI18N
-            if (webXml != null) {
-                try {
-                    DataObject webXmlDo = DataObject.find(webXml);
-                    sc = (SaveCookie)webXmlDo.getCookie(SaveCookie.class);
-                    if (sc != null)
-                        sc.save();
-                }
-                catch (DataObjectNotFoundException e) {
-                    // not bad, just won't be saved
-                }
-            }
-
-            // compiler which creates the line mapping
-            Compiler preTranslate = createPreTranslateCompiler(jspType);
-	    if ( null != preTranslate) {
-		job.add(preTranslate);
-                if (cleanCompiler != null)
-                    cleanCompiler.dependsOn(preTranslate);
-	    }
-
-            // create the compiler for this page
-            JspCompiler jspCompiler = new JspCompiler(this, jspType);
-            if (cleanCompiler != null)
-                jspCompiler.dependsOn(cleanCompiler);
-            if (preTranslate != null)
-                jspCompiler.dependsOn(preTranslate);
-
-            if (type == JspCompiler.CLEAN) {
-                return;
-            }
-            
-            // check if this compiler has already been added
-            Collection compilers = job.compilers();
-            for (Iterator it = compilers.iterator(); it.hasNext(); ) {
-                Object other = it.next();
-                if (jspCompiler.equals(other)) {
-                    JspCompiler otherJspComp = (JspCompiler)other;
-                    // make the cookies consistent
-                    if (jspCompiler.getType () != otherJspComp.getType()) {
-                        otherJspComp.setType(JspCompiler.BUILD);
-                    }
-                    // make the dependencies consistent - it's enough to depend on the cleancompiler
-                    otherJspComp.dependsOn(jspCompiler.dependsOn());
-                    return;
-                }
-            }
-
-            // get the JspCompilationInfo
-            JspParserAPI.ParseResult result = null;
-            // this switch is here because of bug 33678
-            if (shouldParse()) {
-                JspParserAPI parser = JspCompileUtil.getJspParser();
-                if (parser == null) {
-                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, 
-                    new NullPointerException());
-                }
-                result = parser.analyzePage(getPrimaryFile(), 
-                    WebModule.getJspParserWM(JspCompileUtil.getContextRoot(getPrimaryFile())), JspParserAPI.ERROR_IGNORE );
-                
-            }
-            if ((result == null) || result.isParsingSuccess()) {
-                // parse success
-                PageInfo jspInfo = (result == null) ? null : result.getPageInfo();
-                
-                JspCompilationInfo compInfo = new JspCompilationInfo(jspInfo, getPrimaryFile());
-                // update information about pages included in this page
-                updateIncludedPagesInfo(compInfo);
-
-                // acquire compilers for the beans
-                DataObject beans[] = compInfo.getBeans();
-                CompilerJob beansJob = new CompilerJob(Compiler.DEPTH_ZERO);
-                for (int i = 0; i < beans.length; i++) {
-                    if (isFileSystemSuitableForBeansCompilation(beans[i].getPrimaryFile().getFileSystem())) {
-                        CompilerCookie c = (CompilerCookie)beans[i].getCookie(CompilerCookie.Compile.class);
-                        if (c != null) {
-                            c.addToJob(beansJob, Compiler.DEPTH_ZERO);
-                        }
-                    }
-                }
-                // now refresh the folders
-                CompilerJob refreshBeansJob = new CompilerJob(Compiler.DEPTH_ZERO);
-                RefreshCompiler rc;
-                for (int i = 0; i < beans.length; i++) {
-                    rc = new RefreshCompiler(beans[i].getPrimaryFile().getParent());
-                    rc.dependsOn(beansJob);
-                    refreshBeansJob.add(rc);
-                }
-
-
-                // add it, add dependencies, error page info
-                jspCompiler.setErrorPage(compInfo.isErrorPage());
-                //jspCompiler.setEncoding(compInfo.getEncoding());
-                jspCompiler.setCompilationURI(JspCompileUtil.getContextPath(getPrimaryFile()));
-                jspCompiler.dependsOn (refreshBeansJob);
-                job.add(jspCompiler);
-
-                // compiler which creates the line mapping
-                Compiler lmc = createPostTranslateCompiler(jspType, compInfo); // new LineManglerCompiler(this, jspType);
-                if ( null != lmc) {
-                    lmc.dependsOn(jspCompiler);
-                    job.add(lmc);
-                }
-
-                // add the compiler for the generated servlet
-                CompileData plugin = getPlugin();
-                JavaCompilerType.IndirectCompiler servletComp = 
-                    getServletCompiler(CompilerCookie.Build.class, 
-                    plugin.getServerInstance(),
-                    plugin.getServletEncoding(),
-                    plugin.getAdditionalClassPath());
-                if (servletComp == null) {
-                    Compiler error = new ErrorCompiler(getPrimaryFile(), new Exception(
-                                                           NbBundle.getBundle(JspDataObject.class).getString("CTL_BadCompilerType")), true);
-                    job.add(error);
-                }
-                else {
-                    // compile the servlet
-                    servletComp.dependsOn(jspCompiler);
-                    if (lmc != null) {
-                        servletComp.dependsOn(lmc);
-                    }
-                    jspCompiler.servletCompiler = servletComp;
-                    job.add(servletComp);
-                    // rename the class
-                    Compiler ren = new RenameCompiler(jspCompiler);
-                    ren.dependsOn(servletComp);
-                    job.add(ren);
-                    // refresh the folder
-                    // PENDING this part is specific for Tomcat, it should be more general
-                    /*Compiler refr = new RefreshCompiler(JspCompileUtil.suggestContextOutputRoot(getPrimaryFile(),
-                        JspCompileUtil.getCurrentServerInstance(this).getServer()));
-                    refr.dependsOn(ren);
-                    job.add(refr);*/
-                }
-
-                // add compilers for referenced pages - jsp:include and jsp:forward
-                if (ServletSettings.options ().isCompileIncludedForwarded()) {
-                    JspDataObject usedPages[] = compInfo.getReferencedPages();
-                    for (int i = 0; i < usedPages.length; i++) {
-                        JspDataObject jspdo = usedPages[i];
-                        if (jspdo.getCookie(CompilerCookie.Compile.class) != null) {
-                            jspdo.createCompiler(job, CompilerCookie.Compile.class, /*depth,*/ false);
-                        }
-                    }
-                }
-
-                // add compilers for error pages
-                if (ServletSettings.options ().isCompileErrorPage()) {
-                    JspDataObject errorPage[] = compInfo.getErrorPage();
-                    for (int i = 0; i < errorPage.length; i++) {
-                        JspDataObject jspdo = errorPage[i];
-                        jspdo.createCompiler(job, CompilerCookie.Compile.class, /*depth,*/ false);
-                    }
-                }
-            } // end of successful parse branch
-            else {
-                if (result != null) {
-                    // parse failure
-                    JspParserAPI.ErrorDescriptor[] errors = result.getErrors();
-                    Compiler failure = new FailureCompiler(errors);
-                    job.add(failure);
-                }
-            } // end of parse failure branch
-            
-        }
-        catch (FileStateInvalidException e) {
-            //e.printStackTrace();
-            Compiler error = new ErrorCompiler(getPrimaryFile(), e, true);
-            job.add(error);
-        }
-        catch (IOException e) {
-            //e.printStackTrace();
-            Compiler error = new ErrorCompiler(getPrimaryFile(), e, false);
-            job.add(error);
-        }
-/*        catch (Throwable e) {
-            //e.printStackTrace();
-            Compiler error = new ErrorCompiler(getPrimaryFile(), e, false);
-            job.add(error);
-        }*/
-//printJob(job);
-//System.out.println("created JSP compiler for " + getPrimaryFile().getPackageNameExt('/','.'));
-    }
-    
-    private boolean isFileSystemSuitableForBeansCompilation(FileSystem fs) {
-        if (!fs.getCapability().capableOf(FileSystemCapability.COMPILE))
-            return false;
-        if (fs.isReadOnly())
-            return false;
-        return true;
-    }
-    
     private boolean shouldParse() {
         return Boolean.valueOf(System.getProperty("netbeans.jspcompile.shouldparse", "true")).booleanValue();
     }
@@ -447,169 +176,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return !getPlugin().isOutDated();
     }
     
-    /** Returns the currently selected servlet compiler for this object or the default. */
-    private CompilerType getServletCompilerType() {
-        CompilerType ct = CompilerSupport.getCompilerType (getPrimaryEntry());
-        
-        if (ct == null) {
-            ct = ServletSettings.options ().getCompiler();
-        }
-        
-        return ct;
-    }
-
-    /** Return the compiler for the resulting servlet.
-     * @param type compiler type, see org.openide.compiler.CompilerType
-     * @param servletEncoding desired encoding of the servlet file
-     * @param pluginClassPath enumeration of elements, see 
-     *    org.netbeans.modules.java.enviroment.Utilities.createClassPath().
-     *    May be null if no additional classpath is needed.
-     */
-    private JavaCompilerType.IndirectCompiler getServletCompiler(
-        Class type, ServerInstance serverInstance, String servletEncoding, Vector pluginClassPath) throws IOException {
-        CompilerType ct = getServletCompilerType();
-        
-        if (ct instanceof JavaCompilerType) {
-            
-            ClonedCompilersKey newKey = new ClonedCompilersKey(serverInstance, ct);
-            
-            JavaCompilerType jct = (JavaCompilerType)ct;
-            JavaCompilerType javaCompilerType=null;
-            
-            if (clonedCompilers == null)
-                clonedCompilers = new HashMap();
-
-            // test if compilerType need to be cloned
-            if (!clonedCompilers.containsKey(newKey)){ //some property was changed
-                //System.out.println("new clone is running");
-                try {
-                    javaCompilerType = (JavaCompilerType)jct.clone();
-                } catch (CloneNotSupportedException ex) {
-                    return jct.prepareIndirectCompiler(type, null);
-                }
-                clonedCompilers.put(newKey,javaCompilerType);
-                
-                // now set all the properties of the CompilerType which are specific to
-                // JSP-servlet compilation
-                
-                // set the correct encoding
-                javaCompilerType.setCharEncoding(servletEncoding);
-                
-                // set the target filesystem
-                javaCompilerType.setTargetFileSystem(null);
-                
-                // set classpath required to compile the generated file
-                if (pluginClassPath != null) {
-                    
-                    NbClassPath cp = javaCompilerType.getClassPath();
-                    Enumeration newEn = new SequenceEnumeration(
-                            new SingletonEnumeration(cp),
-                            pluginClassPath.elements());
-                    NbClassPath newCp = Utilities.createClassPath(newEn);
-                    if (debug)
-                        System.out.println("newCp: '" + newCp.getClassPath() + "'"); // NOI18N
-                    javaCompilerType.setClassPath(newCp);
-                    if (debug)
-                        System.out.println("cp: '" + javaCompilerType.getClassPath().getClassPath() + "'"); // NOI18N
-                }
-                
-                // hack for projects imported from Boston - they don't have the "{classpath}" tag in classpath
-                // artificially adding to the classpath
-                if (javaCompilerType instanceof JavaExternalCompilerType) {
-                    JavaExternalCompilerType javaExt = (JavaExternalCompilerType)javaCompilerType;
-                    NbProcessDescriptor process = javaExt.getExternalCompiler();
-                    String args = process.getArguments();
-                    String searched0 = "{" + JExternalCompilerGroup.JFormat.TAG_CLASSPATH + "}"; // NOI18N
-                    int cpIndex = args.indexOf(searched0);
-                    if (cpIndex == -1) {
-                        // does not contain the {classpath} tag
-                        String searched = "-classpath {" + ExternalCompilerGroup.Format.TAG_REPOSITORY + "}{" + ExternalCompilerGroup.Format.TAG_PATHSEPARATOR + "}"; // NOI18N
-                        int pos = args.indexOf(searched);
-                        if (pos != -1) {
-                            int after = pos + searched.length();
-                            StringBuffer toInsert = new StringBuffer();
-                            for (Enumeration en = pluginClassPath.elements(); en.hasMoreElements() ; ) {
-                                toInsert.append(((File)en.nextElement()).getAbsolutePath());
-                                toInsert.append("{"); // NOI18N
-                                toInsert.append(ExternalCompilerGroup.Format.TAG_PATHSEPARATOR);
-                                toInsert.append("}"); // NOI18N
-                            }
-                            StringBuffer sb = new StringBuffer(args);
-                            sb.insert(after, toInsert.toString());
-                            javaExt.setExternalCompiler(
-                                new NbProcessDescriptor(
-                                    process.getProcessName(),
-                                    sb.toString(),
-                                    process.getInfo())
-                            );
-                        }
-                    }
-                    
-                    
-                }
-                
-                // add property change listener to the original CompilerType - if
-                // a property is changed, the clone must be recreated
-                jct.addPropertyChangeListener(new PropertyChangeListener(){
-                    public void propertyChange(PropertyChangeEvent e){
-                        if (!JavaCompilerType.PROP_CHAR_ENCODING.equals(e.getPropertyName()) &&
-                            !JavaCompilerType.PROP_TARGET_FILESYSTEM.equals(e.getPropertyName())) {
-                            JavaCompilerType jct2 = (JavaCompilerType)e.getSource();
-                            jct2.removePropertyChangeListener(this);
-                            removeAllForCT(jct2);
-                            if (debug)
-                                printClonedCompilers();
-                        }
-                    }
-                    
-                    /** Removes all keys which contain a given ct from the clonedCompilers table. */
-                    private void removeAllForCT(JavaCompilerType ct2) {
-                        Iterator it = clonedCompilers.keySet().iterator();
-                        for (;it.hasNext();) {
-                            ClonedCompilersKey key = (ClonedCompilersKey)it.next();
-                            if (key.getCompilerType().equals(ct2))
-                                it.remove();
-                        }
-                    }
-                    
-                });
-            }else {
-                javaCompilerType = (JavaCompilerType)clonedCompilers.get(newKey);
-            }
-
-            if (debug)
-                printClonedCompilers();
-            
-            // prepare indirect compiler for cloned compilerType
-            JavaCompilerType.IndirectCompiler comp = javaCompilerType.prepareIndirectCompiler(type, null);
-            return comp;
-        }
-        else {
-            return null;
-        }
-    }
-    
-    /*private void printPluginClassPath(Enumeration pcp) {
-        if (debug)
-            System.out.println("--- APP plugin CP ---");
-        for (;pcp.hasMoreElements();) {
-            Object el = pcp.nextElement();
-            if (debug)
-                System.out.println(el.getClass().getName() + " -> '" + el + "'");
-        }
-    }*/
-    
-    private void printClonedCompilers() {
-        if (debug)
-            System.out.println("--- cloned compilers ---"); // NOI18N
-        Iterator it = clonedCompilers.keySet().iterator();
-        for (;it.hasNext();) {
-            ClonedCompilersKey key = (ClonedCompilersKey)it.next();
-            if (debug)
-                System.out.println("key " + key + ", " + key.getCompilerType() + ", " + key.getServerInstance()); // NOI18N
-        }
-    }
-
     public synchronized CompileData getPlugin() {
         if (compileData == null) {
             if ( firstStart ) {
@@ -1021,12 +587,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     
     /** Updates the information about statically included pages for these pages.
      * E.g. tells the included pages that they are included in this page. */
-    private void updateIncludedPagesInfo(JspCompilationInfo compInfo) throws IOException {
+/*    private void updateIncludedPagesInfo(JspCompilationInfo compInfo) throws IOException {
         FileObject included[] = compInfo.getIncludedFileObjects();
         for (int i = 0; i < included.length; i++) {
             IncludedPagesSupport.setIncludedIn(getPrimaryFile(), included[i]);
         }
-    }
+    }*/
     
     public void setQueryString (String params) throws java.io.IOException {
         WebExecSupport.setQueryString(getPrimaryEntry ().getFile (), params);
@@ -1173,41 +739,5 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         }
         
     }
-    
-    private static class ClonedCompilersKey {
-        
-        private ServerInstance inst;
-        private CompilerType ct;
-        
-        public ClonedCompilersKey(ServerInstance inst, CompilerType ct) {
-            if (inst == null) 
-                throw new IllegalArgumentException();
-            if (ct == null)
-                throw new IllegalArgumentException();
-            this.inst = inst;
-            this.ct = ct;
-        }
-        
-        public boolean equals(Object obj) {
-            if (!(obj instanceof ClonedCompilersKey))
-                return false;
-            if (inst.equals(((ClonedCompilersKey)obj).inst) && ct.equals(((ClonedCompilersKey)obj).ct))
-                return true;
-            return false;
-        }
-        
-        public int hashCode() {
-            return inst.hashCode() + ct.hashCode();
-        }
-        
-        public CompilerType getCompilerType() {
-            return ct;
-        }
-        
-        public ServerInstance getServerInstance() {
-            return inst;
-        }
-    }
-    
 }
 
