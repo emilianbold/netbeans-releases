@@ -66,7 +66,16 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
         String jspSourcePath = event.getJspName();
         String contextRoot = event.getContextRoot();
        
-        cboxJspSourcePath.setSelectedItem(jspSourcePath == null ? "" : contextRoot + " : " + jspSourcePath);        
+        cboxJspSourcePath.setSelectedItem(jspSourcePath == null ? "" : contextRoot + " : " + jspSourcePath);
+
+        String value = (String)cboxJspSourcePath.getSelectedItem();
+        if (value != null && value.indexOf(':') > -1) {
+            String ctx = value.substring(0,value.indexOf(':')-1);
+            String name = value.substring(value.indexOf(':') + 2);
+            event.setContextRoot(ctx);
+            event.setJspName(name);
+        }
+        
         fillLineNumber();
         run();
     }
@@ -211,9 +220,11 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
     }//GEN-LAST:event_tfLineNumberFocusLost
 
     private void cboxJspSourcePathFocusGained(java.awt.event.FocusEvent evt) {
+        System.err.println("focus gained");
     }
 
     private void cboxJspSourcePathFocusLost(java.awt.event.FocusEvent evt) {
+        System.err.println("focus lost");
     }
 
     private void fillLineNumber () {
