@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 
 import javax.swing.JFileChooser;
 
@@ -140,9 +141,10 @@ public class PatchAction extends NodeAction {
         ArrayList appliedFiles = new ArrayList();
         HashMap backups = new HashMap();
         for (int i = 0; i < fileDiffs.length; i++) {
+            //System.out.println("applyFileDiffs(): fileName = "+fileDiffs[i].getFileName());
             FileObject file;
             if (fo.isData()) file = fo;
-            else file = fo.getFileObject(fileDiffs[i].getFileName());
+            else file = findChild(fo, fileDiffs[i].getFileName());//fo.getFileObject(fileDiffs[i].getFileName());
             if (file == null) {
                 notFoundFileNames.add(fo.getPackageNameExt(File.separatorChar, '.') +
                                       File.separator + fileDiffs[i].getFileName());
@@ -176,6 +178,21 @@ public class PatchAction extends NodeAction {
         }
     }
     
+    private static FileObject findChild(FileObject folder, String child) {
+        child = child.replace(File.separatorChar, '/');
+        StringTokenizer tokenizer = new StringTokenizer(child, "/");
+        FileObject ch = null;
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            ch = folder.getFileObject(token);
+            if (ch != null && ch.isFolder()) {
+                folder = ch;
+                ch = null;
+            }
+        }
+        return ch;
+    }
+    
     private FileObject createFileBackup(FileObject fo) {
         FileObject parent = fo.getParent();
         try {
@@ -191,6 +208,7 @@ public class PatchAction extends NodeAction {
     }
     
     private boolean applyDiffsTo(Difference[] diffs, FileObject fo) {
+        //System.out.println("applyDiffsTo("+fo.getPackageNameExt('/', '.')+")");
         File tmp;
         try {
             tmp = File.createTempFile("patch", "tmp");
@@ -204,7 +222,7 @@ public class PatchAction extends NodeAction {
             FileUtil.copy(new ReaderInputStream(patched), new FileOutputStream(tmp));
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
-                NbBundle.getMessage(PatchAction.class, "EXC_PatchApplicationFailed", ioex.getLocalizedMessage())));
+                NbBundle.getMessage(PatchAction.class, "EXC_PatchApplicationFailed", ioex.getLocalizedMessage(), fo.getNameExt())));
             tmp.delete();
             return false;
         }
