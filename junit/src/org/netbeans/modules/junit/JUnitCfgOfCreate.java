@@ -487,7 +487,7 @@ public class JUnitCfgOfCreate extends JPanel {
         /* add the title and insets to the group: */
         JPanel result = new JPanel(new BorderLayout());
         result.add(new JLabel(title), BorderLayout.NORTH);
-        content.setBorder(BorderFactory.createEmptyBorder(6, 12, 0, 0));
+        addBorder(content, BorderFactory.createEmptyBorder(6, 12, 0, 0));
         result.add(content, BorderLayout.CENTER);
         
         /*
@@ -500,7 +500,28 @@ public class JUnitCfgOfCreate extends JPanel {
     }
     
     /**
+     * Adds a given border to a given component.
+     * If the component already has some border, the given border is put
+     * around the existing border.
+     *
+     * @param  component  component the border should be added to
+     * @param  border  the border to be added
+     */
+    private static void addBorder(JComponent component,
+                                  Border newBorder) {
+        Border currentBorder = component.getBorder();
+        if (currentBorder == null) {
+            component.setBorder(newBorder);
+        } else {
+            component.setBorder(BorderFactory.createCompoundBorder(
+                    newBorder,          //outside
+                    currentBorder));    //inside
+        }
+    }
+    
+    /**
      * Adds a border and a title around a given component.
+     * If the component already has some border, it is overridden (not kept).
      *
      * @param  component  component the border and title should be added to
      * @param  insets  insets between the component and the titled border
