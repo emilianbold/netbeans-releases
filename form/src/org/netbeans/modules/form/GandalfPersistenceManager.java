@@ -2668,9 +2668,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
-    private static PropertyEditor createPropertyEditor(Class editorClass,
-                                                       Class propertyType,
-                                                       FormProperty property)
+    private PropertyEditor createPropertyEditor(Class editorClass,
+                                                Class propertyType,
+                                                FormProperty property)
         throws InstantiationException,
                IllegalAccessException
     {
@@ -2681,6 +2681,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if (property != null)
             property.getPropertyContext().initPropertyEditor(ed);
+        else if (ed instanceof FormAwareEditor)
+            ((FormAwareEditor)ed).setFormModel(formModel);
 
         return ed;
     }
