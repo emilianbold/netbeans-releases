@@ -13,22 +13,27 @@
 
 package org.netbeans.modules.web.api.webmodule;
 
-/** Specific source group types for web project;
+/** Constants ueful for web-based projects;
  *
- * @author  mk115033
+ * @author  Milan Kuchtiak
  */
 public interface WebProjectConstants {
 
-    /** source folders for JSPs, HTML ...
-    */    
+    /**
+     * Document root root sources type (source folders for JSPs, HTML ...)
+     * @see org.netbeans.api.project.Sources
+     */
     public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
     
-    /** source folders type for TLD files ...
-    */
+    /**
+     * WEB-INF sources type (source folders for TLD files ...)
+     * @see org.netbeans.api.project.Sources
+     */
     public static final String TYPE_WEB_INF="web_inf"; //NOI18N
-
-    /** source folders for Tag Files
-    */
+    /**
+     * WEB-INF sources type (source folders for Tag Files ...)
+     * @see org.netbeans.api.project.Sources
+     */
     public static final String TYPE_TAGS="tags"; //NOI18N
     
     /**

@@ -26,10 +26,10 @@ import org.openide.util.Lookup;
  * <code>WebModule.getWebModule(fileObject)</code> static method, for any 
  * FileObject in the web module directory structure.
  * </p>
+ * <div class="nonnormative">
  * <p>
  * Use classpath API to obtain classpath for the document base.
  * <p>
- * <div class="nonnormative">
  * Note that the particular directory structure for web module is not guaranteed 
  * by this API.
  * </div>
@@ -63,6 +63,9 @@ public final class WebModule {
         this.impl = impl;
     }
     
+    /** Find the WebModule for given file or null if the file does not belong
+     * to any web module.
+     */
     public static WebModule getWebModule (FileObject f) {
         if (f == null) {
             throw new IllegalArgumentException ();
@@ -85,21 +88,42 @@ public final class WebModule {
         return impl.getDocumentBase ();
     }
     
-    /** Folder that contains Java sources for the web module.
+    /** WEB-INF folder for the web module.
+     * <div class="nonnormative">
+     * The WEB-INF folder would typically be a child of the folder returned 
+     * by {@link #getDocumentBase} but does not need to be.
+     * </div>
      */
-    //compilation classpath - not sources
-    //source level query
-    //what is needed for boothclasspath, is it accepted by jspparser?
-    //is this used or the classpath.getClasspath ??
+    public FileObject getWebInf () {
+        return impl.getWebInf ();
+    }
+
+    /** Deployment descriptor (web.xml file) of the web module.
+     * <div class="nonnormative">
+     * The web.xml file would typically be a child of the folder returned 
+     * by {@link #getWebInf} but does not need to be.
+     * </div>
+     */
+    public FileObject getDeploymentDescriptor () {
+        return impl.getDeploymentDescriptor ();
+    }
     
+    /** Context path of the web module.
+     */
     public String getContextPath () {
         return impl.getContextPath ();
     }
     
+    /** J2EE platform version - one of the constants {@link #J2EE_13_LEVEL}, 
+     * {@link #J2EE_14_LEVEL}.
+     * @return J2EE platform version
+     */
     public String getJ2eePlatformVersion () {
         return impl.getJ2eePlatformVersion ();
     }
     
+    /** Returns true if the object represents the same web module.
+     */
     public boolean equals (Object obj) {
         if (!WebModule.class.isAssignableFrom(obj.getClass()))
             return false;

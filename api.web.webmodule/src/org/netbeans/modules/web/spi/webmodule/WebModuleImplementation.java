@@ -16,15 +16,40 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
 
 /**
- * SPI interface for {@link WebModule}.
- * @see WebModule for documentation on methods
+ * SPI interface for {@link org.netbeans.modules.web.api.webmodule.WebModule}.
  * @see WebModuleFactory
  */
 public interface WebModuleImplementation {
 
-    public FileObject getDocumentBase ();
+    /** Folder that contains sources of the static documents for 
+     * the web module (html, JSPs, etc.).
+     */
+    FileObject getDocumentBase ();
     
-    public String getContextPath ();
+    /** Context path of the web module.
+     */
+    String getContextPath ();
     
-    public String getJ2eePlatformVersion ();
+    /** J2EE platform version - one of the constants 
+     * {@link org.netbeans.modules.web.api.webmodule.WebModule#J2EE_13_LEVEL}, 
+     * {@link org.netbeans.modules.web.api.webmodule.WebModule#J2EE_14_LEVEL}.
+     * @return J2EE platform version
+     */
+    String getJ2eePlatformVersion ();
+    
+    /** WEB-INF folder for the web module.
+     * <div class="nonnormative">
+     * The WEB-INF folder would typically be a child of the folder returned 
+     * by {@link #getDocumentBase} but does not need to be.
+     * </div>
+     */
+    FileObject getWebInf ();
+
+    /** Deployment descriptor (web.xml file) of the web module.
+     * <div class="nonnormative">
+     * The web.xml file would typically be a child of the folder returned 
+     * by {@link #getWebInf} but does not need to be.
+     * </div>
+     */
+    FileObject getDeploymentDescriptor ();
 }
