@@ -18,8 +18,27 @@ import java.io.InputStream;
 
 /**
  * Object input stream with a customized class resolution.
+ * It allows to read search criteria (saved as instances of class
+ * {@link org.openidex.search.SearchType SearchType} or its subclass), although
+ * some of the classes are not defined by the Utilities module (these classes
+ * are called &quot;external&quot; in the rest of this text).
+ *
+ * <p>The following three assumptions are used in the algorithm
+ *    for class resolution:</p>
+ * <ul>
+ *     <li>for each type of search criterion to be read,
+ *         a default instance of the class representing the criterion
+ *         is registered in a lookup</li>
+ *     <li>during serialization, the first external class to be resolved
+ *         is the class representing the search criterion
+ *         (and hence its instance is available in the lookup)</li>
+ *     <li>the classloader which has loaded the search criterion's class
+ *         is able to load all other external classes needed during the search
+ *         criterion's deserialization</li>
+ * </ul>
  * 
  * @see  #resolveClass
+ * @see  org.openidex.search.SearchType  SearchType
  * @author  Marian Petras
  */
 class SearchTypeInputStream extends java.io.ObjectInputStream {
@@ -47,7 +66,7 @@ class SearchTypeInputStream extends java.io.ObjectInputStream {
     /**
      * Loads the local class equivalent of the specified stream class
      * description. Uses the default
-     * {@link ObjectInputStream ObjectInputStream}'s method first and
+     * {@link java.io.ObjectInputStream ObjectInputStream}'s method first and
      * if it fails, tries to lookup the class among the registered
      * <code>SearchType</code>s or to use their classloaders.
      */

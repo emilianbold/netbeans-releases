@@ -30,8 +30,8 @@ import org.openide.windows.TopComponent;
  * <p>
  * FindAction's performer is changed according to current set of
  * selected nodes. If there is no node selected or if no registered
- * {@linkplain SearchType search type} is able to perform search on
- * the selected nodes, the action is temporarily disabled.
+ * {@linkplain org.openidex.search.SearchType search type} is able to perform
+ * search on the selected nodes, the action is temporarily disabled.
  *
  * @author  Petr Kuzel
  * @author  Marian Petras
