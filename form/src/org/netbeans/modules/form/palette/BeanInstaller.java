@@ -336,8 +336,7 @@ public final class BeanInstaller
     }
 
     private static String formatName(String className) {
-        String ret = className.substring(className.lastIndexOf(".") + 1) + "[" + className.replace('.', '-') + "]"; // NOI18N
-        return ret;
+        return className.replace('.', '-'); // NOI18N
     }
 
     /**
