@@ -243,6 +243,15 @@ class SharedXMLSupport {
         factory.setNamespaceAware(true);
         factory.setValidating(validate);
 
+        //??? It is Xerces specifics, but no general API for XML Schema based validation exists
+        if (validate) {
+            try {
+                factory.setFeature(XERCES_FEATURE_PREFIX + "validation/schema", validate); // NOI18N
+            } catch (Exception ex) {
+                sendMessage(Util.THIS.getString("MSG_parser_no_schema"));
+            }                
+        }
+	
         try {
             SAXParser parser = factory.newSAXParser();
             ret = parser.getXMLReader();                
@@ -251,14 +260,6 @@ class SharedXMLSupport {
             return null;
         }
 
-        //??? It is Xerces specifics, but no general API for XML Schema based validation exists
-        if (validate) {
-            try {
-                ret.setFeature(XERCES_FEATURE_PREFIX + "validation/schema", validate); // NOI18N
-            } catch (SAXException ex) {
-                sendMessage(Util.THIS.getString("MSG_parser_no_schema"));
-            }                
-        }
 
         if (ret != null) {
             EntityResolver res = createEntityResolver();
