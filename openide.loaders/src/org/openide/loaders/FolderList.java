@@ -116,7 +116,7 @@ implements FileChangeListener, DataObject.Container {
         if (attach) {
             // creates object that handles all elements in array and
             // assignes it to the
-            folder.addFileChangeListener (WeakListener.fileChange (this, folder));
+            folder.addFileChangeListener (org.openide.filesystems.FileUtil.weakFileChangeListener (this, folder));
         }
     }
 

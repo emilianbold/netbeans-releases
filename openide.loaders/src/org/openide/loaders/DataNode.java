@@ -30,7 +30,6 @@ import org.openide.util.datatransfer.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.*;
 
@@ -66,7 +65,7 @@ public class DataNode extends AbstractNode {
 
         propL = new PropL ();
 
-        obj.addPropertyChangeListener (WeakListener.propertyChange (propL, obj));
+        obj.addPropertyChangeListener (org.openide.util.WeakListener.propertyChange (propL, obj));
 
         super.setName (obj.getName ());
         updateDisplayName ();
@@ -572,7 +571,7 @@ public class DataNode extends AbstractNode {
                 previous = obj.getPrimaryFile ().getFileSystem ();
 
                 if (weakL == null) {
-                    weakL = WeakListener.fileStatus (this, null);
+                    weakL = org.openide.filesystems.FileUtil.weakFileStatusListener (this, null);
                 }
 
                 previous.addFileStatusListener (weakL);

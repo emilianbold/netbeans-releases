@@ -104,11 +104,13 @@ implements RepositoryListener, NewTemplateAction.Cookie {
     }
 
     void initialize () {
-        fileSystemPool.addRepositoryListener (WeakListener.repository (this, fileSystemPool));
+        fileSystemPool.addRepositoryListener (
+            (RepositoryListener)org.openide.util.WeakListeners.create (RepositoryListener.class, this, fileSystemPool)
+        );
         Enumeration en = fileSystemPool.getFileSystems ();
         while (en.hasMoreElements ()) {
             FileSystem fs = (FileSystem)en.nextElement ();
-            fs.addPropertyChangeListener (WeakListener.propertyChange ((DSMap)getChildren (), fs));
+            fs.addPropertyChangeListener (org.openide.util.WeakListeners.propertyChange ((DSMap)getChildren (), fs));
         }
         refresh ();
     }
@@ -147,7 +149,7 @@ implements RepositoryListener, NewTemplateAction.Cookie {
     */
     public void fileSystemAdded (RepositoryEvent ev) {
         ev.getFileSystem ().addPropertyChangeListener (
-            WeakListener.propertyChange ((DSMap)getChildren (), ev.getFileSystem ())
+            org.openide.util.WeakListeners.propertyChange ((DSMap)getChildren (), ev.getFileSystem ())
         );
         refresh ();
     }

@@ -36,7 +36,6 @@ import org.openide.util.Mutex;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.*;
-import org.openide.util.WeakListener;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -529,13 +528,13 @@ public class NewTemplateAction extends NodeAction {
          */
         private WeakReference current;
         /** weak listener */
-        private NodeListener listener = WeakListener.node (this, null);
+        private NodeListener listener = org.openide.nodes.NodeOp.weakNodeListener (this, null);
         
         /** Instance not connected to any node.
          */
         public RootChildren () {
             TopComponent.Registry reg = WindowManager.getDefault ().getRegistry ();
-            reg.addPropertyChangeListener (WeakListener.propertyChange (this, reg));
+            reg.addPropertyChangeListener (org.openide.util.WeakListener.propertyChange (this, reg));
             
             updateWizard (getWizard (null));
         }

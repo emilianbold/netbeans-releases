@@ -525,7 +525,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
     * only declares the interface.
     */
     public static class Origin extends InstanceSupport
-        implements InstanceCookie.Origin {
+        implements org.openide.cookies.InstanceCookie.Origin {
         /** New support for a given entry. The file is taken from the
         * entry and is updated if the entry moves or renames itself.
         * @param entry entry to create instance from

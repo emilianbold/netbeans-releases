@@ -13,8 +13,8 @@
 
 package org.netbeans.core.projects;
 
+import org.openide.util.WeakListeners;
 import org.openide.filesystems.*;
-import org.openide.util.WeakListener;
 
 import java.util.WeakHashMap;
 import java.util.HashMap;
@@ -76,7 +76,7 @@ final class FileStateManager {
         // listen on changes of layers made through the SessionManager
         propL = new PropL ();
         SessionManager.getDefault ().addPropertyChangeListener (
-            WeakListener.propertyChange (propL, SessionManager.getDefault ()));
+            org.openide.util.WeakListeners.propertyChange (propL, SessionManager.getDefault ()));
     }
 
     public void define (final FileObject mfo, int layer, boolean revert) throws IOException {
@@ -378,7 +378,7 @@ final class FileStateManager {
                     notifiers [layer].removeFileChangeListener (weakL [layer]);
 
                 // create new listener and attach it to new notifier
-                weakL [layer] = WeakListener.fileChange (this, fo);
+                weakL [layer] = FileUtil.weakFileChangeListener (this, fo);
                 fo.addFileChangeListener (weakL [layer]);
                 notifiers [layer] = fo;
             }

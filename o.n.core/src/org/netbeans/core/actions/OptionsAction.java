@@ -419,7 +419,7 @@ public class OptionsAction extends CallableSystemAction {
                 
                 refreshColumns (true);
                 addMouseListener (this);
-                weakL = WeakListener.propertyChange (this, SessionManager.getDefault ());
+                weakL = org.openide.util.WeakListeners.propertyChange (this, SessionManager.getDefault ());
                 SessionManager.getDefault ().addPropertyChangeListener (weakL);
                 
                 registerKeyboardAction(

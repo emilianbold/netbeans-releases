@@ -13,6 +13,7 @@
 
 package org.openide.windows;
 
+import java.awt.KeyboardFocusManager;
 import java.util.ArrayList;
 import javax.swing.ActionMap;
 
@@ -313,7 +314,67 @@ public class TopComponentGetLookupTest extends NbTestCase {
             java.util.Collections.singletonList (node), res
         );
     }
-    
+
+    public void testActionMapIsTakenFromComponentAndAlsoFromFocusedOne () {
+        javax.swing.JTextField panel = new javax.swing.JTextField ();
+        
+        class Def extends java.awt.DefaultKeyboardFocusManager {
+            private java.awt.Component c;
+            
+            public Def (java.awt.Component c) {
+                this.c = c;
+            }
+            public java.awt.Component getFocusOwner() {
+                return c;
+            }
+        }
+        KeyboardFocusManager prev = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+
+        try {
+            KeyboardFocusManager.setCurrentKeyboardFocusManager(new Def (panel));
+
+
+
+            top.add (java.awt.BorderLayout.CENTER, panel);
+
+            class Act extends javax.swing.AbstractAction {
+                public void actionPerformed (java.awt.event.ActionEvent ev) {
+                }
+            }
+            Act act1 = new Act ();
+            Act act2 = new Act ();
+            Act act3 = new Act ();
+
+            top.getActionMap ().put ("globalRegistration", act1);
+            top.getActionMap ().put ("doubleRegistration", act2);
+
+            panel.getActionMap ().put ("doubleRegistration", act3);
+            panel.getActionMap ().put ("focusedRegistration", act3);
+
+
+            ActionMap map = (ActionMap)top.getLookup ().lookup (ActionMap.class);
+
+            assertEquals ("actions registered directly on TC are found", act1, map.get ("globalRegistration"));
+            assertEquals ("even if they are provided by focused component", act2, map.get ("doubleRegistration"));
+
+            assertEquals ("Should be focused now", 
+                panel, 
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner()
+            );
+            assertEquals ("actions are delegated to focus owner, if not present", act3, map.get ("focusedRegistration"));
+
+            javax.swing.JTextField f = new javax.swing.JTextField ();
+            f.getActionMap ().put ("focusedRegistration", act3);
+            KeyboardFocusManager.setCurrentKeyboardFocusManager(new Def (f));
+            assertEquals ("f should be focused now", 
+                f, 
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner()
+            );
+            assertEquals ("but as it is not in the right component, nothing is found", null, map.get ("focusedRegistration"));
+        } finally {
+            KeyboardFocusManager.setCurrentKeyboardFocusManager (prev);
+        }
+    }
     
     /** Listener to count number of changes.
      */

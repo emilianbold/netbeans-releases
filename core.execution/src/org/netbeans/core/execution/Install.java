@@ -345,7 +345,7 @@ public class Install extends ModuleInstall {
             };
 
             ModuleActions.getDefault().addPropertyChangeListener(
-                WeakListener.propertyChange(propertyListener, ModuleActions.getDefault())
+                org.openide.util.WeakListeners.propertyChange (propertyListener, ModuleActions.getDefault())
             );
             
             ExecutionEngine ee = ExecutionEngine.getExecutionEngine();

@@ -277,7 +277,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
 	    // Listen for changes in Node's DisplayName/Icon
             Node n = master.getNodeDelegate ();
-            n.addNodeListener (WeakListener.node (this, n));
+            n.addNodeListener (org.openide.nodes.NodeOp.weakNodeListener (this, n));
 	    updateProps();
 
         }

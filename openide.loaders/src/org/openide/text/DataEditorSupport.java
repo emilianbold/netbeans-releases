@@ -194,7 +194,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             editor.setActivatedNodes (new Node[] { ourNode });
             editor.setIcon(ourNode.getIcon (java.beans.BeanInfo.ICON_COLOR_16x16));
             NodeListener nl = new DataNodeListener(editor);
-            ourNode.addNodeListener(WeakListener.node(nl, ourNode));
+            ourNode.addNodeListener(org.openide.nodes.NodeOp.weakNodeListener (nl, ourNode));
             nodeL = nl;
         }
     }

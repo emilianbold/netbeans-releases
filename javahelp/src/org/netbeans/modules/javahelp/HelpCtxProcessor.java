@@ -31,7 +31,7 @@ import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.WeakListener;
+import org.openide.util.Utilities;
 
 import org.netbeans.api.javahelp.Help;
 
@@ -163,10 +163,10 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
             updateEnabled();
             if (obj.isValid()) {
                 Node n = obj.getNodeDelegate();
-                n.addNodeListener(WeakListener.node(this, n));
+                n.addNodeListener(org.openide.nodes.NodeOp.weakNodeListener (this, n));
             }
             Help h = findHelp();
-            if (h != null) h.addChangeListener(WeakListener.change(this, h));
+            if (h != null) h.addChangeListener(org.openide.util.WeakListeners.change (this, h));
         }
         
         /** Show the help.

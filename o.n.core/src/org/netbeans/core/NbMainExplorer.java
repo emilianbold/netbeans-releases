@@ -13,6 +13,9 @@
 
 package org.netbeans.core;
 
+import org.openide.util.WeakListeners;
+import org.openide.util.WeakListeners;
+import org.openide.util.WeakListeners;
 import java.awt.*;
 import java.beans.*;
 import java.io.ObjectInput;
@@ -37,7 +40,6 @@ import org.openide.nodes.NodeListener;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
-import org.openide.util.WeakListener;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Workspace;
@@ -80,7 +82,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         // listening on changes of roots
         rootsListener = new RootsListener();
         NbPlaces p = NbPlaces.getDefault();
-        p.addChangeListener(WeakListener.change(rootsListener, p));
+        p.addChangeListener(org.openide.util.WeakListeners.change (rootsListener, p));
 
         refreshRoots();
     }
@@ -435,7 +437,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
             setConfirmDelete(ideSettings.getConfirmDelete ());
             
             // attach listener to the changes of IDE settings
-            weakIdeL = WeakListener.propertyChange(rcListener(), ideSettings);
+            weakIdeL = org.openide.util.WeakListeners.propertyChange(rcListener(), ideSettings);
             
             // enhancement 9940, add MiniStatusBarListener a status bar's state
             ideSettings.addPropertyChangeListener (new MiniStatusBarStateListener ());
@@ -642,7 +644,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
             updateTitle();
 
             if (weakRcL == null) {
-                weakRcL = WeakListener.propertyChange(rcListener(), rc);
+                weakRcL = org.openide.util.WeakListeners.propertyChange(rcListener(), rc);
             }
             else {
                 rc.removePropertyChangeListener(weakRcL);
@@ -650,7 +652,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
             rc.addPropertyChangeListener(weakRcL);
             
             if (weakNRcL == null) {
-                weakNRcL = WeakListener.node(rcListener(), rc);
+                weakNRcL = org.openide.nodes.NodeOp.weakNodeListener (rcListener(), rc);
             }
             else {
                 rc.removeNodeListener(weakNRcL);
@@ -839,7 +841,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
         public RepositoryTab () {
             DataLoaderPool pool = (DataLoaderPool)Lookup.getDefault ().lookup (DataLoaderPool.class);
             pool.addOperationListener (
-                (OperationListener)WeakListener.create (OperationListener.class, this, pool)
+                (OperationListener)org.openide.util.WeakListeners.create (OperationListener.class, this, pool)
             );
         }
         

@@ -13,6 +13,7 @@
 
 package org.netbeans.core.xml;
 
+import org.openide.util.WeakListeners;
 import java.io.IOException;
 import java.beans.PropertyChangeListener;
 
@@ -28,7 +29,6 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.*;
 import org.openide.xml.EntityCatalog;
-import org.openide.util.WeakListener;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileEvent;
@@ -487,7 +487,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                 if (o != null && l != null) {
                     // add listener to changes of the data object
                     o.addPropertyChangeListener (
-                        WeakListener.propertyChange (this, o)
+                        org.openide.util.WeakListeners.propertyChange (this, o)
                     );
                     // update the lookups
                     setLookups (new Lookup[] { l });
@@ -504,7 +504,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
             if (folder != last[0]) {
                 folder = last[0];
                 last[0].addFileChangeListener (
-                    WeakListener.fileChange (this, last[0])
+                    org.openide.filesystems.FileUtil.weakFileChangeListener (this, last[0])
                 );
             }
         }

@@ -13,6 +13,7 @@
 
 package org.netbeans.core;
 
+import org.openide.util.WeakListeners;
 import org.openide.*;
 import org.openide.loaders.*;
 import org.openide.options.*;
@@ -128,7 +129,7 @@ final class EnvironmentNode extends AbstractNode {
             
             if(ManifestSection.NodeSection.TYPE_ROOTS.equals(filter)) {
                 folder.addPropertyChangeListener(
-                    org.openide.util.WeakListener.propertyChange(this, folder));
+                    org.openide.util.WeakListeners.propertyChange(this, folder));
             }
         }
         

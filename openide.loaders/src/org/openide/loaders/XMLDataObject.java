@@ -151,7 +151,7 @@ public class XMLDataObject extends MultiDataObject {
     throws DataObjectExistsException {
         super (fo, loader);
         
-        fo.addFileChangeListener (WeakListener.fileChange (getIP (), fo));
+        fo.addFileChangeListener (FileUtil.weakFileChangeListener (getIP (), fo));
 
         status = STATUS_NOT;
 

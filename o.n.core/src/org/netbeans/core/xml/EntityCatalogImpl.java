@@ -81,7 +81,7 @@ public final class EntityCatalogImpl extends EntityCatalog {
             if (xmlDO == peer) return;  //ignore double attachements
             
             peer = xmlDO;                        
-            peer.addPropertyChangeListener(WeakListener.propertyChange(this, peer));  //listen at PROP_DOCUMENT
+            peer.addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(this, peer));  //listen at PROP_DOCUMENT
             parsingTask.schedule(0);
         }
 

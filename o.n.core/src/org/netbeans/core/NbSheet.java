@@ -14,7 +14,7 @@
 
 package org.netbeans.core;
 
-
+import org.openide.util.WeakListeners;import org.openide.util.WeakListeners;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -59,7 +59,6 @@ import org.openide.util.Mutex;
 import org.openide.util.SharedClassObject;
 import org.openide.util.UserCancelException;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListener;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.io.SafeException;
 import org.openide.windows.Mode;
@@ -134,7 +133,7 @@ public final class NbSheet extends TopComponent {
         settingsListener = new SettingsListener();
         PropertySheetSettings pss = (PropertySheetSettings)SharedClassObject.findObject(PropertySheetSettings.class);
         pss.addPropertyChangeListener(
-            WeakListener.propertyChange(
+            org.openide.util.WeakListeners.propertyChange(
                 settingsListener, 
                 pss
             )
@@ -383,7 +382,7 @@ public final class NbSheet extends TopComponent {
     private void updateGlobalListening() {
         if (global) {
             TopComponent.getRegistry().addPropertyChangeListener(
-                WeakListener.propertyChange(listener, TopComponent.getRegistry ())
+                org.openide.util.WeakListeners.propertyChange (listener, TopComponent.getRegistry ())
             );
         }
     }
@@ -492,8 +491,8 @@ public final class NbSheet extends TopComponent {
             // start to listen to all given nodes and map nodes to
             // their listeners
             for (int i = 0; i < nodes.length; i++) {
-                curListener = WeakListener.node(this, nodes[i]);
-                pListener = WeakListener.propertyChange(this, nodes[i]);
+                curListener = org.openide.nodes.NodeOp.weakNodeListener (this, nodes[i]);
+                pListener = org.openide.util.WeakListeners.propertyChange(this, nodes[i]);
                 listenerMap.put(nodes[i], curListener);
                 pListenerMap.put(nodes[i], pListener);
                 nodes[i].addNodeListener(curListener);

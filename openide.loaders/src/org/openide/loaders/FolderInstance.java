@@ -638,8 +638,8 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
                     if (cookie instanceof HoldInstance) {
                         hold = (HoldInstance)cookie;
                     } else {
-                        if (cookie instanceof InstanceCookie.Origin) {
-                            hold = new HoldInstanceOrigin (obj, (InstanceCookie.Origin)cookie);
+                        if (cookie instanceof org.openide.cookies.InstanceCookie.Origin) {
+                            hold = new HoldInstanceOrigin (obj, (org.openide.cookies.InstanceCookie.Origin)cookie);
                         } else {
                             hold = new HoldInstance (obj, cookie);
                         }
@@ -839,8 +839,8 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
                          * if ((ic == null && hi.cookie != null) || (ic != hi && !ic.equals (hi.cookie))) { 
                          */
                         if (ic == null || (ic != hi && !ic.equals (hi.cookie))) { 
-                            if (ic instanceof InstanceCookie.Origin) {
-                                hi = new HoldInstanceOrigin (source, (InstanceCookie.Origin)ic);
+                            if (ic instanceof org.openide.cookies.InstanceCookie.Origin) {
+                                hi = new HoldInstanceOrigin (source, (org.openide.cookies.InstanceCookie.Origin)ic);
                             } else {
                                 hi = new HoldInstance (source, ic);
                             }
@@ -986,15 +986,15 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
     /* -- Inner class HoldInstanceOrigin ---------------------------------- */
     /* -------------------------------------------------------------------- */
 
-    /** Special HoldInstance that implements the InstanceCookie.Origin */
-    private class HoldInstanceOrigin extends HoldInstance implements InstanceCookie.Origin {
+    /** Special HoldInstance that implements the InstanceCookie$Origin */
+    private class HoldInstanceOrigin extends HoldInstance implements org.openide.cookies.InstanceCookie.Origin {
 
-        public HoldInstanceOrigin (DataObject source, InstanceCookie.Origin cookie) {
+        public HoldInstanceOrigin (DataObject source, org.openide.cookies.InstanceCookie.Origin cookie) {
             super (source, cookie);
         }
 
         public FileObject instanceOrigin () {
-            return ((InstanceCookie.Origin) cookie).instanceOrigin ();
+            return ((org.openide.cookies.InstanceCookie.Origin) cookie).instanceOrigin ();
         }
     }
 }

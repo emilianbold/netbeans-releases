@@ -32,12 +32,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.*;
-import org.openide.awt.HtmlBrowser;
+import org.openide.awt.HtmlBrowser.BrowserComponent;
 import org.openide.loaders.*;
 import org.openide.actions.*;
 import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
 import org.openide.explorer.*;
@@ -53,6 +51,7 @@ import org.netbeans.core.modules.Module;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleSystem;
 import org.netbeans.core.projects.TrivialProjectManager;
+import org.openide.awt.HtmlBrowser;
 import org.openide.modules.ModuleInfo;
 
 /** This class is a TopManager for Corona environment.
@@ -87,9 +86,9 @@ public abstract class NbTopManager /*extends TopManager*/ {
     /** initializes properties about builds etc. */
     static {
         // Set up module-versioning properties, which logger prints.
-        // The package here must be one which exists only in openide.jar, not openide-deprecated.jar:
-        Object ignoreme = FileSystem.class; // DO NOT DELETE UNUSED VAR
-        Package p = Package.getPackage ("org.openide.filesystems"); // NOI18N
+        // The package here must be one which exists only in a central openide-*.jar, not e.g. openide-deprecated.jar:
+        Object ignoreme = SpecificationVersion.class; // DO NOT DELETE UNUSED VAR
+        Package p = Package.getPackage("org.openide.modules"); // NOI18N
         
         // Normally the defaults here should not be used. openide.jar, not just openide/src/,
         // must be in your classpath (this applies to tests too, even openide/test/build.xml).
@@ -319,7 +318,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
         Toolkit.getDefaultToolkit().beep();
     }
 
-    public static final class NbURLDisplayer extends HtmlBrowser.URLDisplayer {
+    public static final class NbURLDisplayer extends org.openide.awt.HtmlBrowser.URLDisplayer {
         /** WWW browser window. */
         HtmlBrowser.BrowserComponent htmlViewer;
         public void showURL(URL u) {
@@ -619,7 +618,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
                 ((IDESettings)IDESettings.findObject (IDESettings.class, true)).removePropertyChangeListener (idePCL);
                 idePCL = null;
             }
-            ((NbURLDisplayer)HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = null;
+            ((NbURLDisplayer)org.openide.awt.HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = null;
             return super.closeLast ();
         }
 
@@ -636,7 +635,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
                     d = findTopModalDialog(new JDialog().getOwner());
                 }
 		if (d != null) {
-                    HtmlBrowser htmlViewer = new HtmlBrowser ();
+                    org.openide.awt.HtmlBrowser htmlViewer = new org.openide.awt.HtmlBrowser ();
                     htmlViewer.setURL (url);
                     JDialog d1 = new JDialog (d);
                     d1.getContentPane ().add ("Center", htmlViewer); // NOI18N
@@ -682,7 +681,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
         public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
             super.readExternal (in);
             setListener ();
-            ((NbURLDisplayer)HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = this;
+            ((NbURLDisplayer)org.openide.awt.HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = this;
         }
 
         /**
@@ -698,7 +697,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
                         String name = evt.getPropertyName ();
                         if (name == null) return;
                         if (name.equals (IDESettings.PROP_WWWBROWSER)) {
-                            ((NbURLDisplayer)HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = null;
+                            ((NbURLDisplayer)org.openide.awt.HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = null;
                             if (idePCL != null) {
                                 ((IDESettings)IDESettings.findObject (IDESettings.class, true))
                                 .removePropertyChangeListener (idePCL);

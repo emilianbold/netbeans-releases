@@ -45,6 +45,20 @@ Microsystems, Inc. All Rights Reserved.
       <bootclasspath refid="openide-boot-cp"/>
       <classpath refid="openide-cp"/>
     </javac>
+    <javac srcdir="windows/src" destdir="windows/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <bootclasspath refid="openide-boot-cp"/>
+      <classpath refid="openide-cp"/>
+      <classpath>
+        <pathelement location="src" />
+      </classpath>
+    </javac>
+    <javac srcdir="explorer/src" destdir="explorer/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <bootclasspath refid="openide-boot-cp"/>
+      <classpath refid="openide-cp"/>
+      <classpath>
+        <pathelement location="src" />
+      </classpath>
+    </javac>
   </target>
 
   <target name="compile-compat" depends="compile-regular">
@@ -212,6 +226,8 @@ Microsystems, Inc. All Rights Reserved.
       <locale name="ja"/>
       
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="windows/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="explorer/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       
       <!-- include also patches -->
       <fileset dir="compat/src">

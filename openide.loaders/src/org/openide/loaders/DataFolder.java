@@ -861,7 +861,7 @@ implements Serializable, DataObject.Container {
             this.df = df;
             this.node = node;
             listener = new Listener ();
-            node.addNodeListener (WeakListener.node (listener, node));
+            node.addNodeListener (org.openide.nodes.NodeOp.weakNodeListener (listener, node));
         }
 
         /* Returns count of the nodes.

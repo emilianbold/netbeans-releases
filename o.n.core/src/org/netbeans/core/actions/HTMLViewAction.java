@@ -45,7 +45,7 @@ public class HTMLViewAction extends CallableSystemAction {
             
             // is browser open on current workspace?
             Workspace workspace = WindowManager.getDefault().getCurrentWorkspace ();
-            Mode mode = workspace.findMode (HtmlBrowser.BrowserComponent.MODE_NAME);
+            Mode mode = workspace.findMode (org.openide.awt.HtmlBrowser.BrowserComponent.MODE_NAME);
             if (mode != null) {
                 TopComponent [] comps = mode.getTopComponents ();
                 if (comps.length > 0) {
@@ -59,7 +59,7 @@ public class HTMLViewAction extends CallableSystemAction {
                 Workspace [] workspaces = WindowManager.getDefault ().getWorkspaces ();
                 if (workspaces != null) {
                     for (int i=0; i<workspaces.length; i++) {
-                        mode = workspaces[i].findMode (HtmlBrowser.BrowserComponent.MODE_NAME);
+                        mode = workspaces[i].findMode (org.openide.awt.HtmlBrowser.BrowserComponent.MODE_NAME);
                         if (mode != null) {
                             TopComponent [] comps = mode.getTopComponents ();
                             if (comps.length > 0) {
