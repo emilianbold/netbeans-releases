@@ -18,20 +18,58 @@ import java.beans.*;
 
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.UniFileLoader;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Utilities;
 
 public class DataLoaderPool {
 
-    public static class FolderLoaderBeanInfo extends SimpleBeanInfo {
+    /** Method used in [Folder|Instance]LoaderBeanInfo for making 'extensions' property r/o 
+     * instead of r/w as it is declaredi in UniFileDataLoaderBeanInfo. The rest of property
+     * descriptors declared in UniFileDataLoaderBeanInfo are untouched.
+     */
+    private static PropertyDescriptor[] supportGetPropertyDescriptors () {
+        PropertyDescriptor[] descriptors = null;
 
+        try {
+            SimpleBeanInfo uniFileLoader = (SimpleBeanInfo) Introspector.getBeanInfo (UniFileLoader.class);
+            if (uniFileLoader != null) {
+                descriptors = uniFileLoader.getPropertyDescriptors();
+                if (descriptors != null) {
+                    for (int i = 0; i < descriptors.length; i++) {
+                        if (descriptors[i].getName().equals("extensions")) { // NOI18N
+                            descriptors[i].setWriteMethod(null);
+                        }
+                    }
+                }
+            }
+        } 
+        catch (IntrospectionException ie) {
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+                ie.printStackTrace ();
+            return null;
+        }
+        return descriptors;
+    }
+    
+    public static class FolderLoaderBeanInfo extends SimpleBeanInfo {
+        
         public BeanInfo[] getAdditionalBeanInfo () {
             try {
-                return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
+                // FolderLoader bean info uses MultiFileLoader's bean info instead of
+                // UniFileLoader's one. That is why it is necessary to remove 'extensions'
+                // property (declared in UniFileLoaderBeanInfo).
+                // Currently this property is only addition to MultiFileLoader bean info
+                // provided by UniFileLoaderBeanInfo.
+                return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
             } catch (IntrospectionException ie) {
                 if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
                     ie.printStackTrace ();
                 return null;
             }
+        }
+
+        public PropertyDescriptor[] getPropertyDescriptors () {
+            return supportGetPropertyDescriptors();
         }
 
         public Image getIcon (int type) {
@@ -41,14 +79,18 @@ public class DataLoaderPool {
                 return Utilities.loadImage("/org/openide/resources/defaultFolder32.gif"); // NOI18N
             }
         }
-
     }
 
     public static class InstanceLoaderBeanInfo extends SimpleBeanInfo {
 
         public BeanInfo[] getAdditionalBeanInfo () {
             try {
-                return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
+                // InstanceLoader bean info uses MultiFileLoader's bean info instead of
+                // UniFileLoader's one. That is why it is necessary to change 'extensions'
+                // property from r/w (declared in UniFileLoaderBeanInfo) to r/o property.
+                // Currently this property is only addition to MultiFileLoader bean info
+                // provided by UniFileLoaderBeanInfo.
+                return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
             } catch (IntrospectionException ie) {
                 if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
                     ie.printStackTrace ();
@@ -56,6 +98,10 @@ public class DataLoaderPool {
             }
         }
 
+        public PropertyDescriptor[] getPropertyDescriptors () {
+            return supportGetPropertyDescriptors();
+        }
+        
         public Image getIcon (int type) {
             if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
                 return Utilities.loadImage("/org/netbeans/core/resources/action.gif"); // NOI18N
