@@ -35,6 +35,7 @@ import org.openide.util.Utilities;
 import org.openide.WizardDescriptor;
 import org.openide.src.MethodElement;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.NbBundle;
 
 /** Wizard Panel with Test Cases configuration
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
@@ -46,7 +47,7 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
     
     /** Creates new form TestCasesPanel */
     public TestCasesPanel() {
-        setName(org.openide.util.NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesCreate"));
+        setName(NbBundle.getMessage(TestCasesPanel.class, "LBL_TestCasesCreate")); // NOI18N
         initComponents();
         caseName.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {refreshAdd();}

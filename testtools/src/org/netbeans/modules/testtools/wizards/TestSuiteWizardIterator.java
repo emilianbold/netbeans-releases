@@ -69,10 +69,10 @@ public class TestSuiteWizardIterator extends WizardIterator {
         };
         names = new String[panels.length];
         for (int i=0; i<panels.length; i++) {
-            ((javax.swing.JComponent)panels[i]).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+            ((javax.swing.JComponent)panels[i]).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
             names[i]=((javax.swing.JComponent)panels[i]).getName();
         }
-        ((javax.swing.JComponent)panels[0]).putClientProperty("WizardPanel_contentData", names); 
+        ((javax.swing.JComponent)panels[0]).putClientProperty("WizardPanel_contentData", names);  // NOI18N
         current=0;
     }
     

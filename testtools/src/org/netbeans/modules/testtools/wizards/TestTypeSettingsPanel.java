@@ -28,6 +28,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.NbBundle;
 
 /** Wizard Panel with Test Type Settings configuration
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
@@ -41,7 +42,7 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
     
     /** Creates new form TestTypeSettingsPanel */
     public TestTypeSettingsPanel() {
-        setName(org.openide.util.NbBundle.getMessage(TestTypeSettingsPanel.class, "LBL_TestTypeSettingsPanelName"));
+        setName(NbBundle.getMessage(TestTypeSettingsPanel.class, "LBL_TestTypeSettingsPanelName")); // NOI18N
         initComponents();
     }
     
@@ -176,9 +177,9 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
             }
         } catch (Exception e) {}
         if (stop)
-            ((CardLayout)getLayout()).show(this, "stop");
+            ((CardLayout)getLayout()).show(this, "stop"); // NOI18N
         else {
-            ((CardLayout)getLayout()).show(this, "ok");
+            ((CardLayout)getLayout()).show(this, "ok"); // NOI18N
             jemmyCheck.setSelected(set.typeUseJemmy);
             sdiRadio.setSelected(set.typeSDI);
             mdiRadio.setSelected(!set.typeSDI);

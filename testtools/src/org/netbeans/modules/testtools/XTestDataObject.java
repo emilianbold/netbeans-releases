@@ -197,29 +197,12 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
     public static class XTestNode extends AntProjectNode {
         /** creates new XTestNode for given DataObject
          * @param obj DataObject */        
-            public XTestNode (DataObject obj) {
-                super(obj);
-            }
-            /** changes Icon of XTestNode
-             * @param base String icon base */            
-            public void setIconBase(String base) {
-                if (base.indexOf("Error")>=0) 
-                    super.setIconBase("org/netbeans/modules/testtools/XTestIconError");
-                else
-                    super.setIconBase("org/netbeans/modules/testtools/XTestIcon");
-            }
+        public XTestNode (DataObject obj) {
+            super(obj);
+        }
 
         public Image getIcon(int type) {
-            AntProjectCookie.ParseStatus cookie = (AntProjectCookie.ParseStatus)getDataObject().getCookie(AntProjectCookie.ParseStatus.class);
-            if (cookie.getFile() == null && cookie.getFileObject() == null) {
-                // Script has been invalidated perhaps? Don't continue, we would
-                // just get an NPE from the getParseException.
-                return Utilities.loadImage("org/netbeans/modules/testtools/XTestIconError.gif"); // NOI18N
-            }
-            if (!cookie.isParsed()) {
-                // Assume for now it is not erroneous.
-                return Utilities.loadImage("org/netbeans/modules/testtools/XTestIcon.gif"); // NOI18N
-            }
+            AntProjectCookie cookie = (AntProjectCookie)getDataObject().getCookie(AntProjectCookie.class);
             Throwable exc = cookie.getParseException();
             if (exc != null) {
                 return Utilities.loadImage("org/netbeans/modules/testtools/XTestIconError.gif"); // NOI18N
@@ -232,11 +215,11 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
             return getIcon(type);
         }
             
-            /** returns Help Context
-             * @return HelpCtx */    
-            public HelpCtx getHelpCtx() {
-                return new HelpCtx(XTestNode.class);
-            }
+        /** returns Help Context
+         * @return HelpCtx */    
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(XTestNode.class);
+        }
     }
     
 }

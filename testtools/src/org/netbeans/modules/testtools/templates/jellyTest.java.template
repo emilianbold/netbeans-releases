@@ -8,6 +8,9 @@ package Templates.TestTools;
 
 import java.io.PrintStream;
 
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestSuite;
+
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jellytools.*;
 

@@ -28,17 +28,18 @@ import javax.swing.event.DocumentListener;
 
 import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /** Wizard Panel with Test Bag Settings configuration
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.FinishPanel {
 
     static final long serialVersionUID = 6692306744377282694L;
-    private static final String DEFAULT_NAME=org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "CTL_DefaultName");
+    private static final String DEFAULT_NAME=NbBundle.getMessage(TestBagSettingsPanel.class, "CTL_DefaultName"); // NOI18N
     
     /** Creates new form TestBagPanel */
     public TestBagSettingsPanel() {
-        setName(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagSettings"));
+        setName(NbBundle.getMessage(TestBagSettingsPanel.class, "LBL_TestBagSettings")); // NOI18N
         initComponents();
         DocumentListener list=new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {fireStateChanged();}
@@ -310,7 +311,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
     private void fireStateChanged() {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                if (nameField.getText().equals ("")) {
+                if (nameField.getText().equals ("")) { // NOI18N
                     nameField.setText(DEFAULT_NAME);
                     nameField.selectAll();
                 }

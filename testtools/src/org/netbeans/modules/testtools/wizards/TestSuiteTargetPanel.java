@@ -39,6 +39,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
 import org.netbeans.modules.java.JavaDataObject;
+import org.openide.util.NbBundle;
 
 /** Wizard Panel with Test Suite Target selection
 * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
@@ -47,12 +48,12 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
 
     static final long serialVersionUID = 7320115283955775732L;
     private ChangeListener listener=null;
-    private static final String DEFAULT_NAME=org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "CTL_DefaultName");
+    private static final String DEFAULT_NAME=NbBundle.getMessage(TestSuiteTargetPanel.class, "CTL_DefaultName"); // NOI18N
     private boolean modified=true;
 
     /** Creates new form TestSuiteTargetPanel */
     public TestSuiteTargetPanel() {
-        setName(org.openide.util.NbBundle.getMessage(TestSuiteTargetPanel.class, "LBL_TestSuitePanelDescription"));
+        setName(NbBundle.getMessage(TestSuiteTargetPanel.class, "LBL_TestSuitePanelDescription")); // NOI18N
         initComponents();
         templateCombo.setRenderer(new WizardIterator.MyCellRenderer());
         templateCombo.setModel(new DefaultComboBoxModel(WizardIterator.getSuiteTemplates()));
@@ -235,10 +236,10 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
         if (dob!=null)
             url=TemplateWizard.getDescription(dob);
         if (url==null) {
-            ((CardLayout)descriptionPanel.getLayout()).show(descriptionPanel, "no");
+            ((CardLayout)descriptionPanel.getLayout()).show(descriptionPanel, "no"); // NOI18N
         } else {
             htmlBrowser.setURL(url);
-            ((CardLayout)descriptionPanel.getLayout()).show(descriptionPanel, "yes");
+            ((CardLayout)descriptionPanel.getLayout()).show(descriptionPanel, "yes"); // NOI18N
         }
     }//GEN-LAST:event_templateComboActionPerformed
 
@@ -303,7 +304,7 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
                 if (listener != null) {
                     listener.stateChanged (new ChangeEvent (this));
                 }
-                if (nameField.getText().equals ("")) {
+                if (nameField.getText().equals ("")) { // NOI18N
                     nameField.setText(DEFAULT_NAME);
                     nameField.selectAll();
                 }
@@ -314,7 +315,7 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
     /** test current Panel state for data validity
      * @return boolean true if data are valid and Wizard can continue */    
     public boolean isValid() {
-        StringTokenizer st=new StringTokenizer(packageField.getText().replace('.','/'),"/");
+        StringTokenizer st=new StringTokenizer(packageField.getText().replace('.','/'),"/"); // NOI18N
         while (st.hasMoreTokens())
             if (!Utilities.isJavaIdentifier(st.nextToken()))
                 return false;

@@ -50,7 +50,7 @@ class XMLDocument {
     }
     
     void setProperty(String name, String valueName, Object valueValue) {
-        setElement("property", "name", name, valueName, valueValue);
+        setElement("property", "name", name, valueName, valueValue); // NOI18N
     }
     
     void setElement(String element, String valueName, Object valueValue) {
@@ -72,7 +72,7 @@ class XMLDocument {
     }
     
     String getProperty(String name, String valueName) {
-        return getElement("property", "name", name, valueName);
+        return getElement("property", "name", name, valueName); // NOI18N
     }
     
     String getElement(String element, String valueName) {

@@ -36,6 +36,7 @@ import org.openide.util.Utilities;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.TemplateWizard;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /** Wizard Panel with Test Workspace Settings configuration
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
@@ -45,10 +46,10 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
     static final long serialVersionUID = 6910738027583517330L;
     
     private boolean stop=true;
-    private static final String netbeansPath="../../../nb_all/nbbuild/netbeans";
-    private static final String xtestPath="../../../nb_all/xtest";
-    private static final String jemmyPath="../../../nbextra/jemmy";
-    private static final String jellyPath="../../../nbextra/jellytools";
+    private static final String netbeansPath="../../../nb_all/nbbuild/netbeans"; // NOI18N
+    private static final String xtestPath="../../../nb_all/xtest"; // NOI18N
+    private static final String jemmyPath="../../../nbextra/jemmy"; // NOI18N
+    private static final String jellyPath="../../../nbextra/jellytools"; // NOI18N
     private String jemmyHome=jemmyPath;
     private String jellyHome=jellyPath;
     private TemplateWizard wizard;
@@ -56,7 +57,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
 
     /** Creates new form TestWorkspacePanel */
     public TestWorkspaceSettingsPanel() {
-        setName("Test Workspace Settings");
+        setName(NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_TestWorkspacePanelName")); // NOI18N
         initComponents();
         DocumentListener list=new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {fireStateChanged();}
@@ -99,7 +100,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
 
         levelLabel.setDisplayedMnemonic('W');
         levelLabel.setLabelFor(levelCombo);
-        levelLabel.setText("Test Workspace possition in CVS: ");
+        levelLabel.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_TestWorkspaceLevel"));
         levelLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceLevel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -132,7 +133,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
 
         typeLabel.setDisplayedMnemonic('T');
         typeLabel.setLabelFor(typeField);
-        typeLabel.setText("Default Test Type: ");
+        typeLabel.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_TestWorkspaceDefaultTestType"));
         typeLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceDefaultTT"));
         typeLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -166,7 +167,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
 
         attrLabel.setDisplayedMnemonic('A');
         attrLabel.setLabelFor(attrField);
-        attrLabel.setText("Default Attributes: ");
+        attrLabel.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_TestWorkspaceDefaultAttributes"));
         attrLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_TestWorkspaceAttrs"));
         attrLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -208,7 +209,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.insets = new java.awt.Insets(17, 0, 0, 11);
         panel.add(separator1, gridBagConstraints);
 
-        advancedCheck.setText("Advanced Settings");
+        advancedCheck.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_AdvancedSettings"));
         advancedCheck.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_AdvancedSettings"));
         advancedCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -226,7 +227,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
 
         netbeansLabel.setDisplayedMnemonic('N');
         netbeansLabel.setLabelFor(netbeansField);
-        netbeansLabel.setText("Netbeans Home: ");
+        netbeansLabel.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_TestWorkspaceNetbeansHome"));
         netbeansLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_NetbeansHome"));
         netbeansLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -260,7 +261,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
 
         xtestLabel.setDisplayedMnemonic('X');
         xtestLabel.setLabelFor(xtestField);
-        xtestLabel.setText("XTest Home: ");
+        xtestLabel.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_TestWorkspaceXTestHome"));
         xtestLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_NetbeansHome"));
         xtestLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -348,19 +349,19 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         add(panel, "ok");
 
         stopLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        stopLabel.setText("Test Workspace exists in selected package or has invalid name.");
+        stopLabel.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "MSG_TestWorkspaceExists"));
         add(stopLabel, "stop");
 
     }//GEN-END:initComponents
 
     private void xtestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xtestButtonActionPerformed
-        File home=WizardIterator.showFileChooser(this, "Select XTest Home Directory", true, false);
+        File home=WizardIterator.showFileChooser(this, NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TITLE_SelectXTestHome"), true, false); // NOI18N
         if (home!=null) 
             xtestField.setText(home.getAbsolutePath());
     }//GEN-LAST:event_xtestButtonActionPerformed
 
     private void netbeansButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_netbeansButtonActionPerformed
-        File home=WizardIterator.showFileChooser(this, "Select Netbeans Home Directory (different than current)", true, false);
+        File home=WizardIterator.showFileChooser(this, NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "Title_SelectNetbeansHome"), true, false); // NOI18N
         if (home!=null) 
             netbeansField.setText(home.getAbsolutePath());
     }//GEN-LAST:event_netbeansButtonActionPerformed
@@ -410,24 +411,24 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
                         jemmyHome=jemmyPath;
                         jellyHome=jellyPath;
                         break;
-                 case 1:netbeansField.setText("../"+netbeansPath);
-                        xtestField.setText("../"+xtestPath);
-                        jemmyHome="../"+jemmyPath;
-                        jellyHome="../"+jellyPath;
+                 case 1:netbeansField.setText("../"+netbeansPath); // NOI18N
+                        xtestField.setText("../"+xtestPath); // NOI18N
+                        jemmyHome="../"+jemmyPath; // NOI18N
+                        jellyHome="../"+jellyPath; // NOI18N
                         break;
-                 case 2:netbeansField.setText("../../"+netbeansPath);
-                        xtestField.setText("../../"+xtestPath);
-                        jemmyHome="../../"+jemmyPath;
-                        jellyHome="../../"+jellyPath;
+                 case 2:netbeansField.setText("../../"+netbeansPath); // NOI18N
+                        xtestField.setText("../../"+xtestPath); // NOI18N
+                        jemmyHome="../../"+jemmyPath; // NOI18N
+                        jellyHome="../../"+jellyPath; // NOI18N
                         break;
-                 case 3:String home=System.getProperty("netbeans.home");
+                 case 3:String home=System.getProperty("netbeans.home"); // NOI18N
                         netbeansLabel.setEnabled(true);
                         netbeansField.setEnabled(true);
                         netbeansButton.setEnabled(true);
-                        if (!new File(home+File.separator+"xtest-distribution").exists()) 
-                            home=System.getProperty("netbeans.user");
-                        xtestField.setText(home+File.separator+"xtest-distribution");
-                        jemmyHome=home+File.separator+"lib"+File.separator+"ext";
+                        if (!new File(home+File.separator+"xtest-distribution").exists())  // NOI18N
+                            home=System.getProperty("netbeans.user"); // NOI18N
+                        xtestField.setText(home+File.separator+"xtest-distribution"); // NOI18N
+                        jemmyHome=home+File.separator+"modules"+File.separator+"ext"; // NOI18N
                         jellyHome=jemmyHome;
                         break;
              }
@@ -466,9 +467,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
             || WizardIterator.detectBuildScript(df);
         } catch (Exception e) {}
         if (stop)
-            ((CardLayout)getLayout()).show(this, "stop");
+            ((CardLayout)getLayout()).show(this, "stop"); // NOI18N
         else {
-            ((CardLayout)getLayout()).show(this, "ok");
+            ((CardLayout)getLayout()).show(this, "ok"); // NOI18N
             if (set.workspaceLevel<0)
                 levelCombo.setSelectedIndex(WizardIterator.detectWorkspaceLevel(df));
             if (set.defaultType!=null) 
@@ -498,7 +499,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         set.typeJellyHome=jellyHome;
     }
 
-    private static File netHome=new File(System.getProperty("netbeans.home","."));
+    private static File netHome=new File(System.getProperty("netbeans.home",".")); // NOI18N
 
     /** test current Panel state for data validity
      * @return boolean true if data are valid and Wizard can continue */    

@@ -34,6 +34,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
 
 import org.apache.tools.ant.module.loader.AntCompilerSupport;
+import org.openide.util.NbBundle;
 
 /** Data Loader class for XTest Workspace Script Data Object
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
@@ -49,13 +50,13 @@ public class XTestDataLoader extends UniFileLoader {
     /** returns default display name of XTestDataObject
      * @return String default display name of XTestDataObject */    
     protected String defaultDisplayName () {
-        return "XTest Build Script";
+        return NbBundle.getMessage(XTestDataLoader.class, "XTestBuildScriptName"); // NOI18N
     }
 
     /** performs initialization of Data Loader */    
     protected void initialize () {
         super.initialize ();
-        getExtensions().addMimeType("text/x-ant+xml");
+        getExtensions().addMimeType("text/x-ant+xml"); // NOI18N
     }
 
     
@@ -104,7 +105,7 @@ public class XTestDataLoader extends UniFileLoader {
             BufferedReader br=new BufferedReader(new InputStreamReader(fo.getInputStream()));
             String line;
             while ((line=br.readLine())!=null)
-                if (line.indexOf("\"xtest.module\"")>=0) {
+                if (line.indexOf("\"xtest.module\"")>=0) { // NOI18N
                     br.close();
                     return fo;
                 }
@@ -138,7 +139,7 @@ public class XTestDataLoader extends UniFileLoader {
         /** returns name of the Action
          * @return String Action name */        
         public String getName() {
-            return "Clean Results";
+            return NbBundle.getMessage(XTestDataLoader.class, "CleanResultsActionName"); // NOI18N
         }
         
         /** returns Help Context of the Action

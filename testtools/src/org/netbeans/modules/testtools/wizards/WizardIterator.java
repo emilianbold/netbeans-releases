@@ -47,6 +47,7 @@ import org.openide.filesystems.LocalFileSystem;
 
 import org.netbeans.modules.group.GroupShadow;
 import org.netbeans.modules.java.JavaDataObject;
+import org.openide.util.NbBundle;
 
 /** Abstract Wizard Iterator class for all Test Tools Wizard Iterators
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
@@ -77,7 +78,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         /** returns String representation of CaseElement class
          * @return String representation of CaseElement class */        
         public String toString() {
-            return name+" ["+template.getName().getName()+"]";
+            return name+" ["+template.getName().getName()+"]"; // NOI18N
         }
     }
     
@@ -164,7 +165,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         MethodElement[] methods = clel.getMethods();
         ArrayList templates = new ArrayList();
         for (int i=0; i<methods.length; i++)
-            if ((methods[i].getName().getName().startsWith("test"))&&
+            if ((methods[i].getName().getName().startsWith("test"))&& // NOI18N
                 (methods[i].getModifiers()==Modifier.PUBLIC)&&
                 (methods[i].getParameters().length==0)&&
                 (methods[i].getReturn().equals(Type.VOID)))
@@ -183,7 +184,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
             CaseElement cel=methods[i];
             clel.addMethod(cel.getTemplate());
             clel.getMethod(cel.getTemplate().getName(), null).setName(Identifier.create(cel.getName()));
-            if (cel.getTemplate().getBody().indexOf("compareReferenceFiles")>=0)
+            if (cel.getTemplate().getBody().indexOf("compareReferenceFiles")>=0) // NOI18N
                 try {
                     createGoldenFile(source, cel.getName());
                 } catch (IOException ioe) {}
@@ -192,52 +193,52 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         // creating list of test cases
         String className=source.getName();
         StringBuffer suite = new StringBuffer();
-        suite.append("\n        TestSuite suite = new NbTestSuite();\n");
+        suite.append("\n        TestSuite suite = new NbTestSuite();\n"); // NOI18N
         for (int i=0; methods!=null && i<methods.length; i++) {
-            suite.append("        suite.addTest(new ");
+            suite.append("        suite.addTest(new "); // NOI18N
             suite.append(className);
-            suite.append("(\"");
+            suite.append("(\""); // NOI18N
             suite.append(methods[i].getName());
-            suite.append("\"));\n");
+            suite.append("\"));\n"); // NOI18N
         }
-        suite.append("        return suite;\n");
-        clel.getMethod(Identifier.create("suite"), null).setBody(suite.toString());
+        suite.append("        return suite;\n"); // NOI18N
+        clel.getMethod(Identifier.create("suite"), null).setBody(suite.toString()); // NOI18N
     }
 
     static void createGoldenFile(JavaDataObject source, String name) throws IOException {
         FileObject fo=source.getFolder().getPrimaryFile();
-        FileObject fo2=fo.getFileObject("data");
+        FileObject fo2=fo.getFileObject("data"); // NOI18N
         if ((fo2==null)||(!fo2.isFolder()))
-            fo2=fo.createFolder("data");
-        fo=fo2.getFileObject("goldenfiles");
+            fo2=fo.createFolder("data"); // NOI18N
+        fo=fo2.getFileObject("goldenfiles"); // NOI18N
         if ((fo==null)||(!fo.isFolder()))
-            fo=fo2.createFolder("goldenfiles");
+            fo=fo2.createFolder("goldenfiles"); // NOI18N
         fo2=fo.getFileObject(source.getName());
         if ((fo2==null)||(!fo2.isFolder()))
             fo2=fo.createFolder(source.getName());
-        fo2.createData(name,"pass");
+        fo2.createData(name, "pass"); // NOI18N
     }
     
     static boolean detectBuildScript(DataFolder folder) {
         FileObject fo=folder.getPrimaryFile();
         return (fo!=null)&&
-               ((fo=fo.getFileObject("test"))!=null)&&
+               ((fo=fo.getFileObject("test"))!=null)&& // NOI18N
                (fo.isFolder())&&
-               (fo.getFileObject("build","xml")!=null);
+               (fo.getFileObject("build","xml")!=null); // NOI18N
     }
     
     static boolean detectTestType(DataFolder folder, String name) {
         FileObject fo=folder.getPrimaryFile();
         if (fo==null)  return false;
         return (fo.getFileObject(name)!=null)||
-               (fo.getFileObject("cfg-"+name,"xml")!=null)||
-               (fo.getFileObject("build-"+name,"xml")!=null);
+               (fo.getFileObject("cfg-"+name,"xml")!=null)|| // NOI18N
+               (fo.getFileObject("build-"+name,"xml")!=null); // NOI18N
     }
     
     static int detectWorkspaceLevel(DataFolder folder) {
         try {
-            BufferedReader br=new BufferedReader(new InputStreamReader(folder.getPrimaryFile().getFileObject("CVS").getFileObject("Repository").getInputStream()));
-            StringTokenizer repository=new StringTokenizer(br.readLine(),"/");
+            BufferedReader br=new BufferedReader(new InputStreamReader(folder.getPrimaryFile().getFileObject("CVS").getFileObject("Repository").getInputStream())); // NOI18N
+            StringTokenizer repository=new StringTokenizer(br.readLine(),"/"); // NOI18N
             br.close();
             int i=repository.countTokens();
             if ((i>0)&&(i<4))
@@ -250,13 +251,13 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     
     static Set instantiateTestSuite(WizardSettings set) throws IOException {
         if (set.suiteName!=null && !Utilities.isJavaIdentifier(set.suiteName))
-            throw new IOException("Selected Test Suite name is not valid identifier.");
+            throw new IOException(NbBundle.getMessage(WizardIterator.class, "ERR_TestSuiteName")); // NOI18N
         try {
             set.suite=(JavaDataObject)set.suiteTemplate.createFromTemplate(set.suiteTarget, set.suiteName);
         } catch (IOException ioe) {
             if (set.suiteName==null)
                 set.suiteName=set.suiteTemplate.getPrimaryFile().getName();
-            throw new IOException("Could not create new Test Suite \""+set.suiteName+"\" in package \""+set.suiteTarget.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
+            throw new IOException(NbBundle.getMessage(WizardIterator.class, "ERR_CreateSuite", new Object[] {set.suiteName, set.suiteTarget.getPrimaryFile().getPackageName('/'), ioe.getMessage()})); // NOI18N
         }
             
         try {
@@ -273,7 +274,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
 
     static Set instantiateTestType(WizardSettings set) throws IOException {
         if (set.typeName!=null && set.typeName.indexOf(' ')>=0)
-            throw new IOException("Selected Test Type name is not valid identifier.");
+            throw new IOException(NbBundle.getMessage(WizardIterator.class, "ERR_TestTypeName")); // NOI18N
         HashSet res=new HashSet();
         DataObject dob=null;
         try {
@@ -281,14 +282,14 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         } catch (IOException ioe) {
             if (set.typeName==null)
                 set.typeName=set.typeTemplate.getPrimaryFile().getName();
-            throw new IOException("Could not create new Test Type \""+set.typeName+"\" in package \""+set.typeTarget.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
+            throw new IOException(NbBundle.getMessage(WizardIterator.class, "ERR_CreateTestType", new Object[] {set.typeName, set.typeTarget.getPrimaryFile().getPackageName('/'), ioe.getMessage()})); // NOI18N
         }
         Object o[]=((GroupShadow)dob).getLinks();
         for (int i=0; i<o.length; i++) 
             if (o[i] instanceof DataObject) {
-                if (((DataObject)o[i]).getName().startsWith("build-"))
+                if (((DataObject)o[i]).getName().startsWith("build-")) // NOI18N
                     set.typeScript=(DataObject)o[i];
-                if (((DataObject)o[i]).getName().startsWith("cfg-"))
+                if (((DataObject)o[i]).getName().startsWith("cfg-")) // NOI18N
                     set.typeConfig=(DataObject)o[i];
                 res.add((DataObject)o[i]);
             }
@@ -298,7 +299,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         
         if (set.typeName==null)
             set.typeName=set.typeTemplate.getPrimaryFile().getName();
-        set.suiteTarget=DataFolder.create(set.typeTarget, set.typeName+"/src");
+        set.suiteTarget=DataFolder.create(set.typeTarget, set.typeName+"/src"); // NOI18N
         res.add(set.suiteTarget);
         File root=FileUtil.toFile(set.suiteTarget.getPrimaryFile());
         if (root!=null) try {
@@ -318,16 +319,16 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     
     static Set instantiateTestWorkspace(WizardSettings set) throws IOException {
         if (set.workspaceName!=null && set.workspaceName.indexOf(' ')>=0)
-            throw new IOException("Selected Test Workspace name is not valid identifier.");
+            throw new IOException(NbBundle.getMessage(WizardIterator.class, "ERR_TestWorkspaceName")); // NOI18N
         HashSet res=new HashSet();
         
-        set.typeTarget=DataFolder.create(set.workspaceTarget,"test");
+        set.typeTarget=DataFolder.create(set.workspaceTarget,"test"); // NOI18N
         res.add(set.typeTarget);
         
         try {
-            set.workspaceScript=set.workspaceTemplate.createFromTemplate(set.typeTarget, "build");
+            set.workspaceScript=set.workspaceTemplate.createFromTemplate(set.typeTarget, "build"); // NOI18N
         } catch (IOException ioe) {
-            throw new IOException("Could not create new Test Workspace in package \""+set.typeTarget.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
+            throw new IOException(NbBundle.getMessage(WizardIterator.class, "Could_not_create_new_Test_Workspace_in_package_\"", new Object[] {set.typeTarget.getPrimaryFile().getPackageName('/'), ioe.getMessage()})); // NOI18N
         }
         res.add(set.workspaceScript);
         
@@ -344,7 +345,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     }
     
     static DataObject[] getSuiteTemplates() {
-        Enumeration enum=Repository.getDefault().getDefaultFileSystem().findResource("Templates").getFileObject("TestTools").getData(false);
+        Enumeration enum=Repository.getDefault().getDefaultFileSystem().findResource("Templates").getFileObject("TestTools").getData(false); // NOI18N
         ArrayList list=new ArrayList();
         DataObject o;
         while (enum.hasMoreElements()) try {
@@ -356,7 +357,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     }
     
     static DataObject[] getTestTypeTemplates() {
-        Enumeration enum=Repository.getDefault().getDefaultFileSystem().findResource("Templates").getFileObject("TestTools").getData(false);
+        Enumeration enum=Repository.getDefault().getDefaultFileSystem().findResource("Templates").getFileObject("TestTools").getData(false); // NOI18N
         ArrayList list=new ArrayList();
         DataObject o;
         while (enum.hasMoreElements()) try {
@@ -382,7 +383,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
             RequestProcessor.postRequest(run, 5000);
     }
    
-    private  static File target=new File(".");
+    private  static File target=new File("."); // NOI18N
     
     private static class JarAndZipFilter extends FileFilter {
         /** FileFilter implementation method
@@ -391,12 +392,12 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         public boolean accept(File f) {
             if (f.isDirectory ()) return true;
             String s = f.getPath().toLowerCase();
-            return s.endsWith(".jar") || s.endsWith(".zip");
+            return s.endsWith(".jar") || s.endsWith(".zip"); // NOI18N
         }
         /** return description of FileFilter
          * @return String description of FileFilter */        
         public String getDescription() {
-            return "Jar and Zip File Filter";
+            return NbBundle.getMessage(WizardIterator.class, "LBL_JarZipFilter");  // NOI18N
         }
     }
    

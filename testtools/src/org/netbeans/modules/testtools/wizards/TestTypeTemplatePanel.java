@@ -38,6 +38,7 @@ import org.openide.util.Utilities;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.NbBundle;
 
 /** Wizard Panel with Test Type Template selection
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
@@ -47,12 +48,12 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
     static final long serialVersionUID = 2893559646017815470L;
     
     private ChangeListener listener=null;
-    private static final String DEFAULT_NAME=org.openide.util.NbBundle.getMessage(TestTypeTemplatePanel.class, "CTL_DefaultName");
+    private static final String DEFAULT_NAME=NbBundle.getMessage(TestTypeTemplatePanel.class, "CTL_DefaultName"); // NOI18N
     boolean modified=true;
     
     /** Creates new form TestTypeTemplatePanel */
     public TestTypeTemplatePanel() {
-        setName(org.openide.util.NbBundle.getMessage(TestTypeTemplatePanel.class, "LBL_TestTypePanelName"));
+        setName(NbBundle.getMessage(TestTypeTemplatePanel.class, "LBL_TestTypePanelName")); // NOI18N
         initComponents();
         templateCombo.setRenderer(new WizardIterator.MyCellRenderer());
         templateCombo.setModel(new DefaultComboBoxModel(WizardIterator.getTestTypeTemplates()));
@@ -197,10 +198,10 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
             url=TemplateWizard.getDescription(dob);
         }
         if (url==null) {
-            ((CardLayout)descriptionPanel.getLayout()).show(descriptionPanel, "no");
+            ((CardLayout)descriptionPanel.getLayout()).show(descriptionPanel, "no"); // NOI18N
         } else {
             htmlBrowser.setURL(url);
-            ((CardLayout)descriptionPanel.getLayout()).show(descriptionPanel, "yes");
+            ((CardLayout)descriptionPanel.getLayout()).show(descriptionPanel, "yes"); // NOI18N
         }
     }//GEN-LAST:event_templateComboActionPerformed
 
@@ -258,7 +259,7 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
                 if (listener != null) {
                     listener.stateChanged (new ChangeEvent (this));
                 }
-                if (nameField.getText().equals ("")) {
+                if (nameField.getText().equals ("")) { // NOI18N
                     nameField.setText(DEFAULT_NAME);
                     nameField.selectAll();
                 }

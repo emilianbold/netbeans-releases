@@ -29,6 +29,7 @@ import java.beans.IntrospectionException;
 
 import org.openide.util.Utilities;
 import org.openide.compiler.CompilerType;
+import org.openide.util.NbBundle;
 
 /** Bena Info class for XTestCompilerType
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
@@ -42,7 +43,7 @@ public class XTestCompilerTypeBeanInfo extends SimpleBeanInfo {
                        Introspector.getBeanInfo(CompilerType.class)
                    };
         } catch (IntrospectionException ie) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
                 ie.printStackTrace ();
             return null;
         }
@@ -52,9 +53,9 @@ public class XTestCompilerTypeBeanInfo extends SimpleBeanInfo {
      * @return BeanDescriptor */    
     public BeanDescriptor getBeanDescriptor () {
         BeanDescriptor desc = new BeanDescriptor (XTestCompilerType.class);
-        desc.setDisplayName ("XTest Compilation");
-        desc.setShortDescription ("XTest Compilation");
-        desc.setValue ("version", "1.1");
+        desc.setDisplayName (NbBundle.getMessage(XTestCompilerTypeBeanInfo.class, "Compilation_Name")); // NOI18N
+        desc.setShortDescription (NbBundle.getMessage(XTestCompilerTypeBeanInfo.class, "Compilation_Description")); // NOI18N
+        desc.setValue ("version", "1.1"); // NOI18N
         return desc;
     }
 
@@ -63,29 +64,29 @@ public class XTestCompilerTypeBeanInfo extends SimpleBeanInfo {
     public PropertyDescriptor[] getPropertyDescriptors () {
         try {
             PropertyDescriptor[] properties=new PropertyDescriptor[5];
-            properties[0]=new PropertyDescriptor("netbeansHome", XTestCompilerType.class);
-            properties[0].setDisplayName("Netbeans Home");
-            properties[0].setShortDescription("Netbeans IDE Home Directory (different than current).");
-            properties[0].setValue("files",new Boolean(false));
+            properties[0]=new PropertyDescriptor("netbeansHome", XTestCompilerType.class); // NOI18N
+            properties[0].setDisplayName(NbBundle.getMessage(XTestCompilerTypeBeanInfo.class, "NetbeansHomeName")); // NOI18N
+            properties[0].setShortDescription(NbBundle.getMessage(XTestCompilerTypeBeanInfo.class, "NetbeansHomeDescription")); // NOI18N
+            properties[0].setValue("files",new Boolean(false)); // NOI18N
             properties[0].setPreferred(true);
-            properties[1]=new PropertyDescriptor("jellyHome", XTestCompilerType.class);
-            properties[1].setDisplayName("Jelly Home");
-            properties[1].setShortDescription("Jelly Home Directory");
-            properties[1].setValue("files",new Boolean(false));
-            properties[2]=new PropertyDescriptor("jemmyHome", XTestCompilerType.class);
-            properties[2].setDisplayName("Jemmy Home");
-            properties[2].setShortDescription("Jemmy Home Directory");
-            properties[2].setValue("files",new Boolean(false));
-            properties[3]=new PropertyDescriptor("testType", XTestCompilerType.class);
-            properties[3].setDisplayName("Test Type");
-            properties[3].setShortDescription("Test Type");
-            properties[4]=new PropertyDescriptor("xtestHome", XTestCompilerType.class);
-            properties[4].setDisplayName("XTest Home");
-            properties[4].setShortDescription("XTest Home Directory");
-            properties[4].setValue("files",new Boolean(false));
+            properties[1]=new PropertyDescriptor("jellyHome", XTestCompilerType.class); // NOI18N
+            properties[1].setDisplayName(NbBundle.getMessage(XTestCompilerTypeBeanInfo.class, "JellyHomeName")); // NOI18N
+            properties[1].setShortDescription(NbBundle.getMessage(XTestCompilerTypeBeanInfo.class, "JellyHomeDescription")); // NOI18N
+            properties[1].setValue("files",new Boolean(false)); // NOI18N
+            properties[2]=new PropertyDescriptor("jemmyHome", XTestCompilerType.class); // NOI18N
+            properties[2].setDisplayName(NbBundle.getMessage(XTestCompilerTypeBeanInfo.class, "JemmyHomeName")); // NOI18N
+            properties[2].setShortDescription(NbBundle.getMessage(XTestCompilerTypeBeanInfo.class, "JemmyHomeDescription")); // NOI18N
+            properties[2].setValue("files",new Boolean(false)); // NOI18N
+            properties[3]=new PropertyDescriptor("testType", XTestCompilerType.class); // NOI18N
+            properties[3].setDisplayName(NbBundle.getMessage(XTestCompilerTypeBeanInfo.class, "TestTypeName")); // NOI18N
+            properties[3].setShortDescription(NbBundle.getMessage(XTestCompilerTypeBeanInfo.class, "TestTypeDescription")); // NOI18N
+            properties[4]=new PropertyDescriptor("xtestHome", XTestCompilerType.class); // NOI18N
+            properties[4].setDisplayName(NbBundle.getMessage(XTestCompilerTypeBeanInfo.class, "XTestHomeName")); // NOI18N
+            properties[4].setShortDescription(NbBundle.getMessage(XTestCompilerTypeBeanInfo.class, "XTestHomeDescription")); // NOI18N
+            properties[4].setValue("files",new Boolean(false)); // NOI18N
             return properties;
         } catch( IntrospectionException e) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
                 e.printStackTrace ();
             e.printStackTrace();
             return null;
@@ -97,7 +98,7 @@ public class XTestCompilerTypeBeanInfo extends SimpleBeanInfo {
      * @return Image XTestIcon */    
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage ("org/netbeans/modules/testtools/XTestCompIcon.gif");
+            return Utilities.loadImage ("org/netbeans/modules/testtools/XTestCompIcon.gif"); // NOI18N
         } else {
             return null;
         }

@@ -44,7 +44,7 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
     
     /** Creates new form TestTypeAdvancedSettingsPanel */
     public TestTypeAdvancedSettingsPanel() {
-        setName(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeAdvancedPanelName"));
+        setName(org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeAdvancedPanelName")); // NOI18N
         initComponents();
     }
     
@@ -368,45 +368,45 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
     private String add(String path, File elem) {
         String file=null;
         if (netbeansHome!=null)
-            file=substitutePath(elem, new File(baseDir, netbeansHome), "${netbeans.home}");
+            file=substitutePath(elem, new File(baseDir, netbeansHome), "${netbeans.home}"); // NOI18N
         if (file==null && netbeansHome!=null)
-            file=substitutePath(elem, new File(netbeansHome), "${netbeans.home}");
+            file=substitutePath(elem, new File(netbeansHome), "${netbeans.home}"); // NOI18N
         if (file==null)
-            file=substitutePath(elem, new File(System.getProperty("netbeans.home")), "${netbeans.home}");
+            file=substitutePath(elem, new File(System.getProperty("netbeans.home")), "${netbeans.home}"); // NOI18N
         if (file==null)
-            file=substitutePath(elem, baseDir, "..");
+            file=substitutePath(elem, baseDir, ".."); // NOI18N
         if (file==null)
             file=elem.getAbsolutePath();
         if (path.length()==0) 
             return file;
-        StringTokenizer tok=new StringTokenizer(path, ":;");
+        StringTokenizer tok=new StringTokenizer(path, ":;"); // NOI18N
         while (tok.hasMoreTokens())
             if (file.equals(tok.nextToken())) return path;
         return path+';'+file;
     }    
     
     private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
-        File elem=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJAR"), false, true);
+        File elem=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJAR"), false, true); // NOI18N
         if (elem!=null) {
             executeField.setText(add(executeField.getText(), elem));
         }
     }//GEN-LAST:event_executeButtonActionPerformed
 
     private void compileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileButtonActionPerformed
-        File jar=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectClassPathElement"), true, true);
+        File jar=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectClassPathElement"), true, true); // NOI18N
         if (jar!=null) {
             compileField.setText(add(compileField.getText(), jar));
         }
     }//GEN-LAST:event_compileButtonActionPerformed
 
     private void jellyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jellyButtonActionPerformed
-        File home=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJellyHome"), true, false);
+        File home=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJellyHome"), true, false); // NOI18N
         if (home!=null) 
             jellyField.setText(home.getAbsolutePath());
     }//GEN-LAST:event_jellyButtonActionPerformed
 
     private void jemmyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jemmyButtonActionPerformed
-        File home=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJemmyHome"), true, false);
+        File home=WizardIterator.showFileChooser(this, org.openide.util.NbBundle.getMessage(TestTypeAdvancedSettingsPanel.class, "LBL_TestTypeSelectJemmyHome"), true, false); // NOI18N
         if (home!=null) 
             jemmyField.setText(home.getAbsolutePath());
     }//GEN-LAST:event_jemmyButtonActionPerformed
@@ -474,8 +474,8 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
                 netbeansHome=set.netbeansHome;
             } else {
                 baseDir=baseDir.getParentFile();
-                XMLDocument doc=new XMLDocument(DataObject.find(wizard.getTargetFolder().getPrimaryFile().getFileObject("build","xml")));
-                netbeansHome=doc.getProperty("netbeans.home","location");
+                XMLDocument doc=new XMLDocument(DataObject.find(wizard.getTargetFolder().getPrimaryFile().getFileObject("build","xml"))); // NOI18N
+                netbeansHome=doc.getProperty("netbeans.home","location"); // NOI18N
             }
         } catch (Exception e) {}
     }

@@ -24,6 +24,7 @@ import java.beans.*;
 import java.awt.Image;
 
 import org.openide.loaders.DataLoader;
+import org.openide.util.NbBundle;
 
 /** Bean Info for XTestDataLoader class
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
@@ -43,9 +44,9 @@ public class XTestDataLoaderBeanInfo extends SimpleBeanInfo {
      * @return array of PropertyDescriptor */    
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
-            PropertyDescriptor extensions = new PropertyDescriptor("extensions", XTestDataLoader.class, "getExtensions", null);
-            extensions.setDisplayName("Extensions and MIME Types");
-            extensions.setShortDescription("Extensions and MIME Types");
+            PropertyDescriptor extensions = new PropertyDescriptor("extensions", XTestDataLoader.class, "getExtensions", null); // NOI18N
+            extensions.setDisplayName(NbBundle.getMessage(XTestDataLoaderBeanInfo.class, "ExtensionsName")); // NOI18N
+            extensions.setShortDescription(NbBundle.getMessage(XTestDataLoaderBeanInfo.class, "ExtensionsDescription")); // NOI18N
             return new PropertyDescriptor[] {extensions};
         } catch (IntrospectionException ie) {
             return null;
@@ -57,7 +58,7 @@ public class XTestDataLoaderBeanInfo extends SimpleBeanInfo {
      * @return Image XTestIcon */    
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return org.openide.util.Utilities.loadImage ("org/netbeans/modules/testtools/XTestIcon.gif");
+            return org.openide.util.Utilities.loadImage ("org/netbeans/modules/testtools/XTestIcon.gif"); // NOI18N
         } else {
             return null;
         }

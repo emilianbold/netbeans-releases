@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.openide.util.Task;
+//import org.openide.util.Task;
 import org.openide.TopManager;
 import org.openide.ServiceType;
 import org.openide.ErrorManager;
@@ -46,6 +46,7 @@ import org.apache.tools.ant.module.run.AntCompiler;
 import org.apache.tools.ant.module.run.TargetExecutor;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.netbeans.modules.testtools.wizards.WizardIterator;
+import org.openide.util.NbBundle;
 
 
 /** class representing Compiler Type for XTest Workspace Build Script
@@ -54,9 +55,9 @@ public class XTestCompilerType extends CompilerType {
 
     static final long serialVersionUID = -4763744289088576457L;
 
-    private static final String compileTarget = "buildtests";
-    private static final String cleanTarget = "cleantests";
-    private static final String cleanResultsTarget = "cleanresults";
+    private static final String compileTarget = "buildtests"; // NOI18N
+    private static final String cleanTarget = "cleantests"; // NOI18N
+    private static final String cleanResultsTarget = "cleanresults"; // NOI18N
     
     /** Holds value of property netbeansHome. */
     private File netbeansHome=null;
@@ -71,16 +72,16 @@ public class XTestCompilerType extends CompilerType {
     private File jellyHome;
     
     /** Holds value of property testType. */
-    private String testType="";
+    private String testType=""; // NOI18N
     
     /** creates new XTestCompilerType */    
     public XTestCompilerType() {
-        String home=System.getProperty("netbeans.home");
-        if (!new File(home+File.separator+"xtest-distribution").exists()) 
-            home=System.getProperty("netbeans.user");
-        xtestHome=new File(home+File.separator+"xtest-distribution");
-        jemmyHome=new File(home+File.separator+"lib"+File.separator+"ext");
-        jellyHome=new File(home+File.separator+"lib"+File.separator+"ext");
+        String home=System.getProperty("netbeans.home"); // NOI18N
+        if (!new File(home+File.separator+"xtest-distribution").exists())  // NOI18N
+            home=System.getProperty("netbeans.user"); // NOI18N
+        xtestHome=new File(home+File.separator+"xtest-distribution"); // NOI18N
+        jemmyHome=new File(home+File.separator+"modules"+File.separator+"ext"); // NOI18N
+        jellyHome=new File(home+File.separator+"modules"+File.separator+"ext"); // NOI18N
     }
     
     /** creates new XTestCompilerType, fills and returns propper Handler
@@ -95,7 +96,7 @@ public class XTestCompilerType extends CompilerType {
         return new HelpCtx (XTestCompilerType.class);
     }
 
-    final static File netHome=new File(System.getProperty("netbeans.home","."));
+    final static File netHome=new File(System.getProperty("netbeans.home",".")); // NOI18N
     
     /** fills Compiler Job with propper compilers
      * @param job CompilerJob to be filled
@@ -104,10 +105,10 @@ public class XTestCompilerType extends CompilerType {
     public void prepareJob (CompilerJob job, Class type, DataObject obj) {
         AntProjectCookie cookie = (AntProjectCookie) obj.getCookie (AntProjectCookie.class);
         if (cookie == null) { 
-            throw new IllegalArgumentException ("Missing Ant Project Cookie.");
+            throw new IllegalArgumentException (NbBundle.getMessage(XTestCompilerType.class, "Err_MissingAntProjectCookie")); // NOI18N
         }
         if (netbeansHome==null || netHome.equals(netbeansHome)) {
-            File home=WizardIterator.showFileChooser(TopManager.getDefault().getWindowManager().getMainWindow(), "Select Tested Netbeans Home Directory (different than current)", true, false);
+            File home=WizardIterator.showFileChooser(TopManager.getDefault().getWindowManager().getMainWindow(), NbBundle.getMessage(XTestCompilerType.class, "Title_SelectNetbeansHome"), true, false); // NOI18N
             if ((home!=null)&&(!netHome.equals(home))) {
                 setNetbeansHome(home);
                 if (obj instanceof MultiDataObject) {
@@ -154,7 +155,7 @@ public class XTestCompilerType extends CompilerType {
     public void setNetbeansHome(File netbeansHome) {
         File old=this.netbeansHome;
         this.netbeansHome = netbeansHome;
-        firePropertyChange("netbeansHome", old, netbeansHome);
+        firePropertyChange("netbeansHome", old, netbeansHome); // NOI18N
     }
     
     /** Getter for property xtestHome.   
@@ -170,7 +171,7 @@ public class XTestCompilerType extends CompilerType {
     public void setXtestHome(File xtestHome) {
         File old=this.xtestHome;
         this.xtestHome = xtestHome;
-        firePropertyChange("xtestHome", old, xtestHome);
+        firePropertyChange("xtestHome", old, xtestHome); // NOI18N
     }
     
     /** Getter for property jemmyHome.
@@ -186,7 +187,7 @@ public class XTestCompilerType extends CompilerType {
     public void setJemmyHome(File jemmyHome) {
         File old=this.jemmyHome;
         this.jemmyHome = jemmyHome;
-        firePropertyChange("jemmyHome", old, jemmyHome);
+        firePropertyChange("jemmyHome", old, jemmyHome); // NOI18N
     }
     
     /** Getter for property jellyHome.
@@ -202,7 +203,7 @@ public class XTestCompilerType extends CompilerType {
     public void setJellyHome(File jellyHome) {
         File old=this.jellyHome;
         this.jellyHome = jellyHome;
-        firePropertyChange("jellyHome", old, jellyHome);
+        firePropertyChange("jellyHome", old, jellyHome); // NOI18N
     }
     
     /** Getter for property testType.
@@ -218,21 +219,21 @@ public class XTestCompilerType extends CompilerType {
     public void setTestType(String testType) {
         String old=this.testType;
         this.testType = testType;
-        firePropertyChange("testType", old, testType);
+        firePropertyChange("testType", old, testType); // NOI18N
     }
     
     private Properties getProperties() {
         Properties props=new Properties();
         if (netbeansHome!=null)
-            props.setProperty("netbeans.home",netbeansHome.getAbsolutePath());
+            props.setProperty("netbeans.home",netbeansHome.getAbsolutePath()); // NOI18N
         if (xtestHome!=null)
-            props.setProperty("xtest.home",xtestHome.getAbsolutePath());
+            props.setProperty("xtest.home",xtestHome.getAbsolutePath()); // NOI18N
         if (jemmyHome!=null)
-            props.setProperty("jemmy.home",jemmyHome.getAbsolutePath());
+            props.setProperty("jemmy.home",jemmyHome.getAbsolutePath()); // NOI18N
         if (jellyHome!=null)
-            props.setProperty("jelly.home",jellyHome.getAbsolutePath());
-        if (testType!=null && !testType.equals(""))
-            props.setProperty("xtest.testtype",testType);
+            props.setProperty("jelly.home",jellyHome.getAbsolutePath()); // NOI18N
+        if (testType!=null && !testType.equals("")) // NOI18N
+            props.setProperty("xtest.testtype",testType); // NOI18N
         return props;
     }        
 

@@ -40,6 +40,7 @@ import org.openide.filesystems.FileObject;
 import org.apache.tools.ant.module.run.TargetExecutor;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.netbeans.modules.testtools.wizards.WizardIterator;
+import org.openide.util.NbBundle;
 
 /** Executor for XTest Workspace Build Script Data Object
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
@@ -60,22 +61,22 @@ public class XTestExecutor extends Executor {
     private File jellyHome;
     
     /** Holds value of property testType. */
-    private String testType="";
+    private String testType=""; // NOI18N
     
     /** Holds value of property attributes. */
-    private String attributes="";
+    private String attributes=""; // NOI18N
     
     /** Holds value of property showResults. */
     private boolean showResults=true;
     
     /** creates new XTestExecutor */    
     public XTestExecutor() {
-        String home=System.getProperty("netbeans.home");
-        if (!new File(home+File.separator+"xtest-distribution").exists()) 
-            home=System.getProperty("netbeans.user");
-        xtestHome=new File(home+File.separator+"xtest-distribution");
-        jemmyHome=new File(home+File.separator+"lib"+File.separator+"ext");
-        jellyHome=new File(home+File.separator+"lib"+File.separator+"ext");
+        String home=System.getProperty("netbeans.home"); // NOI18N
+        if (!new File(home+File.separator+"xtest-distribution").exists())  // NOI18N
+            home=System.getProperty("netbeans.user"); // NOI18N
+        xtestHome=new File(home+File.separator+"xtest-distribution"); // NOI18N
+        jemmyHome=new File(home+File.separator+"modules"+File.separator+"ext"); // NOI18N
+        jellyHome=new File(home+File.separator+"modules"+File.separator+"ext"); // NOI18N
     }
     
     /** creates new XTestEecutor, fills and returns propper Handler
@@ -89,7 +90,7 @@ public class XTestExecutor extends Executor {
      * @throws IOException "Not yet implemented" IOException
      * @return never returns value */    
     public ExecutorTask execute(ExecInfo info) throws IOException {
-        throw new IOException("Not yet implemented.");
+        throw new IOException(NbBundle.getMessage(XTestExecutor.class, "Err_NotImplemented.")); // NOI18N
     }
     
     /** performs execution of given DataObject
@@ -99,16 +100,16 @@ public class XTestExecutor extends Executor {
     public ExecutorTask execute(DataObject obj) throws IOException {
         AntProjectCookie cookie=(AntProjectCookie)obj.getCookie(AntProjectCookie.class);
         if (cookie==null) {
-            throw new IOException("Missing Ant Project Cookie.");
+            throw new IOException(NbBundle.getMessage(XTestExecutor.class, "Err_MissingAntProjectCookie")); // NOI18N
         }
         if (netbeansHome==null || XTestCompilerType.netHome.equals(netbeansHome)) {
-            File home=WizardIterator.showFileChooser(TopManager.getDefault().getWindowManager().getMainWindow(), "Select Tested Netbeans Home Directory (different than current)", true, false);
+            File home=WizardIterator.showFileChooser(TopManager.getDefault().getWindowManager().getMainWindow(), NbBundle.getMessage(XTestExecutor.class, "Title_SelectNetbeansHome"), true, false); // NOI18N
             if ((home!=null)&&(!XTestCompilerType.netHome.equals(home)))
                 setNetbeansHome(home);
             else
-                throw new IOException("Home directory of tested IDE must be set.");
+                throw new IOException(NbBundle.getMessage(XTestExecutor.class, "Err_HomeDirectoryNotSet")); // NOI18N
         }
-        TargetExecutor executor = new TargetExecutor(cookie, new String[]{"all"});
+        TargetExecutor executor = new TargetExecutor(cookie, new String[]{"all"}); // NOI18N
         executor.addProperties(getProperties());
         if (showResults)
             return showResults(executor.execute(), obj);
@@ -122,8 +123,8 @@ public class XTestExecutor extends Executor {
                 if (task.result()==0) {
                     try {
                         FileObject fo=obj.getFolder().getPrimaryFile();
-                        fo=fo.getFileObject("results");
-                        fo=fo.getFileObject("index", "html");
+                        fo=fo.getFileObject("results"); // NOI18N
+                        fo=fo.getFileObject("index", "html"); // NOI18N
                         TopManager.getDefault().showUrl(fo.getURL());
                     } catch (Exception e) {}
                 }
@@ -154,7 +155,7 @@ public class XTestExecutor extends Executor {
     public void setNetbeansHome(File netbeansHome) {
         File old=this.netbeansHome;
         this.netbeansHome = netbeansHome;
-        firePropertyChange("netbeansHome", old, netbeansHome);
+        firePropertyChange("netbeansHome", old, netbeansHome); // NOI18N
     }
     
     /** Getter for property xtestHome.   
@@ -170,7 +171,7 @@ public class XTestExecutor extends Executor {
     public void setXtestHome(File xtestHome) {
         File old=this.xtestHome;
         this.xtestHome = xtestHome;
-        firePropertyChange("xtestHome", old, xtestHome);
+        firePropertyChange("xtestHome", old, xtestHome); // NOI18N
     }
     
     /** Getter for property jemmyHome.
@@ -186,7 +187,7 @@ public class XTestExecutor extends Executor {
     public void setJemmyHome(File jemmyHome) {
         File old=this.jemmyHome;
         this.jemmyHome = jemmyHome;
-        firePropertyChange("jemmyHome", old, jemmyHome);
+        firePropertyChange("jemmyHome", old, jemmyHome); // NOI18N
     }
     
     /** Getter for property jellyHome.
@@ -202,7 +203,7 @@ public class XTestExecutor extends Executor {
     public void setJellyHome(File jellyHome) {
         File old=this.jellyHome;
         this.jellyHome = jellyHome;
-        firePropertyChange("jellyHome", old, jellyHome);
+        firePropertyChange("jellyHome", old, jellyHome); // NOI18N
     }
     
     /** Getter for property testType.
@@ -218,7 +219,7 @@ public class XTestExecutor extends Executor {
     public void setTestType(String testType) {
         String old=this.testType;
         this.testType = testType;
-        firePropertyChange("testType", old, testType);
+        firePropertyChange("testType", old, testType); // NOI18N
     }
     
     /** Getter for property attributes.
@@ -234,23 +235,23 @@ public class XTestExecutor extends Executor {
     public void setAttributes(String attributes) {
         String old=this.attributes;
         this.attributes = attributes;
-        firePropertyChange("attributes", old, attributes);
+        firePropertyChange("attributes", old, attributes); // NOI18N
     }
    
     private Properties getProperties() {
         Properties props=new Properties();
         if (netbeansHome!=null)
-            props.setProperty("netbeans.home", netbeansHome.getAbsolutePath());
+            props.setProperty("netbeans.home", netbeansHome.getAbsolutePath()); // NOI18N
         if (xtestHome!=null)
-            props.setProperty("xtest.home", xtestHome.getAbsolutePath());
+            props.setProperty("xtest.home", xtestHome.getAbsolutePath()); // NOI18N
         if (jemmyHome!=null)
-            props.setProperty("jemmy.home", jemmyHome.getAbsolutePath());
+            props.setProperty("jemmy.home", jemmyHome.getAbsolutePath()); // NOI18N
         if (jellyHome!=null)
-            props.setProperty("jelly.home", jellyHome.getAbsolutePath());
-        if (testType!=null && !testType.equals(""))
-            props.setProperty("xtest.testtype", testType);
-        if (attributes!=null && !attributes.equals(""))
-            props.setProperty("xtest.attribs", attributes);
+            props.setProperty("jelly.home", jellyHome.getAbsolutePath()); // NOI18N
+        if (testType!=null && !testType.equals("")) // NOI18N
+            props.setProperty("xtest.testtype", testType); // NOI18N
+        if (attributes!=null && !attributes.equals("")) // NOI18N
+            props.setProperty("xtest.attribs", attributes); // NOI18N
         return props;
     } 
     
@@ -267,7 +268,7 @@ public class XTestExecutor extends Executor {
     public void setShowResults(boolean showResults) {
         Boolean old=new Boolean(this.showResults);
         this.showResults = showResults;
-        firePropertyChange("showResults", old, new Boolean(showResults));
+        firePropertyChange("showResults", old, new Boolean(showResults)); // NOI18N
     }
     
 }
