@@ -22,12 +22,12 @@ import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
 
 
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.ListeningDICookie;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.util.Executor;
@@ -85,7 +85,7 @@ public class StartActionProvider extends ActionsProvider {
                         synchronized(startLock) {
                             if (startVerbose) System.out.println("\nS StartActionProvider.doAction () - starting operator thread");
                             o.start ();
-                            startLock.wait();
+                            if (cookie instanceof ListeningDICookie) startLock.wait(1500);
                         }
                         debuggerImpl.setRunning (
                             virtualMachine,
