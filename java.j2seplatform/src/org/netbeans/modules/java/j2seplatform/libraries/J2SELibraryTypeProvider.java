@@ -81,8 +81,10 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
                     public void run () {
                         try {
                             EditableProperties props = PropertyUtils.getGlobalProperties();
-                            addLibraryIntoBuild(libraryImpl,props);
-                            PropertyUtils.putGlobalProperties (props);
+                            boolean save = addLibraryIntoBuild(libraryImpl,props);
+                            if (save) {
+                                PropertyUtils.putGlobalProperties (props);
+                            }
                         } catch (IOException ioe) {
                             ErrorManager.getDefault().notify (ioe);
                         }
@@ -129,7 +131,8 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
         return new J2SELibraryTypeProvider();
     }
 
-    private static void addLibraryIntoBuild(LibraryImplementation impl, EditableProperties props) {
+    private static boolean addLibraryIntoBuild(LibraryImplementation impl, EditableProperties props) {
+        boolean modified = false;
         for (int i=0; i<VOLUME_TYPES.length; i++) {
             String propName = LIB_PREFIX + impl.getName() + '.' + VOLUME_TYPES[i];     //NOI18N
             List roots = impl.getContent (VOLUME_TYPES[i]);
@@ -164,10 +167,14 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
                     ErrorManager.getDefault().log ("J2SELibraryTypeProvider: Can not resolve URL: "+url);
                 }
             }
-            if (propValue.length()>0) {
-                props.setProperty (propName, propValue.toString());
+            String oldValue = props.getProperty (propName);
+            String newValue = propValue.toString();
+            if (newValue.length()>0 && !newValue.equals(oldValue)) {
+                props.setProperty (propName, newValue);
+                modified = true;
             }
         }
-    }    
+        return modified;
+    }
     
 }
