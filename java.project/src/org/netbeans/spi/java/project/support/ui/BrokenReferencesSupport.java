@@ -129,14 +129,8 @@ public class BrokenReferencesSupport {
                             NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
                             true, new Object[] {ok}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
                         dd.setMessageType(DialogDescriptor.INFORMATION_MESSAGE);
-                        Dialog dlg = null;
-                        try {
-                            dlg = DialogDisplayer.getDefault().createDialog(dd);
-                            dlg.setVisible(true);
-                        } finally {
-                            if (dlg != null)
-                                dlg.dispose();
-                        }
+                        Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+                        dlg.setVisible(true);
                     } finally {
                         synchronized (BrokenReferencesSupport.class) {
                             brokenAlertLastTime = System.currentTimeMillis();
