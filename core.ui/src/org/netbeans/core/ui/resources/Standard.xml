@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     <Toolbar name="Build" />
     <Toolbar name="Debug" />
     <Toolbar name="Versioning" visible="false" />
-    <Toolbar name="Memory" visible="false" />
+    <Toolbar name="Memory"/>
   </Row>
   <Row>
     <Toolbar name="WorkspaceSwitcher" visible="true" />
