@@ -17,6 +17,7 @@ import javax.swing.JComponent;
 import org.openide.debugger.Debugger;
 
 import org.netbeans.modules.debugger.*;
+import org.netbeans.modules.debugger.support.*;
 
 
 /**
@@ -24,13 +25,12 @@ import org.netbeans.modules.debugger.*;
  *
  * @author Jan Jancura
  */
-public class JPDADebuggerImpl extends DebuggerImpl 
-implements EventsProducer, ConnectSupport {
+public class JPDADebuggerImpl extends DebuggerImplSupport 
+implements ConnectSupport {
     
-    private static CoreBreakpoint.Event[]      breakpointEvents;
-
-    static {
-        breakpointEvents = new CoreBreakpoint.Event[] {
+    
+    protected CoreBreakpoint.Event[] initEvents () {
+        return new CoreBreakpoint.Event[] {
             new LineBreakpoint (),
             new MethodBreakpoint (),
             new ExceptionBreakpoint (),
@@ -39,7 +39,6 @@ implements EventsProducer, ConnectSupport {
             new ClassBreakpoint ()
         };
     }
-
     
     /**
      * Returns displayable name of JPDA debugger.
@@ -66,35 +65,6 @@ implements EventsProducer, ConnectSupport {
      */
     public JComponent getConnectPanel () {
         return new ConnectPanel ();
-    }
-
-    /**
-     * Each Debugger Implementation can define its own set of breakpoint
-     * types (= Breakpoint Events). Set of Breakpoint Events should be 
-     * static. This property can be set invoking {@link #setBreakpointEvents} method.
-     * Default implementation returns empty field.
-     *
-     * @return set of Breakpoint Events of this Debugger Implementation
-     */
-    public CoreBreakpoint.Event[] getEvents () {
-        return breakpointEvents;
-    }
-    
-    /**
-     * Registers a new breakpoint type.
-     *
-     * @return e new breakpoint type to be registered
-     */
-    public void registerEvent (CoreBreakpoint.Event e) {
-        CoreBreakpoint.Event [] bes = new CoreBreakpoint.Event 
-            [breakpointEvents.length + 1];
-        System.arraycopy (
-            breakpointEvents, 0,
-            bes, 0,
-            breakpointEvents.length
-        );
-        bes [breakpointEvents.length] = e;
-        breakpointEvents = bes;
     }
 
     /**
