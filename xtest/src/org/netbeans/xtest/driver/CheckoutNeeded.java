@@ -36,6 +36,7 @@ public class CheckoutNeeded extends Task {
     String modules = null;
     String repos = null;
     String action = "checkout";             //NOI18N
+    String date = null;
     boolean quiet = true;
     
     private Hashtable repositories = new Hashtable();
@@ -59,6 +60,10 @@ public class CheckoutNeeded extends Task {
     
     public void setAction( String action ) {
         this.action = action;
+    }
+    
+    public void setDate(String date) {
+        this.date = date;
     }
     
     public void checkout(String modules) {
@@ -94,13 +99,14 @@ public class CheckoutNeeded extends Task {
                 
                 if (!branch.equals("trunk")) //NOI18N
                     cvs.setTag( branch );
-                else
-                    cvs.setTag( "HEAD" );
+                
+                if (date != null && !date.equals(""))
+                    cvs.setDate(date);
                 cvs.setPackage( module );
                 cvs.setQuiet( quiet );
                 cvs.setFailOnError(true);
                 
-                cvs.setCommand( "-z6 " + action ); //NOI18N
+                cvs.setCommand( "-z6 " + action + " -A" ); //NOI18N
                 
                 try { cvs.execute();  }
                 catch (BuildException e) {
