@@ -14,12 +14,10 @@ Microsystems, Inc. All Rights Reserved.
 
 <!--
 ToDo:
-- handle Japanese sanely (consider branding too)
+- NbMerge to have option to exclude some locale, e.g. _ja
 - build validator DTD for this build system
-- see how many JARs can actually be moved from lib/ext/ (or modules/patches/) to modules/ext/
-- delete obsolete jars.cfg (from trunk anyway)
+- sanity check that module list actually satisfies module dependencies
 Modules:
-ant (only provisional integration)
 emacs (currently will conflict with editor if installed)
 javacvs (is it stable enough to include?)
 treefs (complete yet?)
@@ -40,7 +38,24 @@ workspaceswitcher
     </jar>
   </target>
 
-  <target name="init" depends="bootstrap">
+  <target name="setup-jdkhome-1">
+    <!-- Note: user-configured -Djavahome=... will always override this: -->
+    <property name="javahome" location="${java.home}"/>
+    <available property="javahome-valid" file="${javahome}/lib/tools.jar"/>
+  </target>
+  <target name="setup-jdkhome-2" depends="setup-jdkhome-1" if="javahome-valid">
+    <property name="jdkhome" value="${javahome}"/>
+    <property name="jdkhome-valid" value="true"/>
+  </target>
+  <target name="setup-jdkhome-3" depends="setup-jdkhome-1" unless="javahome-valid">
+    <property name="jdkhome" location="${javahome}/.."/>
+    <available property="jdkhome-valid" file="${jdkhome}/lib/tools.jar"/>
+  </target>
+  <target name="setup-jdkhome-4" depends="setup-jdkhome-2,setup-jdkhome-3" unless="jdkhome-valid">
+    <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
+  </target>
+
+  <target name="init" depends="bootstrap,setup-jdkhome-4">
     <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
     <taskdef name="configmods" classname="org.netbeans.nbbuild.ConfigureModules" classpath="nbantext.jar"/>
@@ -258,7 +273,7 @@ workspaceswitcher
     <echo message="Starting a build for NetBeans (build ${buildnumber}, config '${moduleconfig}') ..."/>
     <echo message="Selected modules: ${modules}"/>
     <echo message="OS: ${os.name} ${os.version}  Locale: ${user.language}_${user.region}"/>
-    <echo message="Java: ${java.vendor} ${java.version} in ${java.home}"/>
+    <echo message="Java: ${java.vendor} ${java.version} in ${jdkhome}"/>
     <echo message="Classpath: ${java.class.path}"/>
   </target>
 
@@ -299,16 +314,20 @@ workspaceswitcher
 (This both acts as a test, and primes some files
 to make the first user start faster and better.)
 </echo>
-    <!-- XXX should perhaps preset JAVA_PATH to ${java.home} or something? -->
     <!-- XXX better would be to scan first start log for stacktraces and just show those; -->
     <!-- possibly after filtering for duplicates or something like this. -->
     <!-- Timeout is ten minutes; should be enough for valid first start, while preventing -->
     <!-- a deadlock from hanging an automated build: -->
     <exec os="Windows NT Windows 95 Windows 98 Windows 2000" dir="netbeans/bin" executable="runide.exe" failonerror="yes" timeout="600000">
+      <arg value="-jdkhome"/>
+      <arg file="${jdkhome}"/>
       <arg line="${firststart.args}"/>
     </exec>
     <exec os="Linux SunOS Solaris" dir="netbeans/bin" executable="sh" failonerror="yes" timeout="600000">
-      <arg line="runide.sh ${firststart.args}"/>
+      <arg value="runide.sh"/>
+      <arg value="-jdkhome"/>
+      <arg file="${jdkhome}"/>
+      <arg line="${firststart.args}"/>
     </exec>
     <echo message="Successfully started, cleaning up detritus..."/>
     <!-- XXX W2k users have reported problems with the following line. -->
@@ -348,10 +367,15 @@ the nbbuild/netbeans/bin/ directory.
   <target name="tryme" depends="init,maybe-firststart"
           description="Try running the IDE interactively (build it first if needed).">
     <exec os="Windows NT Windows 95 Windows 98 Windows 2000" dir="netbeans/bin" executable="runide.exe" failonerror="yes">
+      <arg value="-jdkhome"/>
+      <arg file="${jdkhome}"/>
       <arg line="${tryme.args}"/>
     </exec>
     <exec os="Linux SunOS Solaris" dir="netbeans/bin" executable="sh" failonerror="yes">
-      <arg line="runide.sh ${tryme.args}"/>
+      <arg value="runide.sh"/>
+      <arg value="-jdkhome"/>
+      <arg file="${jdkhome}"/>
+      <arg line="${tryme.args}"/>
     </exec>
   </target>
 
