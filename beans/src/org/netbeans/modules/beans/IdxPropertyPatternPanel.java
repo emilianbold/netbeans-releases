@@ -15,6 +15,9 @@ package org.netbeans.modules.beans;
 
 import java.awt.Dialog;
 import java.text.MessageFormat;
+import java.util.StringTokenizer;
+import java.util.List;
+import java.util.LinkedList;
 import javax.swing.border.TitledBorder;
 import javax.jmi.reflect.JmiException;
 
@@ -24,6 +27,7 @@ import org.openide.util.Utilities;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.netbeans.jmi.javamodel.Type;
 
 /** Customizer for newIndexed Property Pattern
@@ -41,13 +45,10 @@ public final class IdxPropertyPatternPanel extends javax.swing.JPanel
     private boolean forInterface = false;
 
     /** Standard types */
-    private final String[] types = new String[] {
-                                       "boolean", "char", "byte", "short", "int", // NOI18N
-                                       "long", "float", "double", "String" // NOI18N
-                                   };
+    private static String[] TYPES = null;
 
     /** Human representable form of properties modes */
-    private final String[] modes = new String[] {
+    private static final String[] MODES = new String[] {
                                        PatternNode.getString( "LAB_ReadWriteMODE" ),
                                        PatternNode.getString( "LAB_ReadOnlyMODE" ),
                                        PatternNode.getString( "LAB_WriteOnlyMODE" )
@@ -59,17 +60,19 @@ public final class IdxPropertyPatternPanel extends javax.swing.JPanel
         initComponents ();
         initAccessibility();
 
+        String[] types = getTypes();
         // Customize type checkbox
         for ( int i = 0; i < types.length; i++ ) {
             typeComboBox.addItem( types[i] );
         }
-        typeComboBox.setSelectedItem( "" ); // NOI18N
+        typeComboBox.setSelectedItem(
+                NbBundle.getMessage(IdxPropertyPatternPanel.class, "IdxPropertyPatternPanel_SelectedType")); // NOI18N
 
         // Customize mode checkbox
-        for ( int i = 0; i < modes.length; i++ ) {
-            modeComboBox.addItem( modes[i] );
+        for ( int i = 0; i < MODES.length; i++ ) {
+            modeComboBox.addItem( MODES[i] );
         }
-        modeComboBox.setSelectedItem( modes[0] );
+        modeComboBox.setSelectedItem( MODES[0] );
 
         // i18n
 
@@ -275,6 +278,7 @@ public final class IdxPropertyPatternPanel extends javax.swing.JPanel
         optionsPanel.setLayout(new java.awt.GridBagLayout());
 
         optionsPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(149, 142, 130)), "optionsPanel"));
+        fieldCheckBox.setSelected(true);
         fieldCheckBox.setText("fieldCheckBox");
         fieldCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -290,8 +294,8 @@ public final class IdxPropertyPatternPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 4);
         optionsPanel.add(fieldCheckBox, gridBagConstraints);
 
+        returnCheckBox.setSelected(true);
         returnCheckBox.setText("returnCheckBox");
-        returnCheckBox.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -300,8 +304,8 @@ public final class IdxPropertyPatternPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 4);
         optionsPanel.add(returnCheckBox, gridBagConstraints);
 
+        setCheckBox.setSelected(true);
         setCheckBox.setText("setCheckBox");
-        setCheckBox.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -461,9 +465,9 @@ public final class IdxPropertyPatternPanel extends javax.swing.JPanel
 
         result.name = nameTextField.getText();
         result.type = typeComboBox.getEditor().getItem().toString();
-        if ( modeComboBox.getSelectedItem().toString().equals( modes[1] ) )
+        if ( modeComboBox.getSelectedItem().toString().equals( MODES[1] ) )
             result.mode = PropertyPattern.READ_ONLY;
-        else if ( modeComboBox.getSelectedItem().toString().equals( modes[2] ) )
+        else if ( modeComboBox.getSelectedItem().toString().equals( MODES[2] ) )
             result.mode = PropertyPattern.WRITE_ONLY;
         else
             result.mode = PropertyPattern.READ_WRITE;
@@ -606,6 +610,20 @@ public final class IdxPropertyPatternPanel extends javax.swing.JPanel
             dialog.setVisible( false );
             dialog.dispose();
         }
+    }
+    
+    public static String[] getTypes() {
+        if (TYPES == null) {
+            String typeList = NbBundle.getMessage(PropertyPatternPanel.class, "PropertyPatternPanel_Types"); // NOI18N
+            StringTokenizer st = new StringTokenizer(typeList, "|"); // NOI18N
+            List l = new LinkedList();
+            while (st.hasMoreTokens()) {
+                String type = st.nextToken().trim();
+                l.add(type);
+            }
+            TYPES = (String[]) l.toArray(new String[l.size()]);
+        }
+        return TYPES;
     }
 
 }
