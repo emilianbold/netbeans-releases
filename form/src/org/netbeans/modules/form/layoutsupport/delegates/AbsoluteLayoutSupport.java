@@ -21,7 +21,6 @@ import java.lang.reflect.Constructor;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.util.SharedClassObject;
-import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 
 import org.netbeans.lib.awtextra.AbsoluteLayout;
 import org.netbeans.lib.awtextra.AbsoluteConstraints;
@@ -519,6 +518,11 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                     public PropertyEditor getExpliciteEditor() {
                         return new SizeEditor();
                     }
+                    public Object getValue(String key) {
+                        if ("canEditAsText".equals(key)) // NOI18N
+                            return Boolean.TRUE;
+                        return super.getValue(key);
+                    }
                     public String getJavaInitializationString() {
                         if (nullMode && refComponent != null && !isChanged())
                             return Integer.toString(
@@ -550,6 +554,11 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
                     }
                     public PropertyEditor getExpliciteEditor() {
                         return new SizeEditor();
+                    }
+                    public Object getValue(String key) {
+                        if ("canEditAsText".equals(key)) // NOI18N
+                            return Boolean.TRUE;
+                        return super.getValue(key);
                     }
                     public String getJavaInitializationString() {
                         if (nullMode && refComponent != null && !isChanged())
@@ -633,9 +642,8 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
     /** PropertyEditor for width and height properties of
      * AbsoluteLayoutConstraints.
      */
-    public static final class SizeEditor extends PropertyEditorSupport
-                                         implements EnhancedPropertyEditor
-    {
+    public static final class SizeEditor extends PropertyEditorSupport {
+
         final Integer prefValue = new Integer(-1);
         final String prefTag = getBundle().getString("VALUE_preferred"); // NOI18N
 
@@ -662,16 +670,6 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
         public String getJavaInitializationString() {
             Object value = getValue();
             return value != null ? value.toString() : null;
-        }
-
-        public Component getInPlaceCustomEditor() {
-            return null;
-        }
-        public boolean hasInPlaceCustomEditor() {
-            return false;
-        }
-        public boolean supportsEditingTaggedValues() {
-            return true;
         }
     }
 }

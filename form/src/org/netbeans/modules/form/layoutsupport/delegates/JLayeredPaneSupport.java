@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.lang.reflect.Method;
 
 import org.openide.nodes.*;
-import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.codestructure.*;
@@ -256,6 +255,11 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
                     public PropertyEditor getExpliciteEditor() {
                         return new LayerEditor();
                     }
+                    public Object getValue(String key) {
+                        if ("canEditAsText".equals(key)) // NOI18N
+                            return Boolean.TRUE;
+                        return super.getValue(key);
+                    }
                     public void setPropertyContext(
                         org.netbeans.modules.form.FormPropertyContext ctx)
                     { // disabling this method due to limited persistence
@@ -271,8 +275,8 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
 
     // ---------
 
-    public static final class LayerEditor extends PropertyEditorSupport
-                                          implements EnhancedPropertyEditor {
+    public static final class LayerEditor extends PropertyEditorSupport {
+
         final String[] tags = {
             "DEFAULT_LAYER", // NOI18N
             "PALETTE_LAYER", // NOI18N
@@ -332,16 +336,6 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
             return value != null ? 
                        "new Integer(" + value.toString() + ")" // NOI18N
                        : null;
-        }
-
-        public Component getInPlaceCustomEditor() {
-            return null;
-        }
-        public boolean hasInPlaceCustomEditor() {
-            return false;
-        }
-        public boolean supportsEditingTaggedValues() {
-            return true;
         }
     }
 }
