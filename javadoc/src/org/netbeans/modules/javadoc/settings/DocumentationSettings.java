@@ -48,6 +48,7 @@ public class DocumentationSettings extends SystemOption {
     private static final String PROP_SEARCH              = "searchEngine";
     private static final String PROP_FS_SETTING          = "filesystemSetting";
     private static final String PROP_ASK_BEFORE_GEN      = "askBeforeGenerating";
+    private static final String PROP_ASK_AFTER_GEN       = "askAfterGenerating";
     
     /** generation */
     //private static boolean externalJavadoc = false;
@@ -81,8 +82,13 @@ public class DocumentationSettings extends SystemOption {
             setFileSystemSettings( new java.util.HashMap() );
         if( getProperty( PROP_ASK_BEFORE_GEN ) == null )
             setAskBeforeGenerating( false );
+        if( getProperty( PROP_ASK_AFTER_GEN ) == null )
+            setAskAfterGenerating( true );
     }
 
+    public static DocumentationSettings getDefault(){
+        return ((DocumentationSettings)SharedClassObject.findObject(DocumentationSettings.class, true));
+    }
 
     /** @return human presentable name */
     public String displayName() {
@@ -289,6 +295,14 @@ public class DocumentationSettings extends SystemOption {
 
     public void setAskBeforeGenerating( boolean ask ){
         putProperty( PROP_ASK_BEFORE_GEN, new Boolean(ask), true );
+    }
+
+    public boolean getAskAfterGenerating(){
+        return ((Boolean)getProperty( PROP_ASK_AFTER_GEN )).booleanValue();
+    }
+
+    public void setAskAfterGenerating( boolean ask ){
+        putProperty( PROP_ASK_AFTER_GEN, new Boolean(ask), true );
     }
 }
 
