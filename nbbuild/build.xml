@@ -587,4 +587,7 @@ the nbbuild/netbeans/bin/ directory.
     <echo message="Run `ant real-clean' if desired."/>
   </target>
 
+  <target name="print-selected-modules" depends="init" description="Prints list of modules to build in selected moduleconfig.">
+    <echo message="openide,openidex,core,${modules}"/>
+  </target>
 </project>
