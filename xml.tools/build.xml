@@ -58,7 +58,6 @@ Microsystems, Inc. All Rights Reserved.
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
-            <fileset dir="compat/src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
         </jar>    
     </target>
 
