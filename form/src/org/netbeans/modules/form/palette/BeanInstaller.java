@@ -235,6 +235,34 @@ public final class BeanInstaller extends Object {
 
 
   private static void addJarFileSystem (JarFileSystem jar) {
+    
+    // 1. store information about the JAR/ZIP into $NETBEANS_USER/beans/libs.properties
+    //    so that it will be added to every new project's filesystems
+    File localFolder = new File(System.getProperty("netbeans.user") + File.separator + "beans");
+    if (!localFolder.exists ()) {
+      localFolder.mkdirs ();
+    }
+    File installedLibsFile = new File(System.getProperty("netbeans.user") + File.separator + "beans" + File.separator + "libs.properties");
+    Properties installedLibs = new Properties ();
+    try {
+      installedLibs.load (new FileInputStream (installedLibsFile));
+    } catch (IOException e) { 
+      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
+      /* ignore */ 
+    }
+    String newName;
+    try {
+      newName = jar.getJarFile ().getCanonicalPath ();
+      if (installedLibs.getProperty (newName) == null) {
+        installedLibs.setProperty (newName, "Yes");
+        installedLibs.store (new FileOutputStream (installedLibsFile), "");
+      }
+    } catch (IOException e) { 
+      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
+      /* ignore */ 
+    }
+
+    // 2. add it to the current project's filesystems
     boolean alreadyInstalled = false;
     if (jar != null) {
       Repository rep = TopManager.getDefault().getRepository();
@@ -716,6 +744,8 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  29   Gandalf   1.28        1/15/00  Ian Formanek    Creates 
+ *       beans/libs.properties
  *  28   Gandalf   1.27        1/13/00  Ian Formanek    NOI18N #2
  *  27   Gandalf   1.26        1/12/00  Pavel Buzek     I18N
  *  26   Gandalf   1.25        1/5/00   Ian Formanek    NOI18N
