@@ -133,6 +133,7 @@
 
 <!--also CSH for Find in editor:-->
 <mapID target="editing.find" url="editing/find.html" />
+<mapID target="editing.find_regexp" url="editing/find_regexp.html" />
 
 <mapID target="editing.formatting" url="editing/formatting.html" />
 <mapID target="editing.tabs" url="editing/tabs.html" />

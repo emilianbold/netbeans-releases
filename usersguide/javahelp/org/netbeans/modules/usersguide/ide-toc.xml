@@ -137,6 +137,7 @@
     <tocitem text="Identifying Errors in Source Code" target="editing_error-marks"/>
     <tocitem text="Formatting Code" target="editing.formatting"/>
     <tocitem text="Finding and Replacing Text" target="editing.find"/>
+    <tocitem text="Regular Expressions For Finding and Replacing Text" target="editing.find_regexp"/>
     <tocitem text="Folding Blocks of Code in Java Files" target="editor.hiding"/>
     <tocitem text="Folding Blocks of Code in JSP or HTML Files" target="editor.hiding-jsp"/>
     <tocitem text="Pair Completion, Smart Enter, and Smart Semicolons" target="editor.smart-brackets"/>
