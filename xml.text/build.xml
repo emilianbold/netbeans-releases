@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
-    <property name="homepage.base" value="netbeans.org"/>
+    <property name="homepage.base" value="http://xml.netbeans.org"/>
     <property name="dist.base" value="http://www.netbeans.org/download/nbms/40"/>
     <property name="storepass" value="?"/>
 
@@ -112,7 +112,7 @@ Microsystems, Inc. All Rights Reserved.
         <makenbm file="../xml-text-edit.nbm"
                  topdir="."
                  module="netbeans/modules/xml-text-edit.jar"
-                 homepage="http://${homepage.base}/xml-text-edit.html"
+                 homepage="${homepage.base}/text-edit/"
                  distribution="${dist.base}/xml-text-edit.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
