@@ -218,6 +218,8 @@ public final class ModeImpl implements Mode {
     
     /** Gets selected TopComponent. */
     public TopComponent getSelectedTopComponent() {
+        WindowManagerImpl.assertEventDispatchThread();
+        
         return getCentral().getModeSelectedTopComponent(this);
     }
     

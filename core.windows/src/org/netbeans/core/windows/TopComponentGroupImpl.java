@@ -17,7 +17,6 @@ package org.netbeans.core.windows;
 
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.SwingUtilities;
 
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
@@ -43,13 +42,13 @@ public class TopComponentGroupImpl implements TopComponentGroup {
     
 
     public void open() {
-        assert SwingUtilities.isEventDispatchThread();
+        WindowManagerImpl.assertEventDispatchThread();
         
         getCentral().openGroup(this);
     }
     
     public void close() {
-        assert SwingUtilities.isEventDispatchThread();
+        WindowManagerImpl.assertEventDispatchThread();
         
         getCentral().closeGroup(this);
     }

@@ -166,7 +166,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /** Finds TopComponentGroup of given name. */
     public TopComponentGroup findTopComponentGroup(String name) {
-        assert SwingUtilities.isEventDispatchThread();
+        assertEventDispatchThread();
         
         for(Iterator it = getTopComponentGroups().iterator(); it.hasNext(); ) {
             TopComponentGroupImpl group = (TopComponentGroupImpl)it.next();
@@ -183,7 +183,15 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @return <code>TopComponent</code> instance corresponding to unique ID
      */
     public TopComponent findTopComponent(String tcID) {
+        assertEventDispatchThreadWeak();
+        
         return PersistenceManager.getDefault().getTopComponentForID(tcID);
+    }
+    
+    public String findTopComponentID(TopComponent tc) {
+        assertEventDispatchThreadWeak();
+
+        return super.findTopComponentID(tc);
     }
     
     /** Adds listener.
@@ -820,6 +828,22 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
         
         return null;
+    }
+    
+    
+    private static final String ASSERTION_ERROR_MESSAGE = "WindowsAPI is required to be called from AWT thread only, see " // NOI18N
+        + "http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/threading.html"; // NOI18N
+    
+    static void assertEventDispatchThread() {
+        assert SwingUtilities.isEventDispatchThread() : ASSERTION_ERROR_MESSAGE;
+    }
+
+    // PENDING Just temporary until all 'bad' calls are really put into AWT thread.
+    static void assertEventDispatchThreadWeak() {
+        if(!SwingUtilities.isEventDispatchThread()) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                new IllegalStateException("Assertion failed. " + ASSERTION_ERROR_MESSAGE)); // NOI18N
+        }
     }
 }
 

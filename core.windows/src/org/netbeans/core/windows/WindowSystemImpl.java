@@ -34,11 +34,15 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
     /** Implements <code>NbTopManager.WindowSystem</code> interface method.
      * Loads window system persistent data. */
     public void load() {
+        WindowManagerImpl.assertEventDispatchThread();
+        
         PersistenceHandler.getDefault().load();
     }
     /** Implements <code>NbTopManager.WindowSystem</code> interface method. 
      * Saves window system persistent data. */
     public void save() {
+        WindowManagerImpl.assertEventDispatchThread();
+        
         PersistenceHandler.getDefault().save();
     }
     
@@ -46,12 +50,16 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
     /** Implements <code>NbTopManager.WindowSystem</code> interface method. 
      * Shows window system. */
     public void show() {
+        WindowManagerImpl.assertEventDispatchThread();
+        
         ShortcutAndMenuKeyEventProcessor.install();
         WindowManagerImpl.getInstance().setVisible(true);
     }
     /** Implements <code>NbTopManager.WindowSystem</code> interface method. 
      * Hides window system. */
     public void hide() {
+        WindowManagerImpl.assertEventDispatchThread();
+        
         WindowManagerImpl.getInstance().setVisible(false);
         ShortcutAndMenuKeyEventProcessor.uninstall();
     }
