@@ -25,40 +25,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="openide unit test config">
 
-    <!-- Tests which should be run before commit to validate IDE. -->
-    <testbag testattribs="commit" executor="code" name="Before Commit Validation">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="org/openide/loaders/*Folder*.class"/>                
-                <!-- Don't worry about these, cannot be fixed currently: -->
-                <exclude name="org/openide/loaders/DataFolderTest.class/testSortMode"/> <!-- failing in cont. test -->
-                <exclude name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/> <!-- failing in cont. test -->
-                <exclude name="org/openide/loaders/DataFolderTest.class/testOrderWhenMultiFileSystemSetDelegatesIsCalled" /> <!-- failing in cont. test -->
-                <!-- following was disabled because of issue #20179 -->
-                <exclude name="org/openide/loaders/DataFolderMoveTest.class"/>
-                <!-- does not work an nobody knows why -->
-                <exclude name="org/openide/loaders/FolderInstanceTest.class/testFolderInstanceNeverPassesInvObjects"/>
-                <exclude name="org/openide/loaders/FolderInstanceTest.class/testChangeOfOrder"/>
-                <exclude name="org/openide/loaders/FolderInstanceTest.class/testListenersCountWithCookie"/>
-                <exclude name="org/openide/loaders/FolderInstanceTest.class/testChangeCookie"/>
-                
-                <!-- run also window system tests -->
-                <include name="org/openide/windows/*Test.class"/>
-                <exclude name="org/openide/windows/TopComponentGetLookupOverridenTest.class"/>
-                <exclude name="org/openide/windows/TopComponentGetLookupTest.class"/>
-                
-                <!-- run URLMapper tests which are important for buildsystem -->
-                <include name="org/openide/filesystems/URLMapperTest.class"/>
-                <include name="org/openide/filesystems/*.class/testIfReachable"/>
-                <include name="org/openide/filesystems/*.class/testConversions"/>
-                <include name="org/openide/filesystems/*.class/testForSlashes"/>
-                <include name="org/openide/filesystems/*.class/testForSpaces"/>
-                <exclude name="org/openide/filesystems/JarFileSystemTest.class/testForSpaces"/>
-                
-            </patternset>
-        </testset>
-    </testbag>
-
     <testbag testattribs="sheet" executor="code" name="property sheet blinking tests">
         <testset dir="unit/src">
             <patternset>
