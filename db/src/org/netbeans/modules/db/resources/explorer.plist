@@ -53,7 +53,7 @@
 		name = Drivers;
 		class = org.netbeans.modules.db.explorer.nodes.DriverListNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.DriverListNodeInfo;
-		iconbase = "org/netbeans/core/resources/defaultFolder";
+		iconbase = "org/netbeans/modules/db/resources/defaultFolder";
 		children = ();
 		properties = ();
 		options = {};
