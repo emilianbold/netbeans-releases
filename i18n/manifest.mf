@@ -4,6 +4,6 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/i18n/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.17
 OpenIDE-Module-Layer: org/netbeans/modules/i18n/Layer.xml
 
-Name: org/netbeans/modules/i18n/I18nGroupPopupAction.class
+Name: org/netbeans/modules/i18n/I18nGroupAction.class
 OpenIDE-Module-Class: Action
 

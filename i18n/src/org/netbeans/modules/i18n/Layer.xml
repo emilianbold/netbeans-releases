@@ -21,12 +21,6 @@ Microsystems, Inc. All Rights Reserved.
 	</file>
     </folder>
 
-    <folder name="Menu">
-	<folder name="Tools">
-            <file name="org-netbeans-modules-i18n-I18nGroupMenuAction.instance" />
-        </folder>
-    </folder>
-
     <folder name="Actions">
         <folder name="Tools">
             <file name="org-netbeans-modules-i18n-I18nAction.instance" />
