@@ -1,10 +1,13 @@
 Manifest-Version: 1.0
+Created-By: Jeffrey A. Keyser
 OpenIDE-Module: org.netbeans.modules.javadoc.httpfs/1
+OpenIDE-Module-Name: HTTP Javadoc Filesystem
+OpenIDE-Module-Display-Category: Java
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.icebrowser/1 > 1.5
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Name: HTTP Javadoc Filesystem
-Created-By: Jeffrey A. Keyser
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.icebrowser/1 > 1.5
+OpenIDE-Module-Short-Description: Supports mounting web-based Javadocs.
+OpenIDE-Module-Long-Description: The HTTP Javadoc Filesystem allows you to mount Javadocs that exist on a web site as a NetBeans file system so it can be searches and browsed online.
 
 Name: org/netbeans/modules/javadoc/httpfs/HTTPFileSystem.class
 OpenIDE-Module-Class: Filesystem

@@ -24,7 +24,6 @@ import java.util.ResourceBundle;
 
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileSystem;
-//import org.netbeans.beaninfo.FileSystemBeanInfo;
 
 
 /**
@@ -52,7 +51,6 @@ public class HTTPFileSystemBeanInfo extends SimpleBeanInfo {
                 propertyDescriptors[ 0 ].setShortDescription( ResourceUtils.getBundledString( "HINT_URLPropertyName" ) ); //NOI18N
                 propertyDescriptors[ 0 ].setBound( true );
                 propertyDescriptors[ 0 ].setConstrained( true );
-                propertyDescriptors[ 0 ].setPropertyEditorClass( URLPropertyEditor.class );
             }
             catch( IntrospectionException e ) {            
                 if ( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) { //NOI18N
@@ -75,14 +73,40 @@ public class HTTPFileSystemBeanInfo extends SimpleBeanInfo {
         }
     }
 
+    
+    /**
+     *  Returns an icon image for this bean.
+     *
+     *  @since 1.0
+     */
     public Image getIcon (int kind) {
-        try {
-            return Introspector.getBeanInfo (FileSystem.class).getIcon (kind);
-        } catch (IntrospectionException ie) {
-            if ( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) { //NOI18N
-                ie.printStackTrace( );
-            }            
-            return null;
+
+        // Icon image to return
+        Image   icon;
+        
+        
+        switch( kind ) {
+            
+            case ICON_COLOR_16x16:
+            default:
+                icon = loadImage( "resources/BeanIcon16C.gif" );    // NO I18N
+                break;
+                
+            case ICON_COLOR_32x32:
+                icon = loadImage( "resources/BeanIcon32C.gif" );    // NO I18N
+                break;
+                
+            case ICON_MONO_16x16:
+                icon = loadImage( "resources/BeanIcon16M.gif" );    // NO I18N
+                break;
+                
+            case ICON_MONO_32x32:
+                icon = loadImage( "resources/BeanIcon32M.gif" );    // NO I18N
+                break;
+                
         }
-    }    
+        return icon;
+
+    }
+
 }

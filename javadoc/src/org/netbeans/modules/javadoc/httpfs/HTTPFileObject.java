@@ -18,14 +18,13 @@
 
 package org.netbeans.modules.javadoc.httpfs;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.HttpURLConnection;
-import java.util.Date;
-import java.util.Hashtable;
+import java.util.*;
+import javax.swing.text.html.*;
+import javax.swing.text.BadLocationException;
 
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileLock;
-
+import org.openide.filesystems.*;
 
 
 /**
@@ -38,33 +37,33 @@ class HTTPFileObject extends FileObject {
     private static final long serialVersionUID = 200104;
 
 	// File system that owns this file
-    transient private HTTPFileSystem		parentFileSystem;
+    transient private HTTPFileSystem    parentFileSystem;
     // Path of this file under the URL of the file system.
-    String									uriStem;
+    String                              uriStem;
     // Directory object that contains this file
-    transient private HTTPFileObject		parentFileObject;
+    transient private HTTPFileObject    parentFileObject;
     // Child file objects of this file if it is a directory
-    transient private Hashtable				childFileObjects;
+    transient private Hashtable         childFileObjects;
     // URL to this file
-    private transient java.net.URL fileURL;
+    private transient java.net.URL      fileURL;
     // The file name part of this file
-    transient private String				fullFileName;
+    transient private String            fullFileName;
     // The first part of this file's file name
-    transient private String				fileName;
+    transient private String            fileName;
     // The extension of this file
-    transient private String				fileExtension;
+    transient private String            fileExtension;
     // Flags whether the HTTP header of this file has been read
-    transient private boolean				wasFileHeaderRead;
+    transient private boolean           wasFileHeaderRead;
     // The size of this file
-    transient private long					fileSize;
+    transient private long              fileSize;
     // The MIME type of this file
-    transient private String				fileMIMEType;
+    transient private String            fileMIMEType;
     // The last modified date of this file
-    transient private Date					fileDate;
+    transient private Date              fileDate;
     // All file attributes for this file, as read from the HTTP headers
-    transient private Hashtable				fileAttributes;
-    // Flags whether this package's contents were read yet
-    transient private	boolean				arePackageContentsKnown;
+    transient private Hashtable         fileAttributes;
+    // Flags whether this folder's contents were read yet
+    transient private boolean           areFolderContentsKnown;
         
     /**
      *	Constructs a <code>HTTPFileObject</code> with the path and file systems
@@ -83,14 +82,14 @@ class HTTPFileObject extends FileObject {
     
     /**
      *	Constructs an empty <code>HTTPFileObject</code>.  This constructor is only
-	 *	expected to be used during deserialization.
+     *	expected to be used during deserialization.
      *
      *	@since 1.0
      */
     protected HTTPFileObject(
     ) {
 
-	}
+    }
 
 
     /**
@@ -101,13 +100,13 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-	private void initialize(
-		String			uriStem,
-		HTTPFileSystem	parentFileSystem
-	) {
+    private void initialize(
+        String			uriStem,
+        HTTPFileSystem	parentFileSystem
+    ) {
 
         try {
-            
+
             // initialize this file object
             this.parentFileSystem = parentFileSystem;
             this.parentFileObject = null;
@@ -115,8 +114,8 @@ class HTTPFileObject extends FileObject {
             this.uriStem = uriStem;
             this.fileURL = new java.net.URL( parentFileSystem.baseURL, "." + uriStem );//NOI18N
             this.fileAttributes = new Hashtable( 0 );
-            this.arePackageContentsKnown = true;
-            
+            this.areFolderContentsKnown = true;
+
             // If this is not a root file object,
             if( !isRoot( ) ) {
 
@@ -125,54 +124,55 @@ class HTTPFileObject extends FileObject {
 
                     // Flag the header as read (there is no header for this file)
                     this.wasFileHeaderRead = true;
-                    
+
                     // Trim the trailing slash from the file name
                     this.fullFileName = uriStem.substring( 0, uriStem.length( ) - 1 );
-                    
+
                 // If this is a file object (not a directory),
                 } else {
-                    
+
                     // Create default values for items read from the header
                     this.wasFileHeaderRead = false;
                     this.fileSize = -1;
                     this.fileMIMEType = ""; //NOI18N
                     this.fileDate = new Date( );
                     this.fullFileName = uriStem;
-                    
+
                 }
                 // Trim everything after the last slash as the file name
                 this.fullFileName = this.fullFileName.substring( this.fullFileName.lastIndexOf( '/' ) + 1 );
-                
+
                 // If the full file name contains a period,
                 if( this.fullFileName.lastIndexOf( '.' ) != -1 ) {
-                    
+
                     // Split the file name into its two parts
                     this.fileName = this.fullFileName.substring( 0, this.fullFileName.lastIndexOf( '.' ) );
                     this.fileExtension = this.fullFileName.substring( this.fullFileName.lastIndexOf( '.' ) + 1 );
-                    
+
                 } else {
-                    
+
                     this.fileName = this.fullFileName;
-                    this.fileExtension = "";//NOI18N
-                    
+                    this.fileExtension = "";    //NOI18N
+
                 }
-                
+
             // If this is the root file object,
             } else {
-                
-                this.fullFileName = "";//NOI18N
-                this.fileName = "";//NOI18N
-                this.fileExtension = "";//NOI18N
-                
+
+                this.fullFileName = "";     //NOI18N
+                this.fileName = "";         //NOI18N
+                this.fileExtension = "";    //NOI18N
+                areFolderContentsKnown = false;
+
             }
-            
+
         } catch( java.net.MalformedURLException e ) {
-            
+
             // Ignore - should never occur
-            
+
         }
-        
-	}
+
+    }
 
 
     /**
@@ -182,13 +182,13 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
 
-		// Write out the name of the filesystem and this file
-		out.writeObject( parentFileSystem.getSystemName( ) );
-		out.writeObject( uriStem );
+        // Write out the name of the filesystem and this file
+        out.writeObject( parentFileSystem.getSystemName( ) );
+        out.writeObject( uriStem );
 
-	}
+    }
 
 
     /**
@@ -198,31 +198,26 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
 
-		// Name of the parent filesystem when it was saved
-		String fileSystemName;
-		// Mounted filesystem with the above name
-		HTTPFileSystem newParentFileSystem;
-		// Name of the file
-		String newURIStem;
+        // Name of the parent filesystem when it was saved
+        String fileSystemName;
+        // Mounted filesystem with the above name
+        HTTPFileSystem newParentFileSystem;
+        // Name of the file
+        String newURIStem;
 
-		// Read the name of the parent filesystem and find it if mounted
-		fileSystemName = (String)in.readObject( );
-		newParentFileSystem = (HTTPFileSystem)org.openide.TopManager.getDefault( ).getRepository( ).findFileSystem( fileSystemName );
-		if( newParentFileSystem == null ) {
+        // Read the name of the parent filesystem and find it if mounted
+        fileSystemName = (String)in.readObject( );
+        newParentFileSystem = (HTTPFileSystem)org.openide.TopManager.getDefault( ).getRepository( ).findFileSystem( fileSystemName );
 
-			// TODO: Add an error message to this exception
-			throw new IOException( ResourceUtils.getBundledString( "MSG_FilesystemNotFound" ) ); //NOI18N
-		}
-
-		// Read the name of this file and initialize it
-		newURIStem = (String)in.readObject( );
-		initialize( newURIStem, newParentFileSystem );
-	}
+        // Read the name of this file and initialize it
+        newURIStem = (String)in.readObject( );
+        initialize( newURIStem, newParentFileSystem );
+    }
 
 
-	/**
+    /**
      *	This method reads the information about this file that is found in the HTTP header.
      *
      *	@since 1.0
@@ -255,7 +250,8 @@ class HTTPFileObject extends FileObject {
         
         // Connection to the web server for this file
         HttpURLConnection	fileConnection;
-                
+
+        
         // Open the connection
         fileConnection = (HttpURLConnection)fileURL.openConnection( );
         fileConnection.setUseCaches( true );
@@ -318,9 +314,17 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    public org.openide.filesystems.FileSystem getFileSystem( ) {
+    public org.openide.filesystems.FileSystem getFileSystem( ) throws FileStateInvalidException {
         
-        return parentFileSystem;        
+        if( parentFileSystem != null ) {
+            
+            return parentFileSystem;        
+            
+        } else {
+            
+            throw new FileStateInvalidException( ResourceUtils.getBundledString( "MSG_FilesystemNotFound" ) );  // NO I18N
+            
+        }
     }
     
     
@@ -344,6 +348,19 @@ class HTTPFileObject extends FileObject {
     ) {
         
         return fileExtension;
+        
+    }
+    
+    
+    /**
+     *	Returns the name and extension of this file.
+     *
+     *	@since 1.0
+     */
+    public String getNameExt(
+    ) {
+        
+        return fullFileName;
         
     }
     
@@ -482,11 +499,12 @@ class HTTPFileObject extends FileObject {
      *	@since 1.0
      */
     public FileObject createData(
-		String	fileName,
-		String	extension
+        String	fileName,
+        String	extension
     ) throws IOException {
         
-        throw new IOException( );        
+        throw new IOException( );
+        
     }
     
     
@@ -501,10 +519,11 @@ class HTTPFileObject extends FileObject {
      *	@since 1.0
      */
     public FileObject createFolder(
-	    String	fileName
+	String  fileName
     ) throws IOException {
         
-        throw new IOException( );        
+        throw new IOException( );
+        
     }
     
     
@@ -521,9 +540,9 @@ class HTTPFileObject extends FileObject {
      *	@since 1.0
      */
     public void rename(
-		FileLock	lock,
-		String		fileName,
-		String		extension
+        FileLock    lock,
+        String      fileName,
+        String      extension
     ) throws IOException {
         
         throw new IOException( );        
@@ -602,8 +621,8 @@ class HTTPFileObject extends FileObject {
      *	@since 1.0
      */
     public void setAttribute(
-		String	attributeName,
-		Object	newValue
+        String	attributeName,
+        Object	newValue
     ) throws IOException {
         
         throw new IOException( );        
@@ -617,11 +636,21 @@ class HTTPFileObject extends FileObject {
      */
     synchronized public FileObject[] getChildren( ) {
         
-        // If this is a package directory that has not been read yet,
-        if( !arePackageContentsKnown ) {
+        // If this is a directory that has not been read yet,
+        if( !areFolderContentsKnown ) {
             
-            // Read the list of files in this directory
-            readPackageContents( );
+            // If this is the root file object,
+            if( isRoot( ) ) {
+                
+                // Read the root's contents
+                readRootContents( );
+                
+            } else {
+                
+                // Read the list of files in this package directory
+                readPackageContents( );
+                
+            }
             
         }
         return (FileObject[])childFileObjects.values( ).toArray( new FileObject[ 0 ] );        
@@ -714,10 +743,11 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    synchronized void addChild( HTTPFileObject newChildFileObject ) {        
+    private synchronized void addChild( HTTPFileObject newChildFileObject ) {        
         
-        childFileObjects.put( newChildFileObject.fullFileName, newChildFileObject );
-        newChildFileObject.parentFileObject = this;        
+        childFileObjects.put( newChildFileObject.getNameExt( ), newChildFileObject );
+        newChildFileObject.parentFileObject = this;
+        
     }
     
     
@@ -729,7 +759,7 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    synchronized void addChild( String newChildFileName ) {        
+    private synchronized void addChild( String newChildFileName ) {        
         addChild( new HTTPFileObject( newChildFileName, parentFileSystem ) );        
     }
     
@@ -739,9 +769,11 @@ class HTTPFileObject extends FileObject {
      *	this directory, if the file exists.  Returns a flag specifying whether the
      *	file existed and was added or not.
      *
+     *  @param newChildFileName The name of the new file object to add.
      *
+     *  @since 1.0
      */
-    synchronized boolean addOptionalChild( String newChildFileName ) {        
+    private synchronized boolean addOptionalChild( String newChildFileName ) {        
         // Connection to the web server for this file
         HttpURLConnection	fileConnection;
         // New file object
@@ -794,12 +826,147 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    synchronized HTTPFileObject child( String fullFileName ) {        
+    synchronized HTTPFileObject child( String fullFileName ) {
+        
         // If this is a package that hasn't been read yet and the file system is not mounting,
-        if( parentFileSystem.isInitialized && !arePackageContentsKnown ) {            
-            readPackageContents( );            
+        if( parentFileSystem.isRootInitialized && !areFolderContentsKnown ) {
+            
+            if( isRoot( ) ) {
+                
+                readRootContents( );
+                
+            } else {
+                
+                readPackageContents( );
+                
+            }
         }
         return (HTTPFileObject)childFileObjects.get( fullFileName );        
+    }
+    
+    
+    /**
+     *	Reads the base files available at the URL to build the directory tree.
+     *
+     *	@since 1.0
+     */
+    private void readRootContents() {
+        
+        // File object for /package-list
+        HTTPFileObject	packageFile;
+        // File object for /index-files/ directory
+        HTTPFileObject	indexDirectory;
+        // Reader of package names in /package-list
+        BufferedReader packageReader;
+        // Package name read from /package-list
+        String packageName;
+        // File number for the next split index file
+        int indexFileNumber;
+        
+        
+        // Add the standard files for a Javadoc directory structre
+        if( addOptionalChild( "/package-list" ) ) { //NO I18N
+
+            packageFile = child( "package-list" );       //NO I18N
+            addChild( "/allclasses-frame.html" );        //NO I18N
+            addOptionalChild( "/deprecated-list.html" ); //NO I18N
+            addOptionalChild( "/help-doc.html" );        //NO I18N
+            addOptionalChild( "/index.html" );           //NO I18N
+            addChild( "/overview-frame.html" );          //NO I18N
+            addChild( "/overview-summary.html" );        //NO I18N
+            addOptionalChild( "/overview-tree.html" );   //NO I18N
+            addChild( "/packages.html" );                //NO I18N
+            addChild( "/serialized-form.html" );         //NO I18N
+            addChild( "/stylesheet.css" );               //NO I18N
+
+            // Add the full index file
+            if( !addOptionalChild( "/index-all.html" ) ) {   //NO I18N
+
+                // If there was no full index, search for split index files
+                indexFileNumber = 1;
+                while( addOptionalChild( "/index-" + indexFileNumber + ".html" ) ) { //NO I18N
+
+                    indexFileNumber++;                    
+                }
+
+                // If no index were found in the root,
+                if( indexFileNumber == 1 ) {
+                    // Look in /index-files/
+                    indexDirectory = new HTTPFileObject( "/index-files/", parentFileSystem );   //NO I18N
+                    // Add the full index file
+                    if( !indexDirectory.addOptionalChild( "/index-files/index-all.html" ) ) {   //NO I18N
+                        // If there was no full index, search for split index files
+                        indexFileNumber = 1;
+                        while( indexDirectory.addOptionalChild( "/index-files/index-" + indexFileNumber + ".html" ) ) { //NO I18N
+                            indexFileNumber++;
+                        }
+                        // If index file were found in this directory,
+                        if( indexFileNumber != 1 ) {
+                            addChild( indexDirectory );
+                        }
+
+                        // If there was an index file found in this directory,
+                    } else {
+                        addChild( indexDirectory );
+                    }
+                }
+            }
+            try {
+                // Read all of the package names from the /package-list file
+                packageReader = new BufferedReader( new InputStreamReader( packageFile.getInputStream( ) ) );
+                packageName = packageReader.readLine( );
+                while( packageName != null ) {
+                    // Add each package to this file system
+                    addPackage( packageName );
+                    packageName = packageReader.readLine( );
+                }
+                packageReader.close( );
+
+            } catch( IOException e ) {
+                // Ignore packages
+            }
+
+        }
+        parentFileSystem.isRootInitialized = true;
+
+    }
+    
+    
+    /**
+     *	Adds the named package to this file sytem.
+     *
+     *	@param packageName Package name to add to this file system.
+     *
+     *	@since 1.0
+     */
+    private void addPackage( String packageName ) {
+        
+        // Parser to break up the package heirarchy
+        StringTokenizer packageParser;
+        // One level of this package heirarchy
+        String          packagePart;
+        // The diretory that belongs to the selected package
+        HTTPFileObject  packageDirectory;
+        
+        
+        // Pull apart the package heirarchy
+        packageParser = new StringTokenizer( packageName, "." );    //NOI18N
+        packageDirectory = this;
+        
+        // With each level of the package,
+        while( packageParser.hasMoreElements( ) ) {
+            
+            packagePart = (String)packageParser.nextElement( );
+            
+            // Find its directory object
+            if( packageDirectory.child( packagePart ) == null ) {
+                
+                packageDirectory.addChild( packageDirectory.uriStem + packagePart + "/" );  //NOI18N
+            }
+            packageDirectory = packageDirectory.child( packagePart );            
+        }
+        // flag this directory as containing class files
+        packageDirectory.makePackage( );
     }
     
     
@@ -808,8 +975,8 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    void makePackage() {        
-        arePackageContentsKnown = false;        
+    private void makePackage() {        
+        areFolderContentsKnown = false;        
     }
     
     
@@ -821,22 +988,22 @@ class HTTPFileObject extends FileObject {
     private void readPackageContents( ) {
         
         // File object for this package's "package-summary.html" file
-        HTTPFileObject	packageSummaryFile;
+        HTTPFileObject          packageSummaryFile;
         // Object for this package's "class-use/" directory
-        HTTPFileObject	classUseDirectory;
+        HTTPFileObject          classUseDirectory;
         // InputStream to read the "package-summary.html" file
-        java.io.InputStream packageFileInputStream;
+        InputStream             packageFileInputStream;
         // Kit to read and parse an HTML file
-        javax.swing.text.html.HTMLEditorKit editorKit;
+        HTMLEditorKit           editorKit;
         // HTML document representation of "package-summary.html" file
-        javax.swing.text.html.HTMLDocument htmlDoc;
+        HTMLDocument            htmlDoc;
         // Iterator through "A" tags of the above file
-        javax.swing.text.html.HTMLDocument.Iterator tagIterator;
+        HTMLDocument.Iterator   tagIterator;
         // The file name for the class file in this directory
-        String classFileName;
+        String                  classFileName;
         
         
-        // Find ths standard files found in a package directory
+        // Find the standard files found in a package directory
         packageSummaryFile = new HTTPFileObject( uriStem + "package-summary.html", parentFileSystem );  //NOI18N
         addChild( packageSummaryFile );
         addOptionalChild( uriStem + "package-frame.html" ); //NOI18N
@@ -856,16 +1023,16 @@ class HTTPFileObject extends FileObject {
             
             // Read the "package-summary.html" file into memory
             packageFileInputStream = packageSummaryFile.getInputStream( );
-            editorKit = new javax.swing.text.html.HTMLEditorKit();
-            htmlDoc = (javax.swing.text.html.HTMLDocument)editorKit.createDefaultDocument();
-            editorKit.read( new java.io.InputStreamReader( packageFileInputStream ), htmlDoc, 0);
+            editorKit = new HTMLEditorKit();
+            htmlDoc = (HTMLDocument)editorKit.createDefaultDocument();
+            editorKit.read( new InputStreamReader( packageFileInputStream ), htmlDoc, 0);
             
             // Find all of the "A" tags in the file
-            tagIterator = htmlDoc.getIterator( javax.swing.text.html.HTML.Tag.A );
+            tagIterator = htmlDoc.getIterator( HTML.Tag.A );
             while( tagIterator.isValid( ) ) {
                 
                 // Find the target of the link tag
-                classFileName = (String)tagIterator.getAttributes( ).getAttribute( javax.swing.text.html.HTML.Attribute.HREF );
+                classFileName = (String)tagIterator.getAttributes( ).getAttribute( HTML.Attribute.HREF );
                 if( classFileName != null ) {
                     
                     // If the link points to  file in this directory that is also not a standard package file,
@@ -887,12 +1054,12 @@ class HTTPFileObject extends FileObject {
             }
             packageFileInputStream.close( );
             
-        } catch( javax.swing.text.BadLocationException e ) {            
+        } catch( BadLocationException e ) {            
             // Ignore the classes of this package            
         } catch( IOException e ) {            
             // Ignore the classes of this package            
         } finally {            
-            arePackageContentsKnown = true;            
+            areFolderContentsKnown = true;            
         }        
     }    
 }
