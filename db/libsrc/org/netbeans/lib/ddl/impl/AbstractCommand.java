@@ -150,7 +150,11 @@ public class AbstractCommand
             fcmd = getCommand();
         } catch (Exception e) {
             //			e.printStackTrace();
-            throw new DDLException(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage()); // NOI18N
+            //throw new DDLException(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage()); // NOI18N
+            TopManager.getDefault().notify(
+                new NotifyDescriptor.Message(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage(),
+                NotifyDescriptor.ERROR_MESSAGE));
+            return;
         }
 
         //		System.out.println(fcmd);
@@ -183,7 +187,9 @@ public class AbstractCommand
             //			e.printStackTrace();
             if (opened && fcon != null)
                 spec.closeJDBCConnection();
-            throw new DDLException(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage()); // NOI18N
+            //throw new DDLException(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage()); // NOI18N
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+            return;
         }
         if (opened) spec.closeJDBCConnection();
     }
