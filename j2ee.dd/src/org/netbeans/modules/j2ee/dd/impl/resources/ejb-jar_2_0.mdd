@@ -6,7 +6,7 @@
             <comparator-class>org.netbeans.modules.j2ee.dd.impl.common.Comparator</comparator-class>
             <implements>org.netbeans.modules.j2ee.dd.api.ejb.EjbJar</implements>
             <user-code>
-                public void setVersion(java.lang.String value) {
+                public void setVersion(java.math.BigDecimal value) {
                 }
                 public java.math.BigDecimal getVersion() {
                     return new java.math.BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_0);

@@ -40,8 +40,12 @@ public interface EjbJar extends org.netbeans.modules.j2ee.dd.api.common.RootInte
     public static final String RELATIONSHIPS = "Relationships";	// NOI18N
     public static final String ASSEMBLY_DESCRIPTOR = "AssemblyDescriptor";	// NOI18N
     public static final String EJB_CLIENT_JAR = "EjbClientJar";	// NOI18N
-        
-    //public void setVersion(java.lang.String value);
+    
+    /** Setter for version property.
+     * Warning : Only the upgrade from lower to higher version is supported.
+     * @param version ejb-jar version value
+     */
+    public void setVersion(java.math.BigDecimal version);
     /** Getter for version property.
      * @return property value
      */

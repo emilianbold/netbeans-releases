@@ -64,6 +64,38 @@ public class EjbJarProxy implements EjbJar {
         }
     }
     
+    /** Setter for version property.
+     * Warning : Only the upgrade from lower to higher version is supported.
+     * @param version ejb-jar version value
+     */
+    public void setVersion(java.math.BigDecimal version) {
+        String newVersion = version.toString();
+        if (this.version.equals(newVersion)) return;
+        if (!EjbJar.VERSION_2_1.equals(newVersion)) 
+            throw new RuntimeException("Only the upgrade from lower to upper version is supported"); //NOI18N
+        if (ejbJar!=null) {
+            org.w3c.dom.Document document = null;
+            if (ejbJar instanceof org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0.EjbJar) {
+                document = 
+                    ((org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0.EjbJar)ejbJar).graphManager().getXmlDocument();
+            }
+            if (document!=null) {
+                org.w3c.dom.Element docElement = document.getDocumentElement();
+                if (docElement!=null) {
+                    org.w3c.dom.DocumentType docType = document.getDoctype();
+                    if (docType!=null) {
+                        document.removeChild(docType); //NOI18N
+                    }
+                    docElement.setAttribute("version","2.1"); //NOI18N
+                    docElement.setAttribute("xmlns","http://java.sun.com/xml/ns/j2ee"); //NOI18N
+                    docElement.setAttribute("xmlns:xsi","http://www.w3.org/2001/XMLSchema-instance"); //NOI18N
+                    docElement.setAttribute("xsi:schemaLocation", //NOI18N
+                        "http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd"); //NOI18N
+                }
+            }
+        }
+    }
+    
     public java.math.BigDecimal getVersion() {
         return new java.math.BigDecimal(version);
     }
@@ -171,9 +203,14 @@ public class EjbJarProxy implements EjbJar {
   
     public void merge(org.netbeans.modules.j2ee.dd.api.common.RootInterface bean, int mode) {
         if (ejbJar!=null) {
-            if (bean instanceof EjbJarProxy)
-                ejbJar.merge(((EjbJarProxy)bean).getOriginal(), mode);
-            else ejbJar.merge(bean, mode);
+            if (ejbJar.getVersion().equals(((EjbJarProxy)bean).getVersion())) {
+                if (bean instanceof EjbJarProxy)
+                    ejbJar.merge(((EjbJarProxy)bean).getOriginal(), mode);
+                else ejbJar.merge(bean, mode);
+            } else {
+                if (bean instanceof EjbJarProxy)
+                    setOriginal(((EjbJarProxy)bean).getOriginal());
+            }
         }
     }
     
